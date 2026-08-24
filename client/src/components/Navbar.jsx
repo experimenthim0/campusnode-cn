@@ -379,7 +379,7 @@ const Navbar = () => {
                         <p className="text-[14px] font-black text-black dark:text-neutral-100 truncate">
                           {user.name}
                         </p>
-                        <p className="text-[10px] tracking-widest text-orange-600 dark:text-orange-500 font-medium mt-0.5">
+                        <p className="text-[10px] tracking-widest text-orange-600 dark:text-orange-500 font-semibold mt-0.5">
                           {role === "club"
                             ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
                             : user?.memberships?.some(m => m.role === "CLUB_HEAD")
@@ -502,7 +502,7 @@ const Navbar = () => {
                 setSearchOpen((prev) => !prev);
                 setNotifDropdownOpen(false);
               }}
-              className="relative p-1.5 rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer"
+              className="relative px-1 rounded-sm text-neutral-700 dark:text-neutral-300 transition-colors duration-150 cursor-pointer"
               aria-label="Search"
             >
               <i className={`${searchOpen ? 'ri-close-line' : 'ri-search-line'} text-[20px]`} />
@@ -516,10 +516,10 @@ const Navbar = () => {
                       handleNotificationClick();
                       setSearchOpen(false);
                     }}
-                    className="relative rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer inline-flex items-center justify-center "
+                    className="relative py-1.5  text-neutral-700 dark:text-neutral-300  transition-colors duration-150 cursor-pointer inline-flex items-center justify-center "
                     aria-label="Notifications"
                   >
-                    <BellIcon size={18} />
+                    <BellIcon size={20} />
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border border-white dark:border-[#0a0a0a]"></span>
                     )}

@@ -263,7 +263,7 @@ const CertificateDesigner = () => {
     try {
       await saveCertificateTemplate(id, payload);
       showNotification("Template saved!", "success");
-      navigate("/my-events");
+      navigate(`/profile`);
     } catch (err) {
       console.error(err);
       showNotification(

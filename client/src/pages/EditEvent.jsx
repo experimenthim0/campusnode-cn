@@ -596,7 +596,7 @@ const EditEvent = () => {
         try {
             await updateEvent(id, payload);
             showNotification('Event updated successfully!', 'success');
-            navigate('/my-events');
+            navigate(`/event/${event.slug}`);
         } catch (err) {
             showNotification(err.response?.data?.message || 'Failed to update event', 'error');
         } finally {

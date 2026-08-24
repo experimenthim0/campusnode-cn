@@ -228,6 +228,7 @@ const MyEvents = () => {
   const handleDownloadCertificate = async (eventId) => {
     try {
       setDownloadingCert(eventId);
+      showNotification('Preparing certificate download...', 'info');
       const res = await api.get(`/api/certificates/${eventId}/download`, {
         params: { studentId: user.id || user._id },
         responseType: 'blob'
@@ -248,6 +249,8 @@ const MyEvents = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+
+      showNotification('Downloading started! Check your downloads folder.', 'success');
     } catch (err) {
       console.error('Certificate download error:', err);
       let message = 'Failed to download certificate.';

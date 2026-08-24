@@ -725,7 +725,7 @@ const ClubDetails = () => {
                 onClick={handleShareClub}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition font-semibold text-xs uppercase tracking-wider cursor-pointer"
               >
-                <i className="ri-share-line" /> Share
+                <i className="ri-share-line font-light" /> Share
               </button>
 
               {canEdit && (
@@ -733,7 +733,7 @@ const ClubDetails = () => {
                   onClick={() => setAdminHubOpen(true)}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
                 >
-                  <i className="ri-dashboard-line" /> Manage Club
+                  <i className="ri-dashboard-line font-light" /> Manage Club
                 </button>
               )}
             </div>
@@ -746,7 +746,7 @@ const ClubDetails = () => {
                 to="/create"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
               >
-                <i className="ri-add-line" /> Create Event
+                <i className="ri-add-line font-light" /> Create Event
               </Link>
               {isHead && (
                 <>
@@ -754,13 +754,13 @@ const ClubDetails = () => {
                     to={`/club/edit/${club._id || club.id}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
                   >
-                    <i className="ri-settings-3-line" /> Club Settings
+                    <i className="ri-settings-3-line font-light" /> Club Settings
                   </Link>
                   <Link
                     to={`/club/${club._id || club.id}/team`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
                   >
-                    <i className="ri-team-line" /> Manage Members
+                    <i className="ri-team-line font-light" /> Manage Members
                   </Link>
                   
                 </>

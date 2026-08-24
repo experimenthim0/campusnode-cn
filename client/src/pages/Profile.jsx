@@ -199,6 +199,24 @@ const Profile = () => {
     return r === 'COORDINATOR' || (m.role || '').toLowerCase() === 'coordinator';
   });
 
+  const roleCoordinatorNames = clubCoordinators.map(c => c.student?.name || c.name).filter(Boolean);
+  const roleLeadNames = studentLeads.map(l => l.student?.name || l.name).filter(Boolean);
+  const savedCoordinators = Array.isArray(clubData?.studentCoordinators)
+    ? clubData.studentCoordinators.filter(Boolean)
+    : (typeof clubData?.studentCoordinators === 'string' && clubData.studentCoordinators
+        ? clubData.studentCoordinators.split(',').map(s => s.trim()).filter(Boolean)
+        : []);
+
+  const displayStudentLead = roleLeadNames.length > 0
+    ? roleLeadNames.join(', ')
+    : (savedCoordinators.length > 0 ? savedCoordinators[0] : 'Not Assigned');
+
+  const displayStudentCoordinators = roleCoordinatorNames.length > 0
+    ? roleCoordinatorNames.join(', ')
+    : (savedCoordinators.length > 0
+        ? savedCoordinators.join(', ')
+        : (roleLeadNames.length > 0 ? roleLeadNames.join(', ') : 'Not Assigned'));
+
   // Social Links helper
   const getSocialLink = (platformQuery) => {
     if (!clubData?.socialLinks) return null;
@@ -295,7 +313,7 @@ const Profile = () => {
                   to="/profile/edit"
                   className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
                 >
-                  <i className="ri-edit-line text-sm" /> Edit Profile
+                  <i className="ri-edit-line text-sm font-light" /> Edit Profile
                 </Link>
                 {(clubData?.slug || clubData?.id || user.clubId) && (
                   <Link
@@ -398,13 +416,20 @@ const Profile = () => {
               </div>
 
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Student Coordinator(s)</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Student Lead</p>
                 <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  {Array.isArray(clubData?.studentCoordinators) && clubData.studentCoordinators.length > 0
-                    ? clubData.studentCoordinators.join(', ')
-                    : (typeof clubData?.studentCoordinators === 'string' && clubData.studentCoordinators ? clubData.studentCoordinators : 'Not Configured')}
+                  {displayStudentLead}
                 </p>
               </div>
+
+              {roleCoordinatorNames.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Student Coordinator(s)</p>
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                    {displayStudentCoordinators}
+                  </p>
+                </div>
+              )}
 
               {clubData?.createdAt && (
                 <div>
@@ -855,7 +880,7 @@ const Profile = () => {
                       to="/profile/edit"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full transition-all font-semibold text-xs shadow-xs cursor-pointer border-0"
                     >
-                      <i className="ri-edit-line text-sm" /> Edit Profile
+                      <i className="ri-edit-line text-sm font-light" /> Edit Profile
                     </Link>
                     {!user?.rollNo && (role === 'club' || authRole === 'club') ? (
                       <Link

@@ -51,7 +51,7 @@ const publicClubSelect = {
   facultyCoordinator: { select: { id: true, name: true, email: true } },
   socialLinks: true,
   memberships: {
-    where: { role: "CLUB_HEAD" },
+    where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
     include: {
       student: { select: { id: true, name: true, email: true } }
     }
@@ -76,14 +76,30 @@ router.get("/", async (req, res) => {
       orderBy: { clubName: "asc" },
     });
 
-    const response = clubs.map((club) => ({
-      ...club,
-      _id: club.id,
-      facultyCoordinators: club.facultyCoordinator
-        ? [{ ...club.facultyCoordinator, _id: club.facultyCoordinator.id }]
-        : [],
-      studentHeads: (club.memberships || []).map((m) => m.student?.name).filter(Boolean),
-    }));
+    const response = clubs.map((club) => {
+      const coordinatorMembers = (club.memberships || []).filter((m) => m.role === "COORDINATOR");
+      const headMembers = (club.memberships || []).filter((m) => m.role === "CLUB_HEAD");
+      const roleCoords = coordinatorMembers.map((m) => m.student?.name).filter(Boolean);
+      const roleHeads = headMembers.map((m) => m.student?.name).filter(Boolean);
+
+      const resolvedStudentCoordinators =
+        Array.isArray(club.studentCoordinators) && club.studentCoordinators.length > 0
+          ? club.studentCoordinators
+          : roleHeads.length > 0
+          ? roleHeads
+          : roleCoords;
+
+      return {
+        ...club,
+        _id: club.id,
+        facultyCoordinators: club.facultyCoordinator
+          ? [{ ...club.facultyCoordinator, _id: club.facultyCoordinator.id }]
+          : [],
+        studentHeads: roleHeads,
+        studentCoordinators: resolvedStudentCoordinators,
+        roleCoordinators: roleCoords,
+      };
+    });
 
     setPublicResponse(cacheKey, response);
     res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
@@ -114,12 +130,30 @@ router.get("/:id", async (req, res) => {
         achievements: {
           orderBy: { createdAt: "desc" },
         },
+        memberships: {
+          where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
+          include: {
+            student: { select: { id: true, name: true, email: true, rollNo: true } },
+          },
+        },
       },
     });
 
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
+
+    const coordinatorMembers = (club.memberships || []).filter((m) => m.role === "COORDINATOR");
+    const headMembers = (club.memberships || []).filter((m) => m.role === "CLUB_HEAD");
+    const roleCoords = coordinatorMembers.map((m) => m.student?.name).filter(Boolean);
+    const roleHeads = headMembers.map((m) => m.student?.name).filter(Boolean);
+
+    const resolvedStudentCoordinators =
+      Array.isArray(club.studentCoordinators) && club.studentCoordinators.length > 0
+        ? club.studentCoordinators
+        : roleHeads.length > 0
+        ? roleHeads
+        : roleCoords;
 
     const [events, membersCount] = await Promise.all([
       prisma.event.findMany({
@@ -148,6 +182,9 @@ router.get("/:id", async (req, res) => {
       club: {
         ...club,
         _id: club.id,
+        studentCoordinators: resolvedStudentCoordinators,
+        studentHeads: roleHeads,
+        roleCoordinators: roleCoords,
         clubGallery: club.media?.map((m) => m.url) || [],
         mediaList: club.media || [],
         clubSponsors: club.sponsors?.map((s) => s.logoUrl) || [],

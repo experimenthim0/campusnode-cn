@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getClubBySlugOrId, getClubs, updateClub } from "../services/clubService";
+import { getClubBySlugOrId, getClubs, updateClub, getClubMembers } from "../services/clubService";
 import { useNotification } from "../context/NotificationContext";
 import { Link } from "react-router-dom";
 import ReactQuill from "react-quill-new";
@@ -23,6 +23,7 @@ const EditClub = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [clubId, setClubId] = useState(id);
   const [clubSlug, setClubSlug] = useState("");
+  const [roleStudentLeads, setRoleStudentLeads] = useState([]);
   const [formData, setFormData] = useState({
     clubName: "",
     category: "",
@@ -51,15 +52,23 @@ const EditClub = () => {
   });
 
   useEffect(() => {
-    const applyClubData = (club) => {
+    const applyClubData = (club, fetchedRoleLeads = []) => {
       setClubId(club._id || club.id);
       setClubSlug(club.slug || "");
+
+      // Resolve student lead from club data or auto-fetched Student Lead role
+      const storedCoords = Array.isArray(club.studentCoordinators) && club.studentCoordinators.length > 0
+        ? club.studentCoordinators.join(", ")
+        : (typeof club.studentCoordinators === "string" && club.studentCoordinators ? club.studentCoordinators : "");
+      
+      const resolvedStudentLead = storedCoords || (fetchedRoleLeads.length > 0 ? fetchedRoleLeads.join(", ") : "");
+
       setFormData({
         clubName: club.clubName || "",
         category: club.category || "",
         description: club.description || "",
         clubLogo: club.clubLogo || "",
-        studentCoordinators: club.studentCoordinators?.join(", ") || "",
+        studentCoordinators: resolvedStudentLead,
         clubGallery: club.clubGallery?.join(", ") || "",
         clubSponsors: club.clubSponsors?.join(", ") || "",
         clubInstagram:
@@ -112,11 +121,30 @@ const EditClub = () => {
           throw new Error("No club ID found.");
         }
 
-        const res = await getClubBySlugOrId(targetId);
+        const [res, membersRes] = await Promise.all([
+          getClubBySlugOrId(targetId),
+          getClubMembers(targetId).catch(() => null),
+        ]);
+
         if (!res.data.club) {
           throw new Error("Club data not found in response.");
         }
-        applyClubData(res.data.club);
+
+        const membersList = Array.isArray(membersRes?.data)
+          ? membersRes.data
+          : (membersRes?.data?.members || []);
+
+        const headMembers = membersList.filter(
+          (m) => !m.isClubAccount && (m.role === "CLUB_HEAD" || (m.role || "").toUpperCase() === "CLUB_HEAD" || (m.role || "").toLowerCase() === "clubhead" || (m.role || "").toUpperCase() === "STUDENT_LEAD")
+        );
+
+        const roleHeadNames = headMembers.map((m) => m.student?.name || m.name).filter(Boolean);
+        const fetchedRoleLeads = roleHeadNames.length > 0 
+          ? roleHeadNames 
+          : (res.data.club.studentHeads || []);
+        
+        setRoleStudentLeads(fetchedRoleLeads);
+        applyClubData(res.data.club, fetchedRoleLeads);
       } catch (err) {
         console.error("DEBUG: fetchClub error:", err);
         if (
@@ -140,7 +168,7 @@ const EditClub = () => {
               );
 
               if (matchedClub) {
-                applyClubData(matchedClub);
+                applyClubData(matchedClub, []);
                 return;
               }
             }
@@ -288,17 +316,35 @@ const EditClub = () => {
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
-                Student Coordinators (Comma separated names)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 uppercase">
+                  Student Lead / Club Head
+                </label>
+                {roleStudentLeads.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, studentCoordinators: roleStudentLeads.join(", ") }))}
+                    className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    title="Auto-fill with name from active Student Lead role"
+                  >
+                    <i className="ri-refresh-line text-xs" /> Sync Role
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 name="studentCoordinators"
                 value={formData.studentCoordinators}
                 onChange={handleChange}
-                placeholder="Name 1, Name 2, Name 3"
+                placeholder="Student Lead Name"
                 className={inputCls}
               />
+              {roleStudentLeads.length > 0 && (
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1.5 flex items-center gap-1">
+                  <i className="ri-shield-user-line text-xs text-orange-500" />
+                  <span>Active Student Lead (from Team Roles): <strong className="text-neutral-700 dark:text-neutral-300 font-semibold">{roleStudentLeads.join(", ")}</strong></span>
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
