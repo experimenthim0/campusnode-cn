@@ -38,3 +38,4 @@ attendence.md
 scanner-app/
 
 server/load-tests/
+server/routes/__tests__/

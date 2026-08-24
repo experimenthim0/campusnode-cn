@@ -50,6 +50,27 @@ async function seed() {
       },
     });
 
+    console.log("Seeding Central Event Organiser (ODSW)...");
+    await prisma.studentUser.upsert({
+      where: { email: "odsw@nitj.ac.in" },
+      update: {
+        name: "Office of Dean Student Welfare (ODSW)",
+        password: adminPasswordHash,
+        accessLevel: "central_organizer",
+        isVerified: true,
+        isBlocked: false,
+      },
+      create: {
+        id: createObjectId(),
+        name: "Office of Dean Student Welfare (ODSW)",
+        email: "odsw@nitj.ac.in",
+        password: adminPasswordHash,
+        accessLevel: "central_organizer",
+        isVerified: true,
+        isBlocked: false,
+      },
+    });
+
     console.log("Seeding Clubs...");
     for (const [clubName, facultyName, facultyEmail, clubEmail] of clubsData) {
       const slug = slugify(clubName);
@@ -90,48 +111,24 @@ async function seed() {
           },
         });
 
-        // 3. Create StudentUser for Club management (Head)
-        let clubHeadUser;
-        const existingStudent = await tx.studentUser.findUnique({ where: { email: clubEmail } });
-        if (!existingStudent) {
-          clubHeadUser = await tx.studentUser.create({
-            data: {
-              id: createObjectId(),
-              name: clubName.toUpperCase(),
-              email: clubEmail,
-              password: clubPasswordHash,
-              isVerified: true,
-              isTwoStepEnabled: false,
-            },
-          });
-        } else {
-          clubHeadUser = await tx.studentUser.update({
-            where: { email: clubEmail },
-            data: { 
-              password: clubPasswordHash,
-              isVerified: true,
-              isTwoStepEnabled: false
-            }
-          });
-        }
-
-        const finalStudentId = clubHeadUser.id;
-
-        // 4. Create Membership
-        await tx.clubMembership.upsert({
-          where: { clubId_studentId: { clubId: club.id, studentId: finalStudentId } },
-          update: { role: "CLUB_HEAD", canTakeAttendance: true, canEditEvents: true },
+        // 3. Create or Update dedicated ClubAccount for the official club login
+        await tx.clubAccount.upsert({
+          where: { clubId: club.id },
+          update: {
+            email: clubEmail,
+            password: clubPasswordHash,
+            isActive: true,
+          },
           create: {
             id: createObjectId(),
-            studentId: finalStudentId,
             clubId: club.id,
-            role: "CLUB_HEAD",
-            canTakeAttendance: true,
-            canEditEvents: true,
+            email: clubEmail,
+            password: clubPasswordHash,
+            isActive: true,
           },
         });
 
-        // 5. Update Club with FKs
+        // 4. Update Club with FKs
         await tx.club.update({
           where: { id: club.id },
           data: {
@@ -141,6 +138,73 @@ async function seed() {
       });
       console.log(`Seeded: ${clubName}`);
     }
+
+    // Seed DSW Institutional Account
+    console.log("Seeding DSW Institutional Account...");
+    const dswAccount = await prisma.institutionalAccount.upsert({
+      where: { email: "odsw@nitj.ac.in" },
+      update: {
+        name: "Dean Student Welfare (DSW)",
+        type: "DSW",
+        isActive: true,
+      },
+      create: {
+        id: createObjectId(),
+        name: "Dean Student Welfare (DSW)",
+        email: "odsw@nitj.ac.in",
+        type: "DSW",
+        isActive: true,
+      },
+    });
+
+    const coStudent = await prisma.studentUser.upsert({
+      where: { email: "odsw@nitj.ac.in" },
+      update: {
+        name: "Central Event Organiser (DSW)",
+        password: defaultPasswordHash,
+        accessLevel: "central_organizer",
+        isVerified: true,
+        isBlocked: false,
+      },
+      create: {
+        id: createObjectId(),
+        name: "Central Event Organiser (DSW)",
+        email: "odsw@nitj.ac.in",
+        password: defaultPasswordHash,
+        accessLevel: "central_organizer",
+        isVerified: true,
+        isBlocked: false,
+      },
+    });
+
+    await prisma.institutionalAccountAssignment.upsert({
+      where: {
+        institutionalAccountId_studentId: {
+          institutionalAccountId: dswAccount.id,
+          studentId: coStudent.id,
+        },
+      },
+      update: {
+        role: "CENTRAL_EVENT_ORGANISER",
+        status: "ACTIVE",
+        canManageEvents: true,
+        canTakeAttendance: true,
+        canVerifyPayments: true,
+        canDelegateStaff: true,
+      },
+      create: {
+        id: createObjectId(),
+        institutionalAccountId: dswAccount.id,
+        studentId: coStudent.id,
+        role: "CENTRAL_EVENT_ORGANISER",
+        status: "ACTIVE",
+        canManageEvents: true,
+        canTakeAttendance: true,
+        canVerifyPayments: true,
+        canDelegateStaff: true,
+      },
+    });
+    console.log("Seeded DSW Institutional Account and Central Event Organiser.");
 
     console.log("Seeding completed successfully!");
   } catch (error) {

@@ -7,7 +7,6 @@ import {
     getDashboardStats,
     getClubsList,
     getCoordinators,
-    getCentralOrganizers,
     getUserInfo,
     completePayout,
     getVenues
@@ -28,7 +27,6 @@ import {
     VenuesTab,
     ClubsTab,
     CoordinatorsTab,
-    CentralOrganizerTab,
     ManualPaymentsTab,
     PayoutsTab,
     BroadcastsTab,
@@ -70,9 +68,6 @@ const AdminDashboard = () => {
     const [venuesLoading, setVenuesLoading] = useState(false);
     const [isAddVenueModalOpen, setIsAddVenueModalOpen] = useState(false);
 
-    // Central Organizer Management States
-    const [centralOrganizer, setCentralOrganizer] = useState(null);
-    const [loadingCO, setLoadingCO] = useState(false);
 
     // Communication States
     const [broadcasts, setBroadcasts] = useState([]);
@@ -158,20 +153,7 @@ const AdminDashboard = () => {
         if (activeTab === 'broadcasts') fetchBroadcasts();
         if (activeTab === 'notifications') fetchAdminNotifications();
         if (activeTab === 'venues') fetchVenues();
-        if (activeTab === 'central-organizer') fetchCentralOrganizer();
     }, [activeTab]);
-
-    const fetchCentralOrganizer = async () => {
-        setLoadingCO(true);
-        try {
-            const res = await getCentralOrganizers();
-            setCentralOrganizer(res.data.centralOrganizer || null);
-        } catch (err) {
-            console.error('Failed to fetch central organizer:', err);
-        } finally {
-            setLoadingCO(false);
-        }
-    };
 
     const fetchBroadcasts = async () => {
         setLoadingBroadcasts(true);
@@ -473,13 +455,6 @@ const AdminDashboard = () => {
                     />
                 )}
 
-                {activeTab === 'central-organizer' && (
-                    <CentralOrganizerTab
-                        centralOrganizer={centralOrganizer}
-                        loadingCO={loadingCO}
-                        fetchCentralOrganizer={fetchCentralOrganizer}
-                    />
-                )}
 
                 {activeTab === 'payments-overview' && (
                     <ManualPaymentsTab

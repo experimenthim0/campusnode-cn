@@ -47,14 +47,14 @@ const MyEvents = () => {
   const [highlightedRegId, setHighlightedRegId] = useState(null);
   const [downloadingCert, setDownloadingCert] = useState(null);
 
-  // Check if account is a pure official club account without student identity
-  const isPureClubAccount = !user?.rollNo && authRole === 'club';
+  // Check if account is a dedicated ClubAccount without student identity
+  const isClubAccount = authUser?.principalType === 'CLUB' || (!user?.rollNo && authRole === 'club');
 
   useEffect(() => {
     if (authUser) {
       setUser(authUser);
       const userId = authUser.id || authUser._id;
-      if (userId && !isPureClubAccount) {
+      if (userId && !isClubAccount) {
         fetchRegistrations(userId);
       } else {
         setLoading(false);
@@ -62,7 +62,7 @@ const MyEvents = () => {
     } else {
       setLoading(false);
     }
-  }, [authUser, authRole, isPureClubAccount]);
+  }, [authUser, authRole, isClubAccount]);
 
   // Deep-link highlighting
   useEffect(() => {
@@ -381,8 +381,8 @@ const MyEvents = () => {
   if (!user) return <div className="text-center mt-10 text-sm text-neutral-500">Please login to view your events.</div>;
   if (loading) return <div className="text-center mt-10 text-sm text-neutral-400">Loading your events...</div>;
 
-  // Pure Official Club Account Notice (Guiding to Club Management)
-  if (isPureClubAccount) {
+  // Dedicated Official Club Account Notice (Guiding to Club Management)
+  if (isClubAccount) {
     const clubTargetId = user.clubId || user.id || user._id;
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">

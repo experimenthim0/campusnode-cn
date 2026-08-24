@@ -20,16 +20,21 @@ import { EVENT_STAFF_PERMISSIONS } from "../middleware/eventStaffAuth.js";
 
 const router = express.Router();
 
-// ─── Middleware: require central_organizer role ────────────────────────────────
+// ─── Middleware: require central_organizer role or institutional assignment ──
 
 function requireCentralOrganizer(req, res, next) {
-  if (!req.user || req.user.role !== "central_organizer") {
+  const isCO =
+    req.user?.role === "central_organizer" ||
+    req.user?.principalType === "INSTITUTIONAL" ||
+    (req.user?.institutionalAssignments || []).some((a) => a.status === "ACTIVE");
+
+  if (!isCO) {
     return res.status(403).json({ message: "Central Organizer access required." });
   }
   next();
 }
 
-// ─── Helper: verify CO owns the event (NEVER trust client-supplied ownership) ─
+// ─── Helper: verify CO event access ──────────────────────────────────────────
 
 async function verifyCentralEventOwnership(authenticatedUserId, eventId) {
   const event = await prisma.event.findUnique({
@@ -39,20 +44,13 @@ async function verifyCentralEventOwnership(authenticatedUserId, eventId) {
       title: true,
       organizerType: true,
       centralOrganizerId: true,
+      institutionalAccountId: true,
       clubId: true,
     },
   });
   if (!event) return { error: 404, message: "Event not found." };
-  if (event.organizerType !== "CENTRAL") {
+  if (event.organizerType !== "CENTRAL" && !event.institutionalAccountId) {
     return { error: 403, message: "This is not a central event." };
-  }
-  // If centralOrganizerId is not set to current active CO, auto-sync it to preserve seamless ownership
-  if (event.centralOrganizerId !== authenticatedUserId) {
-    await prisma.event.update({
-      where: { id: eventId },
-      data: { centralOrganizerId: authenticatedUserId },
-    });
-    event.centralOrganizerId = authenticatedUserId;
   }
   return { event };
 }
@@ -98,26 +96,26 @@ router.get("/events", async (req, res) => {
 const createEventSchema = z.object({
   body: z.object({
     title: z.string().min(1).max(200),
-    description: z.string().optional(),
+    description: z.string().nullable().optional(),
     venue: z.string().min(1),
     startTime: z.string().min(1),
     endTime: z.string().min(1),
-    totalSeats: z.number().int().min(0).optional(),
-    imageUrl: z.string().optional(),
-    allowedPrograms: z.array(z.string()).optional(),
-    allowedYears: z.array(z.string()).optional(),
-    allowedBranches: z.array(z.string()).optional(),
-    registrationDeadline: z.string().optional(),
-    registrationType: z.enum(["none", "individual", "team"]).optional(),
-    reviewStatus: z.enum(["PUBLISHED", "DRAFT", "PENDING"]).optional(),
-    minTeamSize: z.number().int().min(1).optional(),
-    maxTeamSize: z.number().int().min(1).optional(),
-    provideCertificate: z.boolean().optional(),
-    paymentMethod: z.string().optional(),
-    registrationFee: z.number().min(0).optional(),
-    paymentInstructions: z.string().optional(),
-    requiredFields: z.array(z.string()).optional(),
-    customFields: z.any().optional(),
+    totalSeats: z.number().int().min(0).nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
+    allowedPrograms: z.array(z.string()).nullable().optional(),
+    allowedYears: z.array(z.string()).nullable().optional(),
+    allowedBranches: z.array(z.string()).nullable().optional(),
+    registrationDeadline: z.string().nullable().optional(),
+    registrationType: z.enum(["none", "individual", "team"]).nullable().optional(),
+    reviewStatus: z.enum(["PUBLISHED", "DRAFT", "PENDING"]).nullable().optional(),
+    minTeamSize: z.number().int().min(1).nullable().optional(),
+    maxTeamSize: z.number().int().min(1).nullable().optional(),
+    provideCertificate: z.boolean().nullable().optional(),
+    paymentMethod: z.string().nullable().optional(),
+    registrationFee: z.number().min(0).nullable().optional(),
+    paymentInstructions: z.string().nullable().optional(),
+    requiredFields: z.array(z.string()).nullable().optional(),
+    customFields: z.any().nullable().optional(),
   }),
   params: z.any().optional(),
   query: z.any().optional(),
@@ -144,6 +142,10 @@ router.post("/events", async (req, res) => {
     const effectiveRegType = registrationType || "individual";
     const effectiveReviewStatus = reviewStatus || "PUBLISHED";
 
+    const dswAccount = await prisma.institutionalAccount.findFirst({
+      where: { type: "DSW", isActive: true },
+    });
+
     const event = await prisma.event.create({
       data: {
         id: eventId,
@@ -156,6 +158,7 @@ router.post("/events", async (req, res) => {
         imageUrl: imageUrl || null,
         organizerType: "CENTRAL",
         centralOrganizerId: req.user.userId, // From server auth context
+        institutionalAccountId: dswAccount?.id || null,
         createdById: req.user.userId,
         clubId: null, // Central events have no single club owner
         slug,
@@ -348,7 +351,10 @@ router.get("/events/:eventId/staff", async (req, res) => {
     }
 
     const staff = await prisma.eventStaff.findMany({
-      where: { eventId: req.params.eventId },
+      where: {
+        eventId: req.params.eventId,
+        status: { not: "REVOKED" },
+      },
       include: {
         user: { select: { id: true, name: true, email: true, profileImage: true, branch: true, year: true } },
       },
@@ -375,7 +381,7 @@ const inviteStaffSchema = z.object({
   body: z.object({
     email: z.string().email(),
     permissions: z.array(z.string()).min(1),
-    expiresAt: z.string().optional(),
+    expiresAt: z.string().nullable().optional(),
   }),
   params: z.any().optional(),
   query: z.any().optional(),
@@ -405,9 +411,12 @@ router.post("/events/:eventId/staff", async (req, res) => {
       });
     }
 
-    // Find existing CampusNode student — do NOT create accounts
-    const student = await prisma.studentUser.findUnique({
-      where: { email },
+    // Find existing CampusNode student — case insensitive
+    const normalizedEmail = email.trim().toLowerCase();
+    const student = await prisma.studentUser.findFirst({
+      where: {
+        email: { equals: normalizedEmail, mode: "insensitive" },
+      },
       select: { id: true, name: true, email: true, isBlocked: true },
     });
 
@@ -426,19 +435,48 @@ router.post("/events/:eventId/staff", async (req, res) => {
       return res.status(400).json({ message: "You cannot invite yourself as event staff." });
     }
 
-    // Create EventStaff with PENDING status (acceptance flow)
-    const staffId = createObjectId();
-    const staffRecord = await prisma.eventStaff.create({
-      data: {
-        id: staffId,
+    // Check if an existing EventStaff record exists for this event and student
+    const existingStaff = await prisma.eventStaff.findFirst({
+      where: {
         eventId: req.params.eventId,
         userId: student.id,
-        invitedById: req.user.userId, // From server auth context
-        permissions,
-        status: "PENDING",
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
     });
+
+    let staffRecord;
+    if (existingStaff) {
+      if (existingStaff.status === "ACTIVE" || existingStaff.status === "PENDING") {
+        return res.status(409).json({
+          message: "This student already has an active or pending staff invitation for this event.",
+        });
+      }
+
+      // Reactivate previously revoked, rejected, or expired staff record
+      staffRecord = await prisma.eventStaff.update({
+        where: { id: existingStaff.id },
+        data: {
+          invitedById: req.user.userId,
+          permissions,
+          status: "PENDING",
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+          revokedAt: null,
+        },
+      });
+    } else {
+      // Create EventStaff with PENDING status (acceptance flow)
+      const staffId = createObjectId();
+      staffRecord = await prisma.eventStaff.create({
+        data: {
+          id: staffId,
+          eventId: req.params.eventId,
+          userId: student.id,
+          invitedById: req.user.userId, // From server auth context
+          permissions,
+          status: "PENDING",
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+        },
+      });
+    }
 
     // Send notification to the student
     try {
@@ -693,6 +731,57 @@ router.get("/audit-logs", async (req, res) => {
       },
       availableActions: Object.values(AUDIT_ACTIONS),
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─── Search Students for Event Staff Delegation ──────────────────────────────
+router.get("/students/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) {
+      return res.json({ students: [] });
+    }
+
+    const query = q.trim();
+
+    // Fetch non-student accounts (clubs, admins, institutional) to strictly exclude them
+    const [clubAccounts, admins, instAccounts] = await Promise.all([
+      prisma.clubAccount.findMany({ select: { email: true } }),
+      prisma.adminRole.findMany({ select: { email: true } }),
+      prisma.institutionalAccount.findMany({ select: { email: true } }),
+    ]);
+
+    const excludedEmails = [
+      ...clubAccounts.map((c) => (c.email ? c.email.toLowerCase() : "")),
+      ...admins.map((a) => (a.email ? a.email.toLowerCase() : "")),
+      ...instAccounts.map((i) => (i.email ? i.email.toLowerCase() : "")),
+    ].filter(Boolean);
+
+    const students = await prisma.studentUser.findMany({
+      where: {
+        isBlocked: false,
+        email: { notIn: excludedEmails },
+        OR: [
+          { email: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+          { rollNo: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        rollNo: true,
+        branch: true,
+        year: true,
+        program: true,
+      },
+      take: 10,
+    });
+
+    res.json({ students });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

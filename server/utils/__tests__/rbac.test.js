@@ -107,15 +107,40 @@ describe("Granular RBAC Engine Tests", () => {
 
       // 2. Scoped management for Club A (Student Lead)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_a" })).toBe(true);
+      expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_a" })).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_a" })).toBe(true);
 
       // 3. Scoped management for Club B (Coordinator)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_b" })).toBe(true);
+      expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_b" })).toBe(true);
+      // Coordinator does NOT have permission of team management (CLUB_MANAGE_MEMBERS)
+      expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_b" })).toBe(false);
 
       // 4. Scoped isolation - cannot manage Club C (only regular member) or Club D (no membership)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_c" })).toBe(false);
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_d" })).toBe(false);
+      expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_d" })).toBe(false);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_d" })).toBe(false);
+    });
+
+    it("Coordinator-only student has event and club settings access but no team management", () => {
+      const coordinatorStudent = {
+        userId: "coord_user_1",
+        userType: "student",
+        role: "club",
+        memberships: [
+          { clubId: "club_robotics", role: "COORDINATOR", canTakeAttendance: true, canEditEvents: true },
+          { clubId: "club_dance", role: "MEMBER", canTakeAttendance: true, canEditEvents: false },
+        ]
+      };
+
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_robotics" })).toBe(true);
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_robotics" })).toBe(true);
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_robotics" })).toBe(false);
+
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_dance" })).toBe(false);
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_dance" })).toBe(false);
+      expect(hasPermission(coordinatorStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_dance" })).toBe(false);
     });
   });
 });

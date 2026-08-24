@@ -7,10 +7,12 @@ import {
   updateClubMember,
   removeClubMember,
   transferStudentLead,
+  searchStudentsForClub,
 } from "../services/clubService";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 import { ClubMemberRole } from "../types/index.js";
+import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
 import { invalidateCache } from "../lib/cacheManager";
 
 // ── Avatar ─────────────────────────────────────────────────────────────────────
@@ -124,6 +126,35 @@ const ClubMembers = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState(ClubMemberRole.MEMBER);
   const [updatingIds, setUpdatingIds] = useState({});
+
+  // Student search / autocomplete state
+  const [studentSearchResults, setStudentSearchResults] = useState([]);
+  const [searchingStudents, setSearchingStudents] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const handleSearchStudents = async (q) => {
+    setInviteEmail(q);
+    setSelectedStudent(null);
+    if (!q || q.trim().length < 2) {
+      setStudentSearchResults([]);
+      return;
+    }
+    setSearchingStudents(true);
+    try {
+      const res = await searchStudentsForClub(clubId, q.trim());
+      setStudentSearchResults(res.data.students || []);
+    } catch {
+      // non-fatal
+    } finally {
+      setSearchingStudents(false);
+    }
+  };
+
+  const handleSelectStudent = (st) => {
+    setInviteEmail(st.email);
+    setSelectedStudent(st);
+    setStudentSearchResults([]);
+  };
 
   const isCurrentMemberSelf = (member) => {
     if (!authUser || !member) return false;
@@ -377,6 +408,39 @@ const ClubMembers = () => {
     );
   }
 
+  // ── Authorization Guard ───────────────────────────────────────────────────
+  const canManageTeam = hasPermission(authUser, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId });
+
+  if (!canManageTeam) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400">
+          <i className="ri-shield-keyhole-line text-3xl" />
+        </div>
+        <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+          Team Management Restricted
+        </h2>
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          Team Management (adding members, changing roles, assigning permissions, and leadership transfers) is reserved for the <strong>Student Lead (Club Head)</strong> and Club Administrators. Coordinators do not have permission to manage team members.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Link
+            to={`/club-events/${clubId}`}
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-orange-700 transition-all"
+          >
+            <i className="ri-arrow-left-line" /> Back to Club Events
+          </Link>
+          <Link
+            to="/profile"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all"
+          >
+            Go to Profile
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -444,40 +508,115 @@ const ClubMembers = () => {
         </div>
       </div>
 
-      {/* ── Invite section ──────────────────────────────────────────────────── */}
-      <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs">
-        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-          Add New Team Member
-        </p>
-        <form onSubmit={handleInvite} className="flex flex-wrap items-center gap-3">
-          <input
-            type="email"
-            placeholder="student@nitj.ac.in"
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            required
-            className="h-10 min-w-[220px] flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-orange-500 focus:outline-none transition-colors"
-          />
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-orange-500 focus:outline-none cursor-pointer"
-          >
-            <option value={ClubMemberRole.MEMBER}>Member</option>
-            <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
-              Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
-            </option>
-            <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
-              Student Lead (Head) {activeStudentLead ? "(Assigned - use Transfer)" : ""}
-            </option>
-          </select>
-          <button
-            type="submit"
-            disabled={inviting}
-            className="h-10 rounded-xl bg-orange-600 hover:bg-orange-700 px-5 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
-          >
-            {inviting ? "Adding…" : "Add Member"}
-          </button>
+      {/* ── Add Member section with live student lookup ─────────────────────── */}
+      <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs space-y-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            Add New Team Member
+          </p>
+          <p className="text-[11px] text-neutral-500 mt-0.5">
+            Search students by name, email, or roll number. Only registered students are eligible (club and admin accounts are strictly excluded).
+          </p>
+        </div>
+
+        <form onSubmit={handleInvite} className="space-y-3">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="relative min-w-[260px] flex-1">
+              <input
+                type="text"
+                placeholder="Search student by name, email or roll number..."
+                value={inviteEmail}
+                onChange={(e) => handleSearchStudents(e.target.value)}
+                required
+                className="h-10 w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-orange-500 focus:outline-none transition-colors"
+              />
+
+              {searchingStudents && (
+                <div className="absolute right-3 top-2.5 text-xs text-neutral-400">
+                  Searching...
+                </div>
+              )}
+
+              {/* Student Search Results Dropdown */}
+              {studentSearchResults.length > 0 && (
+                <div className="absolute left-0 right-0 top-11 z-30 max-h-56 overflow-y-auto rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {studentSearchResults.map((st) => (
+                    <button
+                      key={st.id}
+                      type="button"
+                      disabled={st.isAlreadyMember}
+                      onClick={() => handleSelectStudent(st)}
+                      className={`w-full text-left p-3 flex items-center justify-between gap-3 transition-colors ${
+                        st.isAlreadyMember
+                          ? "opacity-50 cursor-not-allowed bg-neutral-50 dark:bg-neutral-800/50"
+                          : "hover:bg-orange-50/50 dark:hover:bg-zinc-800 cursor-pointer"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-xs font-bold text-neutral-900 dark:text-white">{st.name}</p>
+                        <p className="text-[11px] text-neutral-400">
+                          {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
+                        </p>
+                        <p className="text-[10px] text-neutral-500">
+                          {st.branch || "Branch N/A"} • Year {st.year || "N/A"}
+                        </p>
+                      </div>
+                      {st.isAlreadyMember ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                          Already in team
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400">
+                          Select
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-orange-500 focus:outline-none cursor-pointer"
+            >
+              <option value={ClubMemberRole.MEMBER}>Member</option>
+              <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
+                Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
+              </option>
+              <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
+                Student Lead (Head) {activeStudentLead ? "(Assigned - use Transfer)" : ""}
+              </option>
+            </select>
+
+            <button
+              type="submit"
+              disabled={inviting}
+              className="h-10 rounded-xl bg-orange-600 hover:bg-orange-700 px-5 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+            >
+              {inviting ? "Adding…" : "Add Member"}
+            </button>
+          </div>
+
+          {/* Selected Student Confirmation Pill */}
+          {selectedStudent && (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs">
+              <span className="font-bold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
+              <span className="text-neutral-800 dark:text-neutral-200 font-semibold">{selectedStudent.name}</span>
+              <span className="text-neutral-500">({selectedStudent.email})</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedStudent(null);
+                  setInviteEmail("");
+                }}
+                className="ml-auto text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 underline"
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </form>
       </div>
 

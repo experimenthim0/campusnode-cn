@@ -4,6 +4,7 @@ import { verifyToken } from "../middleware/auth.js";
 import prisma from "../lib/prisma.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { getStudentRoleAndClub, getAdminClubId } from "./auth.js";
+import { getEffectivePermissions } from "../utils/rbac.js";
 import profileUpload from "../middleware/profileUpload.js";
 import { validateFileSignature, processProfileImage, generateProfileFilename } from "../utils/imageProcessor.js";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
@@ -19,21 +20,76 @@ const photoUploadLimiter = rateLimit({
 
 // GET /api/users/me — fetch the authenticated user's profile
 router.get("/me", verifyToken, async (req, res) => {
-  const { userId, userType } = req.user;
+  const { userId, userType, principalType } = req.user;
 
   try {
-    const user = userType === "admin"
-      ? await prisma.adminRole.findUnique({ where: { id: userId } })
-      : await prisma.studentUser.findUnique({ where: { id: userId } });
+    // 1. Club Account
+    if (principalType === "CLUB" || userType === "club") {
+      const clubAccount = await prisma.clubAccount.findUnique({
+        where: { id: req.user.clubAccountId || userId },
+        include: {
+          club: {
+            select: {
+              id: true,
+              clubName: true,
+              slug: true,
+              clubLogo: true,
+              description: true,
+              category: true,
+              bankName: true,
+              accountHolderName: true,
+              accountNumber: true,
+              ifscCode: true,
+              upiId: true,
+              bankPhone: true,
+            },
+          },
+        },
+      });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      if (!clubAccount) {
+        return res.status(404).json({ message: "Club account not found." });
+      }
+
+      const safeUser = {
+        id: clubAccount.id,
+        clubAccountId: clubAccount.id,
+        email: clubAccount.email,
+        name: clubAccount.club?.clubName,
+        clubId: clubAccount.clubId,
+        principalType: "CLUB",
+        club: clubAccount.club,
+        bankName: clubAccount.club?.bankName,
+        accountHolderName: clubAccount.club?.accountHolderName,
+        accountNumber: clubAccount.club?.accountNumber,
+        ifscCode: clubAccount.club?.ifscCode,
+        upiId: clubAccount.club?.upiId,
+        bankPhone: clubAccount.club?.bankPhone,
+      };
+
+      const effectivePermissions = getEffectivePermissions(req.user, clubAccount.clubId);
+
+      return res.json({
+        user: safeUser,
+        role: "club",
+        userType: "club",
+        principalType: "CLUB",
+        effectivePermissions,
+      });
     }
 
-    const safeUser = sanitizeUser(user);
+    // 2. Admin / Faculty
+    if (userType === "admin" || principalType === "FACULTY" || principalType === "ADMIN") {
+      const user = await prisma.adminRole.findUnique({ where: { id: userId } });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
 
-    if (userType === "admin") {
-      const clubInfo = (user.role === "facultyCoordinator" || user.role === "club")
+      const safeUser = sanitizeUser(user);
+      const isFaculty = user.role === "facultyCoordinator";
+      safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
+
+      const clubInfo = isFaculty
         ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } })
         : null;
       safeUser.clubId = clubInfo?.id ?? null;
@@ -46,9 +102,14 @@ router.get("/me", verifyToken, async (req, res) => {
         safeUser.bankPhone = clubInfo.bankPhone;
       }
       safeUser.memberships = clubInfo ? [{
+        id: `fac_${clubInfo.id}`,
         clubId: clubInfo.id,
         clubName: clubInfo.clubName,
         role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
         permissions: {
           canTakeAttendance: true,
           canViewDashboard: true,
@@ -56,24 +117,41 @@ router.get("/me", verifyToken, async (req, res) => {
           canEditEvents: true,
         },
       }] : [];
-      return res.json({ user: safeUser, role: user.role, userType });
+
+      const effectivePermissions = getEffectivePermissions(req.user, clubInfo?.id);
+
+      return res.json({
+        user: safeUser,
+        role: user.role,
+        userType: "admin",
+        principalType: safeUser.principalType,
+        effectivePermissions,
+      });
     }
 
-    const { role, clubId, memberships } = await getStudentRoleAndClub(user.id);
+    // 3. Student
+    const user = await prisma.studentUser.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const safeUser = sanitizeUser(user);
+    safeUser.principalType = "STUDENT";
+
+    const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(user.id);
     safeUser.clubId = clubId;
     safeUser.memberships = memberships;
-    if (role === "club" && clubId) {
-      const clubInfo = await prisma.club.findUnique({ where: { id: clubId } });
-      if (clubInfo) {
-        safeUser.bankName = clubInfo.bankName;
-        safeUser.accountHolderName = clubInfo.accountHolderName;
-        safeUser.accountNumber = clubInfo.accountNumber;
-        safeUser.ifscCode = clubInfo.ifscCode;
-        safeUser.upiId = clubInfo.upiId;
-        safeUser.bankPhone = clubInfo.bankPhone;
-      }
-    }
-    return res.json({ user: safeUser, role, userType });
+    safeUser.institutionalAssignments = institutionalAssignments;
+
+    const effectivePermissions = getEffectivePermissions(req.user, clubId);
+
+    return res.json({
+      user: safeUser,
+      role,
+      userType: "student",
+      principalType: "STUDENT",
+      effectivePermissions,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

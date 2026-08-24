@@ -107,13 +107,13 @@ const EditClub = () => {
               : null;
           targetId = storedUser?.clubId;
 
-          // Fallback: look for CLUB_HEAD role in memberships
+          // Fallback: look for CLUB_HEAD or COORDINATOR role in memberships
           if (!targetId && storedUser?.memberships?.length > 0) {
-            const headMembership = storedUser.memberships.find(
-              (m) => m.role === "CLUB_HEAD",
+            const mgmtMembership = storedUser.memberships.find(
+              (m) => m.role === "CLUB_HEAD" || m.role === "COORDINATOR",
             );
             targetId =
-              headMembership?.clubId || storedUser.memberships[0].clubId;
+              mgmtMembership?.clubId || storedUser.memberships[0].clubId;
           }
         }
 

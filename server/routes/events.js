@@ -80,7 +80,7 @@ async function checkEventAccess(req, eventClubId, requiredPermission = null) {
     });
     if (!membership && String(req.user.clubId) === String(eventClubId)) return true;
     if (!membership) return false;
-    if (membership.role === 'CLUB_HEAD') return true;
+    if (membership.role === 'CLUB_HEAD' || membership.role === 'COORDINATOR') return true;
     if (requiredPermission && !membership[requiredPermission]) return false;
     return true;
   }

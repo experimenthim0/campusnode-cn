@@ -5,507 +5,716 @@ import { createObjectId } from "./objectId.js";
  * Granular Permission Definitions (resource.action)
  */
 export const PERMISSIONS = {
-  EVENT_VIEW: "event.view",
+  // Event Lifecycle (Club & Base)
   EVENT_CREATE: "event.create",
   EVENT_UPDATE: "event.update",
-  EVENT_DELETE: "event.delete",
+  EVENT_DELETE_REQUEST: "event.delete.request",
+  EVENT_DELETE_APPROVE: "event.delete.approve",
   EVENT_APPROVE: "event.approve",
-  EVENT_ATTENDANCE: "event.manage_attendance",
-  EVENT_CERTIFICATE: "event.design_certificate",
+  EVENT_PUBLISH: "event.publish",
 
-  CLUB_VIEW: "club.view",
-  CLUB_CREATE: "club.create",
+  // Operations
+  ATTENDANCE_TAKE: "attendance.take",
+  CERTIFICATE_MANAGE: "certificate.manage",
+
+  // Club & Team Governance
   CLUB_UPDATE: "club.update",
   CLUB_MANAGE_MEMBERS: "club.manage_members",
-  CLUB_ANNOUNCEMENTS_MANAGE: "club.manage_announcements",
-  CLUB_ACHIEVEMENTS_MANAGE: "club.manage_achievements",
+  CLUB_INVITE_MEMBERS: "club.invite_members",
+  CLUB_REMOVE_MEMBERS: "club.remove_members",
+  CLUB_ASSIGN_ROLES: "club.assign_roles",
+  CLUB_TRANSFER_LEADERSHIP: "club.transfer_leadership",
 
-  REGISTRATION_VIEW: "registration.view",
-  REGISTRATION_CREATE: "registration.create",
-  REGISTRATION_CANCEL: "registration.cancel",
-
-  PAYMENT_VIEW: "payment.view",
+  // Finance
+  PAYMENT_REVIEW: "payment.review",
   PAYMENT_VERIFY: "payment.verify",
-  PAYMENT_REFUND: "payment.refund",
-
-  PAYOUT_VIEW: "payout.view",
   PAYOUT_REQUEST: "payout.request",
   PAYOUT_APPROVE: "payout.approve",
 
+  // Broadcasts
+  NOTIFICATION_SEND_REGISTRANTS: "notification.send.registrants",
+  NOTIFICATION_SEND_CAMPUS: "notification.send.campus",
+
+  // Registrations & Participation
+  REGISTRATION_CREATE: "registration.create",
+  REGISTRATION_CANCEL: "registration.cancel",
+
+  // Lost & Found
+  LOSTFOUND_CREATE: "lostfound.create",
+  LOSTFOUND_VIEW: "lostfound.view",
+  LOSTFOUND_MODERATE: "lostfound.moderate",
+
+  // Institutional Permissions (DSW / Institute-wide)
+  EVENT_CREATE_INSTITUTION: "event.create.institution",
+  EVENT_UPDATE_INSTITUTION: "event.update.institution",
+  EVENT_DELETE_REQUEST_INSTITUTION: "event.delete.request.institution",
+  EVENT_PUBLISH_INSTITUTION: "event.publish.institution",
+  EVENT_DELETE_INSTITUTION: "event.delete.institution",
+  ATTENDANCE_TAKE_INSTITUTION: "attendance.take.institution",
+  CERTIFICATE_MANAGE_INSTITUTION: "certificate.manage.institution",
+  REGISTRATION_MANAGE_INSTITUTION: "registration.manage.institution",
+  PAYMENT_REVIEW_INSTITUTION: "payment.review.institution",
+  PAYMENT_VERIFY_INSTITUTION: "payment.verify.institution",
+  VENUE_MANAGE_INSTITUTION: "venue.manage.institution",
+  EVENT_STAFF_MANAGE_INSTITUTION: "event_staff.manage.institution",
+  AUDIT_VIEW_INSTITUTION: "audit.view.institution",
+
+  // --- Backward Compatibility Aliases ---
+  EVENT_VIEW: "event.view",
+  EVENT_DELETE: "event.delete",
+  EVENT_ATTENDANCE: "event.manage_attendance",
+  EVENT_CERTIFICATE: "event.design_certificate",
+  CLUB_VIEW: "club.view",
+  CLUB_CREATE: "club.create",
+  CLUB_ANNOUNCEMENTS_MANAGE: "club.manage_announcements",
+  CLUB_ACHIEVEMENTS_MANAGE: "club.manage_achievements",
+  REGISTRATION_VIEW: "registration.view",
+  PAYMENT_VIEW: "payment.view",
+  PAYMENT_REFUND: "payment.refund",
+  PAYOUT_VIEW: "payout.view",
   USER_VIEW: "user.view",
   USER_UPDATE: "user.update",
   USER_ASSIGN_ROLE: "user.assign_role",
   USER_BLOCK: "user.block",
-
   LOST_FOUND_VIEW: "lost_found.view",
   LOST_FOUND_CREATE: "lost_found.create",
   LOST_FOUND_UPDATE: "lost_found.update",
   LOST_FOUND_RESOLVE: "lost_found.resolve",
   LOST_FOUND_REPORT: "lost_found.report",
   LOST_FOUND_MODERATE: "lost_found.moderate",
-
   NOTIFICATION_VIEW: "notification.view",
   NOTIFICATION_CREATE: "notification.create",
-
   TEAM_CREATE: "team.create",
   TEAM_MANAGE: "team.manage",
-
   AUDIT_VIEW: "audit.view",
   AUDIT_EXPORT: "audit.export",
-
   EVENT_STAFF_MANAGE: "event_staff.manage",
 };
 
 /**
- * Role Permission Mapping Matrix
- * Maps core and legacy roles to explicit permission sets.
+ * Normalizes legacy permission strings to canonical ones.
  */
+export function normalizePermission(permission) {
+  switch (permission) {
+    case PERMISSIONS.EVENT_ATTENDANCE:
+      return PERMISSIONS.ATTENDANCE_TAKE;
+    case PERMISSIONS.EVENT_CERTIFICATE:
+      return PERMISSIONS.CERTIFICATE_MANAGE;
+    case PERMISSIONS.LOST_FOUND_CREATE:
+      return PERMISSIONS.LOSTFOUND_CREATE;
+    case PERMISSIONS.LOST_FOUND_VIEW:
+      return PERMISSIONS.LOSTFOUND_VIEW;
+    case PERMISSIONS.LOST_FOUND_MODERATE:
+      return PERMISSIONS.LOSTFOUND_MODERATE;
+    default:
+      return permission;
+  }
+}
+
+/**
+ * Institutional Permissions granted to DSW Account or Central Event Organiser Lead.
+ */
+export const INSTITUTIONAL_LEAD_PERMISSIONS = [
+  PERMISSIONS.EVENT_CREATE,
+  PERMISSIONS.EVENT_UPDATE,
+  PERMISSIONS.EVENT_DELETE,
+  PERMISSIONS.EVENT_DELETE_REQUEST,
+  PERMISSIONS.EVENT_PUBLISH,
+  PERMISSIONS.ATTENDANCE_TAKE,
+  PERMISSIONS.CERTIFICATE_MANAGE,
+  PERMISSIONS.PAYMENT_REVIEW,
+  PERMISSIONS.PAYMENT_VERIFY,
+  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
+  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+  PERMISSIONS.EVENT_STAFF_MANAGE,
+  PERMISSIONS.AUDIT_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.EVENT_CREATE_INSTITUTION,
+  PERMISSIONS.EVENT_UPDATE_INSTITUTION,
+  PERMISSIONS.EVENT_DELETE_REQUEST_INSTITUTION,
+  PERMISSIONS.EVENT_PUBLISH_INSTITUTION,
+  PERMISSIONS.EVENT_DELETE_INSTITUTION,
+  PERMISSIONS.ATTENDANCE_TAKE_INSTITUTION,
+  PERMISSIONS.CERTIFICATE_MANAGE_INSTITUTION,
+  PERMISSIONS.REGISTRATION_MANAGE_INSTITUTION,
+  PERMISSIONS.PAYMENT_REVIEW_INSTITUTION,
+  PERMISSIONS.PAYMENT_VERIFY_INSTITUTION,
+  PERMISSIONS.VENUE_MANAGE_INSTITUTION,
+  PERMISSIONS.EVENT_STAFF_MANAGE_INSTITUTION,
+  PERMISSIONS.AUDIT_VIEW_INSTITUTION,
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.EVENT_ATTENDANCE,
+  PERMISSIONS.EVENT_CERTIFICATE,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.PAYMENT_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.NOTIFICATION_CREATE,
+  PERMISSIONS.CLUB_VIEW,
+];
+
+/**
+ * Operational permissions granted to an official ClubAccount for its club.
+ */
+export const CLUB_ACCOUNT_PERMISSIONS = [
+  PERMISSIONS.EVENT_CREATE,
+  PERMISSIONS.EVENT_UPDATE,
+  PERMISSIONS.EVENT_DELETE_REQUEST,
+  PERMISSIONS.EVENT_PUBLISH,
+  PERMISSIONS.ATTENDANCE_TAKE,
+  PERMISSIONS.CERTIFICATE_MANAGE,
+  PERMISSIONS.CLUB_UPDATE,
+  PERMISSIONS.CLUB_MANAGE_MEMBERS,
+  PERMISSIONS.CLUB_INVITE_MEMBERS,
+  PERMISSIONS.CLUB_REMOVE_MEMBERS,
+  PERMISSIONS.CLUB_ASSIGN_ROLES,
+  PERMISSIONS.CLUB_TRANSFER_LEADERSHIP,
+  PERMISSIONS.PAYMENT_REVIEW,
+  PERMISSIONS.PAYMENT_VERIFY,
+  PERMISSIONS.PAYOUT_REQUEST,
+  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  // Aliases
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.EVENT_ATTENDANCE,
+  PERMISSIONS.EVENT_CERTIFICATE,
+  PERMISSIONS.CLUB_VIEW,
+  PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
+  PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.PAYMENT_VIEW,
+  PERMISSIONS.PAYOUT_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.NOTIFICATION_CREATE,
+  PERMISSIONS.EVENT_STAFF_MANAGE,
+  PERMISSIONS.AUDIT_VIEW,
+  PERMISSIONS.TEAM_CREATE,
+  PERMISSIONS.TEAM_MANAGE,
+];
+
+/**
+ * Permissions granted to a Faculty Coordinator for their assigned club.
+ */
+export const FACULTY_COORDINATOR_PERMISSIONS = [
+  PERMISSIONS.EVENT_CREATE,
+  PERMISSIONS.EVENT_UPDATE,
+  PERMISSIONS.EVENT_DELETE,
+  PERMISSIONS.EVENT_DELETE_REQUEST,
+  PERMISSIONS.EVENT_DELETE_APPROVE,
+  PERMISSIONS.EVENT_APPROVE,
+  PERMISSIONS.EVENT_PUBLISH,
+  PERMISSIONS.ATTENDANCE_TAKE,
+  PERMISSIONS.CERTIFICATE_MANAGE,
+  PERMISSIONS.CLUB_UPDATE,
+  PERMISSIONS.CLUB_MANAGE_MEMBERS,
+  PERMISSIONS.CLUB_INVITE_MEMBERS,
+  PERMISSIONS.CLUB_REMOVE_MEMBERS,
+  PERMISSIONS.CLUB_ASSIGN_ROLES,
+  PERMISSIONS.CLUB_TRANSFER_LEADERSHIP,
+  PERMISSIONS.PAYMENT_REVIEW,
+  PERMISSIONS.PAYMENT_VERIFY,
+  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
+  // Aliases
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.EVENT_ATTENDANCE,
+  PERMISSIONS.EVENT_CERTIFICATE,
+  PERMISSIONS.CLUB_VIEW,
+  PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
+  PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.PAYMENT_VIEW,
+  PERMISSIONS.PAYOUT_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.NOTIFICATION_CREATE,
+  PERMISSIONS.USER_VIEW,
+  PERMISSIONS.LOSTFOUND_VIEW,
+  PERMISSIONS.LOSTFOUND_CREATE,
+  PERMISSIONS.LOST_FOUND_VIEW,
+  PERMISSIONS.LOST_FOUND_CREATE,
+];
+
+/**
+ * Permissions granted to a student with CLUB_HEAD membership for that club.
+ */
+export const STUDENT_CLUB_HEAD_PERMISSIONS = [
+  PERMISSIONS.EVENT_CREATE,
+  PERMISSIONS.EVENT_UPDATE,
+  PERMISSIONS.EVENT_DELETE_REQUEST,
+  PERMISSIONS.EVENT_PUBLISH,
+  PERMISSIONS.ATTENDANCE_TAKE,
+  PERMISSIONS.CERTIFICATE_MANAGE,
+  PERMISSIONS.CLUB_UPDATE,
+  PERMISSIONS.CLUB_MANAGE_MEMBERS,
+  PERMISSIONS.CLUB_INVITE_MEMBERS,
+  PERMISSIONS.CLUB_REMOVE_MEMBERS,
+  PERMISSIONS.CLUB_ASSIGN_ROLES,
+  PERMISSIONS.CLUB_TRANSFER_LEADERSHIP,
+  PERMISSIONS.PAYMENT_REVIEW,
+  PERMISSIONS.PAYMENT_VERIFY,
+  PERMISSIONS.PAYOUT_REQUEST,
+  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
+  // Aliases
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.EVENT_ATTENDANCE,
+  PERMISSIONS.EVENT_CERTIFICATE,
+  PERMISSIONS.CLUB_VIEW,
+  PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
+  PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.PAYMENT_VIEW,
+  PERMISSIONS.PAYOUT_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.NOTIFICATION_CREATE,
+  PERMISSIONS.EVENT_STAFF_MANAGE,
+  PERMISSIONS.AUDIT_VIEW,
+  PERMISSIONS.TEAM_CREATE,
+  PERMISSIONS.TEAM_MANAGE,
+];
+
+/**
+ * Permissions granted to a student with COORDINATOR membership for that club.
+ */
+export const STUDENT_COORDINATOR_PERMISSIONS = [
+  PERMISSIONS.EVENT_CREATE,
+  PERMISSIONS.EVENT_UPDATE,
+  PERMISSIONS.CLUB_UPDATE,
+  PERMISSIONS.ATTENDANCE_TAKE,
+  PERMISSIONS.CERTIFICATE_MANAGE,
+  PERMISSIONS.PAYMENT_REVIEW,
+  PERMISSIONS.PAYMENT_VERIFY,
+  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+  // Aliases
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.EVENT_ATTENDANCE,
+  PERMISSIONS.EVENT_CERTIFICATE,
+  PERMISSIONS.CLUB_VIEW,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.PAYMENT_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.NOTIFICATION_CREATE,
+  PERMISSIONS.EVENT_STAFF_MANAGE,
+  PERMISSIONS.TEAM_CREATE,
+  PERMISSIONS.TEAM_MANAGE,
+];
+
+/**
+ * Base permissions common to all student accounts regardless of club membership.
+ */
+export const BASE_STUDENT_PERMISSIONS = [
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.LOSTFOUND_CREATE,
+  PERMISSIONS.LOSTFOUND_VIEW,
+  PERMISSIONS.LOST_FOUND_CREATE,
+  PERMISSIONS.LOST_FOUND_VIEW,
+  PERMISSIONS.LOST_FOUND_REPORT,
+  PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.TEAM_CREATE,
+  PERMISSIONS.TEAM_MANAGE,
+  PERMISSIONS.USER_VIEW,
+  PERMISSIONS.USER_UPDATE,
+];
+
+export const EXTERNAL_USER_PERMISSIONS = [
+  PERMISSIONS.EVENT_VIEW,
+  PERMISSIONS.REGISTRATION_CREATE,
+  PERMISSIONS.REGISTRATION_CANCEL,
+  PERMISSIONS.REGISTRATION_VIEW,
+  PERMISSIONS.NOTIFICATION_VIEW,
+];
+
+export const CENTRAL_ORGANIZER_PERMISSIONS = INSTITUTIONAL_LEAD_PERMISSIONS;
+
 export const ROLE_PERMISSIONS_MAP = {
   SUPER_ADMIN: Object.values(PERMISSIONS),
   admin: Object.values(PERMISSIONS),
-
-  FACULTY: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_APPROVE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.CLUB_UPDATE,
-    PERMISSIONS.CLUB_MANAGE_MEMBERS,
-    PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
-    PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.PAYMENT_VERIFY,
-    PERMISSIONS.PAYOUT_VIEW,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-  ],
-  facultyCoordinator: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_APPROVE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.CLUB_UPDATE,
-    PERMISSIONS.CLUB_MANAGE_MEMBERS,
-    PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
-    PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.PAYMENT_VERIFY,
-    PERMISSIONS.PAYOUT_VIEW,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-  ],
-
-  CLUB: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_CREATE,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.CLUB_UPDATE,
-    PERMISSIONS.CLUB_MANAGE_MEMBERS,
-    PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
-    PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.PAYMENT_VERIFY,
-    PERMISSIONS.PAYOUT_VIEW,
-    PERMISSIONS.PAYOUT_REQUEST,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.EVENT_STAFF_MANAGE,
-    PERMISSIONS.AUDIT_VIEW,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-  ],
-  club: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_CREATE,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.CLUB_UPDATE,
-    PERMISSIONS.CLUB_MANAGE_MEMBERS,
-    PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
-    PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.PAYMENT_VERIFY,
-    PERMISSIONS.PAYOUT_VIEW,
-    PERMISSIONS.PAYOUT_REQUEST,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.EVENT_STAFF_MANAGE,
-    PERMISSIONS.AUDIT_VIEW,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-  ],
-
-  CLUB_MEMBER: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_CREATE,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.USER_UPDATE,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-  ],
-
-  STUDENT: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.USER_UPDATE,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-  ],
-  member: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.USER_UPDATE,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-  ],
-  student: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.TEAM_CREATE,
-    PERMISSIONS.TEAM_MANAGE,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.USER_VIEW,
-    PERMISSIONS.USER_UPDATE,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-  ],
-  external: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.NOTIFICATION_VIEW,
-  ],
-
-  LOST_FOUND_ADMIN: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_UPDATE,
-    PERMISSIONS.LOST_FOUND_RESOLVE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-    PERMISSIONS.LOST_FOUND_MODERATE,
-  ],
-  lostFoundAdmin: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.LOST_FOUND_VIEW,
-    PERMISSIONS.LOST_FOUND_CREATE,
-    PERMISSIONS.LOST_FOUND_UPDATE,
-    PERMISSIONS.LOST_FOUND_RESOLVE,
-    PERMISSIONS.LOST_FOUND_REPORT,
-    PERMISSIONS.LOST_FOUND_MODERATE,
-  ],
-
-  paymentAdmin: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.PAYMENT_VERIFY,
-    PERMISSIONS.PAYMENT_REFUND,
-    PERMISSIONS.PAYOUT_VIEW,
-    PERMISSIONS.PAYOUT_APPROVE,
-    PERMISSIONS.AUDIT_VIEW,
-    PERMISSIONS.AUDIT_EXPORT,
-  ],
-
-  CENTRAL_ORGANIZER: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_CREATE,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.EVENT_STAFF_MANAGE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.AUDIT_VIEW,
-  ],
-  central_organizer: [
-    PERMISSIONS.EVENT_VIEW,
-    PERMISSIONS.EVENT_CREATE,
-    PERMISSIONS.EVENT_UPDATE,
-    PERMISSIONS.EVENT_DELETE,
-    PERMISSIONS.EVENT_ATTENDANCE,
-    PERMISSIONS.EVENT_CERTIFICATE,
-    PERMISSIONS.REGISTRATION_VIEW,
-    PERMISSIONS.REGISTRATION_CREATE,
-    PERMISSIONS.REGISTRATION_CANCEL,
-    PERMISSIONS.NOTIFICATION_VIEW,
-    PERMISSIONS.NOTIFICATION_CREATE,
-    PERMISSIONS.PAYMENT_VIEW,
-    PERMISSIONS.EVENT_STAFF_MANAGE,
-    PERMISSIONS.CLUB_VIEW,
-    PERMISSIONS.AUDIT_VIEW,
-  ],
+  FACULTY: FACULTY_COORDINATOR_PERMISSIONS,
+  facultyCoordinator: FACULTY_COORDINATOR_PERMISSIONS,
+  CLUB: CLUB_ACCOUNT_PERMISSIONS,
+  club: CLUB_ACCOUNT_PERMISSIONS,
+  STUDENT: BASE_STUDENT_PERMISSIONS,
+  student: BASE_STUDENT_PERMISSIONS,
+  member: BASE_STUDENT_PERMISSIONS,
+  external: EXTERNAL_USER_PERMISSIONS,
+  central_organizer: CENTRAL_ORGANIZER_PERMISSIONS,
+  CENTRAL_ORGANIZER: CENTRAL_ORGANIZER_PERMISSIONS,
+  INSTITUTIONAL: INSTITUTIONAL_LEAD_PERMISSIONS,
 };
 
 /**
- * Check if a role has a given permission string.
- * @param {string} role
- * @param {string} permission
- * @returns {boolean}
+ * Check if a role string has a given permission (for backward compatibility).
  */
 export function roleHasPermission(role, permission) {
   if (!role || !permission) return false;
   if (role === "admin" || role === "SUPER_ADMIN") return true;
-  const permissions =
-    ROLE_PERMISSIONS_MAP[role] ??
-    ROLE_PERMISSIONS_MAP[role.toLowerCase()] ??
-    ROLE_PERMISSIONS_MAP[role.toUpperCase()] ??
-    [];
-  return permissions.includes(permission);
+
+  const normalized = normalizePermission(permission);
+  if (role === "facultyCoordinator" || role === "FACULTY") {
+    return FACULTY_COORDINATOR_PERMISSIONS.includes(permission) || FACULTY_COORDINATOR_PERMISSIONS.includes(normalized);
+  }
+  if (role === "club" || role === "CLUB") {
+    return CLUB_ACCOUNT_PERMISSIONS.includes(permission) || CLUB_ACCOUNT_PERMISSIONS.includes(normalized);
+  }
+  if (role === "central_organizer" || role === "CENTRAL_ORGANIZER" || role === "INSTITUTIONAL") {
+    return INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(normalized);
+  }
+  if (role === "external") {
+    return EXTERNAL_USER_PERMISSIONS.includes(permission) || EXTERNAL_USER_PERMISSIONS.includes(normalized);
+  }
+  if (role === "paymentAdmin") {
+    return [
+      PERMISSIONS.PAYMENT_VIEW,
+      PERMISSIONS.PAYMENT_VERIFY,
+      PERMISSIONS.PAYMENT_REVIEW,
+      PERMISSIONS.PAYOUT_VIEW,
+      PERMISSIONS.PAYOUT_APPROVE,
+      PERMISSIONS.AUDIT_VIEW,
+      PERMISSIONS.AUDIT_EXPORT,
+    ].includes(permission);
+  }
+  if (role === "lostFoundAdmin") {
+    return [
+      PERMISSIONS.LOSTFOUND_VIEW,
+      PERMISSIONS.LOSTFOUND_CREATE,
+      PERMISSIONS.LOSTFOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_VIEW,
+      PERMISSIONS.LOST_FOUND_CREATE,
+      PERMISSIONS.LOST_FOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_RESOLVE,
+      PERMISSIONS.LOST_FOUND_REPORT,
+    ].includes(permission);
+  }
+  if (role === "student" || role === "member" || role === "STUDENT") {
+    return BASE_STUDENT_PERMISSIONS.includes(permission) || BASE_STUDENT_PERMISSIONS.includes(normalized);
+  }
+  return false;
 }
 
 /**
- * Core Scoped Permission Evaluator
- * Checks whether user has permission AND satisfies resource-level constraints.
- * @param {object} user - Authenticated user context from req.user ({ userId, role, clubId, userType })
- * @param {string} permission - Canonical permission string (resource.action)
- * @param {object|null} resource - Target resource object or context ({ clubId, createdById, userId, ... })
+ * Central Scoped Permission Evaluator
+ * Resolves permissions according to principal type: CLUB, FACULTY, STUDENT, INSTITUTIONAL, ADMIN.
+ *
+ * @param {object} user - Authenticated user context from req.user
+ * @param {string} permission - Canonical or legacy permission string
+ * @param {object|null} resource - Target resource object or context ({ clubId, organizerType, institutionalAccountId, createdById, userId, ... })
  * @returns {boolean}
  */
 export function hasPermission(user, permission, resource = null) {
-  if (!user || !user.role) return false;
+  if (!user) return false;
 
-  // 1. Super Admin wildcard check
-  if (user.role === "admin" || user.role === "SUPER_ADMIN") {
+  const perm = normalizePermission(permission);
+
+  // 1. Super Admin wildcard
+  if (user.role === "admin" || user.role === "SUPER_ADMIN" || user.principalType === "ADMIN") {
     return true;
   }
 
-  // 2. Base role permission check
-  let baseAllowed = roleHasPermission(user.role, permission);
+  // Determine principal type
+  const principalType = user.principalType || (
+    user.role === "facultyCoordinator" ? "FACULTY" :
+    user.role === "lostFoundAdmin" ? "ADMIN" :
+    user.role === "paymentAdmin" ? "ADMIN" :
+    user.role === "central_organizer" ? "INSTITUTIONAL" :
+    user.userType === "student" ? "STUDENT" :
+    user.role === "club" ? "CLUB" : "STUDENT"
+  );
 
-  // 3. Fallback: Any student user always retains standard student permissions
-  if (!baseAllowed && user.userType === "student") {
-    baseAllowed = roleHasPermission("member", permission);
+  const isInstitutionalResource =
+    resource?.organizerType === "CENTRAL" ||
+    Boolean(resource?.institutionalAccountId) ||
+    Boolean(resource?.isInstitutional) ||
+    (resource && !resource.clubId && !resource.club && resource.type === "INSTITUTION");
+
+  const targetClubId = resource?.clubId ?? (!isInstitutionalResource ? resource?.id : null);
+  const targetUserId = resource?.userId ?? resource?.createdById ?? resource?.id ?? null;
+
+  // ── PRINCIPAL: INSTITUTIONAL ACCOUNT DIRECT LOGIN ─────────────────────
+  if (principalType === "INSTITUTIONAL") {
+    // Institutional account cannot manage individual clubs
+    if (targetClubId && !isInstitutionalResource) {
+      return false;
+    }
+    return INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission);
   }
 
-  if (!baseAllowed) {
-    return false;
-  }
+  // ── PRINCIPAL: CLUB ACCOUNT ───────────────────────────────────────────
+  if (principalType === "CLUB") {
+    // Club accounts strictly cannot manage institutional events (e.g. Fresher Party)
+    if (isInstitutionalResource) {
+      return false;
+    }
+    if (perm === PERMISSIONS.EVENT_APPROVE || perm === PERMISSIONS.EVENT_DELETE_APPROVE || perm === PERMISSIONS.PAYOUT_APPROVE) {
+      return false;
+    }
 
-  // If no specific resource context is provided, base permission is sufficient
-  if (!resource) {
+    const hasBase = CLUB_ACCOUNT_PERMISSIONS.includes(perm) || CLUB_ACCOUNT_PERMISSIONS.includes(permission);
+    if (!hasBase) return false;
+
+    // Scope check: If a clubId is specified, must match this club account's clubId
+    if (targetClubId && user.clubId) {
+      return String(user.clubId) === String(targetClubId);
+    }
     return true;
   }
 
-  const targetClubId = resource.clubId ?? resource.id;
-  const targetUserId = resource.userId ?? resource.createdById ?? resource.id;
+  // ── PRINCIPAL: FACULTY COORDINATOR ────────────────────────────────────
+  if (principalType === "FACULTY") {
+    // Faculty coordinator of a club cannot manage institutional events unless assigned
+    if (isInstitutionalResource) {
+      return false;
+    }
+    const hasBase = FACULTY_COORDINATOR_PERMISSIONS.includes(perm) || FACULTY_COORDINATOR_PERMISSIONS.includes(permission);
+    if (!hasBase) return false;
 
-  // 3. Resource-level Scope Constraints
-  switch (permission) {
-    case PERMISSIONS.EVENT_UPDATE:
-    case PERMISSIONS.EVENT_DELETE:
-    case PERMISSIONS.EVENT_CERTIFICATE:
-    case PERMISSIONS.EVENT_ATTENDANCE:
-    case PERMISSIONS.REGISTRATION_VIEW:
-    case PERMISSIONS.PAYMENT_VERIFY:
-    case PERMISSIONS.PAYOUT_REQUEST:
-    case PERMISSIONS.EVENT_STAFF_MANAGE:
-      if (user.role === "central_organizer" || user.role === "CENTRAL_ORGANIZER") {
-        if (!resource) return false; 
-        if (resource.organizerType === "CENTRAL") return true;
-        const eventCentralOrganizerId = resource.centralOrganizerId;
-        if (!eventCentralOrganizerId) return false;
-        return String(eventCentralOrganizerId) === String(user.userId);
-      }
-      if (user.role === "facultyCoordinator" || user.role === "club") {
-        if (user.clubId && targetClubId && String(user.clubId) === String(targetClubId)) {
+    // Club-scoped actions require matching the faculty coordinator's assigned club
+    if (targetClubId && user.clubId) {
+      return String(user.clubId) === String(targetClubId);
+    }
+    return true;
+  }
+
+  // ── SPECIALIZED ADMINS ────────────────────────────────────────────────
+  if (user.role === "lostFoundAdmin") {
+    return [
+      PERMISSIONS.LOSTFOUND_VIEW,
+      PERMISSIONS.LOSTFOUND_CREATE,
+      PERMISSIONS.LOSTFOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_VIEW,
+      PERMISSIONS.LOST_FOUND_CREATE,
+      PERMISSIONS.LOST_FOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_RESOLVE,
+      PERMISSIONS.LOST_FOUND_REPORT,
+    ].includes(perm) || [
+      PERMISSIONS.LOSTFOUND_VIEW,
+      PERMISSIONS.LOSTFOUND_CREATE,
+      PERMISSIONS.LOSTFOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_VIEW,
+      PERMISSIONS.LOST_FOUND_CREATE,
+      PERMISSIONS.LOST_FOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_RESOLVE,
+      PERMISSIONS.LOST_FOUND_REPORT,
+    ].includes(permission);
+  }
+
+  if (user.role === "paymentAdmin") {
+    return [
+      PERMISSIONS.PAYMENT_VIEW,
+      PERMISSIONS.PAYMENT_VERIFY,
+      PERMISSIONS.PAYMENT_REVIEW,
+      PERMISSIONS.PAYOUT_VIEW,
+      PERMISSIONS.PAYOUT_APPROVE,
+      PERMISSIONS.AUDIT_VIEW,
+      PERMISSIONS.AUDIT_EXPORT,
+    ].includes(perm) || [
+      PERMISSIONS.PAYMENT_VIEW,
+      PERMISSIONS.PAYMENT_VERIFY,
+      PERMISSIONS.PAYMENT_REVIEW,
+      PERMISSIONS.PAYOUT_VIEW,
+      PERMISSIONS.PAYOUT_APPROVE,
+      PERMISSIONS.AUDIT_VIEW,
+      PERMISSIONS.AUDIT_EXPORT,
+    ].includes(permission);
+  }
+
+  // ── PRINCIPAL: STUDENT ────────────────────────────────────────────────
+
+  // 1. Check Institutional Account Assignments (DSW)
+  const activeInstAssignment = (user.institutionalAssignments || []).find((a) => a.status === "ACTIVE" || a.status === undefined);
+  const isLegacyCentralOrganizer = user.accessLevel === "central_organizer" || user.role === "central_organizer";
+
+  if (activeInstAssignment || isLegacyCentralOrganizer) {
+    const isLeadCO = isLegacyCentralOrganizer || activeInstAssignment?.role === "CENTRAL_EVENT_ORGANISER";
+
+    // Campus-wide broadcasts
+    if (perm === PERMISSIONS.NOTIFICATION_SEND_CAMPUS || permission === PERMISSIONS.NOTIFICATION_SEND_CAMPUS) {
+      if (isLeadCO || activeInstAssignment?.canManageEvents) return true;
+    }
+
+    // Checking institutional-scoped event permissions
+    if (isInstitutionalResource || perm.endsWith(".institution") || permission.endsWith(".institution") || !targetClubId) {
+      // Full Lead Central Event Organiser
+      if (isLeadCO) {
+        if (INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission)) {
           return true;
         }
-        if (user.memberships && user.memberships.length > 0 && targetClubId) {
-          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
-          if (m) {
-            if (m.role === "CLUB_HEAD" || m.role === "COORDINATOR") return true;
-            if (permission === PERMISSIONS.EVENT_ATTENDANCE && (m.canTakeAttendance || m.permissions?.canTakeAttendance)) return true;
-            if (permission === PERMISSIONS.EVENT_UPDATE && (m.canEditEvents || m.permissions?.canEditEvents)) return true;
-          }
-        }
-        return false;
       }
-      if (user.role === "member" || user.role === "student" || user.userType === "student") {
-        if (resource && resource.membership) {
-          if (permission === PERMISSIONS.EVENT_ATTENDANCE && resource.membership.canTakeAttendance) return true;
-          if (permission === PERMISSIONS.EVENT_UPDATE && resource.membership.canEditEvents) return true;
+
+      // Capability: Event Management
+      if (activeInstAssignment?.canManageEvents || activeInstAssignment?.role === "EVENT_COORDINATOR") {
+        const eventPerms = [
+          PERMISSIONS.EVENT_CREATE,
+          PERMISSIONS.EVENT_UPDATE,
+          PERMISSIONS.EVENT_PUBLISH,
+          PERMISSIONS.EVENT_DELETE_REQUEST,
+          PERMISSIONS.EVENT_CREATE_INSTITUTION,
+          PERMISSIONS.EVENT_UPDATE_INSTITUTION,
+          PERMISSIONS.EVENT_PUBLISH_INSTITUTION,
+          PERMISSIONS.EVENT_VIEW,
+          PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
+        ];
+        if (eventPerms.includes(perm) || eventPerms.includes(permission)) return true;
+      }
+
+      // Capability: Attendance
+      if (activeInstAssignment?.canTakeAttendance || activeInstAssignment?.role === "ATTENDANCE_COORDINATOR") {
+        const attPerms = [
+          PERMISSIONS.ATTENDANCE_TAKE,
+          PERMISSIONS.ATTENDANCE_TAKE_INSTITUTION,
+          PERMISSIONS.EVENT_ATTENDANCE,
+        ];
+        if (attPerms.includes(perm) || attPerms.includes(permission)) return true;
+      }
+
+      // Capability: Payment Verification
+      if (activeInstAssignment?.canVerifyPayments || activeInstAssignment?.role === "PAYMENT_COORDINATOR") {
+        const payPerms = [
+          PERMISSIONS.PAYMENT_REVIEW,
+          PERMISSIONS.PAYMENT_VERIFY,
+          PERMISSIONS.PAYMENT_REVIEW_INSTITUTION,
+          PERMISSIONS.PAYMENT_VERIFY_INSTITUTION,
+          PERMISSIONS.PAYMENT_VIEW,
+        ];
+        if (payPerms.includes(perm) || payPerms.includes(permission)) return true;
+      }
+
+      // Capability: Staff Delegation
+      if (activeInstAssignment?.canDelegateStaff) {
+        const staffPerms = [
+          PERMISSIONS.EVENT_STAFF_MANAGE,
+          PERMISSIONS.EVENT_STAFF_MANAGE_INSTITUTION,
+        ];
+        if (staffPerms.includes(perm) || staffPerms.includes(permission)) return true;
+      }
+
+      // Custom permissions on institutional assignment
+      const customInstPerms = activeInstAssignment?.customPermissions || [];
+      if (customInstPerms.includes(perm) || customInstPerms.includes(permission)) {
+        return true;
+      }
+    }
+  }
+
+  // 2. Check Club-scoped student membership permissions
+  if (targetClubId && user.memberships && user.memberships.length > 0) {
+    const membership = user.memberships.find((m) => String(m.clubId) === String(targetClubId));
+    if (membership && membership.status !== "INACTIVE") {
+      // 1. Student CLUB_HEAD
+      if (membership.role === "CLUB_HEAD") {
+        if (STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission)) {
+          return true;
+        }
+      }
+
+      // 2. Student COORDINATOR
+      if (membership.role === "COORDINATOR") {
+        // Explicitly denied member management
+        if (
+          perm === PERMISSIONS.CLUB_MANAGE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_INVITE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_REMOVE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_ASSIGN_ROLES ||
+          perm === PERMISSIONS.CLUB_TRANSFER_LEADERSHIP ||
+          perm === PERMISSIONS.EVENT_APPROVE ||
+          perm === PERMISSIONS.EVENT_DELETE_APPROVE
+        ) {
           return false;
         }
-        if (user.memberships && user.memberships.length > 0 && targetClubId) {
-          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
-          if (m) {
-            if (m.role === "CLUB_HEAD" || m.role === "COORDINATOR") return true;
-            if (permission === PERMISSIONS.EVENT_ATTENDANCE && (m.canTakeAttendance || m.permissions?.canTakeAttendance)) return true;
-            if (permission === PERMISSIONS.EVENT_UPDATE && (m.canEditEvents || m.permissions?.canEditEvents)) return true;
-          }
-        }
-        if (resource && resource.createdById && String(resource.createdById) === String(user.userId)) {
+
+        if (STUDENT_COORDINATOR_PERMISSIONS.includes(perm) || STUDENT_COORDINATOR_PERMISSIONS.includes(permission)) {
           return true;
         }
-        return false;
       }
-      return true;
 
-    case PERMISSIONS.EVENT_APPROVE:
-      if (user.role === "facultyCoordinator") {
-        if (!user.clubId || !targetClubId) return false;
-        return String(user.clubId) === String(targetClubId);
+      // 3. Custom Permissions on membership (for any member/coordinator)
+      const customPerms = membership.customPermissions || [];
+      if (customPerms.includes(perm) || customPerms.includes(permission)) {
+        return true;
       }
-      return false;
-
-    case PERMISSIONS.CLUB_UPDATE:
-    case PERMISSIONS.CLUB_MANAGE_MEMBERS:
-      if (user.role === "facultyCoordinator" || user.role === "club") {
-        if (user.clubId && targetClubId && String(user.clubId) === String(targetClubId)) {
-          return true;
-        }
-        if (user.memberships && user.memberships.length > 0 && targetClubId) {
-          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
-          return m?.role === "CLUB_HEAD" || m?.role === "COORDINATOR";
-        }
-        return false;
+      // Backward-compat flags on membership
+      if ((perm === PERMISSIONS.ATTENDANCE_TAKE || permission === PERMISSIONS.EVENT_ATTENDANCE) && (membership.canTakeAttendance || membership.permissions?.canTakeAttendance)) {
+        return true;
       }
-      if (user.memberships && user.memberships.length > 0 && targetClubId) {
-        const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
-        return m?.role === "CLUB_HEAD" || m?.role === "COORDINATOR";
+      if ((perm === PERMISSIONS.EVENT_UPDATE || permission === PERMISSIONS.EVENT_UPDATE) && (membership.canEditEvents || membership.permissions?.canEditEvents)) {
+        return true;
       }
-      return false;
-
-    case PERMISSIONS.LOST_FOUND_UPDATE:
-    case PERMISSIONS.LOST_FOUND_RESOLVE:
-      if (user.role === "lostFoundAdmin") return true;
-      if (targetUserId) return String(user.userId) === String(targetUserId);
-      return true;
-
-    case PERMISSIONS.USER_UPDATE:
-      if (targetUserId) return String(user.userId) === String(targetUserId);
-      return true;
-
-    default:
-      return true;
+    }
   }
+
+  // 3. Creator self-permission
+  if (targetUserId && String(targetUserId) === String(user.userId || user.studentId)) {
+    if (perm === PERMISSIONS.USER_UPDATE || perm === PERMISSIONS.LOST_FOUND_UPDATE || perm === PERMISSIONS.LOST_FOUND_RESOLVE) {
+      return true;
+    }
+    if (resource?.createdById && String(resource.createdById) === String(user.userId || user.studentId)) {
+      if (perm === PERMISSIONS.EVENT_UPDATE || perm === PERMISSIONS.EVENT_DELETE_REQUEST) {
+        return true;
+      }
+    }
+  }
+
+  // 4. Base student permissions (available globally to all registered students)
+  if (BASE_STUDENT_PERMISSIONS.includes(perm) || BASE_STUDENT_PERMISSIONS.includes(permission)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
- * Seed permissions into database if model exists and is empty
+ * Returns all effective permissions for a user within an optional resource scope.
+ * @param {object} user - Authenticated user context
+ * @param {object|string|null} resource - Optional target resource or club ID
+ * @returns {string[]} List of effective permission strings
+ */
+export function getEffectivePermissions(user, resource = null) {
+  if (!user) return [];
+
+  const resContext = typeof resource === "string" ? { clubId: resource } : resource;
+  const effective = new Set();
+  for (const perm of Object.values(PERMISSIONS)) {
+    if (hasPermission(user, perm, resContext)) {
+      effective.add(perm);
+    }
+  }
+  return Array.from(effective);
+}
+
+/**
+ * Seed permissions into database if model exists.
  */
 export async function seedPermissions() {
   try {
-    if (!prisma.permission || !prisma.rolePermission) return;
+    if (!prisma.permission) return;
 
     const existingCount = await prisma.permission.count();
     if (existingCount > 0) return;
 
     console.log("Seeding initial RBAC permissions...");
-    for (const [key, permName] of Object.entries(PERMISSIONS)) {
+    const entries = Object.entries(PERMISSIONS);
+    const data = entries.map(([key, permName]) => {
       const [resource, action] = permName.split(".");
-      
-      const perm = await prisma.permission.upsert({
-        where: { name: permName },
-        update: {},
-        create: {
-          id: createObjectId(),
-          name: permName,
-          resource,
-          action,
-          description: `Permission for ${resource} ${action}`,
-        },
-      });
+      return {
+        id: createObjectId(),
+        name: permName,
+        resource: resource || "global",
+        action: action || "access",
+        description: `Permission for ${permName}`,
+      };
+    });
 
-      for (const [role, permList] of Object.entries(ROLE_PERMISSIONS_MAP)) {
-        if (permList.includes(permName)) {
-          await prisma.rolePermission.upsert({
-            where: { role_permissionId: { role, permissionId: perm.id } },
-            update: {},
-            create: {
-              id: createObjectId(),
-              role,
-              permissionId: perm.id,
-            },
-          });
-        }
-      }
-    }
+    await prisma.permission.createMany({ data, skipDuplicates: true });
     console.log("RBAC permissions seeded successfully.");
   } catch (err) {
     console.error("Non-fatal notice: Permission database seeding skipped:", err.message);

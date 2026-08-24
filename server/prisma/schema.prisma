@@ -73,6 +73,7 @@ model StudentUser {
   teamMemberships         TeamMember[]
   eventStaffAssignments   EventStaff[]     @relation("EventStaffUser")
   eventStaffInvitations   EventStaff[]     @relation("EventStaffInviter")
+  institutionalAssignments InstitutionalAccountAssignment[]
 }
 
 model Club {
@@ -98,6 +99,7 @@ model Club {
   motto                String?
   mission              String?
   establishedYear      String?
+  account              ClubAccount?
   facultyCoordinator   AdminRole?       @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
   memberships          ClubMembership[]
   socialLinks          ClubSocialLink[]
@@ -107,6 +109,20 @@ model Club {
   participatingEvents  EventClub[]
   announcements        ClubAnnouncement[]
   achievements         ClubAchievement[]
+}
+
+model ClubAccount {
+  id        String   @id @db.VarChar(24)
+  clubId    String   @unique @db.VarChar(24)
+  email     String   @unique
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([email])
 }
 
 model ClubSocialLink {
@@ -124,8 +140,13 @@ model ClubMembership {
   studentId         String         @db.VarChar(24)
   clubId            String         @db.VarChar(24)
   role              ClubMemberRole @default(MEMBER)
+  academicSessionId String?        @db.VarChar(24)
+  status            String         @default("ACTIVE")
+  customPermissions String[]       @default([])
   canEditEvents     Boolean        @default(false)
   canTakeAttendance Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now()) @updatedAt
   club              Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
   student           StudentUser    @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -157,6 +178,7 @@ model Event {
   clubId               String?         @db.VarChar(24)
   organizerType        EventOrganizerType @default(CLUB)
   centralOrganizerId   String?         @db.VarChar(24)
+  institutionalAccountId String?       @db.VarChar(24)
   registrationDeadline DateTime?
   reviewStatus         ReviewStatus    @default(PENDING)
   reviewComment        String?
@@ -181,6 +203,7 @@ model Event {
   maxTeamSize          Int             @default(1)
   club                 Club?           @relation(fields: [clubId], references: [id], onDelete: Cascade)
   centralOrganizer     StudentUser?    @relation("CentralOrganizerEvents", fields: [centralOrganizerId], references: [id])
+  institutionalAccount InstitutionalAccount? @relation("InstitutionalEvents", fields: [institutionalAccountId], references: [id])
   createdBy            StudentUser     @relation("EventCreatedBy", fields: [createdById], references: [id])
   reviewedBy           AdminRole?      @relation("EventReviewedBy", fields: [reviewedById], references: [id])
   media                Media[]
@@ -196,6 +219,7 @@ model Event {
   @@index([reviewStatus, startTime])
   @@index([createdById, startTime])
   @@index([centralOrganizerId])
+  @@index([institutionalAccountId])
   @@index([organizerType])
 }
 
@@ -588,15 +612,18 @@ model EventClub {
 model AuditLog {
   id         String   @id @db.VarChar(24)
   action     String
+  actorType  String?
   actorId    String   @db.VarChar(24)
   actorEmail String
   targetId   String?  @db.VarChar(24)
+  clubId     String?  @db.VarChar(24)
   eventId    String?  @db.VarChar(24)
   metadata   Json?
   source     String?
   createdAt  DateTime @default(now())
 
   @@index([actorId, createdAt])
+  @@index([clubId, createdAt])
   @@index([eventId, createdAt])
   @@index([action, createdAt])
 }
@@ -633,5 +660,57 @@ model ClubAchievement {
 
   @@index([clubId, createdAt])
 }
+
+enum InstitutionalAccountType {
+  DSW
+}
+
+enum InstitutionalRole {
+  CENTRAL_EVENT_ORGANISER
+  EVENT_COORDINATOR
+  ATTENDANCE_COORDINATOR
+  PAYMENT_COORDINATOR
+  MEMBER
+}
+
+model InstitutionalAccount {
+  id          String                           @id @db.VarChar(24)
+  name        String
+  type        InstitutionalAccountType         @default(DSW)
+  email       String?                          @unique
+  isActive    Boolean                          @default(true)
+  createdAt   DateTime                         @default(now())
+  updatedAt   DateTime                         @updatedAt
+
+  assignments InstitutionalAccountAssignment[]
+  events      Event[]                          @relation("InstitutionalEvents")
+
+  @@index([type, isActive])
+}
+
+model InstitutionalAccountAssignment {
+  id                     String               @id @db.VarChar(24)
+  institutionalAccountId String               @db.VarChar(24)
+  studentId              String               @db.VarChar(24)
+  role                   InstitutionalRole    @default(CENTRAL_EVENT_ORGANISER)
+  academicSessionId      String?              @db.VarChar(24)
+  status                 String               @default("ACTIVE")
+  customPermissions      String[]             @default([])
+  canManageEvents        Boolean              @default(true)
+  canTakeAttendance      Boolean              @default(true)
+  canVerifyPayments      Boolean              @default(false)
+  canDelegateStaff       Boolean              @default(false)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  institutionalAccount   InstitutionalAccount @relation(fields: [institutionalAccountId], references: [id], onDelete: Cascade)
+  student                StudentUser          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionalAccountId, studentId])
+  @@index([studentId, status])
+  @@index([institutionalAccountId, status])
+  @@index([institutionalAccountId, role])
+}
+
 
 

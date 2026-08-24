@@ -57,6 +57,17 @@ router.get(
   requirePermission(PERMISSIONS.AUDIT_VIEW),
   async (req, res) => {
     try {
+      const [instAccounts, clubAccounts, adminRoles] = await Promise.all([
+        prisma.institutionalAccount.findMany({ select: { email: true } }),
+        prisma.clubAccount.findMany({ select: { email: true } }),
+        prisma.adminRole.findMany({ select: { email: true } }),
+      ]);
+      const excludedEmails = [
+        ...instAccounts.map((a) => a.email.toLowerCase()),
+        ...clubAccounts.map((c) => c.email.toLowerCase()),
+        ...adminRoles.map((r) => r.email.toLowerCase()),
+      ];
+
       const [events, participations, totalStudents, totalClubs, totalEventsActive, totalEventsAll] =
         await Promise.all([
           prisma.event.findMany({
@@ -76,17 +87,15 @@ router.get(
             },
           }),
           prisma.participation.findMany({
-            where: { paymentStatus: { in: ["SUCCESS", "APPROVED"] } },
-            select: { eventId: true, amountPaid: true },
+            where: { status: { not: "CANCELLED" } },
+            select: { eventId: true, amountPaid: true, paymentStatus: true },
           }),
           prisma.studentUser.count({
-            where: {
+            where: excludedEmails.length > 0 ? {
               NOT: {
-                memberships: {
-                  some: { role: "CLUB_HEAD" }
-                }
+                email: { in: excludedEmails }
               }
-            }
+            } : {},
           }),
           prisma.club.count(),
           prisma.event.count({ where: { reviewStatus: "PUBLISHED" } }),
@@ -103,6 +112,10 @@ router.get(
       const eventStats = events.map((event) => {
         const eventParts = participationsByEvent.get(event.id) ?? [];
         const isCentral = event.organizerType === "CENTRAL" || !!event.centralOrganizerId || (!event.club && !event.clubId);
+        const collected = eventParts
+          .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
+          .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+
         return {
           eventId: event.id,
           title: event.title,
@@ -111,9 +124,9 @@ router.get(
           isCentral,
           creatorId: event.createdBy?.id || null,
           clubHeadId: event.createdBy?.id || null,
-          registeredCount: event.registeredCount || 0,
-          totalCollected: eventParts.reduce((sum, p) => sum + (p.amountPaid || 0), 0),
-          regCount: eventParts.length,
+          registeredCount: event.registeredCount || eventParts.length,
+          totalCollected: collected,
+          regCount: event.registeredCount || eventParts.length,
           entryFee: event.entryFee,
           payoutStatus: event.payoutStatus || "PENDING",
           registrationDeadline: event.registrationDeadline,
@@ -127,8 +140,12 @@ router.get(
         return acc;
       }, new Map());
 
+      const totalRevenue = participations
+        .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
+        .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+
       res.json({
-        totalRevenue: participations.reduce((sum, p) => sum + (p.amountPaid || 0), 0),
+        totalRevenue,
         totalStudents,
         totalClubs,
         totalEvents: totalEventsActive,
@@ -294,9 +311,9 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
     const participations = await prisma.participation.findMany({
       where: {
         eventId: { in: events.length ? events.map((e) => e.id) : ["__none__"] },
-        paymentStatus: { in: ["SUCCESS", "APPROVED"] },
+        status: { not: "CANCELLED" },
       },
-      select: { eventId: true, amountPaid: true },
+      select: { eventId: true, amountPaid: true, paymentStatus: true },
     });
 
     const participationsByEvent = participations.reduce((acc, p) => {
@@ -310,6 +327,10 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
       events: events.map((event) => {
         const eventParts = participationsByEvent.get(event.id) ?? [];
         const isCentral = event.organizerType === "CENTRAL" || !!event.centralOrganizerId || (!event.club && !event.clubId);
+        const collected = eventParts
+          .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
+          .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+
         return {
           id: event.id,
           eventId: event.id,
@@ -322,7 +343,7 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
           eventType: event.entryFee > 0 ? "Paid" : "Free",
           entryFee: event.entryFee || 0,
           eventDate: event.startTime,
-          totalAmountReceived: eventParts.reduce((sum, p) => sum + (p.amountPaid || 0), 0),
+          totalAmountReceived: collected,
         };
       }),
     });
@@ -385,26 +406,14 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
         },
       });
 
-      // 3. Create StudentUser for the club's management account (club head)
-      const clubUser = await tx.studentUser.create({
+      // 3. Create dedicated ClubAccount for the official club management account
+      await tx.clubAccount.create({
         data: {
           id: createObjectId(),
-          name: clubName.toUpperCase(),
+          clubId: club.id,
           email: clubEmail,
           password: passwordHash,
-          isVerified: true,
-        },
-      });
-
-      // 4. Create ClubMembership marking this StudentUser as club head
-      await tx.clubMembership.create({
-        data: {
-          id: createObjectId(),
-          studentId: clubUser.id,
-          clubId: club.id,
-          role: "CLUB_HEAD",
-          canTakeAttendance: true,
-          canEditEvents: true,
+          isActive: true,
         },
       });
 
@@ -793,34 +802,83 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
 
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 
-// GET /admin/central-organizer — View current Central Organizer
+// GET /admin/central-organizer — View current Central Organizer and DSW assignments
 router.get("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
-    const co = await prisma.studentUser.findFirst({
-      where: { accessLevel: "central_organizer" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        profileImage: true,
-        branch: true,
-        year: true,
-        program: true,
+    let dsw = await prisma.institutionalAccount.findFirst({
+      where: { type: "DSW" },
+      include: {
+        assignments: {
+          where: { status: "ACTIVE" },
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImage: true,
+                branch: true,
+                year: true,
+                program: true,
+                rollNo: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    res.json({ centralOrganizer: co || null });
+    if (!dsw) {
+      dsw = await prisma.institutionalAccount.create({
+        data: {
+          id: createObjectId(),
+          name: "Dean Student Welfare (DSW)",
+          type: "DSW",
+          email: "odsw@nitj.ac.in",
+          isActive: true,
+        },
+        include: { assignments: { include: { student: true } } },
+      });
+    }
+
+    const activeAssignments = (dsw?.assignments || []).map((a) => ({
+      id: a.id,
+      studentId: a.studentId,
+      student: a.student,
+      role: a.role,
+      status: a.status,
+      canManageEvents: a.canManageEvents,
+      canTakeAttendance: a.canTakeAttendance,
+      canVerifyPayments: a.canVerifyPayments,
+      canDelegateStaff: a.canDelegateStaff,
+      customPermissions: a.customPermissions,
+    }));
+
+    const primaryCO = activeAssignments.find((a) => a.role === "CENTRAL_EVENT_ORGANISER") || activeAssignments[0] || null;
+
+    res.json({
+      institutionalAccount: dsw,
+      assignments: activeAssignments,
+      centralOrganizer: primaryCO ? { ...primaryCO.student, assignment: primaryCO } : null,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// POST /admin/central-organizer — Assign Central Organizer role
-// The partial unique index guarantees only ONE user can have accessLevel = "central_organizer"
-// Concurrent requests both trying to set it → one fails with P2002
+// POST /admin/central-organizer — Assign Institutional / DSW role with capabilities
 router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
-    const { studentId } = req.body;
+    const {
+      studentId,
+      role = "CENTRAL_EVENT_ORGANISER",
+      canManageEvents = true,
+      canTakeAttendance = true,
+      canVerifyPayments = false,
+      canDelegateStaff = false,
+      customPermissions = [],
+    } = req.body;
+
     if (!studentId) return res.status(400).json({ message: "studentId is required." });
 
     // Verify target is an existing, unblocked StudentUser
@@ -830,32 +888,63 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
     });
 
     if (!student) return res.status(404).json({ message: "Student not found." });
-    if (student.isBlocked) return res.status(403).json({ message: "Cannot assign CO role to a blocked student." });
-    if (student.accessLevel === "central_organizer") {
-      return res.status(409).json({ message: "This student is already the Central Organizer." });
+    if (student.isBlocked) return res.status(403).json({ message: "Cannot assign role to a blocked student." });
+
+    let dsw = await prisma.institutionalAccount.findFirst({ where: { type: "DSW" } });
+    if (!dsw) {
+      dsw = await prisma.institutionalAccount.create({
+        data: {
+          id: createObjectId(),
+          name: "Dean Student Welfare (DSW)",
+          type: "DSW",
+          email: "odsw@nitj.ac.in",
+          isActive: true,
+        },
+      });
     }
 
-    // Attempt to set accessLevel — partial unique index enforces single-CO constraint
-    try {
+    // Upsert InstitutionalAccountAssignment
+    const assignment = await prisma.institutionalAccountAssignment.upsert({
+      where: {
+        institutionalAccountId_studentId: {
+          institutionalAccountId: dsw.id,
+          studentId: student.id,
+        },
+      },
+      update: {
+        role,
+        status: "ACTIVE",
+        canManageEvents: Boolean(canManageEvents),
+        canTakeAttendance: Boolean(canTakeAttendance),
+        canVerifyPayments: Boolean(canVerifyPayments),
+        canDelegateStaff: Boolean(canDelegateStaff),
+        customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
+      },
+      create: {
+        id: createObjectId(),
+        institutionalAccountId: dsw.id,
+        studentId: student.id,
+        role,
+        status: "ACTIVE",
+        canManageEvents: Boolean(canManageEvents),
+        canTakeAttendance: Boolean(canTakeAttendance),
+        canVerifyPayments: Boolean(canVerifyPayments),
+        canDelegateStaff: Boolean(canDelegateStaff),
+        customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
+      },
+    });
+
+    if (role === "CENTRAL_EVENT_ORGANISER") {
       await prisma.studentUser.update({
         where: { id: studentId },
         data: { accessLevel: "central_organizer" },
       });
-    } catch (updateErr) {
-      if (updateErr.code === "P2002") {
-        return res.status(409).json({
-          message: "A Central Organizer already exists. Revoke the current one first.",
-        });
-      }
-      throw updateErr;
     }
 
-    // Reassign active Central Organizer management on all central events to the newly assigned student.
-    // This preserves all event information, media, registrations, sponsors, certificates,
-    // staff assignments, and attendance records, while keeping createdById intact for audit trail.
+    // Link institutionalAccountId on all central events
     await prisma.event.updateMany({
       where: { organizerType: "CENTRAL" },
-      data: { centralOrganizerId: studentId },
+      data: { institutionalAccountId: dsw.id },
     });
 
     await createAuditLog({
@@ -863,11 +952,17 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
       actorId: req.user.userId,
       actorEmail: req.user.email,
       targetId: studentId,
-      metadata: { studentEmail: student.email, studentName: student.name },
+      metadata: {
+        studentEmail: student.email,
+        studentName: student.name,
+        role,
+        capabilities: { canManageEvents, canTakeAttendance, canVerifyPayments, canDelegateStaff },
+      },
     });
 
     res.status(201).json({
-      message: "Central Organizer assigned successfully.",
+      message: "Institutional role assigned successfully.",
+      assignment,
       centralOrganizer: { id: student.id, name: student.name, email: student.email },
     });
   } catch (err) {
@@ -875,7 +970,7 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
   }
 });
 
-// DELETE /admin/central-organizer/:id — Revoke Central Organizer role
+// DELETE /admin/central-organizer/:id — Revoke DSW Assignment / Central Organizer role
 router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const student = await prisma.studentUser.findUnique({
@@ -884,8 +979,16 @@ router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async 
     });
 
     if (!student) return res.status(404).json({ message: "Student not found." });
-    if (student.accessLevel !== "central_organizer") {
-      return res.status(400).json({ message: "This student is not the Central Organizer." });
+
+    const dsw = await prisma.institutionalAccount.findFirst({ where: { type: "DSW" } });
+
+    if (dsw) {
+      await prisma.institutionalAccountAssignment.deleteMany({
+        where: {
+          institutionalAccountId: dsw.id,
+          studentId: req.params.id,
+        },
+      });
     }
 
     await prisma.studentUser.update({
@@ -901,7 +1004,7 @@ router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async 
       metadata: { studentEmail: student.email },
     });
 
-    res.json({ message: "Central Organizer role revoked." });
+    res.json({ message: "Institutional role revoked successfully." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -916,9 +1019,24 @@ router.get("/students/search", verifyToken, allowRoles("admin"), async (req, res
     }
 
     const query = q.trim();
+
+    // Fetch all non-student account emails (clubs, admins, faculty, institutional) to strictly exclude them
+    const [clubAccounts, admins, instAccounts] = await Promise.all([
+      prisma.clubAccount.findMany({ select: { email: true } }),
+      prisma.adminRole.findMany({ select: { email: true } }),
+      prisma.institutionalAccount.findMany({ select: { email: true } }),
+    ]);
+
+    const excludedEmails = [
+      ...clubAccounts.map((c) => (c.email ? c.email.toLowerCase() : "")),
+      ...admins.map((a) => (a.email ? a.email.toLowerCase() : "")),
+      ...instAccounts.map((i) => (i.email ? i.email.toLowerCase() : "")),
+    ].filter(Boolean);
+
     const students = await prisma.studentUser.findMany({
       where: {
         isBlocked: false,
+        email: { notIn: excludedEmails },
         OR: [
           { email: { contains: query, mode: "insensitive" } },
           { name: { contains: query, mode: "insensitive" } },

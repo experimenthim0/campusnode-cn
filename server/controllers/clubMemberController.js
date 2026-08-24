@@ -10,7 +10,7 @@ export const MAX_CLUB_OFFICIAL_ACCOUNTS = 1;
 const VALID_ROLES = ["CLUB_HEAD", "COORDINATOR", "MEMBER"];
 
 /**
- * Derives permission flags from a ClubMemberRole enum value.
+ * Derives default permission flags from a ClubMemberRole enum value.
  * @param {string} role - One of CLUB_HEAD, COORDINATOR, MEMBER
  * @returns {{ canTakeAttendance: boolean, canEditEvents: boolean }}
  */
@@ -22,34 +22,51 @@ export function derivePermissions(role) {
   return { canTakeAttendance: true, canEditEvents: false };
 }
 
-async function canManageClubMembers(req, clubId) {
+/**
+ * Central permission-based check for managing club members.
+ */
+export async function canManageClubMembers(req, clubId) {
   if (!req.user) return false;
-  if (req.user.role === "admin" || req.user.role === "SUPER_ADMIN") return true;
-  if (req.user.role === "club") {
-    return !req.user.clubId || String(req.user.clubId) === String(clubId);
-  }
-  if (req.user.role === "facultyCoordinator") {
-    return String(req.user.clubId) === String(clubId);
-  }
-  if (req.user.userType === "student" || req.user.role === "member" || req.user.role === "student") {
-    const membership = await prisma.clubMembership.findUnique({
-      where: { clubId_studentId: { clubId, studentId: req.user.userId } },
-    });
-    return membership?.role === "CLUB_HEAD" || membership?.role === "COORDINATOR";
-  }
   return hasPermission(req.user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId, id: clubId });
 }
 
 /**
+ * Helper to record audit logs for team management operations.
+ */
+async function logAudit(req, action, targetId, clubId, metadata = {}) {
+  try {
+    const actorId = req.user?.userId || req.user?.clubAccountId || req.user?.id || "unknown";
+    const actorEmail = req.user?.email || "unknown";
+    const actorType = req.user?.principalType || req.user?.userType || "UNKNOWN";
+
+    await prisma.auditLog.create({
+      data: {
+        id: createObjectId(),
+        action,
+        actorType,
+        actorId,
+        actorEmail,
+        targetId,
+        clubId,
+        metadata,
+        source: "club_members_controller",
+      },
+    });
+  } catch (err) {
+    console.error("Non-fatal notice: Failed to record audit log:", err.message);
+  }
+}
+
+/**
  * Add a new member to a club by college email.
- * Only @nitj.ac.in emails are allowed as per latest requirement.
+ * Only @nitj.ac.in emails are allowed.
  */
 export const addClubMember = async (req, res) => {
   try {
     const { clubId } = req.params;
-    const { email, role = "MEMBER" } = req.body;
+    const { email, role = "MEMBER", customPermissions = [] } = req.body;
 
-    // Validate role is one of the accepted enum values
+    // Validate role
     if (!VALID_ROLES.includes(role)) {
       return res.status(400).json({
         message: `Invalid role. Must be one of: ${VALID_ROLES.join(", ")}.`,
@@ -72,7 +89,7 @@ export const addClubMember = async (req, res) => {
     // Role count validation
     if (role === "CLUB_HEAD") {
       const activeHeads = await prisma.clubMembership.count({
-        where: { clubId, role: "CLUB_HEAD" },
+        where: { clubId, role: "CLUB_HEAD", status: { not: "INACTIVE" } },
       });
       if (activeHeads >= MAX_CLUB_STUDENT_LEADS) {
         return res.status(409).json({
@@ -81,7 +98,7 @@ export const addClubMember = async (req, res) => {
       }
     } else if (role === "COORDINATOR") {
       const activeCoordinators = await prisma.clubMembership.count({
-        where: { clubId, role: "COORDINATOR" },
+        where: { clubId, role: "COORDINATOR", status: { not: "INACTIVE" } },
       });
       if (activeCoordinators >= MAX_CLUB_COORDINATORS) {
         return res.status(409).json({
@@ -90,15 +107,38 @@ export const addClubMember = async (req, res) => {
       }
     }
 
-    // Find the student by email
-    const student = await prisma.studentUser.findUnique({ where: { email } });
+    // Ensure this email does not belong to a ClubAccount, AdminRole, or InstitutionalAccount
+    const [clubAccount, adminAccount, instAccount] = await Promise.all([
+      prisma.clubAccount.findFirst({ where: { email: { equals: email.trim(), mode: "insensitive" } } }),
+      prisma.adminRole.findFirst({ where: { email: { equals: email.trim(), mode: "insensitive" } } }),
+      prisma.institutionalAccount.findFirst({ where: { email: { equals: email.trim(), mode: "insensitive" } } }),
+    ]);
+
+    if (clubAccount) {
+      return res.status(400).json({
+        message: "Club organizational accounts cannot be added as club members. Only individual students are allowed.",
+      });
+    }
+
+    if (adminAccount || instAccount) {
+      return res.status(400).json({
+        message: "Administrative or institutional accounts cannot be added as student members. Only registered students are allowed.",
+      });
+    }
+
+    // Find real student by email
+    const student =
+      (await prisma.studentUser.findFirst({
+        where: { email: { equals: email.trim(), mode: "insensitive" } },
+      })) || (await prisma.studentUser.findUnique({ where: { email: email.trim() } }));
+
     if (!student) {
       return res.status(404).json({
         message: "Student not found. They must register as a student on the platform first.",
       });
     }
 
-    // Check if membership already exists using @@unique([clubId, studentId])
+    // Check if membership already exists
     const existing = await prisma.clubMembership.findUnique({
       where: { clubId_studentId: { clubId, studentId: student.id } },
     });
@@ -115,12 +155,20 @@ export const addClubMember = async (req, res) => {
         studentId: student.id,
         clubId,
         role,
+        status: "ACTIVE",
+        customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
         canTakeAttendance,
         canEditEvents,
       },
       include: {
         student: { select: { id: true, name: true, email: true, rollNo: true } },
       },
+    });
+
+    await logAudit(req, "club.invite_members", membership.id, clubId, {
+      studentEmail: student.email,
+      role,
+      membershipId: membership.id,
     });
 
     invalidatePublicResponses(["clubs:*", "clubs:public"]);
@@ -130,7 +178,7 @@ export const addClubMember = async (req, res) => {
       membership: { ...membership, _id: membership.id },
     });
   } catch (err) {
-    console.error("DEBUG: addClubMember error:", err);
+    console.error("addClubMember error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -144,7 +192,13 @@ export const getClubMembers = async (req, res) => {
 
     const club = await prisma.club.findUnique({
       where: { id: clubId },
-      select: { id: true, clubName: true, clubEmail: true, slug: true }
+      select: {
+        id: true,
+        clubName: true,
+        clubEmail: true,
+        slug: true,
+        account: { select: { id: true, email: true } },
+      },
     });
 
     const members = await prisma.clubMembership.findMany({
@@ -168,18 +222,18 @@ export const getClubMembers = async (req, res) => {
           },
         },
       },
+      orderBy: { id: "asc" },
     });
 
-    const normalizedMembers = members.map(m => {
+    const normalizedMembers = members.map((m) => {
       const isClubAccount = Boolean(
-        (club?.clubEmail && m.student?.email && club.clubEmail.trim().toLowerCase() === m.student.email.trim().toLowerCase()) ||
-        (m.student?.email && club?.slug && m.student.email.toLowerCase().startsWith(club.slug.toLowerCase()))
+        club?.account?.email && m.student?.email && club.account.email.trim().toLowerCase() === m.student.email.trim().toLowerCase()
       );
       return {
         ...m,
         _id: m.id,
         isClubAccount,
-        clubName: club?.clubName
+        clubName: club?.clubName,
       };
     });
 
@@ -195,42 +249,39 @@ export const getClubMembers = async (req, res) => {
 export const updateMemberPermissions = async (req, res) => {
   try {
     const { membershipId } = req.params;
-    const { role, permissions } = req.body;
+    const { role, permissions, customPermissions, status } = req.body;
 
-    // Check if membership exists first
     const existing = await prisma.clubMembership.findUnique({
       where: { id: membershipId },
       include: {
-        club: { select: { clubEmail: true, slug: true } },
-        student: { select: { email: true } }
-      }
+        club: { select: { id: true, clubEmail: true, slug: true, account: { select: { email: true } } } },
+        student: { select: { id: true, email: true, rollNo: true } },
+      },
     });
-    if (!existing) return res.status(404).json({ message: "Membership record not found. Try refreshing the member list." });
+    if (!existing) {
+      return res.status(404).json({ message: "Membership record not found. Try refreshing the member list." });
+    }
 
     if (!(await canManageClubMembers(req, existing.clubId))) {
       return res.status(403).json({ message: "Unauthorized to update members in this club." });
     }
 
-    // Protect official club account from modification
-    const isOfficialClubAccount = Boolean(
-      (existing.club?.clubEmail && existing.student?.email && existing.club.clubEmail.trim().toLowerCase() === existing.student.email.trim().toLowerCase()) ||
-      (existing.student?.email && existing.club?.slug && existing.student.email.toLowerCase().startsWith(existing.club.slug.toLowerCase()))
-    );
-    if (isOfficialClubAccount) {
-      return res.status(400).json({ message: "Cannot modify the permissions or role of the primary official club account." });
-    }
-
-    // Disallow self-modification of role or permissions (e.g. Student Lead cannot change own permissions)
-    const requesterId = req.user?.userId || req.user?.id || req.user?._id;
+    // Disallow self-modification of role or permissions
+    const requesterId = req.user?.studentId || req.user?.userId || req.user?.id;
     const isSelfModification = Boolean(
       requesterId &&
       (String(existing.studentId) === String(requesterId) || (existing.student?.email && req.user?.email && existing.student.email.trim().toLowerCase() === req.user.email.trim().toLowerCase()))
     );
-    if (isSelfModification && req.user?.role !== "admin" && req.user?.role !== "SUPER_ADMIN") {
+    if (isSelfModification && req.user?.role !== "admin" && req.user?.role !== "SUPER_ADMIN" && req.user?.principalType !== "ADMIN") {
       return res.status(400).json({ message: "You cannot modify your own role or permissions." });
     }
 
     const updateData = {};
+
+    if (status && ["ACTIVE", "INACTIVE"].includes(status)) {
+      updateData.status = status;
+    }
+
     if (role) {
       if (!VALID_ROLES.includes(role)) {
         return res.status(400).json({
@@ -241,7 +292,7 @@ export const updateMemberPermissions = async (req, res) => {
       // Enforce role limits
       if (role === "CLUB_HEAD" && existing.role !== "CLUB_HEAD") {
         const activeHeads = await prisma.clubMembership.count({
-          where: { clubId: existing.clubId, role: "CLUB_HEAD", id: { not: membershipId } },
+          where: { clubId: existing.clubId, role: "CLUB_HEAD", id: { not: membershipId }, status: { not: "INACTIVE" } },
         });
         if (activeHeads >= MAX_CLUB_STUDENT_LEADS) {
           return res.status(409).json({
@@ -250,7 +301,7 @@ export const updateMemberPermissions = async (req, res) => {
         }
       } else if (role === "COORDINATOR" && existing.role !== "COORDINATOR") {
         const activeCoordinators = await prisma.clubMembership.count({
-          where: { clubId: existing.clubId, role: "COORDINATOR", id: { not: membershipId } },
+          where: { clubId: existing.clubId, role: "COORDINATOR", id: { not: membershipId }, status: { not: "INACTIVE" } },
         });
         if (activeCoordinators >= MAX_CLUB_COORDINATORS) {
           return res.status(409).json({
@@ -260,8 +311,11 @@ export const updateMemberPermissions = async (req, res) => {
       }
 
       updateData.role = role;
-      // When role changes, we derive new default permissions unless explicitly overridden
       Object.assign(updateData, derivePermissions(role));
+    }
+
+    if (Array.isArray(customPermissions)) {
+      updateData.customPermissions = customPermissions;
     }
 
     if (permissions) {
@@ -281,15 +335,21 @@ export const updateMemberPermissions = async (req, res) => {
       where: { id: membershipId },
       data: updateData,
       include: {
-        student: { select: { name: true } }
-      }
+        student: { select: { id: true, name: true, email: true, rollNo: true } },
+      },
+    });
+
+    await logAudit(req, "club.assign_roles", membershipId, existing.clubId, {
+      updatedFields: Object.keys(updateData),
+      role: updateData.role || existing.role,
+      customPermissions: updateData.customPermissions || existing.customPermissions,
     });
 
     invalidatePublicResponses(["clubs:*", "clubs:public"]);
 
     res.json({ message: "Updated successfully.", membership: { ...membership, _id: membership.id } });
   } catch (err) {
-    console.error("DEBUG: updateMemberPermissions error:", err);
+    console.error("updateMemberPermissions error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -309,7 +369,7 @@ export const transferStudentLead = async (req, res) => {
     const club = await prisma.club.findUnique({ where: { id: clubId } });
     if (!club) return res.status(404).json({ message: "Club not found." });
 
-    // Locate the target membership
+    // Locate target membership
     let targetMembership = null;
     if (targetMembershipId) {
       targetMembership = await prisma.clubMembership.findUnique({
@@ -339,18 +399,9 @@ export const transferStudentLead = async (req, res) => {
       return res.status(400).json({ message: "Target member is already the active Student Lead." });
     }
 
-    // Protect official club account from becoming student lead target
-    const isOfficialClubAccount = Boolean(
-      (club.clubEmail && targetMembership.student?.email && club.clubEmail.trim().toLowerCase() === targetMembership.student.email.trim().toLowerCase()) ||
-      (targetMembership.student?.email && club.slug && targetMembership.student.email.toLowerCase().startsWith(club.slug.toLowerCase()))
-    );
-    if (isOfficialClubAccount) {
-      return res.status(400).json({ message: "The official club account cannot be designated as a student lead." });
-    }
-
-    // Atomic transaction: demote previous CLUB_HEAD(s) to COORDINATOR and promote target to CLUB_HEAD
+    // Atomic leadership transfer
     const newStudentLead = await prisma.$transaction(async (tx) => {
-      // 1. Demote any current CLUB_HEAD to COORDINATOR
+      // 1. Demote previous active CLUB_HEAD(s) to COORDINATOR
       await tx.clubMembership.updateMany({
         where: { clubId, role: "CLUB_HEAD" },
         data: {
@@ -360,7 +411,7 @@ export const transferStudentLead = async (req, res) => {
         },
       });
 
-      // 2. Promote target membership to CLUB_HEAD
+      // 2. Promote target to CLUB_HEAD
       const updated = await tx.clubMembership.update({
         where: { id: targetMembership.id },
         data: {
@@ -374,6 +425,12 @@ export const transferStudentLead = async (req, res) => {
       });
 
       return updated;
+    });
+
+    await logAudit(req, "club.transfer_leadership", newStudentLead.id, clubId, {
+      newLeadStudentId: newStudentLead.student?.id,
+      newLeadEmail: newStudentLead.student?.email,
+      newLeadName: newStudentLead.student?.name,
     });
 
     invalidatePublicResponses(["clubs:*", "clubs:public"]);
@@ -395,41 +452,107 @@ export const removeClubMember = async (req, res) => {
   try {
     const { membershipId } = req.params;
 
-    // Check if membership exists
     const membership = await prisma.clubMembership.findUnique({
       where: { id: membershipId },
       include: {
-        club: { select: { clubEmail: true, slug: true } },
-        student: { select: { email: true } }
-      }
+        student: { select: { id: true, email: true, name: true } },
+      },
     });
     if (!membership) return res.status(404).json({ message: "Membership not found." });
+
     if (!(await canManageClubMembers(req, membership.clubId))) {
       return res.status(403).json({ message: "Unauthorized to remove members from this club." });
     }
 
-    // Protect official club account from deletion
-    const isOfficialClubAccount = Boolean(
-      (membership.club?.clubEmail && membership.student?.email && membership.club.clubEmail.trim().toLowerCase() === membership.student.email.trim().toLowerCase()) ||
-      (membership.student?.email && membership.club?.slug && membership.student.email.toLowerCase().startsWith(membership.club.slug.toLowerCase()))
-    );
-    if (isOfficialClubAccount) {
-      return res.status(400).json({ message: "Cannot remove the official club account from the club." });
-    }
-
     // Disallow self-removal for student members
-    const requesterId = req.user?.userId || req.user?.id || req.user?._id;
+    const requesterId = req.user?.studentId || req.user?.userId || req.user?.id;
     const isSelfRemoval = Boolean(
       requesterId &&
       (String(membership.studentId) === String(requesterId) || (membership.student?.email && req.user?.email && membership.student.email.trim().toLowerCase() === req.user.email.trim().toLowerCase()))
     );
-    if (isSelfRemoval && req.user?.role !== "admin" && req.user?.role !== "SUPER_ADMIN") {
+    if (isSelfRemoval && req.user?.role !== "admin" && req.user?.role !== "SUPER_ADMIN" && req.user?.principalType !== "ADMIN") {
       return res.status(400).json({ message: "You cannot remove yourself from the club." });
     }
 
     await prisma.clubMembership.delete({ where: { id: membershipId } });
-    invalidatePublicResponses(["clubs:*", "clubs:public"]);
-    res.json({ message: "Member removed successfully." });
+
+    await logAudit(req, "club.remove_members", membershipId, membership.clubId, {
+      removedStudentEmail: membership.student?.email,
+      removedStudentName: membership.student?.name,
+      role: membership.role,
+    });
+
+    await invalidatePublicResponses(`/api/club-members/${membership.clubId}/members`);
+
+    res.json({ message: "Member removed from club successfully." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * Search students to add as club members.
+ * Strictly searches ONLY registered students and excludes club accounts, admin, faculty, and institutional accounts.
+ */
+export const searchStudentsForClub = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+    const { q } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.json({ students: [] });
+    }
+
+    const query = q.trim();
+
+    // Fetch all non-student account emails (clubs, admins, faculty, institutional) to strictly exclude them
+    const [clubAccounts, admins, instAccounts] = await Promise.all([
+      prisma.clubAccount.findMany({ select: { email: true } }),
+      prisma.adminRole.findMany({ select: { email: true } }),
+      prisma.institutionalAccount.findMany({ select: { email: true } }),
+    ]);
+
+    const excludedEmails = [
+      ...clubAccounts.map((c) => (c.email ? c.email.toLowerCase() : "")),
+      ...admins.map((a) => (a.email ? a.email.toLowerCase() : "")),
+      ...instAccounts.map((i) => (i.email ? i.email.toLowerCase() : "")),
+    ].filter(Boolean);
+
+    // Also get existing members of this club to indicate if already added
+    const existingMembers = await prisma.clubMembership.findMany({
+      where: { clubId, status: { not: "INACTIVE" } },
+      select: { studentId: true },
+    });
+    const existingMemberIds = new Set(existingMembers.map((m) => m.studentId));
+
+    const students = await prisma.studentUser.findMany({
+      where: {
+        isBlocked: false,
+        email: { notIn: excludedEmails },
+        OR: [
+          { email: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+          { rollNo: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        rollNo: true,
+        branch: true,
+        year: true,
+        program: true,
+      },
+      take: 10,
+    });
+
+    const enriched = students.map((s) => ({
+      ...s,
+      isAlreadyMember: existingMemberIds.has(s.id),
+    }));
+
+    res.json({ students: enriched });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -52,6 +52,7 @@ const LostFoundGuide = lazy(() => import('./pages/LostFoundGuide'));
 const SendNotification = lazy(() => import('./pages/SendNotification'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const CentralOrganizerDashboard = lazy(() => import('./pages/CentralOrganizerDashboard'));
+const CentralOrganizerGuide = lazy(() => import('./pages/CentralOrganizerGuide'));
 const EventStaffDashboard = lazy(() => import('./pages/EventStaffDashboard'));
 const StaffAttendanceView = lazy(() => import('./pages/StaffAttendanceView'));
 const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
@@ -125,6 +126,8 @@ function App() {
                   <Route path="/payments" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   <Route path="/central-organizer" element={<ProtectedRoute><CentralOrganizerDashboard /></ProtectedRoute>} />
+                  <Route path="/central-organizer/guide" element={<ProtectedRoute><CentralOrganizerGuide /></ProtectedRoute>} />
+                  <Route path="/central-organizer-guide" element={<ProtectedRoute><CentralOrganizerGuide /></ProtectedRoute>} />
                   <Route path="/event-staff" element={<ProtectedRoute><EventStaffDashboard /></ProtectedRoute>} />
                   <Route path="/event-staff/:eventId/attendance" element={<ProtectedRoute><StaffAttendanceView /></ProtectedRoute>} />
                   <Route path="/event-calendar" element={<ProtectedRoute><EventCalendarPage readOnly /></ProtectedRoute>} />

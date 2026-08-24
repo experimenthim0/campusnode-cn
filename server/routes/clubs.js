@@ -21,16 +21,16 @@ async function verifyClubAdminAccess(user, clubId) {
   if ((user.role === "club" || user.role === "CLUB") && String(user.clubId) === String(clubId)) {
     return true;
   }
-  // Check if student is a CLUB_HEAD
+  // Check if student is a CLUB_HEAD or COORDINATOR
   const membership = await prisma.clubMembership.findUnique({
     where: {
       clubId_studentId: {
         clubId: clubId,
-        studentId: user.id || user._id,
+        studentId: user.userId || user.id || user._id,
       },
     },
   });
-  if (membership && membership.role === "CLUB_HEAD") {
+  if (membership && (membership.role === "CLUB_HEAD" || membership.role === "COORDINATOR")) {
     return true;
   }
   return false;

@@ -13,24 +13,36 @@ const normalizeClubId = (clubId) => {
 };
 
 /**
- * Generate JWT token.
- * @param {object} user - User object (must have .id and .email)
- * @param {string} role  - Role string: admin | facultyCoordinator | paymentAdmin | club | member | external
- * @param {string} userType - "student" | "admin" | "external"
- * @param {string|null} clubId - Club ID if the user is associated with a club
+ * Generate JWT token supporting 3 principal types: STUDENT, FACULTY/ADMIN, CLUB.
+ *
+ * @param {object} user - User/Account object
+ * @param {string} role  - Role string (admin | facultyCoordinator | club | member | external)
+ * @param {string} userType - "student" | "admin" | "club" | "external"
+ * @param {string|null} clubId - Club ID
+ * @param {string|null} principalType - "STUDENT" | "FACULTY" | "CLUB" | "ADMIN"
  */
-export const generateToken = (user, role, userType = "student", clubId = null) => {
-  return jwt.sign(
-    {
-      userId: user.id,
-      role,
-      email: user.email,
-      clubId: normalizeClubId(clubId),
-      userType,
-    },
-    JWT_SECRET,
-    { expiresIn: "7d" },
+export const generateToken = (user, role, userType = "student", clubId = null, principalType = null) => {
+  const resolvedPrincipal = principalType || (
+    userType === "club" || role === "club_account" ? "CLUB" :
+    userType === "admin" && role === "facultyCoordinator" ? "FACULTY" :
+    userType === "admin" ? "ADMIN" :
+    userType === "external" ? "EXTERNAL" : "STUDENT"
   );
+
+  const payload = {
+    userId: user.id,
+    role,
+    email: user.email,
+    clubId: normalizeClubId(clubId),
+    userType,
+    principalType: resolvedPrincipal,
+  };
+
+  if (resolvedPrincipal === "CLUB") {
+    payload.clubAccountId = user.id;
+  }
+
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 };
 
 const getTokensFromRequest = (req) => {
@@ -42,22 +54,17 @@ const getTokensFromRequest = (req) => {
   return tokens;
 };
 
-const getPrimaryStudentMembership = async (studentId) => {
-  const memberships = await prisma.clubMembership.findMany({ where: { studentId } });
-  const managementMembership = memberships.find((m) =>
-    ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
-  );
-  return managementMembership ?? memberships[0] ?? null;
-};
-
 const getFacultyClub = async (adminId) => {
   return prisma.club.findFirst({
     where: { facultyCoordinatorId: adminId },
-    select: { id: true },
+    select: { id: true, clubName: true },
   });
 };
 
-// Verify JWT token middleware
+/**
+ * Verify JWT token middleware
+ * Reconstructs 3-principal request context (req.user)
+ */
 export const verifyToken = async (req, res, next) => {
   const tokens = getTokensFromRequest(req);
 
@@ -72,42 +79,114 @@ export const verifyToken = async (req, res, next) => {
         decoded = jwt.verify(token, JWT_SECRET);
         break;
       } catch {
-        // Try the next token transport for compatibility during cookie migration.
+        // Fall through to try next token transport
       }
     }
     if (!decoded) return res.status(401).json({ message: "Invalid or expired token." });
-    const userType = decoded.userType === "admin" ? "admin" : decoded.userType === "external" ? "external" : "student";
 
-    if (userType === "admin") {
-      const admin = await prisma.adminRole.findUnique({
-        where: { id: decoded.userId },
-        select: { id: true, email: true, role: true },
+    const principalType = decoded.principalType || (
+      decoded.userType === "club" ? "CLUB" :
+      decoded.userType === "admin" ? (decoded.role === "facultyCoordinator" ? "FACULTY" : "ADMIN") :
+      decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
+    );
+
+    // ── 1. CLUB PRINCIPAL ────────────────────────────────────────────────
+    if (principalType === "CLUB" || decoded.userType === "club") {
+      const accountId = decoded.clubAccountId || decoded.userId;
+      const clubAccount = await prisma.clubAccount.findUnique({
+        where: { id: accountId },
+        include: { club: { select: { id: true, clubName: true, slug: true, clubLogo: true } } },
       });
-      if (!admin) return res.status(401).json({ message: "Invalid or expired token." });
 
-      const facultyClub = admin.role === "facultyCoordinator" ? await getFacultyClub(admin.id) : null;
+      if (!clubAccount || !clubAccount.isActive) {
+        return res.status(401).json({ message: "Club account not found or deactivated." });
+      }
+
       req.user = {
-        userId: admin.id,
-        email: admin.email,
-        role: admin.role,
-        userType: "admin",
-        clubId: facultyClub?.id ?? null,
+        principalType: "CLUB",
+        clubAccountId: clubAccount.id,
+        userId: clubAccount.id, // for backwards-compatibility
+        id: clubAccount.id,
+        clubId: clubAccount.clubId,
+        clubName: clubAccount.club?.clubName,
+        slug: clubAccount.club?.slug,
+        email: clubAccount.email,
+        role: "club",
+        userType: "club",
       };
       return next();
     }
 
+    // ── 2. ADMIN / FACULTY PRINCIPAL ─────────────────────────────────────
+    if (principalType === "ADMIN" || principalType === "FACULTY" || decoded.userType === "admin") {
+      const admin = await prisma.adminRole.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, name: true, role: true },
+      });
+      if (!admin) return res.status(401).json({ message: "Invalid or expired token." });
+
+      const facultyClub = admin.role === "facultyCoordinator" ? await getFacultyClub(admin.id) : null;
+      const isFaculty = admin.role === "facultyCoordinator";
+
+      req.user = {
+        principalType: isFaculty ? "FACULTY" : "ADMIN",
+        facultyId: isFaculty ? admin.id : undefined,
+        userId: admin.id,
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        userType: "admin",
+        clubId: facultyClub?.id ?? null,
+        clubName: facultyClub?.clubName ?? null,
+      };
+      return next();
+    }
+
+    // ── 2.5 INSTITUTIONAL ACCOUNT PRINCIPAL ─────────────────────────────
+    if (principalType === "INSTITUTIONAL" || decoded.userType === "institutional") {
+      const inst = await prisma.institutionalAccount.findUnique({
+        where: { id: decoded.institutionalAccountId || decoded.userId },
+      });
+      if (inst && inst.isActive) {
+        req.user = {
+          principalType: "INSTITUTIONAL",
+          institutionalAccountId: inst.id,
+          userId: inst.id,
+          id: inst.id,
+          name: inst.name,
+          email: inst.email,
+          role: "central_organizer",
+          userType: "institutional",
+        };
+        return next();
+      }
+    }
+
+    // ── 3. STUDENT PRINCIPAL ─────────────────────────────────────────────
     const student = await prisma.studentUser.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, isBlocked: true, accessLevel: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        rollNo: true,
+        isBlocked: true,
+        accessLevel: true,
+      },
     });
+
     if (!student || student.isBlocked) {
       return res.status(401).json({ message: "Invalid or expired token." });
     }
 
-    if (userType === "external") {
+    if (principalType === "EXTERNAL" || decoded.userType === "external") {
       req.user = {
+        principalType: "EXTERNAL",
         userId: student.id,
+        id: student.id,
         email: student.email,
+        name: student.name,
         role: "external",
         userType: "external",
         clubId: null,
@@ -115,67 +194,72 @@ export const verifyToken = async (req, res, next) => {
       return next();
     }
 
-    // Central Organizer: uses existing student account with elevated accessLevel
-    if (student.accessLevel === "central_organizer") {
-      const memberships = await prisma.clubMembership.findMany({
-        where: { studentId: student.id },
-        include: { club: { select: { id: true, clubName: true, slug: true } } }
-      });
-      const managementMembership = memberships.find((m) =>
-        ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
-      );
-      const primary = managementMembership ?? memberships[0] ?? null;
+    // Fetch student club memberships and institutional account assignments
+    const [memberships, instAssignments] = await Promise.all([
+      prisma.clubMembership.findMany({
+        where: { studentId: student.id, status: { not: "INACTIVE" } },
+        include: { club: { select: { id: true, clubName: true, slug: true, clubLogo: true } } },
+      }),
+      prisma.institutionalAccountAssignment.findMany({
+        where: { studentId: student.id, status: { not: "INACTIVE" } },
+        include: { institutionalAccount: { select: { id: true, name: true, type: true, email: true } } },
+      }),
+    ]);
 
-      req.user = {
-        userId: student.id,
-        email: student.email,
-        role: "central_organizer",
-        userType: "student",
-        accessLevel: "central_organizer",
-        clubId: primary?.clubId ?? null,
-        memberships: memberships.map((m) => ({
-          clubId: m.clubId,
-          clubName: m.club?.clubName,
-          slug: m.club?.slug,
-          role: m.role,
-          canTakeAttendance: m.canTakeAttendance,
-          canEditEvents: m.canEditEvents,
-          permissions: {
-            canTakeAttendance: m.canTakeAttendance,
-            canEditEvents: m.canEditEvents,
-          },
-        })),
-      };
-      return next();
-    }
-
-    const memberships = await prisma.clubMembership.findMany({
-      where: { studentId: student.id },
-      include: { club: { select: { id: true, clubName: true, slug: true } } }
-    });
     const managementMembership = memberships.find((m) =>
       ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
     );
     const primary = managementMembership ?? memberships[0] ?? null;
 
-    req.user = {
-      userId: student.id,
-      email: student.email,
-      role: managementMembership ? "club" : "member",
-      userType: "student",
-      clubId: primary?.clubId ?? null,
-      memberships: memberships.map((m) => ({
-        clubId: m.clubId,
-        clubName: m.club?.clubName,
-        slug: m.club?.slug,
-        role: m.role,
+    const mappedMemberships = memberships.map((m) => ({
+      id: m.id,
+      clubId: m.clubId,
+      clubName: m.club?.clubName,
+      slug: m.club?.slug,
+      clubLogo: m.club?.clubLogo,
+      role: m.role,
+      status: m.status,
+      academicSessionId: m.academicSessionId,
+      customPermissions: m.customPermissions || [],
+      canTakeAttendance: m.canTakeAttendance,
+      canEditEvents: m.canEditEvents,
+      permissions: {
         canTakeAttendance: m.canTakeAttendance,
         canEditEvents: m.canEditEvents,
-        permissions: {
-          canTakeAttendance: m.canTakeAttendance,
-          canEditEvents: m.canEditEvents,
-        },
-      })),
+      },
+    }));
+
+    const mappedInstAssignments = instAssignments.map((a) => ({
+      id: a.id,
+      institutionalAccountId: a.institutionalAccountId,
+      accountName: a.institutionalAccount?.name,
+      accountType: a.institutionalAccount?.type,
+      role: a.role,
+      status: a.status,
+      canManageEvents: a.canManageEvents,
+      canTakeAttendance: a.canTakeAttendance,
+      canVerifyPayments: a.canVerifyPayments,
+      canDelegateStaff: a.canDelegateStaff,
+      customPermissions: a.customPermissions || [],
+    }));
+
+    const activeInstAssignment = mappedInstAssignments.find((a) => a.status === "ACTIVE");
+    const isCentralOrganizer = Boolean(activeInstAssignment) || student.accessLevel === "central_organizer" || decoded.role === "central_organizer";
+
+    req.user = {
+      principalType: "STUDENT",
+      studentId: student.id,
+      userId: student.id,
+      id: student.id,
+      rollNo: student.rollNo,
+      name: student.name,
+      email: student.email,
+      role: isCentralOrganizer ? "central_organizer" : managementMembership ? "club" : "member",
+      userType: "student",
+      accessLevel: student.accessLevel,
+      clubId: primary?.clubId ?? null,
+      memberships: mappedMemberships,
+      institutionalAssignments: mappedInstAssignments,
     };
     next();
   } catch {
@@ -185,13 +269,21 @@ export const verifyToken = async (req, res, next) => {
 
 import { hasPermission } from "../utils/rbac.js";
 
-// Granular Permission Middleware
+/**
+ * Granular Permission Middleware
+ * Checks required permission against req.user and optionally scoped resource.
+ */
 export const requirePermission = (permission, resourceExtractor = null) => {
   return async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ message: "Authentication required." });
     }
-    const resource = resourceExtractor ? await resourceExtractor(req) : null;
+    const resource = resourceExtractor
+      ? await resourceExtractor(req)
+      : req.params.clubId
+      ? { clubId: req.params.clubId }
+      : null;
+
     const allowed = hasPermission(req.user, permission, resource);
     if (!allowed) {
       return res.status(403).json({ message: `Access denied. Insufficient permissions for ${permission}.` });
@@ -200,17 +292,19 @@ export const requirePermission = (permission, resourceExtractor = null) => {
   };
 };
 
-// Backward compatible role middleware delegation
+/**
+ * Backward compatible role middleware delegation
+ */
 export const allowRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: "No token" });
+      return res.status(401).json({ message: "No token provided." });
     }
-    if (req.user.role === "admin" || req.user.role === "SUPER_ADMIN") {
+    if (req.user.role === "admin" || req.user.role === "SUPER_ADMIN" || req.user.principalType === "ADMIN") {
       return next();
     }
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+      return res.status(403).json({ message: "Access denied." });
     }
     next();
   };

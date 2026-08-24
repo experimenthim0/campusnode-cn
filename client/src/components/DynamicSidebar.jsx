@@ -17,6 +17,7 @@ import {
   Plus,
   Radio,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 import { hasPermission, PERMISSIONS } from "../utils/rbac";
 
@@ -195,7 +196,7 @@ const DynamicSidebar = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem("sidebar_collapsed") === "true");
   const location = useLocation();
   const role = localStorage.getItem("role");
-  const isPureClubAccount = !user?.rollNo && role === "club";
+  const isClubAccount = user?.principalType === "CLUB" || (!user?.rollNo && role === "club");
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
@@ -264,8 +265,9 @@ const DynamicSidebar = ({ user }) => {
         </div>
       </div>
 
-      {/* ── Create Event Action (Club account or user with event.create permission) ── */}
-      {hasPermission(user, PERMISSIONS.EVENT_CREATE) && (
+      {/* ── Create Event Action (Club account or club student leads/coordinators with event.create permission; not shown for central organizers) ── */}
+      {(isClubAccount || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents)) &&
+        hasPermission(user, PERMISSIONS.EVENT_CREATE) && (
         <div className={`pt-2 pb-2 shrink-0 ${isCollapsed ? "px-2 flex justify-center" : "px-4"}`}>
           <Link
             to="/create"
@@ -287,21 +289,24 @@ const DynamicSidebar = ({ user }) => {
         <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
 
         {/* ── Student Personal: My Events (Visible for students, leads & coordinators; hidden for pure official club accounts) ── */}
-        {!isPureClubAccount && (Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
+        {!isClubAccount && (Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 
         {/* ── Portals ── */}
-        {(user?.accessLevel === "central_organizer" || role === "central_organizer") && (
-          <SidebarLink to="/central-organizer" icon={Shield} label="Central Organizer" isActive={isActive("/central-organizer")} isCollapsed={isCollapsed} />
+        {(user?.accessLevel === "central_organizer" || role === "central_organizer" || (user?.institutionalAssignments && user.institutionalAssignments.length > 0)) && (
+          <>
+            <SidebarLink to="/central-organizer" icon={Shield} label="Central Organizer" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} />
+            <SidebarLink to="/central-organizer/guide" icon={BookOpen} label="Organizer Guide" isActive={isActive("/central-organizer/guide")} isCollapsed={isCollapsed} />
+          </>
         )}
         <SidebarLink to="/event-staff" icon={ShieldCheck} label="Event Staff Portal" isActive={isActive("/event-staff")} isCollapsed={isCollapsed} />
-        {!user?.rollNo && role === "club" && (
+        {isClubAccount && (
           <SidebarLink to="/event-calendar" icon={CalendarDays} label="Calendar/Venues" isActive={isActive("/event-calendar")} isCollapsed={isCollapsed} />
         )}
 
 
-        {(role === "club" || role === "facultyCoordinator" || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")) && (
+        {(role === "club" || role === "facultyCoordinator" || user?.principalType === "CLUB" || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")) && (
           <SidebarDropdown
             icon={Radio}
             label="Broadcasts"
@@ -314,12 +319,12 @@ const DynamicSidebar = ({ user }) => {
         )}
 
         {/* ── Management: Official Club Account, Membership-based clubs & Faculty Coordinator ── */}
-        {(role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
+        {(isClubAccount || role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
           <>
             <SectionLabel isCollapsed={isCollapsed}>Management</SectionLabel>
 
-            {/* Official Club Account (pure club role - no redundant club subheader) */}
-            {role === "club" && userClubId && (
+            {/* Official Club Account */}
+            {isClubAccount && userClubId && (
               <div className="space-y-1 mb-3">
                 <SidebarLink
                   to={`/club-events/${userClubId}`}
@@ -328,41 +333,92 @@ const DynamicSidebar = ({ user }) => {
                   isActive={isActive(`/club-events/${userClubId}`)}
                   isCollapsed={isCollapsed}
                 />
-                <SidebarLink
-                  to={`/club/${userClubId}/team`}
-                  icon={Users}
-                  label="Team Management"
-                  isActive={isActive(`/club/${userClubId}/team`)}
-                  isCollapsed={isCollapsed}
-                />
-                <SidebarLink
-                  to="/payments"
-                  icon={Wallet}
-                  label="Payments"
-                  isActive={isActive("/payments")}
-                  isCollapsed={isCollapsed}
-                />
-                <SidebarLink
-                  to={`/club/edit/${userClubId}`}
-                  icon={LayoutGrid}
-                  label="Club Settings"
-                  isActive={isActive(`/club/edit/${userClubId}`)}
-                  isCollapsed={isCollapsed}
-                />
+                {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: userClubId }) && (
+                  <SidebarLink
+                    to={`/club/${userClubId}/team`}
+                    icon={Users}
+                    label="Team Management"
+                    isActive={isActive(`/club/${userClubId}/team`)}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
+                {hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: userClubId }) && (
+                  <SidebarLink
+                    to="/payments"
+                    icon={Wallet}
+                    label="Payments"
+                    isActive={isActive("/payments")}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
+                {hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: userClubId }) && (
+                  <SidebarLink
+                    to={`/club/edit/${userClubId}`}
+                    icon={LayoutGrid}
+                    label="Club Settings"
+                    isActive={isActive(`/club/edit/${userClubId}`)}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
               </div>
             )}
 
-            {/* Membership-based clubs (Student Leads & Coordinators) */}
-            {role !== "club" && user?.memberships?.map((m) => {
-              const isLead = m.role === "CLUB_HEAD";
-              const isCoord = m.role === "COORDINATOR";
-              const hasOps = isLead || isCoord || m.canEditEvents || m.canCheckRegistration || m.canTakeAttendance || m.permissions?.canEditEvents || m.permissions?.canCheckRegistration || m.permissions?.canTakeAttendance;
+            {/* Membership-based clubs (Student Leads & Coordinators across all clubs) */}
+            {!isClubAccount && (() => {
+              const eligibleMemberships = (user?.memberships || []).filter((m) => {
+                const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+                const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
+                const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+                return canManageTeam || canReviewPayments || canUpdateClub || m.canEditEvents || m.canTakeAttendance;
+              });
 
-              if (!hasOps) return null;
+              if (eligibleMemberships.length === 0) return null;
+
+              // If 2 or more clubs, collapse each into a SidebarDropdown to prevent vertical clutter
+              if (eligibleMemberships.length >= 2) {
+                return (
+                  <div className="space-y-1 mb-3">
+                    {eligibleMemberships.map((m) => {
+                      const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+                      const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
+                      const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+
+                      const items = [
+                        { label: "Club Events", to: `/club-events/${m.clubId}` },
+                      ];
+                      if (canManageTeam) {
+                        items.push({ label: "Team Management", to: `/club/${m.clubId}/team` });
+                      }
+                      if (canReviewPayments) {
+                        items.push({ label: "Payments", to: "/payments" });
+                      }
+                      if (canUpdateClub) {
+                        items.push({ label: "Club Settings", to: `/club/edit/${m.clubId}` });
+                      }
+
+                      return (
+                        <SidebarDropdown
+                          key={m.clubId}
+                          icon={Users}
+                          label={m.clubName || "Club"}
+                          isCollapsed={isCollapsed}
+                          items={items}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              // Exactly 1 club: render flat layout directly without dropdown
+              const m = eligibleMemberships[0];
+              const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+              const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
+              const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
 
               return (
                 <div key={m.clubId} className="space-y-1 mb-3">
-                  <ClubHeader name={m.clubName} isCollapsed={isCollapsed} />
+                  <ClubHeader name={m.clubName || "Club"} isCollapsed={isCollapsed} />
 
                   {/* Club Events */}
                   <SidebarLink
@@ -373,8 +429,8 @@ const DynamicSidebar = ({ user }) => {
                     isCollapsed={isCollapsed}
                   />
 
-                  {/* Team Management */}
-                  {isLead && (
+                  {/* Team Management - Only for users with club.manage_members permission */}
+                  {canManageTeam && (
                     <SidebarLink
                       to={`/club/${m.clubId}/team`}
                       icon={Users}
@@ -385,7 +441,7 @@ const DynamicSidebar = ({ user }) => {
                   )}
 
                   {/* Payments */}
-                  {isLead && (
+                  {canReviewPayments && (
                     <SidebarLink
                       to="/payments"
                       icon={Wallet}
@@ -396,7 +452,7 @@ const DynamicSidebar = ({ user }) => {
                   )}
 
                   {/* Club Settings */}
-                  {isLead && (
+                  {canUpdateClub && (
                     <SidebarLink
                       to={`/club/edit/${m.clubId}`}
                       icon={LayoutGrid}
@@ -407,7 +463,7 @@ const DynamicSidebar = ({ user }) => {
                   )}
                 </div>
               );
-            })}
+            })()}
 
             {/* Faculty Coordinator fallback (if not in memberships) */}
             {role === "facultyCoordinator" && user?.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
@@ -420,20 +476,24 @@ const DynamicSidebar = ({ user }) => {
                   isActive={isActive("/my-events")}
                   isCollapsed={isCollapsed}
                 />
-                <SidebarLink
-                  to={`/club/${user.clubId}/team`}
-                  icon={Users}
-                  label="Team Management"
-                  isActive={isActive(`/club/${user.clubId}/team`)}
-                  isCollapsed={isCollapsed}
-                />
-                <SidebarLink
-                  to={`/club/edit/${user.clubId}`}
-                  icon={LayoutGrid}
-                  label="Club Settings"
-                  isActive={isActive(`/club/edit/${user.clubId}`)}
-                  isCollapsed={isCollapsed}
-                />
+                {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: user.clubId }) && (
+                  <SidebarLink
+                    to={`/club/${user.clubId}/team`}
+                    icon={Users}
+                    label="Team Management"
+                    isActive={isActive(`/club/${user.clubId}/team`)}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
+                {hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: user.clubId }) && (
+                  <SidebarLink
+                    to={`/club/edit/${user.clubId}`}
+                    icon={LayoutGrid}
+                    label="Club Settings"
+                    isActive={isActive(`/club/edit/${user.clubId}`)}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
               </div>
             )}
           </>

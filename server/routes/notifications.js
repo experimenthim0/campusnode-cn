@@ -20,7 +20,7 @@ const senderInclude = {
       name: true,
       email: true,
       memberships: {
-        where: { role: "CLUB_HEAD" },
+        where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
         include: { club: { select: { clubName: true } } },
         take: 1,
       },
@@ -75,7 +75,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_CREATE)
           where: {
             clubId: event.clubId,
             studentId: req.user.userId,
-            OR: [{ role: "CLUB_HEAD" }, { canEditEvents: true }],
+            OR: [{ role: "CLUB_HEAD" }, { role: "COORDINATOR" }, { canEditEvents: true }],
           },
         });
         if (!membership) return res.status(403).json({ message: "Access denied for this event." });

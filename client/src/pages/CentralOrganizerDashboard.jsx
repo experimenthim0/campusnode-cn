@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
+import { useAuth } from "../context/AuthContext";
 import { EVENT_VENUES } from "../constants/eventVenues";
 import {
   CentralOrganizerStats,
@@ -57,6 +58,14 @@ const formatDateTimeLocal = (dateString) => {
 
 const CentralOrganizerDashboard = () => {
   const { showNotification } = useNotification();
+  const { user } = useAuth();
+
+  const isSuperAdmin = user?.role === "admin" || user?.role === "SUPER_ADMIN";
+  const isLeadCO = isSuperAdmin || user?.accessLevel === "central_organizer" || user?.institutionalAssignments?.some((a) => a.role === "CENTRAL_EVENT_ORGANISER");
+  const canManageEvents = isLeadCO || user?.institutionalAssignments?.some((a) => a.canManageEvents || a.role === "EVENT_COORDINATOR");
+  const canDelegateStaff = isLeadCO || user?.institutionalAssignments?.some((a) => a.canDelegateStaff);
+  const canViewAudit = isLeadCO;
+
   const [activeTab, setActiveTab] = useState("events"); // "events" | "create" | "staff" | "clubs" | "audit"
   const [stats, setStats] = useState({
     totalEvents: 0,
@@ -372,36 +381,40 @@ const CentralOrganizerDashboard = () => {
             )}
           </button>
 
-          <button
-            onClick={handleOpenCreateTab}
-            className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
-              activeTab === "create"
-                ? "text-orange-600 dark:text-orange-500"
-                : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
-            }`}
-          >
-            {editingEventId ? "Edit Central Event" : "Create New Event"}
-            {activeTab === "create" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
-            )}
-          </button>
+          {canManageEvents && (
+            <button
+              onClick={handleOpenCreateTab}
+              className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
+                activeTab === "create"
+                  ? "text-orange-600 dark:text-orange-500"
+                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+            >
+              {editingEventId ? "Edit Central Event" : "Create New Event"}
+              {activeTab === "create" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+              )}
+            </button>
+          )}
 
-          <button
-            onClick={() => {
-              if (!selectedEvent && events.length > 0) setSelectedEvent(events[0]);
-              setActiveTab("staff");
-            }}
-            className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
-              activeTab === "staff"
-                ? "text-orange-600 dark:text-orange-500"
-                : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
-            }`}
-          >
-            Staff
-            {activeTab === "staff" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
-            )}
-          </button>
+          {canDelegateStaff && (
+            <button
+              onClick={() => {
+                if (!selectedEvent && events.length > 0) setSelectedEvent(events[0]);
+                setActiveTab("staff");
+              }}
+              className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
+                activeTab === "staff"
+                  ? "text-orange-600 dark:text-orange-500"
+                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+            >
+              Staff
+              {activeTab === "staff" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+              )}
+            </button>
+          )}
 
           <button
             onClick={() => {
@@ -420,20 +433,22 @@ const CentralOrganizerDashboard = () => {
             )}
           </button>
 
-          <button
-            onClick={() => setActiveTab("audit")}
-            className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "audit"
-                ? "text-orange-600 dark:text-orange-500"
-                : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
-            }`}
-          >
-            <Shield size={14} />
-            Audit Logs
-            {activeTab === "audit" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
-            )}
-          </button>
+          {canViewAudit && (
+            <button
+              onClick={() => setActiveTab("audit")}
+              className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === "audit"
+                  ? "text-orange-600 dark:text-orange-500"
+                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+            >
+              <Shield size={14} />
+              Audit Logs
+              {activeTab === "audit" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* ── Tab Content ── */}

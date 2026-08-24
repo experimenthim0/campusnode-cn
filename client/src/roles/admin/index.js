@@ -3,7 +3,6 @@ export { default as EventDataTable } from './tabs/EventDataTable';
 export { default as VenuesTab } from './tabs/VenuesTab';
 export { default as ClubsTab } from './tabs/ClubsTab';
 export { default as CoordinatorsTab } from './tabs/CoordinatorsTab';
-export { default as CentralOrganizerTab } from './tabs/CentralOrganizerTab';
 export { default as ManualPaymentsTab } from './tabs/ManualPaymentsTab';
 export { default as PayoutsTab } from './tabs/PayoutsTab';
 export { default as BroadcastsTab } from './tabs/BroadcastsTab';

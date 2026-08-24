@@ -17,6 +17,7 @@ import { LayoutDashboard, Shield } from "lucide-react";
 import SearchBar from "./SearchBar";
 import { ArrowRightIcon } from "./ui/arrow-right";
 import { usePwaInstall } from "../hooks/usePwaInstall";
+import api from "../services/api";
 
 
 const LostFoundIcon = ({ size = 24, ...props }) => (
@@ -93,7 +94,7 @@ const Navbar = () => {
     setNotifDropdownOpen(!notifDropdownOpen);
     if (!notifDropdownOpen && unreadCount > 0) {
       try {
-        await axios.put(`${API_URL}/api/notifications/read-all`);
+        await api.put("/api/notifications/read-all");
         setUnreadCount(0);
         setNotifications((prev) => prev.map(n => ({ ...n, readBy: [...(n.readBy || []), user._id || user.id] })));
       } catch (err) {
@@ -380,12 +381,12 @@ const Navbar = () => {
                           {user.name}
                         </p>
                         <p className="text-[10px] tracking-widest text-orange-600 dark:text-orange-500 font-semibold mt-0.5">
-                          {role === "club"
-                            ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
-                            : user?.memberships?.some(m => m.role === "CLUB_HEAD")
+                          {user?.memberships?.some(m => m.role === "CLUB_HEAD")
                             ? "Student • Student Lead"
                             : user?.memberships?.some(m => m.role === "COORDINATOR")
                             ? "Student • Coordinator"
+                            : role === "club"
+                            ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
                             : role === "facultyCoordinator"
                             ? "Faculty Coordinator"
                             : role === "admin"

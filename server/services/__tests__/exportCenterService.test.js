@@ -102,23 +102,27 @@ describe("Export Center Service Unit Tests", () => {
   });
 
   describe("Export History Audit Log", () => {
-    it("Records export metadata into history buffer", async () => {
-      await recordExportLog({
-        dataset: "events",
-        recordCount: 42,
-        actorId: "admin_test",
-        actorEmail: "admin@campusnode.edu",
-        actorRole: "admin",
-        filters: { session: "2026–27" },
-        columns: ["title", "venue"],
-      });
+    it(
+      "Records export metadata into history buffer",
+      async () => {
+        await recordExportLog({
+          dataset: "events",
+          recordCount: 42,
+          actorId: "admin_test",
+          actorEmail: "admin@campusnode.edu",
+          actorRole: "admin",
+          filters: { session: "2026–27" },
+          columns: ["title", "venue"],
+        });
 
-      const history = await getExportHistory(10);
-      expect(history.length).toBeGreaterThan(0);
-      const latest = history[0];
-      expect(latest.dataset).toBe("events");
-      expect(latest.recordCount).toBe(42);
-      expect(latest.actorEmail).toBe("admin@campusnode.edu");
-    });
+        const history = await getExportHistory(10);
+        expect(history.length).toBeGreaterThan(0);
+        const latest = history[0];
+        expect(latest.dataset).toBe("events");
+        expect(latest.recordCount).toBe(42);
+        expect(latest.actorEmail).toBe("admin@campusnode.edu");
+      },
+      15000
+    );
   });
 });

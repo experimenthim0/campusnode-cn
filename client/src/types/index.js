@@ -10,6 +10,13 @@ export const ParticipationStatus = Object.freeze({
   CANCELLED:  'CANCELLED',
 });
 
+export const PrincipalType = Object.freeze({
+  STUDENT: 'STUDENT',
+  FACULTY: 'FACULTY',
+  CLUB:    'CLUB',
+  ADMIN:   'ADMIN',
+});
+
 export const ClubMemberRole = Object.freeze({
   CLUB_HEAD:   'CLUB_HEAD',
   COORDINATOR: 'COORDINATOR',

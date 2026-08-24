@@ -27,6 +27,9 @@ export const getClubMembers = (clubId) =>
 export const addClubMember = (clubId, data) =>
   api.post(`/api/club-members/${clubId}/members`, data);
 
+export const searchStudentsForClub = (clubId, q) =>
+  api.get(`/api/club-members/${clubId}/search-students?q=${encodeURIComponent(q)}`);
+
 export const updateClubMember = (arg1, arg2, arg3) => {
   if (arg3 !== undefined) {
     return api.put(`/api/club-members/${arg1}/members/${arg2}`, arg3);

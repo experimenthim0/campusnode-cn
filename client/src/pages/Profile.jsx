@@ -1017,13 +1017,13 @@ const Profile = () => {
                                   ? "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800"
                                   : "bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-400 border-orange-300 dark:border-orange-800"
                                 }`}>
-                                {isHead ? "★ Student Lead (Club Head)" : "Coordinator"}
+                                {isHead ? "★ Student Lead" : "Coordinator"}
                               </span>
                             </div>
                             <p className="text-xs text-neutral-500 dark:text-neutral-400">
                               {isHead
-                                ? "Full executive access: Manage club events, registrations, attendance, certificates & team delegation."
-                                : "Operational access: Manage assigned events, check-ins & attendee lists."}
+                                ? "Full executive access: Manage club events, registrations, attendance, certificates, settings & team delegation."
+                                : "Full management access: Manage club events, registrations, attendance, certificates, payments & club settings."}
                             </p>
                           </div>
                         </div>
@@ -1034,29 +1034,27 @@ const Profile = () => {
                             to={`/club-events/${m.clubId}`}
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
                           >
-                            <i className="ri-dashboard-line text-sm" /> Club Dashboard
+                            <i className="ri-dashboard-line text-sm font-light" /> Club Dashboard
                           </Link>
                           {isHead && (
                             <Link
                               to={`/club/${m.clubId}/team`}
                               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold transition-all shadow-2xs"
                             >
-                              <i className="ri-team-line text-sm text-neutral-500" /> Manage Team
+                              <i className="ri-team-line text-sm text-neutral-500 font-light" /> Manage Team
                             </Link>
                           )}
-                          {isHead && (
-                            <Link
-                              to={`/club/edit/${m.clubId}`}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold transition-all shadow-2xs"
-                            >
-                              <i className="ri-settings-4-line text-sm text-neutral-500" /> Settings
-                            </Link>
-                          )}
+                          <Link
+                            to={`/club/edit/${m.clubId}`}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold transition-all shadow-2xs"
+                          >
+                            <i className="ri-settings-4-line text-sm text-neutral-500 font-light" /> Settings
+                          </Link>
                           <Link
                             to={`/club/${m.slug || m.clubId}`}
                             className="inline-flex items-center gap-1 px-3 py-2 text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 text-xs font-medium transition-colors"
                           >
-                            Public Page <i className="ri-external-link-line text-xs" />
+                            Public Page <i className="ri-external-link-line text-xs font-light" />
                           </Link>
                         </div>
                       </div>

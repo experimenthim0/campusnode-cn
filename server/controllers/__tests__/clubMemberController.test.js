@@ -9,10 +9,17 @@ import {
 } from "../clubMemberController.js";
 import prisma from "../../lib/prisma.js";
 
-vi.mock("../../lib/prisma.js", () => ({
-  default: {
+vi.mock("../../lib/prisma.js", () => {
+  const mockPrisma = {
     club: { findUnique: vi.fn() },
-    studentUser: { findUnique: vi.fn() },
+    clubAccount: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+    adminRole: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+    institutionalAccount: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+    studentUser: {
+      findUnique: vi.fn().mockResolvedValue({ id: "new_stud_1", email: "newstudent@nitj.ac.in", name: "New Student" }),
+      findFirst: vi.fn().mockResolvedValue({ id: "new_stud_1", email: "newstudent@nitj.ac.in", name: "New Student" }),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     clubMembership: {
       count: vi.fn(),
       findUnique: vi.fn(),
@@ -23,9 +30,13 @@ vi.mock("../../lib/prisma.js", () => ({
       updateMany: vi.fn(),
       delete: vi.fn(),
     },
-    $transaction: vi.fn((cb) => cb(prisma)),
-  },
-}));
+    auditLog: {
+      create: vi.fn(),
+    },
+    $transaction: vi.fn((cb) => cb(mockPrisma)),
+  };
+  return { default: mockPrisma };
+});
 
 vi.mock("../../utils/publicResponseCache.js", () => ({
   invalidatePublicResponses: vi.fn(),
@@ -106,6 +117,110 @@ describe("Club Member Management & Role Limits", () => {
           message: "Maximum of 5 active coordinators is allowed for this club.",
         })
       );
+    });
+
+    it("Rejects member management when requester is a COORDINATOR (403 Forbidden)", async () => {
+      prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
+
+      const req = {
+        params: { clubId: "club_1" },
+        body: { email: "newmember@nitj.ac.in", role: "MEMBER" },
+        user: {
+          role: "club",
+          userType: "student",
+          principalType: "STUDENT",
+          userId: "student_coord",
+          memberships: [{ clubId: "club_1", role: "COORDINATOR" }],
+        },
+      };
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      await addClubMember(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Unauthorized to add members to this club.",
+        })
+      );
+    });
+
+    it("Allows member management when requester is a CLUB_HEAD", async () => {
+      prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
+      prisma.studentUser.findUnique.mockResolvedValue({ id: "new_stud_1", email: "newstudent@nitj.ac.in" });
+      prisma.clubMembership.findUnique.mockResolvedValue(null); // no duplicate
+
+      prisma.clubMembership.create.mockResolvedValue({
+        id: "mem_new",
+        studentId: "new_stud_1",
+        clubId: "club_1",
+        role: "MEMBER",
+        canTakeAttendance: true,
+        canEditEvents: false,
+      });
+
+      const req = {
+        params: { clubId: "club_1" },
+        body: { email: "newstudent@nitj.ac.in", role: "MEMBER" },
+        user: {
+          role: "club",
+          userType: "student",
+          principalType: "STUDENT",
+          userId: "student_head",
+          memberships: [{ clubId: "club_1", role: "CLUB_HEAD" }],
+        },
+      };
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      await addClubMember(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Member added successfully.",
+        })
+      );
+    });
+
+    it("Allows member management when requester is a dedicated ClubAccount", async () => {
+      prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
+      prisma.studentUser.findUnique.mockResolvedValue({ id: "new_stud_1", email: "newstudent@nitj.ac.in" });
+      prisma.clubMembership.findUnique.mockResolvedValue(null);
+
+      prisma.clubMembership.create.mockResolvedValue({
+        id: "mem_new",
+        studentId: "new_stud_1",
+        clubId: "club_1",
+        role: "MEMBER",
+        canTakeAttendance: true,
+        canEditEvents: false,
+      });
+
+      const req = {
+        params: { clubId: "club_1" },
+        body: { email: "newstudent@nitj.ac.in", role: "MEMBER" },
+        user: {
+          role: "club",
+          userType: "club",
+          principalType: "CLUB",
+          clubAccountId: "club_acc_1",
+          clubId: "club_1",
+        },
+      };
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      await addClubMember(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
     });
   });
 
@@ -188,6 +303,32 @@ describe("Club Member Management & Role Limits", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "Target member is already the active Student Lead.",
+        })
+      );
+    });
+  });
+
+  describe("Non-Student Account Gating in Club Membership", () => {
+    it("Rejects adding a ClubAccount email as a member with 400 Bad Request", async () => {
+      prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
+      prisma.clubAccount.findFirst.mockResolvedValue({ id: "acc_1", email: "robotics@nitj.ac.in" });
+
+      const req = {
+        params: { clubId: "club_1" },
+        body: { email: "robotics@nitj.ac.in", role: "MEMBER" },
+        user: { role: "admin", userId: "admin1" },
+      };
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      await addClubMember(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Club organizational accounts cannot be added as club members. Only individual students are allowed.",
         })
       );
     });
