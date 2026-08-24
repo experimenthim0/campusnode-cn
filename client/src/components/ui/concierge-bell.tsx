@@ -1,7 +1,7 @@
 "use client";
 
-import type { Variants } from "motion/react";
-import { motion, useAnimation } from "motion/react";
+import type { Variants } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ const SOUND_WAVES_VARIANTS: Variants = {
 };
 
 const ConciergeBellIcon = forwardRef<ConciergeBellHandle, ConciergeBellProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28,children, ...props }, ref) => {
+  ({ onMouseEnter, onMouseLeave, className, size = 20, children, ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
 
@@ -70,7 +70,7 @@ const ConciergeBellIcon = forwardRef<ConciergeBellHandle, ConciergeBellProps>(
 
     return (
       <div
-        className={cn("flex items-center gap-2", className)}
+        className={cn("inline-flex items-center justify-center shrink-0 select-none", className)}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         {...props}
@@ -78,13 +78,14 @@ const ConciergeBellIcon = forwardRef<ConciergeBellHandle, ConciergeBellProps>(
         <svg
           fill="none"
           height={size}
+          width={size}
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"
-          style={{ overflow: "visible" }}
+          className="shrink-0"
+          style={{ overflow: "visible", width: `${size}px`, height: `${size}px`, minWidth: `${size}px`, minHeight: `${size}px` }}
           viewBox="0 0 24 24"
-          width={size}
           xmlns="http://www.w3.org/2000/svg"
         >
           <path d="M3 20a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z" />
@@ -112,9 +113,8 @@ const ConciergeBellIcon = forwardRef<ConciergeBellHandle, ConciergeBellProps>(
             <path d="M2 13a7 7 0 0 1 1-3.5" opacity="0.7" strokeWidth="1.5" />
             <path d="M21 13a7 7 0 0 0-1-3.5" opacity="0.7" strokeWidth="1.5" />
           </motion.g>
-
         </svg>
-          {children && <span className="text-sm font-medium">{children}</span>}
+        {children && <span className="text-sm font-medium ml-2">{children}</span>}
       </div>
     );
   }

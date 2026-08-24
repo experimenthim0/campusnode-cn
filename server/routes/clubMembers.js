@@ -7,6 +7,7 @@ import {
   addClubMember,
   getClubMembers,
   updateMemberPermissions,
+  transferStudentLead,
   removeClubMember
 } from "../controllers/clubMemberController.js";
 
@@ -30,13 +31,16 @@ router.get("/:clubId/members", validate(clubIdParamSchema), getClubMembers);
 // Protected routes require token
 router.use(verifyToken);
 
-// POST /api/clubs/:clubId/members
+// POST /api/club-members/:clubId/members
 router.post("/:clubId/members", requirePermission(PERMISSIONS.CLUB_MANAGE_MEMBERS), validate(clubIdParamSchema), addClubMember);
 
-// PUT /api/clubs/members/:membershipId
+// POST /api/club-members/:clubId/transfer-student-lead
+router.post("/:clubId/transfer-student-lead", requirePermission(PERMISSIONS.CLUB_MANAGE_MEMBERS), validate(clubIdParamSchema), transferStudentLead);
+
+// PUT /api/club-members/members/:membershipId
 router.put("/members/:membershipId", requirePermission(PERMISSIONS.CLUB_MANAGE_MEMBERS), validate(membershipIdParamSchema), updateMemberPermissions);
 
-// DELETE /api/clubs/members/:membershipId
+// DELETE /api/club-members/members/:membershipId
 router.delete("/members/:membershipId", requirePermission(PERMISSIONS.CLUB_MANAGE_MEMBERS), validate(membershipIdParamSchema), removeClubMember);
 
 

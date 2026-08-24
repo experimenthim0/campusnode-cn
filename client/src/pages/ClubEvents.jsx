@@ -52,6 +52,11 @@ const ClubEvents = () => {
       fetchClubEvents(clubId);
 
       setCanReview(authRole === 'facultyCoordinator');
+      if (authRole === 'club' || authRole === 'admin' || authRole === 'SUPER_ADMIN') {
+        setCanEdit(true);
+        setCanScan(true);
+        setCanCheckReg(true);
+      }
 
       getClubMembers(clubId)
         .then(res => {
@@ -74,7 +79,7 @@ const ClubEvents = () => {
     } else {
       setLoading(false);
     }
-  }, [clubId, authUser, authRole]);
+  }, [clubId, authUser?.id, authRole]);
 
   const fetchClubEvents = async (id) => {
     try {

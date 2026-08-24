@@ -116,6 +116,8 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
     PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
     PERMISSIONS.REGISTRATION_VIEW,
+    PERMISSIONS.REGISTRATION_CREATE,
+    PERMISSIONS.REGISTRATION_CANCEL,
     PERMISSIONS.PAYMENT_VIEW,
     PERMISSIONS.PAYMENT_VERIFY,
     PERMISSIONS.PAYOUT_VIEW,
@@ -125,6 +127,10 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.LOST_FOUND_VIEW,
     PERMISSIONS.LOST_FOUND_CREATE,
+    PERMISSIONS.EVENT_STAFF_MANAGE,
+    PERMISSIONS.AUDIT_VIEW,
+    PERMISSIONS.TEAM_CREATE,
+    PERMISSIONS.TEAM_MANAGE,
   ],
   club: [
     PERMISSIONS.EVENT_VIEW,
@@ -139,6 +145,8 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
     PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
     PERMISSIONS.REGISTRATION_VIEW,
+    PERMISSIONS.REGISTRATION_CREATE,
+    PERMISSIONS.REGISTRATION_CANCEL,
     PERMISSIONS.PAYMENT_VIEW,
     PERMISSIONS.PAYMENT_VERIFY,
     PERMISSIONS.PAYOUT_VIEW,
@@ -148,6 +156,10 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.LOST_FOUND_VIEW,
     PERMISSIONS.LOST_FOUND_CREATE,
+    PERMISSIONS.EVENT_STAFF_MANAGE,
+    PERMISSIONS.AUDIT_VIEW,
+    PERMISSIONS.TEAM_CREATE,
+    PERMISSIONS.TEAM_MANAGE,
   ],
 
   CLUB_MEMBER: [
@@ -282,7 +294,14 @@ export function hasPermission(user, permission, resource = null) {
   }
 
   // 2. Base role permission check
-  const allowedPermissions = ROLE_PERMISSIONS_MAP[role] ?? [];
+  let allowedPermissions = [...(ROLE_PERMISSIONS_MAP[role] ?? [])];
+
+  // If user has active CLUB_HEAD or COORDINATOR memberships, merge club permissions
+  if (user?.memberships && user.memberships.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")) {
+    const clubPerms = ROLE_PERMISSIONS_MAP["club"] ?? ROLE_PERMISSIONS_MAP["CLUB"] ?? [];
+    allowedPermissions = Array.from(new Set([...allowedPermissions, ...clubPerms]));
+  }
+
   if (!allowedPermissions.includes(permission)) {
     return false;
   }

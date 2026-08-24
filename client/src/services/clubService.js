@@ -34,6 +34,9 @@ export const updateClubMember = (arg1, arg2, arg3) => {
   return api.put(`/api/club-members/members/${arg1}`, arg2);
 };
 
+export const transferStudentLead = (clubId, data) =>
+  api.post(`/api/club-members/${clubId}/transfer-student-lead`, typeof data === "string" ? { targetMembershipId: data } : data);
+
 export const removeClubMember = (arg1, arg2) => {
   if (arg2 !== undefined) {
     return api.delete(`/api/club-members/${arg1}/members/${arg2}`);

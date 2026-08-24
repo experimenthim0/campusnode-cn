@@ -50,6 +50,12 @@ const publicClubSelect = {
   establishedYear: true,
   facultyCoordinator: { select: { id: true, name: true, email: true } },
   socialLinks: true,
+  memberships: {
+    where: { role: "CLUB_HEAD" },
+    include: {
+      student: { select: { id: true, name: true, email: true } }
+    }
+  },
 };
 
 // ── GET /clubs — all clubs with faculty coordinator ───────────────────────────
@@ -76,6 +82,7 @@ router.get("/", async (req, res) => {
       facultyCoordinators: club.facultyCoordinator
         ? [{ ...club.facultyCoordinator, _id: club.facultyCoordinator.id }]
         : [],
+      studentHeads: (club.memberships || []).map((m) => m.student?.name).filter(Boolean),
     }));
 
     setPublicResponse(cacheKey, response);

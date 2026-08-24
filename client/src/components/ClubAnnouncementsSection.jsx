@@ -259,7 +259,7 @@ const ClubAnnouncementsSection = ({
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
                     {item.isPinned && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 rounded-md border border-orange-200 dark:border-orange-900/50">
-                        <i className="ri-pushpin-fill text-[11px]" /> Pinned
+                        <i className="ri-pushpin-fill text-[11px] font-light" /> Pinned
                       </span>
                     )}
                     <h3 className="text-sm font-bold text-neutral-900 dark:text-white break-words">
@@ -301,7 +301,7 @@ const ClubAnnouncementsSection = ({
                             : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:text-black dark:hover:text-white"
                         }`}
                       >
-                        <i className={item.isPinned ? "ri-pushpin-fill text-xs" : "ri-pushpin-line text-xs"} />
+                        <i className={item.isPinned ? "ri-pushpin-fill text-xs font-light" : "ri-pushpin-line text-xs font-light"} />
                         <span className="hidden sm:inline">{item.isPinned ? "Unpin" : "Pin"}</span>
                       </button>
 
@@ -312,7 +312,7 @@ const ClubAnnouncementsSection = ({
                         title="Delete announcement"
                         className="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 border border-neutral-200 dark:border-neutral-700 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-900/40 transition-colors cursor-pointer"
                       >
-                        <i className="ri-delete-bin-line text-xs" />
+                        <i className="ri-delete-bin-line text-xs font-light" />
                         <span className="hidden sm:inline">Delete</span>
                       </button>
                     </div>

@@ -296,10 +296,10 @@ const Navbar = () => {
                   <div className="relative" ref={notifDropdownRef}>
                     <button
                       onClick={handleNotificationClick}
-                      className="relative p-2 rounded-sm text-neutral-700 dark:text-neutral-300 border-transparent  transition-colors duration-150 cursor-pointer"
+                      className="relative p-2 rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer inline-flex items-center justify-center shrink-0"
+                      aria-label="Notifications"
                     >
-                      {/* <i className="ri-notification-3-line text-lg" /> */}
-                      <BellIcon />
+                      <BellIcon size={20} className="shrink-0" />
                       {unreadCount > 0 && (
                         <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border border-white dark:border-[#0a0a0a]"></span>
                       )}
@@ -380,7 +380,19 @@ const Navbar = () => {
                           {user.name}
                         </p>
                         <p className="text-[10px] tracking-widest text-orange-600 dark:text-orange-500 font-medium mt-0.5">
-                          {role === "club" ? "Club Account" : role === "facultyCoordinator" ? `Faculty Coordinator` : role === "admin" ? "Admin" : role === "lostFoundAdmin" ? "L&F Admin" : "Student"}
+                          {role === "club"
+                            ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
+                            : user?.memberships?.some(m => m.role === "CLUB_HEAD")
+                            ? "Student • Student Lead"
+                            : user?.memberships?.some(m => m.role === "COORDINATOR")
+                            ? "Student • Coordinator"
+                            : role === "facultyCoordinator"
+                            ? "Faculty Coordinator"
+                            : role === "admin"
+                            ? "Admin"
+                            : role === "lostFoundAdmin"
+                            ? "L&F Admin"
+                            : "Student"}
                         </p>
                       </div>
 
@@ -409,8 +421,22 @@ const Navbar = () => {
                               role="menuitem"
                             >
                               <LayoutDashboard size={18} className="text-neutral-500 dark:text-neutral-400" />
-                              Dashboard
+                              Profile / Dashboard
                             </Link>
+
+                            {/* Direct Club Management Entry for Student Leads, Coordinators & Club Accounts */}
+                            {/* {user?.memberships?.filter(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR").map(m => (
+                              <Link
+                                key={m.clubId}
+                                to={`/club-events/${m.clubId}`}
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2.5 text-[12px] font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors"
+                                role="menuitem"
+                              >
+                                <Shield size={18} />
+                                Manage {m.clubName || "Club"}
+                              </Link>
+                            ))} */}
 
                             {(user?.accessLevel === "central_organizer" || role === "central_organizer") && (
                               <Link
@@ -423,16 +449,6 @@ const Navbar = () => {
                                 Central Organizer
                               </Link>
                             )}
-
-                            {/* <Link
-                              to="/event-staff"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-4 py-2.5 text-[12px] font-bold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                              role="menuitem"
-                            >
-                              <Shield size={18} className="text-neutral-500 dark:text-neutral-400" />
-                              Event Staff Portal
-                            </Link> */}
                           </>
                         )}
                       </div>
@@ -500,9 +516,10 @@ const Navbar = () => {
                       handleNotificationClick();
                       setSearchOpen(false);
                     }}
-                    className="relative p-1.5 rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer"
+                    className="relative rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer inline-flex items-center justify-center "
+                    aria-label="Notifications"
                   >
-                    <BellIcon size={22} />
+                    <BellIcon size={18} />
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border border-white dark:border-[#0a0a0a]"></span>
                     )}

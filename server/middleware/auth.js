@@ -117,25 +117,65 @@ export const verifyToken = async (req, res, next) => {
 
     // Central Organizer: uses existing student account with elevated accessLevel
     if (student.accessLevel === "central_organizer") {
-      const membership = await getPrimaryStudentMembership(student.id);
+      const memberships = await prisma.clubMembership.findMany({
+        where: { studentId: student.id },
+        include: { club: { select: { id: true, clubName: true, slug: true } } }
+      });
+      const managementMembership = memberships.find((m) =>
+        ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
+      );
+      const primary = managementMembership ?? memberships[0] ?? null;
+
       req.user = {
         userId: student.id,
         email: student.email,
         role: "central_organizer",
         userType: "student",
         accessLevel: "central_organizer",
-        clubId: membership?.clubId ?? null,
+        clubId: primary?.clubId ?? null,
+        memberships: memberships.map((m) => ({
+          clubId: m.clubId,
+          clubName: m.club?.clubName,
+          slug: m.club?.slug,
+          role: m.role,
+          canTakeAttendance: m.canTakeAttendance,
+          canEditEvents: m.canEditEvents,
+          permissions: {
+            canTakeAttendance: m.canTakeAttendance,
+            canEditEvents: m.canEditEvents,
+          },
+        })),
       };
       return next();
     }
 
-    const membership = await getPrimaryStudentMembership(student.id);
+    const memberships = await prisma.clubMembership.findMany({
+      where: { studentId: student.id },
+      include: { club: { select: { id: true, clubName: true, slug: true } } }
+    });
+    const managementMembership = memberships.find((m) =>
+      ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
+    );
+    const primary = managementMembership ?? memberships[0] ?? null;
+
     req.user = {
       userId: student.id,
       email: student.email,
-      role: membership && ["CLUB_HEAD", "COORDINATOR"].includes(membership.role) ? "club" : "member",
+      role: managementMembership ? "club" : "member",
       userType: "student",
-      clubId: membership?.clubId ?? null,
+      clubId: primary?.clubId ?? null,
+      memberships: memberships.map((m) => ({
+        clubId: m.clubId,
+        clubName: m.club?.clubName,
+        slug: m.club?.slug,
+        role: m.role,
+        canTakeAttendance: m.canTakeAttendance,
+        canEditEvents: m.canEditEvents,
+        permissions: {
+          canTakeAttendance: m.canTakeAttendance,
+          canEditEvents: m.canEditEvents,
+        },
+      })),
     };
     next();
   } catch {

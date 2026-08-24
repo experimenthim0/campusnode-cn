@@ -95,7 +95,9 @@ const ClubCard = ({ club }) => {
     ? club.facultyCoordinators.map((f) => (typeof f === "object" ? f.name : f)).join(", ")
     : club.facultyName || "Not Assigned";
 
-  const studentName = club.studentCoordinators && club.studentCoordinators.length > 0
+  const studentName = club.studentHeads && club.studentHeads.length > 0
+    ? club.studentHeads.join(", ")
+    : club.studentCoordinators && club.studentCoordinators.length > 0
     ? club.studentCoordinators.join(", ")
     : "Not Assigned";
 

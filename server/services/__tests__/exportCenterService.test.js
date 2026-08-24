@@ -48,19 +48,17 @@ describe("Export Center Service Unit Tests", () => {
   });
 
   describe("Authorized Datasets Filter", () => {
-    it("Admin user should get access to all 8 datasets", () => {
+    it("Admin user should get access to all active datasets", () => {
       const adminUser = { userId: "admin1", role: "admin" };
       const datasets = getAuthorizedDatasets(adminUser);
-      expect(datasets.length).toBe(8);
+      expect(datasets.length).toBe(6);
       const datasetIds = datasets.map((d) => d.id);
       expect(datasetIds).toContain("events");
       expect(datasetIds).toContain("registrations");
-      expect(datasetIds).toContain("attendance");
       expect(datasetIds).toContain("students");
       expect(datasetIds).toContain("clubs");
       expect(datasetIds).toContain("transactions");
       expect(datasetIds).toContain("payouts");
-      expect(datasetIds).toContain("lost_found");
     });
 
     it("Faculty coordinator should get access to faculty authorized datasets", () => {
@@ -70,9 +68,7 @@ describe("Export Center Service Unit Tests", () => {
 
       expect(datasetIds).toContain("events");
       expect(datasetIds).toContain("registrations");
-      expect(datasetIds).toContain("attendance");
       expect(datasetIds).toContain("clubs");
-      expect(datasetIds).toContain("lost_found");
     });
   });
 

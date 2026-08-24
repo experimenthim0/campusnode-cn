@@ -461,7 +461,7 @@ const ClubDetails = () => {
 
   useEffect(() => {
     fetchClubDetails();
-  }, [slug, authUser, authRole]);
+  }, [slug, authUser?.id, authRole]);
 
   useEffect(() => {
     if (club) {
@@ -816,6 +816,21 @@ const ClubDetails = () => {
               </span>
             )}
           </div>
+
+          {/* Mission Statement Banner */}
+          {club.mission && (
+            <div className="flex items-start gap-3.5 p-4 rounded-xl bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20 shadow-2xs">
+             
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 mb-0.5">
+                  Club Mission
+                </p>
+                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 leading-relaxed italic">
+                  "{club.mission}"
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Rich Description */}
           {(() => {

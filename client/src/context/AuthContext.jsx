@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as authService from '../services/authService';
+import { getMe } from '../services/userService';
 
 const AuthContext = createContext(null);
 
@@ -47,14 +48,52 @@ export const AuthProvider = ({ children }) => {
   // ── Internal helper to persist session data ───────────────────────────
   const persistSession = useCallback((userData, userRole, token) => {
     if (token) localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
+    const userStr = JSON.stringify(userData);
+    localStorage.setItem('user', userStr);
     localStorage.setItem('role', userRole);
     // Also set 'admin' key for backward compat with AdminNavbar/Sidebar
     if (['admin', 'paymentAdmin', 'lostFoundAdmin'].includes(userRole)) {
-      localStorage.setItem('admin', JSON.stringify(userData));
+      localStorage.setItem('admin', userStr);
     }
-    setUser(userData);
-    setRole(userRole);
+    setUser((prev) => (JSON.stringify(prev) === userStr ? prev : userData));
+    setRole((prev) => (prev === userRole ? prev : userRole));
+  }, []);
+
+  // ── Sync latest user details, role & memberships from server on mount ─
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    let isMounted = true;
+    getMe()
+      .then((res) => {
+        if (isMounted && res.data?.user) {
+          const userStr = JSON.stringify(res.data.user);
+          localStorage.setItem('user', userStr);
+          localStorage.setItem('role', res.data.role);
+          if (['admin', 'paymentAdmin', 'lostFoundAdmin'].includes(res.data.role)) {
+            localStorage.setItem('admin', userStr);
+          }
+          setUser((prev) => (JSON.stringify(prev) === userStr ? prev : res.data.user));
+          setRole((prev) => (prev === res.data.role ? prev : res.data.role));
+        }
+      })
+      .catch((err) => {
+        if (err.response?.status === 401) {
+          localStorage.removeItem('user');
+          localStorage.removeItem('admin');
+          localStorage.removeItem('role');
+          localStorage.removeItem('token');
+          if (isMounted) {
+            setUser(null);
+            setRole(null);
+          }
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // ── Login (student / club / member) ───────────────────────────────────

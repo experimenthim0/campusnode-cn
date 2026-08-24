@@ -137,6 +137,10 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.LOST_FOUND_VIEW,
     PERMISSIONS.LOST_FOUND_CREATE,
+    PERMISSIONS.EVENT_STAFF_MANAGE,
+    PERMISSIONS.AUDIT_VIEW,
+    PERMISSIONS.TEAM_CREATE,
+    PERMISSIONS.TEAM_MANAGE,
   ],
   club: [
     PERMISSIONS.EVENT_VIEW,
@@ -162,6 +166,10 @@ export const ROLE_PERMISSIONS_MAP = {
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.LOST_FOUND_VIEW,
     PERMISSIONS.LOST_FOUND_CREATE,
+    PERMISSIONS.EVENT_STAFF_MANAGE,
+    PERMISSIONS.AUDIT_VIEW,
+    PERMISSIONS.TEAM_CREATE,
+    PERMISSIONS.TEAM_MANAGE,
   ],
 
   CLUB_MEMBER: [
@@ -384,16 +392,37 @@ export function hasPermission(user, permission, resource = null) {
         return String(eventCentralOrganizerId) === String(user.userId);
       }
       if (user.role === "facultyCoordinator" || user.role === "club") {
-        if (!user.clubId || !targetClubId) return false;
-        return String(user.clubId) === String(targetClubId);
+        if (user.clubId && targetClubId && String(user.clubId) === String(targetClubId)) {
+          return true;
+        }
+        if (user.memberships && user.memberships.length > 0 && targetClubId) {
+          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
+          if (m) {
+            if (m.role === "CLUB_HEAD" || m.role === "COORDINATOR") return true;
+            if (permission === PERMISSIONS.EVENT_ATTENDANCE && (m.canTakeAttendance || m.permissions?.canTakeAttendance)) return true;
+            if (permission === PERMISSIONS.EVENT_UPDATE && (m.canEditEvents || m.permissions?.canEditEvents)) return true;
+          }
+        }
+        return false;
       }
-      if (user.role === "member" || user.role === "student") {
+      if (user.role === "member" || user.role === "student" || user.userType === "student") {
         if (resource && resource.membership) {
           if (permission === PERMISSIONS.EVENT_ATTENDANCE && resource.membership.canTakeAttendance) return true;
           if (permission === PERMISSIONS.EVENT_UPDATE && resource.membership.canEditEvents) return true;
           return false;
         }
-        return true;
+        if (user.memberships && user.memberships.length > 0 && targetClubId) {
+          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
+          if (m) {
+            if (m.role === "CLUB_HEAD" || m.role === "COORDINATOR") return true;
+            if (permission === PERMISSIONS.EVENT_ATTENDANCE && (m.canTakeAttendance || m.permissions?.canTakeAttendance)) return true;
+            if (permission === PERMISSIONS.EVENT_UPDATE && (m.canEditEvents || m.permissions?.canEditEvents)) return true;
+          }
+        }
+        if (resource && resource.createdById && String(resource.createdById) === String(user.userId)) {
+          return true;
+        }
+        return false;
       }
       return true;
 
@@ -407,10 +436,20 @@ export function hasPermission(user, permission, resource = null) {
     case PERMISSIONS.CLUB_UPDATE:
     case PERMISSIONS.CLUB_MANAGE_MEMBERS:
       if (user.role === "facultyCoordinator" || user.role === "club") {
-        if (!user.clubId || !targetClubId) return false;
-        return String(user.clubId) === String(targetClubId);
+        if (user.clubId && targetClubId && String(user.clubId) === String(targetClubId)) {
+          return true;
+        }
+        if (user.memberships && user.memberships.length > 0 && targetClubId) {
+          const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
+          return m?.role === "CLUB_HEAD" || m?.role === "COORDINATOR";
+        }
+        return false;
       }
-      return true;
+      if (user.memberships && user.memberships.length > 0 && targetClubId) {
+        const m = user.memberships.find(mem => String(mem.clubId) === String(targetClubId));
+        return m?.role === "CLUB_HEAD" || m?.role === "COORDINATOR";
+      }
+      return false;
 
     case PERMISSIONS.LOST_FOUND_UPDATE:
     case PERMISSIONS.LOST_FOUND_RESOLVE:

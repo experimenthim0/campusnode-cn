@@ -192,7 +192,7 @@ const SendNotification = () => {
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
-          <i className="ri-broadcast-line text-orange-600 text-base" />
+          <i className="ri-broadcast-line text-orange-600 text-base font-light" />
           <span>Push Notification</span>
         </button>
 
@@ -205,7 +205,7 @@ const SendNotification = () => {
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
-          <i className="ri-megaphone-line text-orange-600 text-base" />
+          <i className="ri-megaphone-line text-orange-600 text-base font-light" />
           <span>Club Announcements</span>
           {activeClubData?.announcements?.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] font-black bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 rounded-full">
@@ -337,7 +337,7 @@ const SendNotification = () => {
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    <i className="ri-send-plane-line" /> Send Notification
+                    <i className="ri-send-plane-line font-light" /> Send Notification
                   </span>
                 )}
               </button>
@@ -381,14 +381,14 @@ const SendNotification = () => {
                     </div>
                     <h3 className="text-sm font-bold text-black dark:text-white mb-1">{notif.title}</h3>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">{notif.message}</p>
-                    <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between flex-wrap gap-2">
+                    {/* <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between flex-wrap gap-2">
                       <span className="text-[10px] font-semibold text-neutral-400">
                         Read by {notif.readBy?.length || 0} student(s)
                       </span>
                       <span className="text-[10px] font-semibold text-neutral-400">
                         Sent to {notif.targetType === "ALL_STUDENTS" ? "All" : (notif.recipients?.length || 0)} student(s)
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 ))}
               </div>

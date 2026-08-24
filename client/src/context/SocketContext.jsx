@@ -22,6 +22,12 @@ export const SocketProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, role: userRole } = useAuth();
 
+  const userId = user?.id || user?._id || null;
+  const userRef = useRef(user);
+  userRef.current = user;
+  const userRoleRef = useRef(userRole);
+  userRoleRef.current = userRole;
+
   const { showRealtimeToast } = useNotification() || {};
   const mountTimeRef = useRef(new Date());
 
@@ -32,10 +38,12 @@ export const SocketProvider = ({ children }) => {
 
   // Sync notifications from backend API (Polling / Recovery)
   const syncNotifications = useCallback(async (isInitialSync = false) => {
-    if (!user) return;
-    const currentUserId = String(user._id || user.id);
+    const currentUser = userRef.current;
+    const currentRole = userRoleRef.current;
+    if (!currentUser) return;
+    const currentUserId = String(currentUser._id || currentUser.id);
 
-    if (!["member", "club", "facultyCoordinator", "admin", "student"].includes(userRole)) return;
+    if (!["member", "club", "facultyCoordinator", "admin", "student"].includes(currentRole)) return;
 
     try {
       const res = await getNotifications();
@@ -67,13 +75,12 @@ export const SocketProvider = ({ children }) => {
     } catch (err) {
       console.error("[SocketContext] Could not sync notifications:", err.message);
     }
-  }, [user, userRole, showRealtimeToast]);
+  }, [showRealtimeToast]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
-
-    // Try registering/syncing Web Push subscription if permission is granted
+    // Try registering/syncing Web Push subscription once per session
     registerPushSubscription().catch(() => {});
 
     // Initial sync
@@ -90,16 +97,7 @@ export const SocketProvider = ({ children }) => {
 
     const handleConnect = () => {
       console.log("[SocketContext] Socket connected:", newSocket.id);
-      // Join personal room using both string representations to ensure room match
-      const primaryId = String(user.id || user._id);
-      const altId = String(user._id || user.id);
-
-      newSocket.emit("join", primaryId);
-      if (altId !== primaryId) {
-        newSocket.emit("join", altId);
-      }
-
-      // Re-sync state after reconnect
+      newSocket.emit("join", String(userId));
       syncNotifications(false);
     };
 
@@ -126,35 +124,30 @@ export const SocketProvider = ({ children }) => {
     newSocket.on("new-notification", handleNewNotification);
 
     // ── Polling & Recovery Fallbacks ──────────────────────────────────────────
-    // 1. Periodic sync (every 45s)
+    // 1. Periodic sync (every 60s)
     const interval = setInterval(() => {
       syncNotifications(false);
-    }, 45000);
+    }, 60000);
 
     // 2. Window focus & visibilitychange sync
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        console.log("[SocketContext] Tab visible — triggering immediate notification sync.");
         syncNotifications(false);
       }
     };
 
-    const handleWindowFocus = () => {
-      syncNotifications(false);
-    };
-
-    window.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleVisibilityChange);
       newSocket.off("connect", handleConnect);
       newSocket.off("new-notification", handleNewNotification);
       newSocket.disconnect();
     };
-  }, [user, syncNotifications, showRealtimeToast]);
+  }, [userId, syncNotifications, showRealtimeToast]);
 
   const value = {
     socket,

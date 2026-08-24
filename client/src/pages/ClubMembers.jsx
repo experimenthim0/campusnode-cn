@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
-import { getClubMembers, addClubMember, updateClubMember, removeClubMember } from "../services/clubService";
+import {
+  getClubMembers,
+  addClubMember,
+  updateClubMember,
+  removeClubMember,
+  transferStudentLead,
+} from "../services/clubService";
+import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 import { ClubMemberRole } from "../types/index.js";
+import { invalidateCache } from "../lib/cacheManager";
 
 // ── Avatar ─────────────────────────────────────────────────────────────────────
 const Avatar = ({ name }) => {
@@ -23,9 +32,9 @@ const Avatar = ({ name }) => {
 // ── Role Badge ─────────────────────────────────────────────────────────────────
 const RoleBadge = ({ role }) => {
   const map = {
-    [ClubMemberRole.CLUB_HEAD]:   { style: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", label: "Student Lead" },
-    [ClubMemberRole.COORDINATOR]: { style: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400",       label: "Coordinator" },
-    [ClubMemberRole.MEMBER]:      { style: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", label: "Member" },
+    [ClubMemberRole.CLUB_HEAD]: { style: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", label: "Student Lead" },
+    [ClubMemberRole.COORDINATOR]: { style: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400", label: "Coordinator" },
+    [ClubMemberRole.MEMBER]: { style: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", label: "Member" },
   };
   const { style, label } = map[role] ?? map[ClubMemberRole.MEMBER];
   return (
@@ -41,9 +50,8 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
     type="button"
     onClick={disabled || loading ? null : onToggle}
     disabled={disabled || loading}
-    className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-      active ? "bg-neutral-800" : "bg-neutral-200"
-    } ${disabled || loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+    className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${active ? "bg-neutral-800" : "bg-neutral-200"
+      } ${disabled || loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
     title={loading ? "Updating permission..." : active ? "Permission granted" : "Permission revoked"}
   >
     {loading ? (
@@ -55,9 +63,8 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
       </span>
     ) : (
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
-          active ? "translate-x-[18px]" : "translate-x-[3px]"
-        }`}
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${active ? "translate-x-[18px]" : "translate-x-[3px]"
+          }`}
       />
     )}
   </button>
@@ -66,9 +73,8 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
 // ── Table Header Cell ──────────────────────────────────────────────────────────
 const Th = ({ children, center = false }) => (
   <th
-    className={`px-4 py-3 text-[11px] font-medium tracking-wide text-neutral-400 ${
-      center ? "text-center" : "text-left"
-    }`}
+    className={`px-4 py-3 text-[11px] font-medium tracking-wide text-neutral-400 ${center ? "text-center" : "text-left"
+      }`}
   >
     {children}
   </th>
@@ -111,12 +117,29 @@ const PeopleIcon = () => (
 // ── Main Component ─────────────────────────────────────────────────────────────
 const ClubMembers = () => {
   const { clubId } = useParams();
-  const [members, setMembers]       = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [inviting, setInviting]     = useState(false);
+  const { user: authUser } = useAuth();
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [inviting, setInviting] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState(ClubMemberRole.MEMBER);
-  const [updatingIds, setUpdatingIds]   = useState({});
+  const [updatingIds, setUpdatingIds] = useState({});
+
+  const isCurrentMemberSelf = (member) => {
+    if (!authUser || !member) return false;
+    const authId = authUser.id || authUser._id || authUser.userId;
+    const studentId = member.studentId || member.student?.id || member.student?._id;
+    if (authId && studentId && String(authId) === String(studentId)) return true;
+    const authEmail = (authUser.email || "").trim().toLowerCase();
+    const studentEmail = (member.student?.email || member.email || "").trim().toLowerCase();
+    if (authEmail && studentEmail && authEmail === studentEmail) return true;
+    return false;
+  };
+
+  // Transfer Leadership Modal State
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [selectedNewLeadId, setSelectedNewLeadId] = useState("");
+  const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -134,10 +157,22 @@ const ClubMembers = () => {
     }
   };
 
+  const activeStudentLead = members.find((m) => m.role === ClubMemberRole.CLUB_HEAD && !m.isClubAccount);
+  const coordinatorCount = members.filter((m) => m.role === ClubMemberRole.COORDINATOR && !m.isClubAccount).length;
+  const isCoordinatorLimitReached = coordinatorCount >= 5;
+
   const handleInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail.endsWith("@nitj.ac.in")) {
       toast.error("Only @nitj.ac.in emails allowed");
+      return;
+    }
+    if (selectedRole === ClubMemberRole.COORDINATOR && isCoordinatorLimitReached) {
+      toast.error("Maximum limit of 5 active coordinators reached for this club.");
+      return;
+    }
+    if (selectedRole === ClubMemberRole.CLUB_HEAD && activeStudentLead) {
+      toast.error("This club already has an active Student Lead. Use 'Transfer Leadership' to transfer the role.");
       return;
     }
     const toastId = toast.loading("Adding member...");
@@ -149,6 +184,7 @@ const ClubMembers = () => {
       });
       toast.success("Member added successfully", { id: toastId });
       setInviteEmail("");
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add member", { id: toastId });
@@ -157,11 +193,39 @@ const ClubMembers = () => {
     }
   };
 
+  const handleTransferLeadership = async (e) => {
+    e?.preventDefault();
+    if (!selectedNewLeadId) {
+      toast.error("Please select a member to transfer Student Lead role to.");
+      return;
+    }
+    const targetMember = members.find((m) => (m.id || m._id) === selectedNewLeadId);
+    const toastId = toast.loading(`Transferring leadership to ${targetMember?.student?.name || "selected member"}...`);
+    try {
+      setTransferring(true);
+      const res = await transferStudentLead(clubId, { targetMembershipId: selectedNewLeadId });
+      toast.success(res.data?.message || "Leadership successfully transferred!", { id: toastId });
+      setIsTransferModalOpen(false);
+      setSelectedNewLeadId("");
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      fetchMembers(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to transfer leadership", { id: toastId });
+    } finally {
+      setTransferring(false);
+    }
+  };
+
   const togglePermission = async (membershipId, field, currentValue) => {
     if (updatingIds[membershipId]) return;
 
     const member = members.find((m) => (m.id || m._id) === membershipId);
     if (!member) return;
+
+    if (isCurrentMemberSelf(member)) {
+      toast.error("You cannot modify your own permissions.");
+      return;
+    }
 
     const fieldLabel = field === "canEditEvents" ? "Events" : "Attendance";
     const newPermValue = !currentValue;
@@ -173,7 +237,7 @@ const ClubMembers = () => {
     const previousMembers = [...members];
     const permissions = {
       canTakeAttendance: field === "canTakeAttendance" ? newPermValue : member.canTakeAttendance,
-      canEditEvents:     field === "canEditEvents"     ? newPermValue : member.canEditEvents,
+      canEditEvents: field === "canEditEvents" ? newPermValue : member.canEditEvents,
     };
 
     // Optimistic UI update
@@ -189,6 +253,7 @@ const ClubMembers = () => {
         res.data.message || `'${fieldLabel}' permission ${newPermValue ? "granted to" : "revoked from"} ${member.student?.name || "member"}!`,
         { id: toastId }
       );
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);
@@ -208,8 +273,25 @@ const ClubMembers = () => {
     const member = members.find((m) => (m.id || m._id) === membershipId);
     if (!member) return;
 
+    if (isCurrentMemberSelf(member)) {
+      toast.error("You cannot change your own role. Use 'Transfer Leadership' to assign a new Student Lead.");
+      return;
+    }
+
+    // If attempting to promote to Student Lead when one exists, prompt transfer modal
+    if (newRole === ClubMemberRole.CLUB_HEAD && activeStudentLead && (activeStudentLead.id || activeStudentLead._id) !== membershipId) {
+      setSelectedNewLeadId(membershipId);
+      setIsTransferModalOpen(true);
+      return;
+    }
+
+    if (newRole === ClubMemberRole.COORDINATOR && member.role !== ClubMemberRole.COORDINATOR && isCoordinatorLimitReached) {
+      toast.error("Maximum limit of 5 active coordinators reached for this club.");
+      return;
+    }
+
     const roleLabels = {
-      [ClubMemberRole.CLUB_HEAD]: "Club Head",
+      [ClubMemberRole.CLUB_HEAD]: "Student Lead (Head)",
       [ClubMemberRole.COORDINATOR]: "Coordinator",
       [ClubMemberRole.MEMBER]: "Member",
     };
@@ -236,6 +318,7 @@ const ClubMembers = () => {
         res.data.message || `Role updated to ${targetRoleLabel} for ${member.student?.name || "member"}!`,
         { id: toastId }
       );
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);
@@ -255,6 +338,11 @@ const ClubMembers = () => {
     const member = members.find((m) => (m.id || m._id) === membershipId);
     if (!member) return;
 
+    if (isCurrentMemberSelf(member)) {
+      toast.error("You cannot remove yourself from the club.");
+      return;
+    }
+
     if (!window.confirm(`Remove ${member.student?.name || "this member"} from the club?`)) return;
 
     const toastId = toast.loading(`Removing ${member.student?.name || "member"}...`);
@@ -266,6 +354,7 @@ const ClubMembers = () => {
     try {
       await removeClubMember(membershipId);
       toast.success(`Member ${member.student?.name || ""} removed successfully`, { id: toastId });
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);
@@ -292,11 +381,67 @@ const ClubMembers = () => {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Team Management</h1>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Manage club members, leadership designations, and event editing permissions.
-        </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Team Management</h1>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            Manage club members, leadership designations, and event editing permissions.
+          </p>
+        </div>
+        {activeStudentLead && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedNewLeadId("");
+              setIsTransferModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all cursor-pointer"
+          >
+            <i className="ri-swap-line text-sm" /> Transfer Leadership
+          </button>
+        )}
+      </div>
+
+      {/* Role Quota Indicators */}
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Student Lead</p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-sm font-bold text-neutral-900 dark:text-white truncate">
+              {activeStudentLead?.student?.name || "Not assigned"}
+            </span>
+            <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+              {activeStudentLead ? "1 / 1" : "0 / 1"}
+            </span>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Coordinators</p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {coordinatorCount} Active
+            </span>
+            <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${isCoordinatorLimitReached
+              ? "bg-red-500/10 text-red-600 dark:text-red-400"
+              : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+              }`}>
+              {coordinatorCount} / 5
+            </span>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Total Team</p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {members.filter((m) => !m.isClubAccount).length} Members
+            </span>
+            <span className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-[10px] font-bold text-neutral-600 dark:text-neutral-400">
+              Active
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* ── Invite section ──────────────────────────────────────────────────── */}
@@ -319,7 +464,12 @@ const ClubMembers = () => {
             className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-orange-500 focus:outline-none cursor-pointer"
           >
             <option value={ClubMemberRole.MEMBER}>Member</option>
-            <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
+            <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
+              Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
+            </option>
+            <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
+              Student Lead (Head) {activeStudentLead ? "(Assigned - use Transfer)" : ""}
+            </option>
           </select>
           <button
             type="submit"
@@ -330,6 +480,71 @@ const ClubMembers = () => {
           </button>
         </form>
       </div>
+
+      {/* ── Transfer Leadership Modal ───────────────────────────────────────── */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+                <i className="ri-swap-box-line text-xl" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Transfer Student Lead Role</h3>
+                <p className="text-xs text-neutral-500">Atomic transition of club leadership</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed">
+              Transferring leadership will atomically assign <strong>Student Lead</strong> to the selected student and demote the current lead to <strong>Coordinator</strong>.
+            </p>
+
+            <form onSubmit={handleTransferLeadership} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  Select New Student Lead:
+                </label>
+                <select
+                  value={selectedNewLeadId}
+                  onChange={(e) => setSelectedNewLeadId(e.target.value)}
+                  required
+                  className="w-full h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm text-neutral-900 dark:text-white focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="">-- Choose member --</option>
+                  {members
+                    .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
+                    .map((m) => {
+                      const id = m.id || m._id;
+                      return (
+                        <option key={id} value={id}>
+                          {m.student?.name} ({m.student?.email}) — [{m.role}]
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTransferModalOpen(false)}
+                  disabled={transferring}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={transferring || !selectedNewLeadId}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-xs transition-colors disabled:opacity-50"
+                >
+                  {transferring ? "Transferring…" : "Confirm Transfer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Members table ────────────────────────────────────────────────────── */}
       <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
@@ -357,13 +572,13 @@ const ClubMembers = () => {
                   const id = member._id || member.id;
                   const updatingType = updatingIds[id];
                   const isUpdating = Boolean(updatingType);
+                  const isSelf = isCurrentMemberSelf(member);
 
                   return (
                     <tr
                       key={id}
-                      className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${
-                        isUpdating ? "bg-orange-50/30 dark:bg-orange-950/20" : ""
-                      } ${member.isClubAccount ? "bg-orange-500/5 dark:bg-orange-500/10" : ""}`}
+                      className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${isUpdating ? "bg-orange-50/30 dark:bg-orange-950/20" : ""
+                        } ${member.isClubAccount ? "bg-orange-500/5 dark:bg-orange-500/10" : ""}`}
                     >
                       {/* Member info */}
                       <td className="px-5 py-3.5">
@@ -374,6 +589,11 @@ const ClubMembers = () => {
                               <p className="text-sm font-bold text-neutral-900 dark:text-white">
                                 {member.student?.name}
                               </p>
+                              {isSelf && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-1.5 py-0.5 text-[10px] font-bold">
+                                  You
+                                </span>
+                              )}
                               {member.isClubAccount && (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 text-[10px] font-bold">
                                   Primary Owner
@@ -398,21 +618,24 @@ const ClubMembers = () => {
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60 text-xs font-bold whitespace-nowrap shadow-2xs">
                             <i className="ri-shield-star-fill text-orange-500 text-xs" /> Official Club Account
                           </span>
+                        ) : isSelf ? (
+                          <div title="You cannot change your own role. Use 'Transfer Leadership' to assign a new lead.">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold whitespace-nowrap">
+                              {member.role === ClubMemberRole.CLUB_HEAD ? "Student Lead (Head)" : member.role === ClubMemberRole.COORDINATOR ? "Coordinator" : "Member"}
+                            </span>
+                          </div>
                         ) : (
                           <div className="flex items-center gap-2">
                             <select
                               value={member.role}
                               onChange={(e) => changeRole(id, e.target.value)}
                               disabled={isUpdating}
-                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-orange-500 focus:outline-none ${
-                                isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
-                              }`}
+                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-orange-500 focus:outline-none ${isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                                }`}
                             >
-                              {member.role === ClubMemberRole.CLUB_HEAD && (
-                                <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
-                              )}
-                              <option value={ClubMemberRole.MEMBER}>Member</option>
+                              <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
                               <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
+                              <option value={ClubMemberRole.MEMBER}>Member</option>
                             </select>
                             {updatingType === "role" && (
                               <svg
@@ -430,10 +653,10 @@ const ClubMembers = () => {
 
                       {/* Permissions */}
                       <td className="px-4 py-3.5 text-center">
-                        {member.isClubAccount ? (
-                          <div title="Fixed permissions for official club account">
+                        {member.isClubAccount || isSelf ? (
+                          <div title={isSelf ? "You cannot modify your own permissions" : "Fixed permissions for official club account"}>
                             <PermissionToggle
-                              active={true}
+                              active={member.canTakeAttendance}
                               disabled={true}
                               loading={false}
                               onToggle={null}
@@ -451,10 +674,10 @@ const ClubMembers = () => {
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        {member.isClubAccount ? (
-                          <div title="Fixed permissions for official club account">
+                        {member.isClubAccount || isSelf ? (
+                          <div title={isSelf ? "You cannot modify your own permissions" : "Fixed permissions for official club account"}>
                             <PermissionToggle
-                              active={true}
+                              active={member.canEditEvents}
                               disabled={true}
                               loading={false}
                               onToggle={null}
@@ -474,10 +697,10 @@ const ClubMembers = () => {
 
                       {/* Remove */}
                       <td className="px-5 py-3.5 text-right">
-                        {member.isClubAccount ? (
+                        {member.isClubAccount || isSelf ? (
                           <span
                             className="inline-flex items-center justify-center rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
-                            title="Official Club Account is permanent and cannot be removed"
+                            title={isSelf ? "You cannot remove yourself from the club" : "Official Club Account is permanent and cannot be removed"}
                           >
                             <i className="ri-lock-2-line text-sm" />
                           </span>
@@ -486,11 +709,10 @@ const ClubMembers = () => {
                             type="button"
                             onClick={() => removeMember(id)}
                             disabled={isUpdating}
-                            className={`inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${
-                              isUpdating
-                                ? "text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
-                                : "text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
-                            }`}
+                            className={`inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${isUpdating
+                              ? "text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
+                              : "text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                              }`}
                             title="Remove member"
                           >
                             {updatingType === "remove" ? (

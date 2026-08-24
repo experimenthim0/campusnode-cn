@@ -188,11 +188,11 @@ const Notifications = () => {
                 title={isSubscribed ? "Click to unsubscribe from Push Notifications" : "Click to enable Push Notifications"}
               >
                 {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-orange-500" />
+                  <i className="ri-loader-4-line animate-spin text-orange-500 font-light" />
                 ) : isSubscribed ? (
-                  <i className="ri-notification-3-fill text-emerald-500" />
+                  <i className="ri-notification-3-fill text-emerald-500 font-light" />
                 ) : (
-                  <i className="ri-notification-3-line text-neutral-400" />
+                  <i className="ri-notification-3-line text-neutral-400 font-light" />
                 )}
                 <span>{enablingPush ? "Updating..." : isSubscribed ? "Push Enabled" : "Enable Push"}</span>
               </button>
@@ -204,9 +204,9 @@ const Notifications = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shrink-0"
                 >
                   {loading ? (
-                    <i className="ri-loader-4-line animate-spin text-sm" />
+                    <i className="ri-loader-4-line animate-spin text-sm font-light" />
                   ) : (
-                    <i className="ri-check-double-line text-sm" />
+                    <i className="ri-check-double-line text-sm font-light" />
                   )}
                   Mark all read
                 </button>
@@ -352,7 +352,7 @@ const Notifications = () => {
                               to={notif.url || `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`}
                               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-semibold transition-colors shadow-sm"
                             >
-                              <i className="ri-wallet-3-line text-xs" />
+                              <i className="ri-wallet-3-line text-xs font-light" />
                               {notif.title?.includes("Approved") ? "View Ticket in My Events" : "Update Payment Info"}
                             </Link>
                             {notif.eventId && (

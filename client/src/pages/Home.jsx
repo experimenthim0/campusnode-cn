@@ -533,7 +533,7 @@ const Home = () => {
     greetingSubtext = 'Manage your events, coordinate payouts, and issue certificates.';
     quickActions = [
       { to: '/create', label: 'Create Event', icon: Plus },
-      { to: '/my-events', label: 'My Events', icon: Calendar },
+      { to: user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events', label: 'Club Events', icon: Calendar },
       { to: `/club/${user?.clubId || user?.id || 'my-club'}/team`, label: 'Members', icon: Users },
       { to: '/profile', label: 'Club Profile', icon: User, primary: true },
     ];
@@ -742,7 +742,7 @@ const Home = () => {
                             Organize campus fests, hackathons, and technical talks. Use the check-in scanner to verify QR code tickets and record live attendance.
                           </p>
                         </div>
-                        <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
+                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
                           Manage Club Events <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>

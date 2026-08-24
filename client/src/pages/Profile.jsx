@@ -108,20 +108,6 @@ const Profile = () => {
     if (authUser) {
       setUser(authUser);
       setRole(authRole);
-
-      // Fetch fresh profile from /api/users/me
-      getMe()
-        .then(res => {
-          if (res.data?.user) {
-            setUser(res.data.user);
-            if (res.data.role) setRole(res.data.role);
-            setSession(res.data.user, res.data.role || authRole);
-          }
-        })
-        .catch(err => {
-          console.debug("Could not refresh user profile in Profile.jsx:", err?.message);
-        });
-
       fetchClubInfo();
 
       // Fetch events/winnings for student user
@@ -134,7 +120,7 @@ const Profile = () => {
             participations.forEach(p => {
               const ev = p.eventId || p.event;
               if (ev && ev.showWinner && ev.winners) {
-                const match = ev.winners.find(w => 
+                const match = ev.winners.find(w =>
                   (w.rollNo && w.rollNo.trim() === authUser.rollNo?.trim()) ||
                   (w.name && w.name.toLowerCase().includes(authUser.name?.toLowerCase() || ''))
                 );
@@ -157,7 +143,7 @@ const Profile = () => {
       }
     }
     setLoading(false);
-  }, [authUser, authRole, fetchClubInfo, setSession]);
+  }, [authUser?.id, authUser?.rollNo, authRole, fetchClubInfo]);
 
   // Handle hash scrolling (e.g. #announcements)
   useEffect(() => {
@@ -182,14 +168,36 @@ const Profile = () => {
   const isClubAccount = !isStudentAccount && role === 'club';
 
   // Statistics calculations for Club Profile
-  const totalMembersCount = clubMembers.length;
+  const totalMembersCount = clubMembers.filter(m => !m.isClubAccount).length;
   const totalEventsCount = clubEvents.length;
   const totalRegistrationsCount = clubEvents.reduce((sum, ev) => sum + (Number(ev.registeredCount) || 0), 0);
 
-  // Leadership groupings
+  // Helper to identify if a member record is the official club account itself
+  const isClubSelf = (m) => {
+    if (m.isClubAccount) return true;
+    const studentEmail = (m.student?.email || m.email || '').trim().toLowerCase();
+    const clubEmail = (clubData?.clubEmail || user?.email || '').trim().toLowerCase();
+    if (studentEmail && clubEmail && studentEmail === clubEmail) return true;
+    if (clubData?.slug && studentEmail.startsWith(clubData.slug.toLowerCase())) return true;
+    const studentName = (m.student?.name || m.name || '').trim().toLowerCase();
+    const clubName = (clubData?.clubName || user?.name || '').trim().toLowerCase();
+    if (studentName && clubName && studentName === clubName) return true;
+    if (!m.student?.rollNo && !m.rollNo) return true;
+    return false;
+  };
+
+  // Leadership groupings (Student Leads, Coordinators, Faculty Coordinator only - strictly no generic members or club itself)
   const facultyCoordinator = clubData?.facultyCoordinator || (clubData?.facultyName ? { name: clubData.facultyName, email: clubData.facultyEmail } : null);
-  const clubHeads = clubMembers.filter(m => m.role === 'CLUB_HEAD');
-  const clubCoordinators = clubMembers.filter(m => m.role === 'COORDINATOR');
+  const studentLeads = clubMembers.filter(m => {
+    if (isClubSelf(m)) return false;
+    const r = (m.role || '').toUpperCase();
+    return r === 'CLUB_HEAD' || r === 'STUDENT_LEAD' || (m.role || '').toLowerCase() === 'clubhead';
+  });
+  const clubCoordinators = clubMembers.filter(m => {
+    if (isClubSelf(m)) return false;
+    const r = (m.role || '').toUpperCase();
+    return r === 'COORDINATOR' || (m.role || '').toLowerCase() === 'coordinator';
+  });
 
   // Social Links helper
   const getSocialLink = (platformQuery) => {
@@ -227,11 +235,11 @@ const Profile = () => {
       ========================================================================= */}
       {isClubAccount ? (
         <div className="space-y-6 md:space-y-8">
-          
+
           {/* 1. CLUB IDENTITY — TOP CARD */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-7 shadow-xs">
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-              
+
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left flex-1 min-w-0">
                 {/* Club Logo */}
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center shrink-0 shadow-xs">
@@ -255,9 +263,9 @@ const Profile = () => {
                   {/* Badges */}
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 my-2">
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
-                       Club Account
+                      Club Account
                     </span>
-                    
+
                     {(clubData?.category || user.category) && (
                       <span className="px-2.5 py-0.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full">
                         {clubData?.category || user.category}
@@ -268,7 +276,7 @@ const Profile = () => {
                   {/* Details */}
                   <p className="text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1">
                     <span className="inline-flex items-center gap-1.5">
-                      
+
                       {clubData?.clubEmail || user.email}
                     </span>
                     {(clubData?.slug || user.clubId) && (
@@ -306,7 +314,7 @@ const Profile = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {/* Card 1: Club Members */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-              
+
               <div className="min-w-0">
                 <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
                   {totalMembersCount}
@@ -319,7 +327,7 @@ const Profile = () => {
 
             {/* Card 2: Total Events */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-              
+
               <div className="min-w-0">
                 <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
                   {totalEventsCount}
@@ -332,7 +340,7 @@ const Profile = () => {
 
             {/* Card 3: Total Registrations */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-              
+
               <div className="min-w-0">
                 <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
                   {totalRegistrationsCount}
@@ -468,14 +476,14 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* Club Heads */}
-              {clubHeads.map((head, idx) => (
+              {/* Student Leads */}
+              {studentLeads.map((head, idx) => (
                 <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
-                    Club Head
+                    Student Lead
                   </span>
                   <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
-                    {head.student?.name || head.name || 'Team Member'}
+                    {head.student?.name || head.name || 'Student Lead'}
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
                     {head.student?.email || head.email || '—'}
@@ -490,7 +498,7 @@ const Profile = () => {
                     Coordinator
                   </span>
                   <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
-                    {coord.student?.name || coord.name || 'Team Member'}
+                    {coord.student?.name || coord.name || 'Coordinator'}
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
                     {coord.student?.email || coord.email || '—'}
@@ -498,9 +506,9 @@ const Profile = () => {
                 </div>
               ))}
 
-              {!facultyCoordinator && clubHeads.length === 0 && clubCoordinators.length === 0 && (
+              {!facultyCoordinator && studentLeads.length === 0 && clubCoordinators.length === 0 && (
                 <div className="col-span-full text-center py-4 text-xs text-neutral-500 dark:text-neutral-400">
-                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId || user.id}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Heads and Coordinators.
+                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId || user.id}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
                 </div>
               )}
             </div>
@@ -521,11 +529,10 @@ const Profile = () => {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-bold text-neutral-900 dark:text-white">Two-Factor Authentication</p>
-                    <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full ${
-                      user.isTwoStepEnabled 
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' 
+                    <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full ${user.isTwoStepEnabled
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                         : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-                    }`}>
+                      }`}>
                       {user.isTwoStepEnabled ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
@@ -799,11 +806,10 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 border ${
-                      event.reviewStatus === 'PUBLISHED'
+                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 border ${event.reviewStatus === 'PUBLISHED'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
                         : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
-                    }`}>
+                      }`}>
                       {event.reviewStatus || 'ACTIVE'}
                     </span>
                   </div>
@@ -845,18 +851,27 @@ const Profile = () => {
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-4">
-                    <Link 
-                      to="/profile/edit" 
+                    <Link
+                      to="/profile/edit"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full transition-all font-semibold text-xs shadow-xs cursor-pointer border-0"
                     >
                       <i className="ri-edit-line text-sm" /> Edit Profile
                     </Link>
-                    <Link 
-                      to="/my-events" 
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
-                    >
-                      <i className="ri-calendar-event-line text-sm" /> View My Events
-                    </Link>
+                    {!user?.rollNo && (role === 'club' || authRole === 'club') ? (
+                      <Link
+                        to={`/club-events/${user.clubId || user.id || user._id || ''}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
+                      >
+                        <i className="ri-calendar-event-line text-sm" /> View Club Events
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/my-events"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
+                      >
+                        <i className="ri-calendar-event-line text-sm" /> View My Events
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -928,6 +943,104 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* Club Management & Leadership Hub for Student Leads & Coordinators */}
+          {user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR") && (
+            <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border-2 border-orange-500/20 dark:border-orange-500/30 rounded-2xl shadow-sm relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                    <i className="ri-shield-star-line text-xl" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                      Club Leadership & Management Hub
+                    </h2>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      You hold executive and management permissions for the following campus clubs.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {user.memberships
+                  .filter(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")
+                  .map((m, idx) => {
+                    const isHead = m.role === "CLUB_HEAD";
+                    const resolvedLogo =
+                      m.clubLogo ||
+                      m.club?.clubLogo ||
+                      clubsMap[m.clubId] ||
+                      clubsMap[m.slug] ||
+                      (m.clubName && clubsMap[m.clubName.toLowerCase()]);
+
+                    return (
+                      <div
+                        key={m.clubId || idx}
+                        className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30 flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-all"
+                      >
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="w-14 h-14 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden bg-white dark:bg-neutral-800 flex items-center justify-center shrink-0 shadow-2xs">
+                            <ClubLogoImage clubLogo={resolvedLogo} clubName={m.clubName} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <h3 className="text-base font-bold text-neutral-900 dark:text-white truncate">
+                                {m.clubName || "Club Management"}
+                              </h3>
+                              <span className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-full border ${isHead
+                                  ? "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800"
+                                  : "bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-400 border-orange-300 dark:border-orange-800"
+                                }`}>
+                                {isHead ? "★ Student Lead (Club Head)" : "Coordinator"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                              {isHead
+                                ? "Full executive access: Manage club events, registrations, attendance, certificates & team delegation."
+                                : "Operational access: Manage assigned events, check-ins & attendee lists."}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Direct Action Hub */}
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <Link
+                            to={`/club-events/${m.clubId}`}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                          >
+                            <i className="ri-dashboard-line text-sm" /> Club Dashboard
+                          </Link>
+                          {isHead && (
+                            <Link
+                              to={`/club/${m.clubId}/team`}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold transition-all shadow-2xs"
+                            >
+                              <i className="ri-team-line text-sm text-neutral-500" /> Manage Team
+                            </Link>
+                          )}
+                          {isHead && (
+                            <Link
+                              to={`/club/edit/${m.clubId}`}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold transition-all shadow-2xs"
+                            >
+                              <i className="ri-settings-4-line text-sm text-neutral-500" /> Settings
+                            </Link>
+                          )}
+                          <Link
+                            to={`/club/${m.slug || m.clubId}`}
+                            className="inline-flex items-center gap-1 px-3 py-2 text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 text-xs font-medium transition-colors"
+                          >
+                            Public Page <i className="ri-external-link-line text-xs" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           {/* Enrolled Clubs Section */}
           <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
             <h2 className="text-lg font-bold text-neutral-900 dark:text-white tracking-wider mb-6 flex items-center gap-2">
@@ -940,15 +1053,15 @@ const Profile = () => {
                     m.role === "CLUB_HEAD"
                       ? "Club Head"
                       : m.role === "COORDINATOR"
-                      ? "Coordinator"
-                      : "Member";
+                        ? "Coordinator"
+                        : "Member";
 
                   const badgeStyle =
                     m.role === "CLUB_HEAD"
                       ? "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 font-bold"
                       : m.role === "COORDINATOR"
-                      ? "border-orange-300 bg-orange-50 text-orange-800 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800 font-bold"
-                      : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 font-medium";
+                        ? "border-orange-300 bg-orange-50 text-orange-800 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800 font-bold"
+                        : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 font-medium";
 
                   const resolvedLogo =
                     m.clubLogo ||
@@ -986,8 +1099,8 @@ const Profile = () => {
                 <i className="ri-building-4-line text-3xl text-neutral-400 mb-2 inline-block" />
                 <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Not enrolled in any clubs yet</p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 mb-4">Discover campus clubs, join events, and get involved!</p>
-                <Link 
-                  to="/clubs" 
+                <Link
+                  to="/clubs"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg transition-all shadow-xs"
                 >
                   <i className="ri-compass-3-line text-sm" /> Explore Clubs
