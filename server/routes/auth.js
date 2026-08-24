@@ -176,9 +176,9 @@ router.post("/register/student", async (req, res) => {
       }
     }
 
-    const { role, clubId } = await getStudentRoleAndClub(newUser.id);
+    const { role, clubId, memberships } = await getStudentRoleAndClub(newUser.id);
     const token = generateToken(newUser, role, "student", clubId);
-    const userObj = { ...sanitizeUser(newUser), clubId };
+    const userObj = { ...sanitizeUser(newUser), clubId, memberships };
 
     res.cookie("token", token, getCookieOptions());
 
@@ -227,11 +227,11 @@ router.post("/login/student", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const { role, clubId } = await getStudentRoleAndClub(student.id);
+    const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
 
     // 2FA disabled (isTwoStepEnabled removed from schema)
     const token = generateToken(student, role, "student", clubId);
-    const userObj = { ...sanitizeUser(student), clubId };
+    const userObj = { ...sanitizeUser(student), clubId, memberships };
 
     res.cookie("token", token, getCookieOptions());
 
@@ -396,9 +396,9 @@ router.post("/verify-2fa", async (req, res) => {
         data: { otp: null, otpExpire: null },
       });
 
-      const { role, clubId } = await getStudentRoleAndClub(student.id);
+      const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
       const token = generateToken(student, role, "student", clubId);
-      const userObj = { ...sanitizeUser(student), clubId };
+      const userObj = { ...sanitizeUser(student), clubId, memberships };
 
       res.cookie("token", token, getCookieOptions());
 

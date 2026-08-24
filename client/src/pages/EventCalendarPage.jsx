@@ -225,10 +225,12 @@ const EventCalendarPage = ({ readOnly = false }) => {
   };
 
   const handleRejectEvent = async (eventItem) => {
+    const reason = prompt(`Enter rejection reason for "${eventItem.title}":`);
+    if (reason === null) return; // Cancelled
     try {
       await reviewEvent(eventItem.id || eventItem._id, {
         status: "REJECTED",
-        comment: "Rejected from Event Calendar"
+        comment: reason.trim() || "Proposal rejected by faculty coordinator."
       });
       showNotification(`Event "${eventItem.title}" rejected.`, "info");
       setDrawerOpen(false);

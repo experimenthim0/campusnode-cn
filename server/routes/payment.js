@@ -249,22 +249,30 @@ router.get(
 router.get(
   "/event/:eventId/stats",
   verifyToken,
-  requirePermission(PERMISSIONS.PAYMENT_VIEW),
   async (req, res) => {
     try {
       const event = await prisma.event.findUnique({ where: { id: req.params.eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      // Permission check
+      // Permission check: admin / faculty coordinator / club management / authorized member
       if (req.user.role !== "admin") {
+        if (req.user.role === "facultyCoordinator" && req.user.clubId !== event.clubId) {
+          return res.status(403).json({ message: "Access denied." });
+        }
+
         const membership = await prisma.clubMembership.findFirst({
           where: {
             clubId: event.clubId,
             studentId: req.user.userId,
-            OR: [{ role: "CLUB_HEAD" }, { role: "COORDINATOR" }, { canEditEvents: true }],
+            OR: [
+              { role: "CLUB_HEAD" },
+              { role: "COORDINATOR" },
+              { canEditEvents: true },
+              // { canTakeAttendance: true },
+            ],
           },
         });
-        if (!membership && req.user.clubId !== event.clubId) {
+        if (!membership && req.user.clubId !== event.clubId && req.user.role !== "facultyCoordinator") {
           return res.status(403).json({
             message: "Access denied. You can only view stats for your own club's events.",
           });

@@ -60,15 +60,20 @@ const EventRegistrations = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [regRes, statsRes, eventRes] = await Promise.all([
+                const [regRes, eventRes] = await Promise.all([
                     getEventRegistrations(id),
-                    getPaymentStats(id),
                     getEventById(id),
                 ]);
                 const data = regRes.data;
                 setRegistrations(data.participations || (Array.isArray(data) ? data : []));
-                setStats(statsRes.data);
                 setEventData(eventRes.data);
+
+                try {
+                    const statsRes = await getPaymentStats(id);
+                    if (statsRes?.data) setStats(statsRes.data);
+                } catch (statsErr) {
+                    console.warn("Payment stats unavailable or restricted:", statsErr?.message);
+                }
                 setLoading(false);
             } catch (err) {
                 console.error('Fetch error:', err);

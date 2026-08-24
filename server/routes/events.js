@@ -1138,7 +1138,12 @@ router.get(
           where: {
             clubId: event.clubId,
             studentId: userId,
-            OR: [{ canTakeAttendance: true }, { canEditEvents: true }],
+            OR: [
+              { role: "CLUB_HEAD" },
+              { role: "COORDINATOR" },
+              { canTakeAttendance: true },
+              { canEditEvents: true },
+            ],
           },
         });
         if (!membership) {
@@ -1653,4 +1658,41 @@ router.post(
   }
 );
 
+// PATCH /api/events/:id/feature - Toggle featured status for event (Club Admin/Event Manager)
+router.patch("/:id/feature", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // If club event, unset any other featured event in this club if enabling
+    const newFeaturedState = !event.isFeatured;
+    if (newFeaturedState && event.clubId) {
+      await prisma.event.updateMany({
+        where: { clubId: event.clubId, isFeatured: true },
+        data: { isFeatured: false },
+      });
+    }
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: { isFeatured: newFeaturedState },
+      include: {
+        club: { select: { id: true, clubName: true, clubLogo: true, slug: true } },
+      },
+    });
+
+    invalidatePublicResponses("events");
+    invalidatePublicResponses("clubs");
+
+    res.json({
+      message: `Event ${newFeaturedState ? "featured" : "unfeatured"} successfully`,
+      event: serializeEvent(updated),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 export default router;
+

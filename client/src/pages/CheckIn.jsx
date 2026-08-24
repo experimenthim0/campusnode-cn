@@ -62,8 +62,9 @@ const CheckIn = () => {
       setEvent(eventData);
       setAttendedCount(eventData.attendedCount ?? 0);
 
-      const memberships = storedUser?.memberships || [];
-      const membership = memberships.find(m => m.clubId === eventData.clubId);
+      const memberships = storedUser?.memberships || storedUser?.clubMemberships || [];
+      const targetClubId = String(eventData.clubId?._id || eventData.clubId || eventData.club?.id || eventData.club?._id || '');
+      const membership = memberships.find(m => String(m.clubId?._id || m.clubId) === targetClubId);
       
       const isClubHead = membership?.role === 'CLUB_HEAD' || storedRole === 'club' || storedUser?.role === 'club';
       const isCoordinator = membership?.role === 'COORDINATOR';
@@ -71,12 +72,31 @@ const CheckIn = () => {
         membership?.canTakeAttendance === true || 
         membership?.permissions?.canTakeAttendance === true;
 
-      const canTakeAttendance = 
+      let canTakeAttendance = 
         isClubHead || 
         isCoordinator || 
         hasAttendancePermission || 
         storedRole === 'admin' || 
         storedRole === 'facultyCoordinator';
+
+      if (!canTakeAttendance && targetClubId) {
+        try {
+          const membersRes = await api.get(`/api/club-members/${targetClubId}/members`);
+          const membersList = Array.isArray(membersRes.data) ? membersRes.data : (membersRes.data?.members || []);
+          const userId = String(storedUser?.id || storedUser?._id);
+          const freshMem = membersList.find(m => String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId);
+          if (freshMem) {
+            const isFreshHead = freshMem.role === 'CLUB_HEAD';
+            const isFreshCoord = freshMem.role === 'COORDINATOR';
+            const freshCanScan = Boolean(freshMem.canTakeAttendance ?? freshMem.permissions?.canTakeAttendance);
+            if (isFreshHead || isFreshCoord || freshCanScan) {
+              canTakeAttendance = true;
+            }
+          }
+        } catch (e) {
+          // ignore error and proceed to check
+        }
+      }
 
       if (!canTakeAttendance) {
         showNotification('Access Denied', 'error');

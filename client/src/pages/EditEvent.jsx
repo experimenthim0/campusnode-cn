@@ -61,6 +61,7 @@ const EditEvent = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
+    const [reviewInfo, setReviewInfo] = useState(null);
 
     useEffect(() => {
         const fetchOpenVenues = async () => {
@@ -148,6 +149,11 @@ const EditEvent = () => {
                     setMedia(event.media || []);
                     setSponsorErrors((event.sponsors || []).map(() => ({})));
                     setMediaErrors((event.media || []).map(() => ({})));
+                    setReviewInfo({
+                        reviewStatus: event.reviewStatus,
+                        reviewComment: event.reviewComment,
+                        reviewedBy: event.reviewedBy,
+                    });
                 } else {
                     showNotification('Event not found', 'error');
                     navigate('/profile');
@@ -626,6 +632,34 @@ const EditEvent = () => {
                     <h1 className="text-3xl md:text-5xl font-black text-black tracking-wide">Edit Event</h1>
                     <p className="text-neutral-500 mt-2 font-medium">Refine your event details and registration requirements step-by-step.</p>
                 </div>
+
+                {/* Rejection / Review Feedback Notice Banner */}
+                {reviewInfo?.reviewStatus === 'REJECTED' && (
+                    <div className="mb-6 bg-rose-50 border-2 border-rose-200 rounded-xl p-5 shadow-xs flex items-start gap-4">
+                        <div className="p-2.5 bg-rose-100 rounded-lg text-rose-600 shrink-0">
+                            <i className="ri-error-warning-fill text-2xl" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <span className="text-xs font-black uppercase tracking-widest text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
+                                    Proposal Needs Revision
+                                </span>
+                                {reviewInfo.reviewedBy?.name && (
+                                    <span className="text-[11px] font-bold text-rose-600">
+                                        Reviewed by: {reviewInfo.reviewedBy.name}
+                                    </span>
+                                )}
+                            </div>
+                            <h4 className="text-sm font-bold text-rose-900 mt-1">Reviewer Feedback:</h4>
+                            <p className="text-sm font-semibold text-rose-700 mt-1 bg-white/70 p-3 rounded-lg border border-rose-200">
+                                {reviewInfo.reviewComment || "No specific feedback comment provided. Please check timings, fees, and requirements before resubmitting."}
+                            </p>
+                            <p className="text-xs text-rose-600 mt-2">
+                                Please make the necessary modifications in the form below and save your changes.
+                            </p>
+                        </div>
+                    </div>
+                )}
                 
                 {/* Stepper Component */}
                 <EventFormStepper currentStep={currentStep} onStepClick={handleStepClick} />

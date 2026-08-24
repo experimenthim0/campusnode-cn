@@ -145,7 +145,7 @@ const ClubCard = ({ club }) => {
 
         {/* Description */}
         <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-4 leading-relaxed">
-          {club.description ||
+          {(club.description ? club.description.replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ").trim() : "") ||
             "The official student group dedicated to community, innovation, and campus spirit."}
         </p>
 

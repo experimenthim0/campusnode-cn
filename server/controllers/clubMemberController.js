@@ -21,7 +21,7 @@ async function canManageClubMembers(req, clubId) {
   if (!hasPermission(req.user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId, id: clubId })) {
     return false;
   }
-  if (req.user.role === "admin") return true;
+  if (req.user.role === "admin" || req.user.role === "club") return true;
   if (req.user.role === "facultyCoordinator") {
     return String(req.user.clubId) === String(clubId);
   }
@@ -30,7 +30,7 @@ async function canManageClubMembers(req, clubId) {
   const membership = await prisma.clubMembership.findUnique({
     where: { clubId_studentId: { clubId, studentId: req.user.userId } },
   });
-  return membership?.role === "CLUB_HEAD" || req.user.role === "club";
+  return membership?.role === "CLUB_HEAD" || membership?.role === "COORDINATOR";
 }
 
 /**
@@ -112,6 +112,11 @@ export const getClubMembers = async (req, res) => {
   try {
     const { clubId } = req.params;
 
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { id: true, clubName: true, clubEmail: true, slug: true }
+    });
+
     const members = await prisma.clubMembership.findMany({
       where: { clubId },
       include: {
@@ -135,7 +140,20 @@ export const getClubMembers = async (req, res) => {
       },
     });
 
-    res.json(members.map(m => ({ ...m, _id: m.id })));
+    const normalizedMembers = members.map(m => {
+      const isClubAccount = Boolean(
+        (club?.clubEmail && m.student?.email && club.clubEmail.trim().toLowerCase() === m.student.email.trim().toLowerCase()) ||
+        (m.student?.email && club?.slug && m.student.email.toLowerCase().startsWith(club.slug.toLowerCase()))
+      );
+      return {
+        ...m,
+        _id: m.id,
+        isClubAccount,
+        clubName: club?.clubName
+      };
+    });
+
+    res.json(normalizedMembers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -148,6 +166,29 @@ export const updateMemberPermissions = async (req, res) => {
   try {
     const { membershipId } = req.params;
     const { role, permissions } = req.body;
+
+    // Check if membership exists first
+    const existing = await prisma.clubMembership.findUnique({
+      where: { id: membershipId },
+      include: {
+        club: { select: { clubEmail: true, slug: true } },
+        student: { select: { email: true } }
+      }
+    });
+    if (!existing) return res.status(404).json({ message: "Membership record not found. Try refreshing the member list." });
+
+    if (!(await canManageClubMembers(req, existing.clubId))) {
+      return res.status(403).json({ message: "Unauthorized to update members in this club." });
+    }
+
+    // Protect official club account from modification
+    const isOfficialClubAccount = Boolean(
+      (existing.club?.clubEmail && existing.student?.email && existing.club.clubEmail.trim().toLowerCase() === existing.student.email.trim().toLowerCase()) ||
+      (existing.student?.email && existing.club?.slug && existing.student.email.toLowerCase().startsWith(existing.club.slug.toLowerCase()))
+    );
+    if (isOfficialClubAccount) {
+      return res.status(400).json({ message: "Cannot modify the permissions or role of the primary official club account." });
+    }
 
     const updateData = {};
     if (role) {
@@ -174,13 +215,6 @@ export const updateMemberPermissions = async (req, res) => {
       return res.status(400).json({ message: "No updates provided." });
     }
 
-    // Check if membership exists first to avoid Prisma error P2025
-    const existing = await prisma.clubMembership.findUnique({ where: { id: membershipId } });
-    if (!existing) return res.status(404).json({ message: "Membership record not found. Try refreshing the member list." });
-    if (!(await canManageClubMembers(req, existing.clubId))) {
-      return res.status(403).json({ message: "Unauthorized to update members in this club." });
-    }
-
     const membership = await prisma.clubMembership.update({
       where: { id: membershipId },
       data: updateData,
@@ -204,20 +238,25 @@ export const removeClubMember = async (req, res) => {
     const { membershipId } = req.params;
 
     // Check if membership exists
-    const membership = await prisma.clubMembership.findUnique({ where: { id: membershipId } });
+    const membership = await prisma.clubMembership.findUnique({
+      where: { id: membershipId },
+      include: {
+        club: { select: { clubEmail: true, slug: true } },
+        student: { select: { email: true } }
+      }
+    });
     if (!membership) return res.status(404).json({ message: "Membership not found." });
     if (!(await canManageClubMembers(req, membership.clubId))) {
       return res.status(403).json({ message: "Unauthorized to remove members from this club." });
     }
 
-    // Protect clubHead role? Usually handled by deletion logic
-    if (membership.role === "CLUB_HEAD") {
-        const otherHeads = await prisma.clubMembership.count({
-            where: { clubId: membership.clubId, role: "CLUB_HEAD" }
-        });
-        if (otherHeads <= 1) {
-            return res.status(400).json({ message: "Cannot remove the only Club Head. Transfer leadership first." });
-        }
+    // Protect official club account from deletion
+    const isOfficialClubAccount = Boolean(
+      (membership.club?.clubEmail && membership.student?.email && membership.club.clubEmail.trim().toLowerCase() === membership.student.email.trim().toLowerCase()) ||
+      (membership.student?.email && membership.club?.slug && membership.student.email.toLowerCase().startsWith(membership.club.slug.toLowerCase()))
+    );
+    if (isOfficialClubAccount) {
+      return res.status(400).json({ message: "Cannot remove the official club account from the club." });
     }
 
     await prisma.clubMembership.delete({ where: { id: membershipId } });

@@ -40,7 +40,7 @@ const HomeFooter = () => {
           {/* Brand column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="nitjlogo.png" alt="" className="w-11 h-12"/>
+              <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12"/>
               <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
                 Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
               </span>

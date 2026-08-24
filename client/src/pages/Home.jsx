@@ -1138,12 +1138,12 @@ const Home = () => {
                   <div className="flex gap-4 items-center justify-center lg:justify-end">
                     <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-100 dark:bg-neutral-800 overflow-hidden translate-y-8 shadow-sm">
                       <div className="w-full h-full flex items-center justify-center text-neutral-300">
-                        <img src="mainbuilding.jpeg" alt="NITJ Main Building" className="w-full h-full object-cover"/>
+                        <img src="/mainbuilding.jpeg" alt="NITJ Main Building" className="w-full h-full object-cover"/>
                       </div>
                     </div>
                     <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-200 dark:bg-neutral-800 overflow-hidden -translate-y-4 shadow-sm">
                       <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                        <img src="itbuilding.jpeg" alt="NITJ IT Building" className="w-full h-full object-cover"/>
+                        <img src="/itbuilding.jpeg" alt="NITJ IT Building" className="w-full h-full object-cover"/>
                       </div>
                     </div>
                   </div>
@@ -1264,10 +1264,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Celebration Winner Modal ── */}
+      {/* ── Celebration Winner Modal with Confetti ── */}
       {celebrationEvent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-lg px-4 py-6 overflow-y-auto ticket-backdrop-animate">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative flex flex-col p-6 text-center shadow-2xl ticket-card-animate">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-lg px-4 py-6 overflow-hidden ticket-backdrop-animate">
+          {/* Confetti Animation Background Overlay */}
+          <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+            <img
+              src="/Confetti.svg"
+              alt="Confetti Celebration"
+              className="w-full h-full object-cover opacity-90 select-none animate-pulse-slow scale-105"
+            />
+          </div>
+
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate">
             <div className="relative shrink-0">
               <img src="/Trophy.svg" alt="Trophy" className="w-28 h-28 sm:w-36 sm:h-36 mx-auto animate-bounce-slow" />
               <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />

@@ -55,14 +55,19 @@ const ClubEvents = () => {
 
       getClubMembers(clubId)
         .then(res => {
-          const members = res.data.members || [];
-          const myMembership = members.find(m => m.studentId?._id === authUser.id || m.studentId === authUser.id);
+          const members = Array.isArray(res.data) ? res.data : (res.data?.members || []);
+          const userId = String(authUser.id || authUser._id);
+          const myMembership = members.find(m =>
+            String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId
+          );
           if (myMembership) {
             setClubName(myMembership.clubName || "");
             const r = myMembership.role;
-            setCanEdit(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD);
-            setCanScan(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD || r === ClubMemberRole.EVENT_LEAD || r === ClubMemberRole.VOLUNTEER);
-            setCanCheckReg(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD || r === ClubMemberRole.EVENT_LEAD);
+            const isHead = r === ClubMemberRole.CLUB_HEAD;
+            const isCoordinator = r === ClubMemberRole.COORDINATOR;
+            setCanEdit(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
+            setCanScan(isHead || isCoordinator || Boolean(myMembership.canTakeAttendance ?? myMembership.permissions?.canTakeAttendance));
+            setCanCheckReg(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
           }
         })
         .catch(() => {});

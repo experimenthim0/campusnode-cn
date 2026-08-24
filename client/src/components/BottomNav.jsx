@@ -235,7 +235,7 @@ const BottomNav = () => {
                 </Link>
               )}
 
-              {(user?.accessLevel === "central_organizer" || role === "central_organizer" || role === "admin" || role === "facultyCoordinator" || role === "club") && (
+              {(user?.accessLevel === "central_organizer" || role === "central_organizer") && (
                 <Link
                   to="/central-organizer"
                   onClick={() => setDrawerOpen(false)}

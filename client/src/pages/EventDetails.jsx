@@ -840,6 +840,41 @@ const EventDetails = () => {
 
       {/* ── Main Two-Column Layout ── */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-8">
+        {/* Rejection Feedback Banner */}
+        {event.reviewStatus === 'REJECTED' && (
+          <div className="mb-6 bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900 rounded-xl p-5 shadow-xs flex items-start gap-4">
+            <div className="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-lg text-rose-600 dark:text-rose-400 shrink-0">
+              <i className="ri-error-warning-fill text-2xl" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <span className="text-xs font-black uppercase tracking-widest text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2.5 py-0.5 rounded-full">
+                  Event Proposal Rejected
+                </span>
+                {event.reviewedBy?.name && (
+                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                    Reviewed by: {event.reviewedBy.name}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-1">
+                <span className="font-bold">Feedback: </span>
+                {event.reviewComment || "No specific feedback comment provided. Please contact the faculty coordinator."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Pending Review Banner */}
+        {event.reviewStatus === 'PENDING' && (
+          <div className="mb-6 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-xl p-4 shadow-xs flex items-center gap-3">
+            <i className="ri-time-line text-amber-600 dark:text-amber-400 text-xl" />
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+              This event proposal is currently <span className="underline">PENDING REVIEW</span> by the faculty coordinator and is not yet public.
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8 items-start">
 
           {/* ═══════════════ LEFT COLUMN: Context & Narrative (65%) ═══════════════ */}
@@ -1374,7 +1409,7 @@ const EventDetails = () => {
                       <div className="flex flex-wrap gap-2">
                         {event.club.socialLinks.map((link, i) => {
                           const platform = link.platform?.toLowerCase() || "website";
-                          const iconProps = { className: "w-4 h-4" };
+                          const iconProps = { className: "w-5 h-5" };
 
                           const getIcon = () => {
                             if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={28} />;

@@ -23,9 +23,9 @@ const Avatar = ({ name }) => {
 // ── Role Badge ─────────────────────────────────────────────────────────────────
 const RoleBadge = ({ role }) => {
   const map = {
-    [ClubMemberRole.CLUB_HEAD]:   { style: "bg-amber-50 text-amber-600",      label: "Head" },
-    [ClubMemberRole.COORDINATOR]: { style: "bg-sky-50 text-sky-600",          label: "Coordinator" },
-    [ClubMemberRole.MEMBER]:      { style: "bg-neutral-100 text-neutral-500", label: "Member" },
+    [ClubMemberRole.CLUB_HEAD]:   { style: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", label: "Student Lead" },
+    [ClubMemberRole.COORDINATOR]: { style: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400",       label: "Coordinator" },
+    [ClubMemberRole.MEMBER]:      { style: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", label: "Member" },
   };
   const { style, label } = map[role] ?? map[ClubMemberRole.MEMBER];
   return (
@@ -163,7 +163,7 @@ const ClubMembers = () => {
     const member = members.find((m) => (m.id || m._id) === membershipId);
     if (!member) return;
 
-    const fieldLabel = field === "canEditEvents" ? "Edit Events" : "Take Attendance";
+    const fieldLabel = field === "canEditEvents" ? "Events" : "Attendance";
     const newPermValue = !currentValue;
     const actionLabel = newPermValue ? "Granting" : "Revoking";
     const toastId = toast.loading(`${actionLabel} '${fieldLabel}' permission for ${member.student?.name || "member"}...`);
@@ -293,62 +293,61 @@ const ClubMembers = () => {
     <div className="mx-auto max-w-5xl px-4 py-10">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-xl font-medium text-neutral-900">Team management</h1>
-        <p className="mt-1 text-sm text-neutral-400">
-          Manage club members and their access permissions.
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Team Management</h1>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          Manage club members, leadership designations, and event editing permissions.
         </p>
       </div>
 
       {/* ── Invite section ──────────────────────────────────────────────────── */}
-      <div className="mb-6 rounded-xl border border-neutral-100 bg-white p-5 shadow-sm">
-        <p className="mb-4 text-xs font-medium tracking-wide text-neutral-400">
-          Invite member
+      <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs">
+        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+          Add New Team Member
         </p>
         <form onSubmit={handleInvite} className="flex flex-wrap items-center gap-3">
           <input
             type="email"
-            placeholder="name@nitj.ac.in"
+            placeholder="student@nitj.ac.in"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
             required
-            className="h-9 min-w-[200px] flex-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none"
+            className="h-10 min-w-[220px] flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-orange-500 focus:outline-none transition-colors"
           />
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="h-9 rounded-lg border border-neutral-200 bg-neutral-50 px-3 text-sm text-neutral-700 focus:border-neutral-400 focus:outline-none"
+            className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-orange-500 focus:outline-none cursor-pointer"
           >
             <option value={ClubMemberRole.MEMBER}>Member</option>
             <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
-            <option value={ClubMemberRole.CLUB_HEAD}>Club Head</option>
           </select>
           <button
             type="submit"
             disabled={inviting}
-            className="h-9 rounded-lg bg-neutral-900 px-5 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-40"
+            className="h-10 rounded-xl bg-orange-600 hover:bg-orange-700 px-5 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
           >
-            {inviting ? "Adding…" : "Add member"}
+            {inviting ? "Adding…" : "Add Member"}
           </button>
         </form>
       </div>
 
       {/* ── Members table ────────────────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-xl border border-neutral-100 bg-white ">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
         {members.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
             <PeopleIcon />
-            <p className="text-sm text-neutral-400">No team members added yet.</p>
+            <p className="text-sm font-medium text-neutral-400">No team members added yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-neutral-100">
+                <tr className="border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
                   <Th>Member</Th>
                   <Th>Role</Th>
                   <Th center>Attendance</Th>
-                  <Th center>Edit events</Th>
-                  <th className="px-5 py-3 text-right text-[11px] font-medium tracking-wide text-neutral-400">
+                  <Th center>Events</Th>
+                  <th className="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-neutral-400">
                     Actions
                   </th>
                 </tr>
@@ -363,8 +362,8 @@ const ClubMembers = () => {
                     <tr
                       key={id}
                       className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${
-                        isUpdating ? "bg-amber-50/30" : ""
-                      }`}
+                        isUpdating ? "bg-orange-50/30 dark:bg-orange-950/20" : ""
+                      } ${member.isClubAccount ? "bg-orange-500/5 dark:bg-orange-500/10" : ""}`}
                     >
                       {/* Member info */}
                       <td className="px-5 py-3.5">
@@ -372,11 +371,16 @@ const ClubMembers = () => {
                           <Avatar name={member.student?.name} />
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium text-neutral-800">
+                              <p className="text-sm font-bold text-neutral-900 dark:text-white">
                                 {member.student?.name}
                               </p>
+                              {member.isClubAccount && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 text-[10px] font-bold">
+                                  Primary Owner
+                                </span>
+                              )}
                               {isUpdating && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700 animate-pulse">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-950/60 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400 animate-pulse">
                                   Updating…
                                 </span>
                               )}
@@ -390,78 +394,115 @@ const ClubMembers = () => {
 
                       {/* Role */}
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={member.role}
-                            onChange={(e) => changeRole(id, e.target.value)}
-                            disabled={member.role === ClubMemberRole.CLUB_HEAD || isUpdating}
-                            className={`h-8 rounded-lg border border-neutral-100 bg-neutral-50 px-2 text-[11px] font-medium text-neutral-700 focus:border-neutral-400 focus:outline-none ${
-                              member.role === ClubMemberRole.CLUB_HEAD || isUpdating
-                                ? "cursor-not-allowed opacity-70"
-                                : "cursor-pointer"
-                            }`}
-                          >
-                            <option value={ClubMemberRole.MEMBER}>Member</option>
-                            <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
-                            <option value={ClubMemberRole.CLUB_HEAD}>Club Head</option>
-                          </select>
-                          {updatingType === "role" && (
-                            <svg
-                              className="h-3.5 w-3.5 animate-spin text-orange-600 shrink-0"
-                              viewBox="0 0 24 24"
-                              fill="none"
+                        {member.isClubAccount ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60 text-xs font-bold whitespace-nowrap shadow-2xs">
+                            <i className="ri-shield-star-fill text-orange-500 text-xs" /> Official Club Account
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={member.role}
+                              onChange={(e) => changeRole(id, e.target.value)}
+                              disabled={isUpdating}
+                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-orange-500 focus:outline-none ${
+                                isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                              }`}
                             >
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                          )}
-                        </div>
+                              {member.role === ClubMemberRole.CLUB_HEAD && (
+                                <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
+                              )}
+                              <option value={ClubMemberRole.MEMBER}>Member</option>
+                              <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
+                            </select>
+                            {updatingType === "role" && (
+                              <svg
+                                className="h-3.5 w-3.5 animate-spin text-orange-600 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                            )}
+                          </div>
+                        )}
                       </td>
 
                       {/* Permissions */}
                       <td className="px-4 py-3.5 text-center">
-                        <PermissionToggle
-                          active={member.canTakeAttendance}
-                          disabled={member.role === ClubMemberRole.CLUB_HEAD || isUpdating}
-                          loading={updatingType === "canTakeAttendance"}
-                          onToggle={() =>
-                            togglePermission(id, "canTakeAttendance", member.canTakeAttendance)
-                          }
-                        />
+                        {member.isClubAccount ? (
+                          <div title="Fixed permissions for official club account">
+                            <PermissionToggle
+                              active={true}
+                              disabled={true}
+                              loading={false}
+                              onToggle={null}
+                            />
+                          </div>
+                        ) : (
+                          <PermissionToggle
+                            active={member.canTakeAttendance}
+                            disabled={isUpdating}
+                            loading={updatingType === "canTakeAttendance"}
+                            onToggle={() =>
+                              togglePermission(id, "canTakeAttendance", member.canTakeAttendance)
+                            }
+                          />
+                        )}
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <PermissionToggle
-                          active={member.canEditEvents}
-                          disabled={member.role === ClubMemberRole.CLUB_HEAD || isUpdating}
-                          loading={updatingType === "canEditEvents"}
-                          onToggle={() =>
-                            togglePermission(id, "canEditEvents", member.canEditEvents)
-                          }
-                        />
+                        {member.isClubAccount ? (
+                          <div title="Fixed permissions for official club account">
+                            <PermissionToggle
+                              active={true}
+                              disabled={true}
+                              loading={false}
+                              onToggle={null}
+                            />
+                          </div>
+                        ) : (
+                          <PermissionToggle
+                            active={member.canEditEvents}
+                            disabled={isUpdating}
+                            loading={updatingType === "canEditEvents"}
+                            onToggle={() =>
+                              togglePermission(id, "canEditEvents", member.canEditEvents)
+                            }
+                          />
+                        )}
                       </td>
 
                       {/* Remove */}
                       <td className="px-5 py-3.5 text-right">
-                        <button
-                          type="button"
-                          onClick={() => removeMember(id)}
-                          disabled={member.role === ClubMemberRole.CLUB_HEAD || isUpdating}
-                          className={`inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${
-                            member.role === ClubMemberRole.CLUB_HEAD || isUpdating
-                              ? "text-neutral-200 cursor-not-allowed"
-                              : "text-neutral-300 hover:bg-red-50 hover:text-red-400 cursor-pointer"
-                          }`}
-                          title="Remove member"
-                        >
-                          {updatingType === "remove" ? (
-                            <svg className="h-4 w-4 animate-spin text-red-500" viewBox="0 0 24 24" fill="none">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                          ) : (
-                            <TrashIcon />
-                          )}
-                        </button>
+                        {member.isClubAccount ? (
+                          <span
+                            className="inline-flex items-center justify-center rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
+                            title="Official Club Account is permanent and cannot be removed"
+                          >
+                            <i className="ri-lock-2-line text-sm" />
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => removeMember(id)}
+                            disabled={isUpdating}
+                            className={`inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${
+                              isUpdating
+                                ? "text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
+                                : "text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                            }`}
+                            title="Remove member"
+                          >
+                            {updatingType === "remove" ? (
+                              <svg className="h-4 w-4 animate-spin text-red-500" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                            ) : (
+                              <TrashIcon />
+                            )}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

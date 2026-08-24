@@ -44,3 +44,38 @@ export const removeClubMember = (arg1, arg2) => {
 // ── Leaderboard ────────────────────────────────────────────────────────────
 export const getClubLeaderboard = () =>
   api.get('/api/clubs/leaderboard');
+
+// ── Announcements ──────────────────────────────────────────────────────────
+export const createClubAnnouncement = (clubId, data) =>
+  api.post(`/api/clubs/${clubId}/announcements`, data);
+
+export const updateClubAnnouncement = (clubId, announcementId, data) =>
+  api.put(`/api/clubs/${clubId}/announcements/${announcementId}`, data);
+
+export const deleteClubAnnouncement = (clubId, announcementId) =>
+  api.delete(`/api/clubs/${clubId}/announcements/${announcementId}`);
+
+export const togglePinClubAnnouncement = (clubId, announcementId) =>
+  api.patch(`/api/clubs/${clubId}/announcements/${announcementId}/pin`);
+
+// ── Achievements ───────────────────────────────────────────────────────────
+export const createClubAchievement = (clubId, data) =>
+  api.post(`/api/clubs/${clubId}/achievements`, data);
+
+export const updateClubAchievement = (clubId, achievementId, data) =>
+  api.put(`/api/clubs/${clubId}/achievements/${achievementId}`, data);
+
+export const deleteClubAchievement = (clubId, achievementId) =>
+  api.delete(`/api/clubs/${clubId}/achievements/${achievementId}`);
+
+// ── Gallery ────────────────────────────────────────────────────────────────
+export const addClubGalleryMedia = (clubId, data) =>
+  api.post(`/api/clubs/${clubId}/gallery`, data);
+
+export const deleteClubGalleryMedia = (clubId, mediaId) =>
+  api.delete(`/api/clubs/${clubId}/gallery/${mediaId}`);
+
+// ── Events ─────────────────────────────────────────────────────────────────
+export const toggleEventFeatured = (eventId) =>
+  api.patch(`/api/events/${eventId}/feature`);
+

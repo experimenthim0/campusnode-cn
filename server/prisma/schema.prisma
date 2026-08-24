@@ -95,6 +95,9 @@ model Club {
   ifscCode             String?
   upiId                String?
   studentCoordinators  String[]         @default([]) @map("studentcoordinators")
+  motto                String?
+  mission              String?
+  establishedYear      String?
   facultyCoordinator   AdminRole?       @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
   memberships          ClubMembership[]
   socialLinks          ClubSocialLink[]
@@ -102,6 +105,8 @@ model Club {
   media                Media[]
   sponsors             Sponsor[]
   participatingEvents  EventClub[]
+  announcements        ClubAnnouncement[]
+  achievements         ClubAchievement[]
 }
 
 model ClubSocialLink {
@@ -170,6 +175,7 @@ model Event {
   postRegistrationMessage String?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @default(now()) @updatedAt
+  isFeatured           Boolean         @default(false)
   registrationType     String          @default("individual")
   minTeamSize          Int             @default(1)
   maxTeamSize          Int             @default(1)
@@ -222,7 +228,6 @@ model AttendanceRecord {
   verificationMode  String        // "ONLINE" | "OFFLINE"
   syncedAt          DateTime?
   localAttendanceId String?       @unique // Client-generated UUID for idempotency
-  gate              String?
   createdAt         DateTime      @default(now())
 
   event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -290,13 +295,15 @@ model Sponsor {
 }
 
 model Media {
-  id      String    @id @db.VarChar(24)
-  url     String
-  type    MediaType @default(IMAGE)
-  clubId  String?   @db.VarChar(24)
-  eventId String?   @db.VarChar(24)
-  club    Club?     @relation(fields: [clubId], references: [id])
-  event      Event?  @relation(fields: [eventId], references: [id])
+  id         String    @id @db.VarChar(24)
+  url        String
+  type       MediaType @default(IMAGE)
+  caption    String?
+  albumTitle String?   @default("General")
+  clubId     String?   @db.VarChar(24)
+  eventId    String?   @db.VarChar(24)
+  club       Club?     @relation(fields: [clubId], references: [id])
+  event      Event?    @relation(fields: [eventId], references: [id])
 
   @@index([clubId])
   @@index([eventId])
@@ -593,4 +600,38 @@ model AuditLog {
   @@index([eventId, createdAt])
   @@index([action, createdAt])
 }
+
+model ClubAnnouncement {
+  id          String   @id @db.VarChar(24)
+  clubId      String   @db.VarChar(24)
+  title       String
+  content     String
+  isPinned    Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  authorName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, isPublished])
+  @@index([clubId, isPinned])
+}
+
+model ClubAchievement {
+  id          String   @id @db.VarChar(24)
+  clubId      String   @db.VarChar(24)
+  title       String
+  description String?
+  date        String?
+  imageUrl    String?
+  externalUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, createdAt])
+}
+
 

@@ -41,10 +41,10 @@ const VerifyEmail = () => {
                     {status === 'success' && (
                         <div className="flex flex-col items-center">
                            
-                              <img src="./Success popup.svg" alt=""  className='h-40 w-40'/>
+                              <img src="/Success popup.svg" alt=""  className='h-40 w-40'/>
                             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Verified!</h2>
                             <p className="mt-2 text-sm text-gray-600">{message}</p>
-                            <p className="mt-2 text-sm text-gray-600">Ab pta lga ki aap NITJian ho</p>
+                           
                             <div className="mt-6">
                                 <Link
                                     to="/login"
@@ -58,7 +58,7 @@ const VerifyEmail = () => {
 
                     {status === 'error' && (
                         <div className="flex flex-col items-center">
-                            <XCircle className="h-16 w-16 text-red-500" />
+                            <XCircle className="h-16 w-16 text-orange-500" />
                             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Verification Failed</h2>
                             <p className="mt-2 text-sm text-gray-600">{message}</p>
                             <div className="mt-6">

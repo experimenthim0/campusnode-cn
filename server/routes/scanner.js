@@ -548,7 +548,6 @@ const checkInSchema = z.object({
     eventId: z.string().min(1),
     qrPayload: z.string().min(1),
     scannerSessionId: z.string().optional(),
-    gate: z.string().optional(),
   }),
   params: z.any().optional(),
   query: z.any().optional(),
@@ -556,7 +555,7 @@ const checkInSchema = z.object({
 
 router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async (req, res) => {
   try {
-    const { eventId, qrPayload, scannerSessionId, gate } = req.body;
+    const { eventId, qrPayload, scannerSessionId } = req.body;
     const { userId } = req.user;
 
     // Verify event exists & check authorization
@@ -654,7 +653,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
           scannerSessionId: scannerSessionId || null,
           scannedAt: new Date(),
           verificationMode: "ONLINE",
-          gate: gate || null,
         },
       }),
       prisma.participation.update({
@@ -670,7 +668,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       targetId: participation.id,
       eventId,
       source: "ONLINE",
-      metadata: { gate: gate || null, participantName: participation.student?.name || participation.externalName },
+      metadata: { participantName: participation.student?.name || participation.externalName },
     });
 
     return res.json({
@@ -708,7 +706,6 @@ const syncSchema = z.object({
         localAttendanceId: z.string().min(1),
         participationId: z.string().min(1),
         scannedAt: z.string().min(1),
-        gate: z.string().optional(),
       }),
     ),
   }),
@@ -815,7 +812,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
               verificationMode: "OFFLINE",
               syncedAt: new Date(),
               localAttendanceId: record.localAttendanceId,
-              gate: record.gate || null,
             },
           }),
           prisma.participation.update({

@@ -256,13 +256,18 @@ const MyEvents = () => {
         if (authUser.clubId) {
           api.get(`/api/club-members/${authUser.clubId}/members`)
             .then(res => {
-              const members = res.data.members || [];
-              const myMembership = members.find(m => m.studentId?._id === authUser.id || m.studentId === authUser.id);
+              const members = Array.isArray(res.data) ? res.data : (res.data?.members || []);
+              const userId = String(authUser.id || authUser._id);
+              const myMembership = members.find(m =>
+                String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId
+              );
               if (myMembership) {
                 const r = myMembership.role;
-                setCanEdit(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD);
-                setCanScan(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD || r === ClubMemberRole.EVENT_LEAD || r === ClubMemberRole.VOLUNTEER);
-                setCanCheckReg(r === ClubMemberRole.CLUB_LEAD || r === ClubMemberRole.VICE_LEAD || r === ClubMemberRole.MANAGEMENT_LEAD || r === ClubMemberRole.EVENT_LEAD);
+                const isHead = r === ClubMemberRole.CLUB_HEAD;
+                const isCoordinator = r === ClubMemberRole.COORDINATOR;
+                setCanEdit(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
+                setCanScan(isHead || isCoordinator || Boolean(myMembership.canTakeAttendance ?? myMembership.permissions?.canTakeAttendance));
+                setCanCheckReg(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
               } else {
                 setCanEdit(true); setCanScan(true); setCanCheckReg(true);
               }
@@ -271,19 +276,20 @@ const MyEvents = () => {
         }
       } else {
         fetchRegistrations(authUser.id || authUser._id);
-        const memberships = authUser.clubMemberships || [];
+        const memberships = authUser.memberships || authUser.clubMemberships || [];
         setUserMemberships(memberships);
         const canManageAny = memberships.some(m =>
-          m.role === ClubMemberRole.CLUB_LEAD ||
-          m.role === ClubMemberRole.VICE_LEAD ||
-          m.role === ClubMemberRole.MANAGEMENT_LEAD ||
-          m.role === ClubMemberRole.EVENT_LEAD ||
-          m.role === ClubMemberRole.VOLUNTEER
+          m.role === ClubMemberRole.CLUB_HEAD ||
+          m.role === ClubMemberRole.COORDINATOR ||
+          m.canTakeAttendance ||
+          m.canEditEvents ||
+          m.permissions?.canTakeAttendance ||
+          m.permissions?.canEditEvents
         );
         if (canManageAny) {
           const clubIds = memberships.map(m => m.clubId?._id || m.clubId).filter(Boolean);
           if (clubIds.length > 0) {
-            fetchCreatedEvents(clubIds[0]);
+            clubIds.forEach(id => fetchCreatedEvents(id));
           }
         }
       }
@@ -898,7 +904,7 @@ const MyEvents = () => {
 
                 const eventIdStr = String(event.id || event._id);
                 const eventClubId = event.clubId || (event.club && (event.club.id || event.club._id)) || user?.clubId;
-                const membership = userMemberships.find(m => String(m.clubId) === String(eventClubId));
+                const membership = userMemberships.find(m => String(m.clubId?._id || m.clubId) === String(eventClubId));
 
                 const currentCanEdit = membership ? Boolean(membership.canEditEvents ?? membership.permissions?.canEditEvents) : canEdit;
                 const currentCanScan = membership ? Boolean(membership.canTakeAttendance ?? membership.permissions?.canTakeAttendance) : canScan;

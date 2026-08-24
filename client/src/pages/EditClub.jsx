@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { getClubBySlugOrId, getClubs, updateClub } from "../services/clubService";
 import { useNotification } from "../context/NotificationContext";
 import { Link } from "react-router-dom";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import ShimmerText from "../components/ShimmerText";
 const slugifyClubName = (value = "") =>
   value
@@ -35,6 +37,9 @@ const EditClub = () => {
     clubWebsite: "",
     clubWhatsapp: "",
     clubEmail: "",
+    motto: "",
+    mission: "",
+    establishedYear: "",
     facultyEmail: "",
     facultyName: "",
     bankName: "",
@@ -67,6 +72,9 @@ const EditClub = () => {
         clubWhatsapp:
           club.socialLinks?.find((l) => l.platform === "whatsapp")?.url || "",
         clubEmail: club.clubEmail || "",
+        motto: club.motto || "",
+        mission: club.mission || "",
+        establishedYear: club.establishedYear || "",
         facultyEmail: club.facultyEmail || club.facultyCoordinator?.email || "",
         facultyName: club.facultyName || club.facultyCoordinator?.name || "",
         bankName: club.bankName || "",
@@ -292,18 +300,57 @@ const EditClub = () => {
                 className={inputCls}
               />
             </div>
+            <div>
+              <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
+                Club Motto / Slogan
+              </label>
+              <input
+                type="text"
+                name="motto"
+                value={formData.motto}
+                onChange={handleChange}
+                placeholder="e.g. Think. Express. Evolve."
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
+                Established Year
+              </label>
+              <input
+                type="text"
+                name="establishedYear"
+                value={formData.establishedYear}
+                onChange={handleChange}
+                placeholder="e.g. 2018"
+                className={inputCls}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
+              Club Mission Statement
+            </label>
+            <input
+              type="text"
+              name="mission"
+              value={formData.mission}
+              onChange={handleChange}
+              placeholder="e.g. Fostering literary excellence and critical debate across campus."
+              className={inputCls}
+            />
           </div>
           <div>
             <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
               Club Mission / Description
             </label>
-            <textarea
-              name="description"
+            <ReactQuill
+              theme="snow"
               value={formData.description}
-              onChange={handleChange}
-              rows="5"
-              className={`${inputCls} leading-relaxed`}
-            ></textarea>
+              onChange={(val) => setFormData({ ...formData, description: val })}
+              className="quill-editor"
+              placeholder="Write a rich description of the club, history, initiatives, and activities..."
+            />
           </div>
         </div>
 

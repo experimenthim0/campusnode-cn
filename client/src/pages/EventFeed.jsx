@@ -409,7 +409,7 @@ return (
     {showEmptyBanner && (
       <div className="text-center py-10 px-4 mb-18">
         <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto mb-5 ">
-            <img className='w-full h-full object-cover rounded-full' src="cat.png" alt="" />
+            <img className='w-full h-full object-cover rounded-full' src="/cat.png" alt="" />
         </div>
         <h3 className="text-xl font-black text-neutral-800 mb-2">
           {events.length === 0 
