@@ -389,6 +389,8 @@ const Navbar = () => {
                             ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
                             : role === "facultyCoordinator"
                             ? "Faculty Coordinator"
+                            : (role === "central_organizer" || user?.principalType === "INSTITUTIONAL")
+                            ? "Central Event Organiser"
                             : role === "admin"
                             ? "Admin"
                             : role === "lostFoundAdmin"
@@ -425,21 +427,7 @@ const Navbar = () => {
                               Profile / Dashboard
                             </Link>
 
-                            {/* Direct Club Management Entry for Student Leads, Coordinators & Club Accounts */}
-                            {/* {user?.memberships?.filter(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR").map(m => (
-                              <Link
-                                key={m.clubId}
-                                to={`/club-events/${m.clubId}`}
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-2.5 px-4 py-2.5 text-[12px] font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors"
-                                role="menuitem"
-                              >
-                                <Shield size={18} />
-                                Manage {m.clubName || "Club"}
-                              </Link>
-                            ))} */}
-
-                            {(user?.accessLevel === "central_organizer" || role === "central_organizer") && (
+                            {(user?.accessLevel === "central_organizer" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL") && (
                               <Link
                                 to="/central-organizer"
                                 onClick={() => setDropdownOpen(false)}

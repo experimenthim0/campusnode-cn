@@ -139,13 +139,14 @@ async function seed() {
       console.log(`Seeded: ${clubName}`);
     }
 
-    // Seed DSW Institutional Account
+    // Seed DSW Institutional Account (Central Event Organiser)
     console.log("Seeding DSW Institutional Account...");
     const dswAccount = await prisma.institutionalAccount.upsert({
       where: { email: "odsw@nitj.ac.in" },
       update: {
         name: "Dean Student Welfare (DSW)",
         type: "DSW",
+        password: adminPasswordHash,
         isActive: true,
       },
       create: {
@@ -153,58 +154,11 @@ async function seed() {
         name: "Dean Student Welfare (DSW)",
         email: "odsw@nitj.ac.in",
         type: "DSW",
+        password: adminPasswordHash,
         isActive: true,
       },
     });
-
-    const coStudent = await prisma.studentUser.upsert({
-      where: { email: "odsw@nitj.ac.in" },
-      update: {
-        name: "Central Event Organiser (DSW)",
-        password: defaultPasswordHash,
-        accessLevel: "central_organizer",
-        isVerified: true,
-        isBlocked: false,
-      },
-      create: {
-        id: createObjectId(),
-        name: "Central Event Organiser (DSW)",
-        email: "odsw@nitj.ac.in",
-        password: defaultPasswordHash,
-        accessLevel: "central_organizer",
-        isVerified: true,
-        isBlocked: false,
-      },
-    });
-
-    await prisma.institutionalAccountAssignment.upsert({
-      where: {
-        institutionalAccountId_studentId: {
-          institutionalAccountId: dswAccount.id,
-          studentId: coStudent.id,
-        },
-      },
-      update: {
-        role: "CENTRAL_EVENT_ORGANISER",
-        status: "ACTIVE",
-        canManageEvents: true,
-        canTakeAttendance: true,
-        canVerifyPayments: true,
-        canDelegateStaff: true,
-      },
-      create: {
-        id: createObjectId(),
-        institutionalAccountId: dswAccount.id,
-        studentId: coStudent.id,
-        role: "CENTRAL_EVENT_ORGANISER",
-        status: "ACTIVE",
-        canManageEvents: true,
-        canTakeAttendance: true,
-        canVerifyPayments: true,
-        canDelegateStaff: true,
-      },
-    });
-    console.log("Seeded DSW Institutional Account and Central Event Organiser.");
+    console.log("Seeded DSW Institutional Account (Central Event Organiser).");
 
     console.log("Seeding completed successfully!");
   } catch (error) {

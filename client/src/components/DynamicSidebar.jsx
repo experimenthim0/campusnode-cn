@@ -39,6 +39,8 @@ const getRoleLabel = (role, user) => {
     admin: "Administrator",
     paymentAdmin: "Payment Admin",
     lostFoundAdmin: "L&F Moderator",
+    central_organizer: "Central Event Organiser",
+    INSTITUTIONAL: "Central Event Organiser",
   };
   return labels[role] || "User";
 };
@@ -286,25 +288,33 @@ const DynamicSidebar = ({ user }) => {
 
         {/* ── General (all users) ── */}
         <SectionLabel isCollapsed={isCollapsed}>General</SectionLabel>
-        <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
+        {(role === "central_organizer" || user?.principalType === "INSTITUTIONAL") ? (
+          <SidebarLink to="/central-organizer" icon={Shield} label="Central Dashboard" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} />
+        ) : (
+          <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
+        )}
 
-        {/* ── Student Personal: My Events (Visible for students, leads & coordinators; hidden for pure official club accounts) ── */}
-        {!isClubAccount && (Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
+        {/* ── Student Personal: My Events (Visible for students, leads & coordinators; hidden for pure official club & institutional accounts) ── */}
+        {!isClubAccount && role !== "central_organizer" && user?.principalType !== "INSTITUTIONAL" && (Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 
-        {/* ── Portals ── */}
-        {(user?.accessLevel === "central_organizer" || role === "central_organizer" || (user?.institutionalAssignments && user.institutionalAssignments.length > 0)) && (
+        {/* ── Central Organizer Suite ── */}
+        {(user?.accessLevel === "central_organizer" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || (user?.institutionalAssignments && user.institutionalAssignments.length > 0)) && (
           <>
-            <SidebarLink to="/central-organizer" icon={Shield} label="Central Organizer" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} />
+            <SectionLabel isCollapsed={isCollapsed}>Central Events</SectionLabel>
+            {/* <SidebarLink to="/central-organizer" icon={Shield} label="Central Organizer" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} /> */}
+            <SidebarLink to="/event-calendar" icon={CalendarDays} label="Calendar / Venues" isActive={isActive("/event-calendar")} isCollapsed={isCollapsed} />
+            <SidebarLink to="/send-notification" icon={Radio} label="Campus Broadcasts" isActive={isActive("/send-notification")} isCollapsed={isCollapsed} />
+    
             <SidebarLink to="/central-organizer/guide" icon={BookOpen} label="Organizer Guide" isActive={isActive("/central-organizer/guide")} isCollapsed={isCollapsed} />
           </>
         )}
+
         <SidebarLink to="/event-staff" icon={ShieldCheck} label="Event Staff Portal" isActive={isActive("/event-staff")} isCollapsed={isCollapsed} />
         {isClubAccount && (
           <SidebarLink to="/event-calendar" icon={CalendarDays} label="Calendar/Venues" isActive={isActive("/event-calendar")} isCollapsed={isCollapsed} />
         )}
-
 
         {(role === "club" || role === "facultyCoordinator" || user?.principalType === "CLUB" || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")) && (
           <SidebarDropdown

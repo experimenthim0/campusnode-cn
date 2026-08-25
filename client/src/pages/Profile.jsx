@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import 'react-quill-new/dist/quill.snow.css';
-import { cachedFetch } from '../lib/cacheManager';
+import { cachedFetch, invalidateCache } from '../lib/cacheManager';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { getMe } from '../services/userService';
+import { useNotification } from '../context/NotificationContext';
+import { getMe, uploadProfilePhoto } from '../services/userService';
 import { getUserEvents, getClubManagedEvents } from '../services/eventService';
 import { getClubById, getClubMembers } from '../services/clubService';
 
@@ -38,10 +39,13 @@ const ClubLogoImage = ({ clubLogo, clubName }) => {
 
 const Profile = () => {
   const { user: authUser, role: authRole, setSession } = useAuth();
+  const { showNotification } = useNotification();
   const location = useLocation();
   const [user, setUser] = useState(authUser);
   const [role, setRole] = useState(authRole);
   const [loading, setLoading] = useState(true);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef(null);
 
   // Student specific data
   const [winnings, setWinnings] = useState([]);
@@ -219,8 +223,13 @@ const Profile = () => {
 
   // Social Links helper
   const getSocialLink = (platformQuery) => {
-    if (!clubData?.socialLinks) return null;
-    return clubData.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
+    if (Array.isArray(clubData?.socialLinks) && clubData.socialLinks.length > 0) {
+      return clubData.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
+    }
+    if (Array.isArray(user?.socialLinks) && user.socialLinks.length > 0) {
+      return user.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
+    }
+    return null;
   };
 
   const instagramUrl = getSocialLink('instagram') || user.instagramProfile;
@@ -245,6 +254,48 @@ const Profile = () => {
   // Active club logo resolution
   const resolvedClubLogo = clubData?.clubLogo || user?.clubLogo || user?.profileImage;
 
+  // Handle direct club logo upload from profile page
+  const handleClubLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      showNotification('Image must be JPG, PNG or WEBP.', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('Maximum file size is 5 MB.', 'error');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+
+    try {
+      const res = await uploadProfilePhoto(formData);
+      if (res.data?.success) {
+        const newUrl = res.data.imageUrl;
+        setClubData(prev => prev ? ({ ...prev, clubLogo: newUrl }) : prev);
+        const updatedUser = {
+          ...user,
+          profileImage: newUrl,
+          clubLogo: newUrl,
+          club: user?.club ? { ...user.club, clubLogo: newUrl } : { clubLogo: newUrl }
+        };
+        setUser(updatedUser);
+        setSession(updatedUser, role);
+        await invalidateCache(['/api/clubs/*', '/api/users/*']);
+        showNotification(res.data.message || 'Club logo updated successfully', 'success');
+      }
+    } catch (err) {
+      showNotification(err.response?.data?.message || 'Failed to upload logo', 'error');
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
@@ -260,7 +311,14 @@ const Profile = () => {
 
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left flex-1 min-w-0">
                 {/* Club Logo */}
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center shrink-0 shadow-xs">
+                <div
+                  className="relative group cursor-pointer w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center shrink-0 shadow-xs transition-transform duration-200 hover:scale-102"
+                  onClick={() => !isUploadingLogo && logoInputRef.current?.click()}
+                  title="Click to upload/change club logo"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && logoInputRef.current?.click()}
+                >
                   {resolvedClubLogo ? (
                     <ClubLogoImage clubLogo={resolvedClubLogo} clubName={clubData?.clubName || user.name} />
                   ) : (
@@ -268,6 +326,32 @@ const Profile = () => {
                       {profileInitials}
                     </span>
                   )}
+
+                  {/* Hover overlay with camera icon */}
+                  {!isUploadingLogo && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white">
+                      <i className="ri-camera-line text-lg" />
+                      <span className="text-[10px] font-semibold mt-0.5">Change Logo</span>
+                    </div>
+                  )}
+
+                  {/* Uploading overlay */}
+                  {isUploadingLogo && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="text-[9px] font-bold mt-1">Uploading...</span>
+                    </div>
+                  )}
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    onChange={handleClubLogoUpload}
+                    className="hidden"
+                    aria-hidden="true"
+                  />
                 </div>
 
                 {/* Identity Hierarchy */}

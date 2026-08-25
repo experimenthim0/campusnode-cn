@@ -39,6 +39,8 @@ const EditProfile = () => {
     const [formData, setFormData] = useState({
         name: '',
         year: '',
+        category: '',
+        motto: '',
         githubProfile: '',
         linkedinProfile: '',
         xProfile: '',
@@ -58,22 +60,41 @@ const EditProfile = () => {
         if (authUser) {
             setUser(authUser);
             setRole(authRole);
+
+            // Extract social links if stored in socialLinks array
+            const socialMap = {};
+            const rawLinks = Array.isArray(authUser.socialLinks)
+                ? authUser.socialLinks
+                : (Array.isArray(authUser.club?.socialLinks) ? authUser.club.socialLinks : []);
+            
+            rawLinks.forEach((l) => {
+                const plat = (l.platform || '').toLowerCase();
+                if (plat === 'instagram') socialMap.instagramProfile = l.url;
+                if (plat === 'linkedin') socialMap.linkedinProfile = l.url;
+                if (plat === 'x' || plat === 'twitter') socialMap.xProfile = l.url;
+                if (plat === 'whatsapp') socialMap.whatsappNumber = l.url;
+                if (plat === 'website') socialMap.portfolioUrl = l.url;
+                if (plat === 'github') socialMap.githubProfile = l.url;
+            });
+
             setFormData({
-                name: authUser.name || '',
+                name: authUser.clubName || authUser.name || '',
                 year: authUser.year || '',
-                githubProfile: authUser.githubProfile || '',
-                linkedinProfile: authUser.linkedinProfile || '',
-                xProfile: authUser.xProfile || '',
-                portfolioUrl: authUser.portfolioUrl || '',
-                instagramProfile: authUser.instagramProfile || '',
-                whatsappNumber: authUser.whatsappNumber || '',
+                category: authUser.category || authUser.club?.category || '',
+                motto: authUser.motto || authUser.club?.motto || '',
+                githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
+                linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
+                xProfile: authUser.xProfile || socialMap.xProfile || '',
+                portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
+                instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
+                whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
                 isTwoStepEnabled: authUser.isTwoStepEnabled || false,
-                bankName: authUser.bankName || '',
-                accountHolderName: authUser.accountHolderName || '',
-                accountNumber: authUser.accountNumber || '',
-                ifscCode: authUser.ifscCode || '',
-                upiId: authUser.upiId || '',
-                bankPhone: authUser.bankPhone || ''
+                bankName: authUser.bankName || authUser.club?.bankName || '',
+                accountHolderName: authUser.accountHolderName || authUser.club?.accountHolderName || '',
+                accountNumber: authUser.accountNumber || authUser.club?.accountNumber || '',
+                ifscCode: authUser.ifscCode || authUser.club?.ifscCode || '',
+                upiId: authUser.upiId || authUser.club?.upiId || '',
+                bankPhone: authUser.bankPhone || authUser.club?.bankPhone || ''
             });
         }
     }, [authUser, authRole]);
@@ -111,8 +132,8 @@ const EditProfile = () => {
             const res = await updateProfile(role, user.id || user._id, updateData);
             setSession(res.data.user, role);
             
-            // Invalidate user profile caches locally & broadcast to other tabs
-            await invalidateCache(['/api/users/*', '/api/auth/me']);
+            // Invalidate user and club profile caches locally & broadcast to other tabs
+            await invalidateCache(['/api/users/*', '/api/auth/me', '/api/clubs/*']);
             
             showNotification('Profile information updated successfully', 'success');
             navigate('/profile');
@@ -178,6 +199,17 @@ const EditProfile = () => {
         </div>
     );
 
+    const isStudentAccount = Boolean(
+        user?.rollNo ||
+        user?.branch ||
+        user?.year ||
+        role === 'student' ||
+        role === 'member' ||
+        localStorage.getItem('role') === 'member' ||
+        localStorage.getItem('role') === 'student'
+    );
+    const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
+
     return (
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
             
@@ -235,38 +267,71 @@ const EditProfile = () => {
                     <div className="flex justify-center pb-6 border-b border-neutral-100 dark:border-neutral-800">
                         <ProfilePhotoUpload
                             user={user}
-                            onPhotoUpdate={(newUrl) => {
-                                setUser(prev => ({ ...prev, profileImage: newUrl }));
+                            onPhotoUpdate={async (newUrl) => {
+                                const updatedUser = {
+                                    ...user,
+                                    profileImage: newUrl,
+                                    clubLogo: newUrl,
+                                    club: user?.club ? { ...user.club, clubLogo: newUrl } : user?.club
+                                };
+                                setUser(updatedUser);
+                                setSession(updatedUser, role);
+                                await invalidateCache(['/api/clubs/*', '/api/users/*']);
                             }}
                         />
                     </div>
                     
                     {/* Read Only Academic & Core Fields (Immutability enforced) */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
-                        <div>
-                            <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Roll No</label>
-                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate">{user.rollNo || 'N/A'}</p>
+                    {isClubAccount ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club Name</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.clubName || user.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
+                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate" title={user.email}>{user.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Category</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">
+                                    {user.category || user.club?.category || 'General'}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club ID / Slug</label>
+                                <p className="font-mono font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{user.slug || user.clubId || 'N/A'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Email</label>
-                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate" title={user.email}>{user.email}</p>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Roll No</label>
+                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate">{user.rollNo || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Email</label>
+                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate" title={user.email}>{user.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Branch</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">
+                                {user.program || 'N/A'}{user.branch ? ` • ${user.branch}` : ''}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Year</label>
+                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{user.year || 'N/A'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Branch</label>
-                            <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">
-                            {user.program || 'N/A'}{user.branch ? ` • ${user.branch}` : ''}
-                            </p>
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Year</label>
-                            <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{user.year || 'N/A'}</p>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Editable Profile Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">Full Name</label>
+                        <div className={isClubAccount ? "md:col-span-1" : "md:col-span-2"}>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                {isClubAccount ? "Club Name" : "Full Name"}
+                            </label>
                             <input 
                                 type="text" 
                                 name="name" 
@@ -276,53 +341,21 @@ const EditProfile = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">GitHub URL</label>
-                            <input 
-                                type="url" 
-                                name="githubProfile" 
-                                value={formData.githubProfile} 
-                                onChange={handleProfileChange}
-                                placeholder="https://github.com/username"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">LinkedIn URL</label>
-                            <input 
-                                type="url" 
-                                name="linkedinProfile" 
-                                value={formData.linkedinProfile} 
-                                onChange={handleProfileChange}
-                                placeholder="https://linkedin.com/in/username"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">X (Twitter) URL</label>
-                            <input 
-                                type="url" 
-                                name="xProfile" 
-                                value={formData.xProfile} 
-                                onChange={handleProfileChange}
-                                placeholder="https://x.com/username"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">Portfolio Website</label>
-                            <input 
-                                type="url" 
-                                name="portfolioUrl" 
-                                value={formData.portfolioUrl} 
-                                onChange={handleProfileChange}
-                                placeholder="https://yourportfolio.me"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                            />
-                        </div>
+                        {isClubAccount && (
+                            <div>
+                                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                    Club Motto / Slogan
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="motto" 
+                                    value={formData.motto} 
+                                    onChange={handleProfileChange}
+                                    placeholder="e.g. Think. Express. Evolve."
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+                        )}
 
                         <div>
                             <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">Instagram URL</label>
@@ -337,13 +370,63 @@ const EditProfile = () => {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">WhatsApp Number</label>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">LinkedIn URL</label>
+                            <input 
+                                type="url" 
+                                name="linkedinProfile" 
+                                value={formData.linkedinProfile} 
+                                onChange={handleProfileChange}
+                                placeholder="https://linkedin.com/company/handle"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">X (Twitter) URL</label>
+                            <input 
+                                type="url" 
+                                name="xProfile" 
+                                value={formData.xProfile} 
+                                onChange={handleProfileChange}
+                                placeholder="https://x.com/handle"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                {isClubAccount ? "Club Website" : "Portfolio Website"}
+                            </label>
+                            <input 
+                                type="url" 
+                                name="portfolioUrl" 
+                                value={formData.portfolioUrl} 
+                                onChange={handleProfileChange}
+                                placeholder="https://yourclub.org"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">WhatsApp Number / Group</label>
                             <input 
                                 type="tel" 
                                 name="whatsappNumber" 
                                 value={formData.whatsappNumber} 
                                 onChange={handleProfileChange}
                                 placeholder="+91 98765 43210"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">GitHub URL</label>
+                            <input 
+                                type="url" 
+                                name="githubProfile" 
+                                value={formData.githubProfile} 
+                                onChange={handleProfileChange}
+                                placeholder="https://github.com/club-or-user"
                                 className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>

@@ -394,7 +394,8 @@ const ClubDetails = () => {
   const [heroLogoSrc, setHeroLogoSrc] = useState(() => club?.clubLogo || fallbackLogo);
 
   useEffect(() => {
-    const rawLogo = club?.clubLogo || (authUser?.role === "club" && authUser?.clubLogo ? authUser.clubLogo : null);
+    const isClubOwner = authUser?.role === "club" && (authUser?.clubId === club?._id || authUser?.clubId === club?.id);
+    const rawLogo = club?.clubLogo || (isClubOwner ? (authUser?.clubLogo || authUser?.profileImage) : null);
     if (!rawLogo) {
       setHeroLogoSrc(fallbackLogo);
       return;
@@ -404,7 +405,7 @@ const ClubDetails = () => {
     img.src = rawLogo;
     img.onload = () => setHeroLogoSrc(rawLogo);
     img.onerror = () => setHeroLogoSrc(fallbackLogo);
-  }, [club?.clubLogo, authUser?.clubLogo, fallbackLogo]);
+  }, [club?.clubLogo, club?._id, club?.id, authUser?.role, authUser?.clubId, authUser?.clubLogo, authUser?.profileImage, fallbackLogo]);
 
   const fetchClubDetails = async () => {
     try {

@@ -115,21 +115,29 @@ const SendNotification = () => {
 
   // Fetch Push Notifications data
   useEffect(() => {
-    if (user && (user.id || user.clubId)) {
+    if (user && (user.id || user.clubId || user._id)) {
+      const isCentral = role === "central_organizer" || user?.principalType === "INSTITUTIONAL";
       const targetClubId = user.clubId || selectedClubId;
-      if (targetClubId) {
+
+      if (isCentral) {
+        import("../services/api").then(({ default: api }) => {
+          api.get("/api/central-organizer/events")
+            .then((res) => setEvents(res.data.events || []))
+            .catch((err) => console.error("Could not fetch central events", err));
+        });
+      } else if (targetClubId) {
         getClubManagedEvents(targetClubId)
           .then((res) => {
             setEvents(res.data || []);
           })
           .catch((err) => console.error("Could not fetch events", err));
-
-        getSentNotifications()
-          .then((res) => setHistory(res.data || []))
-          .catch((err) => console.error("Could not fetch history", err));
       }
+
+      getSentNotifications()
+        .then((res) => setHistory(res.data || []))
+        .catch((err) => console.error("Could not fetch history", err));
     }
-  }, [user, selectedClubId]);
+  }, [user, role, selectedClubId]);
 
   const handleSubmitNotification = async (e) => {
     e.preventDefault();

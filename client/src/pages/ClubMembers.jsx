@@ -722,7 +722,12 @@ const ClubMembers = () => {
                       {/* Member info */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <Avatar name={member.student?.name} />
+                          {/* <Avatar name={member.student?.name} /> */}
+                          {
+
+                            member.student.profileImage ? <img src={member.student.profileImage} alt="Profile" className="h-10 w-10 rounded-full" /> :
+                              <Avatar name={member.student?.name} />
+                          }
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-bold text-neutral-900 dark:text-white">

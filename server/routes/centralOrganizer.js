@@ -146,6 +146,9 @@ router.post("/events", async (req, res) => {
       where: { type: "DSW", isActive: true },
     });
 
+    const isStudent = req.user.principalType === "STUDENT" || req.user.userType === "student";
+    const studentCreator = isStudent ? await prisma.studentUser.findUnique({ where: { id: req.user.userId }, select: { id: true } }) : null;
+
     const event = await prisma.event.create({
       data: {
         id: eventId,
@@ -157,9 +160,9 @@ router.post("/events", async (req, res) => {
         totalSeats: effectiveRegType === "none" ? 0 : (totalSeats || 0),
         imageUrl: imageUrl || null,
         organizerType: "CENTRAL",
-        centralOrganizerId: req.user.userId, // From server auth context
-        institutionalAccountId: dswAccount?.id || null,
-        createdById: req.user.userId,
+        centralOrganizerId: studentCreator?.id || null,
+        institutionalAccountId: dswAccount?.id || (req.user.principalType === "INSTITUTIONAL" ? req.user.userId : null),
+        createdById: studentCreator?.id || null,
         clubId: null, // Central events have no single club owner
         slug,
         reviewStatus: effectiveReviewStatus,
@@ -443,6 +446,9 @@ router.post("/events/:eventId/staff", async (req, res) => {
       },
     });
 
+    const isStudent = req.user.principalType === "STUDENT" || req.user.userType === "student";
+    const studentInviter = isStudent ? await prisma.studentUser.findUnique({ where: { id: req.user.userId }, select: { id: true } }) : null;
+
     let staffRecord;
     if (existingStaff) {
       if (existingStaff.status === "ACTIVE" || existingStaff.status === "PENDING") {
@@ -455,7 +461,7 @@ router.post("/events/:eventId/staff", async (req, res) => {
       staffRecord = await prisma.eventStaff.update({
         where: { id: existingStaff.id },
         data: {
-          invitedById: req.user.userId,
+          invitedById: studentInviter?.id || null,
           permissions,
           status: "PENDING",
           expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -470,7 +476,7 @@ router.post("/events/:eventId/staff", async (req, res) => {
           id: staffId,
           eventId: req.params.eventId,
           userId: student.id,
-          invitedById: req.user.userId, // From server auth context
+          invitedById: studentInviter?.id || null,
           permissions,
           status: "PENDING",
           expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -480,10 +486,12 @@ router.post("/events/:eventId/staff", async (req, res) => {
 
     // Send notification to the student
     try {
+      const isInst = req.user.principalType === "INSTITUTIONAL" || req.user.userType === "institutional";
       await prisma.notification.create({
         data: {
           id: createObjectId(),
-          senderStudentId: req.user.userId,
+          senderStudentId: studentInviter?.id || null,
+          senderInstitutionalAccountId: isInst ? req.user.userId : null,
           recipientStudentId: student.id,
           eventId: req.params.eventId,
           type: "EVENT_STAFF_INVITATION",

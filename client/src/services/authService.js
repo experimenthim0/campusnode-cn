@@ -17,11 +17,11 @@ export const adminLogin = (email, password) =>
 export const registerStudent = (formData) =>
   api.post('/api/auth/register/student', formData);
 
-export const forgotPassword = (email, role) =>
-  api.post('/api/auth/forgot-password', { email, role });
+export const forgotPassword = (email) =>
+  api.post('/api/auth/forgot-password', { email });
 
-export const resetPassword = (token, newPassword, role) =>
-  api.post(`/api/auth/reset-password/${token}`, { newPassword, role });
+export const resetPassword = (token, newPassword) =>
+  api.post(`/api/auth/reset-password/${token}`, { newPassword });
 
 export const verifyEmail = (token) =>
   api.get(`/api/auth/verify-email/${token}`);

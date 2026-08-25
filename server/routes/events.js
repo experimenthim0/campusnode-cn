@@ -812,6 +812,9 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       });
     }
 
+    const isStudentCreator = req.user.principalType === "STUDENT" || req.user.userType === "student";
+    const studentUserRecord = isStudentCreator ? await prisma.studentUser.findUnique({ where: { id: req.user.userId }, select: { id: true } }) : null;
+
     const savedEvent = await prisma.event.create({
       data: {
         id: createObjectId(),
@@ -825,7 +828,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         imageUrl: imageUrl || "",
         requiredFields: requiredFields || [],
         customFields: customFields || [],
-        createdById: req.user.userId,
+        createdById: studentUserRecord?.id || null,
         clubId: targetClubId,
         allowedPrograms: allowedPrograms || ["BTECH", "MTECH", "OTHER"],
         allowedYears: allowedYears || [],

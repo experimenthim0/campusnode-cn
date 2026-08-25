@@ -112,15 +112,18 @@ model Club {
 }
 
 model ClubAccount {
-  id        String   @id @db.VarChar(24)
-  clubId    String   @unique @db.VarChar(24)
-  email     String   @unique
-  password  String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String         @id @db.VarChar(24)
+  clubId              String         @unique @db.VarChar(24)
+  email               String         @unique
+  password            String
+  isActive            Boolean        @default(true)
+  resetPasswordToken  String?
+  resetPasswordExpire DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club              Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  notificationsSent Notification[] @relation("NotificationSenderClubAccount")
 
   @@index([email])
 }
@@ -174,7 +177,7 @@ model Event {
   waitingListIds       String[]        @default([])
   requiredFields       String[]        @default([])
   customFields         Json?
-  createdById          String          @db.VarChar(24)
+  createdById          String?         @db.VarChar(24)
   clubId               String?         @db.VarChar(24)
   organizerType        EventOrganizerType @default(CLUB)
   centralOrganizerId   String?         @db.VarChar(24)
@@ -204,7 +207,7 @@ model Event {
   club                 Club?           @relation(fields: [clubId], references: [id], onDelete: Cascade)
   centralOrganizer     StudentUser?    @relation("CentralOrganizerEvents", fields: [centralOrganizerId], references: [id])
   institutionalAccount InstitutionalAccount? @relation("InstitutionalEvents", fields: [institutionalAccountId], references: [id])
-  createdBy            StudentUser     @relation("EventCreatedBy", fields: [createdById], references: [id])
+  createdBy            StudentUser?    @relation("EventCreatedBy", fields: [createdById], references: [id])
   reviewedBy           AdminRole?      @relation("EventReviewedBy", fields: [reviewedById], references: [id])
   media                Media[]
   participations       Participation[]
@@ -334,22 +337,26 @@ model Media {
 }
 
 model Notification {
-  id                 String       @id @db.VarChar(24)
-  senderStudentId    String?      @db.VarChar(24)
-  senderAdminId      String?      @db.VarChar(24)
-  recipientStudentId String?      @db.VarChar(24)
-  lostFoundItemId    String?      @db.VarChar(24)
-  eventId            String?      @db.VarChar(24)
-  teamId             String?      @db.VarChar(24)
-  type               String?
-  title              String
-  message            String
-  createdAt          DateTime     @default(now())
-  readBy             String[]     @default([])
-  senderAdmin        AdminRole?   @relation("NotificationSenderAdmin", fields: [senderAdminId], references: [id])
-  senderStudent      StudentUser? @relation("NotificationSenderStudent", fields: [senderStudentId], references: [id])
-  recipientStudent   StudentUser? @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
-  lostFoundItem      LostFoundItem? @relation(fields: [lostFoundItemId], references: [id], onDelete: Cascade)
+  id                            String                @id @db.VarChar(24)
+  senderStudentId               String?               @db.VarChar(24)
+  senderAdminId                 String?               @db.VarChar(24)
+  senderInstitutionalAccountId  String?               @db.VarChar(24)
+  senderClubAccountId           String?               @db.VarChar(24)
+  recipientStudentId            String?               @db.VarChar(24)
+  lostFoundItemId               String?               @db.VarChar(24)
+  eventId                       String?               @db.VarChar(24)
+  teamId                        String?               @db.VarChar(24)
+  type                          String?
+  title                         String
+  message                       String
+  createdAt                     DateTime              @default(now())
+  readBy                        String[]              @default([])
+  senderAdmin                   AdminRole?            @relation("NotificationSenderAdmin", fields: [senderAdminId], references: [id])
+  senderStudent                 StudentUser?          @relation("NotificationSenderStudent", fields: [senderStudentId], references: [id])
+  senderInstitutionalAccount    InstitutionalAccount? @relation("NotificationSenderInstitutionalAccount", fields: [senderInstitutionalAccountId], references: [id])
+  senderClubAccount             ClubAccount?          @relation("NotificationSenderClubAccount", fields: [senderClubAccountId], references: [id])
+  recipientStudent              StudentUser?          @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
+  lostFoundItem                 LostFoundItem?        @relation(fields: [lostFoundItemId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([recipientStudentId, createdAt])
@@ -579,7 +586,7 @@ model EventStaff {
   id          String           @id @db.VarChar(24)
   eventId     String           @db.VarChar(24)
   userId      String           @db.VarChar(24)
-  invitedById String           @db.VarChar(24)
+  invitedById String?          @db.VarChar(24)
   permissions String[]         @default([])
   status      EventStaffStatus @default(PENDING)
   expiresAt   DateTime?
@@ -589,7 +596,7 @@ model EventStaff {
 
   event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user        StudentUser      @relation("EventStaffUser", fields: [userId], references: [id])
-  invitedBy   StudentUser      @relation("EventStaffInviter", fields: [invitedById], references: [id])
+  invitedBy   StudentUser?     @relation("EventStaffInviter", fields: [invitedById], references: [id])
 
   @@unique([eventId, userId])
   @@index([userId, status])
@@ -674,16 +681,20 @@ enum InstitutionalRole {
 }
 
 model InstitutionalAccount {
-  id          String                           @id @db.VarChar(24)
-  name        String
-  type        InstitutionalAccountType         @default(DSW)
-  email       String?                          @unique
-  isActive    Boolean                          @default(true)
-  createdAt   DateTime                         @default(now())
-  updatedAt   DateTime                         @updatedAt
+  id                  String                           @id @db.VarChar(24)
+  name                String
+  type                InstitutionalAccountType         @default(DSW)
+  email               String?                          @unique
+  password            String?
+  resetPasswordToken  String?
+  resetPasswordExpire DateTime?
+  isActive            Boolean                          @default(true)
+  createdAt           DateTime                         @default(now())
+  updatedAt           DateTime                         @updatedAt
 
-  assignments InstitutionalAccountAssignment[]
-  events      Event[]                          @relation("InstitutionalEvents")
+  assignments       InstitutionalAccountAssignment[]
+  events            Event[]                          @relation("InstitutionalEvents")
+  notificationsSent Notification[]                   @relation("NotificationSenderInstitutionalAccount")
 
   @@index([type, isActive])
 }

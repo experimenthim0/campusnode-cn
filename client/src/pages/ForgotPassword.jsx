@@ -5,7 +5,6 @@ import { forgotPassword as forgotPasswordApi } from '../services/authService';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('student');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const { showNotification } = useNotification();
@@ -15,10 +14,9 @@ const ForgotPassword = () => {
     setLoading(true);
     setMessage('');
     try {
-      const res = await forgotPasswordApi(email, role);
+      const res = await forgotPasswordApi(email);
       setMessage(res.data.message);
       showNotification(res.data.message, 'success');
-
     } catch (err) {
       showNotification(err.response?.data?.message || 'Something went wrong', 'error');
     } finally {
@@ -28,7 +26,6 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
-
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="text-center mb-8">
@@ -36,7 +33,7 @@ const ForgotPassword = () => {
             Campus<span className="text-orange-600">Node</span>
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Reset your password
+            Reset your account password
           </p>
         </div>
 
@@ -45,43 +42,15 @@ const ForgotPassword = () => {
           <h2 className="text-lg font-bold text-black dark:text-white text-center">
             Forgot Password
           </h2>
-          <p className="mt-1 text-center text-sm text-neutral-500 dark:text-neutral-400">
-            Enter your email and we'll send you a reset link
+          <p className="mt-1 text-center text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+            Enter your registered email address and we'll send you a password reset link
           </p>
-
-          {/* Role Toggle */}
-          <div className="flex justify-center mt-6 mb-6">
-            <div className="inline-flex rounded-full border border-neutral-200 dark:border-neutral-800 overflow-hidden p-1 bg-neutral-50 dark:bg-neutral-950">
-              <button
-                type="button"
-                onClick={() => setRole('student')}
-                className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                  role === 'student'
-                    ? 'bg-orange-600 text-white shadow-sm'
-                    : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                Student
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('club')}
-                className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                  role === 'club'
-                    ? 'bg-orange-600 text-white shadow-sm'
-                    : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                Club Head
-              </button>
-            </div>
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
-                College Email Address
+                Registered Email Address
               </label>
               <input
                 type="email"
@@ -89,7 +58,7 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
-                placeholder="example@nitj.ac.in"
+                placeholder="you@nitj.ac.in or club@domain.com"
               />
             </div>
 
@@ -119,7 +88,7 @@ const ForgotPassword = () => {
               to="/login"
               className="text-sm font-semibold text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-500 transition-colors"
             >
-              ← Back to Sign In
+              ← Back to Login
             </Link>
           </div>
         </div>

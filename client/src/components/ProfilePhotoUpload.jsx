@@ -21,10 +21,10 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
   const [dragActive, setDragActive] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const currentPhoto = user?.profileImage || null;
+  const currentPhoto = user?.profileImage || user?.clubLogo || user?.club?.clubLogo || null;
 
   // Generate initials for fallback avatar
-  const initials = (user?.name || 'U')
+  const initials = (user?.name || user?.clubName || 'U')
     .split(' ')
     .map(w => w[0])
     .slice(0, 2)
@@ -79,6 +79,10 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
         // Update localStorage user data
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         storedUser.profileImage = res.data.imageUrl;
+        storedUser.clubLogo = res.data.imageUrl;
+        if (storedUser.club) {
+          storedUser.club.clubLogo = res.data.imageUrl;
+        }
         localStorage.setItem('user', JSON.stringify(storedUser));
 
         // Notify parent
@@ -108,6 +112,10 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
         // Update localStorage
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         delete storedUser.profileImage;
+        delete storedUser.clubLogo;
+        if (storedUser.club) {
+          storedUser.club.clubLogo = null;
+        }
         localStorage.setItem('user', JSON.stringify(storedUser));
 
         if (onPhotoUpdate) onPhotoUpdate(null);

@@ -8,6 +8,7 @@ import { createObjectId } from "../utils/objectId.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { generateToken } from "../middleware/auth.js";
 import sendEmail from "../utils/sendEmail.js";
+import { getStudentRoleAndClub } from "./auth.js";
 
 const router = express.Router();
 
@@ -16,8 +17,85 @@ const router = express.Router();
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
-    const admin = await prisma.adminRole.findUnique({ where: { email } });
-    if (!admin) return res.status(401).json({ success: false, message: "Invalid credentials" });
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    let admin = await prisma.adminRole.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    });
+
+    if (!admin) {
+      // 1. Check InstitutionalAccount (Central Organizer entity)
+      const inst = await prisma.institutionalAccount.findFirst({
+        where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
+      });
+      if (inst && inst.password) {
+        const isMatch = await bcrypt.compare(password, inst.password);
+        if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
+
+        const token = generateToken(inst, "central_organizer", "institutional", null, "INSTITUTIONAL");
+        const userObj = {
+          id: inst.id,
+          institutionalAccountId: inst.id,
+          email: inst.email,
+          name: inst.name,
+          type: inst.type,
+          role: "central_organizer",
+          userType: "institutional",
+          principalType: "INSTITUTIONAL",
+        };
+
+        const isProduction = process.env.NODE_ENV === "production";
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? "none" : "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        return res.json({
+          success: true,
+          message: "Login successful",
+          admin: userObj,
+          role: "central_organizer",
+          user: userObj,
+          token,
+        });
+      }
+
+      // 2. Check if Student Central Organizer
+      const student = await prisma.studentUser.findFirst({
+        where: { email: { equals: cleanEmail, mode: "insensitive" } },
+      });
+      if (student) {
+        const isCO = student.accessLevel === "central_organizer"
+          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }));
+        if (isCO) {
+          const isMatch = await bcrypt.compare(password, student.password);
+          if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
+
+          const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
+          const token = generateToken(student, role, "student", clubId, "STUDENT");
+          const userObj = { ...sanitizeUser(student), principalType: "STUDENT", clubId, memberships, institutionalAssignments };
+
+          const isProduction = process.env.NODE_ENV === "production";
+          res.cookie("token", token, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          });
+
+          return res.json({
+            success: true,
+            message: "Login successful",
+            admin: userObj,
+            role,
+            user: userObj,
+            token,
+          });
+        }
+      }
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
 
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });

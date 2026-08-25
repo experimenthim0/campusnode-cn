@@ -9,7 +9,6 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
 
-  const [role, setRole] = useState('student');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,7 +26,7 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      const res = await resetPasswordApi(token, password, role);
+      const res = await resetPasswordApi(token, password);
       showNotification(res.data.message, 'success');
       navigate('/login');
 

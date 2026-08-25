@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getClubBySlugOrId, getClubs, updateClub, getClubMembers } from "../services/clubService";
+import { invalidateCache } from "../lib/cacheManager";
 import { useNotification } from "../context/NotificationContext";
 import { Link } from "react-router-dom";
 import ReactQuill from "react-quill-new";
@@ -30,7 +31,6 @@ const EditClub = () => {
     clubGallery: "",
     clubSponsors: "",
     description: "",
-    clubLogo: "",
     studentCoordinators: "",
     clubInstagram: "",
     clubLinkedin: "",
@@ -67,7 +67,6 @@ const EditClub = () => {
         clubName: club.clubName || "",
         category: club.category || "",
         description: club.description || "",
-        clubLogo: club.clubLogo || "",
         studentCoordinators: resolvedStudentLead,
         clubGallery: club.clubGallery?.join(", ") || "",
         clubSponsors: club.clubSponsors?.join(", ") || "",
@@ -226,7 +225,10 @@ const EditClub = () => {
       delete processedData.clubX;
       delete processedData.clubWebsite;
       delete processedData.clubWhatsapp;
+      delete processedData.clubLogo;
       const res = await updateClub(clubId, processedData);
+
+      await invalidateCache(['/api/clubs/*', '/api/users/*']);
 
       if (user) {
         const updatedUser = {
@@ -402,21 +404,13 @@ const EditClub = () => {
 
         {/* Visuals & Media */}
         <div className="space-y-5">
-          <h3 className="font-semibold tracking-wide text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-800 pb-3 flex items-center gap-3 uppercase">
-            Media & Visuals
-          </h3>
-          <div>
-            <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
-              Club Logo URL
-            </label>
-            <input
-              type="url"
-              name="clubLogo"
-              value={formData.clubLogo}
-              onChange={handleChange}
-              placeholder="https://example.com/logo.png"
-              className={`${inputCls} font-mono text-xs`}
-            />
+          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <h3 className="font-semibold tracking-wide text-xs text-neutral-500 dark:text-neutral-400 uppercase">
+              Media & Visuals
+            </h3>
+            <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              Logo is managed via <Link to="/profile" className="text-orange-600 dark:text-orange-400 font-semibold hover:underline">Profile</Link>
+            </span>
           </div>
           <div>
             <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
