@@ -69,21 +69,78 @@ router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE),
   }
 });
 
-// Helper function to check if a user has access to a club's events
-async function checkEventAccess(req, eventClubId, requiredPermission = null) {
-  if (req.user.role === 'admin') return true;
-  if (req.user.role === 'facultyCoordinator') return String(req.user.clubId) === String(eventClubId);
+// Helper function to check if a user has management/attendance access to an event or club
+async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
+  const user = req.user;
+  if (!user) return false;
 
-  if (['club', 'member', 'student'].includes(req.user.role)) {
-    const membership = await prisma.clubMembership.findFirst({
-      where: { studentId: req.user.userId, clubId: eventClubId }
+  const userId = user.userId || user.id || user.studentId || user._id;
+  const userRole = user.role;
+  const principalType = user.principalType;
+
+  // 1. Super Admin / Admin
+  if (userRole === "admin" || userRole === "SUPER_ADMIN" || principalType === "ADMIN") return true;
+
+  // If passed an event object or eventId
+  let event = null;
+  let clubId = null;
+
+  if (typeof eventOrClubId === "object" && eventOrClubId !== null) {
+    event = eventOrClubId;
+    clubId = event.clubId;
+  } else if (typeof eventOrClubId === "string") {
+    // Check if it's an event or a club
+    event = await prisma.event.findUnique({
+      where: { id: eventOrClubId },
+      select: { id: true, clubId: true, createdById: true, organizerType: true, centralOrganizerId: true, institutionalAccountId: true }
     });
-    if (!membership && String(req.user.clubId) === String(eventClubId)) return true;
-    if (!membership) return false;
-    if (membership.role === 'CLUB_HEAD' || membership.role === 'COORDINATOR') return true;
-    if (requiredPermission && !membership[requiredPermission]) return false;
-    return true;
+    clubId = event ? event.clubId : eventOrClubId;
   }
+
+  // 2. Event creator
+  if (event?.createdById && userId && String(event.createdById) === String(userId)) return true;
+
+  // 3. Central organizer / Institutional events
+  if (event && (event.organizerType === "CENTRAL" || event.institutionalAccountId || event.centralOrganizerId)) {
+    if (userRole === "central_organizer" || principalType === "INSTITUTIONAL") return true;
+    if (userId && String(event.centralOrganizerId) === String(userId)) return true;
+    const instAssignment = (user.institutionalAssignments || []).find(
+      (a) => a.status === "ACTIVE" || a.status === undefined
+    );
+    if (instAssignment) return true;
+  }
+
+  // 4. Faculty Coordinator / Club Account
+  if (clubId) {
+    if ((userRole === "facultyCoordinator" || userRole === "faculty") && String(user.clubId) === String(clubId)) return true;
+    if ((userRole === "club" || principalType === "CLUB") && String(user.clubId) === String(clubId)) return true;
+
+    // 5. Club membership (Club Head, Coordinator, or permission grant)
+    if (userId) {
+      const membership = await prisma.clubMembership.findFirst({
+        where: {
+          clubId: clubId,
+          studentId: userId,
+          status: { not: "INACTIVE" }
+        }
+      });
+      if (membership) {
+        if (membership.role === "CLUB_HEAD" || membership.role === "COORDINATOR") return true;
+        if (requiredPermission && membership[requiredPermission]) return true;
+        if (membership.canTakeAttendance || membership.canEditEvents) return true;
+        return true;
+      }
+    }
+  }
+
+  // 6. Active Event Staff
+  if (event?.id && userId) {
+    const staff = await prisma.eventStaff.findFirst({
+      where: { eventId: event.id, userId, status: "ACTIVE" }
+    });
+    if (staff) return true;
+  }
+
   return false;
 }
 
@@ -1171,28 +1228,9 @@ router.get(
       const event = await prisma.event.findUnique({ where: { id: req.params.id } });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      // Permission check: admin or facultyCoordinator always allowed;
-      // otherwise require ClubMembership with canTakeAttendance OR canEditEvents
-      const { role, userId } = req.user;
-      if (role === "facultyCoordinator" && event.clubId !== req.user.clubId) {
-        return res.status(403).json({ message: "Access denied. You can only view registrations for your assigned club." });
-      }
-      if (role !== "admin" && role !== "facultyCoordinator") {
-        const membership = await prisma.clubMembership.findFirst({
-          where: {
-            clubId: event.clubId,
-            studentId: userId,
-            OR: [
-              { role: "CLUB_HEAD" },
-              { role: "COORDINATOR" },
-              { canTakeAttendance: true },
-              { canEditEvents: true },
-            ],
-          },
-        });
-        if (!membership) {
-          return res.status(403).json({ message: "Access denied. You don't have permission to view registrations." });
-        }
+      const hasAccess = await checkEventAccess(req, event);
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied. You don't have permission to view registrations." });
       }
 
       const participations = await prisma.participation.findMany({
