@@ -510,6 +510,7 @@ const DynamicSidebar = ({ user }) => {
         )}
       </nav>
 
+
       {/* ── Exit Dashboard ───────────────────────────────────────────── */}
       <div className={`pb-2 pt-2 border-t border-gray-200 dark:border-zinc-800 mt-auto shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
         <Link

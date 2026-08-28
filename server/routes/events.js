@@ -108,6 +108,7 @@ const eventSchema = z.object({
     winners: z.array(z.any()).optional(),
     showWinner: z.boolean().optional(),
     provideCertificate: z.boolean().optional(),
+    feedbackEnabled: z.boolean().optional().default(true),
     certificateTemplate: z.any().optional(),
     paymentMethod: z.enum(['FREE', 'COLLEGE_PAYMENT', 'MANUAL_TRANSACTION']).optional().default('FREE'),
     registrationFee: z.coerce.number().optional().default(0),
@@ -215,7 +216,8 @@ const publicEventSelect = {
 };
 // Decode token without middleware — for optional auth on event detail endpoint
 const getDecodedToken = (req) => {
-  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  const token = (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader) || req.cookies?.token;
   if (!token) return null;
   try {
     return jwt.verify(token, process.env.JWT_SECRET);
@@ -777,6 +779,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       media,
       showWinner,
       provideCertificate,
+      feedbackEnabled,
       paymentMethod,
       registrationFee,
       paymentInstructions,
@@ -839,6 +842,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         maxTeamSize: maxTeamSize !== undefined ? Number(maxTeamSize) : 1,
         showWinner: showWinner || false,
         provideCertificate: provideCertificate || false,
+        feedbackEnabled: feedbackEnabled !== undefined ? Boolean(feedbackEnabled) : true,
         paymentMethod: paymentMethod || "FREE",
         registrationFee: Number(registrationFee || 0),
         paymentInstructions: paymentInstructions || null,
@@ -918,14 +922,51 @@ router.get("/:id", async (req, res) => {
 
     if (event.reviewStatus !== "PUBLISHED") {
       const decoded = getDecodedToken(req);
-      const isCreator = decoded && event.createdById === decoded.userId;
-      const isAdmin = decoded?.role === "admin";
-      const isAssignedFaculty =
-        decoded?.role === "facultyCoordinator" && event.clubId === decoded.clubId;
-      const isCO =
-        decoded && event.organizerType === "CENTRAL" && (decoded.role === "central_organizer" || event.centralOrganizerId === decoded.userId);
+      if (!decoded) {
+        return res.status(403).json({ message: "This event is currently under review." });
+      }
 
-      if (!isCreator && !isAdmin && !isAssignedFaculty && !isCO) {
+      const isCreator = Boolean(event.createdById && (event.createdById === decoded.userId || event.createdById === decoded.id));
+      const isAdmin = decoded.role === "admin";
+      const isAssignedFaculty =
+        decoded.role === "facultyCoordinator" &&
+        (String(event.clubId) === String(decoded.clubId) || String(event.clubId) === String(decoded.club?.id));
+      const isCO =
+        event.organizerType === "CENTRAL" &&
+        (decoded.role === "central_organizer" || event.centralOrganizerId === decoded.userId);
+      const isClubAccount =
+        (decoded.principalType === "CLUB" || decoded.userType === "club" || decoded.role === "club" || decoded.role === "club_account") &&
+        (String(event.clubId) === String(decoded.clubId) ||
+         String(event.clubId) === String(decoded.userId) ||
+         String(event.clubId) === String(decoded.clubAccountId));
+      const isClubOwner =
+        (decoded.clubId && String(event.clubId) === String(decoded.clubId)) ||
+        (decoded.userId && String(event.clubId) === String(decoded.userId));
+
+      let isClubMemberAuthorized = false;
+      if (decoded.userId && event.clubId) {
+        try {
+          const membership = await prisma.clubMembership.findFirst({
+            where: {
+              studentId: decoded.userId,
+              clubId: event.clubId,
+              status: { not: "INACTIVE" },
+            },
+          });
+          if (
+            membership &&
+            (["CLUB_HEAD", "COORDINATOR", "CORE_MEMBER", "MEMBER"].includes(membership.role) ||
+             membership.canEditEvents ||
+             membership.canTakeAttendance)
+          ) {
+            isClubMemberAuthorized = true;
+          }
+        } catch {
+          // ignore error
+        }
+      }
+
+      if (!isCreator && !isAdmin && !isAssignedFaculty && !isCO && !isClubAccount && !isClubOwner && !isClubMemberAuthorized) {
         return res.status(403).json({ message: "This event is currently under review." });
       }
     }
@@ -1248,13 +1289,19 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       "winners",
       "showWinner",
       "provideCertificate",
+      "feedbackEnabled",
       "certificateTemplate",
       "postRegistrationMessage",
     ];
 
     const updates = {};
+    const isCompleted = new Date(event.endTime) < new Date();
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
+        // Lock feedbackEnabled once event is completed
+        if (field === "feedbackEnabled" && isCompleted) {
+          return;
+        }
         updates[field] = req.body[field];
       }
     });

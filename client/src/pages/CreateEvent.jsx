@@ -36,6 +36,7 @@ const CreateEvent = () => {
         allowedBranches: [],
         showWinner: false,
         provideCertificate: false,
+        feedbackEnabled: true,
         registrationType: 'individual',
         minTeamSize: 1,
         maxTeamSize: 1,
@@ -386,6 +387,12 @@ const CreateEvent = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // If user presses Enter on steps 1-3, advance step instead of submitting early
+        if (currentStep < 4) {
+            handleNextStep();
+            return;
+        }
+
         // Validate all steps before final submit
         const step1Err = validateStep1();
         if (step1Err) { setCurrentStep(1); setError(step1Err); return; }

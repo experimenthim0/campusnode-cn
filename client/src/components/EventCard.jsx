@@ -267,7 +267,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
 
                     /* SHOW DETAILS WHILE ACTIVE OR IF showWinner IS FALSE */
                     <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-neutral-600 dark:text-neutral-400">
-                        {/* Temporal Info: Date & Deadline merged (Spans 2 columns) */}
+                      
                         <div className="col-span-2 flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
                             <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                             <span className="truncate">
@@ -275,16 +275,13 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                             </span>
                         </div>
 
-                        {/* Location / Venue */}
                         <div className="flex items-center gap-1.5 min-w-0">
                             <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                             <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                         </div>
 
-                        {/* Host Information */}
 
-
-                        {/* Seats / Capacity */}
+                      
                         <div className="flex items-center gap-1.5 col-span-2 min-w-0">
                             <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                             <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
@@ -295,10 +292,10 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 )}
             </div>
 
-            {/* Footer: Entry Fee + Action on same line */}
+          
             <div className="px-5 pb-4 mt-auto">
                 <div className="flex items-center gap-2 border-t border-neutral-100 dark:border-neutral-800/80 pt-3">
-                    {/* Entry fee badge */}
+               
                     {entryFee !== 0 && (
                         <span
                             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
@@ -307,7 +304,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </span>
                     )}
 
-                    {/* Action button */}
+               
                     {isRegistered ? (
                         <Link
                             to={`/event/${slug || _id}`}
@@ -331,7 +328,6 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </Link>
                     )}
 
-                    {/* Add to Calendar button for upcoming events */}
                     {isUpcoming && (
                         <CalendarDropdown
                             event={event}

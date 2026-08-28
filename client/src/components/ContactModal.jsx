@@ -17,10 +17,12 @@ import {
  * Custom themed contact and suggestion form integrated with Google Apps Script.
  * Contains 3 fields (excluding auto timestamp): Name, Email, Description/Suggestion.
  */
+const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbh0efq5670_uTsHNXei5ItQS-JYhNIsoaM2DkfTchaumsn1nrTPRfgCukN5dISMnJ/exec";
+
 const ContactModal = ({ 
   isOpen, 
   onClose, 
-  scriptUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL 
+  scriptUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_SCRIPT_URL 
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -31,6 +33,24 @@ const ContactModal = ({
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
   const [errorMessage, setErrorMessage] = useState('');
   const [formErrors, setFormErrors] = useState({});
+
+  // Auto-fill logged in user info when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (storedUser) {
+          setFormData((prev) => ({
+            ...prev,
+            name: prev.name || storedUser.name || '',
+            email: prev.email || storedUser.email || ''
+          }));
+        }
+      } catch (err) {
+        console.warn('[ContactModal] Could not parse stored user:', err);
+      }
+    }
+  }, [isOpen]);
 
   // Close on Escape key press
   useEffect(() => {
@@ -90,7 +110,7 @@ const ContactModal = ({
     setStatus('submitting');
     setErrorMessage('');
 
-    const targetUrl = scriptUrl || import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
+    const targetUrl = scriptUrl || import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_SCRIPT_URL;
 
     try {
       if (targetUrl) {
@@ -98,6 +118,14 @@ const ContactModal = ({
         const nameVal = formData.name.trim();
         const emailVal = formData.email.trim();
         const contentVal = formData.suggestion.trim();
+
+        console.log('[ContactModal] Submitting form data to Google Apps Script:', {
+          targetUrl,
+          timestamp,
+          name: nameVal,
+          email: emailVal,
+          suggestion: contentVal
+        });
 
         // Build URLSearchParams (sends both 'suggestion' and 'description' to ensure compatibility with Apps Script)
         const params = new URLSearchParams();
@@ -117,14 +145,16 @@ const ContactModal = ({
           },
           body: params.toString()
         });
+
+        console.log('[ContactModal] Form submitted successfully to Google Apps Script!');
       } else {
-        console.info('Google Apps Script URL not configured. Form data:', formData);
+        console.info('[ContactModal] Google Apps Script URL not configured. Form data:', formData);
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       setStatus('success');
     } catch (err) {
-      console.error('Failed to submit suggestion:', err);
+      console.error('[ContactModal] Failed to submit suggestion:', err);
       setStatus('error');
       setErrorMessage(err.message || 'Unable to submit right now. Please try again.');
     }

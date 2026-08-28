@@ -110,6 +110,198 @@ router.get("/", async (req, res) => {
   }
 });
 
+// ── GET /clubs/leaderboard — ranking based on events, participation & feedback percentage ──
+
+router.get("/leaderboard", async (req, res) => {
+  try {
+    const cacheKey = "clubs:leaderboard";
+    const cachedLeaderboard = getPublicResponse(cacheKey);
+
+    if (cachedLeaderboard) {
+      res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
+      res.set("X-Public-Cache", "HIT");
+      return res.json(cachedLeaderboard);
+    }
+
+    // 1. Fetch all clubs
+    const clubs = await prisma.club.findMany({
+      select: {
+        id: true,
+        clubName: true,
+        slug: true,
+        category: true,
+        clubLogo: true,
+      },
+    });
+
+    // 2. Fetch published events with verified attendance & feedback ratings
+    const events = await prisma.event.findMany({
+      where: { reviewStatus: "PUBLISHED" },
+      select: {
+        id: true,
+        title: true,
+        clubId: true,
+        createdById: true,
+        startTime: true,
+        endTime: true,
+        registeredCount: true,
+        participations: {
+          where: { status: "ATTENDED" },
+          select: { id: true },
+        },
+        feedbacks: {
+          select: {
+            overallRating: true,
+            organizationRating: true,
+            usefulnessRating: true,
+            speakerRating: true,
+            venueRating: true,
+            timingRating: true,
+            attendSimilar: true,
+          },
+        },
+      },
+      orderBy: { startTime: "desc" },
+    });
+
+    const FEEDBACK_WINDOW_MS = 72 * 60 * 60 * 1000;
+    const now = new Date();
+    const nowMs = now.getTime();
+
+    // 3. Aggregate statistics and calculate balanced points per club
+    const stats = {};
+    const clubEventsMap = {};
+
+    events.forEach((event) => {
+      const clubId = event.clubId || event.createdById;
+      if (!clubId) return;
+
+      if (!stats[clubId]) {
+        stats[clubId] = {
+          eventCount: 0,
+          totalVerifiedAttendees: 0,
+          totalPoints: 0,
+          totalFeedbacks: 0,
+          overallRatingSum: 0,
+        };
+        clubEventsMap[clubId] = [];
+      }
+
+      stats[clubId].eventCount += 1;
+
+      // Pillar 1: Event Hosting (+10 points per approved event)
+      const eventHostingPoints = 10;
+
+      // Pillar 2: Verified Student Participation (+1 pt per verified attendee, capped at 20 pts per event)
+      const verifiedAttendeesCount = Array.isArray(event.participations) && event.participations.length > 0
+        ? event.participations.length
+        : (event.registeredCount || 0);
+      const participationPoints = Math.min(verifiedAttendeesCount, 20);
+      stats[clubId].totalVerifiedAttendees += verifiedAttendeesCount;
+
+      // Pillar 3: Feedback Quality Score (+0 to +20 points, requires 72h window closed & min 10 responses)
+      const eventEndTime = new Date(event.endTime).getTime();
+      const isFeedbackWindowClosed = nowMs >= eventEndTime + FEEDBACK_WINDOW_MS;
+      let feedbackQualityPoints = 0;
+
+      const feedbackList = event.feedbacks || [];
+      if (isFeedbackWindowClosed && feedbackList.length >= 10) {
+        const sum = feedbackList.reduce((acc, f) => acc + (f.overallRating || 0), 0);
+        const eventAvgRating = sum / feedbackList.length;
+        const satisfactionPct = Math.round((eventAvgRating / 5) * 100);
+
+        if (satisfactionPct >= 90) feedbackQualityPoints = 20;
+        else if (satisfactionPct >= 80) feedbackQualityPoints = 15;
+        else if (satisfactionPct >= 70) feedbackQualityPoints = 10;
+        else if (satisfactionPct >= 60) feedbackQualityPoints = 5;
+        else feedbackQualityPoints = 0;
+
+        stats[clubId].totalFeedbacks += feedbackList.length;
+        stats[clubId].overallRatingSum += sum;
+      } else if (isFeedbackWindowClosed && feedbackList.length > 0) {
+        // Track overall rating sum for display/tie-breaker even if under 10 responses
+        stats[clubId].totalFeedbacks += feedbackList.length;
+        stats[clubId].overallRatingSum += feedbackList.reduce((acc, f) => acc + (f.overallRating || 0), 0);
+      }
+
+      // Maximum 50 points per event (10 + 20 + 20)
+      const eventTotalPoints = eventHostingPoints + participationPoints + feedbackQualityPoints;
+      stats[clubId].totalPoints += eventTotalPoints;
+
+      if (clubEventsMap[clubId].length < 2) {
+        const startTime = new Date(event.startTime);
+        const endTime = new Date(event.endTime);
+        let eventStatus = "UPCOMING";
+        if (endTime < now) eventStatus = "ENDED";
+        else if (startTime <= now && endTime >= now) eventStatus = "LIVE";
+
+        clubEventsMap[clubId].push({
+          _id: event.id,
+          id: event.id,
+          title: event.title,
+          startTime: event.startTime,
+          status: eventStatus,
+        });
+      }
+    });
+
+    // 4. Format and rank clubs
+    const leaderboard = clubs
+      .map((club) => {
+        const clubStat = stats[club.id] || {
+          eventCount: 0,
+          totalVerifiedAttendees: 0,
+          totalPoints: 0,
+          totalFeedbacks: 0,
+          overallRatingSum: 0,
+        };
+
+        const eventCount = clubStat.eventCount;
+        const participantCount = clubStat.totalVerifiedAttendees;
+        const feedbackCount = clubStat.totalFeedbacks;
+        const avgRating = feedbackCount > 0 ? clubStat.overallRatingSum / feedbackCount : 0;
+        const feedbackPercentage = feedbackCount > 0 ? Math.round((avgRating / 5) * 100) : 0;
+        const points = clubStat.totalPoints;
+
+        return {
+          _id: club.id,
+          id: club.id,
+          clubName: club.clubName,
+          slug: club.slug,
+          category: club.category,
+          clubLogo: club.clubLogo,
+          eventCount,
+          participantCount,
+          feedbackCount,
+          feedbackPercentage,
+          avgRating: Number(avgRating.toFixed(1)),
+          points,
+          score: points,
+          recentEvents: clubEventsMap[club.id] || [],
+        };
+      })
+      .filter((club) => club.eventCount > 0)
+      .sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.feedbackPercentage !== a.feedbackPercentage) return b.feedbackPercentage - a.feedbackPercentage;
+        return b.eventCount - a.eventCount;
+      })
+      .map((club, index) => ({
+        ...club,
+        rank: index + 1,
+      }))
+      .slice(0, 10);
+
+    // Cache leaderboard for 5 minutes (300,000 ms) for maximum server throughput
+    setPublicResponse(cacheKey, leaderboard, 300_000);
+    res.set("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    res.set("X-Public-Cache", "MISS");
+    res.json(leaderboard);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // ── GET /clubs/:id — single club with published events, announcements, achievements, media ──
 
 router.get("/:id", async (req, res) => {

@@ -4,6 +4,7 @@ import { ArrowUpRightIcon } from './ui/arrow-up-right';
 import { getPublicJson } from '../lib/publicDataCache';
 
 const ClubLeaderboard = () => {
+  const [leaderboardData, setLeaderboardData] = useState([]);
   const [clubs, setClubs] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +12,18 @@ const ClubLeaderboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // First try the dedicated leaderboard API which incorporates feedback percentage
+        try {
+          const lbData = await getPublicJson('/api/clubs/leaderboard');
+          if (Array.isArray(lbData) && lbData.length > 0) {
+            setLeaderboardData(lbData);
+            setLoading(false);
+            return;
+          }
+        } catch (lbErr) {
+          console.warn("Could not fetch dedicated leaderboard, falling back to public data:", lbErr);
+        }
+
         const [clubsData, eventsData] = await Promise.all([
           getPublicJson('/api/clubs'),
           getPublicJson('/api/events')
@@ -26,69 +39,109 @@ const ClubLeaderboard = () => {
     fetchData();
   }, []);
 
- const leaderboard = useMemo(() => {
-  // Calculate statistics for each club
-  const stats = events.reduce((acc, event) => {
-    const clubId =
-      event.club?._id ||
-      (typeof event.club === "string" ? event.club : null) ||
-      event.createdBy?._id ||
-      (typeof event.createdBy === "string" ? event.createdBy : null);
-
-    if (!clubId) return acc;
-
-    if (!acc[clubId]) {
-      acc[clubId] = {
-        eventCount: 0,
-        participantCount: 0,
-      };
+  const leaderboard = useMemo(() => {
+    if (leaderboardData.length > 0) {
+      return leaderboardData;
     }
 
-    // Count events
-    acc[clubId].eventCount++;
+    // Fallback calculation if dedicated endpoint is not yet loaded
+    const stats = events.reduce((acc, event) => {
+      const clubId =
+        event.club?._id ||
+        (typeof event.club === "string" ? event.club : null) ||
+        event.createdBy?._id ||
+        (typeof event.createdBy === "string" ? event.createdBy : null);
 
-    // Count participants
-    const participants =
-     event.registeredCount || 0;
+      if (!clubId) return acc;
 
-    acc[clubId].participantCount += participants;
+      if (!acc[clubId]) {
+        acc[clubId] = {
+          eventCount: 0,
+          totalVerifiedAttendees: 0,
+          totalPoints: 0,
+          totalFeedbacks: 0,
+          overallRatingSum: 0,
+        };
+      }
 
-    return acc;
-  }, {});
+      acc[clubId].eventCount++;
+      
+      // Pillar 1: +10 pts per event
+      const eventPoints = 10;
 
-  return clubs
-    .map((club) => {
-      // Find last 2 events
-      const clubEvents = events
-        .filter((e) => {
-          const cid =
-            e.club?._id ||
-            e.club ||
-            e.createdBy?._id ||
-            e.createdBy;
+      // Pillar 2: +1 pt per participant (capped at 20)
+      const attendees = event.registeredCount || 0;
+      const participationPoints = Math.min(attendees, 20);
+      acc[clubId].totalVerifiedAttendees += attendees;
 
-          return cid === club._id;
-        })
-        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-        .slice(0, 2);
+      // Pillar 3: Feedback bonus (0 to 20, min 10 responses)
+      let feedbackPoints = 0;
+      if (event.feedbacks && event.feedbacks.length >= 10) {
+        const sum = event.feedbacks.reduce((s, f) => s + (f.overallRating || 0), 0);
+        const avg = sum / event.feedbacks.length;
+        const pct = Math.round((avg / 5) * 100);
+        if (pct >= 90) feedbackPoints = 20;
+        else if (pct >= 80) feedbackPoints = 15;
+        else if (pct >= 70) feedbackPoints = 10;
+        else if (pct >= 60) feedbackPoints = 5;
 
-      return {
-        ...club,
-        eventCount: stats[club._id]?.eventCount || 0,
-        participantCount: stats[club._id]?.participantCount || 0,
+        acc[clubId].totalFeedbacks += event.feedbacks.length;
+        acc[clubId].overallRatingSum += sum;
+      } else if (event.feedbacks && event.feedbacks.length > 0) {
+        acc[clubId].totalFeedbacks += event.feedbacks.length;
+        acc[clubId].overallRatingSum += event.feedbacks.reduce((s, f) => s + (f.overallRating || 0), 0);
+      }
 
-        // Ranking Score
-        score:
-          (stats[club._id]?.eventCount || 0) +
-          (stats[club._id]?.participantCount || 0),
+      acc[clubId].totalPoints += (eventPoints + participationPoints + feedbackPoints);
 
-        recentEvents: clubEvents,
-      };
-    })
-    .filter((club) => club.eventCount > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
-}, [clubs, events]);
+      return acc;
+    }, {});
+
+    return clubs
+      .map((club) => {
+        const clubEvents = events
+          .filter((e) => {
+            const cid =
+              e.club?._id ||
+              e.club ||
+              e.createdBy?._id ||
+              e.createdBy;
+
+            return cid === club._id || cid === club.id;
+          })
+          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+          .slice(0, 2);
+
+        const clubStat = stats[club._id || club.id] || {
+          eventCount: 0,
+          totalVerifiedAttendees: 0,
+          totalPoints: 0,
+          totalFeedbacks: 0,
+          overallRatingSum: 0,
+        };
+
+        const eventCount = clubStat.eventCount;
+        const participantCount = clubStat.totalVerifiedAttendees;
+        const feedbackCount = clubStat.totalFeedbacks;
+        const avgRating = feedbackCount > 0 ? clubStat.overallRatingSum / feedbackCount : 0;
+        const feedbackPercentage = feedbackCount > 0 ? Math.round((avgRating / 5) * 100) : 0;
+        const points = clubStat.totalPoints;
+
+        return {
+          ...club,
+          eventCount,
+          participantCount,
+          feedbackCount,
+          feedbackPercentage,
+          points,
+          score: points,
+          recentEvents: clubEvents,
+        };
+      })
+      .filter((club) => club.eventCount > 0)
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 10);
+  }, [leaderboardData, clubs, events]);
 
   if (loading) {
     return (
@@ -110,13 +163,22 @@ const ClubLeaderboard = () => {
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-3 mb-2">
               <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-orange-600 dark:text-orange-500">Live Ranking</span>
+              <Link 
+                to="/ranking-guide"
+                className="text-[10px] font-bold text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-400 underline decoration-dotted transition-colors"
+              >
+                How points work?
+              </Link>
             </div>
             <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-wide">Club Leaderboard</h2>
           </div>
-          <div className="w-12 h-12 bg-neutral-900 dark:bg-neutral-800 rounded-2xl rotate-3 flex items-center justify-center shadow-md shadow-black/10">
-             <i className="ri-medal-fill text-amber-400 text-2xl" />
+          <div
+           
+            className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors rounded-2xl rotate-3 flex items-center justify-center shadow-md shadow-black/10"
+          >
+            <i className="ri-medal-fill text-orange-500 text-2xl" />
           </div>
         </div>
 
@@ -124,7 +186,7 @@ const ClubLeaderboard = () => {
           {leaderboard.map((club, index) => {
             const isTop3 = index < 3;
             const rankStyles = [
-              { bg: 'bg-amber-500/10 dark:bg-amber-500/15', border: 'border-amber-400/40 dark:border-amber-500/30', text: 'text-amber-700 dark:text-amber-400', icon: 'ri-vip-crown-fill', label: 'Champion' },
+              { bg: 'bg-orange-400/10 dark:bg-orange-500/15', border: 'border-orange-400/40 dark:border-orange-500/30', text: 'text-orange-700 dark:text-orange-400', icon: 'ri-vip-crown-fill', label: 'Champion' },
               { bg: 'bg-neutral-500/10 dark:bg-neutral-700/20', border: 'border-neutral-300 dark:border-neutral-700', text: 'text-neutral-700 dark:text-neutral-300', icon: 'ri-award-fill', label: 'Runner Up' },
               { bg: 'bg-orange-500/10 dark:bg-orange-500/15', border: 'border-orange-400/40 dark:border-orange-500/30', text: 'text-orange-700 dark:text-orange-400', icon: 'ri-medal-line', label: 'Third Place' }
             ];
@@ -138,7 +200,7 @@ const ClubLeaderboard = () => {
               >
                 {/* Main Content */}
                 <div className="flex items-center gap-3">
-                  {/* Rank & Podium Icon */}
+                  
                   <div className={`w-11 h-11 shrink-0 flex flex-col items-center justify-center rounded-xl font-black text-base shadow-xs
                     ${isTop3 ? 'bg-white dark:bg-neutral-800' : 'bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700'}
                     ${isTop3 ? rankStyles[index].text : ''}
@@ -147,7 +209,7 @@ const ClubLeaderboard = () => {
                     <span className="leading-none">{index + 1}</span>
                   </div>
 
-                  {/* Info */}
+               
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <Link 
@@ -158,69 +220,30 @@ const ClubLeaderboard = () => {
                       </Link>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                       <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">{club.category || 'Society'}</span>
-                       {index === 0 && (
-                        <span className="bg-amber-400 text-black text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wide">Elite</span>
-                      )}
+                       <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{club.category || 'Society'}</span>
+                      
                     </div>
                   </div>
 
-                  {/* Counter */}
+                  {/* Counter: Only show Points/Score */}
                   <div className="text-right pr-1 sm:pr-2 shrink-0">
                     <div className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white leading-none tabular-nums tracking-tighter">
-                      {club.score}
+                      {club.points !== undefined ? club.points : club.score}
                     </div>
 
-                    <div className="text-[8px] sm:text-[9px] font-bold text-neutral-400 uppercase tracking-widest mt-0.5">
-                      Score
-                    </div>
-
-                    <div className="mt-1 text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-semibold">
-                       Events: {club.eventCount}
-                    </div>
-
-                    <div className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-semibold">
-                       Parts: {club.participantCount} 
+                    <div className="text-[8px] sm:text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mt-0.5">
+                      Points
                     </div>
                   </div>
                 </div>
 
-                {/* Quick View - Reveals on Hover */}
-                <div className="max-h-0 overflow-hidden transition-all duration-500 ease-in-out group-hover/item:max-h-40 group-hover/item:mt-4">
-                  <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                    <div className="flex items-center justify-between mb-3">
-                       <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-widest flex items-center gap-1">
-                         <i className="ri-history-line" /> Recent Activity
-                       </span>
-                       <Link to={`/club/${club.slug || club._id}`} className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline">Full History →</Link>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {club.recentEvents.length > 0 ? (
-                        club.recentEvents.map(event => (
-                          <div key={event._id} className="bg-white dark:bg-neutral-800 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs">
-                            <h4 className="text-[11px] font-bold text-neutral-900 dark:text-white truncate mb-1">{event.title}</h4>
-                            <div className="flex items-center justify-between">
-                              <span className="text-[9px] text-neutral-400 dark:text-neutral-400 font-medium">
-                                {new Date(event.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              </span>
-                              <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded-sm ${
-                                event.status === 'ENDED' ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300' : 'bg-red-500 text-white'
-                              }`}>
-                                {event.status}
-                              </span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="col-span-2 text-center py-2 text-[10px] text-neutral-400 italic font-medium">No recent events tracked.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                
               </div>
             );
           })}
         </div>
+
+       
       </div>
     </div>
   );

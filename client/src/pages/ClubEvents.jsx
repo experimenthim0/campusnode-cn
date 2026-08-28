@@ -5,7 +5,7 @@ import { getClubMembers } from '../services/clubService';
 import { CLUB_EVENT_EXPORT_COLUMNS, downloadClubEventExport } from '../utils/clubEventExport';
 import { getClubManagedEvents, reviewEvent, deleteEvent } from '../services/eventService';
 import { useNotification } from '../context/NotificationContext';
-import { Clock, MapPin, Users, QrCode, MoreVertical, Trophy, FileText, Edit, Trash2, Award } from 'lucide-react';
+import { Clock, MapPin, Users, QrCode, MoreVertical, Trophy, FileText, Edit, Trash2, Award, Star } from 'lucide-react';
 import { DownloadIcon } from '@/components/ui/download';
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
@@ -396,6 +396,16 @@ const ClubEvents = () => {
                                   className="flex items-center gap-2 px-3.5 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium transition"
                                 >
                                   <FileText className="w-3.5 h-3.5 text-neutral-400" /> View Registrations
+                                </Link>
+                              )}
+
+                              {canViewReg && (
+                                <Link
+                                  to={`/event/${eventIdStr}/feedback`}
+                                  onClick={() => setOpenMenuEventId(null)}
+                                  className="flex items-center gap-2 px-3.5 py-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium transition"
+                                >
+                                  <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" /> Event Feedback
                                 </Link>
                               )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFeedbackPrompt } from '../context/FeedbackPromptContext';
 import { getUserEvents } from '../services/eventService';
 
 import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search } from 'lucide-react';
@@ -412,6 +413,7 @@ const Home = () => {
   const { user: authUser, role: authRole } = useAuth();
   const [user, setUser] = useState(authUser);
   const [role, setRole] = useState(authRole);
+  const { pendingCount, openFeedbackModal } = useFeedbackPrompt();
   const [registrations, setRegistrations] = useState([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [openMapEventId, setOpenMapEventId] = useState(null);
@@ -583,6 +585,28 @@ const Home = () => {
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light mt-1">
                       {greetingSubtext}
                     </p>
+
+                    {/* Feedback Status Indicator (Student) */}
+                    {isStudent && (
+                      <div className="mt-3 flex items-center">
+                        {pendingCount > 0 ? (
+                          <button
+                            type="button"
+                            onClick={openFeedbackModal}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all cursor-pointer shadow-xs group"
+                          >
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                            <span>FEEDBACK • {pendingCount} {pendingCount === 1 ? 'event needs' : 'events need'} your feedback</span>
+                            <i className="ri-arrow-right-s-line text-sm text-amber-600 dark:text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                          </button>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-850 text-neutral-600 dark:text-neutral-400 border border-neutral-200/70 dark:border-neutral-800">
+                            <i className="ri-checkbox-circle-fill text-green-500 text-xs" />
+                            <span>FEEDBACK • You're up to date</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -976,13 +1000,20 @@ const Home = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
-                <SectionLabel>Campus Rankings</SectionLabel>
+                
                 <h2 className="font-black text-[clamp(28px,4vw,44px)] text-neutral-900 dark:text-white leading-[1.1] tracking-wide mb-6">
                   Club<br /><span className="text-orange-600 dark:text-orange-500 text-6xl">Hall of Fame</span>
                 </h2>
-                <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-8">
-                  Recognition for the most active student organizations at NITJ. Rankings are updated automatically based on successfully completed events organized through CampusNode.
+                <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6">
+                  Recognition for the top student organizations at NITJ. Rankings and points are calculated based on hosted events, student participation, and attendee feedback satisfaction ratings.
                 </p>
+                <Link
+                  to="/leaderboard/how-it-works"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors uppercase tracking-wider group mb-8"
+                >
+                  <span>How Points Are Calculated</span>
+                  <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
+                </Link>
               </ScrollReveal>
             </div>
             <div className="lg:col-span-8">

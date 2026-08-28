@@ -119,7 +119,7 @@ const ClubCard = ({ club }) => {
 
         {/* Upper section: Logo, Title, Category */}
         <div className="flex items-start gap-4">
-          {/* Logo container: custom shadow and smooth borders */}
+          
           <div className="w-14 h-14 bg-neutral-50 dark:bg-neutral-900 rounded-full flex items-center justify-center border border-neutral-200/80 dark:border-neutral-800/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300">
             <img
               ref={imgRef}
@@ -127,7 +127,7 @@ const ClubCard = ({ club }) => {
               alt={club.clubName}
               crossOrigin={isBlobLoaded && club.clubLogo ? "anonymous" : undefined}
               onLoad={handleImageLoad}
-              className="w-full h-full object-contain p-1"
+              className="w-full h-full object-contain p-1 "
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = fallbackLogo;
@@ -151,10 +151,8 @@ const ClubCard = ({ club }) => {
             "The official student group dedicated to community, innovation, and campus spirit."}
         </p>
 
-        {/* Dynamic divider line */}
         <div className="border-t border-neutral-100 dark:border-neutral-800/80 my-5" />
 
-        {/* Mid section: Stacking Coordinator Details in Separate Rows */}
         <div className="space-y-3.5">
           <div className="min-w-0">
             <span className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">

@@ -17,6 +17,19 @@ export async function registerServiceWorker() {
     return null;
   }
 
+  // In development mode, service workers caching Vite HMR modules causes ERR_CACHE_READ_FAILURE
+  if (import.meta.env.DEV) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',

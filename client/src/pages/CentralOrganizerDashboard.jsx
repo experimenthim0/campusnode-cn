@@ -35,6 +35,7 @@ const initialFormData = {
   maxTeamSize: 1,
   provideCertificate: false,
   showWinner: false,
+  feedbackEnabled: true,
   paymentMethod: "FREE",
   registrationFee: 0,
   imageUrl: "",
@@ -208,6 +209,7 @@ const CentralOrganizerDashboard = () => {
       maxTeamSize: ev.maxTeamSize || 1,
       provideCertificate: ev.provideCertificate || false,
       showWinner: ev.showWinner || false,
+      feedbackEnabled: ev.feedbackEnabled !== undefined ? ev.feedbackEnabled : true,
       paymentMethod: ev.paymentMethod || "FREE",
       registrationFee: ev.registrationFee || 0,
       imageUrl: ev.imageUrl || "",
@@ -252,6 +254,7 @@ const CentralOrganizerDashboard = () => {
         allowedBranches: allBranches ? [] : (formData.allowedBranches || []),
         provideCertificate: !!formData.provideCertificate,
         showWinner: !!formData.showWinner,
+        feedbackEnabled: formData.feedbackEnabled !== undefined ? !!formData.feedbackEnabled : true,
       };
 
       if (editingEventId) {

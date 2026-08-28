@@ -7,6 +7,7 @@ import {
   GraduationCap,
   Award,
   Trophy,
+  Star,
   PlusCircle,
 } from "lucide-react";
 import ReactQuill from "react-quill-new";
@@ -563,6 +564,30 @@ const CentralEventForm = ({
                 </div>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                   Enable winner podium and leaderboard publication for this event.
+                </p>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                formData.feedbackEnabled !== false
+                  ? "bg-orange-50/50 dark:bg-orange-950/20 border-orange-500"
+                  : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={formData.feedbackEnabled !== false}
+                onChange={(e) => setFormData({ ...formData, feedbackEnabled: e.target.checked })}
+                className="mt-0.5 w-4 h-4 accent-orange-600 rounded cursor-pointer"
+              />
+              <div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  <Star size={14} className="text-orange-600 fill-orange-500" />
+                  Collect Attendee Feedback
+                </div>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Automatically ask attendees to rate this event for 72 hours after completion.
                 </p>
               </div>
             </label>

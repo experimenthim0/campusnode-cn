@@ -37,6 +37,7 @@ const EditEvent = () => {
         winners: [],
         showWinner: false,
         provideCertificate: false,
+        feedbackEnabled: true,
         registrationType: 'individual',
         minTeamSize: 1,
         maxTeamSize: 1,
@@ -130,6 +131,7 @@ const EditEvent = () => {
                         winners: event.winners || [],
                         showWinner: event.showWinner || false,
                         provideCertificate: event.provideCertificate || false,
+                        feedbackEnabled: event.feedbackEnabled !== undefined ? event.feedbackEnabled : true,
                         registrationType: event.registrationType || 'individual',
                         minTeamSize: event.minTeamSize || 1,
                         maxTeamSize: event.maxTeamSize || 1,
@@ -557,6 +559,12 @@ const EditEvent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // If user presses Enter on steps 1-3, advance step instead of submitting early
+        if (currentStep < 4) {
+            handleNextStep();
+            return;
+        }
 
         // Validate all steps before submitting
         const step1Err = validateStep1();

@@ -8,11 +8,12 @@ import {
   cancelRegistration,
 } from '../services/eventService';
 import { searchUsers } from '../services/userService';
-import { Clock, MapPin, Users, QrCode, Shield, Download, FileText, Award, X } from 'lucide-react';
+import { Clock, MapPin, Users, QrCode, Shield, Download, FileText, Award, X, Star, MessageSquare } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
 import QRCode from 'qrcode';
 import { invalidateCache } from '../lib/cacheManager';
+import { getMyFeedbackHistory } from '../services/feedbackService';
 
 const MyEvents = () => {
   const location = useLocation();
@@ -22,6 +23,9 @@ const MyEvents = () => {
   const [user, setUser] = useState(authUser);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('events'); // 'events' | 'feedback'
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
 
   // Modals & student actions
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -102,6 +106,24 @@ const MyEvents = () => {
       setLoading(false);
     }
   };
+
+  const fetchFeedbackHistory = async () => {
+    try {
+      setLoadingFeedbacks(true);
+      const res = await getMyFeedbackHistory();
+      setFeedbacks(res.data?.feedbacks || []);
+    } catch (err) {
+      console.error('Failed to fetch feedback history:', err);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'feedback' && feedbacks.length === 0) {
+      fetchFeedbackHistory();
+    }
+  }, [activeTab]);
 
   const handleDownloadTicket = async () => {
     if (!selectedTicket || !qrDataUrl) return;
@@ -423,7 +445,145 @@ const MyEvents = () => {
         </Link>
       </div>
 
+      {/* Navigation Sub-Tabs */}
+      <div className="flex items-center gap-2 mb-8 border-b border-neutral-200 dark:border-neutral-800 pb-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab('events')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'events'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white bg-transparent'
+          }`}
+        >
+          <i className="ri-ticket-line text-sm" />
+          <span>Tickets & Registrations ({registrations.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('feedback');
+            fetchFeedbackHistory();
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'feedback'
+              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white bg-transparent'
+          }`}
+        >
+          <Star className="w-3.5 h-3.5 text-amber-500" />
+          <span>My Feedback</span>
+        </button>
+      </div>
+
+      {/* ── SUBMITTED FEEDBACK HISTORY TAB ── */}
+      {activeTab === 'feedback' && (
+        <div>
+          {loadingFeedbacks ? (
+            <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
+              <i className="ri-loader-4-line animate-spin text-3xl mb-2 text-orange-500" />
+              <p className="text-xs font-semibold uppercase tracking-wider">Loading your feedback history...</p>
+            </div>
+          ) : feedbacks.length === 0 ? (
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-12 text-center shadow-2xs">
+              <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
+                <Star className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-1">No Feedback Submitted Yet</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
+                After attending events, you'll be automatically invited to share your ratings and reviews here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {feedbacks.map((fb) => (
+                <div
+                  key={fb.id}
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-2xs hover:shadow-sm transition-all space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 dark:border-neutral-800/80 pb-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {fb.event?.club?.clubName && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200/50 dark:border-orange-900/30">
+                            {fb.event.club.clubName}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-neutral-400">
+                          Submitted on {new Date(fb.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-orange-600 transition-colors">
+                          {fb.event?.title || 'Campus Event'}
+                        </Link>
+                      </h3>
+                    </div>
+
+                    {/* Overall Rating Badge */}
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 shrink-0">
+                      <Star className="w-4 h-4 fill-amber-400 stroke-amber-500" />
+                      <span className="text-sm font-black">{fb.overallRating} / 5</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">Overall</span>
+                    </div>
+                  </div>
+
+                  {/* 6 Metric Breakdown Badges */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+                    {[
+                      { label: 'Overall', val: fb.overallRating },
+                      { label: 'Organization', val: fb.organizationRating },
+                      { label: 'Usefulness', val: fb.usefulnessRating },
+                      { label: 'Speaker', val: fb.speakerRating },
+                      { label: 'Venue', val: fb.venueRating },
+                      { label: 'Timing', val: fb.timingRating },
+                    ].map((item, i) => (
+                      <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-center">
+                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium truncate">{item.label}</p>
+                        <p className="font-bold text-neutral-900 dark:text-white mt-0.5 flex items-center justify-center gap-1">
+                          <span>{item.val}</span>
+                          <Star className="w-3 h-3 fill-amber-400 stroke-amber-500" />
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Recommendation & Written Responses */}
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">Would attend again:</span>
+                      <span className={`font-bold px-2 py-0.5 rounded-md text-[11px] ${
+                        fb.attendSimilar === 'YES' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300' :
+                        fb.attendSimilar === 'MAYBE' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' :
+                        'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
+                      }`}>
+                        {fb.attendSimilar === 'YES' ? 'Yes' : fb.attendSimilar === 'MAYBE' ? 'Maybe' : 'No'}
+                      </span>
+                    </div>
+
+                    {(fb.liked || fb.improvements || fb.comments) && (
+                      <div className="mt-2 p-3 bg-neutral-50 dark:bg-neutral-800/30 rounded-xl space-y-1.5 border border-neutral-100 dark:border-neutral-800">
+                        {fb.liked && (
+                          <p><strong className="text-neutral-700 dark:text-neutral-300">Liked:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.liked}</span></p>
+                        )}
+                        {fb.improvements && (
+                          <p><strong className="text-neutral-700 dark:text-neutral-300">Improvements:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.improvements}</span></p>
+                        )}
+                        {fb.comments && (
+                          <p><strong className="text-neutral-700 dark:text-neutral-300">Comments:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.comments}</span></p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── STUDENT REGISTERED / PARTICIPATED EVENTS LIST ── */}
+      {activeTab === 'events' && (
       <div>
         {registrations.length === 0 ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-12 text-center shadow-2xs">
@@ -648,6 +808,7 @@ const MyEvents = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* ── TICKET MODAL ── */}
      <AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
 import AdminLayout from './components/AdminLayout';
@@ -6,8 +6,9 @@ import RouteLoader from './components/RouteLoader';
 import PageLoader from './components/PageLoader';
 import NetworkGuard from './components/NetworkGuard';
 import ProtectedRoute from './components/ProtectedRoute';
+import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
 
-// Lazy loaded page components
+// Lazy loaded page components (with auto-retry on stale cache/network error)
 const EventFeed = lazy(() => import('./pages/EventFeed'));
 const RegisterStudent = lazy(() => import('./pages/RegisterStudent'));
 const Team = lazy(() => import('./pages/Team'));
@@ -19,6 +20,7 @@ const MyEvents = lazy(() => import('./pages/MyEvents'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
 const EditEvent = lazy(() => import('./pages/EditEvent'));
 const EventRegistrations = lazy(() => import('./pages/EventRegistrations'));
+const EventFeedbackAnalytics = lazy(() => import('./pages/EventFeedbackAnalytics'));
 const CheckIn = lazy(() => import('./pages/CheckIn'));
 
 const ClubsPage = lazy(() => import('./pages/Clubspage'));
@@ -56,9 +58,12 @@ const CentralOrganizerGuide = lazy(() => import('./pages/CentralOrganizerGuide')
 const EventStaffDashboard = lazy(() => import('./pages/EventStaffDashboard'));
 const StaffAttendanceView = lazy(() => import('./pages/StaffAttendanceView'));
 const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
+const FeedbackSurveyPreview = lazy(() => import('./pages/FeedbackSurveyPreview'));
+const LeaderboardGuide = lazy(() => import('./pages/LeaderboardGuide'));
 
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
+import { FeedbackPromptProvider } from './context/FeedbackPromptContext';
 
 function App() {
 
@@ -69,9 +74,10 @@ function App() {
   return (
     <NotificationProvider>
       <SocketProvider>
-        <NetworkGuard>
-          <RouteLoader>
-            <Suspense fallback={<PageLoader />}>
+        <FeedbackPromptProvider>
+          <NetworkGuard>
+            <RouteLoader>
+              <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* ── Admin Layout — separate window, custom navbar/sidebar ── */}
                 <Route element={
@@ -109,6 +115,7 @@ function App() {
                   <Route path="/team" element={<Team />} />
                   <Route path="/lost-found" element={<LostAndFound />} />
                   <Route path="/lost-found/guide" element={<LostFoundGuide />} />
+                  <Route path="/ranking-guide" element={<LeaderboardGuide />} />
 
                   {/* Protected routes (require login) */}
                   <Route path="/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
@@ -121,6 +128,7 @@ function App() {
                   <Route path="/club-events/:clubId" element={<ProtectedRoute><ClubEvents /></ProtectedRoute>} />
                   <Route path="/send-notification" element={<ProtectedRoute><SendNotification /></ProtectedRoute>} />
                   <Route path="/event/:id/registrations" element={<ProtectedRoute><EventRegistrations /></ProtectedRoute>} />
+                  <Route path="/event/:id/feedback" element={<ProtectedRoute><EventFeedbackAnalytics /></ProtectedRoute>} />
                   <Route path="/event/:id/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
                   <Route path="/event/:id/design-certificate" element={<ProtectedRoute><CertificateDesigner /></ProtectedRoute>} />
                   <Route path="/payments" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
@@ -131,13 +139,16 @@ function App() {
                   <Route path="/event-staff" element={<ProtectedRoute><EventStaffDashboard /></ProtectedRoute>} />
                   <Route path="/event-staff/:eventId/attendance" element={<ProtectedRoute><StaffAttendanceView /></ProtectedRoute>} />
                   <Route path="/event-calendar" element={<ProtectedRoute><EventCalendarPage readOnly /></ProtectedRoute>} />
+                  <Route path="/feedback-questions" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />
+                  <Route path="/feedback-survey-preview" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />
 
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
-            </Suspense>
-          </RouteLoader>
-        </NetworkGuard>
+              </Suspense>
+            </RouteLoader>
+          </NetworkGuard>
+        </FeedbackPromptProvider>
       </SocketProvider>
     </NotificationProvider>
   );

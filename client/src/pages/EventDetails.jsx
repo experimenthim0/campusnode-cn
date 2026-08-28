@@ -20,6 +20,7 @@ import { MessageCircleIcon } from "@/components/ui/message-circle";
 import { EarthIcon } from "@/components/ui/earth";
 import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
+import ImageZoomModal from '../components/ImageZoomModal';
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
@@ -60,12 +61,12 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
       className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
     >
       <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4">{question}</span>
-      <i className={`ri-arrow-down-s-line text-lg text-neutral-400 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      <i className={`ri-arrow-down-s-line text-lg text-neutral-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
     </button>
     <div
       className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
     >
-      <div className="px-5 pb-4 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+      <div className="px-5 pb-4 text-[13px] text-neutral-600 dark:text-neutral-500 leading-relaxed">
         {answer}
       </div>
     </div>
@@ -110,6 +111,19 @@ const EventDetails = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentType, setPaymentType] = useState(null); // 'MANUAL_TRANSACTION' | 'COLLEGE_PAYMENT'
   const [paymentPayload, setPaymentPayload] = useState({});
+
+  // Zoomable Image Modal State
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [activeModalImage, setActiveModalImage] = useState({ src: '', title: '', alt: '' });
+
+  const openImageModal = (src, titleText, altText) => {
+    setActiveModalImage({
+      src: src || DEFAULT_IMAGE,
+      title: titleText || event?.title || 'Event Poster',
+      alt: altText || event?.title || 'Poster',
+    });
+    setImageModalOpen(true);
+  };
 
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -620,7 +634,7 @@ const EventDetails = () => {
   const btnConfig = isOpenEvent
     ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default', disabled: true }
     : isEnded
-    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
+    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
     ? { label: 'Event is Live', cls: 'bg-orange-600 text-white border-orange-600 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
@@ -629,7 +643,7 @@ const EventDetails = () => {
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isFull
     ? { label: 'Join Waitlist', cls: 'bg-yellow-400 text-black border-black hover:bg-yellow-300 cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Get Tickets', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-orange-600 hover:border-orange-600 hover:text-white cursor-pointer', disabled: false };
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-orange-600 hover:border-orange-600 hover:text-white cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -826,20 +840,20 @@ const EventDetails = () => {
 
       {/* ── Top Bar ── */}
       <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
-        <div className="max-w-[1200px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-orange-600 transition-colors cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[13px] font-medium text-neutral-500 dark text-neutral-500 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
 
       {/* ── Main Two-Column Layout ── */}
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-8">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
         {/* Rejection Feedback Banner */}
         {event.reviewStatus === 'REJECTED' && (
           <div className="mb-6 bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900 rounded-xl p-5 shadow-xs flex items-start gap-4">
@@ -881,14 +895,14 @@ const EventDetails = () => {
           <div className="w-full lg:w-[65%] min-w-0">
 
             {/* ── Breadcrumb Navigation ── */}
-            <nav className="flex items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500 mb-5 flex-wrap">
+            <nav className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-500 mb-5 flex-wrap">
               <Link to="/" className="hover:text-orange-600 transition-colors">Home</Link>
               <i className="ri-arrow-right-s-line text-[10px]" />
               <Link to="/events" className="hover:text-orange-600 transition-colors">Events</Link>
               {clubCategory && (
                 <>
                   <i className="ri-arrow-right-s-line text-[10px]" />
-                  <span className="text-neutral-500 dark:text-neutral-400">{clubCategory}</span>
+                  <span className="text-neutral-500 dark text-neutral-500">{clubCategory}</span>
                 </>
               )}
               <i className="ri-arrow-right-s-line text-[10px]" />
@@ -896,14 +910,26 @@ const EventDetails = () => {
             </nav>
 
             {/* ── Event Poster ── */}
-            <div className="mb-6 rounded-2xl overflow-hidden border-1 border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative">
+            <div 
+              onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
+              className="mb-6 rounded-2xl overflow-hidden border-1 border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative group cursor-zoom-in transition-all"
+              title="Click to view and zoom poster"
+            >
               <img
                 src={event.imageUrl || DEFAULT_IMAGE}
                 alt={title}
-                className="w-full object-contain"
+                className="w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
                 style={{ maxHeight: '560px' }}
                 onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
               />
+
+              {/* Zoom prompt badge on top right */}
+              <div className="absolute top-4 right-4 z-10">
+                <span className="inline-flex items-center gap-1.5 bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full border border-white/20 shadow-lg group-hover:scale-105 transition-all">
+                  <i className="ri-zoom-in-line text-sm" />
+                </span>
+              </div>
+
               {/* Status badge overlay */}
               <div className="absolute top-4 left-4">
                 {isLive && (
@@ -960,7 +986,7 @@ const EventDetails = () => {
           
 
             {/* ── Quick-Scan Inline Metadata ── */}
-            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-400 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
               <span className="inline-flex items-center gap-1.5">
                 <i className="ri-calendar-event-line text-orange-500" />
                 {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -1002,7 +1028,7 @@ const EventDetails = () => {
             {/* ── Rich Text Description ── */}
             {description && (
               <div className="mb-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-3">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
                   About this Event
                 </h2>
                 <div 
@@ -1014,7 +1040,7 @@ const EventDetails = () => {
 
             {/* ── Event Highlights Matrix ── */}
             <div className="mb-8">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Event Highlights
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1027,7 +1053,7 @@ const EventDetails = () => {
                       <i className={`${h.icon} text-orange-600 dark:text-orange-400 text-base`} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
                       <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
                     </div>
                   </div>
@@ -1036,48 +1062,22 @@ const EventDetails = () => {
             </div>
 
             {/* ── Sponsors Section ── */}
-            {event.sponsors && event.sponsors.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-4">
-                  Sponsors
-                </h3>
-                <div className="flex flex-wrap gap-5 items-center ">
-                  {event.sponsors.map((sponsor, i) => (
-                    <a
-                      key={i}
-                      href={sponsor.websiteUrl || '#'}
-                      target={sponsor.websiteUrl ? "_blank" : "_self"}
-                      rel="noopener noreferrer"
-                      className={`flex flex-col items-center gap-1.5 transition-opacity justify-center ${
-                        sponsor.websiteUrl ? 'cursor-pointer hover:opacity-100 opacity-80' : 'cursor-default opacity-80'
-                      }`}
-                    >
-                      <img
-                        src={sponsor.logoUrl}
-                        alt={sponsor.name}
-                        className="h-7 w-auto object-contain bg-white dark:bg-black"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
-                      />
-                      <span className="text-[11px] font-medium text-black dark:text-white tracking-wide text-center">
-                        {sponsor.name}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+           
 
             {/* ── Gallery Section ── */}
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-4">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Gallery
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {event.media.filter(m => m.type !== 'SPONSOR_LOGO').map((item, i) => (
                     <div key={i} className="aspect-square rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 relative group">
                       {item.type === 'IMAGE' ? (
-                        <div className="w-full h-full cursor-zoom-in" onClick={() => window.open(item.url, '_blank')}>
+                        <div 
+                          className="w-full h-full cursor-zoom-in" 
+                          onClick={() => openImageModal(item.url, `${title} - Gallery Image ${i + 1}`, `Gallery ${i + 1}`)}
+                        >
                           <img
                             src={item.url}
                             alt={`Gallery ${i}`}
@@ -1111,7 +1111,7 @@ const EventDetails = () => {
                     <i className="ri-trophy-fill" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Event Results</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
                     <p className="text-[15px] font-black text-black dark:text-white">
                       {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
                     </p>
@@ -1162,7 +1162,7 @@ const EventDetails = () => {
                             const uniqueNames = Array.from(new Set(namesArr));
                             if (uniqueNames.length === 0) return null;
                             return (
-                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                              <p className="text-[11px] font-medium text-neutral-500 dark text-neutral-500 mt-0.5 truncate">
                                 <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
                                 {uniqueNames.join(', ')}
                               </p>
@@ -1171,7 +1171,7 @@ const EventDetails = () => {
                         </div>
 
                         {/* Rank Label */}
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
                           {medal ? `${medal.label} Place` : `#${winner.rank}`}
                         </span>
                       </div>
@@ -1183,7 +1183,7 @@ const EventDetails = () => {
 
             {/* ── FAQ Accordion ── */}
             <div className="mb-8">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-4">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
               </h2>
               <div className="space-y-2">
@@ -1206,12 +1206,12 @@ const EventDetails = () => {
 
               {/* ── Date & Time Module ── */}
               <div className="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
                   <i className="ri-calendar-event-line text-orange-500 text-xs font-medium" /> DATE & TIME
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Starts</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p>
                     <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
                       {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
@@ -1221,7 +1221,7 @@ const EventDetails = () => {
                   </div>
                   {/* <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" /> */}
                   {/* <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Ends</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
                     <p className="text-[14px] font-semibold text-neutral-700 dark:text-neutral-300">
                       {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' })}
                       {' · '}
@@ -1235,7 +1235,7 @@ const EventDetails = () => {
               {!isUnlimited && (
                 <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Availability</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
                   </div>
                   <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
@@ -1244,7 +1244,7 @@ const EventDetails = () => {
                       style={{ width: `${fillPct}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-neutral-400 mt-1.5">
+                  <p className="text-[11px] text-neutral-500 mt-1.5">
                     {registeredCount} / {totalSeats} seats filled
                   </p>
                   {isFull && (
@@ -1268,11 +1268,11 @@ const EventDetails = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Registration Successful!</p>
-                    <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 mt-1">Check your dashboard for the ticket QR code</p>
+                    <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-500 mt-1">Check your dashboard for the ticket QR code</p>
                   </div>
                   
                   <div className="w-full bg-white dark:bg-neutral-950 border border-neutral-100 dark:border-neutral-850 p-4 rounded-xl text-center shadow-sm">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
                     <p className="text-base font-black text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
                       {registrationId}
                     </p>
@@ -1290,13 +1290,13 @@ const EventDetails = () => {
               {/* ── Primary CTA ── */}
               <div className="px-6 py-5">
                 {/* Horizontal Metadata Anchor */}
-                <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 mb-4 px-1">
+                <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500 mb-4 px-1">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <i className="ri-map-pin-2-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                    <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
+                    <i className="ri-map-pin-2-line text-neutral-500 dark:text-neutral-500 text-sm shrink-0" />
+                    <span className="truncate font-medium text-gray-600 dark:text-neutral-400">{venue}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <i className="ri-ticket-2-line text-neutral-400 dark:text-neutral-500 text-sm" />
+                    <i className="ri-ticket-2-line text-neutral-500 dark:text-neutral-500 text-sm" />
                     <span className={`font-black text-sm ${entryFee > 0 ? 'text-black dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
                       {entryFee > 0 ? `₹${entryFee}` : 'Free'}
                     </span>
@@ -1321,16 +1321,17 @@ const EventDetails = () => {
                   {status === 'UPCOMING' && (
                     <CalendarDropdown
                       event={event}
-                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-600 dark:text-neutral-400 cursor-pointer shadow-sm transition-colors shrink-0"
+                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-600 dark text-neutral-500 cursor-pointer shadow-sm transition-colors shrink-0"
                     />
                   )}
                 </div>
 
                 {registrationDeadline && !isEnded && (
                   <p className="text-[11px] font-medium text-neutral-550 dark:text-neutral-450 mt-3 text-center">
-                    Registration closes: {new Date(registrationDeadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                    Registration closes: {new Date(registrationDeadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                   </p>
                 )}
+
               </div>
 
               {/* ── Organizer ── */}
@@ -1341,7 +1342,7 @@ const EventDetails = () => {
                       <i className="ri-building-2-line text-orange-600 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Organized by</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
                       <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
                       <p className="text-[11px] font-medium text-orange-600 dark:text-orange-400">Dean Student Welfare</p>
                     </div>
@@ -1349,7 +1350,7 @@ const EventDetails = () => {
 
                   {event.participatingClubs?.length > 0 && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
                         Participating Clubs
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1386,7 +1387,7 @@ const EventDetails = () => {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Organized by</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
@@ -1403,7 +1404,7 @@ const EventDetails = () => {
                   {/* ── Club Social Media / Contact Links ── */}
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                     <div className="px-6 pb-4 border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2.5">
                         Connect with {displayName}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -1446,7 +1447,7 @@ const EventDetails = () => {
 
               {/* ── Social Sharing Row ── */}
               <div className="px-6 pb-5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">Share Event</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-3">Share Event</p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleWhatsAppShare}
@@ -1477,6 +1478,42 @@ const EventDetails = () => {
                     <i className="ri-share-forward-line text-lg" />
                   </button>
                 </div>
+              </div>
+              
+<div className="px-6 pb-5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+
+       
+ 
+ {event.sponsors && event.sponsors.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  Sponsors
+                </h3>
+                <div className="flex flex-wrap gap-5 items-center ">
+                  {event.sponsors.map((sponsor, i) => (
+                    <a
+                      key={i}
+                      href={sponsor.websiteUrl || '#'}
+                      target={sponsor.websiteUrl ? "_blank" : "_self"}
+                      rel="noopener noreferrer"
+                      className={`flex flex-col items-center gap-1.5 transition-opacity justify-center ${
+                        sponsor.websiteUrl ? 'cursor-pointer hover:opacity-100 opacity-80' : 'cursor-default opacity-80'
+                      }`}
+                    >
+                      <img
+                        src={sponsor.logoUrl}
+                        alt={sponsor.name}
+                        className="h-7 w-auto object-contain bg-white dark:bg-black"
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
+                      />
+                      {/* <span className="text-[11px] font-medium text-black dark:text-white tracking-wide text-center">
+                        {sponsor.name}
+                      </span> */}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
               </div>
             </div>
           </div>
@@ -1515,7 +1552,7 @@ const EventDetails = () => {
               </h3>
             </div>
             <div className="p-6">
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
+              <p className="text-sm text-neutral-600 dark text-neutral-500 mb-5 leading-relaxed">
                 This event requires the following profile information. Please add them to continue with registration:
               </p>
               <div className="space-y-4">
@@ -1558,7 +1595,7 @@ const EventDetails = () => {
             </div>
             <div className="p-6 overflow-y-auto flex-1">
               <div className="mb-6">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1569,14 +1606,14 @@ const EventDetails = () => {
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
                     <div key={i} className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{item.label}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">{item.label}</p>
                       <p className="text-sm font-medium text-black dark:text-white truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="border-t-2 border-neutral-100 dark:border-neutral-800 mb-6" />
-              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-3">Additional Information</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
@@ -1631,15 +1668,15 @@ const EventDetails = () => {
                 <p className="text-sm font-extrabold text-black dark:text-white truncate">
                   {event.title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
                   <i className="ri-calendar-event-line text-orange-500" />
                   <span>{new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
                   <i className="ri-map-pin-2-line text-orange-500" />
                   <span className="truncate">{venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
                   <i className="ri-ticket-2-line text-orange-500" />
                   <span className="font-bold text-green-600 dark:text-green-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
@@ -1714,20 +1751,20 @@ const EventDetails = () => {
                       <i className="ri-time-line text-orange-600 dark:text-orange-500 text-base" />
                       <p className="text-sm font-bold text-neutral-900 dark:text-white">Payment Under Review</p>
                     </div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    <p className="text-xs text-neutral-500 dark text-neutral-500 leading-relaxed">
                       The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">My Events</strong> section.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                  <p className="text-xs text-neutral-500 dark text-neutral-500 mt-2 leading-relaxed">
                     You are in! Your ticket has been confirmed. You can view your ticket in the My Events section.
                   </p>
                   
                   {registrationId && (
                     <div className="my-5 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1.5">Your Registration ID</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Your Registration ID</p>
                       <p className="text-lg font-black text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
@@ -1739,7 +1776,7 @@ const EventDetails = () => {
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
                 <div className="my-3 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2 flex items-center gap-1.5">
                     <i className="ri-information-line text-orange-600 dark:text-orange-500 text-xs" />
                     Next Steps from Club
                   </p>
@@ -1758,7 +1795,7 @@ const EventDetails = () => {
                 </button>
                 <button
                   onClick={() => setShowSuccessModal(false)}
-                  className="w-full text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                  className="w-full text-xs text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
                 >
                   Stay on this page
                 </button>
@@ -1792,7 +1829,7 @@ const EventDetails = () => {
               </button>
               <button
                 onClick={() => setTeamChoiceModalOpen(false)}
-                className="w-full px-4 py-2 mt-2 text-xs text-neutral-400 hover:text-black dark:hover:text-white transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                className="w-full px-4 py-2 mt-2 text-xs text-neutral-500 hover:text-black dark:hover:text-white transition-colors border-0 bg-transparent outline-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -1829,10 +1866,10 @@ const EventDetails = () => {
               {/* Members/Teammates selection */}
               <div>
                 <label className="block text-sm font-bold text-black dark:text-white mb-1.5">
-                  Add Teammates <span className="text-xs text-neutral-400 font-medium">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
+                  Add Teammates <span className="text-xs text-neutral-500 font-medium">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
-                  <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
                   <input
                     type="text"
                     placeholder="Search by Email or Roll Number..."
@@ -1862,7 +1899,7 @@ const EventDetails = () => {
                       >
                         <div className="text-left">
                           <p className="font-bold text-neutral-800 dark:text-neutral-200">{s.name}</p>
-                          <p className="text-neutral-400 font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                          <p className= "text-neutral-500 font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
                         <span className="text-orange-600 font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 rounded">Add</span>
                       </div>
@@ -1873,22 +1910,22 @@ const EventDetails = () => {
 
               {/* Roster list */}
               <div className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-200 dark:border-neutral-850 rounded-xl space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 text-left">Team Roster</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 text-left">Team Roster</p>
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
                       <p className="font-bold text-neutral-800 dark:text-neutral-200">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-orange-600 font-extrabold">(You)</span></p>
-                      <p className="text-neutral-400 font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
+                      <p className= "text-neutral-500 font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
                         <p className="font-bold text-neutral-800 dark:text-neutral-200">{member.name}</p>
-                        <p className="text-neutral-400 font-mono mt-0.5">{member.rollNo}</p>
+                        <p className= "text-neutral-500 font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
@@ -1900,7 +1937,7 @@ const EventDetails = () => {
                     </div>
                   ))}
                   {teammates.length === 0 && (
-                    <div className="py-3 text-center text-xs text-neutral-400 font-medium">
+                    <div className="py-3 text-center text-xs text-neutral-500 font-medium">
                       No teammates added yet. Search above to add.
                     </div>
                   )}
@@ -1910,7 +1947,7 @@ const EventDetails = () => {
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
                 <div className="space-y-4 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1 text-left">Additional Information</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
                       <label className="block text-sm font-bold text-black dark:text-white mb-1.5 text-left">
@@ -1967,6 +2004,15 @@ const EventDetails = () => {
         onSubmit={submitRegistrationWithPayment}
         isRegistering={isRegistering}
         showNotification={showNotification}
+      />
+
+      {/* ── Zoomable Image Modal ── */}
+      <ImageZoomModal
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        src={activeModalImage.src}
+        alt={activeModalImage.alt}
+        title={activeModalImage.title}
       />
     </div>
   );

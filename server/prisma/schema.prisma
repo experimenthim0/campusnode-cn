@@ -74,6 +74,7 @@ model StudentUser {
   eventStaffAssignments   EventStaff[]     @relation("EventStaffUser")
   eventStaffInvitations   EventStaff[]     @relation("EventStaffInviter")
   institutionalAssignments InstitutionalAccountAssignment[]
+  feedbacks               EventFeedback[]
 }
 
 model Club {
@@ -201,6 +202,7 @@ model Event {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @default(now()) @updatedAt
   isFeatured           Boolean         @default(false)
+  feedbackEnabled      Boolean         @default(true)
   registrationType     String          @default("individual")
   minTeamSize          Int             @default(1)
   maxTeamSize          Int             @default(1)
@@ -217,6 +219,8 @@ model Event {
   attendanceRecords    AttendanceRecord[]
   eventStaff           EventStaff[]
   participatingClubs   EventClub[]
+  feedbacks            EventFeedback[]
+  aiReviews            EventAIReview[]
 
   @@index([clubId, startTime])
   @@index([reviewStatus, startTime])
@@ -723,5 +727,67 @@ model InstitutionalAccountAssignment {
   @@index([institutionalAccountId, role])
 }
 
+enum AttendSimilar {
+  YES
+  MAYBE
+  NO
+}
 
+model EventFeedback {
+  id                  String        @id @db.VarChar(24)
+  eventId             String        @db.VarChar(24)
+  userId              String        @db.VarChar(24)
 
+  overallRating       Int
+  organizationRating  Int
+  usefulnessRating    Int
+  speakerRating       Int
+  venueRating         Int
+  timingRating        Int
+
+  attendSimilar       AttendSimilar
+
+  liked               String?
+  improvements        String?
+  comments            String?
+
+  submittedAt         DateTime      @default(now())
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  event               Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user                StudentUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId, submittedAt])
+  @@index([userId, submittedAt])
+}
+
+model EventAIReview {
+  id                     String        @id @db.VarChar(24)
+  eventId                String        @db.VarChar(24)
+  reviewNumber           Int           // 1 or 2
+  status                 String        // "COMPLETED" | "FAILED" | "IN_PROGRESS"
+  responseCount          Int
+  attendeeCount          Int
+  overallSentiment       String        // "very_positive" | "positive" | "mixed" | "negative" | "very_negative" | "insufficient_data"
+  overallSummary         String        @db.Text
+  whatStudentsLiked      Json          // Array<{ theme: string, summary: string, evidenceCount?: number }>
+  improvementAreas       Json          // Array<{ theme: string, summary: string, evidenceCount?: number, priority: "high" | "medium" | "low" }>
+  keyTakeaways           Json          // string[] (3-5 takeaways)
+  recommendations        Json          // Array<{ title: string, description: string, priority: string, evidenceCount?: number }>
+  positiveHighlights     Json          // Array<{ quote: string, reason: string }>
+  constructiveHighlights Json          // Array<{ quote: string, reason: string }>
+  attendAgainSummary     Json?         // { yesPercentage: number, maybePercentage: number, noPercentage: number }
+  model                  String
+  generatedById          String?       @db.VarChar(24)
+  generatedAt            DateTime      @default(now())
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  event                  Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, reviewNumber])
+  @@index([eventId, status])
+  @@index([eventId, generatedAt])
+}
