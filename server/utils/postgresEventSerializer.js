@@ -1,4 +1,5 @@
 import { getEventStatus } from "./eventStatus.js";
+import { calculateAcademicProgress } from "./academicProgress.js";
 
 export function serializeEvent(event) {
   if (!event) return event;
@@ -31,13 +32,26 @@ export function serializeEvent(event) {
 export function serializeParticipation(participation) {
   if (!participation) return participation;
 
-  const user = participation.student;
+  const rawStudent = participation.student;
+  let user = null;
+  if (rawStudent) {
+    const progress = calculateAcademicProgress(rawStudent);
+    user = {
+      ...rawStudent,
+      _id: rawStudent.id,
+      year: progress.academicYearLabel,
+      academicYear: progress.academicYear,
+      academicYearLabel: progress.academicYearLabel,
+      semester: progress.semester,
+      semesterLabel: progress.semesterLabel,
+    };
+  }
 
   return {
     ...participation,
     _id: participation.id,
     userId: participation.studentId, // Keep userId for frontend compatibility
-    user: user ? { ...user, _id: user.id } : null,
+    user,
     event: participation.event ? serializeEvent(participation.event) : participation.event,
   };
 }

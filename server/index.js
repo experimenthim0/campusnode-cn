@@ -104,14 +104,6 @@ const twoFaLimiter = rateLimit({
 });
 app.use("/api/auth/verify-2fa", twoFaLimiter);
 
-// Rate limiter: notification creation — prevent notification spam
-const notificationLimiter = rateLimit({
-  windowMs: 60 * 1000, 
-  max: 10,
-  message: { message: "Too many notifications sent. Please slow down." },
-});
-app.use("/api/notifications", notificationLimiter);
-
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || "1mb" }));
 app.use(express.urlencoded({ extended: false, limit: process.env.JSON_BODY_LIMIT || "1mb" }));
 app.use(cookieParser());

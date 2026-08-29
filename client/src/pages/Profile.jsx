@@ -9,6 +9,7 @@ import { useNotification } from '../context/NotificationContext';
 import { getMe, uploadProfilePhoto } from '../services/userService';
 import { getUserEvents, getClubManagedEvents } from '../services/eventService';
 import { getClubById, getClubMembers } from '../services/clubService';
+import { calculateAcademicProgress } from '../utils/academicProgress';
 
 const ClubLogoImage = ({ clubLogo, clubName }) => {
   const { isDark } = useTheme();
@@ -167,9 +168,25 @@ const Profile = () => {
   if (!user) return <div className="text-center mt-10">Please login to view profile.</div>;
   if (loading) return <div className="text-center mt-10">Loading profile...</div>;
 
-  // Determine account type
-  const isStudentAccount = Boolean(user?.rollNo || user?.branch || user?.year || role === 'student' || role === 'member' || localStorage.getItem('role') === 'member' || localStorage.getItem('role') === 'student');
-  const isClubAccount = !isStudentAccount && role === 'club';
+  const isStudentAccount = Boolean(
+    user?.rollNo ||
+    user?.branch ||
+    user?.expectedGraduationYear ||
+    user?.academicYear ||
+    user?.year ||
+    role === 'student' ||
+    role === 'member' ||
+    localStorage.getItem('role') === 'member' ||
+    localStorage.getItem('role') === 'student'
+  );
+  const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
+
+  // Dynamic Academic Progress for Students / Student Leads
+  const studentProgress = isStudentAccount ? calculateAcademicProgress(user) : null;
+  const displayAcademicYear = user?.academicYearLabel || studentProgress?.academicYearLabel || user?.year;
+  const displaySemester = user?.semesterLabel || studentProgress?.semesterLabel;
+  const displayAcademicStanding = [displayAcademicYear, displaySemester].filter(Boolean).join(" • ");
+  const displayGraduationYear = user?.expectedGraduationYear || studentProgress?.expectedGraduationYear;
 
   // Statistics calculations for Club Profile
   const totalMembersCount = clubMembers.filter(m => !m.isClubAccount).length;
@@ -989,11 +1006,17 @@ const Profile = () => {
             {/* Academic Attributes */}
             <div className="pt-8">
               <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">Academic & Account Attributes</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {user.rollNo && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
+                  </div>
+                )}
+                {user.program && (
+                  <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.program}</p>
                   </div>
                 )}
                 {user.branch && (
@@ -1002,10 +1025,18 @@ const Profile = () => {
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
                   </div>
                 )}
-                {user.year && (
+                {displayAcademicStanding && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Year</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.year}</p>
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                      {displayAcademicStanding}
+                    </p>
+                  </div>
+                )}
+                {displayGraduationYear && (
+                  <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{displayGraduationYear}</p>
                   </div>
                 )}
               </div>

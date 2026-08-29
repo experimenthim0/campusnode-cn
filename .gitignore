@@ -39,3 +39,7 @@ scanner-app/
 
 server/load-tests/
 server/routes/__tests__/
+
+k6_script.js
+central_event_role.md
+central_org.md

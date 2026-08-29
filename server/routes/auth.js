@@ -9,6 +9,7 @@ import { checkPasswordRateLimit } from "../utils/checkPasswordRateLimit.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { PROGRAM_OPTIONS, isValidBranchForProgram } from "../constants/academicConstants.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
@@ -99,7 +100,7 @@ export async function getAdminClubId(adminId) {
 
 router.post("/register/student", async (req, res) => {
   try {
-    const { name, rollNo, branch, year, program, email, password } = req.body;
+    const { name, rollNo, branch, year, expectedGraduationYear, program, email, password } = req.body;
     const clientUrl = getClientUrl(req.headers.origin);
 
     if (!email.endsWith("@nitj.ac.in")) {
@@ -117,9 +118,9 @@ router.post("/register/student", async (req, res) => {
     }
 
     if (program !== "OTHER") {
-      if (!rollNo || !branch || !year) {
+      if (!rollNo || !branch || (!year && !expectedGraduationYear)) {
         return res.status(400).json({
-          message: "Roll number, branch, and academic year are required.",
+          message: "Roll number, branch, and graduation year are required.",
         });
       }
       if (!isValidBranchForProgram(program, branch)) {
@@ -149,6 +150,12 @@ router.post("/register/student", async (req, res) => {
       });
     }
 
+    const progress = calculateAcademicProgress({
+      program,
+      expectedGraduationYear: expectedGraduationYear ? parseInt(expectedGraduationYear, 10) : null,
+      year: year || null,
+    });
+
     const isDevMode =
       process.env.NODE_ENV !== "production" && process.env.SKIP_VERIFICATION === "true";
     const verificationToken = isDevMode ? null : crypto.randomBytes(20).toString("hex");
@@ -162,7 +169,8 @@ router.post("/register/student", async (req, res) => {
         name: name.toUpperCase(),
         rollNo: rollNo || null,
         branch: branch || null,
-        year: year || null,
+        expectedGraduationYear: progress.expectedGraduationYear,
+        academicStatus: progress.academicStatus,
         program,
         email,
         password: await bcrypt.hash(password, 10),
@@ -210,7 +218,18 @@ router.post("/register/student", async (req, res) => {
 
     const { role, clubId, memberships } = await getStudentRoleAndClub(newUser.id);
     const token = generateToken(newUser, role, "student", clubId);
-    const userObj = { ...sanitizeUser(newUser), clubId, memberships };
+    const userObj = {
+      ...sanitizeUser(newUser),
+      academicYear: progress.academicYear,
+      academicYearLabel: progress.academicYearLabel,
+      semester: progress.semester,
+      semesterLabel: progress.semesterLabel,
+      expectedGraduationYear: progress.expectedGraduationYear,
+      academicStatus: progress.academicStatus,
+      year: progress.academicYearLabel,
+      clubId,
+      memberships,
+    };
 
     res.cookie("token", token, getCookieOptions());
 
@@ -388,11 +407,41 @@ router.post("/login/student", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    if (student.isTwoStepEnabled) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      await prisma.studentUser.update({
+        where: { id: student.id },
+        data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+      });
+      await sendEmail({
+        email: student.email,
+        subject: "CampusNode Login Verification Code",
+        message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+          <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
+          <h2>Your Verification Code</h2>
+          <p>A login was requested for your student account (<strong>${student.email}</strong>).</p>
+          <div style="margin:30px 0">
+            <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+          </div>
+          <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+        </div>`,
+      });
+      return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
+    }
+
     const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
 
+    const progress = calculateAcademicProgress(student);
     const token = generateToken(student, role, "student", clubId, "STUDENT");
     const userObj = {
       ...sanitizeUser(student),
+      academicYear: progress.academicYear,
+      academicYearLabel: progress.academicYearLabel,
+      semester: progress.semester,
+      semesterLabel: progress.semesterLabel,
+      expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
+      academicStatus: student.academicStatus || progress.academicStatus,
+      year: progress.academicYearLabel,
       principalType: "STUDENT",
       clubId,
       memberships,
@@ -590,13 +639,27 @@ router.post("/verify-2fa", async (req, res) => {
         data: { otp: null, otpExpire: null },
       });
 
-      const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
-      const token = generateToken(student, role, "student", clubId);
-      const userObj = { ...sanitizeUser(student), clubId, memberships };
+      const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
+      const progress = calculateAcademicProgress(student);
+      const token = generateToken(student, role, "student", clubId, "STUDENT");
+      const userObj = {
+        ...sanitizeUser(student),
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+        expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
+        academicStatus: student.academicStatus || progress.academicStatus,
+        year: progress.academicYearLabel,
+        principalType: "STUDENT",
+        clubId,
+        memberships,
+        institutionalAssignments,
+      };
 
       res.cookie("token", token, getCookieOptions());
 
-      return res.json({ success: true, message: "Verification successful", user: userObj, role, token });
+      return res.json({ success: true, message: "Verification successful", user: userObj, role, userType: "student", principalType: "STUDENT", token });
     }
 
     // Try AdminRole
@@ -1072,11 +1135,41 @@ router.post("/login", async (req, res) => {
       const isMatch = await bcrypt.compare(password, student.password);
       if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
+      if (student.isTwoStepEnabled) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await prisma.studentUser.update({
+          where: { id: student.id },
+          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+        });
+        await sendEmail({
+          email: student.email,
+          subject: "CampusNode Login Verification Code",
+          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
+            <h2>Your Verification Code</h2>
+            <p>A login was requested for your account (<strong>${student.email}</strong>).</p>
+            <div style="margin:30px 0">
+              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+            </div>
+            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+          </div>`,
+        });
+        return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
+      }
+
       const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
 
+      const progress = calculateAcademicProgress(student);
       const token = generateToken(student, role, "student", clubId, "STUDENT");
       const userObj = {
         ...sanitizeUser(student),
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+        expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
+        academicStatus: student.academicStatus || progress.academicStatus,
+        year: progress.academicYearLabel,
         principalType: "STUDENT",
         clubId,
         memberships,

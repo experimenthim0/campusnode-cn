@@ -21,6 +21,7 @@ import { EarthIcon } from "@/components/ui/earth";
 import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
 import ImageZoomModal from '../components/ImageZoomModal';
+import { formatAcademicYear } from '../utils/academicProgress';
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
@@ -671,7 +672,7 @@ const EventDetails = () => {
       ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: `${event.allowedBranches.length} Branches Allowed` }]
       : []),
     ...(event.allowedYears && event.allowedYears.length > 0 && event.allowedYears.length < 4
-      ? [{ icon: 'ri-calendar-check-line', label: 'Eligible Year', value: `${event.allowedYears.join(', ')}` }]
+      ? [{ icon: 'ri-calendar-check-line', label: 'Eligible Year', value: event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ') }]
       : []),
   ];
 
@@ -789,7 +790,7 @@ const EventDetails = () => {
             <>
               Eligible batches:{' '}
               <strong className="font-bold text-black dark:text-white">
-                Year {event.allowedYears.join(', ')}
+                Year {event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ')}
               </strong>.{' '}
             </>
           )}

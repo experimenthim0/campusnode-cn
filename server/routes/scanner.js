@@ -14,6 +14,7 @@ import { validate } from "../middleware/validate.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { signTicket, verifyTicket, getPublicKeyInfo } from "../services/qrSigningService.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { verifyAttendancePermission, EVENT_STAFF_PERMISSIONS } from "../middleware/eventStaffAuth.js";
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 
@@ -376,7 +377,7 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         qrPayload: true,
         qrVersion: true,
         status: true,
-        student: { select: { name: true, branch: true, rollNo: true, year: true } },
+        student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
         externalName: true,
         externalEmail: true,
       },
@@ -436,7 +437,7 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         studentName: p.student?.name || p.externalName || "Unknown",
         branch: p.student?.branch || null,
         rollNo: p.student?.rollNo || null,
-        year: p.student?.year || null,
+        year: p.student ? calculateAcademicProgress(p.student).academicYearLabel : null,
         externalEmail: p.externalEmail || null,
       })),
       publicKeys: [publicKeyInfo],
@@ -606,7 +607,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
           { qrPayload },
         ],
       },
-      include: { student: { select: { name: true, branch: true, rollNo: true, year: true } } },
+      include: { student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } } },
     });
 
     if (!participation) {
@@ -636,7 +637,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
           name: participation.student?.name || participation.externalName || "Unknown",
           branch: participation.student?.branch || null,
           rollNo: participation.student?.rollNo || null,
-          year: participation.student?.year || null,
+          year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
         },
         attendedAt: existingAttendance.scannedAt,
       });
@@ -678,7 +679,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
         name: participation.student?.name || participation.externalName || "Unknown",
         branch: participation.student?.branch || null,
         rollNo: participation.student?.rollNo || null,
-        year: participation.student?.year || null,
+        year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
       },
       attendedAt: new Date(),
     });

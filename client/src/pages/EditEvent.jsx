@@ -889,6 +889,7 @@ const EditEvent = () => {
                                     <option value="individual">Individual Registration</option>
                                     <option value="team">Team Registration</option>
                                     <option value="both">Both (Individual & Team)</option>
+                                    <option value="none">No Registration (Open / Walk-in)</option>
                                 </select>
                             </div>
 

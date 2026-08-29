@@ -9,6 +9,7 @@ import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { generateToken } from "../middleware/auth.js";
 import sendEmail from "../utils/sendEmail.js";
 import { getStudentRoleAndClub } from "./auth.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 const router = express.Router();
 
@@ -154,6 +155,7 @@ router.get(
               title: true,
               entryFee: true,
               registeredCount: true,
+              registrationType: true,
               payoutStatus: true,
               registrationDeadline: true,
               startTime: true,
@@ -202,9 +204,10 @@ router.get(
           isCentral,
           creatorId: event.createdBy?.id || null,
           clubHeadId: event.createdBy?.id || null,
-          registeredCount: event.registeredCount || eventParts.length,
+          registrationType: event.registrationType || "individual",
+          registeredCount: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
           totalCollected: collected,
-          regCount: event.registeredCount || eventParts.length,
+          regCount: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
           entryFee: event.entryFee,
           payoutStatus: event.payoutStatus || "PENDING",
           registrationDeadline: event.registrationDeadline,
@@ -416,8 +419,9 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
           eventName: event.title,
           clubName: event.club?.clubName || "ODSW",
           organizerType: event.organizerType,
+          registrationType: event.registrationType || "individual",
           isCentral,
-          totalRegistrations: event.registeredCount || eventParts.length,
+          totalRegistrations: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
           eventType: event.entryFee > 0 ? "Paid" : "Free",
           entryFee: event.entryFee || 0,
           eventDate: event.startTime,
@@ -896,7 +900,8 @@ router.get("/central-organizer", verifyToken, allowRoles("admin"), async (req, r
                 email: true,
                 profileImage: true,
                 branch: true,
-                year: true,
+                expectedGraduationYear: true,
+                academicStatus: true,
                 program: true,
                 rollNo: true,
               },
@@ -1127,14 +1132,27 @@ router.get("/students/search", verifyToken, allowRoles("admin"), async (req, res
         email: true,
         rollNo: true,
         branch: true,
-        year: true,
+        expectedGraduationYear: true,
+        academicStatus: true,
         program: true,
         accessLevel: true,
       },
       take: 10,
     });
 
-    res.json({ students });
+    const enriched = students.map((s) => {
+      const progress = calculateAcademicProgress(s);
+      return {
+        ...s,
+        year: progress.academicYearLabel,
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+      };
+    });
+
+    res.json({ students: enriched });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -9,6 +9,7 @@ import { getEffectivePermissions } from "../utils/rbac.js";
 import profileUpload from "../middleware/profileUpload.js";
 import { validateFileSignature, processProfileImage, generateProfileFilename } from "../utils/imageProcessor.js";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 const router = express.Router();
 
@@ -204,6 +205,15 @@ router.get("/me", verifyToken, async (req, res) => {
     const safeUser = sanitizeUser(user);
     safeUser.principalType = "STUDENT";
 
+    const progress = calculateAcademicProgress(user);
+    safeUser.academicYear = progress.academicYear;
+    safeUser.academicYearLabel = progress.academicYearLabel;
+    safeUser.semester = progress.semester;
+    safeUser.semesterLabel = progress.semesterLabel;
+    safeUser.expectedGraduationYear = user.expectedGraduationYear || progress.expectedGraduationYear;
+    safeUser.academicStatus = user.academicStatus || progress.academicStatus;
+    safeUser.year = progress.academicYearLabel;
+
     const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(user.id);
     safeUser.clubId = clubId;
     safeUser.memberships = memberships;
@@ -228,9 +238,8 @@ router.get("/me", verifyToken, async (req, res) => {
 
 router.put("/:role/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { userId, userType, role, principalType, clubId, clubAccountId } = req.user;
-
-  const isClub = userType === "club" || principalType === "CLUB" || role === "club";
+  const { userId, userType, role, principalType, clubId, clubAccountId } = req.u  // Strict check: Only genuine club accounts (ClubAccount table) enter the club branch
+  const isClub = (userType === "club" || principalType === "CLUB") && userType !== "student" && principalType !== "STUDENT";
 
   const isSelf = (userId === id) || (clubAccountId === id) || (clubId === id) || (req.user.id === id);
   if (!isSelf && role !== "admin") {
@@ -291,7 +300,7 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
         addLink("linkedin", req.body.linkedinProfile || req.body.clubLinkedin);
       }
       if (req.body.xProfile !== undefined || req.body.clubX !== undefined) {
-        addLink("x", req.body.xProfile || req.body.clubX);
+        addLink("twitter", req.body.xProfile || req.body.clubX);
       }
       if (req.body.portfolioUrl !== undefined || req.body.clubWebsite !== undefined) {
         addLink("website", req.body.portfolioUrl || req.body.clubWebsite);
@@ -383,7 +392,7 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
         bankPhone: updatedClub?.bankPhone,
       };
 
-      return res.json({ message: "Club profile updated successfully", user: safeClubUser });
+      return res.json({ message: "Club profile updated successfully", user: safeClubUser, role: "club", userType: "club", principalType: "CLUB" });
     }
 
     // ─── 2. ADMIN / FACULTY OR STUDENT ───
@@ -398,94 +407,64 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       Object.entries(req.body).filter(([key]) => allowedFields.includes(key) && req.body[key] !== undefined),
     );
 
-    const clubAllowedFields = [
-      "bankName",
-      "accountHolderName",
-      "accountNumber",
-      "ifscCode",
-      "upiId",
-      "bankPhone"
-    ];
-
-    const clubUpdates = (role === "facultyCoordinator" || role === "club")
-      ? Object.fromEntries(
-          Object.entries(req.body).filter(([key]) => clubAllowedFields.includes(key) && req.body[key] !== undefined),
-        )
-      : {};
-
-    if (Object.keys(updates).length === 0 && Object.keys(clubUpdates).length === 0) {
+    if (Object.keys(updates).length === 0) {
       return res.status(400).json({ message: "No allowed profile fields provided." });
     }
 
     let user;
 
     if (userType === "admin") {
-      if (Object.keys(updates).length > 0) {
-        user = await prisma.adminRole.update({ where: { id }, data: updates });
-      } else {
-        user = await prisma.adminRole.findUnique({ where: { id } });
-      }
-    } else if (userType === "external") {
-      // External users no longer have a separate table — treat as studentUser or skip
-      return res.status(400).json({ message: "External user profile updates are not supported." });
+      user = await prisma.adminRole.update({ where: { id: userId || id }, data: updates });
     } else {
-      user = await prisma.studentUser.update({ where: { id }, data: updates });
-    }
-
-    if ((role === "facultyCoordinator" || role === "club") && req.user.clubId && Object.keys(clubUpdates).length > 0) {
-      await prisma.club.update({
-        where: { id: req.user.clubId },
-        data: clubUpdates
-      });
+      user = await prisma.studentUser.update({ where: { id: userId || id }, data: updates });
     }
 
     const safeUser = Object.fromEntries(
       Object.entries(user).filter(([key]) => !["password", "otp", "otpExpire"].includes(key)),
     );
 
-    // Re-attach club associations and memberships
     if (userType === "admin") {
-        const clubInfo = (user.role === "facultyCoordinator" || user.role === "club") 
-            ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } }) 
-            : null;
-        safeUser.clubId = clubInfo?.id ?? null;
-        if (clubInfo) {
-            safeUser.bankName = clubInfo.bankName;
-            safeUser.accountHolderName = clubInfo.accountHolderName;
-            safeUser.accountNumber = clubInfo.accountNumber;
-            safeUser.ifscCode = clubInfo.ifscCode;
-            safeUser.upiId = clubInfo.upiId;
-            safeUser.bankPhone = clubInfo.bankPhone;
+      const isFaculty = user.role === "facultyCoordinator";
+      safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
+      const clubInfo = isFaculty ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } }) : null;
+      safeUser.clubId = clubInfo?.id ?? null;
+      if (clubInfo) {
+        safeUser.bankName = clubInfo.bankName;
+        safeUser.accountHolderName = clubInfo.accountHolderName;
+        safeUser.accountNumber = clubInfo.accountNumber;
+        safeUser.ifscCode = clubInfo.ifscCode;
+        safeUser.upiId = clubInfo.upiId;
+        safeUser.bankPhone = clubInfo.bankPhone;
+      }
+      safeUser.memberships = clubInfo ? [{
+        clubId: clubInfo.id,
+        clubName: clubInfo.clubName,
+        role: "facultyCoordinator",
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true
         }
-        safeUser.memberships = clubInfo ? [{ 
-            clubId: clubInfo.id, 
-            clubName: clubInfo.clubName, 
-            role: "facultyCoordinator",
-            permissions: {
-                canTakeAttendance: true,
-                canViewDashboard: true,
-                canCheckRegistration: true,
-                canEditEvents: true
-            }
-        }] : [];
+      }] : [];
+      return res.json({ message: "Profile updated successfully", user: safeUser, role: user.role, userType: "admin", principalType: safeUser.principalType });
     } else {
-        const { role: studentRole, clubId: studentClubId, memberships } = await getStudentRoleAndClub(user.id);
-        safeUser.clubId = studentClubId;
-        safeUser.memberships = memberships;
-        if (studentRole === "club" && studentClubId) {
-            const clubInfo = await prisma.club.findUnique({ where: { id: studentClubId } });
-            if (clubInfo) {
-                safeUser.bankName = clubInfo.bankName;
-                safeUser.accountHolderName = clubInfo.accountHolderName;
-                safeUser.accountNumber = clubInfo.accountNumber;
-                safeUser.ifscCode = clubInfo.ifscCode;
-                safeUser.upiId = clubInfo.upiId;
-                safeUser.bankPhone = clubInfo.bankPhone;
-            }
-        }
-    }
+      const { role: studentRole, clubId: studentClubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(user.id);
+      const progress = calculateAcademicProgress(user);
+      safeUser.academicYear = progress.academicYear;
+      safeUser.academicYearLabel = progress.academicYearLabel;
+      safeUser.semester = progress.semester;
+      safeUser.semesterLabel = progress.semesterLabel;
+      safeUser.expectedGraduationYear = user.expectedGraduationYear || progress.expectedGraduationYear;
+      safeUser.academicStatus = user.academicStatus || progress.academicStatus;
+      safeUser.year = progress.academicYearLabel;
+      safeUser.principalType = "STUDENT";
+      safeUser.clubId = studentClubId;
+      safeUser.memberships = memberships;
+      safeUser.institutionalAssignments = institutionalAssignments;
 
-    res.json({ message: "Profile updated successfully", user: safeUser });
+      return res.json({ message: "Profile updated successfully", user: safeUser, role: studentRole, userType: "student", principalType: "STUDENT" });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -514,12 +493,24 @@ router.get("/search", verifyToken, async (req, res) => {
         email: true,
         rollNo: true,
         branch: true,
-        year: true,
+        expectedGraduationYear: true,
+        academicStatus: true,
         program: true,
       },
       take: 15,
     });
-    res.json(students);
+    const enriched = students.map((s) => {
+      const progress = calculateAcademicProgress(s);
+      return {
+        ...s,
+        year: progress.academicYearLabel,
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+      };
+    });
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -542,14 +533,23 @@ router.get("/lookup/:rollNo", verifyToken, async (req, res) => {
         name: true,
         rollNo: true,
         branch: true,
-        year: true,
+        expectedGraduationYear: true,
+        academicStatus: true,
         program: true,
       },
     });
     if (!student) {
       return res.status(404).json({ message: "Student not found." });
     }
-    return res.json(student);
+    const progress = calculateAcademicProgress(student);
+    return res.json({
+      ...student,
+      year: progress.academicYearLabel,
+      academicYear: progress.academicYear,
+      academicYearLabel: progress.academicYearLabel,
+      semester: progress.semester,
+      semesterLabel: progress.semesterLabel,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

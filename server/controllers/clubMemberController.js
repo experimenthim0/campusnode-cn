@@ -2,6 +2,7 @@ import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 export const MAX_CLUB_STUDENT_LEADS = 1;
 export const MAX_CLUB_COORDINATORS = 5;
@@ -211,7 +212,9 @@ export const getClubMembers = async (req, res) => {
             email: true,
             rollNo: true,
             branch: true,
-            year: true,
+            expectedGraduationYear: true,
+            academicStatus: true,
+            program: true,
             profileImage: true,
             githubProfile: true,
             linkedinProfile: true,
@@ -229,9 +232,18 @@ export const getClubMembers = async (req, res) => {
       const isClubAccount = Boolean(
         club?.account?.email && m.student?.email && club.account.email.trim().toLowerCase() === m.student.email.trim().toLowerCase()
       );
+      const student = m.student
+        ? {
+            ...m.student,
+            year: calculateAcademicProgress(m.student).academicYearLabel,
+            academicYear: calculateAcademicProgress(m.student).academicYear,
+            semester: calculateAcademicProgress(m.student).semester,
+          }
+        : null;
       return {
         ...m,
         _id: m.id,
+        student,
         isClubAccount,
         clubName: club?.clubName,
       };
@@ -541,16 +553,25 @@ export const searchStudentsForClub = async (req, res) => {
         email: true,
         rollNo: true,
         branch: true,
-        year: true,
+        expectedGraduationYear: true,
+        academicStatus: true,
         program: true,
       },
       take: 10,
     });
 
-    const enriched = students.map((s) => ({
-      ...s,
-      isAlreadyMember: existingMemberIds.has(s.id),
-    }));
+    const enriched = students.map((s) => {
+      const progress = calculateAcademicProgress(s);
+      return {
+        ...s,
+        year: progress.academicYearLabel,
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+        isAlreadyMember: existingMemberIds.has(s.id),
+      };
+    });
 
     res.json({ students: enriched });
   } catch (err) {

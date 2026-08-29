@@ -14,6 +14,7 @@ import { uploadImage } from "../utils/cloudinary.js";
 import { getPublicResponse, setPublicResponse, invalidatePublicResponses } from "../utils/publicResponseCache.js";
 import { validateBooking, checkEventConflict } from "../services/conflictService.js";
 import { signTicket } from "../services/qrSigningService.js";
+import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 
 const router = express.Router();
 
@@ -156,10 +157,10 @@ const eventSchema = z.object({
     imageUrl: z.string().url().optional().or(z.literal("")),
     requiredFields: z.array(z.string()).optional(),
     allowedPrograms: z.array(z.string()).optional(),
-    allowedYears: z.array(z.string()).optional(),
+    allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
     allowedBranches: z.array(z.string()).optional(),
     registrationDeadline: z.coerce.date().optional().nullable(),
-    registrationType: z.enum(['individual', 'team', 'both']).optional().default('individual'),
+    registrationType: z.enum(['individual', 'team', 'both', 'none']).optional().default('individual'),
     minTeamSize: z.coerce.number().int().min(1).optional().default(1),
     maxTeamSize: z.coerce.number().int().min(1).optional().default(1),
     winners: z.array(z.any()).optional(),
@@ -767,7 +768,8 @@ router.get(
               profileImage: true,
               branch: true,
               program: true,
-              year: true,
+              expectedGraduationYear: true,
+              academicStatus: true,
             },
           },
           team: {
@@ -1073,6 +1075,18 @@ router.post(
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
+      if (event.registrationType === "none") {
+        return res.status(400).json({
+          message: "This event is open entry (walk-in) and does not require registration.",
+        });
+      }
+
+      if (event.registrationType === "team") {
+        return res.status(400).json({
+          message: "This event only allows team registration. Please register with a team.",
+        });
+      }
+
       // Duplicate check
       if (isExternal) {
         const existing = await prisma.participation.findFirst({
@@ -1096,15 +1110,13 @@ router.post(
           });
         }
 
-        if (
-          event.allowedYears?.length > 0 &&
-          student.year &&
-          !event.allowedYears.includes(student.year)
-        ) {
+        if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
+          const progress = calculateAcademicProgress(student);
           return res.status(403).json({
-            message: `Ineligible year. This event is open only to Year [${event.allowedYears.join(", ")}] students (your year: ${student.year}).`,
+            message: `Ineligible year. This event is open only to Year [${event.allowedYears.join(", ")}] students (your standing: ${progress.academicYearLabel}).`,
             allowedYears: event.allowedYears,
-            userYear: student.year,
+            userYear: progress.academicYearLabel,
+            academicYear: progress.academicYear,
           });
         }
 
@@ -1243,44 +1255,113 @@ router.get(
               email: true,
               rollNo: true,
               branch: true,
-              year: true,
+              expectedGraduationYear: true,
+              academicStatus: true,
               program: true,
             },
           },
           team: {
             include: {
-              leader: { select: { id: true, name: true } },
-              members: { include: { user: { select: { id: true, name: true } } } }
-            }
-          }
+              leader: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  rollNo: true,
+                  branch: true,
+                  program: true,
+                  expectedGraduationYear: true,
+                  academicStatus: true,
+                },
+              },
+              members: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      rollNo: true,
+                      branch: true,
+                      program: true,
+                      expectedGraduationYear: true,
+                      academicStatus: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 
       res.json({
-        participations: participations.map((p) => ({
-          id: p.id,
-          studentId: p.studentId,
-          externalEmail: p.externalEmail,
-          externalName: p.externalName,
-          status: p.status,
-          qrCode: p.qrCode,
-          attendedAt: p.attendedAt,
-          markedByMemberId: p.markedByMemberId,
-          amountPaid: p.amountPaid,
-          formResponses: p.formResponses,
-          createdAt: p.createdAt,
-          timestamp: p.createdAt,
-          student: p.student || null,
-          teamId: p.teamId,
-          team: p.team || null,
-          transactionId: p.transactionId || null,
-          payerName: p.payerName || null,
-          paymentRemarks: p.paymentRemarks || null,
-          paymentStatus: p.paymentStatus || 'SUCCESS',
-          paymentReviewedBy: p.paymentReviewedBy || null,
-          paymentReviewedAt: p.paymentReviewedAt || null,
-          paymentReviewMessage: p.paymentReviewMessage || null,
-        })),
+        participations: participations.map((p) => {
+          const student = p.student
+            ? {
+                ...p.student,
+                year: calculateAcademicProgress(p.student).academicYearLabel,
+                academicYear: calculateAcademicProgress(p.student).academicYear,
+                academicYearLabel: calculateAcademicProgress(p.student).academicYearLabel,
+                semester: calculateAcademicProgress(p.student).semester,
+                semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
+              }
+            : null;
+
+          const team = p.team
+            ? {
+                ...p.team,
+                leader: p.team.leader
+                  ? {
+                      ...p.team.leader,
+                      year: calculateAcademicProgress(p.team.leader).academicYearLabel,
+                      academicYear: calculateAcademicProgress(p.team.leader).academicYear,
+                      semester: calculateAcademicProgress(p.team.leader).semester,
+                    }
+                  : null,
+                members: (p.team.members || []).map((m) => {
+                  const memberUser = m.user
+                    ? {
+                        ...m.user,
+                        year: calculateAcademicProgress(m.user).academicYearLabel,
+                        academicYear: calculateAcademicProgress(m.user).academicYear,
+                        semester: calculateAcademicProgress(m.user).semester,
+                      }
+                    : null;
+                  return {
+                    ...m,
+                    user: memberUser,
+                    student: memberUser,
+                  };
+                }),
+              }
+            : null;
+
+          return {
+            id: p.id,
+            studentId: p.studentId,
+            externalEmail: p.externalEmail,
+            externalName: p.externalName,
+            status: p.status,
+            qrCode: p.qrCode,
+            attendedAt: p.attendedAt,
+            markedByMemberId: p.markedByMemberId,
+            amountPaid: p.amountPaid,
+            formResponses: p.formResponses,
+            createdAt: p.createdAt,
+            timestamp: p.createdAt,
+            student,
+            teamId: p.teamId,
+            team,
+            transactionId: p.transactionId || null,
+            payerName: p.payerName || null,
+            paymentRemarks: p.paymentRemarks || null,
+            paymentStatus: p.paymentStatus || "SUCCESS",
+            paymentReviewedBy: p.paymentReviewedBy || null,
+            paymentReviewedAt: p.paymentReviewedAt || null,
+            paymentReviewMessage: p.paymentReviewMessage || null,
+          };
+        }),
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -1378,6 +1459,9 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (updates.totalSeats !== undefined) updates.totalSeats = Number(updates.totalSeats || 0);
     if (updates.minTeamSize !== undefined) updates.minTeamSize = Number(updates.minTeamSize || 1);
     if (updates.maxTeamSize !== undefined) updates.maxTeamSize = Number(updates.maxTeamSize || 1);
+    if (updates.registrationType === "none") {
+      updates.registeredCount = 0;
+    }
 
     const updatedEvent = await prisma.$transaction(async (tx) => {
       if (sponsors !== undefined) {

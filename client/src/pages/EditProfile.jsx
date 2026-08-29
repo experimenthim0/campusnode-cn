@@ -8,6 +8,7 @@ import { changePassword } from '../services/authService';
 import { updateProfile } from '../services/userService';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import ShimmerText from '../components/ShimmerText';
+import { calculateAcademicProgress } from '../utils/academicProgress';
 
 const EditProfile = () => {
     const { showNotification } = useNotification();
@@ -61,11 +62,24 @@ const EditProfile = () => {
             setUser(authUser);
             setRole(authRole);
 
+            const isStudentAcc = Boolean(
+                authUser?.rollNo ||
+                authUser?.branch ||
+                authUser?.expectedGraduationYear ||
+                authUser?.academicYear ||
+                authUser?.year ||
+                authRole === 'student' ||
+                authRole === 'member' ||
+                localStorage.getItem('role') === 'member' ||
+                localStorage.getItem('role') === 'student'
+            );
+            const isClubAcc = !isStudentAcc && (authRole === 'club' || authUser?.principalType === 'CLUB');
+
             // Extract social links if stored in socialLinks array
             const socialMap = {};
             const rawLinks = Array.isArray(authUser.socialLinks)
                 ? authUser.socialLinks
-                : (Array.isArray(authUser.club?.socialLinks) ? authUser.club.socialLinks : []);
+                : (isClubAcc && Array.isArray(authUser.club?.socialLinks) ? authUser.club.socialLinks : []);
             
             rawLinks.forEach((l) => {
                 const plat = (l.platform || '').toLowerCase();
@@ -77,25 +91,47 @@ const EditProfile = () => {
                 if (plat === 'github') socialMap.githubProfile = l.url;
             });
 
-            setFormData({
-                name: authUser.clubName || authUser.name || '',
-                year: authUser.year || '',
-                category: authUser.category || authUser.club?.category || '',
-                motto: authUser.motto || authUser.club?.motto || '',
-                githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
-                linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
-                xProfile: authUser.xProfile || socialMap.xProfile || '',
-                portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
-                instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
-                whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
-                isTwoStepEnabled: authUser.isTwoStepEnabled || false,
-                bankName: authUser.bankName || authUser.club?.bankName || '',
-                accountHolderName: authUser.accountHolderName || authUser.club?.accountHolderName || '',
-                accountNumber: authUser.accountNumber || authUser.club?.accountNumber || '',
-                ifscCode: authUser.ifscCode || authUser.club?.ifscCode || '',
-                upiId: authUser.upiId || authUser.club?.upiId || '',
-                bankPhone: authUser.bankPhone || authUser.club?.bankPhone || ''
-            });
+            if (isClubAcc) {
+                setFormData({
+                    name: authUser.clubName || authUser.club?.clubName || authUser.name || '',
+                    year: '',
+                    category: authUser.category || authUser.club?.category || '',
+                    motto: authUser.motto || authUser.club?.motto || '',
+                    githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
+                    linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
+                    xProfile: authUser.xProfile || socialMap.xProfile || '',
+                    portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
+                    instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
+                    whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
+                    isTwoStepEnabled: authUser.isTwoStepEnabled || false,
+                    bankName: authUser.bankName || authUser.club?.bankName || '',
+                    accountHolderName: authUser.accountHolderName || authUser.club?.accountHolderName || '',
+                    accountNumber: authUser.accountNumber || authUser.club?.accountNumber || '',
+                    ifscCode: authUser.ifscCode || authUser.club?.ifscCode || '',
+                    upiId: authUser.upiId || authUser.club?.upiId || '',
+                    bankPhone: authUser.bankPhone || authUser.club?.bankPhone || ''
+                });
+            } else {
+                setFormData({
+                    name: authUser.name || '',
+                    year: authUser.academicYearLabel || authUser.year || '',
+                    category: '',
+                    motto: '',
+                    githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
+                    linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
+                    xProfile: authUser.xProfile || socialMap.xProfile || '',
+                    portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
+                    instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
+                    whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
+                    isTwoStepEnabled: authUser.isTwoStepEnabled || false,
+                    bankName: '',
+                    accountHolderName: '',
+                    accountNumber: '',
+                    ifscCode: '',
+                    upiId: '',
+                    bankPhone: ''
+                });
+            }
         }
     }, [authUser, authRole]);
 
@@ -109,6 +145,27 @@ const EditProfile = () => {
             }, 100);
         }
     }, [location.hash, activeTab]);
+
+    const isStudentAccount = Boolean(
+        user?.rollNo ||
+        user?.branch ||
+        user?.expectedGraduationYear ||
+        user?.academicYear ||
+        user?.year ||
+        role === 'student' ||
+        role === 'member' ||
+        authRole === 'student' ||
+        authRole === 'member' ||
+        localStorage.getItem('role') === 'member' ||
+        localStorage.getItem('role') === 'student'
+    );
+    const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
+
+    // Dynamic Academic Progress for Students / Student Leads
+    const studentProgress = isStudentAccount ? calculateAcademicProgress(user) : null;
+    const displayAcademicYear = user?.academicYearLabel || studentProgress?.academicYearLabel || user?.year;
+    const displaySemester = user?.semesterLabel || studentProgress?.semesterLabel;
+    const displayAcademicStanding = [displayAcademicYear, displaySemester].filter(Boolean).join(" • ");
 
     const handleProfileChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -129,8 +186,21 @@ const EditProfile = () => {
             delete updateData.newPassword;
             delete updateData.confirmPassword;
 
-            const res = await updateProfile(role, user.id || user._id, updateData);
-            setSession(res.data.user, role);
+            // For personal student accounts, strip out club fields
+            if (!isClubAccount) {
+                delete updateData.category;
+                delete updateData.motto;
+                delete updateData.bankName;
+                delete updateData.accountHolderName;
+                delete updateData.accountNumber;
+                delete updateData.ifscCode;
+                delete updateData.upiId;
+                delete updateData.bankPhone;
+            }
+
+            const targetRole = isClubAccount ? 'club' : 'student';
+            const res = await updateProfile(targetRole, user.id || user._id, updateData);
+            setSession(res.data.user, authRole || role);
             
             // Invalidate user and club profile caches locally & broadcast to other tabs
             await invalidateCache(['/api/users/*', '/api/auth/me', '/api/clubs/*']);
@@ -181,8 +251,9 @@ const EditProfile = () => {
         setIsSaving2FA(true);
         try {
             setFormData(prev => ({ ...prev, isTwoStepEnabled: newVal }));
-            const res = await updateProfile(role, user.id || user._id, { isTwoStepEnabled: newVal });
-            setSession(res.data.user, role);
+            const targetRole = isClubAccount ? 'club' : 'student';
+            const res = await updateProfile(targetRole, user.id || user._id, { isTwoStepEnabled: newVal });
+            setSession(res.data.user, authRole || role);
             await invalidateCache(['/api/users/*', '/api/auth/me']);
             showNotification(`2-Step Verification ${newVal ? 'enabled' : 'disabled'}`, 'success');
         } catch (err) {
@@ -198,17 +269,6 @@ const EditProfile = () => {
             <ShimmerText text="Loading profile..." className="text-sm font-semibold tracking-wide" />
         </div>
     );
-
-    const isStudentAccount = Boolean(
-        user?.rollNo ||
-        user?.branch ||
-        user?.year ||
-        role === 'student' ||
-        role === 'member' ||
-        localStorage.getItem('role') === 'member' ||
-        localStorage.getItem('role') === 'student'
-    );
-    const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
 
     return (
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -320,8 +380,8 @@ const EditProfile = () => {
                                 </p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Year</label>
-                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{user.year || 'N/A'}</p>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Standing</label>
+                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{displayAcademicStanding || 'N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -432,8 +492,8 @@ const EditProfile = () => {
                         </div>
                     </div>
                     
-                    {/* Financial Information section (For Club Account) */}
-                    {(role === 'club' || authRole === 'club' || user?.clubId || user?.role === 'club') && (
+                    {/* Financial Information section (For Official Club Account ONLY) */}
+                    {isClubAccount && (
                         <div id="payment-details" className="pt-8 md:pt-10 border-t border-neutral-200 dark:border-neutral-800 space-y-6">
                             <div className="flex items-center gap-3">
                                 <i className="ri-bank-card-line text-orange-600 text-xl" />
@@ -627,8 +687,8 @@ const EditProfile = () => {
                         </div>
                     </form>
 
-                    {/* 2-Step Verification Card (For non-student accounts) */}
-                    {(!['member', 'student'].includes(role)) && (
+                    {/* 2-Step Verification Card (Hidden for all student and student lead accounts) */}
+                    {!isStudentAccount && (
                         <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
                             <label className="flex items-center justify-between p-4 bg-orange-50/40 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 rounded-xl cursor-pointer group hover:border-orange-500 transition-colors">
                                 <div className="flex items-center gap-3.5">

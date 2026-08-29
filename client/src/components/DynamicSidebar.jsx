@@ -25,7 +25,7 @@ import { hasPermission, PERMISSIONS } from "../utils/rbac";
  * Returns a human-readable role label for display.
  */
 const getRoleLabel = (role, user) => {
-  const isStudent = Boolean(user?.rollNo || user?.branch || user?.year || role === 'student' || role === 'member');
+  const isStudent = Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member');
   if (isStudent) {
     if (user?.memberships?.some(m => m.role === 'CLUB_HEAD')) return 'Student • Student Lead';
     if (user?.memberships?.some(m => m.role === 'COORDINATOR')) return 'Student • Coordinator';
@@ -295,7 +295,7 @@ const DynamicSidebar = ({ user }) => {
         )}
 
         {/* ── Student Personal: My Events (Visible for students, leads & coordinators; hidden for pure official club & institutional accounts) ── */}
-        {!isClubAccount && role !== "central_organizer" && user?.principalType !== "INSTITUTIONAL" && (Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
+        {!isClubAccount && role !== "central_organizer" && user?.principalType !== "INSTITUTIONAL" && (Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 

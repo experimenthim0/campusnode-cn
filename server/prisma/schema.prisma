@@ -34,8 +34,9 @@ model StudentUser {
   email                   String           @unique
   password                String
   branch                  String?
-  year                    String?
   program                 String?
+  expectedGraduationYear  Int?
+  academicStatus          String           @default("ACTIVE")
   githubProfile           String?
   linkedinProfile         String?
   xProfile                String?

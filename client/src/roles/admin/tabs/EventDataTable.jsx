@@ -45,7 +45,7 @@ const EventDataTable = ({
             return [
                 `"${e.eventName || e.title || ''}"`,
                 `"${club}"`,
-                e.totalRegistrations ?? e.registeredCount ?? e.regCount ?? 0,
+                e.registrationType === 'none' ? 'Open Entry (No Reg)' : (e.totalRegistrations ?? e.registeredCount ?? e.regCount ?? 0),
                 e.eventType || (e.entryFee > 0 ? 'Paid' : 'Free'),
                 new Date(e.eventDate || e.startTime).toLocaleDateString(),
                 e.totalAmountReceived || e.totalCollected || 0,
@@ -172,7 +172,15 @@ const EventDataTable = ({
                                     {dateStr ? new Date(dateStr).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
                                 </Td>
                                 <Td className="text-orange-600 dark:text-orange-400 font-semibold" title={clubName === 'ODSW' ? 'Office of DSW' : clubName}>{clubName}</Td>
-                                <Td className="font-semibold text-black dark:text-white">{regCount} students</Td>
+                                <Td className="font-semibold text-black dark:text-white">
+                                    {item.registrationType === 'none' ? (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                                            Open Entry (No Reg.)
+                                        </span>
+                                    ) : (
+                                        `${regCount} students`
+                                    )}
+                                </Td>
                                 <Td>
                                     <TypeBadge isPaid={isPaid} fee={fee} />
                                 </Td>

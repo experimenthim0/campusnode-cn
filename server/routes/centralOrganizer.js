@@ -14,6 +14,8 @@ import { z } from "zod";
 import { verifyToken } from "../middleware/auth.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
+import { sanitizeUser } from "../utils/sanitizeUser.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { slugifyUnique } from "../utils/slugifyUnique.js";
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 import { EVENT_STAFF_PERMISSIONS } from "../middleware/eventStaffAuth.js";
@@ -103,7 +105,7 @@ const createEventSchema = z.object({
     totalSeats: z.number().int().min(0).nullable().optional(),
     imageUrl: z.string().nullable().optional(),
     allowedPrograms: z.array(z.string()).nullable().optional(),
-    allowedYears: z.array(z.string()).nullable().optional(),
+    allowedYears: z.array(z.union([z.string(), z.number()])).nullable().optional(),
     allowedBranches: z.array(z.string()).nullable().optional(),
     registrationDeadline: z.string().nullable().optional(),
     registrationType: z.enum(["none", "individual", "team"]).nullable().optional(),
@@ -228,7 +230,12 @@ router.put("/events/:eventId", async (req, res) => {
     if (allowedYears !== undefined) updateData.allowedYears = allowedYears;
     if (allowedBranches !== undefined) updateData.allowedBranches = allowedBranches;
     if (registrationDeadline !== undefined) updateData.registrationDeadline = registrationDeadline ? new Date(registrationDeadline) : null;
-    if (registrationType !== undefined) updateData.registrationType = registrationType;
+    if (registrationType !== undefined) {
+      updateData.registrationType = registrationType;
+      if (registrationType === "none") {
+        updateData.registeredCount = 0;
+      }
+    }
     if (minTeamSize !== undefined) updateData.minTeamSize = minTeamSize;
     if (maxTeamSize !== undefined) updateData.maxTeamSize = maxTeamSize;
     if (provideCertificate !== undefined) updateData.provideCertificate = provideCertificate;
@@ -262,7 +269,7 @@ router.put("/events/:eventId", async (req, res) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DELETE /central-organizer/events/:eventId — Delete a central event
-// ═══════════════════════════════════════════════════════════════════════════════
+
 
 router.delete("/events/:eventId", async (req, res) => {
   try {
@@ -286,6 +293,7 @@ router.delete("/events/:eventId", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// ═══════════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // POST /central-organizer/events/:eventId/clubs — Add participating club
@@ -359,12 +367,24 @@ router.get("/events/:eventId/staff", async (req, res) => {
         status: { not: "REVOKED" },
       },
       include: {
-        user: { select: { id: true, name: true, email: true, profileImage: true, branch: true, year: true } },
+        user: { select: { id: true, name: true, email: true, profileImage: true, branch: true, expectedGraduationYear: true, academicStatus: true, program: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    res.json({ staff });
+    const enrichedStaff = staff.map((st) => ({
+      ...st,
+      user: st.user
+        ? {
+            ...st.user,
+            year: calculateAcademicProgress(st.user).academicYearLabel,
+            academicYear: calculateAcademicProgress(st.user).academicYear,
+            semester: calculateAcademicProgress(st.user).semester,
+          }
+        : null,
+    }));
+
+    res.json({ staff: enrichedStaff });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -783,13 +803,26 @@ router.get("/students/search", async (req, res) => {
         email: true,
         rollNo: true,
         branch: true,
-        year: true,
+        expectedGraduationYear: true,
+        academicStatus: true,
         program: true,
       },
       take: 10,
     });
 
-    res.json({ students });
+    const enriched = students.map((s) => {
+      const progress = calculateAcademicProgress(s);
+      return {
+        ...s,
+        year: progress.academicYearLabel,
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+      };
+    });
+
+    res.json({ students: enriched });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

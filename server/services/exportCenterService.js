@@ -1,6 +1,7 @@
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { PERMISSIONS, hasPermission } from "../utils/rbac.js";
+import { calculateAcademicProgress, normalizeYearToNumber } from "../utils/academicProgress.js";
 
 // In-memory fallback history buffer for export audit logging
 const exportHistoryMemoryLog = [];
@@ -321,7 +322,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
     case "students": {
       const where = {};
       if (filters.branch && filters.branch !== "all") where.branch = filters.branch;
-      if (filters.year && filters.year !== "all") where.year = filters.year;
       if (filters.program && filters.program !== "all") where.program = filters.program;
       if (filters.isVerified === "true") where.isVerified = true;
       if (filters.isVerified === "false") where.isVerified = false;
@@ -345,8 +345,9 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           rollNo: true,
           email: true,
           branch: true,
-          year: true,
           program: true,
+          expectedGraduationYear: true,
+          academicStatus: true,
           isVerified: true,
           isBlocked: true,
           createdAt: true,
@@ -363,13 +364,16 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       records = rawStudents.map((s) => {
         const isClubHead = s.memberships && s.memberships.length > 0;
         const clubName = isClubHead ? s.memberships[0]?.club?.clubName : null;
+        const progress = calculateAcademicProgress(s);
         return {
           id: s.id,
           name: s.name,
           rollNo: s.rollNo || "N/A",
           email: s.email,
           branch: s.branch || "N/A",
-          year: s.year || "N/A",
+          year: progress.academicYearLabel,
+          academicYear: progress.academicYear,
+          semester: progress.semesterLabel,
           program: s.program || "N/A",
           userCategory: isClubHead ? `Club Head (${clubName || 'Club'})` : "Student",
           isVerified: s.isVerified ? "Yes" : "No",
@@ -377,6 +381,13 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           createdAt: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "",
         };
       });
+
+      if (filters.year && filters.year !== "all") {
+        const targetYearNum = normalizeYearToNumber(filters.year);
+        if (targetYearNum) {
+          records = records.filter((r) => normalizeYearToNumber(r.year) === targetYearNum);
+        }
+      }
       break;
     }
 

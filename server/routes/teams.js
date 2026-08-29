@@ -6,6 +6,7 @@ import { createObjectId } from "../utils/objectId.js";
 import crypto from "crypto";
 import { signTicket } from "../services/qrSigningService.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
+import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 
 const router = express.Router();
 // helper to format/send notifications
@@ -116,12 +117,9 @@ router.post(
           return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
         }
 
-        if (
-          event.allowedYears?.length > 0 &&
-          student.year &&
-          !event.allowedYears.includes(student.year)
-        ) {
-          return res.status(400).json({ message: `${student.name} is ineligible due to their year (${student.year}).` });
+        if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
+          const progress = calculateAcademicProgress(student);
+          return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
         }
 
         if (
@@ -531,12 +529,9 @@ router.post(
         return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
       }
 
-      if (
-        event.allowedYears?.length > 0 &&
-        student.year &&
-        !event.allowedYears.includes(student.year)
-      ) {
-        return res.status(400).json({ message: `${student.name} is ineligible due to their year (${student.year}).` });
+      if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
+        const progress = calculateAcademicProgress(student);
+        return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
       }
 
       if (
@@ -688,12 +683,12 @@ router.get(
         include: {
           event: true,
           leader: {
-            select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, year: true }
+            select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true, academicStatus: true }
           },
           members: {
             include: {
               user: {
-                select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, year: true }
+                select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true, academicStatus: true }
               }
             }
           }
@@ -701,7 +696,31 @@ router.get(
       });
 
       if (!team) return res.status(404).json({ message: "Team not found" });
-      res.json(team);
+
+      const enrichedTeam = {
+        ...team,
+        leader: team.leader
+          ? {
+              ...team.leader,
+              year: calculateAcademicProgress(team.leader).academicYearLabel,
+              academicYear: calculateAcademicProgress(team.leader).academicYear,
+              semester: calculateAcademicProgress(team.leader).semester,
+            }
+          : null,
+        members: (team.members || []).map((m) => ({
+          ...m,
+          user: m.user
+            ? {
+                ...m.user,
+                year: calculateAcademicProgress(m.user).academicYearLabel,
+                academicYear: calculateAcademicProgress(m.user).academicYear,
+                semester: calculateAcademicProgress(m.user).semester,
+              }
+            : null,
+        })),
+      };
+
+      res.json(enrichedTeam);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

@@ -197,7 +197,7 @@ const BottomNav = () => {
                 <p className="text-[11px] font-bold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
                 <p className="text-base font-black text-black dark:text-white">{user.name}</p>
                 <p className="text-[11px] tracking-widest text-orange-600 dark:text-orange-500 font-bold mt-0.5">
-                  {Boolean(user?.rollNo || user?.branch || user?.year || role === 'student' || role === 'member')
+                  {Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member')
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
                       ? "Student • Student Lead"
                       : user?.memberships?.some(m => m.role === "COORDINATOR")
@@ -228,7 +228,7 @@ const BottomNav = () => {
               </Link>
 
               {/* My Events (Visible for all students, leads & coordinators; hidden for pure official club accounts) */}
-              {(!(!user?.rollNo && role === "club") && Boolean(user?.rollNo || user?.branch || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
+              {(!(!user?.rollNo && role === "club") && Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
                 <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
                      <CalendarDaysIcon size={18} />

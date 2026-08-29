@@ -98,7 +98,7 @@ const EventRegistrations = () => {
         { key: 'rollNo', label: 'Roll Number', getValue: row => row.reg.student?.rollNo },
         { key: 'email', label: 'Email', getValue: row => row.reg.student?.email || row.reg.externalEmail },
         { key: 'branch', label: 'Branch', getValue: row => row.reg.student?.branch },
-        { key: 'year', label: 'Year', getValue: row => row.reg.student?.year },
+        { key: 'year', label: 'Year', getValue: row => row.reg.student?.year || row.reg.student?.academicYearLabel || '' },
         { key: 'program', label: 'Program', getValue: row => row.reg.student?.program },
         { key: 'externalName', label: 'External Name', getValue: row => row.reg.externalName },
         { key: 'externalEmail', label: 'External Email', getValue: row => row.reg.externalEmail },
@@ -584,7 +584,7 @@ const EventRegistrations = () => {
                                                                 </td>
                                                                 <td className="px-5 py-3 font-mono text-left">{m.student?.rollNo || '-'}</td>
                                                                 <td className="px-5 py-3 text-neutral-550 dark:text-neutral-400 text-left">
-                                                                    {m.student?.program} • {m.student?.branch} ({m.student?.year})
+                                                                    {m.student?.program || '-'} • {m.student?.branch || '-'} ({m.student?.year || m.student?.academicYearLabel || '-'})
                                                                 </td>
                                                                 <td className="px-5 py-3 text-left">
                                                                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-405 border-0">
@@ -644,7 +644,7 @@ const EventRegistrations = () => {
                                         const studentEmail = reg.student?.email || reg.externalEmail || '-';
                                         const rollNo = reg.student?.rollNo || '-';
                                         const programInfo = isInternal
-                                            ? `${reg.student.program || '-'} • ${reg.student.branch || '-'} (${reg.student.year || '-'})`
+                                            ? `${reg.student.program || '-'} • ${reg.student.branch || '-'} (${reg.student.year || reg.student.academicYearLabel || '-'})`
                                             : 'External Participant';
 
                                         return (

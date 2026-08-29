@@ -9,7 +9,7 @@ import {
   getBranchesForProgram,
   getMaxDurationForProgram,
 } from '../constants/academicConstants';
-import { getGraduationYearOptions, calculateYearFromGraduation } from '../utils/academicYear';
+import { getGraduationYearOptions, calculateAcademicProgress } from '../utils/academicProgress';
 import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterStudent = () => {
@@ -21,6 +21,7 @@ const RegisterStudent = () => {
     rollNo: '',
     branch: '',
     year: '',
+    expectedGraduationYear: '',
     program: '',
     email: '',
     password: ''
@@ -32,16 +33,19 @@ const RegisterStudent = () => {
   const isOtherProgram = formData.program === 'OTHER';
 
   const availableBranches = getBranchesForProgram(formData.program);
-  const maxDurationYears = getMaxDurationForProgram(formData.program);
-  const gradYearOptions = getGraduationYearOptions(maxDurationYears);
+  const gradYearOptions = getGraduationYearOptions(formData.program || 'BTECH');
 
   const handleGraduationYearChange = (e) => {
     const selectedGradYear = e.target.value;
     setGraduationYear(selectedGradYear);
-    const calculatedYear = calculateYearFromGraduation(selectedGradYear);
+    const progress = calculateAcademicProgress({
+      program: formData.program,
+      expectedGraduationYear: selectedGradYear,
+    });
     setFormData((prev) => ({
       ...prev,
-      year: calculatedYear
+      expectedGraduationYear: selectedGradYear ? parseInt(selectedGradYear, 10) : null,
+      year: progress.academicYearLabel,
     }));
   };
 
@@ -55,6 +59,7 @@ const RegisterStudent = () => {
         program: value,
         branch: '',
         year: '',
+        expectedGraduationYear: '',
       }));
       return;
     }
@@ -84,7 +89,7 @@ const RegisterStudent = () => {
   };
 
   const inputCls =
-    'w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400';
+    'w-full px-4 py-3 border border-neutral-200 dark:border-gray-200 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400';
   const labelCls =
     'block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2';
 
@@ -156,7 +161,7 @@ const RegisterStudent = () => {
                   <option value="">{formData.program ? "Select Branch" : "Select Program First"}</option>
                   {availableBranches.map((b) => (
                     <option key={b.code} value={b.code}>
-                      {b.code} ({b.label})
+                      {b.code}
                     </option>
                   ))}
                 </select>
@@ -175,11 +180,6 @@ const RegisterStudent = () => {
                   </option>
                 ))}
               </select>
-              {formData.year && (
-                <p className="mt-1 text-xs text-orange-600 dark:text-orange-400 font-medium">
-                  Calculated Academic Year: <span className="font-semibold">{formData.year}</span>
-                </p>
-              )}
             </div>
 
             {/* Email */}

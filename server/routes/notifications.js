@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { verifyToken, allowRoles, requirePermission } from "../middleware/auth.js";
 import { PERMISSIONS } from "../utils/rbac.js";
 import prisma from "../lib/prisma.js";
@@ -6,6 +7,13 @@ import { createObjectId } from "../utils/objectId.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
 
 const router = express.Router();
+
+// Rate limiter: notification creation — prevent notification spam
+const notificationLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { message: "Too many notifications sent. Please slow down." },
+});
 
 // Defense-in-depth: all notification routes require authentication.
 // Individual handlers still declare their own verifyToken + allowRoles for
@@ -66,8 +74,12 @@ function formatSender(notification) {
 }
 
 // ── POST /notifications — create & broadcast ──────────────────────────────────
-
-router.post("/", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_CREATE), async (req, res) => {
+router.post(
+  "/",
+  notificationLimiter,
+  verifyToken,
+  requirePermission(PERMISSIONS.NOTIFICATION_CREATE),
+  async (req, res) => {
   try {
     const { targetType, eventId, title, message } = req.body;
     const { userId: sender, userType } = req.user;
