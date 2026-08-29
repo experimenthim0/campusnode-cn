@@ -1,53 +1,92 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-/** Stat card */
-export const StatCard = ({ label, value, accent }) => (
-    <div className={`p-5 rounded-2xl border transition-colors ${
+/** Enhanced Stat card */
+export const StatCard = ({ label, value, subtext, icon: Icon, accent, className = "" }) => (
+    <div className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
         accent 
-            ? "bg-black dark:bg-white border-black dark:border-white" 
-            : "bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800"
-    }`}>
-        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">{label}</p>
-        <p className={`text-2xl font-black mt-1 ${
-            accent ? "text-orange-500 dark:text-orange-600" : "text-black dark:text-white"
-        }`}>{value}</p>
+            ? "bg-black dark:bg-white border-black dark:border-white shadow-sm" 
+            : "bg-white dark:bg-[#0c0c0c] border-neutral-200/90 dark:border-zinc-800/90 shadow-xs hover:border-neutral-300 dark:hover:border-zinc-700"
+    } ${className}`}>
+        <div className="flex items-center justify-between gap-2">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-neutral-400 dark:text-neutral-500">
+                {label}
+            </p>
+            {Icon && (
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    accent 
+                        ? "bg-white/10 dark:bg-black/10 text-white dark:text-black" 
+                        : "bg-neutral-100 dark:bg-zinc-800/80 text-neutral-500 dark:text-neutral-400"
+                }`}>
+                    <Icon size={14} strokeWidth={2.2} />
+                </div>
+            )}
+        </div>
+        
+        <div className="mt-3">
+            <p className={`text-2xl lg:text-3xl font-black tracking-tight leading-none ${
+                accent ? "text-orange-500 dark:text-orange-600" : "text-black dark:text-white"
+            }`}>
+                {value}
+            </p>
+            {subtext && (
+                <p className={`text-[11px] mt-1.5 font-medium leading-tight line-clamp-1 ${
+                    accent ? "text-neutral-300 dark:text-neutral-600" : "text-neutral-400 dark:text-neutral-500"
+                }`}>
+                    {subtext}
+                </p>
+            )}
+        </div>
     </div>
 );
 
 /** DataTable wrapper */
 export const DataTable = ({ children }) => (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-            <table className="min-w-full">{children}</table>
+            <table className="min-w-full divide-y divide-neutral-100 dark:divide-zinc-800/60">{children}</table>
         </div>
     </div>
 );
 
 /** Table header cell */
-export const Th = ({ children, align = "left" }) => (
-    <th className={`px-5 py-4 text-${align} text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500`}>
+export const Th = ({ children, align = "left", className = "" }) => (
+    <th className={`px-4 lg:px-5 py-3.5 text-${align} text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-400 dark:text-neutral-500 bg-neutral-50/60 dark:bg-zinc-900/40 select-none ${className}`}>
         {children}
     </th>
 );
 
 /** Table body cell */
 export const Td = ({ children, align = "left", className = "" }) => (
-    <td className={`px-5 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300 text-${align} ${className}`}>
+    <td className={`px-4 lg:px-5 py-3.5 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300 text-${align} ${className}`}>
         {children}
     </td>
 );
 
-/** Event type badge */
+/** Event type / pricing badge */
 export const TypeBadge = ({ isPaid, fee }) => (
-    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg border ${
+    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border ${
         isPaid
-            ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
-            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+            : 'bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-700'
     }`}>
         {isPaid ? (fee ? `Paid (₹${fee})` : 'Paid') : 'Free'}
     </span>
 );
+
+/** Entry registration requirement badge */
+export const EntryBadge = ({ registrationType }) => {
+    const isOpen = registrationType === 'none';
+    return (
+        <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border ${
+            isOpen
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
+        }`}>
+            {isOpen ? 'Open Entry' : 'Reg. Required'}
+        </span>
+    );
+};
 
 /** Form input */
 export const FormInput = ({ name, type = "text", placeholder, required }) => (
@@ -56,16 +95,16 @@ export const FormInput = ({ name, type = "text", placeholder, required }) => (
         type={type} 
         placeholder={placeholder} 
         required={required} 
-        className="px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-400 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors placeholder:text-neutral-500 dark:placeholder:text-neutral-600" 
+        className="px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors placeholder:text-neutral-400 dark:placeholder:text-neutral-600" 
     />
 );
 
 /** Filter select */
-export const FilterSelect = ({ children, value, onChange }) => (
+export const FilterSelect = ({ children, value, onChange, className = "" }) => (
     <select 
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[12px] font-bold text-neutral-600 dark:text-neutral-300 focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors cursor-pointer"
+        className={`h-9 px-3 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800 rounded-xl text-[12px] font-semibold text-neutral-700 dark:text-neutral-300 focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors cursor-pointer ${className}`}
     >
         {children}
     </select>
@@ -74,9 +113,9 @@ export const FilterSelect = ({ children, value, onChange }) => (
 /** Modal wrapper */
 export const Modal = ({ onClose, title, subtitle, children }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4" onClick={onClose}>
-        <div className="bg-white dark:bg-[#0f0f0f] border border-neutral-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="bg-white dark:bg-[#0f0f0f] border border-neutral-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div className="px-6 pt-6 pb-4 flex justify-between items-start">
+            <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-neutral-100 dark:border-zinc-850">
                 <div>
                     <h3 className="text-lg font-black text-black dark:text-white tracking-tight">{title}</h3>
                     {subtitle && <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mt-0.5 tracking-wide">{subtitle}</p>}
@@ -86,7 +125,7 @@ export const Modal = ({ onClose, title, subtitle, children }) => (
                 </button>
             </div>
             {/* Body */}
-            <div className="px-6 pb-6">{children}</div>
+            <div className="px-6 py-5">{children}</div>
         </div>
     </div>
 );
@@ -117,3 +156,4 @@ export const ModalFormField = ({ label, name, type = "text", defaultValue, place
         />
     </div>
 );
+

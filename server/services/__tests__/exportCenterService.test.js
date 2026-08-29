@@ -105,11 +105,11 @@ describe("Export Center Service Unit Tests", () => {
     it(
       "Records export metadata into history buffer",
       async () => {
-        await recordExportLog({
+        const log = await recordExportLog({
           dataset: "events",
           recordCount: 42,
           actorId: "admin_test",
-          actorEmail: "admin@campusnode.edu",
+          actorEmail: "clubsetuadmin@nitj.ac.in",
           actorRole: "admin",
           filters: { session: "2026–27" },
           columns: ["title", "venue"],
@@ -120,7 +120,16 @@ describe("Export Center Service Unit Tests", () => {
         const latest = history[0];
         expect(latest.dataset).toBe("events");
         expect(latest.recordCount).toBe(42);
-        expect(latest.actorEmail).toBe("admin@campusnode.edu");
+        expect(latest.actorEmail).toBe("clubsetuadmin@nitj.ac.in");
+
+        // Clean up test entry from DB
+        try {
+          if (prisma.exportLog && log?.id) {
+            await prisma.exportLog.delete({ where: { id: log.id } });
+          }
+        } catch {
+          // ignore
+        }
       },
       15000
     );

@@ -125,22 +125,29 @@ const EventCalendarPage = ({ readOnly = false }) => {
     try {
       setLoading(true);
 
-      // Determine date range parameters based on subView or activeView
+      // Determine date range parameters based on subView
       const start = new Date(currentDate);
-      const end = new Date(currentDate);
+      let end = new Date(currentDate);
 
-      if (activeView === "calendar" && subView === "month") {
+      if (subView === "month") {
         start.setDate(1);
         start.setHours(0, 0, 0, 0);
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(0);
-        end.setHours(23, 59, 59, 999);
+        // Include buffer for calendar grid padding
+        if (activeView === "calendar") {
+          start.setDate(start.getDate() - 7);
+          end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 7, 23, 59, 59, 999);
+        } else {
+          end = new Date(start.getFullYear(), start.getMonth() + 1, 0, 23, 59, 59, 999);
+        }
       } else if (subView === "week") {
-        start.setDate(start.getDate() - start.getDay());
+        const day = start.getDay();
+        start.setDate(start.getDate() - day);
         start.setHours(0, 0, 0, 0);
-        end.setDate(start.getDate() + 7);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
         end.setHours(23, 59, 59, 999);
       } else {
+        // "day" subView or timeline single day
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 999);
       }
@@ -159,7 +166,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
 
       const [calRes, conflictRes] = await Promise.all([
         getCalendarEvents(params),
-        getConflicts()
+        getConflicts().catch(() => ({ data: { totalIssues: 0 } }))
       ]);
 
       const eventsData = Array.isArray(calRes?.data?.events)
@@ -173,7 +180,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
 
       setEvents(eventsData);
       setBlackouts(blackoutsData);
-      setConflictCount(conflictRes.data?.totalIssues || 0);
+      setConflictCount(conflictRes?.data?.totalIssues || 0);
     } catch (err) {
       console.error("Failed to fetch calendar data:", err);
       setEvents([]);
@@ -298,42 +305,109 @@ const EventCalendarPage = ({ readOnly = false }) => {
           <ShimmerText text="Loading CampusNode calendar schedule..." className="text-sm font-medium" />
         </div>
       ) : activeView === "list" ? (
-        <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl p-4">
+        <div className="bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs divide-y divide-neutral-100 dark:divide-zinc-800/60">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-zinc-800 text-neutral-400 font-black uppercase text-[10px]">
-                  <th className="py-3 px-3">Title</th>
-                  <th className="py-3 px-3">Date & Time</th>
-                  <th className="py-3 px-3">Venue</th>
-                  <th className="py-3 px-3">Club</th>
-                  <th className="py-3 px-3">Status</th>
+                <tr className="bg-neutral-50/60 dark:bg-zinc-900/40 text-neutral-400 dark:text-neutral-500 font-black uppercase text-[10px] tracking-wider">
+                  <th className="py-3.5 px-4">Event Name</th>
+                  <th className="py-3.5 px-4">Date & Time</th>
+                  <th className="py-3.5 px-4">Venue</th>
+                  <th className="py-3.5 px-4">Organizing Club</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-zinc-800/50 font-medium">
-                {events.map((e) => (
-                  <tr
-                    key={e.id || e._id}
-                    onClick={() => handleSelectEvent(e)}
-                    className="hover:bg-neutral-50 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors"
-                  >
-                    <td className="py-3 px-3 font-bold text-black dark:text-white">{e.title}</td>
-                    <td className="py-3 px-3 text-neutral-500">
-                      {new Date(e.startTime).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-neutral-800 dark:text-neutral-200">{e.venue}</td>
-                    <td className="py-3 px-3 text-orange-600 dark:text-orange-400 font-semibold">{e.club?.clubName || 'ODSW'}</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
-                        {e.reviewStatus}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {events.map((e) => {
+                  const eventId = e.id || e._id;
+                  const eventSlug = e.slug || eventId;
+                  const eventUrl = `/event/${eventSlug}`;
+                  const startDate = e.startTime || e.eventDate;
+                  const dObj = startDate ? new Date(startDate) : null;
+                  const dateStr = dObj && !isNaN(dObj.getTime())
+                    ? dObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+                    : "N/A";
+                  const timeStr = dObj && !isNaN(dObj.getTime())
+                    ? dObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+                    : "";
+                  const clubName = e.club?.clubName || e.clubName || "ODSW";
+                  const status = e.reviewStatus || "PENDING";
+                  
+                  return (
+                    <tr
+                      key={eventId}
+                      onClick={() => handleSelectEvent(e)}
+                      className="hover:bg-neutral-50/80 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors"
+                    >
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-black dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs line-clamp-1">
+                            {e.title}
+                          </span>
+                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
+                            {e.club?.category || "General"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-xs">
+                            {dateStr}
+                          </span>
+                          {timeStr && (
+                            <span className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                              {timeStr}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-neutral-800 dark:text-neutral-200">
+                        <div className="flex items-center gap-1.5">
+                          <Building2 size={13} className="text-neutral-400 shrink-0" />
+                          <span className="truncate max-w-[150px]">{e.venue || "TBD / Auditorium"}</span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`font-semibold ${clubName === 'ODSW' ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
+                          {clubName}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                          status === "PUBLISHED"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            : status === "PENDING"
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            : status === "REJECTED"
+                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                            : "bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-700"
+                        }`}>
+                          {status === "PUBLISHED" ? "Approved" : status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right" onClick={(ev) => ev.stopPropagation()}>
+                        <a
+                          href={eventUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold transition-colors"
+                          title="Open public event page"
+                        >
+                          <span>View</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {events.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="py-12 text-center text-neutral-400">
-                      No events found matching current criteria.
+                    <td colSpan="6" className="py-16 text-center text-neutral-400 text-xs">
+                      <div className="max-w-xs mx-auto space-y-2">
+                        <p className="font-semibold text-neutral-700 dark:text-neutral-300">No events found for this time period</p>
+                        <p className="text-[11px]">Adjust your date selector, view switch, or clear active filters.</p>
+                      </div>
                     </td>
                   </tr>
                 )}

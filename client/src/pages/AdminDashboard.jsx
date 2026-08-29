@@ -300,8 +300,8 @@ const AdminDashboard = () => {
         coordinators: { title: 'Coordinators Management', subtitle: 'Manage faculty coordinator accounts' },
         'payments-overview': { title: 'Transactions Management', subtitle: 'Overview of manual transaction registrations and UTR verifications' },
         payouts: { title: 'Financial Payouts', subtitle: 'Manage revenue settlements and payouts for club heads' },
-        broadcasts: { title: 'Broadcast Communication', subtitle: 'Send platform-wide or event-specific announcement broadcasts' },
-        notifications: { title: 'Notifications & Alerts', subtitle: 'View notification logs sent by your admin account' },
+        broadcasts: { title: 'Outgoing Broadcasts', subtitle: 'Dispatch real-time broadcast announcements to all students or event participants' },
+        notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
         'export-center': { title: 'Export Center', subtitle: 'Export & download structured administrative data' },
         profile: { title: 'Settings & Profile', subtitle: 'Update display name, password, and two-step verification' },
     };
@@ -343,6 +343,7 @@ const AdminDashboard = () => {
         </div>
     );
 
+    const allEvents = eventData.length > 0 ? eventData : (stats?.eventStats || []);
     const currentTabInfo = tabTitles[activeTab] || tabTitles.overview;
 
     return (
@@ -397,9 +398,7 @@ const AdminDashboard = () => {
                     <OverviewTab
                         stats={stats}
                         role={role}
-                        showYearWise={showYearWise}
-                        setShowYearWise={setShowYearWise}
-                        events={eventData.length > 0 ? eventData : stats?.eventStats || []}
+                        events={allEvents}
                         clubHeads={clubHeads}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
@@ -412,7 +411,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'event-data' && (
                     <EventDataTable
-                        events={eventData.length > 0 ? eventData : stats?.eventStats || []}
+                        events={allEvents}
                         clubHeads={clubHeads}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}

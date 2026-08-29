@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -18,29 +18,29 @@ import {
   Layers
 } from "lucide-react";
 
-
-
 /* ─── Sidebar Direct Link ─────────────────────────────────────────────────── */
 const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
   <Link
     to={to}
-    className={`admin-sidebar-link group relative flex items-center rounded-xl transition-all duration-200 py-2
+    className={`admin-sidebar-link group relative flex items-center rounded-xl transition-all duration-200 py-2 px-2.5 my-0.5
       ${isActive
-        ? "bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white px-2 font-bold shadow-xs"
-        : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white px-2 font-medium"
+        ? "bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white font-bold shadow-xs border border-neutral-200/80 dark:border-zinc-700/60"
+        : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium border border-transparent"
       }`}
     title={collapsed ? label : undefined}
   >
     <Icon
       size={18}
       strokeWidth={isActive ? 2.2 : 1.7}
-      className={`shrink-0 sidebar-link-icon ${isActive ? "text-orange-600 dark:text-orange-500" : ""}`}
+      className={`shrink-0 sidebar-link-icon transition-colors ${
+        isActive ? "text-orange-600 dark:text-orange-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
+      }`}
     />
     <span className="text-[13px] tracking-wide truncate sidebar-link-text ml-3">
       {label}
     </span>
     {isActive && (
-      <ChevronRight size={14} className="ml-auto shrink-0 opacity-60 sidebar-link-chevron text-orange-600 dark:text-orange-400" />
+      <span className="ml-auto shrink-0 w-1.5 h-3.5 rounded-full bg-orange-600 dark:bg-orange-500" />
     )}
 
     {/* Tooltip — collapsed mode */}
@@ -53,8 +53,16 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
   </Link>
 );
 
-/* ─── Collapsible Category Dropdown ─────────────────────────────────────── */
-const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
+/* ─── Collapsible Category Dropdown (Accordion Item) ─────────────────────── */
+const AdminSidebarDropdown = ({
+  id,
+  icon: Icon,
+  label,
+  items,
+  collapsed,
+  isOpen,
+  onToggle
+}) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get("tab");
@@ -64,21 +72,15 @@ const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
     return location.pathname === "/admin-dashboard" && currentTab === item.tab;
   });
 
-  const [isOpen, setIsOpen] = useState(isAnyChildActive);
-
-  useEffect(() => {
-    if (isAnyChildActive) setIsOpen(true);
-  }, [isAnyChildActive]);
-
   return (
-    <div className="sidebar-dropdown-group my-1">
+    <div className="sidebar-dropdown-group my-0.5">
       <button
         type="button"
-        onClick={() => !collapsed && setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between rounded-xl px-2 py-2 transition-all duration-200 cursor-pointer ${
+        onClick={() => !collapsed && onToggle(id)}
+        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer ${
           isAnyChildActive
-            ? "bg-neutral-100/70 dark:bg-zinc-800/80 text-black dark:text-white font-bold"
-            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white"
+            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-bold border border-neutral-200/60 dark:border-zinc-700/50"
+            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white border border-transparent"
         }`}
         title={collapsed ? label : undefined}
       >
@@ -86,7 +88,9 @@ const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
           <Icon 
             size={18} 
             strokeWidth={isAnyChildActive ? 2.2 : 1.7} 
-            className={`shrink-0 ${isAnyChildActive ? "text-orange-600 dark:text-orange-500" : ""}`} 
+            className={`shrink-0 transition-colors ${
+              isAnyChildActive ? "text-orange-600 dark:text-orange-500" : "text-neutral-400 dark:text-neutral-500"
+            }`} 
           />
           {!collapsed && (
             <span className="text-[13px] font-bold tracking-wide truncate ml-3">
@@ -97,16 +101,16 @@ const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
         {!collapsed && (
           <ChevronDown
             size={14}
-            className={`shrink-0 text-neutral-400 transition-transform duration-200 ${
+            className={`shrink-0 text-neutral-400 dark:text-neutral-500 transition-transform duration-200 ${
               isOpen ? "rotate-180 text-black dark:text-white" : ""
             }`}
           />
         )}
       </button>
 
-      {/* Submenu links */}
+      {/* Submenu links without dots, clean auto-collapsible */}
       {!collapsed && isOpen && (
-        <div className="pl-3.5 pt-1 pb-1 space-y-0.5 border-l-2 border-neutral-100 dark:border-zinc-800/80 ml-3.5 my-1">
+        <div className="pl-3 pt-1 pb-1 space-y-0.5 border-l-2 border-neutral-200 dark:border-zinc-800 ml-4 my-1">
           {items.map((item, idx) => {
             const isActive = item.exactPath
               ? location.pathname === item.exactPath
@@ -118,18 +122,16 @@ const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
               <Link
                 key={idx}
                 to={linkTo}
-                className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-150 ${
+                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${
                   isActive
                     ? "bg-black dark:bg-white text-white dark:text-black font-bold shadow-xs"
-                    : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-zinc-800/60 hover:text-black dark:hover:text-white"
+                    : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-zinc-800/70 hover:text-black dark:hover:text-white font-medium"
                 }`}
               >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full mr-2.5 shrink-0 ${
-                    isActive ? "bg-orange-500" : "bg-neutral-300 dark:bg-zinc-700"
-                  }`}
-                />
                 <span className="truncate">{item.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0 ml-2" />
+                )}
               </Link>
             );
           })}
@@ -143,27 +145,23 @@ const AdminSidebarDropdown = ({ icon: Icon, label, items, collapsed }) => {
 const SectionDivider = ({ title, collapsed }) => (
   <div className="sidebar-divider my-2">
     {title && !collapsed && (
-      <p className="px-1.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+      <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
         {title}
       </p>
     )}
-    <div className="h-px bg-neutral-100 dark:bg-zinc-800/80" />
+    <div className="h-px bg-neutral-100 dark:bg-zinc-800/80 mx-1" />
   </div>
 );
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   AdminSidebar — Modern SaaS Sidebar Architecture
+   AdminSidebar — Modern SaaS Sidebar Architecture with Accordion Auto-Collapse
    ═══════════════════════════════════════════════════════════════════════════ */
 const AdminSidebar = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const currentTab = searchParams.get("tab");
+  const currentTab = searchParams.get("tab") || "overview";
   const { user, role, logout } = useAuth();
-const {
-  theme,
-  setTheme,
-  isDark,
-} = useTheme();
+  const { theme } = useTheme();
 
   // Collapse state — persisted
   const [collapsed, setCollapsed] = useState(() => {
@@ -178,9 +176,80 @@ const {
     localStorage.setItem("adminSidebarCollapsed", String(collapsed));
   }, [collapsed]);
 
+  // Dropdown categories definition
+  const dropdownCategories = [
+    {
+      id: "events",
+      icon: Calendar,
+      label: "Events",
+      items: [
+        { label: "All Events", tab: "event-data" },
+        { label: "Calendar & Schedule", tab: "calendar" },
+      ]
+    },
+    {
+      id: "clubs",
+      icon: Users,
+      label: "Clubs Management",
+      items: [
+        { label: "Clubs", tab: "club-heads" },
+        { label: "Coordinators", tab: "coordinators" },
+      ]
+    },
+    {
+      id: "finance",
+      icon: Wallet,
+      label: "Financial Operations",
+      items: [
+        { label: "Transactions", tab: "payments-overview" },
+        { label: "Payouts", tab: "payouts" },
+      ]
+    },
+    {
+      id: "comms",
+      icon: Radio,
+      label: "Communication",
+      items: [
+        { label: "Broadcasts (Outgoing)", tab: "broadcasts" },
+        { label: "Notifications (Incoming)", tab: "notifications" },
+      ]
+    },
+    {
+      id: "system",
+      icon: Sliders,
+      label: "System Admin",
+      items: [
+        { label: "Export Center", tab: "export-center" },
+        { label: "Venues", tab: "venues" },
+      ]
+    }
+  ];
+
+  // Accordion state: only one open category at a time
+  const findMatchingCategory = (tab) => {
+    return dropdownCategories.find(cat => 
+      cat.items.some(item => item.tab === tab || (item.exactPath && location.pathname === item.exactPath))
+    )?.id || null;
+  };
+
+  const [openDropdownId, setOpenDropdownId] = useState(() => findMatchingCategory(currentTab));
+
+  // Automatically switch open accordion when active tab changes
+  useEffect(() => {
+    const matched = findMatchingCategory(currentTab);
+    if (matched) {
+      setOpenDropdownId(matched);
+    } else if (currentTab === "overview" || currentTab === "profile") {
+      setOpenDropdownId(null);
+    }
+  }, [currentTab, location.pathname]);
+
+  const handleToggleDropdown = (id) => {
+    setOpenDropdownId(prev => (prev === id ? null : id));
+  };
+
   const adminName = user?.name || "Admin User";
   const adminEmail = user?.email || (role === "paymentAdmin" ? "payment@admin.system" : "admin@college.edu");
-  const initialLetter = (adminName.charAt(0) || "A").toUpperCase();
 
   const handleLogout = () => {
     logout('/admin-secret-login');
@@ -188,7 +257,7 @@ const {
 
   return (
     <aside
-      className={`hidden md:flex flex-col shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-neutral-100 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${
+      className={`hidden md:flex flex-col shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${
         collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
       }`}
       style={{ height: "calc(100dvh - 3.5rem - env(safe-area-inset-top))" }}
@@ -242,60 +311,19 @@ const {
               collapsed={collapsed}
             />
 
-            {/* 2. Events Dropdown */}
-            <AdminSidebarDropdown
-              icon={Calendar}
-              label="Events"
-              collapsed={collapsed}
-              items={[
-                { label: "All Events", tab: "event-data" },
-                { label: "Calendar & Schedule", tab: "calendar" },
-              ]}
-            />
-
-            {/* 3. Clubs & Users Dropdown */}
-            <AdminSidebarDropdown
-              icon={Users}
-              label="Clubs Management"
-              collapsed={collapsed}
-              items={[
-                { label: "Clubs", tab: "club-heads" },
-                { label: "Coordinators", tab: "coordinators" },
-              ]}
-            />
-
-            {/* 4. Financial Operations Dropdown */}
-            <AdminSidebarDropdown
-              icon={Wallet}
-              label="Financial Operations"
-              collapsed={collapsed}
-              items={[
-                { label: "Transactions", tab: "payments-overview" },
-                { label: "Payouts", tab: "payouts" },
-              ]}
-            />
-
-            {/* 5. Communication Dropdown */}
-            <AdminSidebarDropdown
-              icon={Radio}
-              label="Communication"
-              collapsed={collapsed}
-              items={[
-                { label: "Broadcasts", tab: "broadcasts" },
-                { label: "Notifications", tab: "notifications" },
-              ]}
-            />
-
-            {/* 6. SYSTEM ADMIN Dropdown */}
-            <AdminSidebarDropdown
-              icon={Sliders}
-              label="System Admin"
-              collapsed={collapsed}
-              items={[
-                { label: "Export Center", tab: "export-center" },
-                { label: "Venues", tab: "venues" },
-              ]}
-            />
+            {/* 2-6. Accordion Dropdown Categories */}
+            {dropdownCategories.map((cat) => (
+              <AdminSidebarDropdown
+                key={cat.id}
+                id={cat.id}
+                icon={cat.icon}
+                label={cat.label}
+                items={cat.items}
+                collapsed={collapsed}
+                isOpen={openDropdownId === cat.id}
+                onToggle={handleToggleDropdown}
+              />
+            ))}
           </>
         )}
 
@@ -320,7 +348,7 @@ const {
       </nav>
 
       {/* ── Bottom Section: Settings Tab & SaaS User Profile/Logout ─────── */}
-      <div className="mt-auto border-t border-neutral-100 dark:border-zinc-800/80 bg-neutral-50/50 dark:bg-zinc-950/40 p-2.5 space-y-2">
+      <div className="mt-auto border-t border-neutral-200/80 dark:border-zinc-800/80 bg-neutral-50/50 dark:bg-zinc-950/40 p-2.5 space-y-2">
         {/* Settings Tab - Positioned directly above profile & logout */}
         <AdminSidebarLink
           to="/admin-dashboard?tab=profile"
@@ -339,11 +367,10 @@ const {
         {/* Profile Card and Logout Row */}
         {!collapsed ? (
           /* Expanded state: Non-clickable profile info + Logout button */
-          <div className="flex items-center justify-between gap-2.5 px-2 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-neutral-200/50 dark:border-zinc-800/50">
+          <div className="flex items-center justify-between gap-2.5 px-2 py-1.5 rounded-xl bg-white/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/50">
             <div className="flex items-center gap-2.5 min-w-0 flex-1 select-none">
-              <div className="w-8 h-8 rounded-full  flex items-center justify-center ring ring-orange-500/20">
-              
-                <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full' />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-neutral-200 dark:ring-zinc-700 overflow-hidden shrink-0">
+                <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
@@ -371,9 +398,8 @@ const {
               className="group relative flex items-center justify-center cursor-default select-none"
               title={`Signed in as ${adminName} (${adminEmail})`}
             >
-              <div className="w-8 h-8 rounded-full  flex items-center justify-center ring ring-orange-500/20">
-              
-                <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full' />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-neutral-200 dark:ring-zinc-700 overflow-hidden">
+                <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
               <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-bold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                 {adminName}
@@ -401,3 +427,4 @@ const {
 };
 
 export default AdminSidebar;
+

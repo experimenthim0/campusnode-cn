@@ -15,9 +15,11 @@ export {
     Th,
     Td,
     TypeBadge,
+    EntryBadge,
     FilterSelect,
     Modal,
     ModalField,
     ModalFormField,
     FormInput
 } from './components/AdminUI';
+

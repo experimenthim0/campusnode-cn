@@ -509,29 +509,6 @@ const Profile = () => {
                 <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 break-all">{clubData?.clubEmail || user.email}</p>
               </div>
 
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Faculty Coordinator</p>
-                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  {clubData?.facultyCoordinator?.name || clubData?.facultyName || 'Not Assigned'}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Student Lead</p>
-                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  {displayStudentLead}
-                </p>
-              </div>
-
-              {roleCoordinatorNames.length > 0 && (
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Student Coordinator(s)</p>
-                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                    {displayStudentCoordinators}
-                  </p>
-                </div>
-              )}
-
               {clubData?.createdAt && (
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Established / Registered</p>
@@ -603,19 +580,32 @@ const Profile = () => {
               )}
 
               {/* Student Leads */}
-              {studentLeads.map((head, idx) => (
-                <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
-                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
-                    Student Lead
-                  </span>
-                  <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
-                    {head.student?.name || head.name || 'Student Lead'}
-                  </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
-                    {head.student?.email || head.email || '—'}
-                  </p>
-                </div>
-              ))}
+              {studentLeads.length > 0 ? (
+                studentLeads.map((head, idx) => (
+                  <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                      Student Lead
+                    </span>
+                    <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
+                      {head.student?.name || head.name || 'Student Lead'}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                      {head.student?.email || head.email || '—'}
+                    </p>
+                  </div>
+                ))
+              ) : savedCoordinators.length > 0 && clubCoordinators.length === 0 ? (
+                savedCoordinators.map((name, idx) => (
+                  <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                      Student Coordinator
+                    </span>
+                    <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
+                      {name}
+                    </p>
+                  </div>
+                ))
+              ) : null}
 
               {/* Coordinators */}
               {clubCoordinators.map((coord, idx) => (
@@ -632,7 +622,7 @@ const Profile = () => {
                 </div>
               ))}
 
-              {!facultyCoordinator && studentLeads.length === 0 && clubCoordinators.length === 0 && (
+              {!facultyCoordinator && studentLeads.length === 0 && clubCoordinators.length === 0 && savedCoordinators.length === 0 && (
                 <div className="col-span-full text-center py-4 text-xs text-neutral-500 dark:text-neutral-400">
                   No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId || user.id}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
                 </div>

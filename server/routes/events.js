@@ -360,8 +360,20 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
     if (start && end) {
       const sDate = new Date(start);
       const eDate = new Date(end);
-      where.startTime = { lt: eDate };
-      where.endTime = { gt: sDate };
+      where.OR = [
+        {
+          startTime: {
+            gte: sDate,
+            lte: eDate,
+          },
+        },
+        {
+          AND: [
+            { startTime: { lte: eDate } },
+            { endTime: { gte: sDate } },
+          ],
+        },
+      ];
     }
 
     // Venue filter (supports comma-separated multi-select)

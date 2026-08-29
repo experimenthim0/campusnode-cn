@@ -4,6 +4,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import api from '../services/api';
 import { updateEvent, getEventById } from '../services/eventService';
+import { invalidateCache } from '../lib/cacheManager';
 import { useNotification } from '../context/NotificationContext';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
@@ -602,9 +603,11 @@ const EditEvent = () => {
 
         setIsSaving(true);
         try {
-            await updateEvent(id, payload);
+            const res = await updateEvent(id, payload);
+            await invalidateCache(['/api/events', '/api/events/*', `/api/events/${id}`]);
             showNotification('Event updated successfully!', 'success');
-            navigate(`/event/${event.slug}`);
+            const targetSlug = res.data?.slug || res.data?.id || res.data?._id || id;
+            navigate(`/event/${targetSlug}`);
         } catch (err) {
             showNotification(err.response?.data?.message || 'Failed to update event', 'error');
         } finally {
@@ -630,13 +633,13 @@ const EditEvent = () => {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    {/* <button
+                    <button
                         type="button"
-                        onClick={() => navigate('/profile')}
-                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4 cursor-pointer"
+                        onClick={() => navigate(-1)}
+                        className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-black hover:text-orange-600 transition-colors mb-4 cursor-pointer"
                     >
-                        <i className="ri-arrow-left-line text-lg" /> Back to Profile
-                    </button> */}
+                        <i className="ri-arrow-left-line" /> Back
+                    </button>
                     <h1 className="text-3xl md:text-5xl font-black text-black tracking-wide">Edit Event</h1>
                     <p className="text-neutral-500 mt-2 font-medium">Refine your event details and registration requirements step-by-step.</p>
                 </div>

@@ -4,6 +4,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { createEvent } from '../services/eventService';
+import { invalidateCache } from '../lib/cacheManager';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { EVENT_VENUES } from '../constants/eventVenues';
@@ -431,7 +432,13 @@ const CreateEvent = () => {
 
         try {
             const res = await createEvent(payload);
-            navigate(`/event/${res.data.slug}`);
+            await invalidateCache(['/api/events', '/api/events/*']);
+            const targetSlug = res.data?.slug || res.data?.id || res.data?._id;
+            if (targetSlug) {
+                navigate(`/event/${targetSlug}`);
+            } else {
+                navigate('/events');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event');
             setIsSubmitting(false);

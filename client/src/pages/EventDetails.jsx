@@ -149,6 +149,11 @@ const EventDetails = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
+      if (!slug || slug === 'undefined') {
+        setError('Event not found');
+        setLoading(false);
+        return;
+      }
       try {
         const url = `/api/events/${slug}`;
         

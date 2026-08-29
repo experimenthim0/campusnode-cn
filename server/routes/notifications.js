@@ -184,27 +184,46 @@ router.get(
   requirePermission(PERMISSIONS.NOTIFICATION_VIEW),
   async (req, res) => {
     try {
-      const { userId, userType } = req.user;
+      const { userId, userType, principalType, role } = req.user;
+      const isAdminUser = userType === "admin" || principalType === "ADMIN" || role === "admin" || role === "paymentAdmin";
 
       let notifications;
 
-      if (userType === "admin") {
+      if (isAdminUser) {
         notifications = await prisma.notification.findMany({
-          where: { senderAdminId: userId },
+          where: {
+            OR: [
+              { senderAdminId: null },
+              { senderAdminId: { not: userId } },
+            ],
+          },
           include: senderInclude,
           orderBy: { createdAt: "desc" },
+          take: 100,
         });
-      } else if (req.user.principalType === "INSTITUTIONAL" || userType === "institutional") {
+      } else if (principalType === "INSTITUTIONAL" || userType === "institutional") {
         notifications = await prisma.notification.findMany({
-          where: { senderInstitutionalAccountId: userId },
+          where: {
+            OR: [
+              { senderInstitutionalAccountId: null },
+              { senderInstitutionalAccountId: { not: userId } },
+            ],
+          },
           include: senderInclude,
           orderBy: { createdAt: "desc" },
+          take: 100,
         });
-      } else if (req.user.principalType === "CLUB" || userType === "club") {
+      } else if (principalType === "CLUB" || userType === "club") {
         notifications = await prisma.notification.findMany({
-          where: { senderClubAccountId: userId },
+          where: {
+            OR: [
+              { recipientStudentId: null, senderClubAccountId: { not: userId } },
+              { recipientStudentId: userId },
+            ],
+          },
           include: senderInclude,
           orderBy: { createdAt: "desc" },
+          take: 100,
         });
       } else {
         const student = await prisma.studentUser.findUnique({
@@ -251,14 +270,15 @@ router.get(
 
 router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW), async (req, res) => {
   try {
-    const { userId, userType } = req.user;
+    const { userId, userType, principalType, role } = req.user;
+    const isAdminUser = userType === "admin" || principalType === "ADMIN" || role === "admin" || role === "paymentAdmin";
 
     const where =
-      userType === "admin"
+      isAdminUser
         ? { senderAdminId: userId }
-        : (req.user.principalType === "INSTITUTIONAL" || userType === "institutional")
+        : (principalType === "INSTITUTIONAL" || userType === "institutional")
         ? { senderInstitutionalAccountId: userId }
-        : (req.user.principalType === "CLUB" || userType === "club")
+        : (principalType === "CLUB" || userType === "club")
         ? { senderClubAccountId: userId }
         : { senderStudentId: userId };
 
