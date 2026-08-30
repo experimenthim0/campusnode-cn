@@ -7,6 +7,7 @@ import { serializeEvent } from "../utils/postgresEventSerializer.js";
 import crypto from "crypto";
 import multer from "multer";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
+import { validateFileSignature, processBannerImage } from "../utils/imageProcessor.js";
 import { getPublicResponse, setPublicResponse } from "../utils/publicResponseCache.js";
 
 /**
@@ -471,6 +472,23 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
       updates.slug = await slugifyUnique(updates.clubName, "club", "slug", targetClubId);
     }
 
+    if (updates.bannerImage !== undefined) {
+      const existingClub = await prisma.club.findUnique({
+        where: { id: targetClubId },
+        select: { bannerImage: true },
+      });
+      if (existingClub?.bannerImage && existingClub.bannerImage !== updates.bannerImage) {
+        const oldPublicId = extractCloudinaryPublicId(existingClub.bannerImage);
+        if (oldPublicId) {
+          try {
+            await deleteImage(oldPublicId);
+          } catch (delErr) {
+            console.warn("Failed to delete old banner image from Cloudinary:", delErr.message);
+          }
+        }
+      }
+    }
+
     const updatedClub = await prisma.$transaction(async (tx) => {
       await tx.club.update({
         where: { id: targetClubId },
@@ -559,7 +577,16 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
       return res.status(400).json({ message: "No image file provided." });
     }
 
-    // 1. Fetch current club banner and delete old image from Cloudinary if exists
+    // 1. Validate image format via magic bytes with Sharp
+    const { valid, detectedFormat } = await validateFileSignature(req.file.buffer);
+    if (!valid) {
+      return res.status(400).json({
+        message: "Image must be a valid JPG, PNG, or WEBP file.",
+        detail: detectedFormat ? `Detected format: ${detectedFormat}` : undefined,
+      });
+    }
+
+    // 2. Fetch current club banner and delete old image from Cloudinary if exists
     const currentClub = await prisma.club.findUnique({
       where: { id: clubId },
       select: { bannerImage: true },
@@ -577,7 +604,10 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
       }
     }
 
-    // 2. Upload new banner to Cloudinary with WebP conversion and compression
+    // 3. Compress and convert image buffer to WEBP via Sharp
+    const processedBuffer = await processBannerImage(req.file.buffer);
+
+    // 4. Upload new compressed WebP banner to Cloudinary
     const publicId = `club-banner-${clubId}-${Date.now()}`;
     const uploadOptions = {
       folder: "club-banners",
@@ -587,7 +617,7 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
       format: "webp",
     };
 
-    const result = await uploadImage(req.file.buffer, "club-banners", uploadOptions);
+    const result = await uploadImage(processedBuffer, "club-banners", uploadOptions);
     const bannerUrl = result.secure_url;
 
     const updatedClub = await prisma.club.update({

@@ -55,3 +55,23 @@ export function generateProfileFilename(userId) {
   const random = crypto.randomBytes(8).toString("hex");
   return `${userId}_${timestamp}_${random}`;
 }
+
+/**
+ * Process a club banner image buffer:
+ * 1. Auto-orient (applies EXIF rotation then strips all metadata)
+ * 2. Resize to fit within 1920×1080 preserving aspect ratio, without enlargement
+ * 3. Compress and convert to WEBP at quality 82
+ *
+ * @param {Buffer} buffer — raw image buffer
+ * @returns {Promise<Buffer>} — processed WEBP buffer
+ */
+export async function processBannerImage(buffer) {
+  return sharp(buffer)
+    .rotate()
+    .resize(1920, 1080, {
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: 82 })
+    .toBuffer();
+}
