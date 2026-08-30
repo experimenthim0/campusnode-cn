@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
+import { markdownToHtml } from "../../utils/htmlMarkdownConverter";
 
 const STATUS_BADGES = {
   PUBLISHED: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
@@ -113,10 +114,7 @@ const EventQuickViewDrawer = ({
                 <div
                   className="text-xs text-neutral-600 dark:text-neutral-300 mt-3 line-clamp-3 font-medium [&_*]:!text-inherit [&_*]:!bg-transparent [&>p]:mb-1 [&>p:last-child]:mb-0"
                   dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(event.description, {
-                      ADD_ATTR: ["target"],
-                      FORBID_ATTR: ["style"]
-                    })
+                    __html: markdownToHtml(event.description)
                   }}
                 />
               )}

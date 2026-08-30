@@ -5,8 +5,7 @@ import { getClubBySlugOrId, getClubs, updateClub, getClubMembers } from "../serv
 import { invalidateCache } from "../lib/cacheManager";
 import { useNotification } from "../context/NotificationContext";
 import { Link } from "react-router-dom";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
+import WysiwygMarkdownEditor from "../components/WysiwygMarkdownEditor";
 import ShimmerText from "../components/ShimmerText";
 const slugifyClubName = (value = "") =>
   value
@@ -392,12 +391,11 @@ const EditClub = () => {
             <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
               Club Mission / Description
             </label>
-            <ReactQuill
-              theme="snow"
-              value={formData.description}
-              onChange={(val) => setFormData({ ...formData, description: val })}
-              className="quill-editor"
+            <WysiwygMarkdownEditor
+              value={formData.description || ""}
+              onChange={(markdown) => setFormData(prev => ({ ...prev, description: markdown }))}
               placeholder="Write a rich description of the club, history, initiatives, and activities..."
+              minHeight="280px"
             />
           </div>
         </div>

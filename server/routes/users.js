@@ -621,23 +621,44 @@ router.post(
         }
       }
 
-      // Fetch current user / club to check for existing photo
+      // Fetch current user / club details to check for existing photo and build public_id
       let existingPhotoUrl = null;
+      let folder = "profile-photos";
+      let publicId = null;
+
       if (isClub && effectiveClubId) {
-        const currentClub = await prisma.club.findUnique({ where: { id: effectiveClubId }, select: { clubLogo: true } });
+        folder = "club-logos";
+        const currentClub = await prisma.club.findUnique({
+          where: { id: effectiveClubId },
+          select: { clubLogo: true, slug: true, clubName: true },
+        });
         existingPhotoUrl = currentClub?.clubLogo;
+        const identifier = currentClub?.slug || (currentClub?.clubName ? currentClub.clubName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : null) || `club-${effectiveClubId}`;
+        publicId = identifier;
       } else if (isAdmin) {
-        const currentAdmin = await prisma.adminRole.findUnique({ where: { id: userId }, select: { profileImage: true } });
+        folder = "admin-profiles";
+        const currentAdmin = await prisma.adminRole.findUnique({
+          where: { id: userId },
+          select: { profileImage: true, email: true },
+        });
         existingPhotoUrl = currentAdmin?.profileImage;
+        const emailPrefix = currentAdmin?.email ? currentAdmin.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]+/g, '-') : userId;
+        publicId = `admin-${emailPrefix}`;
       } else {
-        const currentStudent = await prisma.studentUser.findUnique({ where: { id: userId }, select: { profileImage: true } });
+        folder = "profile-photos";
+        const currentStudent = await prisma.studentUser.findUnique({
+          where: { id: userId },
+          select: { profileImage: true, rollNumber: true },
+        });
         existingPhotoUrl = currentStudent?.profileImage;
+        const rollOrId = currentStudent?.rollNumber ? currentStudent.rollNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-') : userId;
+        publicId = `student-${rollOrId}`;
       }
 
-      // Delete old photo from Cloudinary if exists
+      // Delete old photo from Cloudinary if exists with different publicId
       if (existingPhotoUrl) {
         const oldPublicId = extractCloudinaryPublicId(existingPhotoUrl);
-        if (oldPublicId) {
+        if (oldPublicId && oldPublicId !== `${folder}/${publicId}` && oldPublicId !== publicId) {
           try {
             await deleteImage(oldPublicId);
           } catch (delErr) {
@@ -646,7 +667,13 @@ router.post(
         }
       }
 
-      const result = await uploadImage(processedBuffer, isClub ? "club-logos" : "profile-photos");
+      const uploadOptions = {
+        public_id: publicId,
+        unique_filename: false,
+        overwrite: true,
+      };
+
+      const result = await uploadImage(processedBuffer, folder, uploadOptions);
       const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
 
       if (isClub && effectiveClubId) {

@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { searchUsers, updateProfile } from '../services/userService';
 import { getUserEvents, registerForEvent } from '../services/eventService';
 import DOMPurify from 'dompurify';
-import 'react-quill-new/dist/quill.snow.css';
+import { markdownToHtml } from '../utils/htmlMarkdownConverter';
+import '../components/WysiwygMarkdownEditor.css';
 import { useNotification } from '../context/NotificationContext';
 import CalendarDropdown from '../components/CalendarDropdown';
 import PaymentModal from '../components/PaymentModal';
@@ -149,11 +150,6 @@ const EventDetails = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!slug || slug === 'undefined') {
-        setError('Event not found');
-        setLoading(false);
-        return;
-      }
       try {
         const url = `/api/events/${slug}`;
         
@@ -1038,8 +1034,8 @@ const EventDetails = () => {
                   About this Event
                 </h2>
                 <div 
-                  className="text-[15px] text-neutral-700 dark:text-neutral-300  leading-relaxed event-description ql-editor px-0 whitespace-pre-wrap [&_*]:!text-inherit [&_*]:!bg-transparent" 
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description, { ADD_ATTR: ['target'], FORBID_ATTR: ['style'] }) }}
+                  className="text-[15px] text-neutral-700 dark:text-neutral-300 leading-relaxed event-description campusnode-markdown-preview px-0" 
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(description) }}
                 />
               </div>
             )}

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import DOMPurify from 'dompurify';
-import 'react-quill-new/dist/quill.snow.css';
 import { cachedFetch, invalidateCache } from '../lib/cacheManager';
+import { markdownToHtml } from '../utils/htmlMarkdownConverter';
+import '../components/WysiwygMarkdownEditor.css';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -531,12 +531,9 @@ const Profile = () => {
                 <div className="md:col-span-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About the Club</p>
                   <div
-                    className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed event-description ql-editor px-0 whitespace-pre-wrap [&_*]:!text-inherit [&_*]:!bg-transparent"
+                    className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(clubData.description, {
-                        ADD_ATTR: ["target"],
-                        FORBID_ATTR: ["style"],
-                      }),
+                      __html: markdownToHtml(clubData.description),
                     }}
                   />
                 </div>

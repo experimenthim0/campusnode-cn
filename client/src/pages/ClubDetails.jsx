@@ -14,8 +14,8 @@ import {
   toggleEventFeatured,
 } from "../services/clubService";
 import { getUserEvents } from "../services/eventService";
-import DOMPurify from "dompurify";
-import "react-quill-new/dist/quill.snow.css";
+import { markdownToHtml } from "../utils/htmlMarkdownConverter";
+import "../components/WysiwygMarkdownEditor.css";
 import { InstagramIcon } from "@/components/ui/instagram";
 import { LinkedinIcon } from "@/components/ui/linkedin";
 import { TwitterIcon } from "@/components/ui/twitter";
@@ -848,12 +848,9 @@ const ClubDetails = () => {
                   }`}
                 >
                   <div
-                    className="text-neutral-700 dark:text-neutral-300 text-sm font-medium leading-relaxed event-description ql-editor px-0 whitespace-pre-wrap [&_*]:!text-inherit [&_*]:!bg-transparent"
+                    className="campusnode-markdown-preview text-neutral-700 dark:text-neutral-300 text-sm font-medium leading-relaxed px-0"
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(descHtml, {
-                        ADD_ATTR: ["target"],
-                        FORBID_ATTR: ["style"],
-                      }),
+                      __html: markdownToHtml(descHtml),
                     }}
                   />
                 </div>

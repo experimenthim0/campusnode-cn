@@ -188,7 +188,7 @@ const Navbar = () => {
     <>
       {/* ── Navbar ─────────────────────────────────────────────────────────── */}
       <nav
-        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white/30 dark:bg-[#0a0a0a]/75 border-b border-transparent backdrop-blur-md transition-all duration-300 myfont ${scrolled ? "shadow-sm border-neutral-100/80 dark:border-white/10" : ""
+        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white/30 dark:bg-[#0a0a0a]/75 border-b border-transparent backdrop-blur-md transition-all duration-300 myfont  ${scrolled ? "shadow-sm border-neutral-100/80 dark:border-white/10" : ""
           }`}
       >
         {/* Orange top accent on scroll */}
@@ -196,7 +196,7 @@ const Navbar = () => {
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-orange-600 z-10 pointer-events-none" />
         )} */}
 
-        <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between gap-4 rounded-full">
           {/* ── Logo ─────────────────────────────────────────────────────── */}
           <div className="flex items-center sm:gap-5 gap-auto">
             <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12" />

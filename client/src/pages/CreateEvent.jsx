@@ -4,9 +4,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { createEvent } from '../services/eventService';
-import { invalidateCache } from '../lib/cacheManager';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import WysiwygMarkdownEditor from '../components/WysiwygMarkdownEditor';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
 import { MediaType } from '../types/index';
@@ -295,7 +293,11 @@ const CreateEvent = () => {
         }
     };
 
-    const handleNextStep = () => {
+    const handleNextStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         const err = validateCurrentStep(currentStep);
         if (err) {
             setError(err);
@@ -307,7 +309,11 @@ const CreateEvent = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handlePrevStep = () => {
+    const handlePrevStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         setError('');
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -386,11 +392,15 @@ const CreateEvent = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
+
+        if (isSubmitting) return;
         
         // If user presses Enter on steps 1-3, advance step instead of submitting early
         if (currentStep < 4) {
-            handleNextStep();
+            handleNextStep(e);
             return;
         }
 
@@ -432,13 +442,7 @@ const CreateEvent = () => {
 
         try {
             const res = await createEvent(payload);
-            await invalidateCache(['/api/events', '/api/events/*']);
-            const targetSlug = res.data?.slug || res.data?.id || res.data?._id;
-            if (targetSlug) {
-                navigate(`/event/${targetSlug}`);
-            } else {
-                navigate('/events');
-            }
+            navigate(`/event/${res.data.slug}`);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event');
             setIsSubmitting(false);
@@ -496,10 +500,13 @@ const CreateEvent = () => {
 
                             {/* Description */}
                             <div>
-                                <label className={labelCls}>Description</label>
-                                <div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a]">
-                                    <ReactQuill theme="snow" value={formData.description} onChange={(val) => setFormData({ ...formData, description: val })} className="quill-editor" />
-                                </div>
+                                <label className={labelCls}>Event Description</label>
+                                <WysiwygMarkdownEditor
+                                    value={formData.description}
+                                    onChange={(markdown) => setFormData(prev => ({ ...prev, description: markdown }))}
+                                    placeholder="Write a clear, attractive event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
+                                    minHeight="320px"
+                                />
                             </div>
 
                             {/* Event Poster Upload */}
@@ -1190,6 +1197,7 @@ const CreateEvent = () => {
                     <div className="flex gap-4 pt-6 border-t-2 border-neutral-100">
                         {currentStep === 1 ? (
                             <button
+                                key="cancel-btn"
                                 type="button"
                                 onClick={() => navigate(-1)}
                                 className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-850 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-200 transition-colors border-0 outline-none"
@@ -1198,6 +1206,7 @@ const CreateEvent = () => {
                             </button>
                         ) : (
                             <button
+                                key="prev-step-btn"
                                 type="button"
                                 onClick={handlePrevStep}
                                 className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-850 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-200 transition-colors border-0 outline-none flex items-center justify-center gap-2"
@@ -1208,6 +1217,7 @@ const CreateEvent = () => {
 
                         {currentStep < 4 ? (
                             <button
+                                key="next-step-btn"
                                 type="button"
                                 onClick={handleNextStep}
                                 className="flex-1 px-6 py-3 bg-black hover:bg-orange-600 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-colors border-0 outline-none flex items-center justify-center gap-2"
@@ -1216,6 +1226,7 @@ const CreateEvent = () => {
                             </button>
                         ) : (
                             <button
+                                key="submit-event-btn"
                                 type="submit"
                                 disabled={isSubmitting}
                                 className={`flex-1 px-6 py-3 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-colors border-0 outline-none ${

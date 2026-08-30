@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import WysiwygMarkdownEditor from '../components/WysiwygMarkdownEditor';
 import api from '../services/api';
 import { updateEvent, getEventById } from '../services/eventService';
-import { invalidateCache } from '../lib/cacheManager';
 import { useNotification } from '../context/NotificationContext';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
@@ -438,7 +436,11 @@ const EditEvent = () => {
         }
     };
 
-    const handleNextStep = () => {
+    const handleNextStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         const err = validateCurrentStep(currentStep);
         if (err) {
             showNotification(err, 'error');
@@ -449,7 +451,11 @@ const EditEvent = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handlePrevStep = () => {
+    const handlePrevStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -559,11 +565,15 @@ const EditEvent = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
+
+        if (isSaving) return;
 
         // If user presses Enter on steps 1-3, advance step instead of submitting early
         if (currentStep < 4) {
-            handleNextStep();
+            handleNextStep(e);
             return;
         }
 
@@ -603,11 +613,9 @@ const EditEvent = () => {
 
         setIsSaving(true);
         try {
-            const res = await updateEvent(id, payload);
-            await invalidateCache(['/api/events', '/api/events/*', `/api/events/${id}`]);
+            await updateEvent(id, payload);
             showNotification('Event updated successfully!', 'success');
-            const targetSlug = res.data?.slug || res.data?.id || res.data?._id || id;
-            navigate(`/event/${targetSlug}`);
+            navigate(`/event/${id}`);
         } catch (err) {
             showNotification(err.response?.data?.message || 'Failed to update event', 'error');
         } finally {
@@ -633,13 +641,13 @@ const EditEvent = () => {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <button
+                    {/* <button
                         type="button"
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-black hover:text-orange-600 transition-colors mb-4 cursor-pointer"
+                        onClick={() => navigate('/profile')}
+                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4 cursor-pointer"
                     >
-                        <i className="ri-arrow-left-line" /> Back
-                    </button>
+                        <i className="ri-arrow-left-line text-lg" /> Back to Profile
+                    </button> */}
                     <h1 className="text-3xl md:text-5xl font-black text-black tracking-wide">Edit Event</h1>
                     <p className="text-neutral-500 mt-2 font-medium">Refine your event details and registration requirements step-by-step.</p>
                 </div>
@@ -696,10 +704,13 @@ const EditEvent = () => {
 
                             {/* Description */}
                             <div>
-                                <label className={labelCls}>Description</label>
-                                <div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a]">
-                                    <ReactQuill theme="snow" value={formData.description} onChange={(val) => setFormData({ ...formData, description: val })} className="quill-editor" />
-                                </div>
+                                <label className={labelCls}>Event Description</label>
+                                <WysiwygMarkdownEditor
+                                    value={formData.description}
+                                    onChange={(markdown) => setFormData(prev => ({ ...prev, description: markdown }))}
+                                    placeholder="Write a clear, engaging event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
+                                    minHeight="320px"
+                                />
                             </div>
 
                             {/* Venue */}
@@ -1400,6 +1411,7 @@ const EditEvent = () => {
                     <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-neutral-100">
                         {currentStep === 1 ? (
                             <button
+                                key="discard-btn"
                                 type="button"
                                 onClick={() => navigate('/profile')}
                                 className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-800 hover:bg-neutral-200 transition-colors font-black text-xs rounded-full tracking-widest order-2 sm:order-1 border-0 outline-none cursor-pointer"
@@ -1408,6 +1420,7 @@ const EditEvent = () => {
                             </button>
                         ) : (
                             <button
+                                key="prev-step-btn"
                                 type="button"
                                 onClick={handlePrevStep}
                                 className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-800 hover:bg-neutral-200 transition-colors font-black text-xs rounded-full tracking-widest order-2 sm:order-1 border-0 outline-none cursor-pointer flex items-center justify-center gap-2"
@@ -1418,6 +1431,7 @@ const EditEvent = () => {
 
                         {currentStep < 4 ? (
                             <button
+                                key="next-step-btn"
                                 type="button"
                                 onClick={handleNextStep}
                                 className="flex-1 px-6 py-3 bg-black hover:bg-orange-600 text-white font-black text-xs rounded-full tracking-widest transition-all order-1 sm:order-2 border-0 outline-none cursor-pointer flex items-center justify-center gap-2"
@@ -1426,6 +1440,7 @@ const EditEvent = () => {
                             </button>
                         ) : (
                             <button
+                                key="submit-event-btn"
                                 type="submit"
                                 disabled={isSaving}
                                 className={`flex-1 px-6 py-3 text-white font-black text-xs rounded-full tracking-widest transition-all active:translate-x-1 active:translate-y-1 active:shadow-none order-1 sm:order-2 border-0 outline-none cursor-pointer ${

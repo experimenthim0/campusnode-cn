@@ -59,7 +59,27 @@ router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE),
       return res.status(400).json({ message: "No file uploaded." });
     }
 
-    const result = await uploadImage(req.file.buffer, "event-posters");
+    const { title, slug, eventId } = req.body || {};
+    let publicId = undefined;
+    if (slug) {
+      publicId = `poster-${slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+    } else if (title) {
+      const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 45);
+      publicId = `poster-${cleanTitle}-${Date.now()}`;
+    } else if (eventId) {
+      publicId = `poster-event-${eventId}`;
+    }
+
+    const uploadOptions = {
+      folder: "event-posters",
+      unique_filename: publicId ? false : true,
+      overwrite: true,
+    };
+    if (publicId) {
+      uploadOptions.public_id = publicId;
+    }
+
+    const result = await uploadImage(req.file.buffer, "event-posters", uploadOptions);
     res.json({ 
       secure_url: result.secure_url,
       public_id: result.public_id
@@ -148,7 +168,7 @@ async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
 const eventSchema = z.object({
   body: z.object({
     title: z.string().min(3),
-
+    description: z.string().optional().nullable(),
     venue: z.string().optional(),
     startTime: z.coerce.date(),
     endTime: z.coerce.date(),

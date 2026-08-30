@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
     if (data.role === 'lostFoundAdmin') {
       navigate('/admin/lost-found');
     } else {
-      navigate('/');
+      navigate('/profile');
     }
     return { needs2FA: false, role: data.role };
   }, [navigate, persistSession]);
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     if (data.role === 'lostFoundAdmin') {
       navigate('/admin/lost-found');
     } else {
-      navigate('/');
+      navigate('/profile');
     }
     return data;
   }, [navigate, persistSession]);
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }) => {
       if (data.admin.role === 'lostFoundAdmin') {
         navigate('/admin/lost-found');
       } else if (data.admin.role === 'facultyCoordinator') {
-        navigate('/');
+        navigate('/profile');
       } else {
         navigate('/admin-dashboard');
       }

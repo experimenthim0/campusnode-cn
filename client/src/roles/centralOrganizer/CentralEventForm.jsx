@@ -10,8 +10,7 @@ import {
   Star,
   PlusCircle,
 } from "lucide-react";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
+import WysiwygMarkdownEditor from "../../components/WysiwygMarkdownEditor";
 import {
   PROGRAM_OPTIONS,
   PROGRAM_LABELS,
@@ -179,15 +178,12 @@ const CentralEventForm = ({
             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Description
             </label>
-            <div className="rounded-xl overflow-hidden border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
-              <ReactQuill
-                theme="snow"
-                value={formData.description || ""}
-                onChange={(val) => setFormData({ ...formData, description: val })}
-                placeholder="Event details, schedule, highlights..."
-                className="quill-editor"
-              />
-            </div>
+            <WysiwygMarkdownEditor
+              value={formData.description || ""}
+              onChange={(markdown) => setFormData(prev => ({ ...prev, description: markdown }))}
+              placeholder="Write a clear, attractive event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
+              minHeight="280px"
+            />
           </div>
 
           <div>
