@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { getColorSync } from "colorthief";
 import { useImageBlob } from "../hooks/useImageBlob";
 import { useTheme } from "../context/ThemeContext";
+import { markdownToHtml } from "../utils/htmlMarkdownConverter";
+import "../components/WysiwygMarkdownEditor.css";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 import { InstagramIcon } from "@/components/ui/instagram";
 import { LinkedinIcon } from "@/components/ui/linkedin";
@@ -114,20 +116,35 @@ const ClubCard = ({ club }) => {
         style={glowOverlayStyle}
       />
 
-      {/* Main Content Area */}
-      <div className="p-6 flex flex-col flex-grow relative z-10">
+      {/* ── Banner Image (LinkedIn style) ── */}
+      <div className="relative w-full h-28 sm:h-32 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden shrink-0">
+        <img
+          src={club.bannerImage || club.coverImage || "/mainbuilding.jpeg"}
+          alt={`${club.clubName} Banner`}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/collegeimg.jpeg";
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
+      </div>
 
-        {/* Upper section: Logo, Title, Category */}
-        <div className="flex items-start gap-4">
+      {/* Main Content Area */}
+      <div className="p-5 sm:p-6 pt-0 flex flex-col flex-grow relative z-10">
+
+        {/* Upper section: Overlapping Logo & Title + Category in same row */}
+        <div className="flex items-end gap-3.5 -mt-9 sm:-mt-9 mb-4 min-w-0">
           
-          <div className="w-14 h-14 bg-neutral-50 dark:bg-neutral-900 rounded-full flex items-center justify-center border border-neutral-200/80 dark:border-neutral-800/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+          {/* Logo with border */}
+          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white dark:bg-[#0d0d0d] rounded-full flex items-center justify-center border-3 border-white dark:border-[#0d0d0d] shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 p-1">
             <img
               ref={imgRef}
               src={displayUrl}
               alt={club.clubName}
               crossOrigin={isBlobLoaded && club.clubLogo ? "anonymous" : undefined}
               onLoad={handleImageLoad}
-              className="w-full h-full object-contain p-1 "
+              className="w-full h-full object-contain"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = fallbackLogo;
@@ -135,27 +152,34 @@ const ClubCard = ({ club }) => {
             />
           </div>
 
-          <div className="space-y-1 min-w-0 flex-1">
-            <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded">
-              {club.category || "Student Club"}
-            </span>
-            <h2 className="text-xl font-bold tracking-wide text-neutral-900 dark:text-white leading-tight break-words">
+          {/* Name & Category in same row */}
+          <div className="space-y-0.5 min-w-0 flex-1 pb-0.5">
+             <h2 className="text-lg sm:text-xl font-bold tracking-wide text-neutral-900 dark:text-white leading-tight truncate" title={club.clubName}>
               {club.clubName}
             </h2>
+            <span className="inline-flex px-2 py-0.5 text-[9px] font-bold tracking-widest bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full">
+              {club.category || "Student Club"}
+            </span>
+           
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-4 leading-relaxed">
-          {(club.description ? club.description.replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ").trim() : "") ||
-            "The official student group dedicated to community, innovation, and campus spirit."}
-        </p>
+        <div
+          className="campusnode-markdown-preview text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed [&_*]:!text-inherit [&_*]:!bg-transparent [&>p]:!mb-0 [&>p:last-child]:!mb-0 [&>h1]:!text-sm [&>h1]:!my-0 [&>h1]:!border-none [&>h1]:!pb-0 [&>h2]:!text-sm [&>h2]:!my-0 [&>h3]:!text-sm [&>h3]:!my-0 [&>ul]:!my-0 [&>ol]:!my-0 [&>blockquote]:!my-0 [&>blockquote]:!p-0 [&>blockquote]:!border-none [&_a]:text-orange-600 [&_a]:underline"
+          dangerouslySetInnerHTML={{
+            __html: markdownToHtml(
+              club.description ||
+                "The official student group dedicated to community, innovation, and campus spirit."
+            ),
+          }}
+        />
 
-        <div className="border-t border-neutral-100 dark:border-neutral-800/80 my-5" />
+        <div className="border-t border-neutral-200/75 dark:border-neutral-800/80 my-2" />
 
-        <div className="space-y-3.5">
+        <div className="space-y-1">
           <div className="min-w-0">
-            <span className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
               Faculty Lead
             </span>
             <p
@@ -167,7 +191,7 @@ const ClubCard = ({ club }) => {
           </div>
 
           <div className="min-w-0">
-            <span className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
               Student Lead
             </span>
             <p
@@ -180,12 +204,12 @@ const ClubCard = ({ club }) => {
         </div>
 
         {/* Push socials & footer to bottom */}
-        <div className="mt-auto pt-6 space-y-4">
+        <div className="mt-auto pt-2 space-y-2">
 
           {/* Social connections row */}
           {club.socialLinks && club.socialLinks.length > 0 && (
             <div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-1.5">
                 Connect
               </span>
               <div className="flex flex-wrap gap-1.5 min-h-[32px]">
@@ -209,7 +233,7 @@ const ClubCard = ({ club }) => {
                       href={platform === "whatsapp" ? `https://wa.me/${link.url.replace(/\s+/g, "")}` : link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg  flex items-center justify-center text-neutral-600 dark:text-neutral-300 transition-all duration-300"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-orange-600 transition-all duration-300"
                       title={link.platform}
                     >
                       {getIcon()}
@@ -221,7 +245,7 @@ const ClubCard = ({ club }) => {
           )}
 
           {/* Action button row */}
-          <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-4">
+          <div className="border-t border-neutral-200/75 dark:border-neutral-800/80 pt-3.5">
             <Link
               to={`/club/${club.slug || club._id}`}
               style={buttonStyle}

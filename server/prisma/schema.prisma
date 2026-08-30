@@ -85,6 +85,7 @@ model Club {
   description          String?
   category             String?
   clubLogo             String?
+  bannerImage          String?
   facultyCoordinatorId String?          @db.VarChar(24)
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt

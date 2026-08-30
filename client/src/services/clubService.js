@@ -17,6 +17,11 @@ export const getClubBySlugOrId = (identifier) =>
 export const updateClub = (id, data) =>
   api.put(`/api/clubs/${id}`, data);
 
+export const uploadClubBanner = (clubId, formData) =>
+  api.post(`/api/clubs/${clubId}/banner`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 export const deleteClub = (id) =>
   api.delete(`/api/clubs/${id}`);
 

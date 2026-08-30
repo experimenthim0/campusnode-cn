@@ -1202,14 +1202,14 @@ const EventDetails = () => {
             </div>
           </div>
 
-          {/* ═══════════════ RIGHT COLUMN: Transactional Widget (35%) ═══════════════ */}
-          <div className="w-full lg:w-[35%] lg:sticky lg:top-[80px] shrink-0">
+          {/* ═══════════════ RIGHT COLUMN: Transactional Widget (30%) ═══════════════ */}
+          <div className="w-full lg:w-[30%] lg:sticky lg:top-[80px] shrink-0">
             <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
 
               {/* ── Date & Time Module ── */}
-              <div className="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
-                  <i className="ri-calendar-event-line text-orange-500 text-xs font-medium" /> DATE & TIME
+                  DATE & TIME
                 </p>
                 <div className="space-y-2.5">
                   <div>
@@ -1290,7 +1290,7 @@ const EventDetails = () => {
               )}
 
               {/* ── Primary CTA ── */}
-              <div className="px-6 py-5">
+              <div className="px-6 py-4">
                 {/* Horizontal Metadata Anchor */}
                 <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500 mb-4 px-1">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -1370,7 +1370,7 @@ const EventDetails = () => {
                   )}
                 </div>
               ) : (
-                <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                <div className="px-1 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                   <div className="px-3 flex items-center gap-3 pb-4">
                     {clubSlugOrId ? (
                       <Link
@@ -1405,14 +1405,14 @@ const EventDetails = () => {
 
                   {/* ── Club Social Media / Contact Links ── */}
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
-                    <div className="px-6 pb-4 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                    <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2.5">
                         Connect with {displayName}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {event.club.socialLinks.map((link, i) => {
                           const platform = link.platform?.toLowerCase() || "website";
-                          const iconProps = { className: "w-5 h-5" };
+                          const iconProps = { className: "w-6 h-6" };
 
                           const getIcon = () => {
                             if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={28} />;
@@ -1448,7 +1448,7 @@ const EventDetails = () => {
               )}
 
               {/* ── Social Sharing Row ── */}
-              <div className="px-6 pb-5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="px-6 pb-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-3">Share Event</p>
                 <div className="flex items-center gap-2">
                   <button
@@ -1482,7 +1482,7 @@ const EventDetails = () => {
                 </div>
               </div>
               
-<div className="px-6 pb-5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+<div className="px-6 pb-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
 
        
  

@@ -5,7 +5,36 @@ import { slugifyUnique } from "../utils/slugifyUnique.js";
 import prisma from "../lib/prisma.js";
 import { serializeEvent } from "../utils/postgresEventSerializer.js";
 import crypto from "crypto";
+import multer from "multer";
+import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { getPublicResponse, setPublicResponse } from "../utils/publicResponseCache.js";
+
+/**
+ * Helper to extract Cloudinary public_id from a URL
+ */
+function extractCloudinaryPublicId(url) {
+  if (!url) return null;
+  try {
+    const clean = url.split("?")[0];
+    const match = clean.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-z0-9]+)?$/i);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for high-res banners
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files (jpeg, png, webp, gif) are allowed."), false);
+    }
+  },
+});
 
 const router = express.Router();
 
@@ -43,6 +72,7 @@ const publicClubSelect = {
   description: true,
   category: true,
   clubLogo: true,
+  bannerImage: true,
   facultyName: true,
   studentCoordinators: true,
   motto: true,
@@ -420,6 +450,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
       "facultyEmail",
       "facultyName",
       "clubLogo",
+      "bannerImage",
       "bankName",
       "accountHolderName",
       "accountNumber",
@@ -512,6 +543,69 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// ── POST /api/clubs/:id/banner — Upload & set club banner ─────────────────────
+router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res) => {
+  try {
+    const clubId = req.params.id;
+    const isAuthorized = await verifyClubAdminAccess(req.user, clubId);
+    if (!isAuthorized) {
+      return res.status(403).json({ message: "Access denied. You can only update your own club banner." });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided." });
+    }
+
+    // 1. Fetch current club banner and delete old image from Cloudinary if exists
+    const currentClub = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { bannerImage: true },
+    });
+
+    const oldBannerUrl = currentClub?.bannerImage;
+    if (oldBannerUrl) {
+      const oldPublicId = extractCloudinaryPublicId(oldBannerUrl);
+      if (oldPublicId) {
+        try {
+          await deleteImage(oldPublicId);
+        } catch (delErr) {
+          console.warn("Failed to delete previous banner from Cloudinary:", delErr.message);
+        }
+      }
+    }
+
+    // 2. Upload new banner to Cloudinary with WebP conversion and compression
+    const publicId = `club-banner-${clubId}-${Date.now()}`;
+    const uploadOptions = {
+      folder: "club-banners",
+      unique_filename: false,
+      overwrite: true,
+      public_id: publicId,
+      format: "webp",
+    };
+
+    const result = await uploadImage(req.file.buffer, "club-banners", uploadOptions);
+    const bannerUrl = result.secure_url;
+
+    const updatedClub = await prisma.club.update({
+      where: { id: clubId },
+      data: { bannerImage: bannerUrl },
+    });
+
+    res.json({
+      message: "Club banner updated successfully",
+      bannerImage: bannerUrl,
+      club: {
+        ...updatedClub,
+        _id: updatedClub.id,
+      },
+    });
+  } catch (error) {
+    console.error("Banner upload error:", error);
+    res.status(500).json({ message: "Failed to upload banner.", error: error.message });
   }
 });
 

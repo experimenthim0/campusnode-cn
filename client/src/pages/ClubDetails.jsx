@@ -23,6 +23,7 @@ import { GithubIcon } from "@/components/ui/github";
 import { MessageCircleIcon } from "@/components/ui/message-circle";
 import { EarthIcon } from "@/components/ui/earth";
 import EventCard from "../components/EventCard";
+import BannerCropModal from "../components/BannerCropModal";
 import { useTheme } from "../context/ThemeContext";
 import { getPublicJson } from "../lib/publicDataCache";
 import { registerUpdateCallback, unregisterUpdateCallback } from "../lib/cacheManager";
@@ -382,6 +383,7 @@ const ClubDetails = () => {
   const [eventViewMode, setEventViewMode] = useState("list"); // "list" | "calendar"
   const [lightboxImage, setLightboxImage] = useState(null);
   const [adminHubOpen, setAdminHubOpen] = useState(false);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
   const [adminTab, setAdminTab] = useState("announcements"); // "announcements" | "achievements" | "gallery" | "featured"
 
   // Admin Hub Form States
@@ -669,139 +671,201 @@ const ClubDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-white pb-24 transition-colors duration-300">
-      {/* ── 1. CLUB HERO & HEADER ── */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 pt-16 pb-20 px-4 sm:px-6 relative overflow-hidden">
-        {/* Subtle orange accent glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 blur-[130px] rounded-full pointer-events-none" />
+      {/* ── 1. LINKEDIN-STYLE CLUB HERO CARD ── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
+          
+          {/* Banner Cover Image Container */}
+          <div className="relative w-full h-44 sm:h-56 md:h-64 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden">
+            <img
+              src={club.bannerImage || club.coverImage || "/mainbuilding.jpeg"}
+              alt={`${club.clubName} Banner`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/collegeimg.jpeg";
+              }}
+            />
+            
+            {/* Subtle Gradient Shade on Banner */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-            {/* Logo */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full flex-shrink-0 overflow-hidden shadow-sm flex items-center justify-center p-2">
-              <img
-                src={heroLogoSrc}
-                alt={club.clubName}
-                className="w-full h-full object-contain rounded-full"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = fallbackLogo;
-                }}
-              />
-            </div>
+            {/* LinkedIn-style Edit Banner Icon */}
+            {canEdit && (
+              <button
+                onClick={() => setBannerModalOpen(true)}
+                title="Change & Adjust Cover Banner"
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 dark:bg-neutral-900/90 hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 shadow-md backdrop-blur-sm flex items-center justify-center transition-all cursor-pointer border border-neutral-200/60 dark:border-neutral-700/60 hover:scale-105"
+              >
+                <i className="ri-pencil-line text-sm" />
+              </button>
+            )}
+          </div>
 
-            {/* Main Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-full">
-                  {club.category || "Student Club"}
-                </span>
-                
-                {club.establishedYear && (
-                  <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-full">
-                    Est. {club.establishedYear}
-                  </span>
+          {/* Profile Header Body */}
+          <div className="px-5 sm:px-8 pb-6 sm:pb-8 relative">
+            
+            {/* Top Row: Avatar overlapping banner + Action buttons */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 md:-mt-20 mb-4">
+              
+              {/* Overlapping Avatar */}
+              <div className="relative group">
+                <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white dark:border-neutral-900 bg-white dark:bg-neutral-800 shadow-md overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+                  <img
+                    src={heroLogoSrc}
+                    alt={club.clubName}
+                    className="w-full h-full object-contain rounded-full"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = fallbackLogo;
+                    }}
+                  />
+                </div>
+                {canEdit && (
+                  <button
+                    onClick={() => setAdminHubOpen(true)}
+                    title="Change Logo"
+                    className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 shadow-md border-2 border-white dark:border-neutral-900 flex items-center justify-center transition-all cursor-pointer text-xs"
+                  >
+                    <i className="ri-pencil-line" />
+                  </button>
                 )}
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-neutral-900 dark:text-white leading-tight">
-                {club.clubName}
-              </h1>
-
-              {club.motto && (
-                <p className="text-sm sm:text-base font-semibold text-orange-600 dark:text-orange-400 mt-1 italic tracking-wide">
-                  "{club.motto}"
-                </p>
-              )}
-
-              {club.mission && !club.motto && (
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1.5 line-clamp-2">
-                  {club.mission}
-                </p>
-              )}
-            </div>
-
-            {/* Top Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
-              <button
-                onClick={handleShareClub}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition font-semibold text-xs uppercase tracking-wider cursor-pointer"
-              >
-                <i className="ri-share-line font-light" /> Share
-              </button>
-
-              {canEdit && (
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end pt-2 sm:pt-0">
                 <button
-                  onClick={() => setAdminHubOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
+                  onClick={handleShareClub}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition font-semibold text-xs uppercase tracking-wider cursor-pointer"
                 >
-                  <i className="ri-dashboard-line font-light" /> Manage Club
+                  <i className="ri-share-line font-light" /> Share
                 </button>
-              )}
-            </div>
-          </div>
 
-          {/* Admin Fast-Action Bar (If authorized) */}
-          {(canEdit || isHead) && (
-            <div className="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800/80 justify-center sm:justify-start">
-              <Link
-                to="/create"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
-              >
-                <i className="ri-add-line font-light" /> Create Event
-              </Link>
-              {isHead && (
-                <>
-                  <Link
-                    to={`/club/edit/${club._id || club.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
+                {canEdit && (
+                  <button
+                    onClick={() => setAdminHubOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
                   >
-                    <i className="ri-settings-3-line font-light" /> Club Settings
-                  </Link>
-                  <Link
-                    to={`/club/${club._id || club.id}/team`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
-                  >
-                    <i className="ri-team-line font-light" /> Manage Members
-                  </Link>
-                  
-                </>
-              )}
+                    <i className="ri-dashboard-line font-light" /> Manage Club
+                  </button>
+                )}
+              </div>
             </div>
-          )}
+
+            {/* Middle Section: Left info (Title, Motto, Badges) & Right stats (Small boxes) */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mt-3">
+              {/* Left Column: Info */}
+              <div className="space-y-2 max-w-xl">
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-full">
+                    {club.category || "Student Club"}
+                  </span>
+                  
+                  {club.establishedYear && (
+                    <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-full">
+                      Est. {club.establishedYear}
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-neutral-900 dark:text-white leading-tight">
+                  {club.clubName}
+                </h1>
+
+                {club.motto && (
+                  <p className="text-sm sm:text-base font-semibold text-orange-600 dark:text-orange-400 italic tracking-wide">
+                    "{club.motto}"
+                  </p>
+                )}
+
+                {club.mission && !club.motto && (
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
+                    {club.mission}
+                  </p>
+                )}
+              </div>
+
+              {/* Right Column: Small Stat Boxes */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
+                  {/* <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm shrink-0">
+                    <i className="ri-team-line" />
+                  </div> */}
+                  <div className="leading-tight pr-1">
+                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
+                      {studentMembers.length}
+                    </div>
+                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                      Members
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
+                  {/* <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm shrink-0">
+                    <i className="ri-calendar-check-line" />
+                  </div> */}
+                  <div className="leading-tight pr-1">
+                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
+                      {upcomingEvents.length + liveEvents.length}
+                    </div>
+                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                      Upcoming
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
+                  {/* <div className="w-8 h-8 rounded-xl bg-neutral-200/60 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 flex items-center justify-center text-sm shrink-0">
+                    <i className="ri-history-line" />
+                  </div> */}
+                  <div className="leading-tight pr-1">
+                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
+                      {pastEvents.length}
+                    </div>
+                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                      Past Events
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Fast-Action Bar (If authorized) */}
+            {(canEdit || isHead) && (
+              <div className="flex flex-wrap items-center gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800/80">
+                <Link
+                  to="/create"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
+                >
+                  <i className="ri-add-line font-light" /> Create Event
+                </Link>
+                {isHead && (
+                  <>
+                    <Link
+                      to={`/club/edit/${club._id || club.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
+                    >
+                      <i className="ri-settings-3-line font-light" /> Club Settings
+                    </Link>
+                    <Link
+                      to={`/club/${club._id || club.id}/team`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
+                    >
+                      <i className="ri-team-line font-light" /> Manage Members
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+
+          </div>
         </div>
       </div>
 
       {/* ── MAIN CONTENT CONTAINER ── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-10 relative z-20 space-y-8">
-        {/* ── 2. CLUB STATISTICS (Zero Registrations) ── */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 rounded-2xl shadow-xs text-center sm:text-left">
-            <div className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">
-              {studentMembers.length}
-            </div>
-            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-1">
-              Active Members
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 rounded-2xl shadow-xs text-center sm:text-left">
-            <div className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">
-              {upcomingEvents.length + liveEvents.length}
-            </div>
-            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-1">
-              Live & Upcoming
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 rounded-2xl shadow-xs text-center sm:text-left">
-            <div className="text-2xl sm:text-3xl font-black text-neutral-800 dark:text-neutral-200">
-              {pastEvents.length}
-            </div>
-            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-1">
-              Past Events
-            </div>
-          </div>
-        </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 relative z-20 space-y-8">
 
       
 
@@ -1898,6 +1962,20 @@ const ClubDetails = () => {
           </div>
         </div>
       )}
+
+      {/* ── BANNER CROP & UPLOAD MODAL ── */}
+      <BannerCropModal
+        isOpen={bannerModalOpen}
+        onClose={() => setBannerModalOpen(false)}
+        clubId={club?._id || club?.id}
+        currentBannerUrl={club?.bannerImage || club?.coverImage}
+        onSuccess={(newBannerUrl) => {
+          if (newBannerUrl) {
+            setClub((prev) => (prev ? { ...prev, bannerImage: newBannerUrl } : prev));
+          }
+          fetchClubDetails();
+        }}
+      />
     </div>
   );
 };
