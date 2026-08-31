@@ -38,15 +38,20 @@ export const downloadCertificate = async (req, res) => {
       });
     }
 
-    // Look up the student's participation record
+    // Look up the student's or external user's participation record
     const participation = await prisma.participation.findFirst({
       where: {
         eventId,
-        studentId,
+        OR: [
+          { studentId },
+          { externalUserId: studentId },
+          { externalEmail: req.user.email },
+        ],
         paymentStatus: { in: ["SUCCESS", "APPROVED"] },
       },
       include: {
         student: { select: { id: true, name: true } },
+        externalUser: { select: { id: true, name: true } },
       },
     });
 
@@ -56,11 +61,11 @@ export const downloadCertificate = async (req, res) => {
 
     if (participation.status !== "ATTENDED") {
       return res.status(403).json({
-        message: "Certificates are only available to participants who attended the event. Please contact the club coordinator if you attended but are not marked.",
+        message: "Certificates are only available to participants who attended the event. Please contact the coordinator if you attended but were not marked.",
       });
     }
 
-    const userName = participation.student?.name;
+    const userName = participation.student?.name || participation.externalUser?.name || participation.externalName;
     if (!userName) {
       return res.status(422).json({ message: "Participant name is missing." });
     }

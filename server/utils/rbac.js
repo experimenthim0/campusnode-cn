@@ -336,6 +336,10 @@ export const EXTERNAL_USER_PERMISSIONS = [
   PERMISSIONS.REGISTRATION_CANCEL,
   PERMISSIONS.REGISTRATION_VIEW,
   PERMISSIONS.NOTIFICATION_VIEW,
+  PERMISSIONS.TEAM_CREATE,
+  PERMISSIONS.TEAM_MANAGE,
+  PERMISSIONS.USER_VIEW,
+  PERMISSIONS.USER_UPDATE,
 ];
 
 export const CENTRAL_ORGANIZER_PERMISSIONS = INSTITUTIONAL_LEAD_PERMISSIONS;
@@ -407,7 +411,7 @@ export function roleHasPermission(role, permission) {
 
 /**
  * Central Scoped Permission Evaluator
- * Resolves permissions according to principal type: CLUB, FACULTY, STUDENT, INSTITUTIONAL, ADMIN.
+ * Resolves permissions according to principal type: CLUB, FACULTY, STUDENT, INSTITUTIONAL, ADMIN, EXTERNAL.
  *
  * @param {object} user - Authenticated user context from req.user
  * @param {string} permission - Canonical or legacy permission string
@@ -430,6 +434,7 @@ export function hasPermission(user, permission, resource = null) {
     user.role === "lostFoundAdmin" ? "ADMIN" :
     user.role === "paymentAdmin" ? "ADMIN" :
     user.role === "central_organizer" ? "INSTITUTIONAL" :
+    user.userType === "external" || user.role === "external" ? "EXTERNAL" :
     user.userType === "student" ? "STUDENT" :
     user.role === "club" ? "CLUB" : "STUDENT"
   );
@@ -442,6 +447,14 @@ export function hasPermission(user, permission, resource = null) {
 
   const targetClubId = resource?.clubId ?? (!isInstitutionalResource ? resource?.id : null);
   const targetUserId = resource?.userId ?? resource?.createdById ?? resource?.id ?? null;
+
+  // ── PRINCIPAL: EXTERNAL PARTICIPANT ──────────────────────────────────
+  if (principalType === "EXTERNAL" || user.role === "external" || user.userType === "external") {
+    if (targetUserId && String(targetUserId) === String(user.userId || user.id)) {
+      if (perm === PERMISSIONS.USER_UPDATE || perm === PERMISSIONS.USER_VIEW) return true;
+    }
+    return EXTERNAL_USER_PERMISSIONS.includes(perm) || EXTERNAL_USER_PERMISSIONS.includes(permission);
+  }
 
   // ── PRINCIPAL: INSTITUTIONAL ACCOUNT DIRECT LOGIN ─────────────────────
   if (principalType === "INSTITUTIONAL") {

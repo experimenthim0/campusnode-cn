@@ -46,10 +46,73 @@ const loginSchema = z.object({
 router.post("/login", validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
+    const cleanEmail = (email || "").trim().toLowerCase();
 
-    // Try AdminRole first (faculty coordinator with club or super admin)
-    const admin = await prisma.adminRole.findUnique({
-      where: { email },
+    // 1. Try ClubAccount first (Club official credentials)
+    const clubAccount = await prisma.clubAccount.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
+      include: {
+        club: { select: { id: true, clubName: true, slug: true, clubLogo: true } },
+      },
+    });
+
+    if (clubAccount) {
+      const match = await bcrypt.compare(password, clubAccount.password);
+      if (!match) return res.status(401).json({ message: "Invalid credentials." });
+
+      const token = generateToken(clubAccount, "club", "club", clubAccount.clubId, "CLUB");
+
+      return res.json({
+        token,
+        user: {
+          id: clubAccount.id,
+          name: clubAccount.club?.clubName || "Club Official",
+          email: clubAccount.email,
+          role: "club",
+          userType: "club",
+          clubs: [
+            {
+              id: clubAccount.clubId,
+              name: clubAccount.club?.clubName || "Club",
+              membershipId: clubAccount.id,
+              role: "CLUB_HEAD",
+              canTakeAttendance: true,
+            },
+          ],
+          staffEvents: [],
+        },
+      });
+    }
+
+    // 2. Try InstitutionalAccount (Central Organizer entity)
+    const instAccount = await prisma.institutionalAccount.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
+    });
+
+    if (instAccount && instAccount.password) {
+      const match = await bcrypt.compare(password, instAccount.password);
+      if (!match) return res.status(401).json({ message: "Invalid credentials." });
+
+      const token = generateToken(instAccount, "central_organizer", "institutional", null, "INSTITUTIONAL");
+
+      return res.json({
+        token,
+        user: {
+          id: instAccount.id,
+          name: instAccount.name,
+          email: instAccount.email,
+          role: "central_organizer",
+          userType: "institutional",
+          accessLevel: "central_organizer",
+          clubs: [],
+          staffEvents: [],
+        },
+      });
+    }
+
+    // 3. Try AdminRole (Faculty Coordinator / Super Admin)
+    const admin = await prisma.adminRole.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
       select: { id: true, email: true, password: true, role: true, name: true, coordinatedClubs: { select: { id: true, clubName: true } } },
     });
 
@@ -76,14 +139,20 @@ router.post("/login", validate(loginSchema), async (req, res) => {
           email: admin.email,
           role: admin.role,
           userType: "admin",
-          clubs: clubs.map((c) => ({ id: c.id, name: c.clubName })),
+          clubs: clubs.map((c) => ({
+            id: c.id,
+            name: c.clubName,
+            role: "COORDINATOR",
+            canTakeAttendance: true,
+          })),
+          staffEvents: [],
         },
       });
     }
 
-    // Try StudentUser
-    const student = await prisma.studentUser.findUnique({
-      where: { email },
+    // 4. Try StudentUser (Club Heads, Coordinators, Attendance Operators, Event Staff, Central Organizers)
+    const student = await prisma.studentUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
       select: {
         id: true,
         email: true,
@@ -92,7 +161,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
         isBlocked: true,
         accessLevel: true,
         memberships: {
-          where: { role: { in: ["CLUB_HEAD", "COORDINATOR", "MEMBER"] } },
+          where: { role: { in: ["CLUB_HEAD", "COORDINATOR", "MEMBER"] }, status: { not: "INACTIVE" } },
           include: { club: { select: { id: true, clubName: true } } },
         },
         eventStaffAssignments: {
@@ -116,7 +185,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ message: "Invalid credentials." });
 
-    // 1. Check if user is Central Organizer
+    // 4a. Check if user is Central Organizer
     if (student.accessLevel === "central_organizer") {
       const token = generateToken(student, "central_organizer", "student", null);
       return res.json({
@@ -138,12 +207,12 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // 2. Check Club Memberships with attendance permission
+    // 4b. Check Club Memberships with attendance permission
     const scannerMemberships = student.memberships.filter(
       (m) => m.canTakeAttendance || ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
     );
 
-    // 3. Check EventStaff assignments with ATTENDANCE_OPERATOR
+    // 4c. Check EventStaff assignments with ATTENDANCE_OPERATOR
     const activeStaffAssignments = student.eventStaffAssignments;
 
     if (scannerMemberships.length === 0 && activeStaffAssignments.length === 0) {
@@ -378,6 +447,7 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         qrVersion: true,
         status: true,
         student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
+        externalUser: { select: { name: true, collegeName: true, email: true } },
         externalName: true,
         externalEmail: true,
       },
@@ -434,11 +504,12 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         qrPayload: p.qrPayload,
         qrVersion: p.qrVersion,
         status: p.status,
-        studentName: p.student?.name || p.externalName || "Unknown",
-        branch: p.student?.branch || null,
-        rollNo: p.student?.rollNo || null,
+        studentName: p.student?.name || p.externalUser?.name || p.externalName || "Unknown",
+        branch: p.student?.branch || (p.externalUser ? p.externalUser.collegeName : null),
+        rollNo: p.student?.rollNo || (p.externalUser ? "External" : null),
         year: p.student ? calculateAcademicProgress(p.student).academicYearLabel : null,
-        externalEmail: p.externalEmail || null,
+        externalEmail: p.externalEmail || p.externalUser?.email || null,
+        collegeName: p.externalUser?.collegeName || null,
       })),
       publicKeys: [publicKeyInfo],
       existingAttendance: existingAttendance.map((a) => a.participationId),
@@ -607,7 +678,10 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
           { qrPayload },
         ],
       },
-      include: { student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } } },
+      include: {
+        student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
+        externalUser: { select: { name: true, collegeName: true, email: true } },
+      },
     });
 
     if (!participation) {
@@ -634,10 +708,11 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
         status: "ALREADY_ATTENDED",
         message: "Participant already checked in.",
         participant: {
-          name: participation.student?.name || participation.externalName || "Unknown",
-          branch: participation.student?.branch || null,
-          rollNo: participation.student?.rollNo || null,
+          name: participation.student?.name || participation.externalUser?.name || participation.externalName || "Unknown",
+          branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
+          rollNo: participation.student?.rollNo || (participation.externalUser ? "External" : null),
           year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
+          collegeName: participation.externalUser?.collegeName || null,
         },
         attendedAt: existingAttendance.scannedAt,
       });
@@ -669,17 +744,18 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       targetId: participation.id,
       eventId,
       source: "ONLINE",
-      metadata: { participantName: participation.student?.name || participation.externalName },
+      metadata: { participantName: participation.student?.name || participation.externalUser?.name || participation.externalName },
     });
 
     return res.json({
       status: "VALID",
       message: "Check-in successful!",
       participant: {
-        name: participation.student?.name || participation.externalName || "Unknown",
-        branch: participation.student?.branch || null,
-        rollNo: participation.student?.rollNo || null,
+        name: participation.student?.name || participation.externalUser?.name || participation.externalName || "Unknown",
+        branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
+        rollNo: participation.student?.rollNo || (participation.externalUser ? "External" : null),
         year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
+        collegeName: participation.externalUser?.collegeName || null,
       },
       attendedAt: new Date(),
     });
@@ -726,24 +802,41 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
     });
     if (!event) return res.status(404).json({ message: "Event not found." });
 
-    // 2. Validate Scanner Session: must belong to authenticated user and match event
-    const session = await prisma.scannerSession.findUnique({ where: { id: scannerSessionId } });
-    if (!session) {
-      return res.status(403).json({ message: "Scanner session not found." });
-    }
-    if (session.eventId !== eventId) {
-      return res.status(403).json({ message: "Scanner session does not match the event." });
-    }
-    if (req.user.role !== "admin" && session.userId !== userId) {
-      return res.status(403).json({ message: "Scanner session does not belong to the authenticated user." });
-    }
-
-    // 3. Re-validate authorization at sync time (Mandatory security: if permission revoked while offline, reject sync!)
+    // 2. Re-validate authorization at sync time (Mandatory security: if permission revoked while offline, reject sync!)
     const isAuthorized = await verifyAttendancePermission(userId, eventId, event, req.user);
     if (!isAuthorized) {
       return res.status(403).json({
         message: "Attendance operator access was revoked or expired. Offline records cannot be synchronized.",
       });
+    }
+
+    // 3. Validate Scanner Session: must belong to authenticated user and match event
+    let session = await prisma.scannerSession.findUnique({ where: { id: scannerSessionId } });
+    if (!session) {
+      // Find or create an offline session for this authorized user
+      session = await prisma.scannerSession.findFirst({
+        where: { eventId, userId, mode: "OFFLINE" },
+      });
+      if (!session) {
+        session = await prisma.scannerSession.create({
+          data: {
+            id: createObjectId(),
+            eventId,
+            clubId: event.clubId || null,
+            userId,
+            deviceId: "synced_device",
+            mode: "OFFLINE",
+            status: "ACTIVE",
+          },
+        });
+      }
+    } else {
+      if (session.eventId !== eventId) {
+        return res.status(403).json({ message: "Scanner session does not match the event." });
+      }
+      if (req.user.role !== "admin" && session.userId !== userId) {
+        return res.status(403).json({ message: "Scanner session does not belong to the authenticated user." });
+      }
     }
 
     const results = [];
@@ -808,7 +901,7 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
               id: attendanceId,
               eventId,
               participationId: record.participationId,
-              scannerSessionId,
+              scannerSessionId: session.id,
               scannedAt: new Date(record.scannedAt),
               verificationMode: "OFFLINE",
               syncedAt: new Date(),

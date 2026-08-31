@@ -204,6 +204,7 @@ model Event {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @default(now()) @updatedAt
   isFeatured           Boolean         @default(false)
+  allowExternal        Boolean         @default(true)
   feedbackEnabled      Boolean         @default(true)
   registrationType     String          @default("individual")
   minTeamSize          Int             @default(1)
@@ -301,6 +302,8 @@ model Participation {
   updatedAt            DateTime            @default(now()) @updatedAt
   event            Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   student          StudentUser?        @relation(fields: [studentId], references: [id])
+  externalUserId   String?             @db.VarChar(24)
+  externalUser     ExternalUser?       @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
   teamId           String?             @db.VarChar(24)
   team             Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   attendanceRecords AttendanceRecord[]
@@ -308,6 +311,8 @@ model Participation {
   @@index([eventId])
   @@index([studentId, createdAt])
   @@index([studentId, eventId])
+  @@index([externalUserId])
+  @@index([externalEmail])
   @@index([eventId, paymentStatus])
   @@index([eventId, status])
 }
@@ -502,32 +507,42 @@ enum LostFoundStatus {
 }
 
 model Team {
-  id        String       @id @db.VarChar(24)
-  eventId   String       @db.VarChar(24)
-  teamName  String
-  leaderId  String       @db.VarChar(24)
-  status    String       @default("active")
-  createdAt DateTime     @default(now())
-  event     Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  leader    StudentUser  @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
-  members   TeamMember[]
-  participations Participation[]
+  id               String          @id @db.VarChar(24)
+  eventId          String          @db.VarChar(24)
+  teamName         String
+  leaderId         String          @db.VarChar(24)
+  leaderStudentId  String?         @db.VarChar(24)
+  leaderExternalId String?         @db.VarChar(24)
+  status           String          @default("active")
+  createdAt        DateTime        @default(now())
+  event            Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  leader           StudentUser?    @relation("TeamLeader", fields: [leaderStudentId], references: [id], onDelete: Cascade)
+  leaderExternal   ExternalUser?   @relation("ExternalTeamLeader", fields: [leaderExternalId], references: [id], onDelete: Cascade)
+  members          TeamMember[]
+  participations   Participation[]
 
   @@index([eventId])
   @@index([leaderId])
+  @@index([leaderStudentId])
+  @@index([leaderExternalId])
 }
 
 model TeamMember {
-  id       String      @id @db.VarChar(24)
-  teamId   String      @db.VarChar(24)
-  userId   String      @db.VarChar(24)
-  role     String      @default("member")
-  joinedAt DateTime    @default(now())
-  team     Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user     StudentUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String        @id @db.VarChar(24)
+  teamId         String        @db.VarChar(24)
+  userId         String        @db.VarChar(24)
+  studentId      String?       @db.VarChar(24)
+  externalUserId String?       @db.VarChar(24)
+  role           String        @default("member")
+  joinedAt       DateTime      @default(now())
+  team           Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user           StudentUser?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  externalUser   ExternalUser? @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
   @@index([userId])
+  @@index([studentId])
+  @@index([externalUserId])
 }
 
 model Permission {
@@ -793,3 +808,35 @@ model EventAIReview {
   @@index([eventId, status])
   @@index([eventId, generatedAt])
 }
+
+model ExternalUser {
+  id                  String          @id @db.VarChar(24)
+  name                String
+  email               String          @unique
+  password            String
+  collegeName         String
+  phone               String?
+  program             String?
+  graduationYear      Int?
+  profileImage        String?
+  githubProfile       String?
+  linkedinProfile     String?
+  xProfile            String?
+  instagramProfile    String?
+  whatsappNumber      String?
+  portfolioUrl        String?
+  isVerified          Boolean         @default(true)
+  isTwoStepEnabled    Boolean         @default(false)
+  otp                 String?
+  otpExpire           DateTime?
+  resetPasswordExpire DateTime?
+  resetPasswordToken  String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  participations      Participation[]
+  ledTeams            Team[]          @relation("ExternalTeamLeader")
+  teamMemberships     TeamMember[]
+
+  @@index([email])
+}
+

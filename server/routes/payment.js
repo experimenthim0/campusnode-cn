@@ -338,7 +338,12 @@ router.put(
       }
 
       // Permission check: must be owner of registration
-      if (participation.studentId !== req.user.userId) {
+      const isOwner =
+        participation.studentId === req.user.userId ||
+        participation.externalUserId === req.user.userId ||
+        participation.externalEmail === req.user.email;
+
+      if (!isOwner && req.user.role !== "admin") {
         return res.status(403).json({ message: "Access denied. You can only update your own registration." });
       }
 

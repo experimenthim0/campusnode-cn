@@ -243,7 +243,7 @@ router.post("/register/student", async (req, res) => {
 // POST /api/auth/login/student
 // Authenticates official club accounts (ClubAccount table) or students (StudentUser table)
 
-router.post("/login/student", async (req, res) => {
+router.post(["/login", "/login/student"], async (req, res) => {
   try {
     const { email, password } = req.body;
     const cleanEmail = String(email || "").trim().toLowerCase();
@@ -377,8 +377,78 @@ router.post("/login/student", async (req, res) => {
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
-    if (!student || student.isBlocked) {
+    if (!student) {
+      // 4. Try ExternalUser
+      const externalUser = await prisma.externalUser.findFirst({
+        where: { email: { equals: cleanEmail, mode: "insensitive" } },
+      });
+
+      if (externalUser) {
+        const isMatch = await bcrypt.compare(password, externalUser.password);
+        if (!isMatch) {
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        if (externalUser.isTwoStepEnabled) {
+          const otp = Math.floor(100000 + Math.random() * 900000).toString();
+          await prisma.externalUser.update({
+            where: { id: externalUser.id },
+            data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+          });
+          await sendEmail({
+            email: externalUser.email,
+            subject: "CampusNode Login Verification Code",
+            message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+              <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
+              <h2>Your Verification Code</h2>
+              <p>A login was requested for your account (<strong>${externalUser.email}</strong>).</p>
+              <div style="margin:30px 0">
+                <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+              </div>
+              <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+            </div>`,
+          });
+          return res.json({ needs2FA: true, email: externalUser.email, userType: "external", message: "Verification code sent to your email." });
+        }
+
+        const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+        const userObj = {
+          id: externalUser.id,
+          name: externalUser.name,
+          email: externalUser.email,
+          collegeName: externalUser.collegeName,
+          phone: externalUser.phone,
+          program: externalUser.program,
+          graduationYear: externalUser.graduationYear,
+          profileImage: externalUser.profileImage,
+          githubProfile: externalUser.githubProfile,
+          linkedinProfile: externalUser.linkedinProfile,
+          xProfile: externalUser.xProfile,
+          instagramProfile: externalUser.instagramProfile,
+          whatsappNumber: externalUser.whatsappNumber,
+          portfolioUrl: externalUser.portfolioUrl,
+          role: "external",
+          userType: "external",
+          principalType: "EXTERNAL",
+        };
+
+        res.cookie("token", token, getCookieOptions());
+        return res.json({
+          success: true,
+          message: "Login successful",
+          user: userObj,
+          role: "external",
+          userType: "external",
+          principalType: "EXTERNAL",
+          token,
+        });
+      }
+
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (student.isBlocked) {
+      return res.status(401).json({ message: "Your account is suspended. Please contact administrator." });
     }
 
     if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
@@ -540,84 +610,163 @@ router.post("/login/admin", async (req, res) => {
 });
 
 // ─── EXTERNAL USER REGISTRATION & LOGIN ───────────────────────────────────────
-// External participants are now stored as StudentUser records with no rollNo/branch
+// External participants are stored in dedicated ExternalUser table
 
 router.post("/register/external", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, password, collegeName, phone, program, graduationYear } = req.body;
 
-    if (!name || !email) {
-      return res.status(400).json({ message: "Name and email are required." });
+    if (!name || !email || !password || !collegeName || !program || !graduationYear) {
+      return res.status(400).json({ message: "Name, email, password, college/university name, program/degree, and graduation year are required." });
     }
 
-    let externalUser = await prisma.studentUser.findUnique({ where: { email } });
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    }
 
-    if (!externalUser) {
-      externalUser = await prisma.studentUser.create({
-        data: {
-          id: createObjectId(),
-          name,
-          email,
-          password: await import("bcryptjs").then(b => b.default.hash(createObjectId(), 10)),
-          program: "OTHER",
-        },
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Enforce educational/institutional email ending with .edu or .ac.in
+    const domain = cleanEmail.split("@")[1] || "";
+    const isAcademicEmail =
+      domain.endsWith(".edu") ||
+      domain.endsWith(".ac.in") ||
+      domain.endsWith(".edu.in");
+
+    if (!isAcademicEmail) {
+      return res.status(400).json({
+        message: "Only institutional student emails ending with .edu or .ac.in are allowed for external registration.",
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
+    // Check email uniqueness across ExternalUser and StudentUser
+    const [existingExternal, existingStudent] = await Promise.all([
+      prisma.externalUser.findUnique({ where: { email: cleanEmail } }),
+      prisma.studentUser.findUnique({ where: { email: cleanEmail } }),
+    ]);
 
-    await prisma.studentUser.update({ where: { id: externalUser.id }, data: { otp, otpExpire } });
+    if (existingExternal || existingStudent) {
+      return res.status(400).json({ message: "An account with this email address already exists. Please login instead." });
+    }
 
-    await sendEmail({
-      email,
-      subject: "Your CampusNode Event Access Code",
-      message: `<div style="font-family: logofont,Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-        <h1 style="color:#FF4400;"><span style="color:#000">Club</span>Setu</h1>
-        <h2>Event Access Code</h2>
-        <p>Hi ${name}, use this code to confirm your registration:</p>
-        <div style="margin:30px 0">
-          <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-        </div>
-        <p style="color:#777">Valid for <strong>10 minutes</strong>.</p>
-      </div>`,
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const externalUser = await prisma.externalUser.create({
+      data: {
+        id: createObjectId(),
+        name: name.trim(),
+        email: cleanEmail,
+        password: hashedPassword,
+        collegeName: collegeName.trim(),
+        phone: phone?.trim() || null,
+        program: program?.trim() || null,
+        graduationYear: graduationYear ? parseInt(graduationYear, 10) : null,
+        isVerified: true,
+      },
     });
 
-    res.json({ message: "Access code sent to your email.", email });
+    const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+    const userObj = {
+      id: externalUser.id,
+      name: externalUser.name,
+      email: externalUser.email,
+      collegeName: externalUser.collegeName,
+      phone: externalUser.phone,
+      program: externalUser.program,
+      graduationYear: externalUser.graduationYear,
+      role: "external",
+      userType: "external",
+      principalType: "EXTERNAL",
+    };
+
+    res.cookie("token", token, getCookieOptions());
+
+    return res.status(201).json({
+      success: true,
+      message: "External participant account created successfully!",
+      user: userObj,
+      role: "external",
+      userType: "external",
+      principalType: "EXTERNAL",
+      token,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("External user registration error:", err);
+    res.status(500).json({ message: err.message || "Failed to register external participant." });
   }
 });
 
 router.post("/login/external", async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, password, otp } = req.body;
 
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required." });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
     }
 
-    const externalUser = await prisma.studentUser.findFirst({
-      where: { email, otp, otpExpire: { gt: new Date() } },
-    });
+    const cleanEmail = email.toLowerCase().trim();
 
-    if (!externalUser) {
-      return res.status(401).json({ message: "Invalid or expired access code." });
+    let externalUser;
+    if (otp) {
+      externalUser = await prisma.externalUser.findFirst({
+        where: { email: cleanEmail, otp, otpExpire: { gt: new Date() } },
+      });
+      if (!externalUser) {
+        return res.status(401).json({ message: "Invalid or expired access code." });
+      }
+      await prisma.externalUser.update({
+        where: { id: externalUser.id },
+        data: { otp: null, otpExpire: null },
+      });
+    } else if (password) {
+      externalUser = await prisma.externalUser.findFirst({
+        where: { email: cleanEmail },
+      });
+      if (!externalUser) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      const isMatch = await bcrypt.compare(password, externalUser.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+    } else {
+      return res.status(400).json({ message: "Password or OTP is required." });
     }
 
-    await prisma.studentUser.update({
-      where: { id: externalUser.id },
-      data: { otp: null, otpExpire: null },
+    const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+    const userObj = {
+      id: externalUser.id,
+      name: externalUser.name,
+      email: externalUser.email,
+      collegeName: externalUser.collegeName,
+      phone: externalUser.phone,
+      program: externalUser.program,
+      graduationYear: externalUser.graduationYear,
+      profileImage: externalUser.profileImage,
+      githubProfile: externalUser.githubProfile,
+      linkedinProfile: externalUser.linkedinProfile,
+      xProfile: externalUser.xProfile,
+      instagramProfile: externalUser.instagramProfile,
+      whatsappNumber: externalUser.whatsappNumber,
+      portfolioUrl: externalUser.portfolioUrl,
+      role: "external",
+      userType: "external",
+      principalType: "EXTERNAL",
+    };
+
+    res.cookie("token", token, getCookieOptions());
+
+    return res.json({
+      success: true,
+      message: "Login successful",
+      user: userObj,
+      role: "external",
+      userType: "external",
+      principalType: "EXTERNAL",
+      token,
     });
-
-    const token = generateToken(externalUser, "external", "external", null);
-    const userObj = sanitizeUser(externalUser);
-
-    res.cookie("token", token, getCookieOptions(24 * 60 * 60 * 1000));
-
-    return res.json({ success: true, message: "Login successful", user: userObj, role: "external", userType: "external", token });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("External login error:", err);
+    res.status(500).json({ message: err.message || "Failed to log in." });
   }
 });
 

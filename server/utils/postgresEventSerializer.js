@@ -4,9 +4,16 @@ import { calculateAcademicProgress } from "./academicProgress.js";
 export function serializeEvent(event) {
   if (!event) return event;
 
+  const actualRegCount = typeof event._count?.participations === 'number'
+    ? event._count.participations
+    : (Array.isArray(event.participations)
+        ? event.participations.filter(p => p.status !== 'CANCELLED').length
+        : (typeof event.registeredCount === 'number' ? event.registeredCount : 0));
+
   return {
     ...event,
     _id: event.id,
+    registeredCount: actualRegCount,
     createdBy: event.createdBy
       ? { ...event.createdBy, _id: event.createdBy.id }
       : event.createdBy,
@@ -45,12 +52,25 @@ export function serializeParticipation(participation) {
       semester: progress.semester,
       semesterLabel: progress.semesterLabel,
     };
+  } else if (participation.externalUser || participation.externalName || participation.externalEmail) {
+    const rawExternal = participation.externalUser;
+    user = {
+      id: participation.externalUserId || rawExternal?.id || null,
+      _id: participation.externalUserId || rawExternal?.id || null,
+      name: rawExternal?.name || participation.externalName || "External Participant",
+      email: rawExternal?.email || participation.externalEmail || "",
+      collegeName: rawExternal?.collegeName || "External College",
+      rollNo: rawExternal?.collegeName || "External",
+      profileImage: rawExternal?.profileImage || null,
+      phone: rawExternal?.phone || null,
+      isExternal: true,
+    };
   }
 
   return {
     ...participation,
     _id: participation.id,
-    userId: participation.studentId, // Keep userId for frontend compatibility
+    userId: participation.studentId || participation.externalUserId || participation.externalEmail,
     user,
     event: participation.event ? serializeEvent(participation.event) : participation.event,
   };

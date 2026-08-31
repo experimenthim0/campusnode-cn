@@ -234,6 +234,15 @@ const eventInclude = {
   },
   sponsors: true,
   media: true,
+  _count: {
+    select: {
+      participations: {
+        where: {
+          status: { not: "CANCELLED" },
+        },
+      },
+    },
+  },
 };
 
 // The feed does not need the large sponsor/media/custom payment payloads used
@@ -249,6 +258,7 @@ const publicEventSelect = {
   endTime: true,
   totalSeats: true,
   entryFee: true,
+  allowExternal: true,
   allowedPrograms: true,
   allowedYears: true,
   allowedBranches: true,
@@ -273,6 +283,15 @@ const publicEventSelect = {
   registrationFee: true,
   createdAt: true,
   updatedAt: true,
+  _count: {
+    select: {
+      participations: {
+        where: {
+          status: { not: "CANCELLED" },
+        },
+      },
+    },
+  },
   createdBy: {
     select: { id: true, name: true },
   },
@@ -748,14 +767,24 @@ router.get(
         return res.status(403).json({ message: "Access denied." });
       }
 
-      const isExternal = userType === "external";
+      const isExternal = userType === "external" || role === "external" || req.user.principalType === "EXTERNAL";
 
       const participations = await prisma.participation.findMany({
-        where: isExternal ? { externalEmail: userId } : { studentId: userId },
+        where: isExternal
+          ? {
+              OR: [
+                { externalUserId: userId },
+                { externalUserId: authUserId },
+                { externalEmail: authEmail || userId },
+                { studentId: userId },
+              ],
+            }
+          : { studentId: userId },
         select: {
           id: true,
           eventId: true,
           studentId: true,
+          externalUserId: true,
           externalEmail: true,
           externalName: true,
           status: true,
@@ -804,16 +833,29 @@ router.get(
               academicStatus: true,
             },
           },
+          externalUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              collegeName: true,
+              profileImage: true,
+              phone: true,
+              program: true,
+            },
+          },
           team: {
             select: {
               id: true,
               teamName: true,
               leaderId: true,
               leader: { select: { id: true, name: true, email: true, rollNo: true } },
+              leaderExternal: { select: { id: true, name: true, email: true, collegeName: true } },
               members: {
                 select: {
                   userId: true,
                   user: { select: { id: true, name: true, email: true, rollNo: true } },
+                  externalUser: { select: { id: true, name: true, email: true, collegeName: true } },
                 },
               }
             }
@@ -927,6 +969,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         allowedPrograms: allowedPrograms || ["BTECH", "MTECH", "OTHER"],
         allowedYears: allowedYears || [],
         allowedBranches: allowedBranches || [],
+        allowExternal: req.body.allowExternal !== undefined ? Boolean(req.body.allowExternal) : true,
         registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
         registrationType: registrationType || "individual",
         minTeamSize: minTeamSize !== undefined ? Number(minTeamSize) : 1,
@@ -1096,16 +1139,34 @@ router.post(
     try {
       const eventId = req.params.id;
       const { externalEmail, externalName, transactionId, payerName, paymentRemarks } = req.body;
-      const isExternal = !!externalEmail;
-      if (req.user.role === "external" && externalEmail !== req.user.email) {
-        return res.status(403).json({ message: "External users can only register with their own email." });
-      }
-      if (req.user.role !== "external" && isExternal) {
-        return res.status(403).json({ message: "Only external users can submit external registration details." });
-      }
+      const isExternalUser = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
+      const isExternal = isExternalUser || !!externalEmail;
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
+
+      const now = new Date();
+      if (now > new Date(event.endTime)) {
+        return res.status(400).json({
+          message: "This event has already ended. Registration is closed.",
+        });
+      }
+
+      const registrationDeadline = event.registrationDeadline
+        ? new Date(event.registrationDeadline)
+        : new Date(event.startTime);
+
+      if (now > registrationDeadline) {
+        return res.status(400).json({
+          message: "Registration deadline has passed for this event.",
+        });
+      }
+
+      if (isExternal && event.allowExternal === false) {
+        return res.status(403).json({
+          message: "This event is exclusive to internal NITJ students only. External participation is not allowed for this event.",
+        });
+      }
 
       if (event.registrationType === "none") {
         return res.status(400).json({
@@ -1119,10 +1180,20 @@ router.post(
         });
       }
 
+      const extUserId = isExternalUser ? req.user.userId : null;
+      const extEmail = isExternalUser ? req.user.email : (externalEmail || null);
+      const extName = isExternalUser ? req.user.name : (externalName || null);
+
       // Duplicate check
       if (isExternal) {
         const existing = await prisma.participation.findFirst({
-          where: { eventId, externalEmail },
+          where: {
+            eventId,
+            OR: [
+              ...(extUserId ? [{ externalUserId: extUserId }] : []),
+              ...(extEmail ? [{ externalEmail: extEmail }] : []),
+            ]
+          },
         });
         if (existing) return res.status(400).json({ message: "Already registered for this event." });
       } else {
@@ -1183,18 +1254,25 @@ router.post(
           id: createObjectId(),
           eventId,
           studentId: null,
-          externalEmail,
-          externalName: externalName || null,
+          externalUserId: extUserId,
+          externalEmail: extEmail,
+          externalName: extName,
           qrCode: ticketId,
           qrPayload,
           qrVersion,
           qrKeyId,
           status,
+          transactionId: transactionId || null,
+          payerName: payerName || null,
+          paymentRemarks: paymentRemarks || null,
+          amountPaid: (event.paymentMethod === 'FREE') ? 0 : (event.registrationFee || event.entryFee || 0),
+          paymentStatus: (event.paymentMethod === 'MANUAL_TRANSACTION') ? 'PENDING' : (event.paymentMethod === 'COLLEGE_PAYMENT') ? 'PENDING' : 'SUCCESS',
         }
         : {
           id: createObjectId(),
           eventId,
           studentId: req.user.userId,
+          externalUserId: null,
           externalEmail: null,
           externalName: null,
           qrCode: ticketId,
@@ -1292,6 +1370,17 @@ router.get(
               program: true,
             },
           },
+          externalUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              collegeName: true,
+              program: true,
+              graduationYear: true,
+              phone: true,
+            },
+          },
           team: {
             include: {
               leader: {
@@ -1306,6 +1395,17 @@ router.get(
                   academicStatus: true,
                 },
               },
+              leaderExternal: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  collegeName: true,
+                  program: true,
+                  graduationYear: true,
+                  phone: true,
+                },
+              },
               members: {
                 include: {
                   user: {
@@ -1318,6 +1418,17 @@ router.get(
                       program: true,
                       expectedGraduationYear: true,
                       academicStatus: true,
+                    },
+                  },
+                  externalUser: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      collegeName: true,
+                      program: true,
+                      graduationYear: true,
+                      phone: true,
                     },
                   },
                 },
@@ -1337,6 +1448,21 @@ router.get(
                 academicYearLabel: calculateAcademicProgress(p.student).academicYearLabel,
                 semester: calculateAcademicProgress(p.student).semester,
                 semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
+                isExternal: false,
+              }
+            : (p.externalUser || p.externalName || p.externalEmail)
+            ? {
+                id: p.externalUserId || p.externalUser?.id || null,
+                _id: p.externalUserId || p.externalUser?.id || null,
+                name: p.externalUser?.name || p.externalName || "External Participant",
+                email: p.externalUser?.email || p.externalEmail || "",
+                collegeName: p.externalUser?.collegeName || "External College",
+                rollNo: p.externalUser?.collegeName || "External",
+                program: p.externalUser?.program || "N/A",
+                year: p.externalUser?.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'Verified Guest',
+                academicYearLabel: p.externalUser?.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'Verified Guest',
+                phone: p.externalUser?.phone || null,
+                isExternal: true,
               }
             : null;
 
@@ -1349,6 +1475,14 @@ router.get(
                       year: calculateAcademicProgress(p.team.leader).academicYearLabel,
                       academicYear: calculateAcademicProgress(p.team.leader).academicYear,
                       semester: calculateAcademicProgress(p.team.leader).semester,
+                      isExternal: false,
+                    }
+                  : p.team.leaderExternal
+                  ? {
+                      ...p.team.leaderExternal,
+                      rollNo: p.team.leaderExternal.collegeName,
+                      year: p.team.leaderExternal.graduationYear ? `Class of ${p.team.leaderExternal.graduationYear}` : 'Verified Guest',
+                      isExternal: true,
                     }
                   : null,
                 members: (p.team.members || []).map((m) => {
@@ -1358,6 +1492,14 @@ router.get(
                         year: calculateAcademicProgress(m.user).academicYearLabel,
                         academicYear: calculateAcademicProgress(m.user).academicYear,
                         semester: calculateAcademicProgress(m.user).semester,
+                        isExternal: false,
+                      }
+                    : m.externalUser
+                    ? {
+                        ...m.externalUser,
+                        rollNo: m.externalUser.collegeName,
+                        year: m.externalUser.graduationYear ? `Class of ${m.externalUser.graduationYear}` : 'Verified Guest',
+                        isExternal: true,
                       }
                     : null;
                   return {
@@ -1433,6 +1575,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       "allowedPrograms",
       "allowedYears",
       "allowedBranches",
+      "allowExternal",
       "registrationDeadline",
       "registrationType",
       "minTeamSize",
@@ -1595,11 +1738,47 @@ router.delete(
         return res.status(403).json({ message: "Unauthorized to deregister this user." });
       }
 
-      if (userType === "external") {
+      if (userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL") {
         const p = await prisma.participation.findFirst({
-          where: { eventId, externalEmail: studentId },
+          where: {
+            eventId,
+            OR: [
+              { externalUserId: userId },
+              { externalUserId: studentId },
+              { externalEmail: req.user.email },
+              { externalEmail: studentId },
+            ],
+          },
+          include: { event: true },
         });
         if (!p) return res.status(404).json({ message: "Registration not found." });
+
+        if (p.teamId) {
+          const team = await prisma.team.findUnique({
+            where: { id: p.teamId },
+          });
+
+          if (team && team.leaderId === (userId || studentId)) {
+            // Leader deregistering deletes the whole team registration
+            const teamParticipations = await prisma.participation.findMany({
+              where: { teamId: p.teamId },
+            });
+            await prisma.$transaction(async (tx) => {
+              await tx.participation.deleteMany({ where: { teamId: p.teamId } });
+              await tx.teamMember.deleteMany({ where: { teamId: p.teamId } });
+              await tx.team.delete({ where: { id: p.teamId } });
+              const registeredMembersCount = teamParticipations.filter(tp => tp.status === "REGISTERED").length;
+              if (registeredMembersCount > 0) {
+                await tx.event.update({
+                  where: { id: eventId },
+                  data: { registeredCount: { decrement: registeredMembersCount } },
+                });
+              }
+            });
+            invalidatePublicResponses(["events:public:*"]);
+            return res.json({ message: "Team and all member registrations cancelled successfully." });
+          }
+        }
 
         await prisma.$transaction(async (tx) => {
           await tx.participation.delete({ where: { id: p.id } });

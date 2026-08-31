@@ -189,9 +189,43 @@ const cleanupUnverifiedStudents = async () => {
   }
 };
 
+// Auto-sync registeredCount with actual non-cancelled participations
+const syncRegisteredCounts = async () => {
+  try {
+    const events = await prisma.event.findMany({
+      select: {
+        id: true,
+        registeredCount: true,
+        _count: {
+          select: {
+            participations: {
+              where: {
+                status: { not: "CANCELLED" },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    for (const ev of events) {
+      const actual = ev._count?.participations || 0;
+      if (ev.registeredCount !== actual) {
+        await prisma.event.update({
+          where: { id: ev.id },
+          data: { registeredCount: actual },
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error syncing registered counts on startup:", error);
+  }
+};
+
 // Run on startup
 cleanupReunitedItems();
 cleanupUnverifiedStudents();
+syncRegisteredCounts();
 seedPermissions();
 ensureBlackoutTable();
 

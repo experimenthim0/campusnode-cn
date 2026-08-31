@@ -60,7 +60,11 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
           { id: rawInput },
         ],
       },
-      include: { event: true, student: true },
+      include: {
+        event: true,
+        student: true,
+        externalUser: { select: { name: true, collegeName: true, email: true } },
+      },
     });
 
     if (!participation) {
@@ -107,10 +111,10 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       return res.status(409).json({
         status: 'ALREADY_ATTENDED',
         message: 'Attendance already recorded for this attendee.',
-        participantName: participation.student?.name || participation.externalName || 'Unknown',
-        branch: participation.student?.branch || null,
-        rollNo: participation.student?.rollNo || null,
-        externalEmail: participation.externalEmail || null,
+        participantName: participation.student?.name || participation.externalUser?.name || participation.externalName || 'Unknown',
+        branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
+        rollNo: participation.student?.rollNo || (participation.externalUser ? 'External' : null),
+        externalEmail: participation.externalEmail || participation.externalUser?.email || null,
         attendedAt: existingRecord?.scannedAt || participation.attendedAt || new Date(),
       });
     }
@@ -139,10 +143,10 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
     ]);
 
     // Step 6: Return attendance confirmation
-    const participantName = participation.student?.name || participation.externalName || 'Unknown';
-    const branch = participation.student?.branch || null;
-    const rollNo = participation.student?.rollNo || null;
-    const externalEmail = participation.externalEmail || null;
+    const participantName = participation.student?.name || participation.externalUser?.name || participation.externalName || 'Unknown';
+    const branch = participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null);
+    const rollNo = participation.student?.rollNo || (participation.externalUser ? 'External' : null);
+    const externalEmail = participation.externalEmail || participation.externalUser?.email || null;
 
     return res.status(200).json({
       status: 'VALID',

@@ -163,6 +163,40 @@ export const verifyToken = async (req, res, next) => {
       }
     }
 
+    // ── 2.8 EXTERNAL USER PRINCIPAL ──────────────────────────────────────
+    if (principalType === "EXTERNAL" || decoded.userType === "external" || decoded.role === "external") {
+      const externalUser = await prisma.externalUser.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          collegeName: true,
+          phone: true,
+          isVerified: true,
+          isTwoStepEnabled: true,
+        },
+      });
+
+      if (!externalUser) {
+        return res.status(401).json({ message: "Invalid or expired token." });
+      }
+
+      req.user = {
+        principalType: "EXTERNAL",
+        userId: externalUser.id,
+        id: externalUser.id,
+        email: externalUser.email,
+        name: externalUser.name,
+        collegeName: externalUser.collegeName,
+        phone: externalUser.phone,
+        role: "external",
+        userType: "external",
+        clubId: null,
+      };
+      return next();
+    }
+
     // ── 3. STUDENT PRINCIPAL ─────────────────────────────────────────────
     const student = await prisma.studentUser.findUnique({
       where: { id: decoded.userId },
@@ -178,20 +212,6 @@ export const verifyToken = async (req, res, next) => {
 
     if (!student || student.isBlocked) {
       return res.status(401).json({ message: "Invalid or expired token." });
-    }
-
-    if (principalType === "EXTERNAL" || decoded.userType === "external") {
-      req.user = {
-        principalType: "EXTERNAL",
-        userId: student.id,
-        id: student.id,
-        email: student.email,
-        name: student.name,
-        role: "external",
-        userType: "external",
-        clubId: null,
-      };
-      return next();
     }
 
     // Fetch student club memberships and institutional account assignments
