@@ -103,7 +103,6 @@ const CentralAuditLogs = ({ events = [] }) => {
 
   return (
     <div className="space-y-4 myfont">
-      {/* ── Console Header & Controls ── */}
       <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 sm:p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -134,7 +133,6 @@ const CentralAuditLogs = ({ events = [] }) => {
 
         {/* Filters Bar */}
         <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
-          {/* Search Query */}
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input
@@ -146,7 +144,6 @@ const CentralAuditLogs = ({ events = [] }) => {
             />
           </form>
 
-          {/* Action Filter */}
           <div className="flex items-center gap-2">
             <select
               value={selectedAction}
@@ -164,7 +161,6 @@ const CentralAuditLogs = ({ events = [] }) => {
               ))}
             </select>
 
-            {/* Event Filter */}
             <select
               value={selectedEventId}
               onChange={(e) => {
@@ -184,7 +180,6 @@ const CentralAuditLogs = ({ events = [] }) => {
         </div>
       </div>
 
-      {/* ── Tabular Server Log ── */}
       <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xs overflow-hidden">
         {loading ? (
           <div className="py-20 text-center flex flex-col items-center justify-center">
@@ -290,7 +285,6 @@ const CentralAuditLogs = ({ events = [] }) => {
           </div>
         )}
 
-        {/* ── Table Footer / Pagination ── */}
         {!loading && logs.length > 0 && (
           <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-4 font-mono text-[11px]">
             <span className="text-neutral-500">
@@ -319,7 +313,6 @@ const CentralAuditLogs = ({ events = [] }) => {
         )}
       </div>
 
-      {/* ── Raw Log / JSON Metadata Modal ── */}
       {selectedMetadata && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs font-mono">
           <div className="bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-xl max-w-xl w-full p-5 shadow-2xl space-y-4">

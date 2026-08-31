@@ -42,13 +42,11 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [role, setRole] = useState(null);
 
-    // Filters for Events
     const [filters, setFilters] = useState({ month: 'all', year: 'all', clubId: 'all' });
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
     const [showYearWise, setShowYearWise] = useState(false);
 
-    // Payout modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedClub, setSelectedClub] = useState(null);
     const [selectedEventId, setSelectedEventId] = useState(null);
@@ -288,7 +286,6 @@ const AdminDashboard = () => {
         }
     };
 
-    /* ─── Tab Titles Mapping ─────────────────────────────────────────────────── */
     const tabTitles = {
         overview: { title: 'Overview', subtitle: 'All events and system metrics at a glance' },
         'event-data': { title: 'All Events', subtitle: 'View, filter, and access all event details and direct page links' },
@@ -309,7 +306,6 @@ const AdminDashboard = () => {
     if (loading) return (
         <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont animate-pulse">
             <div className="max-w-7xl mx-auto px-5 lg:px-8 py-8">
-                {/* Page Header Skeleton */}
                 <div className="mb-8 space-y-2">
                     <div className="h-7 w-48 bg-neutral-100 dark:bg-zinc-900 rounded-lg" />
                     <div className="h-4 w-72 bg-neutral-50 dark:bg-zinc-900/50 rounded-lg" />
@@ -350,7 +346,6 @@ const AdminDashboard = () => {
         <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont">
             <div className="max-w-7xl mx-auto px-5 lg:px-8 py-8">
 
-                {/* ── Page Header ───────────────────────────────────────── */}
                 <div className="mb-8 flex flex-wrap justify-between items-end gap-4">
                     <div>
                         <h1 className="text-2xl font-black text-black dark:text-white tracking-wide">
@@ -361,7 +356,6 @@ const AdminDashboard = () => {
                         </p>
                     </div>
 
-                    {/* Header Actions */}
                     {activeTab === 'broadcasts' && (
                         <button
                             onClick={() => setBroadcastModalOpen(true)}
@@ -393,7 +387,6 @@ const AdminDashboard = () => {
                     )}
                 </div>
 
-                {/* ── TAB VIEWS ─────────────────────────────────────────── */}
                 {activeTab === 'overview' && (
                     <OverviewTab
                         stats={stats}

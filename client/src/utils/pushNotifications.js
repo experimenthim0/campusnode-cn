@@ -143,7 +143,6 @@ export async function sendLocalPushNotification(title, options = {}) {
     try {
       new Notification(title, { body: options.body || '' });
     } catch (_) {
-      /* ignore */
     }
   }
 }

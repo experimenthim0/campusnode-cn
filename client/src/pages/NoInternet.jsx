@@ -107,7 +107,6 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
           Don't worry. Everything will continue where you left off.
         </p>
 
-        {/* Button */}
 
         <button
           onClick={handleRetry}

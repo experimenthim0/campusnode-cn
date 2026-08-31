@@ -41,7 +41,6 @@ function approximateSize(value) {
   }
 }
 
-// ─── IndexedDB helpers ──────────────────────────────────────────────────────
 
 let dbInstance = null;
 let dbFailed = false;
@@ -128,7 +127,6 @@ function withStore(mode, callback) {
 
 const memoryStore = new Map();
 
-// ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
  * Get a cache entry by URL key.
@@ -137,7 +135,6 @@ const memoryStore = new Map();
  * @returns {Promise<object|null>} — The cache entry or null
  */
 export async function getEntry(key) {
-  // Try IndexedDB first
   const entry = await withStore('readonly', (store) => store.get(key));
   if (entry) {
     // Update lastAccessed in background (fire-and-forget)
@@ -178,7 +175,6 @@ export async function setEntry(key, data, metadata = {}) {
     sizeBytes,
   };
 
-  // Try IndexedDB
   const stored = await withStore('readwrite', (store) => store.put(entry));
   if (stored !== undefined) {
     // Check if we need to evict (fire-and-forget)
@@ -317,7 +313,6 @@ export async function clearAll() {
   memoryStore.clear();
 }
 
-// ─── Internal helpers ───────────────────────────────────────────────────────
 
 /**
  * Check if total cache size exceeds limit and evict if necessary.

@@ -124,7 +124,6 @@ const ClubAnnouncementsSection = ({
       id="announcements"
       className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs scroll-mt-20 transition-all"
     >
-      {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
@@ -163,7 +162,6 @@ const ClubAnnouncementsSection = ({
         )}
       </div>
 
-      {/* Collapsible New Announcement Form */}
       {isFormOpen && canManage && (
         <form
           onSubmit={handleCreate}

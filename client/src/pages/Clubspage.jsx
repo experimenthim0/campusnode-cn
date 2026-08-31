@@ -141,7 +141,6 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
   const filteredClubs = useMemo(() => {
     let list = Array.isArray(clubs) ? [...clubs] : [];
 
-    // Filter by Category
     if (filterCategory !== "ALL") {
       list = list.filter((club) => {
         const cat = club.category || "";
@@ -149,7 +148,6 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       });
     }
 
-    // Filter by Search Query
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter((club) => {
@@ -236,10 +234,8 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           </div>
         )}
 
-        {/* ── FILTER & SEARCH BAR ── */}
         {(!isHome || showFilters) && (
           <div className="mb-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs overflow-hidden">
-            {/* Row 1: Search */}
             <div className="relative group">
               <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-sm sm:text-base transition-colors pointer-events-none" />
               <input
@@ -260,7 +256,6 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
               )}
             </div>
 
-            {/* Row 2: Category Tabs */}
             <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 mt-2 sm:mt-2.5 min-w-0 max-w-full">
               {categoryTabs.map((cat) => {
                 const isSelected = filterCategory.toLowerCase() === cat.key.toLowerCase();
@@ -281,7 +276,6 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
               })}
             </div>
 
-            {/* Active filter summary */}
             {isFilterActive && (
               <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[10px] sm:text-[11px]">
                 <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-bold truncate pr-2">
@@ -300,7 +294,6 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           </div>
         )}
 
-        {/* Empty State Banner */}
         {showEmptyBanner && (
           <div className="text-center py-12 px-4 mb-14 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
             <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center mx-auto mb-4 overflow-hidden">

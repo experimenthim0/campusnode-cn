@@ -60,11 +60,8 @@ export const requestMetrics = (req, res, next) => {
   next();
 };
 
-// ─── Route-Aware Cache-Control Headers ──────────────────────────────────────
-//
 // Instead of a blanket max-age=15 for all public GETs, each route gets
 // a Cache-Control header matched to its data freshness requirements.
-//
 // | Route Pattern             | Cache-Control                                    |
 // |---------------------------|--------------------------------------------------|
 // | GET /api/events (list)    | public, max-age=300, stale-while-revalidate=600  |
@@ -81,12 +78,10 @@ export const requestMetrics = (req, res, next) => {
  * @type {Array<{test: (method: string, path: string) => boolean, header: string}>}
  */
 const CACHE_RULES = [
-  // ── Never cache: mutations ────────────────────────────────────────────
   {
     test: (method) => method !== "GET",
     header: "no-cache, no-store",
   },
-  // ── Never cache: registration, check-in, QR verification ─────────────
   {
     test: (_, path) =>
       path.includes("/register") ||
@@ -94,22 +89,18 @@ const CACHE_RULES = [
       path.includes("/verify"),
     header: "no-cache, no-store, must-revalidate",
   },
-  // ── Never cache: auth routes ──────────────────────────────────────────
   {
     test: (_, path) => path.startsWith("/api/auth/"),
     header: "no-cache, no-store",
   },
-  // ── Never cache: payment routes ───────────────────────────────────────
   {
     test: (_, path) => path.startsWith("/api/payment/"),
     header: "no-cache, no-store",
   },
-  // ── Admin dashboard: private, no-cache ────────────────────────────────
   {
     test: (_, path) => path.startsWith("/api/admin/"),
     header: "private, no-cache, no-store",
   },
-  // ── Notifications: private, very short cache ──────────────────────────
   {
     test: (_, path) => path.startsWith("/api/notifications"),
     header: "private, max-age=30, must-revalidate",
@@ -120,7 +111,6 @@ const CACHE_RULES = [
     test: (_, path) => path.startsWith("/api/events/user/"),
     header: "private, no-cache, no-store, must-revalidate",
   },
-  // ── User-specific data (requires auth headers) ────────────────────────
   {
     test: (_, path, req) =>
       path.startsWith("/api/users/") ||
@@ -130,31 +120,26 @@ const CACHE_RULES = [
       req.headers.cookie,
     header: "private, max-age=60, must-revalidate",
   },
-  // ── Events list: public, 5min + 10min SWR ────────────────────────────
   {
     test: (method, path) =>
       method === "GET" && /^\/api\/events\/?$/.test(path),
     header: "public, max-age=15, stale-while-revalidate=30",
   },
-  // ── Event detail: public, 5min + 15min SWR ───────────────────────────
   {
     test: (method, path) =>
       method === "GET" && /^\/api\/events\/[^/]+\/?$/.test(path),
     header: "public, max-age=15, stale-while-revalidate=30",
   },
-  // ── Clubs list: public, 1hr + 6hr SWR ────────────────────────────────
   {
     test: (method, path) =>
       method === "GET" && /^\/api\/clubs\/?$/.test(path),
     header: "public, max-age=3600, stale-while-revalidate=21600",
   },
-  // ── Club detail: public, 1hr + 6hr SWR ───────────────────────────────
   {
     test: (method, path) =>
       method === "GET" && /^\/api\/clubs\/[^/]+\/?$/.test(path),
     header: "public, max-age=3600, stale-while-revalidate=21600",
   },
-  // ── Default: moderate public cache ────────────────────────────────────
   {
     test: (method, path) =>
       method === "GET" &&
@@ -178,8 +163,6 @@ export const publicReadCache = (req, res, next) => {
   next();
 };
 
-// ─── ETag Support Middleware ────────────────────────────────────────────────
-//
 // Generates weak ETags from response body hashes for public GET API routes.
 // Checks incoming If-None-Match headers and returns 304 Not Modified
 // if the content hasn't changed — zero body transfer, lower bandwidth.

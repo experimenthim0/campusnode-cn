@@ -98,12 +98,10 @@ const AppLayout = () => {
 
   const { user, isAuthenticated } = useAuth();
 
-  // ── Auth gate for dashboard/management routes ─────────────────────────
   if (isDashboardRoute && !isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // ── Render correct layout content ─────────────────────────────────────
   const layoutContent = isDashboardRoute ? (
     <div className="cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       {/* Navbar — always pinned at top, full width */}

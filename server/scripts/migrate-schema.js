@@ -23,7 +23,6 @@ async function run() {
   await client.connect();
   console.log("Connected to database.");
 
-  // ── Step 0: Inspect current state ─────────────────────────────────────────
   const { rows: tables } = await client.query(`
     SELECT table_name FROM information_schema.tables 
     WHERE table_schema = 'public' ORDER BY table_name
@@ -37,7 +36,6 @@ async function run() {
   const hasOldCollegeParticipation = tableNames.includes("CollegeEventParticipation");
   const hasOldExternalParticipation = tableNames.includes("ExternalCollegeEventParticipation");
 
-  // ── Step 1: Fix ClubMembership ─────────────────────────────────────────────
   console.log("\n── Step 1: Fixing ClubMembership ──");
 
   const { rows: membershipCols } = await client.query(`
@@ -47,7 +45,6 @@ async function run() {
   const membershipColNames = membershipCols.map(c => c.column_name);
   console.log("ClubMembership columns:", membershipColNames);
 
-  // 1a. Rename userId → studentId if needed
   if (membershipColNames.includes("userId") && !membershipColNames.includes("studentId")) {
     console.log("  Renaming userId → studentId...");
     await client.query(`ALTER TABLE "ClubMembership" RENAME COLUMN "userId" TO "studentId"`);
@@ -56,16 +53,12 @@ async function run() {
     console.log("  studentId already exists, skipping rename.");
   }
 
-  // 1b. Migrate old role enum values
   console.log("  Migrating role values...");
-  // The role column is a USER-DEFINED type. We need to handle the enum migration.
-  // First check if the old enum type exists
   const { rows: enumTypes } = await client.query(`
     SELECT typname FROM pg_type WHERE typname IN ('ClubMemberRole', 'clubmemberrole')
   `);
   console.log("  Existing enum types:", enumTypes.map(e => e.typname));
 
-  // Check current role values in the table
   const { rows: roleValues } = await client.query(`
     SELECT DISTINCT role::text FROM "ClubMembership"
   `);
@@ -75,7 +68,6 @@ async function run() {
   
   if (hasOldRoles) {
     console.log("  Converting role column to text temporarily for migration...");
-    // Convert to text, update values, then convert back
     await client.query(`ALTER TABLE "ClubMembership" ALTER COLUMN "role" TYPE text USING "role"::text`);
     
     await client.query(`UPDATE "ClubMembership" SET "role" = 'CLUB_HEAD' WHERE "role" = 'clubHead'`);
@@ -84,7 +76,6 @@ async function run() {
     console.log("  ✓ Role values updated");
   }
 
-  // 1c. Ensure ClubMemberRole enum exists with correct values
   const { rows: existingEnum } = await client.query(`
     SELECT typname FROM pg_type WHERE typname = 'ClubMemberRole'
   `);
@@ -94,7 +85,6 @@ async function run() {
     await client.query(`CREATE TYPE "ClubMemberRole" AS ENUM ('CLUB_HEAD', 'COORDINATOR', 'MEMBER')`);
     console.log("  ✓ ClubMemberRole enum created");
   } else {
-    // Check if enum has correct values
     const { rows: enumVals } = await client.query(`
       SELECT enumlabel FROM pg_enum 
       JOIN pg_type ON pg_enum.enumtypid = pg_type.oid 
@@ -104,7 +94,6 @@ async function run() {
     
     const hasNewValues = enumVals.some(e => e.enumlabel === 'CLUB_HEAD');
     if (!hasNewValues) {
-      // Need to recreate the enum
       console.log("  Recreating ClubMemberRole enum with new values...");
       await client.query(`DROP TYPE IF EXISTS "ClubMemberRole" CASCADE`);
       await client.query(`CREATE TYPE "ClubMemberRole" AS ENUM ('CLUB_HEAD', 'COORDINATOR', 'MEMBER')`);
@@ -112,7 +101,6 @@ async function run() {
     }
   }
 
-  // 1d. Convert role column back to enum type
   const { rows: currentRoleType } = await client.query(`
     SELECT data_type FROM information_schema.columns 
     WHERE table_name = 'ClubMembership' AND column_name = 'role'
@@ -127,7 +115,6 @@ async function run() {
     console.log("  ✓ role column converted to ClubMemberRole enum");
   }
 
-  // 1e. Update permission flags based on new roles
   console.log("  Updating permission flags based on roles...");
   await client.query(`
     UPDATE "ClubMembership" 
@@ -146,7 +133,6 @@ async function run() {
   `);
   console.log("  ✓ Permission flags updated");
 
-  // 1f. Add unique constraint on (clubId, studentId) if not exists
   const { rows: constraints } = await client.query(`
     SELECT constraint_name FROM information_schema.table_constraints 
     WHERE table_name = 'ClubMembership' AND constraint_type = 'UNIQUE'
@@ -160,7 +146,6 @@ async function run() {
   
   if (!hasUniqueConstraint) {
     console.log("  Adding unique constraint on (clubId, studentId)...");
-    // Remove duplicate rows first (keep the most recent one)
     await client.query(`
       DELETE FROM "ClubMembership" a
       USING "ClubMembership" b
@@ -175,7 +160,6 @@ async function run() {
     console.log("  ✓ Unique constraint added");
   }
 
-  // ── Step 2: Fix enums for other models ────────────────────────────────────
   console.log("\n── Step 2: Ensuring all required enums exist ──");
 
   const requiredEnums = [
@@ -193,7 +177,6 @@ async function run() {
       await client.query(`CREATE TYPE "${name}" AS ENUM (${enumDef})`);
       console.log(`  ✓ Created enum ${name}`);
     } else {
-      // Check if all required values exist
       const { rows: existingVals } = await client.query(
         `SELECT enumlabel FROM pg_enum JOIN pg_type ON pg_enum.enumtypid = pg_type.oid WHERE pg_type.typname = $1`,
         [name]
@@ -205,13 +188,11 @@ async function run() {
       if (missingValues.length > 0 || hasWrongCase) {
         console.log(`  Recreating enum ${name} (old: [${existingLabels}], need: [${values}])...`);
         if (name === 'MediaType') {
-          // Drop old tables that depend on this enum (they are empty)
           await client.query(`DROP TABLE IF EXISTS "EventMedia" CASCADE`);
           await client.query(`DROP TABLE IF EXISTS "ClubMedia" CASCADE`);
           await client.query(`DROP TABLE IF EXISTS "Media" CASCADE`);
         }
         if (name === 'ParticipationStatus') {
-          // Add missing CANCELLED value instead of recreating (safer)
           if (!existingLabels.includes('CANCELLED')) {
             await client.query(`ALTER TYPE "ParticipationStatus" ADD VALUE 'CANCELLED'`);
             console.log(`  ✓ Added CANCELLED to ParticipationStatus`);
@@ -228,7 +209,6 @@ async function run() {
     }
   }
 
-  // ── Step 3: Fix Event table ────────────────────────────────────────────────
   console.log("\n── Step 3: Fixing Event table ──");
 
   const { rows: eventCols } = await client.query(`
@@ -264,7 +244,6 @@ async function run() {
     }
   }
 
-  // Fix reviewStatus column type if needed
   const { rows: reviewStatusType } = await client.query(`
     SELECT data_type FROM information_schema.columns 
     WHERE table_name = 'Event' AND column_name = 'reviewStatus'
@@ -277,7 +256,6 @@ async function run() {
     console.log("  ✓ Event.reviewStatus converted to enum");
   }
 
-  // ── Step 4: Fix Club table ─────────────────────────────────────────────────
   console.log("\n── Step 4: Fixing Club table ──");
 
   const { rows: clubCols } = await client.query(`
@@ -303,7 +281,6 @@ async function run() {
     }
   }
 
-  // ── Step 5: Fix StudentUser table ─────────────────────────────────────────
   console.log("\n── Step 5: Fixing StudentUser table ──");
 
   const { rows: studentCols } = await client.query(`
@@ -325,7 +302,6 @@ async function run() {
     }
   }
 
-  // ── Step 6: Create Participation table ────────────────────────────────────
   console.log("\n── Step 6: Creating Participation table ──");
 
   if (!hasParticipation) {
@@ -356,7 +332,6 @@ async function run() {
     await client.query(`CREATE INDEX "Participation_eventId_idx" ON "Participation"("eventId")`);
     console.log("  ✓ Participation table created");
 
-    // Migrate data from CollegeEventParticipation
     if (hasOldCollegeParticipation) {
       console.log("  Migrating CollegeEventParticipation data...");
       const { rows: oldCols } = await client.query(`
@@ -369,7 +344,6 @@ async function run() {
       console.log(`  CollegeEventParticipation rows: ${oldRows[0].count}`);
 
       if (parseInt(oldRows[0].count) > 0) {
-        // Cast status as text to avoid enum issues, map manually
         await client.query(`
           INSERT INTO "Participation" (
             "id", "eventId", "studentId", "status", "qrCode", 
@@ -409,7 +383,6 @@ async function run() {
       console.log(`  ✓ Migrated ${migratedCount[0].count} internal participations`);
     }
 
-    // Migrate data from ExternalCollegeEventParticipation
     if (hasOldExternalParticipation) {
       console.log("  Migrating ExternalCollegeEventParticipation data...");
       const { rows: extCols } = await client.query(`
@@ -466,7 +439,6 @@ async function run() {
     console.log("  Participation table already exists, skipping.");
   }
 
-  // ── Step 7: Create Sponsor table ──────────────────────────────────────────
   console.log("\n── Step 7: Creating Sponsor table ──");
 
   if (!hasSponsor) {
@@ -487,7 +459,6 @@ async function run() {
     console.log("  Sponsor table already exists, skipping.");
   }
 
-  // ── Step 8: Create Media table ────────────────────────────────────────────
   console.log("\n── Step 8: Creating Media table ──");
 
   if (!hasMedia) {
@@ -507,7 +478,6 @@ async function run() {
     console.log("  Media table already exists, skipping.");
   }
 
-  // ── Step 9: Fix AdminRole table ───────────────────────────────────────────
   console.log("\n── Step 9: Fixing AdminRole table ──");
 
   const hasAdminRole = tableNames.includes("AdminRole");
@@ -526,7 +496,6 @@ async function run() {
     console.log("  ✓ AdminRole table created");
   } else {
     console.log("  AdminRole table already exists.");
-    // Check if it has the right columns
     const { rows: adminCols } = await client.query(`
       SELECT column_name FROM information_schema.columns WHERE table_name = 'AdminRole'
     `);
@@ -537,7 +506,6 @@ async function run() {
     }
   }
 
-  // ── Step 10: Fix Notification table ──────────────────────────────────────
   console.log("\n── Step 10: Fixing Notification table ──");
 
   const hasNotification = tableNames.includes("Notification");
@@ -561,7 +529,6 @@ async function run() {
     }
   }
 
-  // ── Step 11: Fix ClubMembership - remove old columns ─────────────────────
   console.log("\n── Step 11: Cleaning up ClubMembership old columns ──");
 
   const { rows: finalMembershipCols } = await client.query(`
@@ -569,8 +536,6 @@ async function run() {
   `);
   const finalMembershipColNames = finalMembershipCols.map(c => c.column_name);
 
-  // Add joinedAt if missing (it was in old schema, keep it)
-  // Remove columns that no longer exist in new schema
   const colsToRemove = ['canCheckRegistration', 'canViewDashboard'];
   for (const col of colsToRemove) {
     if (finalMembershipColNames.includes(col)) {
@@ -579,7 +544,6 @@ async function run() {
     }
   }
 
-  // ── Final: Verify ─────────────────────────────────────────────────────────
   console.log("\n── Final Verification ──");
 
   const { rows: finalTables } = await client.query(`

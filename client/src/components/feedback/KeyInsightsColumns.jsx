@@ -10,7 +10,6 @@ const priorityBadgeStyles = {
 const KeyInsightsColumns = ({ whatStudentsLiked = [], improvementAreas = [] }) => {
   return (
     <section aria-label="Key Insights: Strengths and Improvement Areas" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* 1. What Students Liked */}
       <div className="p-5 md:p-6 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-200/70 dark:border-emerald-900/30 space-y-4">
         <div className="flex items-center justify-between gap-2 border-b border-emerald-200/50 dark:border-emerald-900/40 pb-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
@@ -53,7 +52,6 @@ const KeyInsightsColumns = ({ whatStudentsLiked = [], improvementAreas = [] }) =
         )}
       </div>
 
-      {/* 2. What Should Improve */}
       <div className="p-5 md:p-6 rounded-2xl bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/70 dark:border-amber-900/30 space-y-4">
         <div className="flex items-center justify-between gap-2 border-b border-amber-200/50 dark:border-amber-900/40 pb-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-2">

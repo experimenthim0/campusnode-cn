@@ -9,21 +9,15 @@
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "./objectId.js";
 
-/**
- * Audit action constants
- */
 export const AUDIT_ACTIONS = {
-  // Central Organizer
   CENTRAL_ORGANIZER_ASSIGNED: "CENTRAL_ORGANIZER_ASSIGNED",
   CENTRAL_ORGANIZER_REVOKED: "CENTRAL_ORGANIZER_REVOKED",
 
-  // Central Events
   CENTRAL_EVENT_CREATED: "CENTRAL_EVENT_CREATED",
   CENTRAL_EVENT_UPDATED: "CENTRAL_EVENT_UPDATED",
   CENTRAL_EVENT_DELETED: "CENTRAL_EVENT_DELETED",
   CENTRAL_EVENT_PUBLISHED: "CENTRAL_EVENT_PUBLISHED",
 
-  // Event Staff
   EVENT_STAFF_INVITED: "EVENT_STAFF_INVITED",
   EVENT_STAFF_ACCEPTED: "EVENT_STAFF_ACCEPTED",
   EVENT_STAFF_REJECTED: "EVENT_STAFF_REJECTED",
@@ -31,18 +25,14 @@ export const AUDIT_ACTIONS = {
   EVENT_STAFF_EXPIRED: "EVENT_STAFF_EXPIRED",
   EVENT_STAFF_PERMISSIONS_UPDATED: "EVENT_STAFF_PERMISSIONS_UPDATED",
 
-  // Attendance
   ATTENDANCE_MARKED: "ATTENDANCE_MARKED",
   ATTENDANCE_UPDATED: "ATTENDANCE_UPDATED",
   ATTENDANCE_SYNC: "ATTENDANCE_SYNC",
 
-  // Registrations
   REGISTRATION_UPDATED: "REGISTRATION_UPDATED",
 
-  // Certificates
   CERTIFICATE_GENERATED: "CERTIFICATE_GENERATED",
 
-  // Announcements
   ANNOUNCEMENT_SENT: "ANNOUNCEMENT_SENT",
 };
 
@@ -81,7 +71,6 @@ export async function createAuditLog({
       },
     });
   } catch (err) {
-    // Audit log failure should not break the main operation
     console.error("Audit log creation failed:", err.message);
     return null;
   }

@@ -519,7 +519,6 @@ const ClubEvents = () => {
         </div>
       )}
 
-      {/* ── DELETE MODAL ── */}
       <ColumnExportModal
         open={eventExportModalOpen}
         columns={CLUB_EVENT_EXPORT_COLUMNS}
@@ -562,7 +561,6 @@ const ClubEvents = () => {
           </div>
         </div>
       )}
-      {/* ── WINNER ANNOUNCEMENT MODAL ── */}
       <WinnerModal
         isOpen={!!winnerModalEvent}
         onClose={() => setWinnerModalEvent(null)}

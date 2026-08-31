@@ -17,7 +17,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// ── Request Interceptor: Attach Bearer token ──────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -29,7 +28,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Response Interceptor: Handle 401 / 503 globally ───────────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -48,14 +46,12 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      // Clear all auth data
       localStorage.removeItem('user');
       localStorage.removeItem('admin');
       localStorage.removeItem('role');
       localStorage.removeItem('token');
       document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
-      // Redirect based on route context
       if (path.includes('/admin')) {
         window.location.href = '/admin-secret-login';
         return Promise.reject(error);
@@ -68,7 +64,6 @@ api.interceptors.response.use(
   }
 );
 
-// ── Network error interceptor (offline detection) ─────────────────────────
 setupAxiosNetworkInterceptor(api);
 
 export default api;

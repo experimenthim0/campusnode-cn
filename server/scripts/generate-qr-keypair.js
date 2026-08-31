@@ -35,7 +35,6 @@ console.log();
 console.log("── Add to server/.env ──");
 console.log();
 
-// For .env files, replace newlines with \n so the value is a single line
 const privateKeyOneLine = privateKey.trim().replace(/\n/g, "\\n");
 const publicKeyOneLine  = publicKey.trim().replace(/\n/g, "\\n");
 

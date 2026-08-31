@@ -63,7 +63,6 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
     );
   };
 
-  // Helper to filter events for a specific day
   const getEventsForDate = (dateObj) => {
     const dStr = dateObj.toDateString();
     return safeEvents.filter((e) => {
@@ -72,7 +71,6 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
     });
   };
 
-  // Helper to filter blackouts for a specific day
   const getBlackoutsForDate = (dateObj) => {
     const startOfDay = new Date(dateObj);
     startOfDay.setHours(0, 0, 0, 0);

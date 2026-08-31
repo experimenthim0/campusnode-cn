@@ -1,9 +1,3 @@
-/**
- * CampusNode Scanner API Routes
- *
- * Endpoints for the Android scanner application and web scanner interface.
- * Supports both online and offline scanning workflows with strict event-scoped authorization.
- */
 
 import express from "express";
 import { z } from "zod";
@@ -30,10 +24,6 @@ const getAttendedCountByEvent = async (events) => {
   return new Map(rows.map((row) => [row.eventId, row._count._all]));
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /scanner/login — Authenticate scanner user
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const loginSchema = z.object({
   body: z.object({
     email: z.string().email(),
@@ -48,7 +38,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
     const { email, password } = req.body;
     const cleanEmail = (email || "").trim().toLowerCase();
 
-    // 1. Try ClubAccount first (Club official credentials)
     const clubAccount = await prisma.clubAccount.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
       include: {
@@ -84,7 +73,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // 2. Try InstitutionalAccount (Central Organizer entity)
     const instAccount = await prisma.institutionalAccount.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
     });
@@ -110,7 +98,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // 3. Try AdminRole (Faculty Coordinator / Super Admin)
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
       select: { id: true, email: true, password: true, role: true, name: true, coordinatedClubs: { select: { id: true, clubName: true } } },
@@ -150,7 +137,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // 4. Try StudentUser (Club Heads, Coordinators, Attendance Operators, Event Staff, Central Organizers)
     const student = await prisma.studentUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
       select: {
@@ -185,7 +171,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ message: "Invalid credentials." });
 
-    // 4a. Check if user is Central Organizer
     if (student.accessLevel === "central_organizer") {
       const token = generateToken(student, "central_organizer", "student", null);
       return res.json({
@@ -207,12 +192,10 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // 4b. Check Club Memberships with attendance permission
     const scannerMemberships = student.memberships.filter(
       (m) => m.canTakeAttendance || ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
     );
 
-    // 4c. Check EventStaff assignments with ATTENDANCE_OPERATOR
     const activeStaffAssignments = student.eventStaffAssignments;
 
     if (scannerMemberships.length === 0 && activeStaffAssignments.length === 0) {
@@ -257,15 +240,10 @@ router.post("/login", validate(loginSchema), async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /scanner/events — Get events the user can scan for
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.get("/events", verifyToken, async (req, res) => {
   try {
     const { userId, role, clubId, userType } = req.user;
 
-    // Admin can scan all published events
     if (role === "admin") {
       const events = await prisma.event.findMany({
         where: { reviewStatus: "PUBLISHED" },
@@ -310,12 +288,10 @@ router.get("/events", verifyToken, async (req, res) => {
 
     const eventQueryOrs = [];
 
-    // Faculty coordinator
     if (userType === "admin" && clubId) {
       eventQueryOrs.push({ clubId });
     }
 
-    // Student club memberships with attendance rights
     const memberships = await prisma.clubMembership.findMany({
       where: {
         studentId: userId,
@@ -327,14 +303,12 @@ router.get("/events", verifyToken, async (req, res) => {
       eventQueryOrs.push({ clubId: { in: memberships.map((m) => m.clubId) } });
     }
 
-    // Central Organizer: can scan central events
     if (role === "central_organizer") {
       eventQueryOrs.push({
         organizerType: "CENTRAL",
       });
     }
 
-    // EventStaff with ATTENDANCE_OPERATOR
     const staffAssignments = await prisma.eventStaff.findMany({
       where: {
         userId,
@@ -399,16 +373,11 @@ router.get("/events", verifyToken, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /scanner/events/:eventId/offline-package — Download offline scanning data
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
     const { userId } = req.user;
 
-    // Find event
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: {
@@ -434,7 +403,6 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
       return res.status(403).json({ message: "Unauthorized to access attendance package for this event." });
     }
 
-    // Get all registered participations
     const participations = await prisma.participation.findMany({
       where: {
         eventId,
@@ -472,13 +440,11 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
       }),
     );
 
-    // Get existing attendance records
     const existingAttendance = await prisma.attendanceRecord.findMany({
       where: { eventId },
       select: { participationId: true },
     });
 
-    // Public key for offline verification
     const publicKeyInfo = getPublicKeyInfo();
 
     return res.json({
@@ -493,9 +459,6 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         clubId: event.clubId,
         clubName: event.club?.clubName || (event.organizerType === "CENTRAL" ? "Office of DSW (Central Event)" : "College Event"),
         organizerType: event.organizerType,
-        // Use the package size rather than Event.registeredCount. The counter
-        // can be stale after imports/legacy data, while this is the exact set
-        // the scanner has actually downloaded.
         registeredCount: hydratedParticipations.length,
       },
       tickets: hydratedParticipations.map((p) => ({
@@ -520,10 +483,6 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /scanner/sessions — Create a scanner session
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const sessionSchema = z.object({
   body: z.object({
     eventId: z.string().min(1),
@@ -539,20 +498,17 @@ router.post("/sessions", verifyToken, validate(sessionSchema), async (req, res) 
     const { eventId, deviceId, mode } = req.body;
     const { userId } = req.user;
 
-    // Verify event exists
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { id: true, clubId: true, organizerType: true, centralOrganizerId: true },
     });
     if (!event) return res.status(404).json({ message: "Event not found." });
 
-    // Validate user is authorized for attendance on this event
     const isAuthorized = await verifyAttendancePermission(userId, eventId, event, req.user);
     if (!isAuthorized) {
       return res.status(403).json({ message: "Unauthorized to create a scanner session for this event." });
     }
 
-    // For OFFLINE mode, check no other active offline session exists
     if (mode === "OFFLINE") {
       const existingOffline = await prisma.scannerSession.findFirst({
         where: { eventId, mode: "OFFLINE", status: "ACTIVE" },
@@ -565,7 +521,6 @@ router.post("/sessions", verifyToken, validate(sessionSchema), async (req, res) 
       }
     }
 
-    // Upsert session (same device + event + mode = update)
     const session = await prisma.scannerSession.upsert({
       where: { eventId_deviceId_mode: { eventId, deviceId, mode } },
       update: { status: "ACTIVE", startedAt: new Date(), endedAt: null, userId },
@@ -584,10 +539,6 @@ router.post("/sessions", verifyToken, validate(sessionSchema), async (req, res) 
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /scanner/sessions/:sessionId/end — End a scanner session
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.post("/sessions/:sessionId/end", verifyToken, async (req, res) => {
   try {
@@ -611,10 +562,6 @@ router.post("/sessions/:sessionId/end", verifyToken, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /scanner/attendance/check-in — Online check-in (single scan)
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const checkInSchema = z.object({
   body: z.object({
     eventId: z.string().min(1),
@@ -630,7 +577,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
     const { eventId, qrPayload, scannerSessionId } = req.body;
     const { userId } = req.user;
 
-    // Verify event exists & check authorization
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { id: true, clubId: true, organizerType: true, centralOrganizerId: true, title: true },
@@ -642,7 +588,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       return res.status(403).json({ message: "Not authorized to mark attendance for this event." });
     }
 
-    // If scannerSessionId provided, verify it belongs to this user and event
     if (scannerSessionId) {
       const session = await prisma.scannerSession.findUnique({ where: { id: scannerSessionId } });
       if (!session || session.eventId !== eventId || (req.user.role !== "admin" && session.userId !== userId)) {
@@ -659,7 +604,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       });
     }
 
-    // 2. Check event binding
     if (verification.eventId !== eventId) {
       return res.status(400).json({
         status: "WRONG_EVENT",
@@ -667,14 +611,11 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       });
     }
 
-    // 3. Find ticket
     const participation = await prisma.participation.findFirst({
       where: {
         eventId,
         OR: [
           { qrCode: verification.ticketId },
-          // Also support a valid payload saved before the ticket-id column was
-          // repaired, while still binding the lookup to this event.
           { qrPayload },
         ],
       },
@@ -698,7 +639,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       });
     }
 
-    // 4. Check duplicate attendance (DB-level)
     const existingAttendance = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId, participationId: participation.id } },
     });
@@ -770,10 +710,6 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /scanner/attendance/sync — Batch sync offline attendance records
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const syncSchema = z.object({
   body: z.object({
     eventId: z.string().min(1),
@@ -795,14 +731,12 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
     const { eventId, scannerSessionId, records } = req.body;
     const { userId } = req.user;
 
-    // 1. Verify Event exists
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { id: true, clubId: true, organizerType: true, centralOrganizerId: true },
     });
     if (!event) return res.status(404).json({ message: "Event not found." });
 
-    // 2. Re-validate authorization at sync time (Mandatory security: if permission revoked while offline, reject sync!)
     const isAuthorized = await verifyAttendancePermission(userId, eventId, event, req.user);
     if (!isAuthorized) {
       return res.status(403).json({
@@ -810,10 +744,8 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
       });
     }
 
-    // 3. Validate Scanner Session: must belong to authenticated user and match event
     let session = await prisma.scannerSession.findUnique({ where: { id: scannerSessionId } });
     if (!session) {
-      // Find or create an offline session for this authorized user
       session = await prisma.scannerSession.findFirst({
         where: { eventId, userId, mode: "OFFLINE" },
       });
@@ -843,7 +775,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
 
     for (const record of records) {
       try {
-        // Check idempotency — if localAttendanceId already exists, return DUPLICATE
         const existingByLocalId = await prisma.attendanceRecord.findUnique({
           where: { localAttendanceId: record.localAttendanceId },
         });
@@ -857,7 +788,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
           continue;
         }
 
-        // Check if attendance already exists for this event+participation
         const existingAttendance = await prisma.attendanceRecord.findUnique({
           where: { eventId_participationId: { eventId, participationId: record.participationId } },
         });
@@ -871,7 +801,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
           continue;
         }
 
-        // Verify participation exists and belongs to this event
         const participation = await prisma.participation.findUnique({
           where: { id: record.participationId },
         });
@@ -893,7 +822,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
           continue;
         }
 
-        // Create attendance record
         const attendanceId = createObjectId();
         await prisma.$transaction([
           prisma.attendanceRecord.create({
@@ -963,10 +891,6 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /scanner/events/:eventId/sync-state — Get attendance state for an event
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.get("/events/:eventId/sync-state", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -999,10 +923,6 @@ router.get("/events/:eventId/sync-state", verifyToken, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /scanner/keys/public — Get public verification keys
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.get(["/keys/public", "/keys"], async (req, res) => {
   try {

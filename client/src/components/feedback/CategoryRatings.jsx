@@ -83,7 +83,6 @@ const CategoryRatings = ({ averageRatings = {} }) => {
         </div>
       </div>
 
-      {/* Dynamic Biggest Gap Card */}
       {weakestCategory && gap && Number(gap) > 0 && (
         <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 flex items-start gap-3">
           <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />

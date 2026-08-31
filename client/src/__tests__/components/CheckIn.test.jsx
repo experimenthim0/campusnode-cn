@@ -16,7 +16,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import fc from 'fast-check';
 
-// ── Extracted scan logic (mirrors CheckIn.jsx onScanSuccess) ─────────────────
 // We replicate the state machine logic so it can be tested without the full component.
 
 function createScanHandler({ axiosPatch, onStateChange, onCountChange, onResultChange }) {
@@ -62,7 +61,6 @@ function createScanHandler({ axiosPatch, onStateChange, onCountChange, onResultC
   return onScanSuccess;
 }
 
-// ── 9.10 Unit tests: HTTP status → scan state ─────────────────────────────────
 
 describe('CheckIn scan state — HTTP status mappings', () => {
   beforeEach(() => {
@@ -183,7 +181,6 @@ describe('CheckIn scan state — HTTP status mappings', () => {
   });
 });
 
-// ── 9.3 Property 2: scan dedup guard ─────────────────────────────────────────
 
 /**
  * **Validates: Requirements 1.6**
@@ -257,7 +254,6 @@ describe('CheckIn — Property 2: scan dedup guard', () => {
   });
 });
 
-// ── 9.4 Property 3: optimistic attendedCount ──────────────────────────────────
 
 /**
  * **Validates: Requirements 1.8**
@@ -301,7 +297,7 @@ describe('CheckIn — Property 3: optimistic attendedCount', () => {
         });
 
         await handler('valid-qr-code');
-        return count === initialCount; // count unchanged
+        return count === initialCount; 
       }),
       { numRuns: 100 }
     );

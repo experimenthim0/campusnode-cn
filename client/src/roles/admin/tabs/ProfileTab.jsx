@@ -3,6 +3,7 @@ import { useNotification } from '../../../context/NotificationContext';
 import { useAuth } from '../../../context/AuthContext';
 import { updateProfile } from '../../../services/userService';
 import { changePassword } from '../../../services/authService';
+import PasswordStrengthChecker from '../../../components/PasswordStrengthChecker';
 
 const ProfileTab = ({
     profileName,
@@ -73,7 +74,6 @@ const ProfileTab = ({
 
     return (
         <div className="max-w-2xl space-y-8">
-            {/* Profile Info Form */}
             <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
                 <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Admin Profile</h2>
                 <p className="text-neutral-400 text-xs mb-6">Update display name and security preferences.</p>
@@ -126,7 +126,6 @@ const ProfileTab = ({
                 </form>
             </div>
 
-            {/* Password Form */}
             <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
                 <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Change Password</h2>
                 <p className="text-neutral-400 text-xs mb-6">Ensure your administrative password is strong and secure.</p>
@@ -151,6 +150,10 @@ const ProfileTab = ({
                                 onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, newPassword: e.target.value }))} 
                                 required 
                                 className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+                            />
+                            <PasswordStrengthChecker 
+                                password={profilePasswordForm.newPassword} 
+                                userInputs={[profileName, profileEmail]} 
                             />
                         </div>
                         <div>

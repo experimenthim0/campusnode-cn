@@ -28,7 +28,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
   const lastTouchPosRef = useRef(null);
   const lastTapTimeRef = useRef(0);
 
-  // Reset state when modal opens or src changes
   useEffect(() => {
     if (isOpen) {
       setScale(1);
@@ -225,7 +224,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
           }
         }}
       >
-        {/* Top Floating Header Bar */}
         <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 py-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none">
           <div className="flex items-center gap-2.5 pointer-events-auto min-w-0 pr-4">
             <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
@@ -273,7 +271,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
             scale > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'
           }`}
         >
-          {/* Loading Spinner */}
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none z-10">
               <i className="ri-loader-4-line animate-spin text-3xl text-orange-500" />
@@ -305,7 +302,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
             exit={{ y: 20, opacity: 0 }}
             className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full bg-neutral-900/85 backdrop-blur-xl border border-white/15 shadow-[0_10px_35px_rgba(0,0,0,0.6)] text-white"
           >
-            {/* Zoom Out Button */}
             <button
               onClick={handleZoomOut}
               disabled={scale <= 1}
@@ -324,7 +320,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
               {Math.round(scale * 100)}%
             </button>
 
-            {/* Zoom In Button */}
             <button
               onClick={handleZoomIn}
               disabled={scale >= 4}
@@ -336,7 +331,6 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
 
             <div className="w-px h-5 bg-white/15 mx-1" />
 
-            {/* Rotate Button */}
             <button
               onClick={handleRotate}
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/15 active:scale-90 transition-all cursor-pointer text-neutral-200"

@@ -187,7 +187,6 @@ const InitialsAvatar = ({ name, domain }) => {
   );
 };
 
-// ── Individual team card ──────────────────────────────────────────────────
 const MemberCard = ({ member, domainAccent, index }) => {
   const [hovered, setHovered] = useState(false);
   const hasImage = Boolean(member.imageUrl);
@@ -200,7 +199,6 @@ const MemberCard = ({ member, domainAccent, index }) => {
       onFocusCapture={() => setHovered(true)}
       onBlurCapture={() => setHovered(false)}
     >
-      {/* ── Photo / Avatar ── */}
       <figure
         className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900"
         style={{
@@ -289,7 +287,6 @@ const MemberCard = ({ member, domainAccent, index }) => {
         </div>
       </figure>
 
-      {/* ── Figcaption ── */}
       <figcaption className="mt-3 flex flex-col gap-2">
         <div>
           <div className="flex items-baseline gap-2 flex-wrap">
@@ -382,7 +379,6 @@ const MemberCard = ({ member, domainAccent, index }) => {
   );
 };
 
-// ── Domain Section ────────────────────────────────────────────────────────
 const DomainSection = ({ domain, members, sectionIndex }) => {
   if (members.length === 0) return null;
 
@@ -440,7 +436,6 @@ const DomainSection = ({ domain, members, sectionIndex }) => {
   );
 };
 
-// ── Main Team page ────────────────────────────────────────────────────────
 const Team = () => {
   // Group members by department
   const byDomain = DOMAINS.reduce((acc, domain) => {
@@ -453,7 +448,6 @@ const Team = () => {
 
   return (
     <>
-      {/* ── CSS custom properties (domain accents + semantic vars) ── */}
       <style>{`
         :root {
           --domain-core:     #ea580c;
@@ -517,7 +511,6 @@ const Team = () => {
 
         <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto relative z-10">
 
-          {/* ── Header ── */}
           <div className="flex flex-col items-center mb-20 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
               <span
@@ -556,7 +549,6 @@ const Team = () => {
             </ScrollReveal>
           </div>
 
-          {/* ── Content: domain sections or empty state ── */}
           {hasAnyMembers ? (
             <div>
               {DOMAINS.map((domain, i) => (

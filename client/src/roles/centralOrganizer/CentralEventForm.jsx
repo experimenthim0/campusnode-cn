@@ -158,7 +158,6 @@ const CentralEventForm = ({
           )}
         </div>
 
-        {/* Form Fields Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="sm:col-span-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
@@ -287,7 +286,6 @@ const CentralEventForm = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              {/* 1. File Upload Dropzone */}
               <div>
                 <input
                   type="file"
@@ -325,7 +323,6 @@ const CentralEventForm = ({
                 </label>
               </div>
 
-              {/* 2. Direct Image URL Input & Live Preview */}
               <div className="space-y-3">
                 <div className="relative">
                   <Link2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -391,7 +388,6 @@ const CentralEventForm = ({
               </div>
             </div>
 
-            {/* 1. Allowed Programs */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
@@ -420,7 +416,6 @@ const CentralEventForm = ({
               </div>
             </div>
 
-            {/* 2. Allowed Years */}
             <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-850">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
@@ -466,7 +461,6 @@ const CentralEventForm = ({
               )}
             </div>
 
-            {/* 3. Allowed Branches */}
             <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-850">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
@@ -605,7 +599,6 @@ const CentralEventForm = ({
           </div>
         </div>
 
-        {/* Form Action Buttons */}
         <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <button
             type="button"

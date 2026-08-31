@@ -130,7 +130,6 @@ const PaymentTracking = () => {
           </div>
         ) : (
           <>
-            {/* Events Grid Table */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm mb-10">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800">

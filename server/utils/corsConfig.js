@@ -21,10 +21,8 @@ export const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
     
-    // Check exact matches
     const isAllowed = allowedOrigins.includes(origin);
     
-    // Check wildcards for previews and testing domains
     const isPreview = origin && (
       /\.nikhim\.me$/.test(origin) ||
       /\.vercel\.app$/.test(origin) ||
@@ -65,4 +63,4 @@ export const corsOptions = {
   ],
   maxAge: 86400,
 };
-
+

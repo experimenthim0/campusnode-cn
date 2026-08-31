@@ -10,12 +10,10 @@ const RawAttendeeResponses = ({ responses = [] }) => {
   const filteredResponses = useMemo(() => {
     let result = [...responses];
 
-    // 1. Sentiment filter
     if (sentimentFilter !== 'all') {
       result = result.filter((r) => r.sentiment === sentimentFilter);
     }
 
-    // 2. Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -26,7 +24,6 @@ const RawAttendeeResponses = ({ responses = [] }) => {
       );
     }
 
-    // 3. Sorting
     result.sort((a, b) => {
       if (sortBy === 'highest') {
         return (b.overallRating || 0) - (a.overallRating || 0);
@@ -56,7 +53,6 @@ const RawAttendeeResponses = ({ responses = [] }) => {
 
         {/* Filters and Controls Toolbar */}
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-          {/* Sentiment Filter Tabs */}
           <div className="flex items-center bg-slate-100 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold" role="tablist" aria-label="Filter by sentiment">
             {['all', 'positive', 'neutral', 'negative'].map((filterKey) => (
               <button
@@ -80,7 +76,6 @@ const RawAttendeeResponses = ({ responses = [] }) => {
             ))}
           </div>
 
-          {/* Search Input */}
           <div className="relative flex-1 sm:w-48">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <input

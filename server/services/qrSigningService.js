@@ -14,8 +14,6 @@
 
 import { createPrivateKey, createPublicKey, sign, verify } from "crypto";
 
-// ── Configuration ──────────────────────────────────────────────────────────────
-
 const QR_VERSION = 1;
 
 const KEY_ID = process.env.QR_SIGNING_KEY_ID || "cn-qr-2026-01";
@@ -47,17 +45,9 @@ function getPublicKey() {
   return _publicKey;
 }
 
-// ── Canonical Message ──────────────────────────────────────────────────────────
-
-/**
- * Build the deterministic message that is signed/verified.
- * Format: "CN1|{keyId}|{eventId}|{ticketId}"
- */
 function buildCanonicalMessage(eventId, ticketId, keyId = KEY_ID) {
   return `CN${QR_VERSION}|${keyId}|${eventId}|${ticketId}`;
 }
-
-// ── Sign ────────────────────────────────────────────────────────────────────────
 
 /**
  * Sign a ticket and produce a compact base64url QR payload.
@@ -71,7 +61,6 @@ export function signTicket(eventId, ticketId, keyId = KEY_ID) {
   const message = buildCanonicalMessage(eventId, ticketId, keyId);
   const signature = sign(null, Buffer.from(message), getPrivateKey());
 
-  // Build binary payload
   const keyIdBuf = Buffer.from(keyId, "utf8");
   const eventIdBuf = Buffer.from(eventId, "utf8");
   const ticketIdBuf = Buffer.from(ticketId, "utf8");
@@ -107,8 +96,6 @@ export function signTicket(eventId, ticketId, keyId = KEY_ID) {
   return { qrPayload, qrVersion: QR_VERSION, qrKeyId: keyId };
 }
 
-// ── Verify ──────────────────────────────────────────────────────────────────────
-
 /**
  * Parse and verify a QR payload.
  *
@@ -121,26 +108,22 @@ export function verifyTicket(qrPayloadBase64) {
 
     let offset = 0;
 
-    // Version
     const version = buf.readUInt8(offset);
     offset += 1;
     if (version !== QR_VERSION) {
       return { valid: false, error: "UNSUPPORTED_VERSION", version };
     }
 
-    // Key ID
     const keyIdLen = buf.readUInt8(offset);
     offset += 1;
     const keyId = buf.subarray(offset, offset + keyIdLen).toString("utf8");
     offset += keyIdLen;
 
-    // Event ID
     const eventIdLen = buf.readUInt8(offset);
     offset += 1;
     const eventId = buf.subarray(offset, offset + eventIdLen).toString("utf8");
     offset += eventIdLen;
 
-    // Ticket ID
     const ticketIdLen = buf.readUInt8(offset);
     offset += 1;
     const ticketId = buf.subarray(offset, offset + ticketIdLen).toString("utf8");
@@ -152,7 +135,6 @@ export function verifyTicket(qrPayloadBase64) {
       return { valid: false, error: "INVALID_SIGNATURE_LENGTH" };
     }
 
-    // Verify
     const message = buildCanonicalMessage(eventId, ticketId, keyId);
     const isValid = verify(null, Buffer.from(message), getPublicKey(), signature);
 
@@ -165,8 +147,6 @@ export function verifyTicket(qrPayloadBase64) {
     return { valid: false, error: "INVALID_FORMAT", message: err.message };
   }
 }
-
-// ── Public Key Export ────────────────────────────────────────────────────────────
 
 /**
  * Get the public key info for distribution to scanners.
@@ -202,9 +182,6 @@ export function getPublicKeyInfo() {
   };
 }
 
-/**
- * Get current QR version.
- */
 export function getQrVersion() {
   return QR_VERSION;
 }

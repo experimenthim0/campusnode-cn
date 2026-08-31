@@ -7,7 +7,6 @@ import { sendWebPushNotification } from "../utils/sendPush.js";
 
 const router = express.Router();
 
-// ── PUT /payment/:participationId/review ── Club heads review manual payments ─
 router.put(
   "/:participationId/review",
   verifyToken,
@@ -33,7 +32,6 @@ router.put(
         return res.status(404).json({ message: "Registration not found." });
       }
 
-      // Permission check: must be club head/coordinator of the event's club, or admin
       if (req.user.role !== "admin") {
         const membership = await prisma.clubMembership.findFirst({
           where: {
@@ -49,7 +47,6 @@ router.put(
         }
       }
 
-      // Build update data
       const updateData = {
         paymentStatus: status,
         paymentReviewedBy: req.user.userId,
@@ -60,7 +57,6 @@ router.put(
         updateData.paymentReviewMessage = message;
       }
 
-      // If approved, mark participation as REGISTERED and update registration count
       if (status === "APPROVED") {
         updateData.paymentStatus = "APPROVED";
 
@@ -70,9 +66,7 @@ router.put(
             data: updateData,
           });
 
-          // Only increment count if previously not counted
           if (participation.status === "REGISTERED" || participation.status === "WAITLISTED") {
-            // Already counted, no change needed
           }
         });
       } else {
@@ -82,7 +76,6 @@ router.put(
         });
       }
 
-      // Send notification to student
       if (participation.studentId) {
         const notificationTitle =
           status === "APPROVED"
@@ -116,7 +109,6 @@ router.put(
           link: `/my-events?eventId=${participation.eventId}`,
         };
 
-        // Send real-time notification via socket
         if (req.io) {
           req.io.to(participation.studentId).emit("new-notification", payload);
         }
@@ -133,7 +125,6 @@ router.put(
   },
 );
 
-// ── GET /payment/event/:eventId/registrations ── Payment registrations with search & filters ─
 router.get(
   "/event/:eventId/registrations",
   verifyToken,
@@ -146,7 +137,6 @@ router.get(
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      // Permission check: club head/coordinator or admin
       if (req.user.role !== "admin") {
         const membership = await prisma.clubMembership.findFirst({
           where: {
@@ -160,7 +150,6 @@ router.get(
         }
       }
 
-      // Build where clause
       const where = { eventId };
 
       if (filterStatus && filterStatus !== "ALL") {
@@ -187,7 +176,6 @@ router.get(
         orderBy: { createdAt: "desc" },
       });
 
-      // Apply search filter on results
       let filtered = participations;
       if (search) {
         const q = search.toLowerCase();
@@ -245,7 +233,6 @@ router.get(
   },
 );
 
-// ── GET /payment/event/:eventId/stats ─────────────────────────────────────────
 router.get(
   "/event/:eventId/stats",
   verifyToken,
@@ -268,7 +255,6 @@ router.get(
               { role: "CLUB_HEAD" },
               { role: "COORDINATOR" },
               { canEditEvents: true },
-              // { canTakeAttendance: true },
             ],
           },
         });
@@ -337,7 +323,6 @@ router.put(
         return res.status(404).json({ message: "Registration not found." });
       }
 
-      // Permission check: must be owner of registration
       const isOwner =
         participation.studentId === req.user.userId ||
         participation.externalUserId === req.user.userId ||

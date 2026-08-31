@@ -58,7 +58,6 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
     });
   };
 
-  // Compute top offset & height for time-based event blocks (each hour = 60px height)
   const getBlockStyle = (startTimeStr, endTimeStr) => {
     const start = new Date(startTimeStr);
     const end = new Date(endTimeStr);
@@ -82,7 +81,6 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
 
   return (
     <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-      {/* Header Row: Dates */}
       <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 sticky top-0 z-20">
         <div className="py-3 text-center text-[10px] font-black uppercase text-neutral-400 dark:text-neutral-500 border-r border-neutral-200 dark:border-zinc-800">
           Time
@@ -141,7 +139,6 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                 />
               ))}
 
-              {/* Render Blackout Blocks */}
               {dayBlackouts.map((b) => {
                 const style = getBlockStyle(b.startTime, b.endTime);
                 return (
@@ -159,7 +156,6 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                 );
               })}
 
-              {/* Render Event Blocks */}
               {dayEvents.map((event) => {
                 const style = getBlockStyle(event.startTime, event.endTime);
                 const category = event.club?.category || "Technical";

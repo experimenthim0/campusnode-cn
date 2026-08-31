@@ -29,7 +29,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
-  // ── Rehydrate from localStorage on initial render ─────────────────────
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('user') || localStorage.getItem('admin');
@@ -45,7 +44,6 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // ── Internal helper to persist session data ───────────────────────────
   const persistSession = useCallback((userData, userRole, token) => {
     if (token) localStorage.setItem('token', token);
     const userStr = JSON.stringify(userData);
@@ -96,7 +94,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // ── Login (student / club / member) ───────────────────────────────────
   const login = useCallback(async (email, password) => {
     const res = await authService.loginUser(email, password);
     const data = res.data;
@@ -115,7 +112,6 @@ export const AuthProvider = ({ children }) => {
     return { needs2FA: false, role: data.role };
   }, [navigate, persistSession]);
 
-  // ── Verify 2FA OTP ────────────────────────────────────────────────────
   const verify2FA = useCallback(async (email, otp) => {
     const res = await authService.verify2FA(email, otp);
     const data = res.data;
@@ -130,7 +126,6 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, [navigate, persistSession]);
 
-  // ── Admin Login ───────────────────────────────────────────────────────
   const adminLogin = useCallback(async (email, password) => {
     const res = await authService.adminLogin(email, password);
     const data = res.data;
@@ -149,12 +144,10 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, [navigate, persistSession]);
 
-  // ── Set Session (for registration and profile refresh flows) ──────────
   const setSession = useCallback((userData, userRole, token) => {
     persistSession(userData, userRole, token);
   }, [persistSession]);
 
-  // ── Refresh user data from localStorage (used by profile updates) ─────
   const refreshUser = useCallback(() => {
     try {
       const stored = localStorage.getItem('user');
@@ -164,11 +157,9 @@ export const AuthProvider = ({ children }) => {
       const storedRole = localStorage.getItem('role');
       if (storedRole) setRole(storedRole);
     } catch {
-      // ignore
     }
   }, []);
 
-  // ── Logout ────────────────────────────────────────────────────────────
   const logout = useCallback((redirectTo = '/') => {
     localStorage.removeItem('user');
     localStorage.removeItem('admin');
@@ -186,7 +177,6 @@ export const AuthProvider = ({ children }) => {
     window.location.href = redirectTo;
   }, []);
 
-  // ── Memoized context value ────────────────────────────────────────────
   const value = useMemo(() => ({
     user,
     role,

@@ -27,7 +27,6 @@ const MyEvents = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
 
-  // Modals & student actions
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [eventToDeregister, setEventToDeregister] = useState(null);
   const [regToDeregister, setRegToDeregister] = useState(null);
@@ -139,7 +138,6 @@ const MyEvents = () => {
     canvas.height = 400;
     const ctx = canvas.getContext('2d');
 
-    // 1. Background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -162,7 +160,6 @@ const MyEvents = () => {
     ctx.fillText('CAMPUSNODE', 0, 0);
     ctx.restore();
 
-    // 2. Black Stub & Accents
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(700, 0, 300, canvas.height);
 
@@ -172,7 +169,6 @@ const MyEvents = () => {
     ctx.fillStyle = accentGrad;
     ctx.fillRect(0, 0, 15, canvas.height);
 
-    // 3. Perforations
     ctx.fillStyle = '#f3f4f6';
     ctx.beginPath(); ctx.arc(700, 0, 25, 0, Math.PI, false); ctx.fill();
     ctx.beginPath(); ctx.arc(700, 400, 25, Math.PI, 0, false); ctx.fill();
@@ -182,7 +178,6 @@ const MyEvents = () => {
       ctx.beginPath(); ctx.arc(700, i, 3, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 4. Branding & Text
     const brandX = 60;
     const brandY = 65;
     ctx.letterSpacing = "4px"; 
@@ -215,7 +210,6 @@ const MyEvents = () => {
     drawData('Time', eventDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }), 280, 305);
     drawData('Venue', selectedTicket.eventId?.venue || 'TBA', 460, 305);
 
-    // 5. Stub Content
     ctx.textAlign = 'center';
     ctx.font = 'bold 20px "myfont"';
     ctx.fillStyle = '#ffffff';
@@ -429,7 +423,6 @@ const MyEvents = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">My Events</h1>
@@ -445,7 +438,6 @@ const MyEvents = () => {
         </Link>
       </div>
 
-      {/* Navigation Sub-Tabs */}
       <div className="flex items-center gap-2 mb-8 border-b border-neutral-200 dark:border-neutral-800 pb-3">
         <button
           type="button"
@@ -476,7 +468,6 @@ const MyEvents = () => {
         </button>
       </div>
 
-      {/* ── SUBMITTED FEEDBACK HISTORY TAB ── */}
       {activeTab === 'feedback' && (
         <div>
           {loadingFeedbacks ? (
@@ -582,7 +573,6 @@ const MyEvents = () => {
         </div>
       )}
 
-      {/* ── STUDENT REGISTERED / PARTICIPATED EVENTS LIST ── */}
       {activeTab === 'events' && (
       <div>
         {registrations.length === 0 ? (
@@ -810,7 +800,6 @@ const MyEvents = () => {
       </div>
       )}
 
-      {/* ── TICKET MODAL ── */}
      <AnimatePresence>
   {ticketModalOpen &&
     selectedTicket &&
@@ -876,7 +865,6 @@ const MyEvents = () => {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.93, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -895,9 +883,6 @@ const MyEvents = () => {
               shadow-2xl
             "
           >
-            {/* =====================================================
-                HEADER
-            ====================================================== */}
             <div className="mb-4">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span
@@ -928,7 +913,6 @@ const MyEvents = () => {
                   </span>
                 )}
 
-                {/* Close Button */}
 <button
   type="button"
   onClick={() => setTicketModalOpen(false)}
@@ -961,9 +945,6 @@ const MyEvents = () => {
               </p>
             </div>
 
-            {/* =====================================================
-                EVENT DETAILS
-            ====================================================== */}
             <div
               className="
                 rounded-2xl
@@ -1009,9 +990,6 @@ const MyEvents = () => {
               </div>
             </div>
 
-            {/* =====================================================
-                QR + ATTENDEE
-            ====================================================== */}
             <div className="flex flex-col items-center">
               {/* QR */}
               <div
@@ -1042,9 +1020,6 @@ const MyEvents = () => {
                 )}
               </div>
 
-              {/* =================================================
-                  ATTENDEE IDENTITY
-              ================================================== */}
               <div className="w-full mt-3">
                 <div
                   className="
@@ -1088,9 +1063,6 @@ const MyEvents = () => {
               </div>
             </div>
 
-            {/* =====================================================
-                PASS ID
-            ====================================================== */}
             <div className="mt-3 mb-4 text-center">
               <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400 mb-1">
                 Pass ID : <span className=' text-orange-600 dark:text-orange-400'>{passId}</span>
@@ -1099,9 +1071,6 @@ const MyEvents = () => {
               
             </div>
 
-            {/* =====================================================
-                ACTIONS
-            ====================================================== */}
             <div className="flex gap-3">
               <button
                 type="button"
@@ -1147,7 +1116,6 @@ const MyEvents = () => {
     })()}
 </AnimatePresence>
 
-      {/* ── CONFIRM DEREGISTER MODAL ── */}
       <AnimatePresence>
         {confirmModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1192,7 +1160,6 @@ const MyEvents = () => {
         )}
       </AnimatePresence>
 
-      {/* ── UPDATE TEAM MODAL ── */}
       <AnimatePresence>
         {updateTeamModalOpen && teamToUpdate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1312,7 +1279,6 @@ const MyEvents = () => {
         )}
       </AnimatePresence>
 
-      {/* ── EDIT PAYMENT DETAILS MODAL ── */}
       <AnimatePresence>
         {editPaymentModalOpen && editingReg && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

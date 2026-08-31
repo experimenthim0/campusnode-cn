@@ -174,10 +174,8 @@ const ContactModal = ({
           onClick={(e) => e.stopPropagation()}
           className="relative w-full max-w-md max-h-[85dvh] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden my-auto"
         >
-          {/* Header Bar Accent */}
           <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 shrink-0" />
 
-          {/* Close Button */}
           <button
             onClick={handleClose}
             disabled={status === 'submitting'}
@@ -227,7 +225,6 @@ const ContactModal = ({
               </motion.div>
             ) : (
               <div>
-                {/* Modal Title Header */}
                 <div className="mb-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 text-xs font-semibold tracking-wide mb-2">
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -241,7 +238,6 @@ const ContactModal = ({
                   </p>
                 </div>
 
-                {/* Error Banner */}
                 {status === 'error' && (
                   <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -335,7 +331,6 @@ const ContactModal = ({
                     )}
                   </div>
 
-                  {/* Submit Button */}
                   <div className="pt-2">
                     <button
                       type="submit"

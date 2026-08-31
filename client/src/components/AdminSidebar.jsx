@@ -18,7 +18,6 @@ import {
   Layers
 } from "lucide-react";
 
-/* ─── Sidebar Direct Link ─────────────────────────────────────────────────── */
 const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
   <Link
     to={to}
@@ -53,7 +52,6 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
   </Link>
 );
 
-/* ─── Collapsible Category Dropdown (Accordion Item) ─────────────────────── */
 const AdminSidebarDropdown = ({
   id,
   icon: Icon,
@@ -141,7 +139,6 @@ const AdminSidebarDropdown = ({
   );
 };
 
-/* ─── Section Header / Divider ─────────────────────────────────────────── */
 const SectionDivider = ({ title, collapsed }) => (
   <div className="sidebar-divider my-2">
     {title && !collapsed && (
@@ -153,9 +150,6 @@ const SectionDivider = ({ title, collapsed }) => (
   </div>
 );
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   AdminSidebar — Modern SaaS Sidebar Architecture with Accordion Auto-Collapse
-   ═══════════════════════════════════════════════════════════════════════════ */
 const AdminSidebar = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -163,7 +157,6 @@ const AdminSidebar = () => {
   const { user, role, logout } = useAuth();
   const { theme } = useTheme();
 
-  // Collapse state — persisted
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem("adminSidebarCollapsed") === "true";
@@ -263,7 +256,6 @@ const AdminSidebar = () => {
       style={{ height: "calc(100dvh - 3.5rem - env(safe-area-inset-top))" }}
       aria-label="Admin sidebar"
     >
-      {/* ── Top Header: Workspace Brand & Collapse Toggle ───────────────── */}
       <div className="flex items-center justify-between px-3.5 pt-4 pb-2 relative min-h-[48px]">
         <div className="flex items-center gap-2.5 min-w-0 sidebar-brand-container">
           <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-500 flex items-center justify-center shrink-0 border border-orange-500/20">
@@ -295,11 +287,9 @@ const AdminSidebar = () => {
 
       <SectionDivider collapsed={collapsed} />
 
-      {/* ── Navigation List ─────────────────────────────────────────────── */}
       <nav className="flex-1 px-3 py-1 space-y-1 overflow-y-auto overflow-x-hidden" aria-label="Admin navigation">
         {role === "admin" && (
           <>
-            {/* 1. Overview */}
             <AdminSidebarLink
               to="/admin-dashboard?tab=overview"
               icon={LayoutDashboard}
@@ -347,7 +337,6 @@ const AdminSidebar = () => {
         )}
       </nav>
 
-      {/* ── Bottom Section: Settings Tab & SaaS User Profile/Logout ─────── */}
       <div className="mt-auto border-t border-neutral-200/80 dark:border-zinc-800/80 bg-neutral-50/50 dark:bg-zinc-950/40 p-2.5 space-y-2">
         {/* Settings Tab - Positioned directly above profile & logout */}
         <AdminSidebarLink

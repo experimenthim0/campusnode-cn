@@ -6,10 +6,8 @@ import cloudinary from "../utils/cloudinary.js";
 
 const router = express.Router();
 
-// All routes require platform lost-found moderation privileges.
 router.use(verifyToken, requirePermission(PERMISSIONS.LOST_FOUND_MODERATE));
 
-// GET /api/admin/lost-found/all - Fetch all items (including fraud/reunited)
 router.get("/all", async (req, res) => {
   try {
     const items = await prisma.lostFoundItem.findMany({
@@ -24,7 +22,6 @@ router.get("/all", async (req, res) => {
   }
 });
 
-// GET /api/admin/lost-found/stats - Get dashboard stats
 router.get("/stats", async (req, res) => {
   try {
     const total = await prisma.lostFoundItem.count();
@@ -38,7 +35,6 @@ router.get("/stats", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/lost-found/:id - Force delete item
 router.delete("/:id", async (req, res) => {
   try {
     const item = await prisma.lostFoundItem.findUnique({ where: { id: req.params.id } });
@@ -58,7 +54,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// PATCH /api/admin/lost-found/:id/toggle-fraud - Toggle fraud status
 router.patch("/:id/toggle-fraud", async (req, res) => {
   try {
     const item = await prisma.lostFoundItem.findUnique({ where: { id: req.params.id } });
@@ -75,7 +70,6 @@ router.patch("/:id/toggle-fraud", async (req, res) => {
   }
 });
 
-// PATCH /api/admin/lost-found/user/:userId/block - Toggle user block status
 router.patch("/user/:userId/block", async (req, res) => {
   try {
     const user = await prisma.studentUser.findUnique({ where: { id: req.params.userId } });

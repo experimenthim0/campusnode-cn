@@ -1,20 +1,6 @@
-/**
- * Event Staff Authorization Middleware
- *
- * Enforces event-scoped staff permissions.
- * Checks: User + Event + Permission + Status(ACTIVE) + Expiry
- *
- * NEVER trusts client-supplied roles, permissions, or user IDs.
- * Derives everything from the database based on authenticated user ID.
- */
 
 import prisma from "../lib/prisma.js";
 
-/**
- * Valid event staff permission constants.
- * These are NOT global roles — they are event-scoped strings
- * checked only against the EventStaff record for a specific event.
- */
 export const EVENT_STAFF_PERMISSIONS = {
   ATTENDANCE_OPERATOR: "ATTENDANCE_OPERATOR",
   REGISTRATION_OPERATOR: "REGISTRATION_OPERATOR",
@@ -70,14 +56,12 @@ export function requireEventStaffPermission(permission) {
         return res.status(403).json({ message: "Event staff access has expired." });
       }
 
-      // Check specific permission
       if (!staffRecord.permissions.includes(permission)) {
         return res.status(403).json({
           message: `Missing event staff permission: ${permission}`,
         });
       }
 
-      // Attach staff record to request for downstream use
       req.eventStaff = staffRecord;
       next();
     } catch (err) {
@@ -103,10 +87,8 @@ export function requireEventStaffPermission(permission) {
  * @returns {boolean} Whether the user is authorized for attendance
  */
 export async function verifyAttendancePermission(userId, eventId, event, user) {
-  // Admin has full access
   if (user.role === "admin") return true;
 
-  // Central Organizer owns the event
   if (
     user.role === "central_organizer" &&
     event.organizerType === "CENTRAL"
@@ -114,7 +96,6 @@ export async function verifyAttendancePermission(userId, eventId, event, user) {
     return true;
   }
 
-  // Club membership check (existing system — for CLUB events)
   if (event.clubId) {
     const membership = await prisma.clubMembership.findFirst({
       where: {
@@ -129,12 +110,10 @@ export async function verifyAttendancePermission(userId, eventId, event, user) {
     if (membership) return true;
   }
 
-  // Faculty coordinator check (existing system)
   if (user.userType === "admin" && user.clubId && event.clubId === user.clubId) {
     return true;
   }
 
-  // EventStaff check — ATTENDANCE_OPERATOR for this specific event
   const staffRecord = await prisma.eventStaff.findUnique({
     where: { eventId_userId: { eventId, userId } },
   });

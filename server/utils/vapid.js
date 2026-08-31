@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Helper to convert base64url to Buffer
 function base64urlToBuffer(base64url) {
   let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) {
@@ -12,7 +11,6 @@ function base64urlToBuffer(base64url) {
   return Buffer.from(base64, "base64");
 }
 
-// Helper to convert Buffer to base64url
 function bufferToBase64url(buffer) {
   return buffer
     .toString("base64")
@@ -39,7 +37,6 @@ let vapidKeys = {
   subject: process.env.VAPID_SUBJECT || "mailto:admin@campusnode.com",
 };
 
-// Fallback auto-generation if not configured in .env
 if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
   console.log("[CampusNode VAPID] VAPID keys not found in .env — generating transient VAPID keys...");
   const generated = generateVapidKeys();
@@ -80,7 +77,6 @@ export function createVapidHeader(endpointUrl) {
     const encodedPayload = bufferToBase64url(Buffer.from(JSON.stringify(payload)));
     const unsignedToken = `${encodedHeader}.${encodedPayload}`;
 
-    // Reconstruct ECDH key object for signing
     const ecdh = crypto.createECDH("prime256v1");
     ecdh.setPrivateKey(base64urlToBuffer(vapidKeys.privateKey));
     const pubKeyBuf = ecdh.getPublicKey();

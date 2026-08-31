@@ -64,8 +64,6 @@ export default function () {
     registrationErrors.add(!ok);
   }
 
-  // Writes are opt-in because they create/delete real registrations. Use a
-  // dedicated test account and event when ENABLE_WRITES=true.
   if (enableWrites && token && selectedEvent) {
     const started = Date.now();
     const registered = http.post(`${baseUrl}/api/events/${selectedEvent}/register`, '{}', {

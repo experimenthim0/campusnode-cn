@@ -15,7 +15,6 @@ import {
   MediaType,
 } from '../../types/index.js';
 
-// ── 9.11 Unit tests: constant values ─────────────────────────────────────────
 
 describe('ParticipationStatus constants', () => {
   it('has exactly the four expected values', () => {
@@ -58,7 +57,6 @@ describe('MediaType constants', () => {
   });
 });
 
-// ── 9.1 Property 13: isValidObjectId ─────────────────────────────────────────
 
 describe('isValidObjectId — unit examples', () => {
   it('accepts a valid 24-char lowercase hex string', () => {

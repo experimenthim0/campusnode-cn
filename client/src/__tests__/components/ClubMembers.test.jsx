@@ -16,10 +16,8 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ClubMemberRole } from '../../types/index.js';
 
-// ---------------------------------------------------------------------------
 // Replicate the RoleBadge mapping exactly as defined in ClubMembers.jsx.
 // This is the pure function under test.
-// ---------------------------------------------------------------------------
 
 const ROLE_LABEL_MAP = {
   [ClubMemberRole.CLUB_HEAD]:   'Head',
@@ -38,9 +36,7 @@ function getRoleBadgeLabel(role) {
   return ROLE_LABEL_MAP[role] ?? ROLE_LABEL_MAP[ClubMemberRole.MEMBER];
 }
 
-// ---------------------------------------------------------------------------
 // Example-based unit tests
-// ---------------------------------------------------------------------------
 
 describe('RoleBadge label mapping – example-based', () => {
   it('CLUB_HEAD maps to "Head"', () => {
@@ -73,9 +69,7 @@ describe('RoleBadge label mapping – example-based', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
 // Property-based tests  (Validates: Requirements 2.8, 5.7)
-// ---------------------------------------------------------------------------
 
 describe('RoleBadge label mapping – property-based', () => {
   /**

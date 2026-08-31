@@ -59,7 +59,6 @@ const VenueTimelineView = ({
     return `${h.toString().padStart(2, "0")}:00 ${period}`;
   };
 
-  // Convert time to X offset in pixels relative to 8:00 AM
   const getXPosition = (timeDateObj) => {
     const d = new Date(timeDateObj);
     const hours = d.getHours() + d.getMinutes() / 60;
@@ -124,7 +123,6 @@ const VenueTimelineView = ({
 
   return (
     <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-      {/* Header Info */}
       <div className="p-3 px-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-xs">
@@ -166,14 +164,12 @@ const VenueTimelineView = ({
         >
           {/* Timeline Header Row (Sticky top) */}
           <div className="flex border-b border-neutral-200 dark:border-zinc-800 bg-neutral-100/80 dark:bg-zinc-900 sticky top-0 z-30">
-            {/* Sticky Venue Column Header */}
             <div
               className="w-[200px] shrink-0 p-3 bg-neutral-100 dark:bg-zinc-900 border-r border-neutral-200 dark:border-zinc-800 text-xs font-black uppercase text-neutral-400 tracking-wider sticky left-0 z-40"
             >
               Venues ({venueList.length})
             </div>
 
-            {/* Time Columns Header */}
             <div className="flex-1 flex divide-x divide-neutral-200/60 dark:divide-zinc-800/60">
               {HOURS.map((h) => (
                 <div
@@ -237,7 +233,6 @@ const VenueTimelineView = ({
                       />
                     ))}
 
-                    {/* Render Blackouts */}
                     {venueBlackouts.map((b) => {
                       const leftPx = getXPosition(b.startTime);
                       const widthPx = getWidth(b.startTime, b.endTime);
@@ -259,7 +254,6 @@ const VenueTimelineView = ({
                       );
                     })}
 
-                    {/* Render Event Blocks */}
                     {venueEvents.map((event) => {
                       const leftPx = getXPosition(event.startTime);
                       const widthPx = getWidth(event.startTime, event.endTime);

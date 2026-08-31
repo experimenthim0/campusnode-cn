@@ -35,7 +35,6 @@ let activePrefetches = 0;
 function shouldSkipPrefetch() {
   if (typeof navigator === 'undefined') return true;
 
-  // Respect data saver mode
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (connection) {
     if (connection.saveData) return true;

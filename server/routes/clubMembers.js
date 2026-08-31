@@ -39,13 +39,10 @@ const extractMembershipClubId = async (req) => {
   return null;
 };
 
-// Public route: GET /api/club-members/:clubId/members
 router.get("/:clubId/members", validate(clubIdParamSchema), getClubMembers);
 
-// Protected routes require token
 router.use(verifyToken);
 
-// GET /api/club-members/:clubId/search-students
 router.get(
   "/:clubId/search-students",
   validate(clubIdParamSchema),
@@ -53,7 +50,6 @@ router.get(
   searchStudentsForClub
 );
 
-// POST /api/club-members/:clubId/members
 router.post(
   "/:clubId/members",
   validate(clubIdParamSchema),
@@ -61,7 +57,6 @@ router.post(
   addClubMember
 );
 
-// POST /api/club-members/:clubId/transfer-student-lead
 router.post(
   "/:clubId/transfer-student-lead",
   validate(clubIdParamSchema),
@@ -69,7 +64,6 @@ router.post(
   transferStudentLead
 );
 
-// PUT /api/club-members/members/:membershipId
 router.put(
   "/members/:membershipId",
   validate(membershipIdParamSchema),
@@ -77,7 +71,6 @@ router.put(
   updateMemberPermissions
 );
 
-// DELETE /api/club-members/members/:membershipId
 router.delete(
   "/members/:membershipId",
   validate(membershipIdParamSchema),

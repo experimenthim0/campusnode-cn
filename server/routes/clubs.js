@@ -10,9 +10,6 @@ import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { validateFileSignature, processBannerImage } from "../utils/imageProcessor.js";
 import { getPublicResponse, setPublicResponse } from "../utils/publicResponseCache.js";
 
-/**
- * Helper to extract Cloudinary public_id from a URL
- */
 function extractCloudinaryPublicId(url) {
   if (!url) return null;
   try {
@@ -39,19 +36,16 @@ const upload = multer({
 
 const router = express.Router();
 
-// Helper to verify club management permission for a given user & club
 async function verifyClubAdminAccess(user, clubId) {
   if (!user) return false;
   if (user.role === "admin" || user.role === "SUPER_ADMIN") return true;
   if ((user.role === "faculty" || user.role === "facultyCoordinator") && (user.clubId === clubId || user.id)) {
-    // Check if faculty is coordinator of this club
     const club = await prisma.club.findUnique({ where: { id: clubId }, select: { facultyCoordinatorId: true } });
     if (club?.facultyCoordinatorId === user.id) return true;
   }
   if ((user.role === "club" || user.role === "CLUB") && String(user.clubId) === String(clubId)) {
     return true;
   }
-  // Check if student is a CLUB_HEAD or COORDINATOR
   const membership = await prisma.clubMembership.findUnique({
     where: {
       clubId_studentId: {
@@ -88,8 +82,6 @@ const publicClubSelect = {
     }
   },
 };
-
-// ── GET /clubs — all clubs with faculty coordinator ───────────────────────────
 
 router.get("/", async (req, res) => {
   try {
@@ -141,8 +133,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ── GET /clubs/leaderboard — ranking based on events, participation & feedback percentage ──
-
 router.get("/leaderboard", async (req, res) => {
   try {
     const cacheKey = "clubs:leaderboard";
@@ -154,7 +144,6 @@ router.get("/leaderboard", async (req, res) => {
       return res.json(cachedLeaderboard);
     }
 
-    // 1. Fetch all clubs
     const clubs = await prisma.club.findMany({
       select: {
         id: true,
@@ -165,7 +154,6 @@ router.get("/leaderboard", async (req, res) => {
       },
     });
 
-    // 2. Fetch published events with verified attendance & feedback ratings
     const events = await prisma.event.findMany({
       where: { reviewStatus: "PUBLISHED" },
       select: {
@@ -199,7 +187,6 @@ router.get("/leaderboard", async (req, res) => {
     const now = new Date();
     const nowMs = now.getTime();
 
-    // 3. Aggregate statistics and calculate balanced points per club
     const stats = {};
     const clubEventsMap = {};
 
@@ -220,7 +207,6 @@ router.get("/leaderboard", async (req, res) => {
 
       stats[clubId].eventCount += 1;
 
-      // Pillar 1: Event Hosting (+10 points per approved event)
       const eventHostingPoints = 10;
 
       // Pillar 2: Verified Student Participation (+1 pt per verified attendee, capped at 20 pts per event)
@@ -250,12 +236,10 @@ router.get("/leaderboard", async (req, res) => {
         stats[clubId].totalFeedbacks += feedbackList.length;
         stats[clubId].overallRatingSum += sum;
       } else if (isFeedbackWindowClosed && feedbackList.length > 0) {
-        // Track overall rating sum for display/tie-breaker even if under 10 responses
         stats[clubId].totalFeedbacks += feedbackList.length;
         stats[clubId].overallRatingSum += feedbackList.reduce((acc, f) => acc + (f.overallRating || 0), 0);
       }
 
-      // Maximum 50 points per event (10 + 20 + 20)
       const eventTotalPoints = eventHostingPoints + participationPoints + feedbackQualityPoints;
       stats[clubId].totalPoints += eventTotalPoints;
 
@@ -276,7 +260,6 @@ router.get("/leaderboard", async (req, res) => {
       }
     });
 
-    // 4. Format and rank clubs
     const leaderboard = clubs
       .map((club) => {
         const clubStat = stats[club.id] || {
@@ -323,7 +306,6 @@ router.get("/leaderboard", async (req, res) => {
       }))
       .slice(0, 10);
 
-    // Cache leaderboard for 5 minutes (300,000 ms) for maximum server throughput
     setPublicResponse(cacheKey, leaderboard, 300_000);
     res.set("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
     res.set("X-Public-Cache", "MISS");
@@ -332,8 +314,6 @@ router.get("/leaderboard", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ── GET /clubs/:id — single club with published events, announcements, achievements, media ──
 
 router.get("/:id", async (req, res) => {
   try {
@@ -398,7 +378,6 @@ router.get("/:id", async (req, res) => {
     const pastEvents = events.filter((e) => new Date(e.endTime) < now);
     const liveEvents = events.filter((e) => new Date(e.startTime) <= now && new Date(e.endTime) >= now);
 
-    // Find featured event or fallback to next upcoming event
     const featuredEvent = events.find((e) => e.isFeatured) || upcomingEvents[0] || null;
 
     res.json({
@@ -426,8 +405,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ── PUT /clubs/:id — update club (admin or assigned club head) ────────────────
 
 router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), async (req, res) => {
   try {
@@ -564,7 +541,6 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
   }
 });
 
-// ── POST /api/clubs/:id/banner — Upload & set club banner ─────────────────────
 router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res) => {
   try {
     const clubId = req.params.id;
@@ -586,7 +562,6 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
       });
     }
 
-    // 2. Fetch current club banner and delete old image from Cloudinary if exists
     const currentClub = await prisma.club.findUnique({
       where: { id: clubId },
       select: { bannerImage: true },
@@ -604,10 +579,8 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
       }
     }
 
-    // 3. Compress and convert image buffer to WEBP via Sharp
     const processedBuffer = await processBannerImage(req.file.buffer);
 
-    // 4. Upload new compressed WebP banner to Cloudinary
     const publicId = `club-banner-${clubId}-${Date.now()}`;
     const uploadOptions = {
       folder: "club-banners",
@@ -639,9 +612,6 @@ router.post("/:id/banner", verifyToken, upload.single("banner"), async (req, res
   }
 });
 
-// ── ANNOUNCEMENTS MANAGEMENT ──────────────────────────────────────────────────
-
-// POST /api/clubs/:id/announcements
 router.post("/:id/announcements", verifyToken, async (req, res) => {
   try {
     const clubId = req.params.id;
@@ -673,7 +643,6 @@ router.post("/:id/announcements", verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/clubs/:id/announcements/:announcementId
 router.put("/:id/announcements/:announcementId", verifyToken, async (req, res) => {
   try {
     const { id: clubId, announcementId } = req.params;
@@ -699,7 +668,6 @@ router.put("/:id/announcements/:announcementId", verifyToken, async (req, res) =
   }
 });
 
-// PATCH /api/clubs/:id/announcements/:announcementId/pin
 router.patch("/:id/announcements/:announcementId/pin", verifyToken, async (req, res) => {
   try {
     const { id: clubId, announcementId } = req.params;
@@ -722,7 +690,6 @@ router.patch("/:id/announcements/:announcementId/pin", verifyToken, async (req, 
   }
 });
 
-// DELETE /api/clubs/:id/announcements/:announcementId
 router.delete("/:id/announcements/:announcementId", verifyToken, async (req, res) => {
   try {
     const { id: clubId, announcementId } = req.params;
@@ -741,9 +708,6 @@ router.delete("/:id/announcements/:announcementId", verifyToken, async (req, res
   }
 });
 
-// ── ACHIEVEMENTS MANAGEMENT ───────────────────────────────────────────────────
-
-// POST /api/clubs/:id/achievements
 router.post("/:id/achievements", verifyToken, async (req, res) => {
   try {
     const clubId = req.params.id;
@@ -775,7 +739,6 @@ router.post("/:id/achievements", verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/clubs/:id/achievements/:achievementId
 router.put("/:id/achievements/:achievementId", verifyToken, async (req, res) => {
   try {
     const { id: clubId, achievementId } = req.params;
@@ -802,7 +765,6 @@ router.put("/:id/achievements/:achievementId", verifyToken, async (req, res) => 
   }
 });
 
-// DELETE /api/clubs/:id/achievements/:achievementId
 router.delete("/:id/achievements/:achievementId", verifyToken, async (req, res) => {
   try {
     const { id: clubId, achievementId } = req.params;
@@ -821,9 +783,6 @@ router.delete("/:id/achievements/:achievementId", verifyToken, async (req, res) 
   }
 });
 
-// ── GALLERY MEDIA MANAGEMENT ──────────────────────────────────────────────────
-
-// POST /api/clubs/:id/gallery
 router.post("/:id/gallery", verifyToken, async (req, res) => {
   try {
     const clubId = req.params.id;
@@ -854,7 +813,6 @@ router.post("/:id/gallery", verifyToken, async (req, res) => {
   }
 });
 
-// DELETE /api/clubs/:id/gallery/:mediaId
 router.delete("/:id/gallery/:mediaId", verifyToken, async (req, res) => {
   try {
     const { id: clubId, mediaId } = req.params;

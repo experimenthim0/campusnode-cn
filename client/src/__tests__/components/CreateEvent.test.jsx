@@ -10,7 +10,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-// ── Array mutation helpers (mirrors CreateEvent.jsx state logic) ──────────────
 
 function simulateArrayOps(ops) {
   let arr = [];
@@ -25,7 +24,6 @@ function simulateArrayOps(ops) {
   return arr;
 }
 
-// ── 9.5 Property 7: array length invariant ────────────────────────────────────
 
 /**
  * **Validates: Requirements 3.2, 3.4**
@@ -85,7 +83,6 @@ describe('CreateEvent — Property 7: sponsor/media array length', () => {
   });
 });
 
-// ── 9.6 Property 8: submission payload contains sponsors and media verbatim ───
 
 /**
  * **Validates: Requirements 3.5**
@@ -164,7 +161,6 @@ describe('CreateEvent — Property 8: submission payload', () => {
   });
 });
 
-// ── 9.7 Property 10: slug-based redirect ─────────────────────────────────────
 
 /**
  * **Validates: Requirements 3.8**

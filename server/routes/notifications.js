@@ -16,11 +16,8 @@ const notificationLimiter = rateLimit({
 });
 
 // Defense-in-depth: all notification routes require authentication.
-// Individual handlers still declare their own verifyToken + allowRoles for
-// explicit per-route role checks, but this catches any future routes.
 router.use(verifyToken);
 
-// Include for sender — student, admin, institutional account, or club account
 const senderInclude = {
   senderStudent: {
     select: {
@@ -73,7 +70,6 @@ function formatSender(notification) {
   return null;
 }
 
-// ── POST /notifications — create & broadcast ──────────────────────────────────
 router.post(
   "/",
   notificationLimiter,
@@ -176,8 +172,6 @@ router.post(
   }
 });
 
-// ── GET /notifications — notifications for the requesting user ────────────────
-
 router.get(
   "/",
   verifyToken,
@@ -266,8 +260,6 @@ router.get(
   },
 );
 
-// ── GET /notifications/sent — sent notifications ──────────────────────────────
-
 router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW), async (req, res) => {
   try {
     const { userId, userType, principalType, role } = req.user;
@@ -301,9 +293,6 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
 });
 
 // IMPORTANT: /read-all must come BEFORE /:id/read to avoid Express
-// matching "read-all" as an :id parameter.
-
-// ── PUT /notifications/read-all ───────────────────────────────────────────────
 
 router.put(
   "/read-all",
@@ -328,8 +317,6 @@ router.put(
         userCreatedAt = student?.createdAt ?? new Date(0);
       }
 
-      // Restore readBy tracking logic: updateMany doesn't support push.
-      // We fetch IDs of notifications that the user hasn't read yet and update them.
       const unreadNotifications = await prisma.notification.findMany({
         where: {
           createdAt: { gte: userCreatedAt },
@@ -343,7 +330,6 @@ router.put(
       });
 
       if (unreadNotifications.length > 0) {
-        // Use a loop to update each notification
         for (const n of unreadNotifications) {
           await prisma.notification.update({
             where: { id: n.id },
@@ -362,8 +348,6 @@ router.put(
     }
   },
 );
-
-// ── PUT /notifications/:id/read ───────────────────────────────────────────────
 
 router.put(
   "/:id/read",

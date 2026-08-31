@@ -19,21 +19,14 @@ export function derivePermissions(role) {
   if (role === "CLUB_HEAD" || role === "COORDINATOR") {
     return { canTakeAttendance: true, canEditEvents: true };
   }
-  // MEMBER
   return { canTakeAttendance: true, canEditEvents: false };
 }
 
-/**
- * Central permission-based check for managing club members.
- */
 export async function canManageClubMembers(req, clubId) {
   if (!req.user) return false;
   return hasPermission(req.user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId, id: clubId });
 }
 
-/**
- * Helper to record audit logs for team management operations.
- */
 async function logAudit(req, action, targetId, clubId, metadata = {}) {
   try {
     const actorId = req.user?.userId || req.user?.clubAccountId || req.user?.id || "unknown";
@@ -58,16 +51,11 @@ async function logAudit(req, action, targetId, clubId, metadata = {}) {
   }
 }
 
-/**
- * Add a new member to a club by college email.
- * Only @nitj.ac.in emails are allowed.
- */
 export const addClubMember = async (req, res) => {
   try {
     const { clubId } = req.params;
     const { email, role = "MEMBER", customPermissions = [] } = req.body;
 
-    // Validate role
     if (!VALID_ROLES.includes(role)) {
       return res.status(400).json({
         message: `Invalid role. Must be one of: ${VALID_ROLES.join(", ")}.`,
@@ -87,7 +75,6 @@ export const addClubMember = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized to add members to this club." });
     }
 
-    // Role count validation
     if (role === "CLUB_HEAD") {
       const activeHeads = await prisma.clubMembership.count({
         where: { clubId, role: "CLUB_HEAD", status: { not: "INACTIVE" } },
@@ -127,7 +114,6 @@ export const addClubMember = async (req, res) => {
       });
     }
 
-    // Find real student by email
     const student =
       (await prisma.studentUser.findFirst({
         where: { email: { equals: email.trim(), mode: "insensitive" } },
@@ -139,7 +125,6 @@ export const addClubMember = async (req, res) => {
       });
     }
 
-    // Check if membership already exists
     const existing = await prisma.clubMembership.findUnique({
       where: { clubId_studentId: { clubId, studentId: student.id } },
     });
@@ -184,9 +169,6 @@ export const addClubMember = async (req, res) => {
   }
 };
 
-/**
- * Get all members of a club.
- */
 export const getClubMembers = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -255,9 +237,6 @@ export const getClubMembers = async (req, res) => {
   }
 };
 
-/**
- * Update member permissions or role.
- */
 export const updateMemberPermissions = async (req, res) => {
   try {
     const { membershipId } = req.params;
@@ -278,7 +257,6 @@ export const updateMemberPermissions = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized to update members in this club." });
     }
 
-    // Disallow self-modification of role or permissions
     const requesterId = req.user?.studentId || req.user?.userId || req.user?.id;
     const isSelfModification = Boolean(
       requesterId &&
@@ -301,7 +279,6 @@ export const updateMemberPermissions = async (req, res) => {
         });
       }
 
-      // Enforce role limits
       if (role === "CLUB_HEAD" && existing.role !== "CLUB_HEAD") {
         const activeHeads = await prisma.clubMembership.count({
           where: { clubId: existing.clubId, role: "CLUB_HEAD", id: { not: membershipId }, status: { not: "INACTIVE" } },
@@ -366,9 +343,6 @@ export const updateMemberPermissions = async (req, res) => {
   }
 };
 
-/**
- * Atomically transfer Student Lead (Head) to another member in the club.
- */
 export const transferStudentLead = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -381,7 +355,6 @@ export const transferStudentLead = async (req, res) => {
     const club = await prisma.club.findUnique({ where: { id: clubId } });
     if (!club) return res.status(404).json({ message: "Club not found." });
 
-    // Locate target membership
     let targetMembership = null;
     if (targetMembershipId) {
       targetMembership = await prisma.clubMembership.findUnique({
@@ -411,9 +384,7 @@ export const transferStudentLead = async (req, res) => {
       return res.status(400).json({ message: "Target member is already the active Student Lead." });
     }
 
-    // Atomic leadership transfer
     const newStudentLead = await prisma.$transaction(async (tx) => {
-      // 1. Demote previous active CLUB_HEAD(s) to COORDINATOR
       await tx.clubMembership.updateMany({
         where: { clubId, role: "CLUB_HEAD" },
         data: {
@@ -423,7 +394,6 @@ export const transferStudentLead = async (req, res) => {
         },
       });
 
-      // 2. Promote target to CLUB_HEAD
       const updated = await tx.clubMembership.update({
         where: { id: targetMembership.id },
         data: {
@@ -457,9 +427,6 @@ export const transferStudentLead = async (req, res) => {
   }
 };
 
-/**
- * Remove a member from a club.
- */
 export const removeClubMember = async (req, res) => {
   try {
     const { membershipId } = req.params;
@@ -476,7 +443,6 @@ export const removeClubMember = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized to remove members from this club." });
     }
 
-    // Disallow self-removal for student members
     const requesterId = req.user?.studentId || req.user?.userId || req.user?.id;
     const isSelfRemoval = Boolean(
       requesterId &&
@@ -502,10 +468,6 @@ export const removeClubMember = async (req, res) => {
   }
 };
 
-/**
- * Search students to add as club members.
- * Strictly searches ONLY registered students and excludes club accounts, admin, faculty, and institutional accounts.
- */
 export const searchStudentsForClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -530,7 +492,6 @@ export const searchStudentsForClub = async (req, res) => {
       ...instAccounts.map((i) => (i.email ? i.email.toLowerCase() : "")),
     ].filter(Boolean);
 
-    // Also get existing members of this club to indicate if already added
     const existingMembers = await prisma.clubMembership.findMany({
       where: { clubId, status: { not: "INACTIVE" } },
       select: { studentId: true },

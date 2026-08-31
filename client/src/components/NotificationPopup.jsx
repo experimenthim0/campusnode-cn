@@ -63,7 +63,6 @@ const NotificationPopup = ({ message, type = 'info', onClose, duration = 3000 })
           </p>
         </div>
 
-        {/* Subtle Close Button */}
         <button 
           onClick={onClose} 
           className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors cursor-pointer p-0.5 rounded "

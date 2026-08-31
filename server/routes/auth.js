@@ -22,7 +22,6 @@ const getCookieOptions = (maxAge = 7 * 24 * 60 * 60 * 1000) => ({
   maxAge,
 });
 
-// ─── Helper: derive student role & clubId & institutional assignments ────────
 
 export async function getStudentRoleAndClub(studentId) {
   const [studentUser, memberships, instAssignments] = await Promise.all([
@@ -86,17 +85,26 @@ export async function getStudentRoleAndClub(studentId) {
   };
 }
 
-// ─── Helper: derive facultyCoordinator clubId ────────────────────────────────
 
 export async function getAdminClubId(adminId) {
   const club = await prisma.club.findFirst({
     where: { facultyCoordinatorId: adminId },
-    select: { id: true, clubName: true },
+    select: {
+      id: true,
+      clubName: true,
+      slug: true,
+      clubLogo: true,
+      bankName: true,
+      accountHolderName: true,
+      accountNumber: true,
+      ifscCode: true,
+      upiId: true,
+      bankPhone: true,
+    },
   });
   return club;
 }
 
-// ─── STUDENT REGISTRATION ─────────────────────────────────────────────────────
 
 router.post("/register/student", async (req, res) => {
   try {
@@ -239,16 +247,14 @@ router.post("/register/student", async (req, res) => {
   }
 });
 
-// ─── STUDENT / CLUB LOGIN ──────────────────────────────────────────────────
-// POST /api/auth/login/student
-// Authenticates official club accounts (ClubAccount table) or students (StudentUser table)
+// Authenticates official club accounts (ClubAccount table), institutional accounts, students (StudentUser table), admin/faculty (AdminRole table), or external users (ExternalUser table)
 
 router.post(["/login", "/login/student"], async (req, res) => {
   try {
     const { email, password } = req.body;
     const cleanEmail = String(email || "").trim().toLowerCase();
 
-    // 1. Try ClubAccount first
+    // 1. Club Account
     const clubAccount = await prisma.clubAccount.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
       include: {
@@ -337,7 +343,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
       });
     }
 
-    // 2. Try InstitutionalAccount (Central Organizer entity)
+    // 2. Institutional Account (Central Organizer)
     const instAccount = await prisma.institutionalAccount.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
     });
@@ -372,181 +378,268 @@ router.post(["/login", "/login/student"], async (req, res) => {
       });
     }
 
-    // 3. Try StudentUser
+    // 3. Student User
     const student = await prisma.studentUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
-    if (!student) {
-      // 4. Try ExternalUser
-      const externalUser = await prisma.externalUser.findFirst({
-        where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      });
-
-      if (externalUser) {
-        const isMatch = await bcrypt.compare(password, externalUser.password);
-        if (!isMatch) {
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-
-        if (externalUser.isTwoStepEnabled) {
-          const otp = Math.floor(100000 + Math.random() * 900000).toString();
-          await prisma.externalUser.update({
-            where: { id: externalUser.id },
-            data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
-          });
-          await sendEmail({
-            email: externalUser.email,
-            subject: "CampusNode Login Verification Code",
-            message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-              <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
-              <h2>Your Verification Code</h2>
-              <p>A login was requested for your account (<strong>${externalUser.email}</strong>).</p>
-              <div style="margin:30px 0">
-                <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-              </div>
-              <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-            </div>`,
-          });
-          return res.json({ needs2FA: true, email: externalUser.email, userType: "external", message: "Verification code sent to your email." });
-        }
-
-        const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
-        const userObj = {
-          id: externalUser.id,
-          name: externalUser.name,
-          email: externalUser.email,
-          collegeName: externalUser.collegeName,
-          phone: externalUser.phone,
-          program: externalUser.program,
-          graduationYear: externalUser.graduationYear,
-          profileImage: externalUser.profileImage,
-          githubProfile: externalUser.githubProfile,
-          linkedinProfile: externalUser.linkedinProfile,
-          xProfile: externalUser.xProfile,
-          instagramProfile: externalUser.instagramProfile,
-          whatsappNumber: externalUser.whatsappNumber,
-          portfolioUrl: externalUser.portfolioUrl,
-          role: "external",
-          userType: "external",
-          principalType: "EXTERNAL",
-        };
-
-        res.cookie("token", token, getCookieOptions());
-        return res.json({
-          success: true,
-          message: "Login successful",
-          user: userObj,
-          role: "external",
-          userType: "external",
-          principalType: "EXTERNAL",
-          token,
-        });
+    if (student) {
+      if (student.isBlocked) {
+        return res.status(401).json({ message: "Your account is suspended. Please contact administrator." });
       }
 
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+      if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
+        const hasPrivilegedRole = (student.accessLevel === "central_organizer")
+          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }))
+          || Boolean(await prisma.clubMembership.findFirst({ where: { studentId: student.id, role: { in: ["CLUB_HEAD", "COORDINATOR"] } } }));
 
-    if (student.isBlocked) {
-      return res.status(401).json({ message: "Your account is suspended. Please contact administrator." });
-    }
+        if (hasPrivilegedRole) {
+          await prisma.studentUser.update({
+            where: { id: student.id },
+            data: { isVerified: true },
+          });
+          student.isVerified = true;
+        } else {
+          const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+          if (student.createdAt < twentyFourHoursAgo || (student.verificationTokenExpire && new Date(student.verificationTokenExpire) < new Date())) {
+            await prisma.studentUser.delete({ where: { id: student.id } });
+            return res.status(401).json({ message: "Verification link expired (24 hours passed). Please register again." });
+          }
+          return res.status(401).json({ message: "Please verify your email to login." });
+        }
+      }
 
-    if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
-      const hasPrivilegedRole = (student.accessLevel === "central_organizer")
-        || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }))
-        || Boolean(await prisma.clubMembership.findFirst({ where: { studentId: student.id, role: { in: ["CLUB_HEAD", "COORDINATOR"] } } }));
+      const isMatch = await bcrypt.compare(password, student.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
 
-      if (hasPrivilegedRole) {
+      if (student.isTwoStepEnabled) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         await prisma.studentUser.update({
           where: { id: student.id },
-          data: { isVerified: true },
+          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
-        student.isVerified = true;
-      } else {
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        if (student.createdAt < twentyFourHoursAgo || (student.verificationTokenExpire && new Date(student.verificationTokenExpire) < new Date())) {
-          await prisma.studentUser.delete({ where: { id: student.id } });
-          return res.status(401).json({ message: "Verification link expired (24 hours passed). Please register again." });
-        }
-        return res.status(401).json({ message: "Please verify your email to login." });
+        await sendEmail({
+          email: student.email,
+          subject: "CampusNode Login Verification Code",
+          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
+            <h2>Your Verification Code</h2>
+            <p>A login was requested for your student account (<strong>${student.email}</strong>).</p>
+            <div style="margin:30px 0">
+              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+            </div>
+            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+          </div>`,
+        });
+        return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
       }
-    }
 
-    const isMatch = await bcrypt.compare(password, student.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+      const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
 
-    if (student.isTwoStepEnabled) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      await prisma.studentUser.update({
-        where: { id: student.id },
-        data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+      const progress = calculateAcademicProgress(student);
+      const token = generateToken(student, role, "student", clubId, "STUDENT");
+      const userObj = {
+        ...sanitizeUser(student),
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+        expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
+        academicStatus: student.academicStatus || progress.academicStatus,
+        year: progress.academicYearLabel,
+        principalType: "STUDENT",
+        clubId,
+        memberships,
+        institutionalAssignments,
+      };
+
+      res.cookie("token", token, getCookieOptions());
+
+      return res.json({
+        success: true,
+        message: "Login successful",
+        user: userObj,
+        role,
+        userType: "student",
+        principalType: "STUDENT",
+        token,
       });
-      await sendEmail({
-        email: student.email,
-        subject: "CampusNode Login Verification Code",
-        message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-          <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
-          <h2>Your Verification Code</h2>
-          <p>A login was requested for your student account (<strong>${student.email}</strong>).</p>
-          <div style="margin:30px 0">
-            <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-          </div>
-          <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-        </div>`,
-      });
-      return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
     }
 
-    const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
-
-    const progress = calculateAcademicProgress(student);
-    const token = generateToken(student, role, "student", clubId, "STUDENT");
-    const userObj = {
-      ...sanitizeUser(student),
-      academicYear: progress.academicYear,
-      academicYearLabel: progress.academicYearLabel,
-      semester: progress.semester,
-      semesterLabel: progress.semesterLabel,
-      expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
-      academicStatus: student.academicStatus || progress.academicStatus,
-      year: progress.academicYearLabel,
-      principalType: "STUDENT",
-      clubId,
-      memberships,
-      institutionalAssignments,
-    };
-
-    res.cookie("token", token, getCookieOptions());
-
-    return res.json({
-      success: true,
-      message: "Login successful",
-      user: userObj,
-      role,
-      userType: "student",
-      principalType: "STUDENT",
-      token,
+    // 4. Admin / Faculty Coordinator User (AdminRole table)
+    const admin = await prisma.adminRole.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
+
+    if (admin) {
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (admin.isTwoStepEnabled) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await prisma.adminRole.update({
+          where: { id: admin.id },
+          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+        });
+        await sendEmail({
+          email: admin.email,
+          subject: "CampusNode Login Verification Code",
+          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node — Admin</h1>
+            <h2>Your Verification Code</h2>
+            <p>A login was requested for your account (<strong>${admin.email}</strong>).</p>
+            <div style="margin:30px 0">
+              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+            </div>
+            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+          </div>`,
+        });
+        return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent to your email." });
+      }
+
+      const clubInfo = (admin.role === "facultyCoordinator" || admin.role === "club")
+        ? await getAdminClubId(admin.id)
+        : null;
+      const clubId = clubInfo?.id ?? null;
+      const isFaculty = admin.role === "facultyCoordinator";
+      const principalType = isFaculty ? "FACULTY" : "ADMIN";
+      const memberships = clubInfo ? [{
+        id: `fac_${clubInfo.id}`,
+        clubId: clubInfo.id,
+        clubName: clubInfo.clubName,
+        slug: clubInfo.slug,
+        clubLogo: clubInfo.clubLogo,
+        role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
+        canCheckRegistration: true,
+        canViewDashboard: true,
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true,
+        },
+      }] : [];
+
+      const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+      const userObj = {
+        ...sanitizeUser(admin),
+        principalType,
+        clubId,
+        clubName: clubInfo?.clubName ?? null,
+        memberships,
+      };
+      if (clubInfo) {
+        userObj.bankName = clubInfo.bankName;
+        userObj.accountHolderName = clubInfo.accountHolderName;
+        userObj.accountNumber = clubInfo.accountNumber;
+        userObj.ifscCode = clubInfo.ifscCode;
+        userObj.upiId = clubInfo.upiId;
+        userObj.bankPhone = clubInfo.bankPhone;
+      }
+
+      res.cookie("token", token, getCookieOptions());
+      return res.json({
+        success: true,
+        message: "Login successful",
+        user: userObj,
+        role: admin.role,
+        userType: "admin",
+        principalType,
+        token,
+      });
+    }
+
+    // 5. External User
+    const externalUser = await prisma.externalUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    });
+
+    if (externalUser) {
+      const isMatch = await bcrypt.compare(password, externalUser.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (externalUser.isTwoStepEnabled) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await prisma.externalUser.update({
+          where: { id: externalUser.id },
+          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+        });
+        await sendEmail({
+          email: externalUser.email,
+          subject: "CampusNode Login Verification Code",
+          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
+            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
+            <h2>Your Verification Code</h2>
+            <p>A login was requested for your account (<strong>${externalUser.email}</strong>).</p>
+            <div style="margin:30px 0">
+              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
+            </div>
+            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
+          </div>`,
+        });
+        return res.json({ needs2FA: true, email: externalUser.email, userType: "external", message: "Verification code sent to your email." });
+      }
+
+      const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+      const userObj = {
+        id: externalUser.id,
+        name: externalUser.name,
+        email: externalUser.email,
+        collegeName: externalUser.collegeName,
+        phone: externalUser.phone,
+        program: externalUser.program,
+        graduationYear: externalUser.graduationYear,
+        profileImage: externalUser.profileImage,
+        githubProfile: externalUser.githubProfile,
+        linkedinProfile: externalUser.linkedinProfile,
+        xProfile: externalUser.xProfile,
+        instagramProfile: externalUser.instagramProfile,
+        whatsappNumber: externalUser.whatsappNumber,
+        portfolioUrl: externalUser.portfolioUrl,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+      };
+
+      res.cookie("token", token, getCookieOptions());
+      return res.json({
+        success: true,
+        message: "Login successful",
+        user: userObj,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+        token,
+      });
+    }
+
+    return res.status(401).json({ message: "Invalid credentials" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ─── ADMIN LOGIN ───────────────────────────────────────────────────────────────
-// POST /api/auth/login/admin
 // Authenticates platform admins, faculty coordinators, and payment admins (AdminRole table)
 
 router.post("/login/admin", async (req, res) => {
   try {
+    const { email, password } = req.body;
     const cleanEmail = String(email || "").trim().toLowerCase();
     let admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (!admin) {
-      // Check if Central Organizer
       const student = await prisma.studentUser.findFirst({
         where: { email: { equals: cleanEmail, mode: "insensitive" } },
       });
@@ -598,18 +691,63 @@ router.post("/login/admin", async (req, res) => {
 
     const club = admin.role === "facultyCoordinator" ? await getAdminClubId(admin.id) : null;
     const clubId = club?.id ?? null;
-    const token = generateToken(admin, admin.role, "admin", clubId);
-    const userObj = { ...sanitizeUser(admin), clubId };
+    const isFaculty = admin.role === "facultyCoordinator";
+    const principalType = isFaculty ? "FACULTY" : "ADMIN";
+    const memberships = club ? [{
+      id: `fac_${club.id}`,
+      clubId: club.id,
+      clubName: club.clubName,
+      slug: club.slug,
+      clubLogo: club.clubLogo,
+      role: "facultyCoordinator",
+      status: "ACTIVE",
+      customPermissions: [],
+      canTakeAttendance: true,
+      canEditEvents: true,
+      canCheckRegistration: true,
+      canViewDashboard: true,
+      permissions: {
+        canTakeAttendance: true,
+        canViewDashboard: true,
+        canCheckRegistration: true,
+        canEditEvents: true,
+      },
+    }] : [];
+
+    const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+    const userObj = {
+      ...sanitizeUser(admin),
+      principalType,
+      clubId,
+      clubName: club?.clubName ?? null,
+      memberships,
+    };
+    if (club) {
+      userObj.bankName = club.bankName;
+      userObj.accountHolderName = club.accountHolderName;
+      userObj.accountNumber = club.accountNumber;
+      userObj.ifscCode = club.ifscCode;
+      userObj.upiId = club.upiId;
+      userObj.bankPhone = club.bankPhone;
+    }
 
     res.cookie("token", token, getCookieOptions());
 
-    return res.json({ success: true, message: "Admin login successful", user: userObj, role: admin.role, userType: "admin", token });
+    return res.json({
+      success: true,
+      message: "Admin login successful",
+      user: userObj,
+      admin: userObj,
+      role: admin.role,
+      userType: "admin",
+      principalType,
+      token,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ─── EXTERNAL USER REGISTRATION & LOGIN ───────────────────────────────────────
 // External participants are stored in dedicated ExternalUser table
 
 router.post("/register/external", async (req, res) => {
@@ -639,7 +777,6 @@ router.post("/register/external", async (req, res) => {
       });
     }
 
-    // Check email uniqueness across ExternalUser and StudentUser
     const [existingExternal, existingStudent] = await Promise.all([
       prisma.externalUser.findUnique({ where: { email: cleanEmail } }),
       prisma.studentUser.findUnique({ where: { email: cleanEmail } }),
@@ -770,14 +907,12 @@ router.post("/login/external", async (req, res) => {
   }
 });
 
-// ─── 2FA VERIFICATION ─────────────────────────────────────────────────────────
 // Checks StudentUser first, then AdminRole
 
 router.post("/verify-2fa", async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    // Try StudentUser
     const student = await prisma.studentUser.findFirst({
       where: { email, otp, otpExpire: { gt: new Date() } },
     });
@@ -811,7 +946,6 @@ router.post("/verify-2fa", async (req, res) => {
       return res.json({ success: true, message: "Verification successful", user: userObj, role, userType: "student", principalType: "STUDENT", token });
     }
 
-    // Try AdminRole
     const admin = await prisma.adminRole.findFirst({
       where: { email, otp, otpExpire: { gt: new Date() } },
     });
@@ -838,7 +972,6 @@ router.post("/verify-2fa", async (req, res) => {
   }
 });
 
-// ─── EMAIL VERIFICATION ────────────────────────────────────────────────────────
 // Only students verify email; admins are pre-verified, externals use OTP
 
 router.get("/verify-email/:token", async (req, res) => {
@@ -865,7 +998,6 @@ router.get("/verify-email/:token", async (req, res) => {
   }
 });
 
-// ─── FORGOT PASSWORD ───────────────────────────────────────────────────────────
 // Checks InstitutionalAccount, StudentUser, AdminRole, and ClubAccount
 
 router.post("/forgot-password", async (req, res) => {
@@ -977,7 +1109,6 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// ─── RESET PASSWORD ────────────────────────────────────────────────────────────
 
 router.post("/reset-password/:token", async (req, res) => {
   try {
@@ -985,7 +1116,6 @@ router.post("/reset-password/:token", async (req, res) => {
     const { newPassword } = req.body;
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 1. Try InstitutionalAccount (Central Organizer)
     const instAcc = await prisma.institutionalAccount.findFirst({
       where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
     });
@@ -998,7 +1128,6 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.json({ message: "Password reset successful." });
     }
 
-    // 2. Try StudentUser
     const student = await prisma.studentUser.findFirst({
       where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
     });
@@ -1011,7 +1140,6 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.json({ message: "Password reset successful." });
     }
 
-    // 3. Try AdminRole
     const admin = await prisma.adminRole.findFirst({
       where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
     });
@@ -1024,7 +1152,6 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.json({ message: "Password reset successful." });
     }
 
-    // 4. Try ClubAccount
     const clubAcc = await prisma.clubAccount.findFirst({
       where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
     });
@@ -1043,7 +1170,6 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 });
 
-// ─── CHANGE PASSWORD ───────────────────────────────────────────────────────────
 
 router.post("/change-password", verifyToken, async (req, res) => {
   try {
@@ -1112,7 +1238,6 @@ router.post("/change-password", verifyToken, async (req, res) => {
   }
 });
 
-// ─── LOGOUT ────────────────────────────────────────────────────────────────────
 // Clears the httpOnly token cookie
 router.post("/logout", (req, res) => {
   res.cookie("token", "", {
@@ -1123,295 +1248,5 @@ router.post("/logout", (req, res) => {
   });
   res.json({ success: true, message: "Logged out successfully" });
 });
-
-// ─── UNIFIED LOGIN ────────────────────────────────────────────────────────────
-// Authenticates ClubAccount, StudentUser, or AdminRole
-
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const cleanEmail = String(email || "").trim().toLowerCase();
-
-    // 1. Try ClubAccount first
-    const clubAccount = await prisma.clubAccount.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      include: {
-        club: {
-          select: {
-            id: true,
-            clubName: true,
-            slug: true,
-            clubLogo: true,
-            category: true,
-            motto: true,
-            mission: true,
-            establishedYear: true,
-            description: true,
-            bankName: true,
-            accountHolderName: true,
-            accountNumber: true,
-            ifscCode: true,
-            upiId: true,
-            bankPhone: true,
-            socialLinks: true,
-          },
-        },
-      },
-    });
-
-    if (clubAccount && clubAccount.isActive) {
-      const isMatch = await bcrypt.compare(password, clubAccount.password);
-      if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-
-      const socialMap = {};
-      (clubAccount.club?.socialLinks || []).forEach((l) => {
-        const plat = (l.platform || "").toLowerCase();
-        if (plat === "instagram") socialMap.instagramProfile = l.url;
-        if (plat === "linkedin") socialMap.linkedinProfile = l.url;
-        if (plat === "x" || plat === "twitter") socialMap.xProfile = l.url;
-        if (plat === "whatsapp") socialMap.whatsappNumber = l.url;
-        if (plat === "website") socialMap.portfolioUrl = l.url;
-        if (plat === "github") socialMap.githubProfile = l.url;
-      });
-
-      const token = generateToken(clubAccount, "club", "club", clubAccount.clubId, "CLUB");
-      const userObj = {
-        id: clubAccount.id,
-        clubAccountId: clubAccount.id,
-        email: clubAccount.email,
-        name: clubAccount.club?.clubName,
-        clubName: clubAccount.club?.clubName,
-        clubId: clubAccount.clubId,
-        slug: clubAccount.club?.slug,
-        clubLogo: clubAccount.club?.clubLogo,
-        profileImage: clubAccount.club?.clubLogo,
-        category: clubAccount.club?.category,
-        motto: clubAccount.club?.motto,
-        mission: clubAccount.club?.mission,
-        establishedYear: clubAccount.club?.establishedYear,
-        description: clubAccount.club?.description,
-        principalType: "CLUB",
-        club: clubAccount.club,
-        socialLinks: clubAccount.club?.socialLinks || [],
-        instagramProfile: socialMap.instagramProfile || "",
-        linkedinProfile: socialMap.linkedinProfile || "",
-        xProfile: socialMap.xProfile || "",
-        whatsappNumber: socialMap.whatsappNumber || "",
-        portfolioUrl: socialMap.portfolioUrl || "",
-        githubProfile: socialMap.githubProfile || "",
-        bankName: clubAccount.club?.bankName,
-        accountHolderName: clubAccount.club?.accountHolderName,
-        accountNumber: clubAccount.club?.accountNumber,
-        ifscCode: clubAccount.club?.ifscCode,
-        upiId: clubAccount.club?.upiId,
-        bankPhone: clubAccount.club?.bankPhone,
-      };
-
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role: "club",
-        userType: "club",
-        principalType: "CLUB",
-        token,
-      });
-    }
-
-    // 2. Try InstitutionalAccount (Central Organizer entity)
-    const instAccount = await prisma.institutionalAccount.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
-    });
-
-    if (instAccount && instAccount.password) {
-      const isMatch = await bcrypt.compare(password, instAccount.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const token = generateToken(instAccount, "central_organizer", "institutional", null, "INSTITUTIONAL");
-      const userObj = {
-        id: instAccount.id,
-        institutionalAccountId: instAccount.id,
-        email: instAccount.email,
-        name: instAccount.name,
-        type: instAccount.type,
-        role: "central_organizer",
-        userType: "institutional",
-        principalType: "INSTITUTIONAL",
-      };
-
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role: "central_organizer",
-        userType: "institutional",
-        principalType: "INSTITUTIONAL",
-        token,
-      });
-    }
-
-    // 3. Try StudentUser
-    const student = await prisma.studentUser.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" } },
-    });
-
-    if (student && !student.isBlocked) {
-      if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
-        const hasPrivilegedRole = (student.accessLevel === "central_organizer")
-          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }))
-          || Boolean(await prisma.clubMembership.findFirst({ where: { studentId: student.id, role: { in: ["CLUB_HEAD", "COORDINATOR"] } } }));
-
-        if (hasPrivilegedRole) {
-          await prisma.studentUser.update({
-            where: { id: student.id },
-            data: { isVerified: true },
-          });
-          student.isVerified = true;
-        } else {
-          const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-          if (student.createdAt < twentyFourHoursAgo || (student.verificationTokenExpire && new Date(student.verificationTokenExpire) < new Date())) {
-            await prisma.studentUser.delete({ where: { id: student.id } });
-            return res.status(401).json({ message: "Verification link expired (24 hours passed). Please register again." });
-          }
-          return res.status(401).json({ message: "Please verify your email to login." });
-        }
-      }
-
-      const isMatch = await bcrypt.compare(password, student.password);
-      if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-
-      if (student.isTwoStepEnabled) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        await prisma.studentUser.update({
-          where: { id: student.id },
-          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
-        });
-        await sendEmail({
-          email: student.email,
-          subject: "CampusNode Login Verification Code",
-          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
-            <h2>Your Verification Code</h2>
-            <p>A login was requested for your account (<strong>${student.email}</strong>).</p>
-            <div style="margin:30px 0">
-              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-            </div>
-            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-          </div>`,
-        });
-        return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
-      }
-
-      const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
-
-      const progress = calculateAcademicProgress(student);
-      const token = generateToken(student, role, "student", clubId, "STUDENT");
-      const userObj = {
-        ...sanitizeUser(student),
-        academicYear: progress.academicYear,
-        academicYearLabel: progress.academicYearLabel,
-        semester: progress.semester,
-        semesterLabel: progress.semesterLabel,
-        expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
-        academicStatus: student.academicStatus || progress.academicStatus,
-        year: progress.academicYearLabel,
-        principalType: "STUDENT",
-        clubId,
-        memberships,
-        institutionalAssignments,
-      };
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role,
-        userType: "student",
-        principalType: "STUDENT",
-        token,
-      });
-    }
-
-    // 4. Try AdminRole
-    const admin = await prisma.adminRole.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" } },
-    });
-
-    if (admin) {
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-
-      if (admin.isTwoStepEnabled) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        await prisma.adminRole.update({
-          where: { id: admin.id },
-          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
-        });
-        await sendEmail({
-          email: admin.email,
-          subject: "Login Verification Code",
-          message: `<p>Your OTP is: <strong>${otp}</strong>. Expires in 5 minutes.</p>`,
-        });
-        return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent." });
-      }
-
-      const clubInfo = (admin.role === "facultyCoordinator" || admin.role === "club") 
-        ? await prisma.club.findFirst({ where: { facultyCoordinatorId: admin.id } }) 
-        : null;
-      const clubId = clubInfo?.id ?? null;
-      const isFaculty = admin.role === "facultyCoordinator";
-      const principalType = isFaculty ? "FACULTY" : "ADMIN";
-      const memberships = clubInfo ? [{ 
-        clubId: clubInfo.id, 
-        clubName: clubInfo.clubName, 
-        role: "facultyCoordinator",
-        canTakeAttendance: true,
-        canEditEvents: true,
-        canCheckRegistration: true,
-        canViewDashboard: true,
-        permissions: {
-          canTakeAttendance: true,
-          canViewDashboard: true,
-          canCheckRegistration: true,
-          canEditEvents: true
-        }
-      }] : [];
-      
-      const token = generateToken(admin, admin.role, "admin", clubId, principalType);
-      const userObj = {
-        ...sanitizeUser(admin),
-        principalType,
-        clubId,
-        memberships,
-      };
-      if (clubInfo) {
-        userObj.bankName = clubInfo.bankName;
-        userObj.accountHolderName = clubInfo.accountHolderName;
-        userObj.accountNumber = clubInfo.accountNumber;
-        userObj.ifscCode = clubInfo.ifscCode;
-        userObj.upiId = clubInfo.upiId;
-        userObj.bankPhone = clubInfo.bankPhone;
-      }
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role: admin.role,
-        userType: "admin",
-        principalType,
-        token,
-      });
-    }
-
-    return res.status(401).json({ message: "Invalid credentials" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 export default router;
+

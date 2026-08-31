@@ -162,7 +162,6 @@ const Notifications = () => {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
       <div className="max-w-3xl mx-auto px-5 md:px-6 py-10 md:py-12">
 
-        {/* Header */}
         <div className="mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -180,7 +179,6 @@ const Notifications = () => {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Clean Push Notification Control Pill */}
               <button
                 onClick={isSubscribed ? handleDisablePush : handleEnablePush}
                 disabled={enablingPush}
@@ -215,7 +213,6 @@ const Notifications = () => {
           </div>
         </div>
 
-        {/* ── Dismissible Push Notification Promotion Banner ──────────────────────── */}
         {!isSubscribed && !bannerDismissed && permissionState !== "denied" && (
           <div className="mb-6 p-4 md:p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm relative transition-all">
             <button
@@ -260,7 +257,6 @@ const Notifications = () => {
 
         <div className="mb-6 h-px bg-neutral-200 dark:bg-neutral-800 w-full" />
 
-        {/* Notification List */}
         {notifications?.length > 0 ? (
           <div className="space-y-4">
             {notifications.map((notif) => {
@@ -306,7 +302,6 @@ const Notifications = () => {
                       {notif.message}
                     </p>
 
-                    {/* Actions */}
                     {notif.type === "TEAM_INVITATION" && notif.title === "Team Invitation" ? (
                       <div className="mt-4 flex flex-wrap gap-3">
                         <button
@@ -389,7 +384,6 @@ const Notifications = () => {
             })}
           </div>
         ) : (
-          /* Empty State */
           <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl py-16 flex flex-col items-center gap-4 text-center px-6">
             <div className="w-14 h-14 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-center text-neutral-300 dark:text-neutral-700">
               <i className="ri-notification-off-line text-2xl"></i>

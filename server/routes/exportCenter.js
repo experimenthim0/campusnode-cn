@@ -13,7 +13,6 @@ import {
 
 const router = express.Router();
 
-// ── GET /api/export-center/events-list ───────────────────────────────────────
 router.get("/events-list", verifyToken, async (req, res) => {
   try {
     const { clubId = "all" } = req.query;
@@ -24,7 +23,6 @@ router.get("/events-list", verifyToken, async (req, res) => {
   }
 });
 
-// ── GET /api/export-center/datasets ──────────────────────────────────────────
 router.get("/datasets", verifyToken, async (req, res) => {
   try {
     const authorized = getAuthorizedDatasets(req.user);
@@ -43,7 +41,6 @@ router.get("/datasets", verifyToken, async (req, res) => {
   }
 });
 
-// ── GET /api/export-center/preview ───────────────────────────────────────────
 router.get("/preview", verifyToken, async (req, res) => {
   try {
     const { dataset, session, semester, clubId, page = 1, limit = 50, ...customFilters } = req.query;
@@ -87,7 +84,6 @@ router.get("/preview", verifyToken, async (req, res) => {
   }
 });
 
-// ── POST /api/export-center/export ───────────────────────────────────────────
 router.post("/export", verifyToken, async (req, res) => {
   try {
     const { dataset, session, semester, clubId, columns = [], filters = {} } = req.body;
@@ -103,7 +99,6 @@ router.post("/export", verifyToken, async (req, res) => {
       ...filters,
     };
 
-    // Query all matching records for export
     const result = await queryDatasetRecords({
       datasetId: dataset,
       user: req.user,
@@ -115,7 +110,6 @@ router.post("/export", verifyToken, async (req, res) => {
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `campusnode_${dataset}_${timestamp}.csv`;
 
-    // Record audit log
     await recordExportLog({
       dataset,
       recordCount: result.records.length,
@@ -135,7 +129,6 @@ router.post("/export", verifyToken, async (req, res) => {
   }
 });
 
-// ── GET /api/export-center/history ───────────────────────────────────────────
 router.get("/history", verifyToken, requirePermission(PERMISSIONS.AUDIT_VIEW), async (req, res) => {
   try {
     const history = await getExportHistory(30);

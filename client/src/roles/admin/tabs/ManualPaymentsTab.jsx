@@ -12,7 +12,6 @@ const ManualPaymentsTab = ({
     const [statusFilter, setStatusFilter] = useState('all');
 
     const filtered = manualPayments.filter(p => {
-        // Search filter
         if (paymentsSearch) {
             const q = paymentsSearch.toLowerCase();
             const matchesMember = (p.teamMembers || []).some(m => 
@@ -34,12 +33,10 @@ const ManualPaymentsTab = ({
             if (!matchesGeneral) return false;
         }
 
-        // Format filter (Team vs Individual)
         const isTeamEvent = p.isTeam || p.eventRegistrationType === 'team';
         if (formatFilter === 'team' && !isTeamEvent) return false;
         if (formatFilter === 'individual' && isTeamEvent) return false;
 
-        // Status filter
         if (statusFilter !== 'all') {
             if (statusFilter === 'approved' && !['APPROVED', 'SUCCESS'].includes(p.paymentStatus)) return false;
             if (statusFilter === 'pending' && p.paymentStatus !== 'PENDING') return false;
@@ -75,7 +72,6 @@ const ManualPaymentsTab = ({
                 </div>
             )}
 
-            {/* Search & Filter Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-50/80 dark:bg-neutral-900/50 p-3.5 border border-neutral-200 dark:border-zinc-800 rounded-2xl">
                 <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
                     <div className="relative flex-1 min-w-[220px]">
@@ -94,14 +90,12 @@ const ManualPaymentsTab = ({
                         )}
                     </div>
 
-                    {/* Format Filter: Team vs Solo */}
                     <FilterSelect value={formatFilter} onChange={(val) => setFormatFilter(val)}>
                         <option value="all">All Formats (Team & Solo)</option>
                         <option value="team">Team Events Only</option>
                         <option value="individual">Solo / Individual Only</option>
                     </FilterSelect>
 
-                    {/* Status Filter */}
                     <FilterSelect value={statusFilter} onChange={(val) => setStatusFilter(val)}>
                         <option value="all">All Payment Statuses</option>
                         <option value="pending">Pending</option>
@@ -116,7 +110,6 @@ const ManualPaymentsTab = ({
                 </span>
             </div>
 
-            {/* Table */}
             <DataTable>
                 <thead>
                     <tr className="border-b border-neutral-200 dark:border-zinc-800">
@@ -140,7 +133,6 @@ const ManualPaymentsTab = ({
                             <tr key={p.id || idx} className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
                                 <Td className="text-neutral-300 dark:text-neutral-600">{idx + 1}</Td>
                                 
-                                {/* 1. Event & Format */}
                                 <Td>
                                     <p className="font-bold text-black dark:text-white text-sm">{p.eventName}</p>
                                     <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mt-0.5" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>
@@ -159,7 +151,6 @@ const ManualPaymentsTab = ({
                                     </div> */}
                                 </Td>
 
-                                {/* 2. Participant / Team Details */}
                                 <Td>
                                     {isTeam ? (
                                         <div className="space-y-1">
@@ -200,7 +191,6 @@ const ManualPaymentsTab = ({
                                     )}
                                 </Td>
 
-                                {/* 3. Payer & UTR */}
                                 <Td>
                                     {p.transactionId ? (
                                         <span className="font-mono text-xs font-bold text-black dark:text-white">{p.transactionId}</span>
@@ -211,10 +201,8 @@ const ManualPaymentsTab = ({
                                     {p.paymentRemarks && <p className="text-[10px] text-neutral-400 dark:text-neutral-500 italic mt-0.5">"{p.paymentRemarks}"</p>}
                                 </Td>
 
-                                {/* 4. Amount */}
                                 <Td className="font-mono font-black text-orange-600 dark:text-orange-400 text-base">₹{p.amountPaid}</Td>
 
-                                {/* 5. Status */}
                                 <Td>
                                     <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg border ${
                                         ['APPROVED', 'SUCCESS'].includes(p.paymentStatus)
@@ -229,7 +217,6 @@ const ManualPaymentsTab = ({
                                     </span>
                                 </Td>
 
-                                {/* 6. Date */}
                                 <Td align="right" className="text-[11px] text-neutral-400 uppercase tracking-wide">
                                     {new Date(p.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                                 </Td>

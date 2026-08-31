@@ -224,7 +224,6 @@ const DynamicSidebar = ({ user }) => {
       style={{ height: "calc(100dvh - 4rem - env(safe-area-inset-top))" }}
       aria-label="Dashboard sidebar"
     >
-      {/* ── User Info & Collapse Toggle Row ── */}
       <div className="px-3 py-4 border-b border-gray-200 dark:border-zinc-800 shrink-0">
         <div className={`flex items-center justify-between ${isCollapsed ? "flex-col gap-3 items-center" : "px-1"}`}>
           <div className="flex items-center gap-3 min-w-0">
@@ -267,7 +266,6 @@ const DynamicSidebar = ({ user }) => {
         </div>
       </div>
 
-      {/* ── Create Event Action (Club account or club student leads/coordinators with event.create permission; not shown for central organizers) ── */}
       {(isClubAccount || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents)) &&
         hasPermission(user, PERMISSIONS.EVENT_CREATE) && (
         <div className={`pt-2 pb-2 shrink-0 ${isCollapsed ? "px-2 flex justify-center" : "px-4"}`}>
@@ -283,10 +281,8 @@ const DynamicSidebar = ({ user }) => {
         </div>
       )}
 
-      {/* ── Navigation Links ─────────────────────────────────────────── */}
       <nav className={`flex-1 py-3 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : "px-3"}`} aria-label="Dashboard navigation">
 
-        {/* ── General (all users) ── */}
         <SectionLabel isCollapsed={isCollapsed}>General</SectionLabel>
         {(role === "central_organizer" || user?.principalType === "INSTITUTIONAL") ? (
           <SidebarLink to="/central-organizer" icon={Shield} label="Central Dashboard" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} />
@@ -294,12 +290,10 @@ const DynamicSidebar = ({ user }) => {
           <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
         )}
 
-        {/* ── Student Personal: My Events (Visible for students, leads & coordinators; hidden for pure official club & institutional accounts) ── */}
         {!isClubAccount && role !== "central_organizer" && user?.principalType !== "INSTITUTIONAL" && (Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 
-        {/* ── Central Organizer Suite ── */}
         {(user?.accessLevel === "central_organizer" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || (user?.institutionalAssignments && user.institutionalAssignments.length > 0)) && (
           <>
             <SectionLabel isCollapsed={isCollapsed}>Central Events</SectionLabel>
@@ -328,7 +322,6 @@ const DynamicSidebar = ({ user }) => {
           />
         )}
 
-        {/* ── Management: Official Club Account, Membership-based clubs & Faculty Coordinator ── */}
         {(isClubAccount || role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
           <>
             <SectionLabel isCollapsed={isCollapsed}>Management</SectionLabel>
@@ -430,7 +423,6 @@ const DynamicSidebar = ({ user }) => {
                 <div key={m.clubId} className="space-y-1 mb-3">
                   <ClubHeader name={m.clubName || "Club"} isCollapsed={isCollapsed} />
 
-                  {/* Club Events */}
                   <SidebarLink
                     to={`/club-events/${m.clubId}`}
                     icon={CalendarDays}
@@ -511,7 +503,6 @@ const DynamicSidebar = ({ user }) => {
       </nav>
 
 
-      {/* ── Exit Dashboard ───────────────────────────────────────────── */}
       <div className={`pb-2 pt-2 border-t border-gray-200 dark:border-zinc-800 mt-auto shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
         <Link
           to="/"

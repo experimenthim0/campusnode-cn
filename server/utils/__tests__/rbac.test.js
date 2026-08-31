@@ -99,24 +99,19 @@ describe("Granular RBAC Engine Tests", () => {
         ]
       };
 
-      // 1. Normal student rights are fully preserved
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_VIEW)).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.REGISTRATION_CREATE)).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.REGISTRATION_CANCEL)).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.LOST_FOUND_CREATE)).toBe(true);
 
-      // 2. Scoped management for Club A (Student Lead)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_a" })).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_a" })).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_a" })).toBe(true);
 
-      // 3. Scoped management for Club B (Coordinator)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_b" })).toBe(true);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_b" })).toBe(true);
-      // Coordinator does NOT have permission of team management (CLUB_MANAGE_MEMBERS)
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: "club_b" })).toBe(false);
 
-      // 4. Scoped isolation - cannot manage Club C (only regular member) or Club D (no membership)
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_c" })).toBe(false);
       expect(hasPermission(dualContextStudent, PERMISSIONS.EVENT_UPDATE, { clubId: "club_d" })).toBe(false);
       expect(hasPermission(dualContextStudent, PERMISSIONS.CLUB_UPDATE, { clubId: "club_d" })).toBe(false);

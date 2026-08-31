@@ -142,7 +142,6 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6 overflow-y-auto">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh]">
-        {/* Modal Header */}
         <div className="bg-gradient-to-r from-orange-600 to-amber-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 text-white">
             <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
@@ -163,7 +162,6 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
           </button>
         </div>
 
-        {/* Modal Content */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
           {/* Public Visibility Toggle */}
           <div className="flex items-center justify-between p-4 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 rounded-xl">
@@ -189,7 +187,6 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             </label>
           </div>
 
-          {/* Winners List Header */}
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-base font-bold text-neutral-900 dark:text-white">
@@ -310,7 +307,6 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
           </div>
         </div>
 
-        {/* Modal Footer */}
         <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-end gap-3">
           <button
             type="button"

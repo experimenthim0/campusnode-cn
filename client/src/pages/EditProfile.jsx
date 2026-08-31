@@ -9,6 +9,7 @@ import { updateProfile } from '../services/userService';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import ShimmerText from '../components/ShimmerText';
 import { calculateAcademicProgress } from '../utils/academicProgress';
+import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
 
 const EditProfile = () => {
     const { showNotification } = useNotification();
@@ -26,7 +27,6 @@ const EditProfile = () => {
     const [isSavingPassword, setIsSavingPassword] = useState(false);
     const [isSaving2FA, setIsSaving2FA] = useState(false);
 
-    // Password form fields
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -36,7 +36,6 @@ const EditProfile = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Profile form fields
     const [formData, setFormData] = useState({
         name: '',
         year: '',
@@ -75,7 +74,6 @@ const EditProfile = () => {
             );
             const isClubAcc = !isStudentAcc && (authRole === 'club' || authUser?.principalType === 'CLUB');
 
-            // Extract social links if stored in socialLinks array
             const socialMap = {};
             const rawLinks = Array.isArray(authUser.socialLinks)
                 ? authUser.socialLinks
@@ -175,7 +173,6 @@ const EditProfile = () => {
         setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
     };
 
-    // 1. Separate handler: Update Profile Info
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
         setIsSavingProfile(true);
@@ -214,7 +211,6 @@ const EditProfile = () => {
         }
     };
 
-    // 2. Separate handler: Change Password
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         if (!passwordData.currentPassword) {
@@ -246,7 +242,6 @@ const EditProfile = () => {
         }
     };
 
-    // 3. Separate handler: Toggle 2FA Setting
     const handleToggle2FA = async (newVal) => {
         setIsSaving2FA(true);
         try {
@@ -273,7 +268,6 @@ const EditProfile = () => {
     return (
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
             
-            {/* Header with Navigation */}
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
@@ -553,7 +547,6 @@ const EditProfile = () => {
                         </div>
                     )}
 
-                    {/* Profile Submit Actions */}
                     <div className="pt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
                         <button 
                             type="button" 
@@ -581,7 +574,6 @@ const EditProfile = () => {
             {activeTab === 'security' && (
                 <div className="space-y-6">
                     
-                    {/* Change Password Form */}
                     <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
                         <div className="flex items-center gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
                             <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 text-orange-600 flex items-center justify-center shrink-0">
@@ -641,6 +633,10 @@ const EditProfile = () => {
                                             {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                         </button>
                                     </div>
+                                    <PasswordStrengthChecker 
+                                        password={passwordData.newPassword} 
+                                        userInputs={[formData.name, user?.name, user?.email]} 
+                                    />
                                 </div>
 
                                 <div>

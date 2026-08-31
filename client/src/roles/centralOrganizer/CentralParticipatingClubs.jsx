@@ -40,7 +40,6 @@ const CentralParticipatingClubs = ({
 
   return (
     <div className="space-y-6">
-      {/* Event Switcher Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
@@ -80,7 +79,6 @@ const CentralParticipatingClubs = ({
           </p>
         </div>
 
-        {/* Add Club Form */}
         <form onSubmit={onAddClub} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <select
             required

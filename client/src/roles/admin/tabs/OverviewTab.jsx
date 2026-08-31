@@ -38,7 +38,6 @@ const OverviewTab = ({
     const currentYear = now.getFullYear();
     const currentMonthName = now.toLocaleString('en-US', { month: 'long' });
 
-    /* ─── 1. Derived Real Metric Totals ─────────────────────────────────────── */
     const totalRegistrations = useMemo(() => {
         return (events || []).reduce((sum, e) => {
             if (e.registrationType === 'none') return sum;
@@ -54,7 +53,6 @@ const OverviewTab = ({
         }).length;
     }, [events, currentMonth, currentYear]);
 
-    /* ─── 2. Real Attention Required Alerts ─────────────────────────────────── */
     const attentionItems = useMemo(() => {
         const items = [];
         const threeDaysFromNow = new Date(now.getTime() + 72 * 60 * 60 * 1000);
@@ -71,7 +69,6 @@ const OverviewTab = ({
                 ? e.clubName
                 : (e.club?.clubName || 'ODSW');
 
-            // 1. Starting soon (within 72 hours and in future)
             if (isValidStart && startDate > now && startDate <= threeDaysFromNow) {
                 const hoursLeft = Math.max(1, Math.round((startDate - now) / (1000 * 60 * 60)));
                 items.push({
@@ -87,7 +84,6 @@ const OverviewTab = ({
                 });
             }
 
-            // 2. Pending payout for completed events with funds
             if (e.payoutStatus === 'PENDING' && collected > 0 && ((isValidStart && startDate < now) || (deadlineDate && deadlineDate < now))) {
                 items.push({
                     id: `payout-${e.id || e.eventId}`,
@@ -102,7 +98,6 @@ const OverviewTab = ({
                 });
             }
 
-            // 3. Low registrations on upcoming event (< 5 registrations, starting in next 7 days)
             if (isValidStart && startDate > now && startDate <= sevenDaysFromNow && e.registrationType !== 'none' && regCount < 5) {
                 items.push({
                     id: `low-reg-${e.id || e.eventId}`,
@@ -121,7 +116,6 @@ const OverviewTab = ({
         return items.slice(0, 4); // Keep concise and clean
     }, [events, now]);
 
-    /* ─── 3. Monthly Event Trends (Past 6 Months) ─────────────────────────── */
     const monthlyTrends = useMemo(() => {
         const months = [];
         for (let i = 5; i >= 0; i--) {
@@ -141,7 +135,6 @@ const OverviewTab = ({
         return months.map(m => ({ ...m, percent: Math.max(12, Math.round((m.count / maxCount) * 100)) }));
     }, [events, now]);
 
-    /* ─── 4. Club Activity Ranking ─────────────────────────────────────────── */
     const topClubs = useMemo(() => {
         const clubMap = new Map();
         (events || []).forEach(e => {
@@ -166,7 +159,6 @@ const OverviewTab = ({
 
     return (
         <div className="space-y-6">
-            {/* ─── 1. Primary Metrics Grid (6 KPI Cards) ────────────────────── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <StatCard 
                     label="Active Events" 
@@ -206,13 +198,10 @@ const OverviewTab = ({
                 />
             </div>
 
-            {/* ─── 2. Real Analytics & Attention Grid ──────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 
-                {/* ── Left Column: Event & Club Activity Analytics (7 cols) ── */}
                 <div className="lg:col-span-7 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
                     <div>
-                        {/* Header with View Toggle */}
                         <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-neutral-100 dark:border-zinc-800/80">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-500 flex items-center justify-center">
@@ -341,7 +330,6 @@ const OverviewTab = ({
                     </div>
                 </div>
 
-                {/* ── Right Column: Attention Required Section (5 cols) ───── */}
                 <div className="lg:col-span-5 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
                     <div>
                         <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-zinc-800/80">
@@ -358,7 +346,6 @@ const OverviewTab = ({
                             </span>
                         </div>
 
-                        {/* Alerts List */}
                         <div className="pt-3 space-y-2.5">
                             {attentionItems.map((item) => {
                                 const ItemIcon = item.icon || AlertCircle;
@@ -407,7 +394,6 @@ const OverviewTab = ({
                         </div>
                     </div>
 
-                    {/* Quick helper tip */}
                     <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center gap-2 text-[11px] text-neutral-400 dark:text-neutral-500">
                         <Sparkles size={13} className="text-orange-500 shrink-0" />
                         <span className="truncate">Alerts update dynamically with registration deadlines & start times.</span>
@@ -416,7 +402,6 @@ const OverviewTab = ({
 
             </div>
 
-            {/* ─── 3. Event Data Table Section ────────────────────────────── */}
             <div className="pt-2">
                 <div className="flex items-center justify-between mb-3 px-1">
                     <div>

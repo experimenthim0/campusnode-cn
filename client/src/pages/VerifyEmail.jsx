@@ -6,7 +6,7 @@ import ShimmerText from '../components/ShimmerText';
 
 const VerifyEmail = () => {
     const { token } = useParams();
-    const [status, setStatus] = useState('loading'); // loading, success, error
+    const [status, setStatus] = useState('loading'); 
     const [message, setMessage] = useState('');
 
     useEffect(() => {

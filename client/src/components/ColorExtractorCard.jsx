@@ -26,7 +26,6 @@ export const ColorExtractorCard = ({
   const [isColorLoaded, setIsColorLoaded] = useState(false);
   const imgRef = useRef(null);
 
-  // Extract color when image has loaded
   const handleImageLoad = () => {
     const imageEl = imgRef.current;
     if (!imageEl) return;
@@ -128,7 +127,6 @@ export const ColorExtractorCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
       </div>
 
-      {/* Content */}
       <div className="p-6 flex flex-col flex-grow relative z-10">
         <h3 className="text-xl font-semibold text-white tracking-tight mb-2 group-hover:text-neutral-100 transition-colors duration-300">
           {title}

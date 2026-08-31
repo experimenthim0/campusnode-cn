@@ -83,7 +83,6 @@ const CentralEventCard = ({
           </span>
         </div>
 
-        {/* Card Details */}
         <div className="mt-3.5 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
           <p className="flex items-center gap-2">
             <MapPin size={14} className="text-orange-600 dark:text-orange-500 shrink-0" />

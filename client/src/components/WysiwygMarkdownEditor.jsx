@@ -15,7 +15,6 @@ const WysiwygMarkdownEditor = ({
   const editorRef = useRef(null);
   const isInternalChangeRef = useRef(false);
 
-  // Active toolbar state
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -34,7 +33,6 @@ const WysiwygMarkdownEditor = ({
     left: 0,
   });
 
-  // ── Minimal Gmail-style in-place link popover (at cursor) ───────────
   const [linkPopover, setLinkPopover] = useState({
     isOpen: false,
     top: 0,
@@ -49,7 +47,6 @@ const WysiwygMarkdownEditor = ({
   const linkUrlInputRef = useRef(null);
   const savedSelectionRange = useRef(null);
 
-  // ── In-place Image Popover with Size (Width, Height, Alignment) & Editing ──
   const [imagePopover, setImagePopover] = useState({
     isOpen: false,
     isExistingImage: false,
@@ -160,7 +157,6 @@ const WysiwygMarkdownEditor = ({
     }
   }, []);
 
-  // ── Floating Selection Bubble Calculator ────────────────────────────
   const updateFloatingBubble = useCallback(() => {
     if (!containerRef.current || !editorRef.current || linkPopover.isOpen || imagePopover.isOpen) return;
 
@@ -206,7 +202,6 @@ const WysiwygMarkdownEditor = ({
     return () => document.removeEventListener('selectionchange', handleDocSelectionChange);
   }, [updateActiveFormats, updateFloatingBubble]);
 
-  // Clear highlighted image helper
   const clearSelectedImageHighlight = () => {
     if (editorRef.current) {
       const imgs = editorRef.current.querySelectorAll('img.selected-editor-image');
@@ -258,7 +253,6 @@ const WysiwygMarkdownEditor = ({
     updateFloatingBubble();
   };
 
-  // ── Minimal In-Place Link Popover (Gmail Style) ──────────────────────
   const openLinkPopover = () => {
     setBubbleToolbar({ visible: false, top: 0, left: 0 });
     setImagePopover((prev) => ({ ...prev, isOpen: false }));
@@ -387,7 +381,6 @@ const WysiwygMarkdownEditor = ({
     setLinkPopover({ isOpen: false, top: 0, left: 0, hasSelectedText: false, isExistingLink: false });
   };
 
-  // ── Open Image Popover for an existing clicked image element ─────────
   const openImagePopoverForElement = (imgNode) => {
     clearSelectedImageHighlight();
     imgNode.classList.add('selected-editor-image');
@@ -441,7 +434,6 @@ const WysiwygMarkdownEditor = ({
     }, 40);
   };
 
-  // ── Open Image Popover for new image insertion ───────────────────────
   const openImagePopover = () => {
     clearSelectedImageHighlight();
     setBubbleToolbar({ visible: false, top: 0, left: 0 });
@@ -697,7 +689,6 @@ const WysiwygMarkdownEditor = ({
       className={`relative w-full bg-white dark:bg-[#0a0a0a] border border-neutral-300 dark:border-neutral-800 rounded-2xl shadow-xs transition-all ${className}`}
     >
       
-      {/* ── Sticky Visual Formatting Toolbar (Affixed on scroll) ── */}
       {showToolbar && (
         <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md text-neutral-700 dark:text-neutral-300 rounded-t-2xl shadow-xs">
           
@@ -877,7 +868,6 @@ const WysiwygMarkdownEditor = ({
 
           <div className="h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-1" />
 
-          {/* Link Button */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -893,7 +883,6 @@ const WysiwygMarkdownEditor = ({
             <span className="hidden sm:inline">Link</span>
           </button>
 
-          {/* Image Insertion Button */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -977,7 +966,6 @@ const WysiwygMarkdownEditor = ({
         </div>
       )}
 
-      {/* ── Floating Bubble Formatting Popup (Appears on text selection) ── */}
       {bubbleToolbar.visible && !linkPopover.isOpen && !imagePopover.isOpen && (
         <div
           className="floating-bubble-toolbar absolute z-30 flex items-center gap-1 p-1 bg-neutral-100/95 dark:bg-black/95 text-white backdrop-blur-md rounded-xl border border-neutral-300 dark:border-neutral-700 shadow-2xl"
@@ -1110,7 +1098,6 @@ const WysiwygMarkdownEditor = ({
         </div>
       )}
 
-      {/* ── Minimal Gmail-Style Link Popover (Floating directly at cursor position) ── */}
       {linkPopover.isOpen && (
         <div
           ref={linkPopoverRef}
@@ -1197,7 +1184,6 @@ const WysiwygMarkdownEditor = ({
         </div>
       )}
 
-      {/* ── In-Place Image Popover with Size (Width/Height) & Alignment & Editing ── */}
       {imagePopover.isOpen && (
         <div
           ref={imagePopoverRef}
@@ -1239,7 +1225,6 @@ const WysiwygMarkdownEditor = ({
             </div>
           </div>
 
-          {/* URL Input */}
           <div className="relative">
             <input
               ref={imageUrlInputRef}
@@ -1395,7 +1380,6 @@ const WysiwygMarkdownEditor = ({
         </div>
       )}
 
-      {/* ── Visual WYSIWYG Editable Document Area ── */}
       <div className="relative bg-white dark:bg-[#0a0a0a] rounded-b-2xl">
         <div
           ref={editorRef}
@@ -1413,7 +1397,6 @@ const WysiwygMarkdownEditor = ({
         />
       </div>
 
-      {/* ── Optional Footer Bar ── */}
       {showStats && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-neutral-50 dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-500 dark:text-neutral-400 select-none rounded-b-2xl">
           <div className="flex items-center gap-4 flex-wrap">

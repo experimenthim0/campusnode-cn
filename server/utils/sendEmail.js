@@ -1,7 +1,6 @@
 import { Resend } from "resend";
 import dotenv from "dotenv";
 
-// Load environment variables BEFORE importing modules that use them
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -32,4 +31,4 @@ const sendEmail = async (options) => {
 };
 
 export default sendEmail;
-
+

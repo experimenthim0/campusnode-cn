@@ -13,8 +13,6 @@ import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 const router = express.Router();
 
-// ── POST /admin/login ──────────────────────────────────────────────────────────
-// Re-mounting for frontend compatibility
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -24,7 +22,6 @@ router.post("/login", async (req, res) => {
     });
 
     if (!admin) {
-      // 1. Check InstitutionalAccount (Central Organizer entity)
       const inst = await prisma.institutionalAccount.findFirst({
         where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
       });
@@ -62,7 +59,6 @@ router.post("/login", async (req, res) => {
         });
       }
 
-      // 2. Check if Student Central Organizer
       const student = await prisma.studentUser.findFirst({
         where: { email: { equals: cleanEmail, mode: "insensitive" } },
       });
@@ -101,7 +97,6 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
-    // 2FA check (matching auth.js behavior)
     if (admin.isTwoStepEnabled) {
       return res.status(403).json({ success: false, message: "Please use the official login route for 2FA accounts." });
     }
@@ -127,8 +122,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
-// ── GET /admin/dashboard-stats ────────────────────────────────────────────────
 
 router.get(
   "/dashboard-stats",
@@ -242,8 +235,6 @@ router.get(
   },
 );
 
-// ── POST /admin/complete-payout/:eventId ──────────────────────────────────────
-
 router.post(
   "/complete-payout/:eventId",
   verifyToken,
@@ -271,8 +262,6 @@ router.post(
     }
   },
 );
-
-// ── GET /admin/user-info/:id — bank info for payout (StudentUser) ─────────────
 
 router.get("/user-info/:id", verifyToken, requirePermission(PERMISSIONS.USER_VIEW), async (req, res) => {
   try {
@@ -319,8 +308,6 @@ router.get("/user-info/:id", verifyToken, requirePermission(PERMISSIONS.USER_VIE
   }
 });
 
-// ── GET /admin/clubs-list ─────────────────────────────────────────────────────
-
 router.get("/clubs-list", verifyToken, requirePermission(PERMISSIONS.CLUB_VIEW), async (req, res) => {
   try {
     const clubs = await prisma.club.findMany({
@@ -348,8 +335,6 @@ router.get("/clubs-list", verifyToken, requirePermission(PERMISSIONS.CLUB_VIEW),
     res.status(500).json({ message: "Failed to fetch clubs" });
   }
 });
-
-// ── GET /admin/event-data-export ──────────────────────────────────────────────
 
 router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDIT_EXPORT), async (req, res) => {
   try {
@@ -434,8 +419,6 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
   }
 });
 
-// ── POST /admin/clubs — create club with head and faculty coordinator ──────────
-
 router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), async (req, res) => {
   try {
     const { clubName, facultyName, facultyEmail, clubEmail } = req.body;
@@ -460,7 +443,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
     let isNewFaculty = false;
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Check if an AdminRole user already exists with facultyEmail, or create one
       let facultyUser = await tx.adminRole.findUnique({ where: { email: facultyEmail } });
       if (!facultyUser) {
         isNewFaculty = true;
@@ -475,7 +457,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
         });
       }
 
-      // 2. Create the Club record
       const club = await tx.club.create({
         data: {
           id: createObjectId(),
@@ -488,7 +469,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
         },
       });
 
-      // 3. Create dedicated ClubAccount for the official club management account
       await tx.clubAccount.create({
         data: {
           id: createObjectId(),
@@ -504,7 +484,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
 
     const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
 
-    // 1. Send Welcome & Credentials Email to Club Head (clubEmail)
     try {
       await sendEmail({
         email: clubEmail,
@@ -541,7 +520,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
       console.error("Failed to send club credentials email:", emailErr?.message || emailErr);
     }
 
-    // 2. Send Notification & Credentials Email to Faculty Coordinator (facultyEmail)
     try {
       await sendEmail({
         email: facultyEmail,
@@ -594,8 +572,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
   }
 });
 
-// ── GET /admin/coordinators — list all faculty coordinators ────────────────────
-
 router.get("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_VIEW), async (req, res) => {
   try {
     const coordinators = await prisma.adminRole.findMany({
@@ -609,8 +585,6 @@ router.get("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_VIEW
     res.status(500).json({ message: "Failed to fetch coordinators" });
   }
 });
-
-// ── POST /admin/coordinators — create a new coordinator ────────────────────────
 
 router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
   try {
@@ -674,8 +648,6 @@ router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASS
   }
 });
 
-// ── PUT /admin/coordinators/:id — update coordinator ───────────────────────────
-
 router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -697,8 +669,6 @@ router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_
     res.status(500).json({ message: err.message || "Failed to update coordinator" });
   }
 });
-
-// ── PUT /admin/clubs/:id — update club (admin only) ─────────────────────────────
 
 router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), async (req, res) => {
   try {
@@ -723,7 +693,6 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
   }
 });
 
-// ── GET /admin/manual-payments — get all manual payments for admin overview ───
 router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMENT_VERIFY), async (req, res) => {
   try {
     const participations = await prisma.participation.findMany({
@@ -769,7 +738,6 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
       orderBy: { createdAt: "desc" },
     });
 
-    // Group team participations into single payment rows by teamId
     const processedMap = new Map();
     const resultList = [];
 
@@ -781,7 +749,6 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
           processedMap.get(p.teamId).push(p);
         }
       } else {
-        // Individual registration
         const isCentral = p.event?.organizerType === "CENTRAL" || !!p.event?.centralOrganizerId || (!p.event?.club && !p.event?.clubId);
         resultList.push({
           id: p.id,
@@ -812,9 +779,7 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
       }
     }
 
-    // Process grouped team participations
     for (const [teamId, teamParts] of processedMap.entries()) {
-      // Find the primary participation with the UTR or leader record
       const primaryP = teamParts.find(tp => tp.transactionId) || 
                        teamParts.find(tp => tp.studentId && tp.studentId === tp.team?.leaderId) || 
                        teamParts[0];
@@ -858,7 +823,6 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
       });
     }
 
-    // Sort by createdAt descending
     resultList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const summary = {
@@ -878,13 +842,8 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Central Organizer Management (Super Admin only)
-// ═══════════════════════════════════════════════════════════════════════════════
-
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 
-// GET /admin/central-organizer — View current Central Organizer and DSW assignments
 router.get("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     let dsw = await prisma.institutionalAccount.findFirst({
@@ -949,7 +908,6 @@ router.get("/central-organizer", verifyToken, allowRoles("admin"), async (req, r
   }
 });
 
-// POST /admin/central-organizer — Assign Institutional / DSW role with capabilities
 router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const {
@@ -964,7 +922,6 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
 
     if (!studentId) return res.status(400).json({ message: "studentId is required." });
 
-    // Verify target is an existing, unblocked StudentUser
     const student = await prisma.studentUser.findUnique({
       where: { id: studentId },
       select: { id: true, name: true, email: true, isBlocked: true, accessLevel: true },
@@ -986,7 +943,6 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
       });
     }
 
-    // Upsert InstitutionalAccountAssignment
     const assignment = await prisma.institutionalAccountAssignment.upsert({
       where: {
         institutionalAccountId_studentId: {
@@ -1024,7 +980,6 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
       });
     }
 
-    // Link institutionalAccountId on all central events
     await prisma.event.updateMany({
       where: { organizerType: "CENTRAL" },
       data: { institutionalAccountId: dsw.id },
@@ -1053,7 +1008,6 @@ router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, 
   }
 });
 
-// DELETE /admin/central-organizer/:id — Revoke DSW Assignment / Central Organizer role
 router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const student = await prisma.studentUser.findUnique({
@@ -1093,7 +1047,6 @@ router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async 
   }
 });
 
-// GET /admin/students/search — Search students to assign as Central Organizer
 router.get("/students/search", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { q } = req.query;

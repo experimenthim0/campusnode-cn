@@ -110,7 +110,6 @@ const CertificateDesigner = () => {
     img.src = url;
   };
 
-  // Render canvas whenever any dependency changes
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !image) return;
@@ -347,10 +346,8 @@ const CertificateDesigner = () => {
         </div>
       </div>
 
-      {/* Main layout */}
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex gap-5 items-start">
-          {/* ── Left panel ── */}
           <motion.div
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -577,7 +574,6 @@ const CertificateDesigner = () => {
               </div>
             </div>
 
-            {/* Preview name input */}
             <div className="bg-white border border-neutral-200 rounded-xl p-4 space-y-1.5">
               <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">
                 3 · Preview name
@@ -595,7 +591,6 @@ const CertificateDesigner = () => {
             </div>
           </motion.div>
 
-          {/* ── Canvas area ── */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

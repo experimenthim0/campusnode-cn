@@ -468,7 +468,6 @@ const EditClub = () => {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row gap-4 justify-end w-full pt-6 border-t border-neutral-100 dark:border-neutral-800">
             <button

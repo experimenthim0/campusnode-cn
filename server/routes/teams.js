@@ -10,7 +10,6 @@ import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../ut
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 
 const router = express.Router();
-// helper to format/send notifications
 async function notifyTeamMember(io, recipientId, title, message, senderStudentId = null) {
   try {
     const notification = await prisma.notification.create({
@@ -64,7 +63,6 @@ async function notifyInvitation(io, recipientId, eventId, teamId, teamName, even
   }
 }
 
-// ── POST /api/teams — register a team ───────────────────────────────────────────
 router.post(
   "/",
   verifyToken,
@@ -78,7 +76,6 @@ router.post(
         return res.status(400).json({ message: "Event ID, Team Name, and Members array are required." });
       }
 
-      // Check duplicates in members
       const allMembers = [leaderId, ...members];
       if (new Set(allMembers).size !== allMembers.length) {
         return res.status(400).json({ message: "Duplicate members are not allowed, and the leader cannot be added twice." });
@@ -112,7 +109,6 @@ router.post(
         return res.status(400).json({ message: `Team size must be between ${minSize} and ${maxSize} members.` });
       }
 
-      // Fetch all member details (checking both StudentUser and ExternalUser)
       const [students, externalUsers] = await Promise.all([
         prisma.studentUser.findMany({ where: { id: { in: allMembers } } }),
         prisma.externalUser.findMany({ where: { id: { in: allMembers } } }),
@@ -126,13 +122,11 @@ router.post(
         return res.status(400).json({ message: "One or more team members do not exist as registered participants." });
       }
 
-      // If any member is external, verify event allows external participants
       const hasExternalMember = externalUsers.length > 0;
       if (hasExternalMember && event.allowExternal === false) {
         return res.status(403).json({ message: "This event is exclusive to internal NITJ students only. External participants cannot join this event." });
       }
 
-      // Validate program, year, branch for internal students
       for (const student of students) {
         if (
           event.allowedPrograms?.length > 0 &&
@@ -156,7 +150,6 @@ router.post(
         }
       }
 
-      // Check if any member already registered for this event
       const existing = await prisma.participation.findFirst({
         where: {
           eventId,
@@ -189,7 +182,6 @@ router.post(
       const isLeaderExternal = leaderInfo?.isExternal;
 
       await prisma.$transaction(async (tx) => {
-        // Lock event row for safe registration counts
         const events = await tx.$queryRaw`
           SELECT * FROM "Event" WHERE id = ${eventId} FOR UPDATE
         `;
@@ -201,7 +193,6 @@ router.post(
             ? "WAITLISTED"
             : "REGISTERED";
 
-        // Create the Team
         await tx.team.create({
           data: {
             id: teamId,
@@ -214,7 +205,6 @@ router.post(
           },
         });
 
-        // Create Leader TeamMember & Participation
         await tx.teamMember.create({
           data: {
             id: createObjectId(),
@@ -253,14 +243,12 @@ router.post(
           },
         });
 
-        // Increment registeredCount by 1 (for leader)
         if (leaderRegStatus === "REGISTERED") {
           await tx.event.update({
             where: { id: eventId },
             data: { registeredCount: { increment: 1 } },
           });
         } else {
-          // Add leader participation ID to waitlist
           const leaderPart = await tx.participation.findFirst({
             where: {
               teamId,
@@ -279,7 +267,6 @@ router.post(
           }
         }
 
-        // Create TeamMembers and Participation records for invited members with status "INVITED"
         for (const memberId of members) {
           const memberInfo = allUsersMap.get(memberId);
           const isMemberExternal = memberInfo?.isExternal;
@@ -320,7 +307,6 @@ router.post(
         }
       });
 
-      // Send invitation notifications to members
       const leaderName = leaderInfo?.name || "Team Leader";
 
       for (const memberId of members) {
@@ -353,7 +339,6 @@ router.post(
   }
 );
 
-// ── POST /api/teams/invitations/:id/accept — accept invitation ──────────────────
 router.post(
   "/invitations/:id/accept",
   verifyToken,
@@ -375,7 +360,6 @@ router.post(
         req.user.role === "external" ||
         req.user.principalType === "EXTERNAL";
 
-      // Find the user's participation for this team/event
       const participation = await prisma.participation.findFirst({
         where: {
           eventId: notif.eventId,
@@ -410,7 +394,6 @@ router.post(
       }
 
       await prisma.$transaction(async (tx) => {
-        // Lock event row
         const events = await tx.$queryRaw`
           SELECT * FROM "Event" WHERE id = ${event.id} FOR UPDATE
         `;
@@ -438,7 +421,6 @@ router.post(
           });
         }
 
-        // Update notification to indicate acceptance
         await tx.notification.update({
           where: { id: notificationId },
           data: {
@@ -449,7 +431,6 @@ router.post(
         });
       });
 
-      // Notify the leader
       const student = await prisma.studentUser.findUnique({ where: { id: userId } });
       await notifyTeamMember(
         req.io,
@@ -469,7 +450,6 @@ router.post(
   }
 );
 
-// ── POST /api/teams/invitations/:id/decline — decline invitation ────────────────
 router.post(
   "/invitations/:id/decline",
   verifyToken,
@@ -486,7 +466,6 @@ router.post(
         return res.status(404).json({ message: "Invitation not found." });
       }
 
-      // Find the user's participation for this team/event
       const participation = await prisma.participation.findFirst({
         where: {
           eventId: notif.eventId,
@@ -505,7 +484,6 @@ router.post(
       }
 
       await prisma.$transaction(async (tx) => {
-        // Delete teamMember and participation
         await tx.teamMember.deleteMany({
           where: {
             teamId: notif.teamId,
@@ -517,7 +495,6 @@ router.post(
           where: { id: participation.id }
         });
 
-        // Update notification to indicate declination
         await tx.notification.update({
           where: { id: notificationId },
           data: {
@@ -528,7 +505,6 @@ router.post(
         });
       });
 
-      // Notify the leader
       const student = await prisma.studentUser.findUnique({ where: { id: userId } });
       await notifyTeamMember(
         req.io,
@@ -546,7 +522,6 @@ router.post(
   }
 );
 
-// ── POST /api/teams/:id/invite — invite a new member to an existing team ─────────
 router.post(
   "/:id/invite",
   verifyToken,
@@ -560,7 +535,6 @@ router.post(
         return res.status(400).json({ message: "Student ID is required." });
       }
 
-      // Check if team exists and caller is the leader
       const team = await prisma.team.findUnique({
         where: { id: teamId },
         include: {
@@ -591,20 +565,17 @@ router.post(
         }
       }
 
-      // Check if team is already at max size
       const currentSize = team.members.length;
       const maxSize = event.maxTeamSize || 1;
       if (currentSize >= maxSize) {
         return res.status(400).json({ message: `Team is already at its maximum size of ${maxSize} members.` });
       }
 
-      // Check if student already in the team
       const alreadyInTeam = team.members.some(m => m.userId === studentId);
       if (alreadyInTeam) {
         return res.status(400).json({ message: "This user is already a member of your team." });
       }
 
-      // Fetch user details (checking both internal student and external user)
       const [student, externalUser] = await Promise.all([
         prisma.studentUser.findUnique({ where: { id: studentId } }),
         prisma.externalUser.findUnique({ where: { id: studentId } }),
@@ -620,7 +591,6 @@ router.post(
         });
       }
 
-      // Validate eligibility for internal student
       if (student) {
         if (
           event.allowedPrograms?.length > 0 &&
@@ -644,7 +614,6 @@ router.post(
         }
       }
 
-      // Check if user is already registered for this event (individually or in another team)
       const existing = await prisma.participation.findFirst({
         where: {
           eventId: event.id,
@@ -661,7 +630,6 @@ router.post(
         });
       }
 
-      // Add to database as INVITED
       await prisma.$transaction(async (tx) => {
         await tx.teamMember.create({
           data: {
@@ -696,7 +664,6 @@ router.post(
         });
       });
 
-      // Send notification
       const [leaderStudent, leaderExternal] = await Promise.all([
         prisma.studentUser.findUnique({ where: { id: leaderId } }),
         prisma.externalUser.findUnique({ where: { id: leaderId } }),
@@ -725,7 +692,6 @@ router.post(
   }
 );
 
-// ── GET /api/teams/event/:eventId/lookup-leader — fetch team details by leader name/rollNo/teamName ──
 router.get(
   "/event/:eventId/lookup-leader",
   verifyToken,
@@ -788,7 +754,6 @@ router.get(
   }
 );
 
-// ── GET /api/teams/:id — fetch team details ─────────────────────────────────────
 router.get(
   "/:id",
   verifyToken,

@@ -34,7 +34,6 @@ const AIReviewModule = ({
 
   return (
     <section aria-label="AI Feedback Review & Intelligence" className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-3xl p-6 md:p-8 shadow-xs overflow-hidden relative space-y-6">
-      {/* Module Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-neutral-100 dark:border-neutral-800/80">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 shrink-0">
@@ -70,7 +69,6 @@ const AIReviewModule = ({
         </div>
       </div>
 
-      {/* Error Alert Banner */}
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-3">
           <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" aria-hidden="true" />
@@ -142,7 +140,6 @@ const AIReviewModule = ({
       {/* State: Reviews Available */}
       {reviews.length > 0 && currentReview && (
         <div className="space-y-6">
-          {/* History Switcher Tabs */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-neutral-100 dark:border-neutral-800">
             <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="AI Review History Tabs">
               {reviews.map((rev, idx) => {
@@ -185,26 +182,21 @@ const AIReviewModule = ({
             </div>
           </div>
 
-          {/* 1. AI Verdict Strip */}
           <AIVerdictStrip review={currentReview} analytics={analytics} />
 
-          {/* 2. Executive Summary */}
           <ExecutiveSummary
             summary={currentReview.overallSummary}
             sentiment={currentReview.overallSentiment}
             keyTakeaways={currentReview.keyTakeaways}
           />
 
-          {/* 3. Key Insights (What Students Liked vs What Should Improve) */}
           <KeyInsightsColumns
             whatStudentsLiked={currentReview.whatStudentsLiked}
             improvementAreas={currentReview.improvementAreas}
           />
 
-          {/* 4. Actionable Recommended Actions */}
           <RecommendedActions recommendations={currentReview.recommendations} />
 
-          {/* 5. Notable Feedback / Real Quotes */}
           <NotableFeedback
             positiveHighlights={currentReview.positiveHighlights}
             constructiveHighlights={currentReview.constructiveHighlights}

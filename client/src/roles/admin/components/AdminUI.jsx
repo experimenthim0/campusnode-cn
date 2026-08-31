@@ -1,7 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-/** Enhanced Stat card */
 export const StatCard = ({ label, value, subtext, icon: Icon, accent, className = "" }) => (
     <div className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
         accent 
@@ -49,7 +48,6 @@ export const DataTable = ({ children }) => (
     </div>
 );
 
-/** Table header cell */
 export const Th = ({ children, align = "left", className = "" }) => (
     <th className={`px-4 lg:px-5 py-3.5 text-${align} text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-400 dark:text-neutral-500 bg-neutral-50/60 dark:bg-zinc-900/40 select-none ${className}`}>
         {children}
@@ -88,7 +86,6 @@ export const EntryBadge = ({ registrationType }) => {
     );
 };
 
-/** Form input */
 export const FormInput = ({ name, type = "text", placeholder, required }) => (
     <input 
         name={name} 
@@ -99,7 +96,6 @@ export const FormInput = ({ name, type = "text", placeholder, required }) => (
     />
 );
 
-/** Filter select */
 export const FilterSelect = ({ children, value, onChange, className = "" }) => (
     <select 
         value={value}
@@ -110,11 +106,9 @@ export const FilterSelect = ({ children, value, onChange, className = "" }) => (
     </select>
 );
 
-/** Modal wrapper */
 export const Modal = ({ onClose, title, subtitle, children }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4" onClick={onClose}>
         <div className="bg-white dark:bg-[#0f0f0f] border border-neutral-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            {/* Header */}
             <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-neutral-100 dark:border-zinc-850">
                 <div>
                     <h3 className="text-lg font-black text-black dark:text-white tracking-tight">{title}</h3>
@@ -124,13 +118,11 @@ export const Modal = ({ onClose, title, subtitle, children }) => (
                     <X size={18} />
                 </button>
             </div>
-            {/* Body */}
             <div className="px-6 py-5">{children}</div>
         </div>
     </div>
 );
 
-/** Modal field (read-only) */
 export const ModalField = ({ label, value, mono, accent }) => (
     <div>
         <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">{label}</label>
@@ -142,7 +134,6 @@ export const ModalField = ({ label, value, mono, accent }) => (
     </div>
 );
 
-/** Modal form field */
 export const ModalFormField = ({ label, name, type = "text", defaultValue, placeholder, required }) => (
     <div>
         <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">{label}</label>

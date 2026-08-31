@@ -1,11 +1,3 @@
-/**
- * Lightweight HTML-stripping sanitizer for user-submitted text.
- *
- * Removes all HTML/XML tags and collapses excess whitespace so that
- * values stored in the database are never executable markup.
- *
- * Zero external dependencies — uses only built-in String methods.
- */
 
 /**
  * Strip HTML tags from a string and trim whitespace.

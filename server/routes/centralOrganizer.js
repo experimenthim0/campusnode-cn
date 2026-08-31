@@ -22,8 +22,6 @@ import { EVENT_STAFF_PERMISSIONS } from "../middleware/eventStaffAuth.js";
 
 const router = express.Router();
 
-// ─── Middleware: require central_organizer role or institutional assignment ──
-
 function requireCentralOrganizer(req, res, next) {
   const isCO =
     req.user?.role === "central_organizer" ||
@@ -35,8 +33,6 @@ function requireCentralOrganizer(req, res, next) {
   }
   next();
 }
-
-// ─── Helper: verify CO event access ──────────────────────────────────────────
 
 async function verifyCentralEventOwnership(authenticatedUserId, eventId) {
   const event = await prisma.event.findUnique({
@@ -57,12 +53,7 @@ async function verifyCentralEventOwnership(authenticatedUserId, eventId) {
   return { event };
 }
 
-// All routes require central organizer role
 router.use(verifyToken, requireCentralOrganizer);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /central-organizer/events — List CO's own events
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.get("/events", async (req, res) => {
   try {
@@ -90,10 +81,6 @@ router.get("/events", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /central-organizer/events — Create a central event
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const createEventSchema = z.object({
   body: z.object({
@@ -198,10 +185,6 @@ router.post("/events", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// PUT /central-organizer/events/:eventId — Update a central event
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.put("/events/:eventId", async (req, res) => {
   try {
     const ownership = await verifyCentralEventOwnership(req.user.userId, req.params.eventId);
@@ -267,10 +250,6 @@ router.put("/events/:eventId", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DELETE /central-organizer/events/:eventId — Delete a central event
-
-
 router.delete("/events/:eventId", async (req, res) => {
   try {
     const ownership = await verifyCentralEventOwnership(req.user.userId, req.params.eventId);
@@ -293,11 +272,6 @@ router.delete("/events/:eventId", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /central-organizer/events/:eventId/clubs — Add participating club
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.post("/events/:eventId/clubs", async (req, res) => {
   try {
@@ -329,10 +303,6 @@ router.post("/events/:eventId/clubs", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DELETE /central-organizer/events/:eventId/clubs/:clubId — Remove club
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.delete("/events/:eventId/clubs/:clubId", async (req, res) => {
   try {
     const ownership = await verifyCentralEventOwnership(req.user.userId, req.params.eventId);
@@ -349,10 +319,6 @@ router.delete("/events/:eventId/clubs/:clubId", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /central-organizer/events/:eventId/staff — List event staff
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.get("/events/:eventId/staff", async (req, res) => {
   try {
@@ -390,16 +356,6 @@ router.get("/events/:eventId/staff", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /central-organizer/events/:eventId/staff — Invite event staff
-//
-// Flow: CO enters email → student found → EventStaff created as PENDING
-//       → notification sent → student accepts/rejects
-//
-// If email doesn't match an existing CampusNode account, reject.
-// Do NOT silently create a privileged account.
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const inviteStaffSchema = z.object({
   body: z.object({
     email: z.string().email(),
@@ -424,7 +380,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
 
     const { email, permissions, expiresAt } = req.body;
 
-    // Validate permissions are valid event staff permissions
     const validPermissions = Object.values(EVENT_STAFF_PERMISSIONS);
     const invalidPerms = permissions.filter((p) => !validPermissions.includes(p));
     if (invalidPerms.length > 0) {
@@ -434,7 +389,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
       });
     }
 
-    // Find existing CampusNode student — case insensitive
     const normalizedEmail = email.trim().toLowerCase();
     const student = await prisma.studentUser.findFirst({
       where: {
@@ -453,12 +407,10 @@ router.post("/events/:eventId/staff", async (req, res) => {
       return res.status(403).json({ message: "This student's account is blocked." });
     }
 
-    // Cannot invite yourself
     if (student.id === req.user.userId) {
       return res.status(400).json({ message: "You cannot invite yourself as event staff." });
     }
 
-    // Check if an existing EventStaff record exists for this event and student
     const existingStaff = await prisma.eventStaff.findFirst({
       where: {
         eventId: req.params.eventId,
@@ -477,7 +429,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
         });
       }
 
-      // Reactivate previously revoked, rejected, or expired staff record
       staffRecord = await prisma.eventStaff.update({
         where: { id: existingStaff.id },
         data: {
@@ -489,7 +440,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
         },
       });
     } else {
-      // Create EventStaff with PENDING status (acceptance flow)
       const staffId = createObjectId();
       staffRecord = await prisma.eventStaff.create({
         data: {
@@ -504,7 +454,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
       });
     }
 
-    // Send notification to the student
     try {
       const isInst = req.user.principalType === "INSTITUTIONAL" || req.user.userType === "institutional";
       await prisma.notification.create({
@@ -543,10 +492,6 @@ router.post("/events/:eventId/staff", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PUT /central-organizer/events/:eventId/staff/:staffId — Update staff permissions/expiry
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.put("/events/:eventId/staff/:staffId", async (req, res) => {
   try {
@@ -593,13 +538,6 @@ router.put("/events/:eventId/staff/:staffId", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DELETE /central-organizer/events/:eventId/staff/:staffId — Revoke staff access
-//
-// Sets status = REVOKED immediately. Backend authorization denies all
-// future requests from this staff member for this event.
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.delete("/events/:eventId/staff/:staffId", async (req, res) => {
   try {
     const ownership = await verifyCentralEventOwnership(req.user.userId, req.params.eventId);
@@ -630,10 +568,6 @@ router.delete("/events/:eventId/staff/:staffId", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /central-organizer/dashboard-stats — CO analytics
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.get("/dashboard-stats", async (req, res) => {
   try {
@@ -678,10 +612,6 @@ router.get("/dashboard-stats", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /central-organizer/audit-logs — Central Organizer activity and security audit logs
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.get("/audit-logs", async (req, res) => {
   try {
     const { eventId, action, search, page = 1, limit = 20 } = req.query;
@@ -689,7 +619,6 @@ router.get("/audit-logs", async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     const skip = (pageNum - 1) * limitNum;
 
-    // Get all central events
     const coEvents = await prisma.event.findMany({
       where: {
         organizerType: "CENTRAL",
@@ -700,8 +629,6 @@ router.get("/audit-logs", async (req, res) => {
     const eventIds = coEvents.map((e) => e.id);
     const eventMap = new Map(coEvents.map((e) => [e.id, e.title]));
 
-    // Build Prisma query condition:
-    // Logs where actor is this CO OR event is one of CO's events
     const whereConditions = {
       OR: [
         { actorId: req.user.userId },
@@ -710,7 +637,6 @@ router.get("/audit-logs", async (req, res) => {
     };
 
     if (eventId && eventId !== "ALL") {
-      // Must be an event the CO owns
       if (!eventIds.includes(eventId)) {
         return res.status(403).json({ message: "You do not have access to logs for this event." });
       }
@@ -764,7 +690,6 @@ router.get("/audit-logs", async (req, res) => {
   }
 });
 
-// ─── Search Students for Event Staff Delegation ──────────────────────────────
 router.get("/students/search", async (req, res) => {
   try {
     const { q } = req.query;
@@ -829,4 +754,4 @@ router.get("/students/search", async (req, res) => {
 });
 
 export default router;
-
+

@@ -58,21 +58,18 @@ const Navbar = () => {
   const location = useLocation();
   const dropdownRef = useRef(null);
 
-  // ── Scroll listener ───────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ── Close everything on route change ─────────────────────────────────────
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
     setSearchOpen(false);
   }, [location.pathname]);
 
-  // ── Click-outside → close dropdown ───────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -103,7 +100,6 @@ const Navbar = () => {
     }
   };
 
-  // ── Escape key → close dropdown ──────────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "Escape") {
@@ -115,7 +111,6 @@ const Navbar = () => {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Global keyboard shortcut: Ctrl/Cmd+K to open search ──────────────────
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -127,7 +122,6 @@ const Navbar = () => {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Prevent body scroll when mobile menu open ─────────────────────────────
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -152,7 +146,6 @@ const Navbar = () => {
       .slice(0, 2)
       .toUpperCase() || "?";
 
-  // ── Shared nav link style ─────────────────────────────────────────────────
   const navLinkCls = (path) =>
     `relative py-1 text-[14px] font-medium tracking-widest transition-all duration-300 group ${isActive(path)
       ? "text-orange-600 dark:text-orange-500"
@@ -160,7 +153,6 @@ const Navbar = () => {
     }`;
 
 
-  // format date and time
   const formatDate = (dateString) => {
     const date = new Date(dateString);
 
@@ -186,7 +178,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
       <nav
         className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white/30 dark:bg-[#0a0a0a]/75 border-b border-transparent backdrop-blur-md transition-all duration-300 myfont  ${scrolled ? "shadow-sm border-neutral-100/80 dark:border-white/10" : ""
           }`}
@@ -197,7 +188,6 @@ const Navbar = () => {
         )} */}
 
         <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between gap-4 rounded-full">
-          {/* ── Logo ─────────────────────────────────────────────────────── */}
           <div className="flex items-center sm:gap-5 gap-auto">
             <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12" />
             <Link
@@ -219,7 +209,6 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* ── Desktop center links ──────────────────────────────────────── */}
           <div className="hidden md:flex items-center gap-6 ">
             <Link to="/" className={navLinkCls("/")}>
               Home
@@ -243,11 +232,9 @@ const Navbar = () => {
             </Link> */}
           </div>
 
-          {/* ── Desktop right actions ─────────────────────────────────────── */}
           <div className="hidden md:flex items-center gap-2">
             <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-800" />
 
-            {/* Search Trigger */}
             <button
               onClick={() => {
                 setSearchOpen((prev) => !prev);
@@ -292,7 +279,6 @@ const Navbar = () => {
 
             {user ? (
               <>
-                {/* ── Notification Bell (Members, Faculty, Clubs, Admins) ── */}
                 {(role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student") && (
                   <div className="relative" ref={notifDropdownRef}>
                     <button
@@ -366,13 +352,11 @@ const Navbar = () => {
                     />
                   </button>
 
-                  {/* ── Dropdown panel ── */}
                   {dropdownOpen && (
                     <div
                       className="absolute top-[calc(100%+10px)] right-0 w-52 bg-white dark:bg-neutral-900 dark:border-neutral-800 rounded-sm z-50 overflow-hidden mt-2 shadow-lg"
                       role="menu"
                     >
-                      {/* User header */}
                       <div className="px-4 pt-3 pb-2 border-b border-neutral-100 dark:border-neutral-800">
                         <p className="text-[10px] font-bold tracking-widest text-neutral-400 dark:text-neutral-500 mb-0.5">
                           Logged in as
@@ -483,9 +467,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* ── Hamburger ────────────────────────────────────────────────── */}
           <div className="md:hidden flex items-center gap-1">
-            {/* Mobile Search Icon */}
             <button
               onClick={() => {
                 setSearchOpen((prev) => !prev);
@@ -581,13 +563,11 @@ const Navbar = () => {
 
       </nav>
 
-      {/* ── Search Bar (below navbar with dropdown animation) ──── */}
       <SearchBar
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
 
-      {/* ── Search Overlay ──────────────────────────────────────── */}
       <div
         className={`search-overlay ${searchOpen ? 'search-overlay-visible' : ''}`}
         onClick={() => setSearchOpen(false)}

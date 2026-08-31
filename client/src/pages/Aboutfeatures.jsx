@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-/* ─── Tiny reusable primitives ─────────────────────────────────────────── */
 
 const SectionTag = ({ label }) => (
   <div className="flex items-center gap-2.5 mb-4">
@@ -33,7 +32,6 @@ const SectionDesc = ({ children, dark = false }) => (
   </p>
 );
 
-/* ─── Student feature card ──────────────────────────────────────────────── */
 
 const StudentCard = ({ icon, title, desc }) => (
   <div className="group bg-white hover:bg-orange-50 transition-colors duration-200 p-8 flex flex-col gap-5 border-r border-b border-neutral-200 last:border-r-0">
@@ -52,7 +50,6 @@ const StudentCard = ({ icon, title, desc }) => (
   </div>
 );
 
-/* ─── Organizer feature card ────────────────────────────────────────────── */
 
 const OrgCard = ({ icon, title, desc, soon = false, className = '' }) => (
   <div
@@ -78,7 +75,6 @@ const OrgCard = ({ icon, title, desc, soon = false, className = '' }) => (
   </div>
 );
 
-/* ─── Main component ────────────────────────────────────────────────────── */
 
 const Aboutfeatures = () => {
   return (
@@ -88,7 +84,6 @@ const Aboutfeatures = () => {
 
       <div className="min-h-screen bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
-        {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section className="relative bg-white px-8 md:px-16 pt-20 pb-24 overflow-hidden">
           {/* BG monogram */}
           <span
@@ -139,7 +134,6 @@ const Aboutfeatures = () => {
           </div>
         </section>
 
-        {/* ── STUDENTS ─────────────────────────────────────────────────── */}
         <section id="students" className="px-8 md:px-16 py-20 bg-white">
           <SectionTag label="Discover Life" />
           <SectionTitle>Built for<br />the student.</SectionTitle>
@@ -194,7 +188,6 @@ const Aboutfeatures = () => {
           </div>
         </section>
 
-        {/* ── ORGANIZERS ───────────────────────────────────────────────── */}
         <section id="organizers" className="relative bg-white px-8 md:px-16 py-20 overflow-hidden">
           {/* subtle dot grid */}
           <div
@@ -216,7 +209,6 @@ const Aboutfeatures = () => {
 
             {/* Cards grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Featured wide card */}
               <div className="lg:col-span-2 border border-neutral-800 bg-white rounded-sm p-8 flex flex-col gap-5 hover:border-neutral-700 transition-colors duration-200">
                 <div className="flex items-center gap-3.5">
                   <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
@@ -294,7 +286,6 @@ const Aboutfeatures = () => {
           </div>
         </section>
 
-        {/* ── FOOTER CTA ───────────────────────────────────────────────── */}
         <section className="px-8 md:px-16 py-24 bg-neutral-100 text-center">
           <h2
             className="text-[clamp(36px,6vw,72px)] font-extrabold leading-[1] tracking-[-2.5px] text-neutral-950 mb-4"

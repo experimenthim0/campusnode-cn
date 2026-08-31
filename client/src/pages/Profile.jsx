@@ -48,11 +48,9 @@ const Profile = () => {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const logoInputRef = useRef(null);
 
-  // Student specific data
   const [winnings, setWinnings] = useState([]);
   const [clubsMap, setClubsMap] = useState({});
 
-  // Club specific real data
   const [clubData, setClubData] = useState(null);
   const [clubMembers, setClubMembers] = useState([]);
   const [clubEvents, setClubEvents] = useState([]);
@@ -115,7 +113,6 @@ const Profile = () => {
       setRole(authRole);
       fetchClubInfo();
 
-      // Fetch events/winnings for student user
       const isStudentUser = Boolean(authUser?.rollNo || authUser?.branch || authRole === 'member' || authRole === 'student' || authRole !== 'club');
       if (isStudentUser) {
         getUserEvents(authUser.id || authUser._id)
@@ -193,7 +190,6 @@ const Profile = () => {
   const totalEventsCount = clubEvents.length;
   const totalRegistrationsCount = clubEvents.reduce((sum, ev) => sum + (Number(ev.registeredCount) || 0), 0);
 
-  // Helper to identify if a member record is the official club account itself
   const isClubSelf = (m) => {
     if (m.isClubAccount) return true;
     const studentEmail = (m.student?.email || m.email || '').trim().toLowerCase();
@@ -238,7 +234,6 @@ const Profile = () => {
         ? savedCoordinators.join(', ')
         : (roleLeadNames.length > 0 ? roleLeadNames.join(', ') : 'Not Assigned'));
 
-  // Social Links helper
   const getSocialLink = (platformQuery) => {
     if (Array.isArray(clubData?.socialLinks) && clubData.socialLinks.length > 0) {
       return clubData.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
@@ -256,7 +251,6 @@ const Profile = () => {
   const whatsappUrl = getSocialLink('whatsapp') || user.whatsappNumber;
   const websiteUrl = getSocialLink('website') || user.portfolioUrl;
 
-  // Bank masking helper
   const maskAccountNumber = (acc) => {
     if (!acc) return 'Not Set';
     const clean = String(acc).trim();
@@ -316,13 +310,9 @@ const Profile = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
-      {/* =========================================================================
-          CLUB ACCOUNT PROFILE VIEW
-      ========================================================================= */}
       {isClubAccount ? (
         <div className="space-y-6 md:space-y-8">
 
-          {/* 1. CLUB IDENTITY — TOP CARD */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-7 shadow-xs">
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
 
@@ -360,7 +350,6 @@ const Profile = () => {
                     </div>
                   )}
 
-                  {/* Hidden file input */}
                   <input
                     ref={logoInputRef}
                     type="file"
@@ -408,7 +397,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Top Card Actions */}
               <div className="flex sm:flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
                 <Link
                   to="/profile/edit"
@@ -429,9 +417,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 2. CLUB STATISTICS (Exact 3 Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {/* Card 1: Club Members */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
 
               <div className="min-w-0">
@@ -444,7 +430,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Card 2: Total Events */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
 
               <div className="min-w-0">
@@ -457,7 +442,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Card 3: Total Registrations */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
 
               <div className="min-w-0">
@@ -471,7 +455,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 3. CLUB INFORMATION */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
@@ -541,7 +524,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 4. CLUB LEADERSHIP */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
@@ -559,7 +541,6 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {/* Faculty Coordinator Card */}
               {facultyCoordinator && (
                 <div className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 rounded-md">
@@ -627,7 +608,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 5. SECURITY & ACCESS */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center gap-2.5 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <i className="ri-shield-keyhole-line text-lg text-orange-600" />
@@ -637,7 +617,6 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* 2FA Card */}
               <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -661,7 +640,6 @@ const Profile = () => {
                 </Link>
               </div>
 
-              {/* Account Credentials Card */}
               <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -684,7 +662,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 6. PAYMENT ACCOUNT */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
@@ -753,7 +730,6 @@ const Profile = () => {
             </p>
           </div>
 
-          {/* 7. CONNECTED ACCOUNTS */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
@@ -881,7 +857,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* 8. RECENT ACTIVITY (Real Events Data) */}
           {clubEvents.length > 0 && (
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
               <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
@@ -933,13 +908,8 @@ const Profile = () => {
 
         </div>
       ) : (
-        /* =========================================================================
-            STUDENT ACCOUNT PROFILE VIEW (Preserved & Polished)
-        ========================================================================= */
         <div className="space-y-8">
-          {/* Profile Card */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs">
-            {/* Unified Profile Header */}
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 pb-8 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left flex-1">
                 {/* Avatar */}

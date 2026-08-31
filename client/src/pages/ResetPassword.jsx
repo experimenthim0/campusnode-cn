@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
 import { resetPassword as resetPasswordApi } from '../services/authService';
 import { Eye, EyeOff } from 'lucide-react';
+import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -40,7 +41,6 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
       <div className="w-full max-w-md">
-        {/* Brand Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-medium tracking-wider text-black dark:text-white logofont">
             Campus<span className="text-orange-600">Node</span>
@@ -50,7 +50,6 @@ const ResetPassword = () => {
           </p>
         </div>
 
-        {/* Card */}
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm">
           <h2 className="text-lg font-bold text-black dark:text-white text-center">
             Set New Password
@@ -87,7 +86,6 @@ const ResetPassword = () => {
             </div>
           </div> */}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
             <div>
               <label className="block text-[13px] font-semibold  tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
@@ -110,6 +108,7 @@ const ResetPassword = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              <PasswordStrengthChecker password={password} />
             </div>
 
             <div>
@@ -148,7 +147,6 @@ const ResetPassword = () => {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800 text-center">
             <Link
               to="/login"

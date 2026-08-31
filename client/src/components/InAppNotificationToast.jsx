@@ -98,7 +98,6 @@ const InAppNotificationToast = ({ toast, onClose }) => {
           {toast.message}
         </p>
 
-        {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800/60">
           <button
             onClick={handleNavigate}

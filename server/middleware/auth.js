@@ -61,10 +61,6 @@ const getFacultyClub = async (adminId) => {
   });
 };
 
-/**
- * Verify JWT token middleware
- * Reconstructs 3-principal request context (req.user)
- */
 export const verifyToken = async (req, res, next) => {
   const tokens = getTokensFromRequest(req);
 
@@ -79,7 +75,6 @@ export const verifyToken = async (req, res, next) => {
         decoded = jwt.verify(token, JWT_SECRET);
         break;
       } catch {
-        // Fall through to try next token transport
       }
     }
     if (!decoded) return res.status(401).json({ message: "Invalid or expired token." });
@@ -90,7 +85,6 @@ export const verifyToken = async (req, res, next) => {
       decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
     );
 
-    // ── 1. CLUB PRINCIPAL ────────────────────────────────────────────────
     if (principalType === "CLUB" || decoded.userType === "club") {
       const accountId = decoded.clubAccountId || decoded.userId;
       const clubAccount = await prisma.clubAccount.findUnique({
@@ -117,7 +111,6 @@ export const verifyToken = async (req, res, next) => {
       return next();
     }
 
-    // ── 2. ADMIN / FACULTY PRINCIPAL ─────────────────────────────────────
     if (principalType === "ADMIN" || principalType === "FACULTY" || decoded.userType === "admin") {
       const admin = await prisma.adminRole.findUnique({
         where: { id: decoded.userId },
@@ -143,7 +136,6 @@ export const verifyToken = async (req, res, next) => {
       return next();
     }
 
-    // ── 2.5 INSTITUTIONAL ACCOUNT PRINCIPAL ─────────────────────────────
     if (principalType === "INSTITUTIONAL" || decoded.userType === "institutional") {
       const inst = await prisma.institutionalAccount.findUnique({
         where: { id: decoded.institutionalAccountId || decoded.userId },
@@ -163,7 +155,6 @@ export const verifyToken = async (req, res, next) => {
       }
     }
 
-    // ── 2.8 EXTERNAL USER PRINCIPAL ──────────────────────────────────────
     if (principalType === "EXTERNAL" || decoded.userType === "external" || decoded.role === "external") {
       const externalUser = await prisma.externalUser.findUnique({
         where: { id: decoded.userId },
@@ -197,7 +188,6 @@ export const verifyToken = async (req, res, next) => {
       return next();
     }
 
-    // ── 3. STUDENT PRINCIPAL ─────────────────────────────────────────────
     const student = await prisma.studentUser.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -214,7 +204,6 @@ export const verifyToken = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid or expired token." });
     }
 
-    // Fetch student club memberships and institutional account assignments
     const [memberships, instAssignments] = await Promise.all([
       prisma.clubMembership.findMany({
         where: { studentId: student.id, status: { not: "INACTIVE" } },
@@ -289,10 +278,6 @@ export const verifyToken = async (req, res, next) => {
 
 import { hasPermission } from "../utils/rbac.js";
 
-/**
- * Granular Permission Middleware
- * Checks required permission against req.user and optionally scoped resource.
- */
 export const requirePermission = (permission, resourceExtractor = null) => {
   return async (req, res, next) => {
     if (!req.user) {
@@ -312,9 +297,6 @@ export const requirePermission = (permission, resourceExtractor = null) => {
   };
 };
 
-/**
- * Backward compatible role middleware delegation
- */
 export const allowRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {

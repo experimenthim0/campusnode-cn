@@ -25,7 +25,6 @@ export async function registerServiceWorker() {
         await registration.unregister();
       }
     } catch {
-      // ignore
     }
     return null;
   }

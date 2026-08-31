@@ -33,7 +33,6 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
       <div className="w-full max-w-2xl bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 space-y-6 max-h-[85vh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black">
@@ -68,7 +67,6 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
           </div>
         </div>
 
-        {/* Content list */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {loading ? (
             <div className="py-16 text-center text-neutral-400 text-sm">

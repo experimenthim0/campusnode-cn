@@ -47,7 +47,6 @@ export function initSyncChannel() {
   if (initialized) return;
   initialized = true;
 
-  // Try BroadcastChannel first
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       channel = new BroadcastChannel(CHANNEL_NAME);
@@ -103,7 +102,6 @@ export function broadcastMessage(msg) {
     tabId: TAB_ID,
   };
 
-  // Try BroadcastChannel
   if (channel) {
     try {
       channel.postMessage(fullMsg);
@@ -143,7 +141,6 @@ export function offSyncMessage(callback) {
   listeners.delete(callback);
 }
 
-// ─── Convenience broadcasters ───────────────────────────────────────────────
 
 /**
  * Broadcast cache invalidation to other tabs.

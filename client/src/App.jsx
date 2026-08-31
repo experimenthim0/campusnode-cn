@@ -79,7 +79,6 @@ function App() {
             <RouteLoader>
               <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* ── Admin Layout — separate window, custom navbar/sidebar ── */}
                 <Route element={
                   <ProtectedRoute roles={['admin', 'paymentAdmin', 'lostFoundAdmin']}>
                     <AdminLayout />
@@ -90,9 +89,7 @@ function App() {
                   <Route path="/admin/lost-found" element={<LostFoundAdminDashboard />} />
                 </Route>
 
-                {/* ── Public Layout — standard navbar/footer ── */}
                 <Route element={<AppLayout />}>
-                  {/* Public routes */}
                   <Route path="/" element={<Home />} />
                   <Route path="/clubs" element={<ClubsPage />} />
                   <Route path="/club/:slug" element={<ClubDetails />} />

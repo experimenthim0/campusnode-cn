@@ -167,7 +167,6 @@ export default function FeedbackSurveyPreview() {
     <div className="min-h-screen bg-neutral-50/40 dark:bg-[#0d0f12] text-neutral-900 dark:text-neutral-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-6">
         
-        {/* Page Top Header */}
         <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -226,10 +225,8 @@ export default function FeedbackSurveyPreview() {
               </button>
             </div>
 
-            {/* Student Feedback Form Card */}
             <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-xs overflow-hidden">
               
-              {/* Card Header */}
               <div className="px-6 py-5 border-b border-neutral-200/70 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-500 dark:text-neutral-400 block">
@@ -260,7 +257,6 @@ export default function FeedbackSurveyPreview() {
                 </div>
               </div>
 
-              {/* Form Content */}
               <div className="p-6 sm:p-7 space-y-6">
                 {submittedPreview ? (
                   /* Success Confirmation */
@@ -288,7 +284,6 @@ export default function FeedbackSurveyPreview() {
                     </div>
                   </div>
                 ) : (
-                  /* Questionnaire Form */
                   <form onSubmit={handleSimulateSubmit} className="space-y-6">
                     
                     {/* Notice bar */}
@@ -431,7 +426,6 @@ export default function FeedbackSurveyPreview() {
                       </div>
                     </div>
 
-                    {/* Submit Button */}
                     <div className="pt-2 flex items-center justify-end border-t border-neutral-100 dark:border-neutral-800">
                       <button
                         type="submit"

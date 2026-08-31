@@ -39,7 +39,6 @@ const EventCardSkeleton = () => {
         </div>
       </div>
 
-      {/* Footer Skeleton */}
       <div className="px-5 pb-3">
         <div className="flex items-center gap-3 border-t-2 border-neutral-100 pt-2">
           <Skeleton className="w-16 h-8" />

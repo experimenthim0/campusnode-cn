@@ -127,14 +127,12 @@ const CountdownTimer = ({ startTime, endTime }) => {
   );
 };
 
-// ── Reusable section label ──────────────────────────────────────────────────
 const SectionLabel = ({ children, light = false }) => (
   <div className="flex items-center gap-2 mb-5 text-orange-600 dark:text-orange-500">
     <span className="text-[11px] font-bold uppercase tracking-[0.15em]">{children}</span>
   </div>
 );
 
-// ── Primary button ──────────────────────────────────────────────────────────
 const BtnPrimary = ({ to, children }) => (
   <Link
     to={to}
@@ -144,7 +142,6 @@ const BtnPrimary = ({ to, children }) => (
   </Link>
 );
 
-// ── Secondary button ────────────────────────────────────────────────────────
 const BtnSecondary = ({ to, children }) => (
   <Link
     to={to}
@@ -162,7 +159,6 @@ const DOMAINS = [
 ];
 
 const TEAM_MEMBERS = [];
-// add team members here
 
 const InitialsAvatar = ({ name }) => {
   const initials = name
@@ -501,7 +497,6 @@ const Home = () => {
   const bgImages = ["mainbuilding.jpeg"];
   const [bgIndex, setBgIndex] = useState(0);
 
-  // useEffect(() => {
   //   const interval = setInterval(() => {
   //     setBgIndex((prev) => (prev + 1) % bgImages.length);
   //   }, 4000);
@@ -565,7 +560,6 @@ const Home = () => {
 
       {user ? (
         <>
-          {/* ── "MY NODE" CONTROL PANEL ─────────────────────────────────────── */}
           <section className="relative pt-28 pb-12 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800/80 text-neutral-900 dark:text-white transition-colors duration-300 overflow-hidden">
             {/* Glow Effects */}
             {/* <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-orange-500/[0.05] dark:bg-orange-600/[0.08] rounded-full blur-[120px] pointer-events-none" />
@@ -573,7 +567,6 @@ const Home = () => {
             
             <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-neutral-200 dark:border-neutral-800">
-                {/* User Greeting Widget */}
                 <div className="flex items-center gap-4">
                   <div>
                     {/* <div className="flex items-center gap-2">
@@ -610,7 +603,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Quick Actions Grid */}
                 <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 sm:gap-3">
                   {quickActions.map((action, idx) => {
                     const IconComponent = action.icon;
@@ -634,7 +626,6 @@ const Home = () => {
             </div>
           </section>
 
-          {/* ── PERSONALIZED TIMELINE / MANAGEMENT PANEL ─────────────────────── */}
           <section className="py-16 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
               <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -857,7 +848,6 @@ const Home = () => {
         </>
       ) : (
         <>
-          {/* ── HERO ─────────────────────────────────────────────────────────── */}
           <section className="relative flex flex-col justify-center pt-22 pb-8 lg:pt-36 lg:pb-12 overflow-hidden">
             {/* Background Image & Overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none">
@@ -942,7 +932,6 @@ const Home = () => {
         </>
       )}
 
-      {/* ── LATEST EVENTS (Shared) ────────────────────────────────────────── */}
       <section className="pt-12 pb-16 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
           <ScrollReveal direction="up">
@@ -969,7 +958,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── CLUBS (Shared) ─────────────────────────────────────────────────── */}
       <section className="py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4">
           <ScrollReveal direction="up">
@@ -994,7 +982,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── LEADERBOARD (Shared) ──────────────────────────────────────────── */}
       <section className="py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
@@ -1027,7 +1014,6 @@ const Home = () => {
 
       {!user && (
         <>
-          {/* ── FOR STUDENTS (Public Only) ─────────────────────────────────── */}
           <section className="py-20 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <div className="max-w-6xl mx-auto px-6">
               {/* Tab switcher */}
@@ -1047,7 +1033,6 @@ const Home = () => {
                 ))}
               </div>
 
-              {/* ── STUDENTS ── */}
               {tab === "students" && (
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                   {/* Left: text */}
@@ -1096,7 +1081,6 @@ const Home = () => {
                 </div>
               )}
 
-              {/* ── CLUB HEADS ── */}
               {tab === "clubs" && (
                 <div>
                   <div className="mb-10">
@@ -1128,7 +1112,6 @@ const Home = () => {
             </div>
           </section>
 
-          {/* ── ABOUT CAMPUSNODE ("Our Vision") (Public Only) ──────────────── */}
           <section className="py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -1185,7 +1168,6 @@ const Home = () => {
         </>
       )}
 
-      {/* ── FACULTY & TEAM ────────────────────────────────────────────────── */}
       <style>{`
         :root {
           --domain-core:     #ea580c;
@@ -1295,7 +1277,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Celebration Winner Modal with Confetti ── */}
       {celebrationEvent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-lg px-4 py-6 overflow-hidden ticket-backdrop-animate">
           {/* Confetti Animation Background Overlay */}
@@ -1332,7 +1313,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Home Footer */}
       <HomeFooter />
 
     </div>

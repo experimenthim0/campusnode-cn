@@ -29,7 +29,6 @@ const EventFeedbackAnalytics = () => {
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  // AI Feedback Review State
   const [aiState, setAiState] = useState({
     loading: false,
     generating: false,
@@ -191,7 +190,6 @@ const EventFeedbackAnalytics = () => {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
       <main className="max-w-[95vw] xl:max-w-[1300px] mx-auto px-4 md:px-6 py-10">
         
-        {/* A. Event Header */}
         <EventHeader
           eventData={eventData}
           isCompleted={isCompleted}
@@ -200,7 +198,6 @@ const EventFeedbackAnalytics = () => {
           eventId={id}
         />
 
-        {/* Zero Feedback Empty State */}
         {!analytics || totalResponses === 0 ? (
           <ZeroFeedbackState isCompleted={isCompleted} />
         ) : (

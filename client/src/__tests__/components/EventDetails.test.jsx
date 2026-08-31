@@ -9,10 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 
-// ---------------------------------------------------------------------------
 // Pure helpers extracted from EventDetails.jsx logic
 // (tested as pure functions — no DOM rendering required)
-// ---------------------------------------------------------------------------
 
 /**
  * Mirrors the payload construction in handleRegister (authenticated path).
@@ -46,13 +44,11 @@ function shouldShowExternalForm({ user, isEnded, isDeadlinePassed, alreadyRegist
   return !user && !isEnded && !isDeadlinePassed && !alreadyRegistered;
 }
 
-// ---------------------------------------------------------------------------
 // Task 9.8 — Property 11
 // "For any authenticated user object stored in localStorage, the registration
 //  request body SHALL contain studentId: user.id and SHALL NOT contain a
 //  userId field."
 // Validates: Requirements 4.2
-// ---------------------------------------------------------------------------
 
 describe('Property 11: internal registration payload (Task 9.8)', () => {
   it('payload always contains studentId equal to user.id', () => {
@@ -111,13 +107,11 @@ describe('Property 11: internal registration payload (Task 9.8)', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
 // Task 9.9 — Property 12
 // "For any registration response, if status === 'WAITLISTED' the waitlist
 //  message SHALL be shown; if status === 'REGISTERED' the QR code display
 //  SHALL be shown. These two states are mutually exclusive."
 // Validates: Requirements 4.5, 4.6
-// ---------------------------------------------------------------------------
 
 describe('Property 12: registration status drives post-registration UI (Task 9.9)', () => {
   it('WAITLISTED response → showWaitlist true, showQr false', () => {
@@ -186,12 +180,10 @@ describe('Property 12: registration status drives post-registration UI (Task 9.9
   });
 });
 
-// ---------------------------------------------------------------------------
 // Task 9.12 — Unit test: external participant form rendering (Requirement 4.3)
 // "When the current user is not authenticated, the client SHALL display input
 //  fields for externalEmail (required, valid email format) and externalName
 //  (required, non-empty string)."
-// ---------------------------------------------------------------------------
 
 describe('Requirement 4.3: external participant form visibility (Task 9.12)', () => {
   it('shows external form when user is null and event is active', () => {

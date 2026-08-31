@@ -45,7 +45,6 @@ const StaffAttendanceView = () => {
   // Session check-in history
   const [attendanceLog, setAttendanceLog] = useState([]);
 
-  // Scan feedback state
   const [scanState, setScanState] = useState("idle"); // "idle" | "processing" | "success" | "already_marked" | "unauthorized" | "wrong_event" | "error"
   const [scanResult, setScanResult] = useState(null);
 
@@ -53,7 +52,6 @@ const StaffAttendanceView = () => {
   const isProcessingRef = useRef(false);
   const lastScannedCodeRef = useRef(null);
 
-  // 1. Fetch Event and verify Event Staff permission
   const loadEventAndStaff = async () => {
     try {
       setLoading(true);
@@ -62,7 +60,6 @@ const StaffAttendanceView = () => {
       setAttendedCount(res.data.attendedCount || 0);
       setRegisteredCount(res.data.registeredCount || 0);
 
-      // Check if user has ATTENDANCE_OPERATOR
       const permissions = res.data.permissions || [];
       if (!permissions.includes("ATTENDANCE_OPERATOR")) {
         alert("You do not have Attendance Operator permission for this event.");
@@ -81,7 +78,6 @@ const StaffAttendanceView = () => {
     if (eventId) loadEventAndStaff();
   }, [eventId]);
 
-  // 2. Setup Html5Qrcode Scanner
   useEffect(() => {
     if (loading || !scanning || activeTab !== "scan") return;
 
@@ -213,7 +209,6 @@ const StaffAttendanceView = () => {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-6 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* Back navigation & header */}
         <div className="flex items-center justify-between">
           <Link
             to="/event-staff"
@@ -228,7 +223,6 @@ const StaffAttendanceView = () => {
           </span>
         </div>
 
-        {/* Event Stats Card */}
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -299,7 +293,6 @@ const StaffAttendanceView = () => {
           </button>
         </div>
 
-        {/* ── Tab 1: Live QR Scanner ── */}
         {activeTab === "scan" && (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="relative rounded-2xl overflow-hidden bg-neutral-950 aspect-square max-w-sm mx-auto flex items-center justify-center">
@@ -369,7 +362,6 @@ const StaffAttendanceView = () => {
           </div>
         )}
 
-        {/* ── Tab 2: Manual Check-In ── */}
         {activeTab === "manual" && (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-5">
             <div>
@@ -407,7 +399,6 @@ const StaffAttendanceView = () => {
           </div>
         )}
 
-        {/* ── Tab 3: Session Attendance Log ── */}
         {activeTab === "log" && (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">

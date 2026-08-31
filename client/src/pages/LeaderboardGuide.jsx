@@ -7,7 +7,6 @@ const LeaderboardGuide = () => {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto space-y-12">
         
-        {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -21,7 +20,6 @@ const LeaderboardGuide = () => {
           </span>
         </div>
 
-        {/* Hero Header */}
         <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 rounded-3xl p-8 sm:p-12 text-white shadow-2xl">
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
           

@@ -51,7 +51,6 @@ const CoordinatorsTab = ({
 
     return (
         <div className="space-y-6">
-            {/* Header Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800">
                 <div>
                     <h2 className="text-base font-black text-black dark:text-white tracking-wide">Faculty Coordinators</h2>
@@ -130,7 +129,6 @@ const CoordinatorsTab = ({
                 </Modal>
             )}
 
-            {/* Edit Coordinator Modal */}
             {isCoordModalOpen && editingCoord && (
                 <Modal
                     onClose={() => { setIsCoordModalOpen(false); setEditingCoord(null); }}

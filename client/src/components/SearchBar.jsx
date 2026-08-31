@@ -35,7 +35,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
   const resultsRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fetch clubs and events once when search opens
   useEffect(() => {
     if (isOpen && !hasFetched) {
       const fetchData = async () => {
@@ -84,7 +83,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
     const q = query.toLowerCase().trim();
     const matched = [];
 
-    // Search clubs
     clubs.forEach((club) => {
       if (
         club.clubName?.toLowerCase().includes(q) ||
@@ -102,7 +100,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
       }
     });
 
-    // Search events
     events.forEach((event) => {
       if (
         event.title?.toLowerCase().includes(q) ||
@@ -120,7 +117,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
       }
     });
 
-    // Search static pages
     STATIC_PAGES.forEach((page) => {
       if (page.title.toLowerCase().includes(q)) {
         matched.push({
@@ -147,7 +143,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
     setResults(matched.slice(0, 8));
   }, [query, clubs, events]);
 
-  // Handle keyboard navigation
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
       onClose();
@@ -240,7 +235,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
       }`}
     >
       <div className={`search-bar-container ${isOpen ? "search-bar-container-open" : ""}`}>
-        {/* Search Input */}
         <div className="search-input-wrapper">
           <i className="ri-search-line search-input-icon" />
           <input
@@ -278,7 +272,6 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
           </button>
         </div>
 
-        {/* Render Results */}
         {renderResults()}
       </div>
     </div>

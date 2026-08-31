@@ -76,7 +76,6 @@ const LostFoundGuide = () => {
 
     return (
         <div className={`min-h-screen myfont ${isDark ? 'bg-[#0a0a0a] text-neutral-100' : 'bg-gray-50 text-gray-900'} transition-colors duration-300 pb-20`}>
-            {/* Header */}
             <div className={`${isDark ? 'bg-neutral-900/80 border-neutral-800' : 'bg-white border-gray-200'} border-b  top-0 z-50 backdrop-blur-md`}>
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
                     <button 
@@ -101,7 +100,6 @@ const LostFoundGuide = () => {
                     </p>
                 </div>
 
-                {/* Sections List */}
                 <div className="space-y-8">
                     {sections.map((section, idx) => (
                         <div 

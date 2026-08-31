@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-/* ─── tiny hook: detect when element enters viewport ─── */
 const useInView = (threshold = 0.1) => {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -13,7 +12,6 @@ const useInView = (threshold = 0.1) => {
   return [ref, inView];
 };
 
-/* ─── Fade-up wrapper ─── */
 const Reveal = ({ children, delay = 0, className = '' }) => {
   const [ref, inView] = useInView();
   return (
@@ -31,7 +29,6 @@ const Reveal = ({ children, delay = 0, className = '' }) => {
   );
 };
 
-/* ─── Social link tile ─── */
 const SocialLink = ({ icon, label, username, href, hoverColor }) => (
   <a
     href={href}
@@ -50,7 +47,6 @@ const SocialLink = ({ icon, label, username, href, hoverColor }) => (
   </a>
 );
 
-/* ─── Section label ─── */
 const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-4 mb-8">
     <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-orange-600 dark:text-orange-500 whitespace-nowrap">{children}</span>
@@ -114,12 +110,10 @@ const Contribute = () => {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-black dark:text-white transition-colors duration-300">
       
-      {/* ── Custom Styling ── */}
       <style>{`
         .code-font { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
       `}</style>
 
-      {/* ── Technical Banner/Hero ── */}
       <div className="relative border-b border-neutral-200 dark:border-neutral-850 bg-white dark:bg-neutral-950 overflow-hidden py-16 sm:py-24">
         {/* Dynamic Canvas/Dot grid overlay */}
         <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.07] pointer-events-none" 
@@ -191,10 +185,8 @@ const Contribute = () => {
         </div>
       </div>
 
-      {/* ── Main Container ── */}
       <div className="max-w-5xl mx-auto px-6 lg:px-10 py-16 space-y-20">
 
-        {/* ── Tech Stack / The Stack ── */}
         <Reveal>
           <SectionLabel>Technology Stack</SectionLabel>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
@@ -223,7 +215,6 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── How to Contribute ── */}
         <Reveal>
           <SectionLabel>Roadmap to Access & Contribute</SectionLabel>
           <div className="space-y-0 border-l border-neutral-200 dark:border-neutral-800 ml-6">
@@ -254,12 +245,10 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── Interactive Setup Terminal ── */}
         <Reveal>
           <SectionLabel>Setup Guides & Commands</SectionLabel>
           <div className="bg-neutral-900 dark:bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg">
             
-            {/* Terminal Top bar tabs */}
             <div className="bg-neutral-950 border-b border-neutral-900/60 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-rose-500/80" />
@@ -267,7 +256,6 @@ const Contribute = () => {
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
               </div>
 
-              {/* Tabs */}
               <div className="flex items-center gap-1 bg-neutral-900 p-0.5 rounded-lg border border-neutral-800/60">
                 {Object.keys(codeBlocks).map((tab) => (
                   <button
@@ -284,7 +272,6 @@ const Contribute = () => {
                 ))}
               </div>
 
-              {/* Copy button */}
               <button
                 onClick={() => handleCopy(codeBlocks[activeTab].commands, activeTab)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-855 text-neutral-400 hover:text-neutral-200 border border-neutral-800/80 text-[10px] code-font uppercase cursor-pointer transition-colors"
@@ -308,7 +295,6 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── Areas We Need Help With ── */}
         <Reveal>
           <SectionLabel>Areas We Need Help With</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,11 +322,9 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── Maintainer Card ── */}
         <Reveal>
           <SectionLabel>Project Maintainer</SectionLabel>
           <div className="bg-neutral-900 dark:bg-neutral-955 rounded-2xl border border-neutral-800 shadow-xl overflow-hidden relative">
-            {/* Ambient glowing effect */}
             <div className="absolute top-0 right-0 w-72 h-72 bg-orange-600/10 blur-[90px] rounded-full pointer-events-none -mr-20 -mt-20" />
             <div className="h-1 bg-orange-600 w-full" />
 
@@ -390,7 +374,6 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── Code of Conduct / Dev Guidelines ── */}
         <Reveal>
           <SectionLabel>Contribution Guidelines</SectionLabel>
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-850 rounded-2xl p-7 shadow-sm">
@@ -415,7 +398,6 @@ const Contribute = () => {
           </div>
         </Reveal>
 
-        {/* ── Footer ── */}
         <div className="flex items-center justify-between pt-6 border-t border-neutral-200 dark:border-neutral-855">
           <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors">
             <i className="ri-arrow-left-line" /> Back to Home

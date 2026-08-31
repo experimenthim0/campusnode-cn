@@ -115,7 +115,6 @@ export const EventFeedbackModal = ({
   const currentEvent = pendingEvents[currentIndex] || null;
   const totalPending = pendingEvents.length;
 
-  // Reset form when active event changes
   useEffect(() => {
     setRatings({
       overallRating: 0,
@@ -229,7 +228,6 @@ export const EventFeedbackModal = ({
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white dark:bg-[#111418] border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden text-neutral-900 dark:text-neutral-100"
         >
-          {/* Header */}
           <div className="relative shrink-0 px-6 py-5 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/70 dark:bg-neutral-900/50 flex items-start justify-between gap-4">
             <div className="space-y-1 pr-6">
               <div className="flex items-center gap-2">
@@ -285,10 +283,8 @@ export const EventFeedbackModal = ({
             </button>
           </div>
 
-          {/* Body */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
             {isSuccess ? (
-              /* Success State */
               <div className="py-8 text-center space-y-5">
                 <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto shadow-inner">
                   <CheckCircle2 className="w-9 h-9" />
@@ -322,7 +318,6 @@ export const EventFeedbackModal = ({
                 </div>
               </div>
             ) : (
-              /* Form State */
               <form id="event-feedback-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* 72h window indicator */}
                 <div className="flex items-center gap-2 p-3 bg-neutral-50/80 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-800 rounded-xl text-xs text-neutral-600 dark:text-neutral-400">
@@ -332,7 +327,6 @@ export const EventFeedbackModal = ({
                   </span>
                 </div>
 
-                {/* Error Banner */}
                 {error && (
                   <div className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-900 border border-red-300 dark:border-red-900/60 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -468,7 +462,6 @@ export const EventFeedbackModal = ({
             )}
           </div>
 
-          {/* Footer Actions */}
           {!isSuccess && (
             <div className="shrink-0 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 flex items-center justify-between gap-3">
               <button

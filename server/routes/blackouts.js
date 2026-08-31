@@ -33,7 +33,6 @@ export async function ensureBlackoutTable() {
   }
 }
 
-// GET /api/venues/blackouts — Fetch blackouts (optional start, end, venue filters)
 router.get("/", async (req, res) => {
   try {
     await ensureBlackoutTable();
@@ -77,7 +76,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST /api/venues/blackouts — Create blackout (Admin / Faculty Coordinator only)
 router.post("/", verifyToken, allowRoles("admin", "facultyCoordinator"), async (req, res) => {
   try {
     await ensureBlackoutTable();
@@ -137,7 +135,6 @@ router.post("/", verifyToken, allowRoles("admin", "facultyCoordinator"), async (
   }
 });
 
-// PUT /api/venues/blackouts/:id — Edit blackout
 router.put("/:id", verifyToken, allowRoles("admin", "facultyCoordinator"), async (req, res) => {
   try {
     await ensureBlackoutTable();
@@ -177,7 +174,6 @@ router.put("/:id", verifyToken, allowRoles("admin", "facultyCoordinator"), async
   }
 });
 
-// DELETE /api/venues/blackouts/:id — Delete blackout
 router.delete("/:id", verifyToken, allowRoles("admin", "facultyCoordinator"), async (req, res) => {
   try {
     await ensureBlackoutTable();

@@ -66,7 +66,6 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
 
   return (
     <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-      {/* Header Info Banner */}
       <div className="p-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-black text-black dark:text-white">
@@ -109,7 +108,6 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
             </div>
           )}
 
-          {/* Render Blackouts */}
           {dayBlackouts.map((b) => {
             const style = getBlockStyle(b.startTime, b.endTime);
             return (
@@ -130,7 +128,6 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
             );
           })}
 
-          {/* Render Events */}
           {dayEvents.map((event) => {
             const style = getBlockStyle(event.startTime, event.endTime);
             const category = event.club?.category || "Technical";

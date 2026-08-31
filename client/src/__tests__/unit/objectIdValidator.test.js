@@ -12,9 +12,6 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { isValidObjectId } from '../../types/index.js';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const HEX_LOWER = '0123456789abcdef';
 const VALID_REGEX = /^[a-f0-9]{24}$/;
@@ -25,9 +22,7 @@ const validObjectId = fc.stringOf(
   { minLength: 24, maxLength: 24 }
 );
 
-// ---------------------------------------------------------------------------
 // Example-based unit tests
-// ---------------------------------------------------------------------------
 
 describe('isValidObjectId – example-based', () => {
   it('returns true for a known valid ObjectId', () => {
@@ -71,9 +66,7 @@ describe('isValidObjectId – example-based', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
 // Property-based tests  (Validates: Requirements 13)
-// ---------------------------------------------------------------------------
 
 describe('isValidObjectId – property-based', () => {
   it('Property 13a: returns true for every valid 24-char lowercase hex string', () => {

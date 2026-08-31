@@ -18,7 +18,6 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form state
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [email, setEmail] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState(["ATTENDANCE_OPERATOR"]);
@@ -297,7 +296,6 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
         </div>
       )}
 
-      {/* ── Minimal Invite Modal ── */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-md shadow-2xl p-5 sm:p-6 space-y-4">
@@ -327,7 +325,6 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
             </div>
 
             <form onSubmit={handleInviteStaff} className="space-y-4">
-              {/* Student Search */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
                   Student Account

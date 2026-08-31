@@ -15,7 +15,6 @@ import { ClubMemberRole } from "../types/index.js";
 import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
 import { invalidateCache } from "../lib/cacheManager";
 
-// ── Avatar ─────────────────────────────────────────────────────────────────────
 const Avatar = ({ name }) => {
   const initials = name
     ?.split(" ")
@@ -31,7 +30,6 @@ const Avatar = ({ name }) => {
   );
 };
 
-// ── Role Badge ─────────────────────────────────────────────────────────────────
 const RoleBadge = ({ role }) => {
   const map = {
     [ClubMemberRole.CLUB_HEAD]: { style: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", label: "Student Lead" },
@@ -46,7 +44,6 @@ const RoleBadge = ({ role }) => {
   );
 };
 
-// ── Permission Toggle ──────────────────────────────────────────────────────────
 const PermissionToggle = ({ active, onToggle, disabled = false, loading = false }) => (
   <button
     type="button"
@@ -72,7 +69,6 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
   </button>
 );
 
-// ── Table Header Cell ──────────────────────────────────────────────────────────
 const Th = ({ children, center = false }) => (
   <th
     className={`px-4 py-3 text-[11px] font-medium tracking-wide text-neutral-400 ${center ? "text-center" : "text-left"
@@ -82,7 +78,6 @@ const Th = ({ children, center = false }) => (
   </th>
 );
 
-// ── Trash Icon ─────────────────────────────────────────────────────────────────
 const TrashIcon = () => (
   <svg
     className="h-4 w-4"
@@ -99,7 +94,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-// ── Empty State Icon ───────────────────────────────────────────────────────────
 const PeopleIcon = () => (
   <svg
     className="h-10 w-10 text-neutral-200"
@@ -116,7 +110,6 @@ const PeopleIcon = () => (
   </svg>
 );
 
-// ── Main Component ─────────────────────────────────────────────────────────────
 const ClubMembers = () => {
   const { clubId } = useParams();
   const { user: authUser } = useAuth();
@@ -167,7 +160,6 @@ const ClubMembers = () => {
     return false;
   };
 
-  // Transfer Leadership Modal State
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedNewLeadId, setSelectedNewLeadId] = useState("");
   const [transferring, setTransferring] = useState(false);
@@ -399,7 +391,6 @@ const ClubMembers = () => {
     }
   };
 
-  // ── Loading ──────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-neutral-400">
@@ -408,7 +399,6 @@ const ClubMembers = () => {
     );
   }
 
-  // ── Authorization Guard ───────────────────────────────────────────────────
   const canManageTeam = hasPermission(authUser, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId });
 
   if (!canManageTeam) {
@@ -441,10 +431,8 @@ const ClubMembers = () => {
     );
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      {/* Page header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Team Management</h1>
@@ -508,7 +496,6 @@ const ClubMembers = () => {
         </div>
       </div>
 
-      {/* ── Add Member section with live student lookup ─────────────────────── */}
       <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs space-y-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -537,7 +524,6 @@ const ClubMembers = () => {
                 </div>
               )}
 
-              {/* Student Search Results Dropdown */}
               {studentSearchResults.length > 0 && (
                 <div className="absolute left-0 right-0 top-11 z-30 max-h-56 overflow-y-auto rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl divide-y divide-neutral-100 dark:divide-neutral-800">
                   {studentSearchResults.map((st) => (
@@ -620,7 +606,6 @@ const ClubMembers = () => {
         </form>
       </div>
 
-      {/* ── Transfer Leadership Modal ───────────────────────────────────────── */}
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-2xl">
@@ -685,7 +670,6 @@ const ClubMembers = () => {
         </div>
       )}
 
-      {/* ── Members table ────────────────────────────────────────────────────── */}
       <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
         {members.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">

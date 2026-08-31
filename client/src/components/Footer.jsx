@@ -33,7 +33,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Contact & Suggestion Modal */}
       <ContactModal 
         isOpen={isContactOpen} 
         onClose={() => setIsContactOpen(false)} 

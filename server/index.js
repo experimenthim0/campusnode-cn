@@ -27,8 +27,6 @@ import { getPublicKeyInfo } from "./services/qrSigningService.js";
 import prisma from "./lib/prisma.js";
 import compression from "compression";
 
-
-
 import { corsOptions } from "./utils/corsConfig.js";
 import errorHandler from "./middleware/errorHandler.js";
 import helmet from "helmet";
@@ -47,14 +45,12 @@ const io = new Server(server, {
   cors: corsOptions,
 });
 
-// Provide socket.io to routes
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 app.use(compression());
 
-// Socket connection handler
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
@@ -75,7 +71,6 @@ app.use(publicReadCache);
 app.use(etagSupport);
 app.use(apiCompression);
 
-// Rate limiter for auth route
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 app.use("/api/auth/login", authLimiter);
 
@@ -139,7 +134,6 @@ app.use("/api/central-organizer", centralOrganizerRoutes);
 app.use("/api/event-staff", eventStaffRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// Public verification keys distribution for Android / offline scanners
 app.get(["/api/keys", "/api/keys/public"], (req, res) => {
   try {
     const keyInfo = getPublicKeyInfo();
@@ -149,7 +143,6 @@ app.get(["/api/keys", "/api/keys/public"], (req, res) => {
   }
 });
 
-// Auto-cleanup for reunited items (runs every 8 hours)
 const cleanupReunitedItems = async () => {
   try {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
@@ -169,7 +162,6 @@ const cleanupReunitedItems = async () => {
   }
 };
 
-// Auto-cleanup for unverified student registrations older than 24 hours
 const cleanupUnverifiedStudents = async () => {
   try {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -189,7 +181,6 @@ const cleanupUnverifiedStudents = async () => {
   }
 };
 
-// Auto-sync registeredCount with actual non-cancelled participations
 const syncRegisteredCounts = async () => {
   try {
     const events = await prisma.event.findMany({
@@ -222,21 +213,18 @@ const syncRegisteredCounts = async () => {
   }
 };
 
-// Run on startup
 cleanupReunitedItems();
 cleanupUnverifiedStudents();
 syncRegisteredCounts();
 seedPermissions();
 ensureBlackoutTable();
 
-
 setInterval(cleanupReunitedItems, 8 * 60 * 60 * 1000);
 setInterval(cleanupUnverifiedStudents, 60 * 60 * 1000);
 
-// Global Error Handler should be the last middleware
 app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
+

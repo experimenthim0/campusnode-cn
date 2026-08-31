@@ -81,7 +81,6 @@ const EventStaffDashboard = () => {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
           <div className="flex items-center gap-2.5">
             <Shield className="text-orange-600 dark:text-orange-500" size={24} />
@@ -114,7 +113,6 @@ const EventStaffDashboard = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* ── Pending Invitations ── */}
             {pendingInvitations.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -191,7 +189,6 @@ const EventStaffDashboard = () => {
               </div>
             )}
 
-            {/* ── Active Staff Assignments ── */}
             <div className="space-y-4">
               <h2 className="text-base font-black text-neutral-900 dark:text-neutral-100">
                 Active Staff Assignments ({activeStaff.length})
@@ -292,7 +289,6 @@ const EventStaffDashboard = () => {
               )}
             </div>
 
-            {/* ── Past / Archived Staff Records ── */}
             {pastStaff.length > 0 && (
               <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">

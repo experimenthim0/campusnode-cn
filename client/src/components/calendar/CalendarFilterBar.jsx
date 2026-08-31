@@ -44,7 +44,6 @@ const CalendarFilterBar = ({
   const [venueDropdownOpen, setVenueDropdownOpen] = useState(false);
   const venueRef = useRef(null);
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (venueRef.current && !venueRef.current.contains(event.target)) {
@@ -87,7 +86,6 @@ const CalendarFilterBar = ({
     (filters.category && filters.category !== "all") ||
     (filters.status && filters.status !== "all");
 
-  // Date Navigation logic
   const handlePrevDate = () => {
     const newDate = new Date(currentDate);
     if (subView === "month") {
@@ -134,7 +132,6 @@ const CalendarFilterBar = ({
     <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl p-3 space-y-3">
       {/* Top Bar: Date Controls + SubView Controls + Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* Left: Date Navigation */}
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -216,7 +213,6 @@ const CalendarFilterBar = ({
 
       {/* Bottom Bar: Reusable Multi-Select Filters */}
       <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100 dark:border-zinc-800/80">
-        {/* Multi-Select Venue Filter Dropdown */}
         <div className="relative" ref={venueRef}>
           <button
             type="button"
@@ -281,7 +277,6 @@ const CalendarFilterBar = ({
           )}
         </div>
 
-        {/* Club Filter */}
         <select
           value={filters.clubId || "all"}
           onChange={(e) => onFilterChange("clubId", e.target.value)}
@@ -299,7 +294,6 @@ const CalendarFilterBar = ({
           })}
         </select>
 
-        {/* Event Category Filter */}
         <select
           value={filters.category || "all"}
           onChange={(e) => onFilterChange("category", e.target.value)}
@@ -312,7 +306,6 @@ const CalendarFilterBar = ({
           ))}
         </select>
 
-        {/* Event Status Filter */}
         <select
           value={filters.status || "all"}
           onChange={(e) => onFilterChange("status", e.target.value)}
@@ -325,7 +318,6 @@ const CalendarFilterBar = ({
           ))}
         </select>
 
-        {/* Clear Filters Button */}
         {isFilterActive && (
           <button
             type="button"

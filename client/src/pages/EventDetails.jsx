@@ -26,7 +26,6 @@ import { formatAcademicYear } from '../utils/academicProgress';
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
-// ── Category emoji mapping ──────────────────────────────────────────────────
 const CATEGORY_EMOJI = {
   'sports': '🏃',
   'sports & fitness': '🏃',
@@ -55,7 +54,6 @@ const getCategoryEmoji = (category) => {
   return CATEGORY_EMOJI[category.toLowerCase()] || '🎉';
 };
 
-// ── FAQ Accordion Item ──────────────────────────────────────────────────────
 const FAQItem = ({ question, answer, isOpen, onToggle }) => (
   <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all duration-200">
     <button
@@ -114,7 +112,6 @@ const EventDetails = () => {
   const [paymentType, setPaymentType] = useState(null); // 'MANUAL_TRANSACTION' | 'COLLEGE_PAYMENT'
   const [paymentPayload, setPaymentPayload] = useState({});
 
-  // Zoomable Image Modal State
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [activeModalImage, setActiveModalImage] = useState({ src: '', title: '', alt: '' });
 
@@ -170,7 +167,6 @@ const EventDetails = () => {
           prefetchClubDetail(eventData.club.slug || eventData.club.id);
         }
 
-        // Check if the user is already registered for this event
         if (user && (role === 'member' || role === 'student')) {
           try {
             const regRes = await getUserEvents(user.id || user._id);
@@ -551,7 +547,6 @@ const EventDetails = () => {
     finally { setIsRegistering(false); }
   };
 
-  // ── Share handlers ──────────────────────────────────────────────────────────
   const getShareText = () => {
     if (!event) return '';
     return `*_Event Alert 🚨_*\n\n*${event.title}*\n*Venue*: ${event.venue}\n*Date*: ${new Date(event.startTime).toLocaleDateString('en-IN')}\n*Time*: ${new Date(event.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}\n*Entry Fee*: ${event.entryFee ? `₹${event.entryFee}` : 'Free'}\n*Event By*: ${event.club?.clubName || event.createdBy?.clubName}\n*Hosted On*: *_CampusNode_*\n\n*More Info*: `;
@@ -582,7 +577,6 @@ const EventDetails = () => {
       .catch(() => showNotification('Failed to copy link', 'error'));
   };
 
-  // ── Loading State ──────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
@@ -591,7 +585,6 @@ const EventDetails = () => {
     );
   }
 
-  // ── Error State ──────────────────────────────────────────────────────────
   if (error || !event) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
@@ -609,7 +602,6 @@ const EventDetails = () => {
     );
   }
 
-  // ── Derived data ──────────────────────────────────────────────────────────
   const { title, description, venue, startTime, endTime, totalSeats, registeredCount, views, status, registrationDeadline, entryFee } = event;
   const isUnlimited = !totalSeats || totalSeats === 0;
   const isFull = !isUnlimited && registeredCount >= totalSeats;
@@ -650,7 +642,6 @@ const EventDetails = () => {
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
 
-  // ── Auto-generated highlights ──────────────────────────────────────────────
   const highlights = [
     { icon: 'ri-group-line', label: 'Capacity', value: isUnlimited ? 'Unlimited Seats' : `${totalSeats} Seats` },
     { icon: 'ri-coin-line', label: 'Entry Fee', value: entryFee > 0 ? `₹${entryFee}` : 'Free Entry' },
@@ -677,7 +668,6 @@ const EventDetails = () => {
       : []),
   ];
 
-  // ── Auto-generated FAQ with bold dynamic event information ──────────────────
   const faqItems = [
     {
       question: 'When and where is the event scheduled?',
@@ -834,13 +824,9 @@ const EventDetails = () => {
     }
   ];
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // ── RENDER ──
-  // ══════════════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
 
-      {/* ── Top Bar ── */}
       <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
@@ -854,7 +840,6 @@ const EventDetails = () => {
         </div>
       </div>
 
-      {/* ── Main Two-Column Layout ── */}
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
         {/* Rejection Feedback Banner */}
         {event.reviewStatus === 'REJECTED' && (
@@ -893,10 +878,8 @@ const EventDetails = () => {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-          {/* ═══════════════ LEFT COLUMN: Context & Narrative (65%) ═══════════════ */}
           <div className="w-full lg:w-[65%] min-w-0">
 
-            {/* ── Breadcrumb Navigation ── */}
             <nav className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-500 mb-5 flex-wrap">
               <Link to="/" className="hover:text-orange-600 transition-colors">Home</Link>
               <i className="ri-arrow-right-s-line text-[10px]" />
@@ -911,7 +894,6 @@ const EventDetails = () => {
               <span className="text-neutral-600 dark:text-neutral-300 font-medium truncate max-w-[180px]">{title}</span>
             </nav>
 
-            {/* ── Event Poster ── */}
             <div 
               onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
               className="mb-6 rounded-2xl overflow-hidden border-1 border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative group cursor-zoom-in transition-all"
@@ -954,7 +936,6 @@ const EventDetails = () => {
   <h1 className="font-black text-3xl md:text-4xl text-black dark:text-white leading-tight tracking-tight mb-4">
               {title}
             </h1>
-            {/* ── Category & Status Badges ── */}
             {/* <div className="flex items-center gap-2 flex-wrap mb-3">
               {isCentralEvent ? (
                 <>
@@ -987,7 +968,6 @@ const EventDetails = () => {
      
           
 
-            {/* ── Quick-Scan Inline Metadata ── */}
             <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
               <span className="inline-flex items-center gap-1.5">
                 <i className="ri-calendar-event-line text-orange-500" />
@@ -1027,7 +1007,6 @@ const EventDetails = () => {
               </span>
             </div>
 
-            {/* ── Rich Text Description ── */}
             {description && (
               <div className="mb-8">
                 <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
@@ -1040,7 +1019,6 @@ const EventDetails = () => {
               </div>
             )}
 
-            {/* ── Event Highlights Matrix ── */}
             <div className="mb-8">
               <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Event Highlights
@@ -1063,10 +1041,8 @@ const EventDetails = () => {
               </div>
             </div>
 
-            {/* ── Sponsors Section ── */}
            
 
-            {/* ── Gallery Section ── */}
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
                 <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
@@ -1105,7 +1081,6 @@ const EventDetails = () => {
               </div>
             )}
 
-            {/* ── Winners Section ── */}
             {showWinners && (
               <div id="winners-section" className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -1156,7 +1131,6 @@ const EventDetails = () => {
                             )}
                           </div>
 
-                          {/* Render Team Members if present */}
                           {memberList && memberList.length > 0 && (() => {
                             const namesArr = Array.isArray(memberList)
                               ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
@@ -1183,7 +1157,6 @@ const EventDetails = () => {
               </div>
             )}
 
-            {/* ── FAQ Accordion ── */}
             <div className="mb-8">
               <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
@@ -1202,11 +1175,9 @@ const EventDetails = () => {
             </div>
           </div>
 
-          {/* ═══════════════ RIGHT COLUMN: Transactional Widget (30%) ═══════════════ */}
           <div className="w-full lg:w-[30%] lg:sticky lg:top-[80px] shrink-0">
             <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
 
-              {/* ── Date & Time Module ── */}
               <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
                   DATE & TIME
@@ -1233,7 +1204,6 @@ const EventDetails = () => {
                 </div>
               </div>
 
-              {/* ── Seat Progress ── */}
               {!isUnlimited && (
                 <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
@@ -1255,7 +1225,6 @@ const EventDetails = () => {
                 </div>
               )}
 
-              {/* ── Already Registered / Registration ID ── */}
               {alreadyRegistered && (
                 <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50 rounded-full">
                   <i className="ri-checkbox-circle-line text-orange-600 text-lg shrink-0" />
@@ -1289,7 +1258,6 @@ const EventDetails = () => {
                 </div>
               )}
 
-              {/* ── Primary CTA ── */}
               <div className="px-6 py-4">
                 {/* Horizontal Metadata Anchor */}
                 <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500 mb-4 px-1">
@@ -1336,7 +1304,6 @@ const EventDetails = () => {
 
               </div>
 
-              {/* ── Organizer ── */}
               {isCentralEvent ? (
                 <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                   <div className="px-3 flex items-center gap-3 pb-3">
@@ -1403,7 +1370,6 @@ const EventDetails = () => {
                     </div>
                   </div>
 
-                  {/* ── Club Social Media / Contact Links ── */}
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                     <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2.5">
@@ -1447,7 +1413,6 @@ const EventDetails = () => {
                 </div>
               )}
 
-              {/* ── Social Sharing Row ── */}
               <div className="px-6 pb-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-3">Share Event</p>
                 <div className="flex items-center gap-2">
@@ -1522,7 +1487,6 @@ const EventDetails = () => {
         </div>
       </div>
 
-      {/* ── Mobile Floating Bottom CTA (Upcoming & Not Registered Only) ── */}
       {showMobileCTA && (
         <div className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 left-0 right-0 z-40 flex justify-center pointer-events-none px-4">
           <button
@@ -1544,7 +1508,6 @@ const EventDetails = () => {
       {/* Spacer for mobile CTA */}
       {showMobileCTA && <div className="lg:hidden h-24 md:h-16" />}
 
-      {/* ── Missing Fields Modal ── */}
       {missingFieldsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl">
@@ -1585,7 +1548,6 @@ const EventDetails = () => {
         </div>
       )}
 
-      {/* ── Custom Form Modal ── */}
       {customFormModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col">
@@ -1653,7 +1615,6 @@ const EventDetails = () => {
         </div>
       )}
 
-      {/* ── Confirm Registration Modal ── */}
       {confirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-neutral-900 border-2  dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl">
@@ -1707,12 +1668,10 @@ const EventDetails = () => {
           </div>
         </div>
       )}
-      {/* ── Registration Success Modal ── */}
       {showSuccessModal && (() => {
         const isPendingPayment = registrationPaymentStatus === 'PENDING';
         const isPaymentSuccess = !isPendingPayment;
 
-        // Helper to auto-link URLs in text
         const renderWithLinks = (text) => {
           if (!text) return null;
           const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -1807,7 +1766,6 @@ const EventDetails = () => {
         );
       })()}
 
-      {/* ── Team Registration Choice Modal ── */}
       {teamChoiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-2xl max-w-sm w-full shadow-2xl p-6">
@@ -1840,7 +1798,6 @@ const EventDetails = () => {
         </div>
       )}
 
-      {/* ── Team Registration Modal ── */}
       {teamModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col">
@@ -1910,7 +1867,6 @@ const EventDetails = () => {
                 )}
               </div>
 
-              {/* Roster list */}
               <div className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-200 dark:border-neutral-850 rounded-xl space-y-3">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 text-left">Team Roster</p>
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -1975,7 +1931,6 @@ const EventDetails = () => {
                 </div>
               )}
 
-              {/* Submit Buttons */}
               <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
                 <button
                   type="button"
@@ -1997,7 +1952,6 @@ const EventDetails = () => {
         </div>
       )}
 
-      {/* ── Dynamic/Manual Payment Modal ── */}
       <PaymentModal
         isOpen={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
@@ -2008,7 +1962,6 @@ const EventDetails = () => {
         showNotification={showNotification}
       />
 
-      {/* ── Zoomable Image Modal ── */}
       <ImageZoomModal
         isOpen={imageModalOpen}
         onClose={() => setImageModalOpen(false)}

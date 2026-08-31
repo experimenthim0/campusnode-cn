@@ -16,7 +16,6 @@ const ExecutiveSummary = ({ summary, sentiment, keyTakeaways }) => {
 
   return (
     <div className="space-y-4">
-      {/* Executive Summary Card */}
       <div className="p-5 md:p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/90 dark:border-neutral-700/60 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">

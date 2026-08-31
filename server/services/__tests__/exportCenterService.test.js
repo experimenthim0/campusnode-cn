@@ -93,10 +93,8 @@ describe("Export Center Service Unit Tests", () => {
       // Verify UTF-8 BOM prefix
       expect(csv.startsWith("\uFEFF")).toBe(true);
 
-      // Verify Headers
       expect(csv).includes('"Event Title","Organising Club","Venue","Entry Fee (₹)","Approval Status"');
 
-      // Verify Escaped Record Row
       expect(csv).includes('"Hackathon 2026","LADC, NITJ","Main Auditorium","100","PUBLISHED"');
     });
   });
@@ -122,13 +120,11 @@ describe("Export Center Service Unit Tests", () => {
         expect(latest.recordCount).toBe(42);
         expect(latest.actorEmail).toBe("clubsetuadmin@nitj.ac.in");
 
-        // Clean up test entry from DB
         try {
           if (prisma.exportLog && log?.id) {
             await prisma.exportLog.delete({ where: { id: log.id } });
           }
         } catch {
-          // ignore
         }
       },
       15000

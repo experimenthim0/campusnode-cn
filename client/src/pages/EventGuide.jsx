@@ -6,7 +6,6 @@ const EventGuide = () => {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] py-12 px-4 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
 
-        {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3 text-orange-600">
             <span className="block w-6 h-[1px] bg-orange-600" />
@@ -90,7 +89,6 @@ const EventGuide = () => {
           </div>
         </section>
 
-        {/* Types of Events */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
             <i className="ri-layout-grid-line text-orange-600 text-xl" />
@@ -150,7 +148,6 @@ const EventGuide = () => {
           </h2>
 
           <div className="space-y-6">
-            {/* STEP 1 */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 rounded-md">
@@ -188,7 +185,6 @@ const EventGuide = () => {
               </div>
             </div>
 
-            {/* STEP 2 */}
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 rounded-md">
@@ -235,7 +231,6 @@ const EventGuide = () => {
               </div>
             </div>
 
-            {/* STEP 3 */}
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 rounded-md">
@@ -293,7 +288,6 @@ const EventGuide = () => {
               </div>
             </div>
 
-            {/* STEP 4 */}
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 rounded-md">

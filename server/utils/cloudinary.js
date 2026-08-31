@@ -1,7 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configuration will use CLOUDINARY_URL from .env if available, 
-// or individual keys if provided separately.
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -29,7 +27,6 @@ export const uploadImage = (fileBuffer, folder = 'certificates', options = {}) =
       ...options,
     };
 
-    // Ensure folder is set
     uploadOptions.folder = folder;
 
     const uploadStream = cloudinary.uploader.upload_stream(

@@ -25,7 +25,6 @@ export const uploadClubBanner = (clubId, formData) =>
 export const deleteClub = (id) =>
   api.delete(`/api/clubs/${id}`);
 
-// ── Members ────────────────────────────────────────────────────────────────
 export const getClubMembers = (clubId) =>
   api.get(`/api/club-members/${clubId}/members`);
 
@@ -52,11 +51,9 @@ export const removeClubMember = (arg1, arg2) => {
   return api.delete(`/api/club-members/members/${arg1}`);
 };
 
-// ── Leaderboard ────────────────────────────────────────────────────────────
 export const getClubLeaderboard = () =>
   api.get('/api/clubs/leaderboard');
 
-// ── Announcements ──────────────────────────────────────────────────────────
 export const createClubAnnouncement = (clubId, data) =>
   api.post(`/api/clubs/${clubId}/announcements`, data);
 
@@ -69,7 +66,6 @@ export const deleteClubAnnouncement = (clubId, announcementId) =>
 export const togglePinClubAnnouncement = (clubId, announcementId) =>
   api.patch(`/api/clubs/${clubId}/announcements/${announcementId}/pin`);
 
-// ── Achievements ───────────────────────────────────────────────────────────
 export const createClubAchievement = (clubId, data) =>
   api.post(`/api/clubs/${clubId}/achievements`, data);
 
@@ -79,14 +75,12 @@ export const updateClubAchievement = (clubId, achievementId, data) =>
 export const deleteClubAchievement = (clubId, achievementId) =>
   api.delete(`/api/clubs/${clubId}/achievements/${achievementId}`);
 
-// ── Gallery ────────────────────────────────────────────────────────────────
 export const addClubGalleryMedia = (clubId, data) =>
   api.post(`/api/clubs/${clubId}/gallery`, data);
 
 export const deleteClubGalleryMedia = (clubId, mediaId) =>
   api.delete(`/api/clubs/${clubId}/gallery/${mediaId}`);
 
-// ── Events ─────────────────────────────────────────────────────────────────
 export const toggleEventFeatured = (eventId) =>
   api.patch(`/api/events/${eventId}/feature`);
 

@@ -39,7 +39,6 @@ const NetworkGuard = ({ children }) => {
       // Cache pages for offline access
       cacheCurrentPage(location.pathname);
     } else {
-      // Record offline state
       wasOfflineRef.current = true;
       if (!preservedLocationRef.current) {
         preservedLocationRef.current = fullPath;
@@ -62,7 +61,6 @@ const NetworkGuard = ({ children }) => {
 
       const targetPath = preservedLocationRef.current || '/';
 
-      // Navigate back to preserved target route if different
       if (location.pathname === '/no-internet' || location.pathname !== targetPath.split('?')[0]) {
         navigate(targetPath, { replace: true });
       }

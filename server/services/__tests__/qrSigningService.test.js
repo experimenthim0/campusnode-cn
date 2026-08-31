@@ -50,8 +50,6 @@ describe("qrSigningService", () => {
   it("should reject when ticketId inside payload is modified without valid signature", () => {
     const { qrPayload } = signTicket(eventId, "tkt_original");
     const buf = Buffer.from(qrPayload, "base64url");
-    // Modify a character in the ticketId section
-    // Format: [v:1][kLen:1][k:N][eLen:1][e:N][tLen:1][t:N][sig:64]
     const kLen = buf[1];
     const eLen = buf[2 + kLen];
     const tLenOffset = 3 + kLen + eLen;
@@ -64,7 +62,6 @@ describe("qrSigningService", () => {
   });
 
   it("should reject unsupported QR version", () => {
-    // Generate a raw buffer with invalid version 99
     const buf = Buffer.from([99, 14, 99, 110, 45, 113, 114, 45, 50, 48, 50, 54, 45, 48, 49]);
     const verification = verifyTicket(buf.toString("base64url"));
 
@@ -79,4 +76,4 @@ describe("qrSigningService", () => {
     expect(keyInfo.publicKey).toContain("BEGIN PUBLIC KEY");
   });
 });
-
+

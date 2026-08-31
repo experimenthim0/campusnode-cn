@@ -25,10 +25,8 @@ const DEFAULT_VENUES = [
   "Other"
 ];
 
-// Helper to ensure Venue table exists & auto-seed default venues
 export async function ensureVenuesTableAndSeed() {
   try {
-    // 1. Create table & index if not existing
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "Venue" (
         "id" VARCHAR(24) NOT NULL,
@@ -43,7 +41,6 @@ export async function ensureVenuesTableAndSeed() {
       CREATE UNIQUE INDEX IF NOT EXISTS "Venue_name_key" ON "Venue"("name");
     `;
 
-    // 2. Count existing rows safely using raw SQL
     const countResult = await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM "Venue"`;
     const count = Number(countResult[0]?.count || 0);
 
@@ -63,7 +60,6 @@ export async function ensureVenuesTableAndSeed() {
   }
 }
 
-// GET /api/venues — Fetch all venues (openOnly=true optional)
 router.get("/", async (req, res) => {
   try {
     await ensureVenuesTableAndSeed();
@@ -91,7 +87,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST /api/venues — Add a new venue (Admin only)
 router.post("/", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     await ensureVenuesTableAndSeed();
@@ -103,7 +98,6 @@ router.post("/", verifyToken, allowRoles("admin"), async (req, res) => {
 
     const trimmedName = name.trim();
 
-    // Check if venue with same name exists
     const existing = await prisma.$queryRaw`
       SELECT id FROM "Venue" WHERE LOWER(name) = LOWER(${trimmedName}) LIMIT 1
     `;
@@ -135,7 +129,6 @@ router.post("/", verifyToken, allowRoles("admin"), async (req, res) => {
   }
 });
 
-// PUT /api/venues/:id — Edit venue details (Admin only)
 router.put("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { id } = req.params;
@@ -184,7 +177,6 @@ router.put("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   }
 });
 
-// PATCH /api/venues/:id/toggle-status — Toggle open/closed status (Admin only)
 router.patch("/:id/toggle-status", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { id } = req.params;
@@ -215,7 +207,6 @@ router.patch("/:id/toggle-status", verifyToken, allowRoles("admin"), async (req,
   }
 });
 
-// DELETE /api/venues/:id — Delete venue (Admin only)
 router.delete("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { id } = req.params;

@@ -74,13 +74,11 @@ async function seed() {
     console.log("Seeding Clubs...");
     for (const [clubName, facultyName, facultyEmail, clubEmail] of clubsData) {
       const slug = slugify(clubName);
-      // Password logic: clubemail(before @) + "@him0148"
       const prefix = clubEmail.split("@")[0];
       const clubPassword = `${prefix}@him0148`;
       const clubPasswordHash = await bcrypt.hash(clubPassword, 10);
 
       await prisma.$transaction(async (tx) => {
-        // 1. Create or Find Club record
         let club = await tx.club.findUnique({ where: { slug } });
         const clubId = club?.id || createObjectId();
 
@@ -97,7 +95,6 @@ async function seed() {
           });
         }
 
-        // 2. Create AdminRole for Faculty Coordinator
         const facultyUser = await tx.adminRole.upsert({
           where: { email: facultyEmail },
           update: { password: clubPasswordHash },
@@ -111,7 +108,6 @@ async function seed() {
           },
         });
 
-        // 3. Create or Update dedicated ClubAccount for the official club login
         await tx.clubAccount.upsert({
           where: { clubId: club.id },
           update: {
@@ -128,7 +124,6 @@ async function seed() {
           },
         });
 
-        // 4. Update Club with FKs
         await tx.club.update({
           where: { id: club.id },
           data: {
@@ -139,7 +134,6 @@ async function seed() {
       console.log(`Seeded: ${clubName}`);
     }
 
-    // Seed DSW Institutional Account (Central Event Organiser)
     console.log("Seeding DSW Institutional Account...");
     const dswAccount = await prisma.institutionalAccount.upsert({
       where: { email: "odsw@nitj.ac.in" },

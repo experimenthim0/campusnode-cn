@@ -7,7 +7,6 @@ import {
 } from "../config/exportDatasets";
 import { useNotification } from "../context/NotificationContext";
 
-/* ─── Shared Compact Table Primitives ─────────────────────────────────── */
 const DataTable = ({ children }) => (
   <div className="overflow-x-auto border border-neutral-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#0a0a0a]">
     <table className="w-full text-left border-collapse myfont text-xs">{children}</table>
@@ -28,13 +27,9 @@ const Td = ({ children, align = "left", className = "" }) => (
   </td>
 );
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ExportCenter Page Component
-   ═══════════════════════════════════════════════════════════════════════════ */
 const ExportCenter = () => {
   const { showNotification } = useNotification();
 
-  // Active dataset state
   const [selectedDatasetId, setSelectedDatasetId] = useState("events");
   const activeDataset = EXPORT_DATASETS[selectedDatasetId] || EXPORT_DATASETS.events;
 
@@ -44,7 +39,6 @@ const ExportCenter = () => {
   const [clubId, setClubId] = useState("all");
   const [eventId, setEventId] = useState("all");
 
-  // Dynamic dataset filter state
   const [datasetFilters, setDatasetFilters] = useState({});
 
   // Column selection state (array of selected column ids)
@@ -57,7 +51,6 @@ const ExportCenter = () => {
   const [clubs, setClubs] = useState([]);
   const [eventsList, setEventsList] = useState([]);
 
-  // Preview & Pagination state
   const [previewData, setPreviewData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -65,7 +58,6 @@ const ExportCenter = () => {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Audit History state
   const [exportHistory, setExportHistory] = useState([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -75,7 +67,6 @@ const ExportCenter = () => {
     Object.keys(EXPORT_DATASETS)
   );
 
-  // Fetch Clubs dropdown list
   useEffect(() => {
     api
       .get('/api/admin/clubs-list')
@@ -85,7 +76,6 @@ const ExportCenter = () => {
       .catch(() => {});
   }, []);
 
-  // Fetch Events dropdown list ONLY after a specific club is selected
   useEffect(() => {
     if (clubId && clubId !== "all") {
       api
@@ -104,7 +94,6 @@ const ExportCenter = () => {
     }
   }, [clubId]);
 
-  // Fetch Authorized Datasets list
   useEffect(() => {
     api
       .get('/api/export-center/datasets')
@@ -269,7 +258,6 @@ const ExportCenter = () => {
 
   return (
     <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont text-black dark:text-white p-5 lg:p-8 space-y-6">
-      {/* ── 1. Page Header & Session Context Banner ─────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
@@ -307,7 +295,6 @@ const ExportCenter = () => {
         </div>
       </div>
 
-      {/* ── 2. Dataset Selection ────────────────────────────────────────── */}
       <div className="space-y-2">
         <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
           Select Dataset
@@ -343,7 +330,6 @@ const ExportCenter = () => {
         </div>
       </div>
 
-      {/* ── 3. Filters Section ──────────────────────────────────────────── */}
       <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
@@ -489,7 +475,6 @@ const ExportCenter = () => {
         </div>
       </div>
 
-      {/* ── 4. Column Selection & Export Bar ────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a]">
         <div className="flex items-center gap-3">
           <button
@@ -575,7 +560,6 @@ const ExportCenter = () => {
         </div>
       )}
 
-      {/* ── 5. Server-Side Paginated Preview Table ──────────────────────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -652,7 +636,6 @@ const ExportCenter = () => {
         )}
       </div>
 
-      {/* ── 6. Export Audit History Drawer / Section ────────────────────── */}
       {isHistoryOpen && (
         <div className="p-5 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
           <div className="flex items-center justify-between">

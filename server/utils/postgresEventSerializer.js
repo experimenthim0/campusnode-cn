@@ -32,10 +32,6 @@ export function serializeEvent(event) {
   };
 }
 
-/**
- * Serialize a Participation record.
- * Normalises `student` → `user` in the API response for frontend compatibility.
- */
 export function serializeParticipation(participation) {
   if (!participation) return participation;
 

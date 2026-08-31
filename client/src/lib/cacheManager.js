@@ -33,7 +33,6 @@ import {
   broadcastUpdate,
 } from './cacheSyncChannel.js';
 
-// ─── TTL Configuration (milliseconds) ──────────────────────────────────────
 
 /** Default TTL values by resource type */
 const TTL = {
@@ -50,7 +49,6 @@ const TTL = {
   DEFAULT: 5 * 60 * 1000,            // 5 minutes fallback
 };
 
-// ─── Never-cache patterns ───────────────────────────────────────────────────
 // These URL patterns are ALWAYS fetched fresh — never stored in cache.
 
 const NEVER_CACHE_PATTERNS = [
@@ -66,7 +64,6 @@ const NEVER_CACHE_PATTERNS = [
   '/verify-email',
 ];
 
-// ─── URL → TTL mapping rules ────────────────────────────────────────────────
 
 /**
  * Determine the TTL for a given URL.
@@ -77,7 +74,6 @@ const NEVER_CACHE_PATTERNS = [
 function getTTLForUrl(url, options = {}) {
   const path = extractPath(url);
 
-  // Events list
   if (/\/api\/events\/?$/.test(path)) return TTL.EVENTS_LIST;
 
   // Event detail — status-aware
@@ -85,7 +81,6 @@ function getTTLForUrl(url, options = {}) {
     return getEventTTL(options.eventStatus);
   }
 
-  // Clubs list
   if (/\/api\/clubs\/?$/.test(path)) return TTL.CLUBS_LIST;
 
   // Club detail
@@ -124,7 +119,6 @@ export function getEventTTL(status) {
   }
 }
 
-// ─── Update callbacks (SWR subscribers) ─────────────────────────────────────
 
 /** @type {Map<string, Set<(data: any) => void>>} */
 const updateCallbacks = new Map();
@@ -172,7 +166,6 @@ function notifyUpdateCallbacks(key, data) {
   }
 }
 
-// ─── Initialization ─────────────────────────────────────────────────────────
 
 let isInitialized = false;
 
@@ -237,7 +230,6 @@ function handleSyncMessage(msg) {
   }
 }
 
-// ─── Core: cachedFetch ──────────────────────────────────────────────────────
 
 /**
  * Intelligent cached fetch with SWR, ETag, and IndexedDB persistence.
@@ -384,7 +376,6 @@ async function fetchAndCacheBackground(url, path, ttlMs, cached, options) {
       return;
     }
 
-    // Check if data actually changed
     const etag = res.headers?.etag || res.headers?.['etag'] || null;
     const lastModified = res.headers?.['last-modified'] || null;
     const dataChanged = !shallowEqual(cached?.data, res.data);
@@ -394,7 +385,6 @@ async function fetchAndCacheBackground(url, path, ttlMs, cached, options) {
     if (dataChanged && !options.prefetch) {
       // Notify local UI subscribers
       notifyUpdateCallbacks(path, res.data);
-      // Broadcast to other tabs
       broadcastUpdate(path, res.data, { ttlMs, etag, lastModified });
     }
   } catch {
@@ -402,7 +392,6 @@ async function fetchAndCacheBackground(url, path, ttlMs, cached, options) {
   }
 }
 
-// ─── Cache Invalidation ─────────────────────────────────────────────────────
 
 /**
  * Invalidate cache entries matching patterns. Call after CRUD operations.
@@ -418,7 +407,6 @@ export async function invalidateCache(patterns) {
     await deleteByPattern(pattern);
   }
 
-  // Broadcast to other tabs
   broadcastInvalidate(patterns);
 }
 
@@ -457,7 +445,6 @@ export async function forceRefresh(url, options = {}) {
   return cachedFetch(url, { ...options, forceRefresh: true });
 }
 
-// ─── Refresh Expired (for reconnect) ────────────────────────────────────────
 
 /**
  * Refresh all expired cache entries in background.
@@ -481,7 +468,6 @@ export async function refreshExpired() {
   }
 }
 
-// ─── Maintenance ────────────────────────────────────────────────────────────
 
 /**
  * Remove all expired entries from IndexedDB.
@@ -499,7 +485,6 @@ export async function getCacheStats() {
   return storeGetCacheStats();
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
  * Extract the pathname from a full URL or return as-is if already a path.

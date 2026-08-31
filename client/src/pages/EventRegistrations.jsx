@@ -46,7 +46,6 @@ const EventRegistrations = () => {
             );
             toast.success(`Payment ${reviewStatus.toLowerCase()} successfully!`);
             setReviewModalOpen(false);
-            // Refresh registrations list
             const regRes = await getEventRegistrations(id);
             const data = regRes.data;
             setRegistrations(data.participations || (Array.isArray(data) ? data : []));
@@ -135,7 +134,6 @@ const EventRegistrations = () => {
         return () => document.removeEventListener('keydown', closeOnEscape);
     }, [exportModalOpen, isExporting]);
 
-    // ── Helpers ────────────────────────────────────────────────────────────
     const getFormResponse = (reg, label) => {
         const responses = reg.formResponses || {};
         return responses instanceof Map ? responses.get(label) : responses[label];
@@ -199,7 +197,6 @@ const EventRegistrations = () => {
         setExpandedTeams(prev => ({ ...prev, [teamId]: !prev[teamId] }));
     };
 
-    // ── Selective registration export (CSV, Excel-compatible) ─────────────
     const handleExportExcel = () => {
         if (!registrations.length) return;
         setExportError('');
@@ -283,7 +280,6 @@ const EventRegistrations = () => {
         <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
             <div className="max-w-[95vw] xl:max-w-[1400px] mx-auto px-4 md:px-6 py-10">
                 
-                {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-black text-black dark:text-white tracking-tight">
@@ -314,7 +310,6 @@ const EventRegistrations = () => {
                 {eventData && (() => {
                     const eventHasStarted = eventData.startTime && new Date(eventData.startTime) < new Date();
                     const isTeamEvent = eventData?.registrationType === 'team' || eventData?.registrationType === 'both';
-                    // Count teams as single units; individual rows counted separately
                     const indivCount = (Array.isArray(registrations) ? registrations : []).filter(r => !r.teamId).length;
                     const teamCount = Object.keys(fullTeamMap).length;
                     const registeredCount = isTeamEvent ? indivCount + teamCount : registrations.length;
@@ -393,7 +388,6 @@ const EventRegistrations = () => {
                     </div>
                 )}
 
-                {/* Search Bar */}
                 {registrations.length > 0 && (
                     <div className="mb-6">
                         <div className="relative">
@@ -446,7 +440,6 @@ const EventRegistrations = () => {
                     </div>
                 )}
 
-                {/* Registrations List / Table */}
                 {registrations.length === 0 ? (
                     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-2xl text-center text-neutral-500">
                         No students registered yet.
@@ -457,7 +450,6 @@ const EventRegistrations = () => {
                             const isExpanded = !!expandedTeams[team.id];
                             return (
                                 <div key={team.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
-                                    {/* Header */}
                                     <div
                                         onClick={() => toggleTeam(team.id)}
                                         className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-850/40 transition-colors cursor-pointer"
@@ -488,7 +480,6 @@ const EventRegistrations = () => {
                                     {/* Expandable Table */}
                                     {isExpanded && (
                                         <div className="border-t border-neutral-100 dark:border-neutral-800 overflow-x-auto">
-                                            {/* Render payment review section for the team here if paid event */}
                                             {eventData?.paymentMethod && eventData?.paymentMethod !== 'FREE' && (() => {
                                                 const leaderPart = team.members.find(m => m.studentId === team.leader?.id) || team.members[0];
                                                 if (!leaderPart) return null;
@@ -523,7 +514,6 @@ const EventRegistrations = () => {
                                                             )}
                                                         </div>
 
-                                                        {/* Actions */}
                                                         {leaderPart.paymentStatus !== 'APPROVED' && (
                                                             <div className="flex gap-2 shrink-0">
                                                                 <button
@@ -761,7 +751,6 @@ const EventRegistrations = () => {
                     </div>
                 )}
 
-                {/* ── Export Registrations Modal ── */}
                 {exportModalOpen && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-3 py-4 backdrop-blur-sm sm:px-4" role="presentation">
                         <div ref={exportModalRef} tabIndex="-1" role="dialog" aria-modal="true" aria-labelledby="export-registrations-title" className="flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-none dark:border-neutral-800 dark:bg-neutral-900">
@@ -801,7 +790,6 @@ const EventRegistrations = () => {
                     </div>
                 )}
 
-                {/* ── Payment Review Modal ── */}
                 {reviewModalOpen && selectedReg && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
                         <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">

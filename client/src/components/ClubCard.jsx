@@ -116,7 +116,6 @@ const ClubCard = ({ club }) => {
         style={glowOverlayStyle}
       />
 
-      {/* ── Banner Image (LinkedIn style) ── */}
       <div className="relative w-full h-28 sm:h-32 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden shrink-0">
         <img
           src={club.bannerImage || club.coverImage || "/mainbuilding.jpeg"}
@@ -134,7 +133,7 @@ const ClubCard = ({ club }) => {
       <div className="p-5 sm:p-6 pt-0 flex flex-col flex-grow relative z-10">
 
         {/* Upper section: Overlapping Logo & Title + Category in same row */}
-        <div className="flex items-end gap-3.5 -mt-9 sm:-mt-9 mb-4 min-w-0">
+        <div className="flex items-end gap-3.5 -mt-1 sm:-mt-9 mb-2 min-w-0">
           
           {/* Logo with border */}
           <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white dark:bg-[#0d0d0d] rounded-full flex items-center justify-center border-3 border-white dark:border-[#0d0d0d] shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 p-1">
@@ -244,7 +243,6 @@ const ClubCard = ({ club }) => {
             </div>
           )}
 
-          {/* Action button row */}
           <div className="border-t border-neutral-200/75 dark:border-neutral-800/80 pt-3.5">
             <Link
               to={`/club/${club.slug || club._id}`}

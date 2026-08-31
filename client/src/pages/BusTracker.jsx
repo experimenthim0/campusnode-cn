@@ -144,7 +144,6 @@ const BusTracker = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Compute effective date based on sim settings
   const getEffNow = () => {
     if (!simMode) return new Date();
     const [h, m] = simTime.split(":").map(Number);
@@ -179,7 +178,6 @@ const BusTracker = () => {
     return [[f.lat, f.lng], [t.lat, t.lng]];
   };
 
-  // Calculate bus position along polyline
   const getBusPos = (leg, now) => {
     const m = nowM(now);
     const t = Math.max(0, Math.min(1, (m - leg.dep) / (leg.arr - leg.dep)));
@@ -196,7 +194,6 @@ const BusTracker = () => {
     return lerp(STOPS[leg.from], STOPS[leg.to], t);
   };
 
-  // Calculate bus bearing heading
   const getBusBearing = (leg, now) => {
     const m = nowM(now);
     const t = Math.max(0, Math.min(1, (m - leg.dep) / (leg.arr - leg.dep)));
@@ -387,7 +384,6 @@ const BusTracker = () => {
   return (
     <div className="min-h-screen myfont bg-white dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300 pb-20">
       
-      {/* Top Header */}
       <div className="bg-white/80 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           
@@ -414,7 +410,6 @@ const BusTracker = () => {
             </div>
           </div>
 
-          {/* Clock & Status */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700">
               <span className="relative flex h-2 w-2">
@@ -446,10 +441,8 @@ const BusTracker = () => {
         </div>
       </div>
 
-      {/* Main Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        {/* Simulator Bar Drawer */}
         {simMode && (
           <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400">
@@ -493,14 +486,12 @@ const BusTracker = () => {
           </div>
         )}
 
-        {/* Map View Section */}
         <div className={`relative bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all duration-300 shadow-sm ${
           isExpandedMap ? "h-[620px]" : "h-[340px] sm:h-[400px]"
         }`}>
           
           <div ref={mapContainerRef} className="w-full h-full z-10" />
 
-          {/* Map Floating Control Overlay */}
           <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
             <button
               onClick={handleRecenter}
@@ -527,7 +518,6 @@ const BusTracker = () => {
             </button>
           </div>
 
-          {/* Route Info Badge Floating */}
           <div className="absolute bottom-3 left-3 z-20 bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 px-3 py-2 rounded-xl backdrop-blur-md text-[11px] font-medium text-neutral-600 dark:text-neutral-400 shadow-md flex items-center gap-2">
             <MapPin className="w-3.5 h-3.5 text-orange-600" />
             <span>Campus ↔ Bidhipur ↔ Maqsudan ↔ Patel Chowk</span>
@@ -535,7 +525,6 @@ const BusTracker = () => {
 
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
@@ -606,7 +595,6 @@ const BusTracker = () => {
 
         </div>
 
-        {/* Navigation Tabs */}
         <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3">
           <button
             onClick={() => setActiveTab("live")}
@@ -633,7 +621,6 @@ const BusTracker = () => {
           </button>
         </div>
 
-        {/* Tab Content */}
         {activeTab === "live" ? (
           <div className="space-y-4">
             {activeBuses.length === 0 ? (
@@ -684,7 +671,6 @@ const BusTracker = () => {
                       </span>
                     </div>
 
-                    {/* Progress Track */}
                     <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
                       <div 
                         className="h-full rounded-full transition-all duration-1000 ease-linear"
@@ -734,7 +720,6 @@ const BusTracker = () => {
               </div>
             </div>
 
-            {/* Saturday & Sunday Batch 1 */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-500 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -760,7 +745,6 @@ const BusTracker = () => {
               </div>
             </div>
 
-            {/* Saturday & Sunday Batch 2 */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -786,7 +770,6 @@ const BusTracker = () => {
               </div>
             </div>
 
-            {/* All Week Evening Batch */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -812,7 +795,6 @@ const BusTracker = () => {
               </div>
             </div>
 
-            {/* Contact Box */}
             <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-neutral-500 dark:text-neutral-400">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-orange-600 shrink-0" />

@@ -49,7 +49,6 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
 const EventCalendarPage = ({ readOnly = false }) => {
   const { showNotification } = useNotification();
 
-  // State
   const [activeView, setActiveView] = useState("timeline"); // "list" | "calendar" | "timeline"
   const [subView, setSubView] = useState("month"); // "month" | "week" | "day"
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -69,7 +68,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
     status: "all"
   });
 
-  // Modal / Drawer States
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -85,7 +83,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
   const userRole = authRole || "admin";
   const canManageCalendar = !readOnly && (userRole === "admin" || userRole === "facultyCoordinator");
 
-  // Fetch Venues & Clubs reference lists
   useEffect(() => {
     const fetchReferences = async () => {
       try {
@@ -280,7 +277,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
         </p>
       </div>
 
-      {/* Reusable Filter Bar */}
       <CalendarFilterBar
         currentDate={currentDate}
         onDateChange={setCurrentDate}
@@ -473,7 +469,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
         userRole={userRole}
       />
 
-      {/* Reschedule Confirmation Modal */}
       {canManageCalendar && <RescheduleConfirmModal
         rescheduleData={rescheduleData}
         isOpen={rescheduleModalOpen}
@@ -481,7 +476,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
         onSuccess={() => fetchCalendarData()}
       />}
 
-      {/* Blackout Window Modal */}
       {canManageCalendar && <BlackoutModal
         isOpen={blackoutModalOpen}
         onClose={() => {
@@ -493,7 +487,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
         onSuccess={() => fetchCalendarData()}
       />}
 
-      {/* Conflict Center Modal */}
       <ConflictCenter
         isOpen={conflictCenterOpen}
         onClose={() => setConflictCenterOpen(false)}

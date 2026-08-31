@@ -106,7 +106,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     };
   }, []);
 
-  // Extract unique club names for the filter dropdown (excluding Central Events)
   const clubNames = useMemo(() => {
     const names = new Set();
     if (Array.isArray(events)) {
@@ -308,11 +307,9 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </h1>
       )}
 
-      {/* ── FILTER BAR ── */}
       {(!hideHeader || showFilters) && (
         <div className="mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
 
-          {/* Row 1: Search */}
           <div className="relative group">
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
@@ -501,7 +498,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 </div>
           </div>
 
-          {/* Active filter summary */}
           {isFilterActive && (
             <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[10px] sm:text-[11px]">
               <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-bold truncate pr-2">
@@ -565,7 +561,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-      {/* LIVE Events */}
       {liveEvents.length > 0 && (
         <div className="mb-14">
           {!hideHeader && (
@@ -599,7 +594,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-      {/* Upcoming Events Section */}
       {upcomingEvents.length > 0 && (
         <div className={endedEvents.length > 0 ? 'mb-14' : ''}>
           {!hideHeader && (
@@ -622,7 +616,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-      {/* Ended Events Section */}
       {endedEvents.length > 0 && (
         <div>
           {!hideHeader && (

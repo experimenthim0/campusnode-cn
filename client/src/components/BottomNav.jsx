@@ -47,7 +47,6 @@ const BottomNav = () => {
 
   const { user, role, logout } = useAuth();
 
-  // Close drawer on route change
   useEffect(() => {
     setDrawerOpen(false);
   }, [location.pathname]);
@@ -115,7 +114,6 @@ const BottomNav = () => {
 
   return (
     <>
-      {/* Bottom Navigation Bar */}
       <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md border-t border-gray-200 dark:border-neutral-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex justify-around items-center h-16 px-2">
           {navItems.map((item, index) => {
@@ -291,14 +289,12 @@ const BottomNav = () => {
                 </Link>
               )}
 
-              {/* ── Management Section: Official Club Account, Student Club Memberships & Faculty ── */}
               {(role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
                 <div className="mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                   <p className="px-4 py-2 text-[12px] font-bold tracking-widest text-neutral-500 dark:text-neutral-400">
                     Management
                   </p>
 
-                  {/* 1. Official Club Account (pure club account) */}
                   {(!user?.rollNo && role === "club") && (user?.clubId || user?.id) && (
                     <div className="mb-2">
                       <Link
@@ -354,7 +350,6 @@ const BottomNav = () => {
                     </div>
                   )}
 
-                  {/* 2. Student Club Memberships (Student Leads & Coordinators across all clubs) */}
                   {(Boolean(user?.rollNo) || role !== "club") && (() => {
                     const eligibleMemberships = (user?.memberships || []).filter((m) => {
                       const isLead = m.role === "CLUB_HEAD";
@@ -519,7 +514,6 @@ const BottomNav = () => {
                     );
                   })()}
 
-                  {/* 3. Faculty Coordinator specific links */}
                   {role === "facultyCoordinator" && user.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
                     <div className="mb-4">
                       <p className="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-orange-600 bg-orange-50/50 dark:bg-orange-950/20 mb-2">

@@ -80,7 +80,6 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Try registering/syncing Web Push subscription once per session
     registerPushSubscription().catch(() => {});
 
     // Initial sync
@@ -124,12 +123,10 @@ export const SocketProvider = ({ children }) => {
     newSocket.on("new-notification", handleNewNotification);
 
     // ── Polling & Recovery Fallbacks ──────────────────────────────────────────
-    // 1. Periodic sync (every 60s)
     const interval = setInterval(() => {
       syncNotifications(false);
     }, 60000);
 
-    // 2. Window focus & visibilitychange sync
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         syncNotifications(false);

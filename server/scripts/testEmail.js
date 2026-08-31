@@ -1,9 +1,7 @@
 import dotenv from "dotenv";
 
-// Load environment variables BEFORE importing modules that use them
 dotenv.config();
 
-// Dynamic import to ensure env vars are loaded
 const { default: sendEmail } = await import("../utils/sendEmail.js");
 
 const testEmail = async () => {
@@ -35,4 +33,4 @@ const testEmail = async () => {
 };
 
 testEmail();
-
+

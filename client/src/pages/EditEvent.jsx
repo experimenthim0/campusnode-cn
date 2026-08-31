@@ -226,7 +226,6 @@ const EditEvent = () => {
         });
     };
 
-    // ── Custom Fields Handlers ──────────────────────────────────────────
     const addCustomField = () => {
         setFormData(prev => ({
             ...prev,
@@ -278,7 +277,6 @@ const EditEvent = () => {
         });
     };
 
-    // ── Sponsor Handlers ───────────────────────────────────────────────
     const addSponsor = () => {
         setSponsors(prev => [...prev, { name: '', logoUrl: '', websiteUrl: '' }]);
         setSponsorErrors(prev => [...prev, {}]);
@@ -297,7 +295,6 @@ const EditEvent = () => {
         });
     };
 
-    // ── Media Handlers ─────────────────────────────────────────────────
     const addMedia = () => {
         setMedia(prev => [...prev, { url: '', type: MediaType.IMAGE }]);
         setMediaErrors(prev => [...prev, {}]);
@@ -316,7 +313,6 @@ const EditEvent = () => {
         });
     };
 
-    // ── Validation ─────────────────────────────────────────────────────
     const URL_PATTERN = /^https?:\/\/.+/;
 
     const validateSponsorsAndMedia = () => {
@@ -339,7 +335,6 @@ const EditEvent = () => {
         return valid;
     };
 
-    // ── Step Validation ───────────────────────────────────────────────
     const validateStep1 = () => {
         if (!formData.title || !formData.title.trim()) {
             return 'Event Title is required.';
@@ -479,7 +474,6 @@ const EditEvent = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ── Winners Handlers ────────────────────────────────────────────────
     const addWinner = () => {
         setFormData(prev => ({
             ...prev,
@@ -639,7 +633,6 @@ const EditEvent = () => {
     return (
         <div className="min-h-screen bg-neutral-50 py-8 md:py-12 px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
                 <div className="mb-6">
                     {/* <button
                         type="button"
@@ -803,7 +796,6 @@ const EditEvent = () => {
                                 <p className="text-xs text-neutral-500 mt-1">Optional: If left blank, registrations stay open until start time.</p>
                             </div>
 
-                            {/* Registration Restrictions Card */}
                             <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-6">
                                 <div>
                                     <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">Registration Restrictions</h3>
@@ -925,7 +917,6 @@ const EditEvent = () => {
 
                             {/* Seats & Fee Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                {/* Total Seats */}
                                 <div className="space-y-4">
                                     <label className={labelCls}>Seat Availability <span className="text-orange-600">*</span></label>
                                     <div className="flex items-center gap-3">
@@ -1001,7 +992,6 @@ const EditEvent = () => {
                                     </div>
                                 </div>
 
-                                {/* Registration Fee Input (Conditional) */}
                                 {formData.paymentMethod !== 'FREE' && (
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-orange-600">*</span></label>

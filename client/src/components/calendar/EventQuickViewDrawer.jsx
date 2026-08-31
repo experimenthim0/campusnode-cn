@@ -57,7 +57,6 @@ const EventQuickViewDrawer = ({
   const venueCapacity = event.totalSeats || 0;
   const isCapacityWarning = venueCapacity > 0 && expectedAttendance >= venueCapacity;
 
-  // Extract resources if available from customFields or requiredFields
   const resources = event.customFields?.resources || ["Projector", "Sound System", "Chairs"];
 
   const statusBadge = STATUS_BADGES[event.reviewStatus] || STATUS_BADGES.PENDING;
@@ -65,7 +64,6 @@ const EventQuickViewDrawer = ({
   return (
     <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/40 backdrop-blur-xs transition-opacity">
       <div className="w-full max-w-md bg-white dark:bg-[#0c0c0c] border-l border-neutral-200 dark:border-zinc-800 shadow-2xl h-full flex flex-col justify-between overflow-y-auto">
-        {/* Drawer Header */}
         <div>
           <div className="p-5 border-b border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between bg-neutral-50/50 dark:bg-zinc-900/40">
             <div className="flex items-center gap-2">
@@ -87,7 +85,6 @@ const EventQuickViewDrawer = ({
 
           {/* Body Content */}
           <div className="p-6 space-y-6">
-            {/* Title & Club Header */}
             <div>
               <div className="flex items-center gap-3 mb-2">
                 {event.club?.clubLogo ? (
@@ -217,7 +214,6 @@ const EventQuickViewDrawer = ({
           </div>
         </div>
 
-        {/* Drawer Actions Footer */}
         <div className="p-5 border-t border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 space-y-2">
           {/* {userRole === "facultyCoordinator" && event.reviewStatus === "PENDING" && onApprove && onReject && (
             <div className="grid grid-cols-2 gap-2 mb-2">

@@ -157,7 +157,6 @@ const ClubCalendarView = ({ events }) => {
 
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs">
-      {/* Calendar Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
         <div>
           <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white">
@@ -193,7 +192,6 @@ const ClubCalendarView = ({ events }) => {
         ))}
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {daysArray.map((day, idx) => {
           if (day === null) {
@@ -386,7 +384,6 @@ const ClubDetails = () => {
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
   const [adminTab, setAdminTab] = useState("announcements"); // "announcements" | "achievements" | "gallery" | "featured"
 
-  // Admin Hub Form States
   const [announcementForm, setAnnouncementForm] = useState({ title: "", content: "", isPinned: false });
   const [achievementForm, setAchievementForm] = useState({ title: "", description: "", date: "", imageUrl: "", externalUrl: "" });
   const [galleryForm, setGalleryForm] = useState({ url: "", caption: "", albumTitle: "General" });
@@ -671,7 +668,6 @@ const ClubDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-white pb-24 transition-colors duration-300">
-      {/* ── 1. LINKEDIN-STYLE CLUB HERO CARD ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
           
@@ -702,15 +698,14 @@ const ClubDetails = () => {
             )}
           </div>
 
-          {/* Profile Header Body */}
-          <div className="px-5 sm:px-8 pb-6 sm:pb-8 relative">
+          <div className="px-4 sm:px-7 pb-5 sm:pb-6 relative">
             
-            {/* Top Row: Avatar overlapping banner + Action buttons */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 md:-mt-20 mb-4">
+            {/* Top Row: Avatar overlapping banner + Action buttons aligned on right */}
+            <div className="flex items-end justify-between gap-3 -mt-12 sm:-mt-16 md:-mt-18 mb-3 sm:mb-4">
               
               {/* Overlapping Avatar */}
-              <div className="relative group">
-                <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-white dark:border-neutral-900 bg-white dark:bg-neutral-800 shadow-md overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+              <div className="relative group shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-neutral-900 bg-white dark:bg-neutral-800 shadow-md overflow-hidden flex items-center justify-center p-1.5">
                   <img
                     src={heroLogoSrc}
                     alt={club.clubName}
@@ -725,7 +720,7 @@ const ClubDetails = () => {
                   <button
                     onClick={() => setAdminHubOpen(true)}
                     title="Change Logo"
-                    className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 shadow-md border-2 border-white dark:border-neutral-900 flex items-center justify-center transition-all cursor-pointer text-xs"
+                    className="absolute bottom-0.5 right-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 shadow-md border-2 border-white dark:border-neutral-900 flex items-center justify-center transition-all cursor-pointer text-xs"
                   >
                     <i className="ri-pencil-line" />
                   </button>
@@ -733,37 +728,38 @@ const ClubDetails = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end pt-2 sm:pt-0">
+              <div className="flex items-center gap-2 shrink-0 pb-1">
                 <button
                   onClick={handleShareClub}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition font-semibold text-xs uppercase tracking-wider cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl transition font-semibold text-xs uppercase tracking-wider shadow-2xs cursor-pointer"
                 >
-                  <i className="ri-share-line font-light" /> Share
+                  <i className="ri-share-line text-sm" />
+                  <span>Share</span>
                 </button>
 
                 {canEdit && (
                   <button
                     onClick={() => setAdminHubOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
                   >
-                    <i className="ri-dashboard-line font-light" /> Manage Club
+                    <i className="ri-dashboard-line text-sm" />
+                    <span>Manage Club</span>
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Middle Section: Left info (Title, Motto, Badges) & Right stats (Small boxes) */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mt-3">
-              {/* Left Column: Info */}
-              <div className="space-y-2 max-w-xl">
-                
+            {/* Main Info (Left) & Stats (Right) Row */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
+              {/* Left Column: Category Badges, Club Title, Motto */}
+              <div className="space-y-1.5 min-w-0 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full">
                     {club.category || "Student Club"}
                   </span>
                   
                   {club.establishedYear && (
-                    <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full">
                       Est. {club.establishedYear}
                     </span>
                   )}
@@ -774,59 +770,44 @@ const ClubDetails = () => {
                 </h1>
 
                 {club.motto && (
-                  <p className="text-sm sm:text-base font-semibold text-orange-600 dark:text-orange-400 italic tracking-wide">
+                  <p className="text-xs sm:text-sm font-semibold text-orange-600 dark:text-orange-400 italic tracking-wide">
                     "{club.motto}"
                   </p>
                 )}
 
                 {club.mission && !club.motto && (
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
                     {club.mission}
                   </p>
                 )}
               </div>
 
-              {/* Right Column: Small Stat Boxes */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
-                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
-                  {/* <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm shrink-0">
-                    <i className="ri-team-line" />
-                  </div> */}
-                  <div className="leading-tight pr-1">
-                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
-                      {studentMembers.length}
-                    </div>
-                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                      Members
-                    </div>
+              {/* Right Column: Compact Stat Boxes */}
+              <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0">
+                <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
+                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                    {studentMembers.length}
+                  </div>
+                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    Members
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
-                  {/* <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-sm shrink-0">
-                    <i className="ri-calendar-check-line" />
-                  </div> */}
-                  <div className="leading-tight pr-1">
-                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
-                      {upcomingEvents.length + liveEvents.length}
-                    </div>
-                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                      Upcoming
-                    </div>
+                <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
+                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                    {upcomingEvents.length + liveEvents.length}
+                  </div>
+                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    Upcoming
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs">
-                  {/* <div className="w-8 h-8 rounded-xl bg-neutral-200/60 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 flex items-center justify-center text-sm shrink-0">
-                    <i className="ri-history-line" />
-                  </div> */}
-                  <div className="leading-tight pr-1">
-                    <div className="text-sm sm:text-base text-center font-black text-neutral-900 dark:text-white">
-                      {pastEvents.length}
-                    </div>
-                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                      Past Events
-                    </div>
+                <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
+                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                    {pastEvents.length}
+                  </div>
+                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    Past Events
                   </div>
                 </div>
               </div>
@@ -834,7 +815,7 @@ const ClubDetails = () => {
 
             {/* Admin Fast-Action Bar (If authorized) */}
             {(canEdit || isHead) && (
-              <div className="flex flex-wrap items-center gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800/80">
+              <div className="flex flex-wrap items-center gap-2 mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800/80">
                 <Link
                   to="/create"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
@@ -864,12 +845,10 @@ const ClubDetails = () => {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT CONTAINER ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 relative z-20 space-y-8">
 
       
 
-        {/* ── 4. ABOUT THE CLUB & MISSION ── */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
             <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500">
@@ -960,7 +939,6 @@ const ClubDetails = () => {
           </div>
         </section>
 
-{/* ── 11. SOCIALS & CONNECT ── */}
         {club.socialLinks && club.socialLinks.length > 0 && (
           <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
@@ -1009,7 +987,6 @@ const ClubDetails = () => {
           </section>
         )}
 
-          {/* ── 3. FEATURED EVENT SPOTLIGHT (If Available) ── */}
         {featuredEvent && (
           <section className=" text-black rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden shadow-orange-500 border border-orange-200 ">
             <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none transform translate-x-8 translate-y-8">
@@ -1057,7 +1034,6 @@ const ClubDetails = () => {
         )}
 
 
-        {/* ── 5. ANNOUNCEMENTS (Visible when items exist OR for Club Leads) ── */}
         {(announcements.length > 0 || canEdit || isHead) && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
@@ -1160,7 +1136,6 @@ const ClubDetails = () => {
           </section>
         )}
 
-        {/* ── 6. EVENTS & INTERACTIVE CALENDAR ── */}
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 pb-4">
             <div>
@@ -1199,7 +1174,6 @@ const ClubDetails = () => {
             <ClubCalendarView events={events} />
           ) : (
             <div className="space-y-8">
-              {/* Live Events */}
               {liveEvents.length > 0 && (
                 <div>
                   <div className="flex items-center gap-3 mb-4">
@@ -1223,7 +1197,6 @@ const ClubDetails = () => {
                 </div>
               )}
 
-              {/* Upcoming Events */}
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
                   Upcoming Events
@@ -1266,7 +1239,6 @@ const ClubDetails = () => {
                 )}
               </div>
 
-              {/* Past Events */}
               {pastEvents.length > 0 && (
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
@@ -1308,160 +1280,174 @@ const ClubDetails = () => {
 
       
 
-        {/* ── 9. LEADERSHIP & PEOPLE DIRECTORY ── */}
-        <section className="space-y-6">
-          <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4">
+        {((club.facultyName || club.facultyCoordinator?.name) ||
+          studentHeads.length > 0 ||
+          studentCoordinators.length > 0 ||
+          regularMembers.length > 0) && (
+          <section className=" max-w-7xl w-full px-2 sm:px-4 space-y-8 sm:space-y-10">
+             <div className=" pb-4">
             <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <i className="ri-group-line text-orange-600 font-light" /> Club Leadership & Team
             </h2>
             <p className="text-xs text-neutral-400">Guiding faculty, student coordinators, and active members</p>
           </div>
+           
 
-          <div className="space-y-8">
-            {/* Faculty Coordinator & Student Leads (Side-by-side in separate columns with respective section tags) */}
-            {((club.facultyName || club.facultyCoordinator?.name) || studentHeads.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                {/* Column 1: Faculty Coordinator */}
-                {(club.facultyName || club.facultyCoordinator?.name) && (
-                  <div>
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
-                      Faculty Coordinator
+            <div className="max-w-5xl space-y-10 sm:space-y-12">
+              {((club.facultyName || club.facultyCoordinator?.name) || studentHeads.length > 0) && (
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                      Leadership
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-2xl shadow-xs text-center flex flex-col items-center justify-between">
-                        <StudentAvatar
-                          student={{
-                            name: club.facultyName || club.facultyCoordinator?.name,
-                            profileImage: club.facultyCoordinator?.profileImage,
-                          }}
-                          size="lg"
-                        />
-                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate w-full">
-                          {club.facultyName || club.facultyCoordinator?.name}
-                        </h4>
-                        <p className="text-[11px] text-neutral-400 truncate mt-0.5">
-                          {club.facultyEmail || club.facultyCoordinator?.email || "Faculty Incharge"}
-                        </p>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded mt-1.5">
-                          Faculty Coordinator
-                        </span>
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                  </div>
+
+                  {/* Centered Leadership Cards */}
+                  <div className="flex flex-wrap justify-center items-stretch gap-6 sm:gap-8">
+                    {(club.facultyName || club.facultyCoordinator?.name) && (
+                      <div className="w-full sm:w-[320px] max-w-[340px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-5 rounded-2xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between">
+                        <div className="w-full flex flex-col items-center">
+                          <StudentAvatar
+                            student={{
+                              name: club.facultyName || club.facultyCoordinator?.name,
+                              profileImage: club.facultyCoordinator?.profileImage,
+                            }}
+                            size="lg"
+                          />
+                          <h4 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
+                            {club.facultyName || club.facultyCoordinator?.name}
+                          </h4>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full mt-1.5">
+                            Faculty Coordinator
+                          </span>
+                        </div>
+
                         {(club.facultyEmail || club.facultyCoordinator?.email) && (
-                          <div className="flex items-center justify-center flex-wrap gap-1 pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 w-full">
+                          <div className="flex items-center justify-center pt-2.5 mt-2.5 border-t border-neutral-100 dark:border-neutral-800 w-full">
                             <a
                               href={`mailto:${club.facultyEmail || club.facultyCoordinator?.email}`}
-                              className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium py-0.5 transition-colors"
+                              className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium py-0.5 transition-colors group"
                               title="Contact Faculty"
                             >
-                              <i className="ri-mail-line text-sm" />
-                              <span className="text-xs">Email</span>
+                              <i className="ri-mail-line text-sm text-neutral-400 group-hover:text-orange-500 transition-colors" />
+                              <span className="truncate max-w-[220px]">
+                                {club.facultyEmail || club.facultyCoordinator?.email}
+                              </span>
                             </a>
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {/* Column 2: Student Leads */}
-                {studentHeads.length > 0 && (
-                  <div>
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
-                      Student Leads
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {studentHeads.map((m) => (
-                        <div
-                          key={m.id}
-                          className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-2xl shadow-xs text-center flex flex-col items-center justify-between"
-                        >
+                    {/* Student Lead Cards */}
+                    {studentHeads.map((m) => (
+                      <div
+                        key={m.id}
+                        className="w-full sm:w-[320px] max-w-[340px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-5 rounded-2xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
+                      >
+                        <div className="w-full flex flex-col items-center">
                           <StudentAvatar student={m.student} size="lg" />
-                          <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate w-full">
+                          <h4 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
                             {m.student?.name}
                           </h4>
                           {(m.student?.branch || m.student?.year) && (
-                            <p className="text-[11px] text-neutral-400 truncate mt-0.5">
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                               {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
                             </p>
                           )}
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded mt-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-0.5 rounded-full mt-1.5">
                             Student Lead
                           </span>
-                          <MemberSocials student={m.student} />
                         </div>
-                      ))}
-                    </div>
+                        <MemberSocials student={m.student} />
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Coordinators */}
-            {studentCoordinators.length > 0 && (
-              <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
-                  Coordinators
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {studentCoordinators.map((m) => (
-                    <div
-                      key={m.id}
-                      className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3.5 rounded-xl shadow-xs text-center flex flex-col items-center justify-between"
-                    >
-                      <StudentAvatar student={m.student} size="lg" />
-                      <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate w-full">
-                        {m.student?.name}
-                      </h4>
-                      {(m.student?.branch || m.student?.year) && (
-                        <p className="text-[10px] text-neutral-400 truncate mt-0.5">
-                          {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded mt-1">
-                        Coordinator
-                      </span>
-                      <MemberSocials student={m.student} />
-                    </div>
-                  ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* General Members */}
-            {regularMembers.length > 0 && (
-              <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
-                  Club Members ({regularMembers.length})
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {regularMembers.map((m) => (
-                    <div
-                      key={m.id}
-                      className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3.5 rounded-xl shadow-xs text-center flex flex-col items-center justify-between"
-                    >
-                      <StudentAvatar student={m.student} size="md" />
-                      <h4 className="text-xs font-bold text-neutral-900 dark:text-white truncate w-full">
-                        {m.student?.name}
-                      </h4>
-                      {(m.student?.branch || m.student?.year) && (
-                        <p className="text-[10px] text-neutral-400 truncate mt-0.5">
-                          {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                      <span className="text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 mt-1">
-                        Member
-                      </span>
-                      <MemberSocials student={m.student} />
-                    </div>
-                  ))}
+              {studentCoordinators.length > 0 && (
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                      Coordinators
+                    </h3>
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                  </div>
+
+                  {/* Responsive Coordinators Grid / Centered Flex */}
+                  <div className="flex flex-wrap justify-center items-stretch gap-4 sm:gap-5">
+                    {studentCoordinators.map((m) => (
+                      <div
+                        key={m.id}
+                        className="w-full sm:w-[230px] md:w-[250px] max-w-[270px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-4 rounded-xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
+                      >
+                        <div className="w-full flex flex-col items-center">
+                          <StudentAvatar student={m.student} size="md" />
+                          <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
+                            {m.student?.name}
+                          </h4>
+                          {(m.student?.branch || m.student?.year) && (
+                            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                              {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded mt-1.5">
+                            Coordinator
+                          </span>
+                        </div>
+                        <MemberSocials student={m.student} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </section>
+              )}
+
+              {regularMembers.length > 0 && (
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                      Club Members ({regularMembers.length})
+                    </h3>
+                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                  </div>
+
+                  <div className="flex flex-wrap justify-center items-stretch gap-3 sm:gap-4">
+                    {regularMembers.map((m) => (
+                      <div
+                        key={m.id}
+                        className="w-full sm:w-[200px] md:w-[220px] max-w-[240px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-3.5 rounded-xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
+                      >
+                        <div className="w-full flex flex-col items-center">
+                          <StudentAvatar student={m.student} size="md" />
+                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
+                            {m.student?.name}
+                          </h4>
+                          {(m.student?.branch || m.student?.year) && (
+                            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                              {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                          <span className="text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 mt-1">
+                            Member
+                          </span>
+                        </div>
+                        <MemberSocials student={m.student} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
 
 
-          {/* ── 7. ACHIEVEMENTS & HIGHLIGHTS (If Any) ── */}
         {achievements.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
@@ -1508,7 +1494,6 @@ const ClubDetails = () => {
           </section>
         )}
 
-        {/* ── 8. GALLERY (If Any) ── */}
         {galleryMedia.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
@@ -1569,7 +1554,6 @@ const ClubDetails = () => {
           </section>
         )}
 
-        {/* ── 10. SPONSORS & PARTNERS (If Any) ── */}
         {((club.sponsors && club.sponsors.length > 0) || (club.clubSponsors && club.clubSponsors.length > 0)) && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
@@ -1610,7 +1594,6 @@ const ClubDetails = () => {
         
       </div>
 
-      {/* ── LIGHTBOX MODAL ── */}
       {lightboxImage && (
         <div
           onClick={() => setLightboxImage(null)}
@@ -1632,7 +1615,6 @@ const ClubDetails = () => {
         </div>
       )}
 
-      {/* ── ADMIN MANAGEMENT HUB MODAL ── */}
       {adminHubOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-6">
@@ -1651,7 +1633,6 @@ const ClubDetails = () => {
               </button>
             </div>
 
-            {/* Admin Tabs */}
             <div className="flex flex-wrap gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3">
               {[
                 { id: "announcements", label: "Announcements", icon: "ri-megaphone-line" },
@@ -1722,7 +1703,6 @@ const ClubDetails = () => {
                   </div>
                 </form>
 
-                {/* Existing announcements list */}
                 <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                     Existing Announcements
@@ -1821,7 +1801,6 @@ const ClubDetails = () => {
                   </div>
                 </form>
 
-                {/* Existing achievements list */}
                 <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                     Existing Achievements
@@ -1963,7 +1942,6 @@ const ClubDetails = () => {
         </div>
       )}
 
-      {/* ── BANNER CROP & UPLOAD MODAL ── */}
       <BannerCropModal
         isOpen={bannerModalOpen}
         onClose={() => setBannerModalOpen(false)}

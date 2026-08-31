@@ -56,7 +56,6 @@ const PaymentModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-md px-4 py-6 transition-all duration-300">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[90dvh] flex flex-col overflow-hidden transition-colors">
         
-        {/* Header */}
         <div className="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
@@ -79,7 +78,6 @@ const PaymentModal = ({
           </button>
         </div>
 
-        {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
           
           {/* Fee & Payment Type Header Summary */}
@@ -211,7 +209,6 @@ const PaymentModal = ({
                 </div>
               )}
 
-              {/* Form Input Section */}
               <div className="space-y-4 pt-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
                   Verification Details
@@ -366,7 +363,6 @@ const PaymentModal = ({
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-4 px-6 bg-neutral-50/50 dark:bg-neutral-900/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-3 shrink-0">
           <button
             type="button"

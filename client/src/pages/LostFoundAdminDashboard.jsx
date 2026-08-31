@@ -122,7 +122,6 @@ const LostFoundAdminDashboard = () => {
 
     if (loading) return (
         <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#0a0a0a] animate-pulse">
-            {/* Header Skeleton */}
             <div className="bg-white text-black py-12 px-6 border-b border-neutral-200 dark:border-zinc-800">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="space-y-2">
@@ -169,7 +168,6 @@ const LostFoundAdminDashboard = () => {
         <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#0a0a0a] pb-20">
             <Toaster position="top-right" />
             
-            {/* Header */}
             <div className="bg-white text-black py-12 px-6">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
@@ -201,7 +199,6 @@ const LostFoundAdminDashboard = () => {
                     <StatCard label="Fraud Flagged" value={stats.fraud} icon="ri-error-warning-fill" color="red" />
                 </div>
 
-                {/* Content */}
                 <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-neutral-200 dark:border-zinc-800 overflow-hidden">
                     <div className="p-6 border-b border-neutral-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">All Items</h2>
@@ -313,7 +310,6 @@ const LostFoundAdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Change Password Modal */}
             {showPasswordModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
                     <div className="bg-white dark:bg-[#1a1a1a] w-full max-w-md rounded-2xl border border-neutral-200 dark:border-zinc-800 p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">

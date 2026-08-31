@@ -63,7 +63,6 @@ export async function registerPushSubscription() {
 
     const applicationServerKey = urlBase64ToUint8Array(keyData.publicKey);
 
-    // 2. Check existing subscription
     let subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
@@ -74,7 +73,6 @@ export async function registerPushSubscription() {
       });
     }
 
-    // 3. Send subscription object to backend
     const subscriptionJSON = subscription.toJSON();
     await api.post('/api/push/subscribe', {
       endpoint: subscriptionJSON.endpoint,

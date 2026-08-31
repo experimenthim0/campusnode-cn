@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const timeBasedMessages = {
-  // 1. Early Morning — Before 8:00 AM (Hostel life, alarms, waking up late, mess breakfast, early spots)
   earlyMorning: [
     "Bro, even the Fruit Shop bhaiya hasn't opened his shutter yet.",
     "8 AM class? Page is still debating between Nescafe coffee and 5 more minutes of sleep.",
@@ -16,7 +15,6 @@ const timeBasedMessages = {
     "Hostel corridor is dead silent, and this page is in deep REM sleep."
   ],
 
-  // 2. Morning / College Hours — 8:00 AM to 1:00 PM (Classes, attendance, labs, bunking at canteens)
   collegeMorning: [
     "Page bunked the lecture and is currently chilling at Nescafe with an iced latte.",
     "Page got caught in the front row by the professor. Pray for it. 💀",
@@ -30,7 +28,6 @@ const timeBasedMessages = {
     "Page went to get a lab manual signed and got lost in the department."
   ],
 
-  // 3. Afternoon — 1:00 PM to 4:00 PM (Post-lunch coma, afternoon nap, cooler, chill spots)
   afternoon: [
     "Post-lunch coma hit hard. Page is taking the legendary 3-hour power nap.",
     "Page ate parathas at Yadav Canteen and productivity.exe immediately crashed. 😴",
@@ -44,7 +41,6 @@ const timeBasedMessages = {
     "Page is chilling at Campus Cafe avoiding the brutal afternoon heat."
   ],
 
-  // 4. Evening — 4:00 PM to 8:00 PM (Canteen, chai, campus walks, sports, meetup spots)
   evening: [
     "Page went to Nescafe for a 5-minute chai break and started an entire startup discussion.",
     "Page is at Rimjhim Bakery treating friends because 'intern lag gayi (almost)'.",
@@ -58,7 +54,6 @@ const timeBasedMessages = {
     "Page is busy pretending tomorrow's assignment submission doesn't exist."
   ],
 
-  // 5. Night — After 8:00 PM (Campus rounds, Night Canteen, dates, situationships, late canteen)
   night: [
     "Page went on a late-night campus round. Won't return alone for sure. 👀",
     "Page is at Night Canteen ordering double-cheese Maggi with extra butter at 1 AM.",
@@ -148,7 +143,6 @@ const NotFound = () => {
           </h1>
         </div>
 
-        {/* Funny Tagline Card */}
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-center gap-2 mb-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600">
@@ -164,7 +158,6 @@ const NotFound = () => {
           </p>
         </div>
 
-        {/* Redirect Countdown */}
         <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium mb-6 tracking-wide flex items-center justify-center gap-1.5">
           Auto-redirecting to home in{' '}
           <span className="inline-flex items-center justify-center w-7 h-7 bg-orange-600 text-white text-[11px] font-extrabold rounded-full shadow-sm">
@@ -191,7 +184,6 @@ const NotFound = () => {
           </button>
         </div>
 
-        {/* Footer */}
         <p className="mt-10 text-[10px] text-neutral-300 dark:text-neutral-700 tracking-widest font-bold uppercase flex items-center justify-center gap-1.5 flex-wrap">
           Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span> • You're off the map 🗺️
         </p>

@@ -50,7 +50,6 @@ const RescheduleConfirmModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
       <div className="w-full max-w-lg bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-zinc-800">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
@@ -118,7 +117,6 @@ const RescheduleConfirmModal = ({
           The change will be validated against active venue bookings & blackouts before saving.
         </p>
 
-        {/* Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-zinc-800">
           <button
             type="button"

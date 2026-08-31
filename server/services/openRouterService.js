@@ -3,9 +3,6 @@ import { z } from "zod";
 const DEFAULT_MODEL = "openrouter/free";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-
-
-// Zod Schema for Structured AI Feedback Review
 export const aiFeedbackReviewSchema = z.object({
   overallSentiment: z.enum([
     "very_positive",
@@ -61,10 +58,6 @@ export const aiFeedbackReviewSchema = z.object({
     .optional(),
 });
 
-/**
- * Normalizes any LLM JSON output variations, synonyms, or missing keys
- * into our strict canonical schema.
- */
 export function normalizeAIReviewResponse(raw) {
   if (!raw || typeof raw !== "object") {
     raw = {};
@@ -86,7 +79,6 @@ export function normalizeAIReviewResponse(raw) {
     else sentiment = "positive";
   }
 
-  // 2. Normalize overallSummary
   const summary = (
     raw.overallSummary ||
     raw.summary ||
@@ -95,7 +87,6 @@ export function normalizeAIReviewResponse(raw) {
     "The event attendee feedback has been analyzed."
   ).toString().trim();
 
-  // 3. Normalize keyTakeaways
   let rawTakeaways = raw.keyTakeaways || raw.takeaways || raw.takeaway || raw.points || [];
   if (!Array.isArray(rawTakeaways)) {
     rawTakeaways = typeof rawTakeaways === "string" ? [rawTakeaways] : [];
@@ -107,7 +98,6 @@ export function normalizeAIReviewResponse(raw) {
     keyTakeaways.push(summary.slice(0, 150));
   }
 
-  // 4. Normalize whatStudentsLiked
   let rawLiked = raw.whatStudentsLiked || raw.positiveThemes || raw.liked || raw.likes || raw.positives || [];
   if (!Array.isArray(rawLiked)) rawLiked = [];
   const whatStudentsLiked = rawLiked.map((item) => {
@@ -121,7 +111,6 @@ export function normalizeAIReviewResponse(raw) {
     };
   });
 
-  // 5. Normalize improvementAreas
   let rawImprovements = raw.improvementAreas || raw.areasForImprovement || raw.improvements || raw.constructiveAreas || [];
   if (!Array.isArray(rawImprovements)) rawImprovements = [];
   const improvementAreas = rawImprovements.map((item) => {
@@ -138,7 +127,6 @@ export function normalizeAIReviewResponse(raw) {
     };
   });
 
-  // 6. Normalize recommendations
   let rawRecs = raw.recommendations || raw.actionableRecommendations || raw.actions || raw.actionItems || raw.recommendedActions || [];
   if (!Array.isArray(rawRecs)) rawRecs = [];
   const recommendations = rawRecs.map((item) => {
@@ -155,7 +143,6 @@ export function normalizeAIReviewResponse(raw) {
     };
   });
 
-  // 7. Normalize positiveHighlights
   let rawPosQuotes = raw.positiveHighlights || raw.positiveQuotes || raw.quotes?.positive || [];
   if (!Array.isArray(rawPosQuotes)) rawPosQuotes = [];
   const positiveHighlights = rawPosQuotes.map((item) => ({
@@ -163,7 +150,6 @@ export function normalizeAIReviewResponse(raw) {
     reason: (item?.reason || item?.context || "Positive student mention").toString().trim(),
   })).filter((q) => q.quote.length > 0);
 
-  // 8. Normalize constructiveHighlights
   let rawNegQuotes = raw.constructiveHighlights || raw.constructiveQuotes || raw.quotes?.constructive || [];
   if (!Array.isArray(rawNegQuotes)) rawNegQuotes = [];
   const constructiveHighlights = rawNegQuotes.map((item) => ({
@@ -183,11 +169,6 @@ export function normalizeAIReviewResponse(raw) {
   };
 }
 
-
-/**
- * Sanitize and anonymize student feedback data before sending to AI provider.
- * Absolutely NO student names, roll numbers, emails, user IDs, or timestamps are sent.
- */
 export function sanitizeFeedbackForAI(event, feedbacks, totalAttendees) {
   const sanitizedFeedbacks = feedbacks.map((f, index) => {
     const entry = {
@@ -219,9 +200,6 @@ export function sanitizeFeedbackForAI(event, feedbacks, totalAttendees) {
   };
 }
 
-/**
- * Verify quote integrity: ensure quoted text matches or is a substantial substring of real submitted comments.
- */
 export function verifyQuoteIntegrity(highlights, rawComments) {
   if (!Array.isArray(highlights) || highlights.length === 0) return [];
   if (!rawComments || rawComments.length === 0) return [];
@@ -233,7 +211,6 @@ export function verifyQuoteIntegrity(highlights, rawComments) {
     const qLower = item.quote.toLowerCase().trim();
     if (qLower.length < 5) return false;
 
-    // Check if the quote exists in any student response
     const matches = lowerComments.some(
       (c) => c.includes(qLower) || qLower.includes(c)
     );
@@ -241,9 +218,6 @@ export function verifyQuoteIntegrity(highlights, rawComments) {
   });
 }
 
-/**
- * Call OpenRouter server-side to generate structured AI feedback review.
- */
 export async function generateAIFeedbackReview({
   event,
   feedbacks,
@@ -261,7 +235,6 @@ export async function generateAIFeedbackReview({
 
   const sanitizedData = sanitizeFeedbackForAI(event, feedbacks, totalAttendees);
 
-  // Extract all written student feedback for quote integrity checking
   const allStudentRawComments = [];
   feedbacks.forEach((f) => {
     if (f.liked?.trim()) allStudentRawComments.push(f.liked.trim());
@@ -420,9 +393,6 @@ Analyze this complete dataset and return the structured JSON review now:`;
     throw lastError || new Error("OpenRouter returned an empty completion.");
   }
 
-
-
-  // Parse JSON response
   let parsedJson;
   try {
     const cleaned = rawContent
@@ -434,10 +404,8 @@ Analyze this complete dataset and return the structured JSON review now:`;
     throw new Error(`Invalid JSON returned by AI model: ${parseErr.message}`);
   }
 
-  // Normalize LLM response against minor schema variations / missing fields
   const normalizedJson = normalizeAIReviewResponse(parsedJson);
 
-  // Validate with Zod Schema
   const validated = aiFeedbackReviewSchema.safeParse(normalizedJson);
   if (!validated.success) {
     const errorDetails = validated.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
@@ -446,8 +414,6 @@ Analyze this complete dataset and return the structured JSON review now:`;
 
   const reviewData = validated.data;
 
-
-  // Validate quote integrity against real submitted student feedback
   if (allStudentRawComments.length > 0) {
     reviewData.positiveHighlights = verifyQuoteIntegrity(
       reviewData.positiveHighlights,
@@ -467,4 +433,4 @@ Analyze this complete dataset and return the structured JSON review now:`;
     modelUsed: modelActuallyUsed || model,
   };
 }
-
+

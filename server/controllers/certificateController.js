@@ -38,7 +38,6 @@ export const downloadCertificate = async (req, res) => {
       });
     }
 
-    // Look up the student's or external user's participation record
     const participation = await prisma.participation.findFirst({
       where: {
         eventId,

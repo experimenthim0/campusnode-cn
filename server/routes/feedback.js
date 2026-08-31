@@ -13,7 +13,6 @@ const router = express.Router();
 const FEEDBACK_WINDOW_HOURS = 72;
 const FEEDBACK_WINDOW_MS = FEEDBACK_WINDOW_HOURS * 60 * 60 * 1000;
 
-// Schema for feedback submission
 const feedbackSubmissionSchema = z.object({
   overallRating: z.coerce.number().int().min(1, "Overall rating must be between 1 and 5").max(5),
   organizationRating: z.coerce.number().int().min(1, "Organization rating must be between 1 and 5").max(5),
@@ -29,9 +28,6 @@ const feedbackSubmissionSchema = z.object({
   comments: z.string().max(2000).optional().nullable(),
 });
 
-/**
- * Check if the user has organizer access to the event
- */
 async function canAccessEventAnalytics(user, event) {
   if (!user || !event) return false;
   if (user.role === "admin" || user.role === "SUPER_ADMIN" || user.principalType === "ADMIN") return true;
@@ -55,7 +51,6 @@ async function canAccessEventAnalytics(user, event) {
 
   if (String(event.createdById) === String(user.userId || user.id || user.studentId)) return true;
 
-  // Event staff check
   const staff = await prisma.eventStaff.findFirst({
     where: { eventId: event.id, userId: user.userId || user.id, status: "ACTIVE" },
   });
@@ -64,10 +59,6 @@ async function canAccessEventAnalytics(user, event) {
   return false;
 }
 
-/**
- * ── GET /api/feedback/pending ───────────────────────────────────────────────
- * Returns pending feedback count, queue of eligible events, and next event.
- */
 router.get("/pending", verifyToken, async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id || req.user?.studentId;
@@ -78,7 +69,6 @@ router.get("/pending", verifyToken, async (req, res) => {
     const now = new Date();
     const cutoff = new Date(now.getTime() - FEEDBACK_WINDOW_MS);
 
-    // 1. Find all participations where student attended and event is completed within 72h
     const attendedParticipations = await prisma.participation.findMany({
       where: {
         studentId: userId,
@@ -126,7 +116,6 @@ router.get("/pending", verifyToken, async (req, res) => {
 
     const eventIds = attendedParticipations.map((p) => p.eventId);
 
-    // 2. Find already submitted feedbacks
     const submittedFeedbacks = await prisma.eventFeedback.findMany({
       where: {
         userId,
@@ -137,7 +126,6 @@ router.get("/pending", verifyToken, async (req, res) => {
 
     const submittedSet = new Set(submittedFeedbacks.map((f) => f.eventId));
 
-    // 3. Filter eligible pending events
     const pendingEvents = attendedParticipations
       .filter((p) => !submittedSet.has(p.eventId) && p.event)
       .map((p) => {
@@ -172,10 +160,6 @@ router.get("/pending", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * ── GET /api/feedback/my-feedback ───────────────────────────────────────────
- * Returns previously submitted feedback by the current student.
- */
 router.get("/my-feedback", verifyToken, async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id || req.user?.studentId;
@@ -233,10 +217,6 @@ router.get("/my-feedback", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * ── POST /api/feedback/:eventId & POST /api/events/:eventId/feedback ────────
- * Submits feedback for an attended, completed event within 72h.
- */
 router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -246,7 +226,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
       return res.status(401).json({ message: "Authentication required to submit feedback." });
     }
 
-    // 1. Validate payload structure
     const parsed = feedbackSubmissionSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
@@ -268,7 +247,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
       comments,
     } = parsed.data;
 
-    // 2. Fetch event
     const event = await prisma.event.findUnique({
       where: { id: eventId },
     });
@@ -288,7 +266,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
     const now = new Date();
     const eventEndTime = new Date(event.endTime);
 
-    // 3. Event completion check
     if (now < eventEndTime) {
       return res.status(400).json({ message: "Feedback can only be submitted after the event has completed." });
     }
@@ -302,7 +279,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
       });
     }
 
-    // 5. Attendance verification check
     const participation = await prisma.participation.findFirst({
       where: {
         eventId,
@@ -317,7 +293,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
       });
     }
 
-    // 6. Duplicate check (prevent multiple submissions)
     const existingFeedback = await prisma.eventFeedback.findUnique({
       where: {
         eventId_userId: {
@@ -333,7 +308,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
       });
     }
 
-    // 7. Save feedback record
     const newFeedback = await prisma.eventFeedback.create({
       data: {
         id: createObjectId(),
@@ -371,10 +345,6 @@ router.post(["/:eventId", "/events/:eventId"], verifyToken, async (req, res) => 
   }
 });
 
-/**
- * ── GET /api/feedback/:eventId/analytics & /api/events/:eventId/feedback/analytics ──
- * Returns aggregated and anonymized feedback analytics for event organizers.
- */
 router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -391,13 +361,11 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
       return res.status(404).json({ message: "Event not found." });
     }
 
-    // Authorization check
     const isAuthorized = await canAccessEventAnalytics(req.user, event);
     if (!isAuthorized) {
       return res.status(403).json({ message: "Access denied. Organizer permissions required." });
     }
 
-    // 1. Total attended count
     const totalAttendees = await prisma.participation.count({
       where: {
         eventId,
@@ -405,7 +373,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
       },
     });
 
-    // 2. All feedbacks for this event
     const allFeedbacks = await prisma.eventFeedback.findMany({
       where: { eventId },
       orderBy: { submittedAt: "desc" },
@@ -414,7 +381,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
     const totalResponses = allFeedbacks.length;
     const responseRate = totalAttendees > 0 ? Math.round((totalResponses / totalAttendees) * 100) : 0;
 
-    // 3. Average ratings calculation
     const calculateAvg = (key) => {
       if (!totalResponses) return 0;
       const sum = allFeedbacks.reduce((acc, f) => acc + (f[key] || 0), 0);
@@ -430,7 +396,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
       timing: calculateAvg("timingRating"),
     };
 
-    // 4. Rating distribution for Overall (5★ to 1★)
     const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     allFeedbacks.forEach((f) => {
       if (ratingDistribution[f.overallRating] !== undefined) {
@@ -444,7 +409,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
       percentage: totalResponses > 0 ? Math.round((ratingDistribution[stars] / totalResponses) * 100) : 0,
     }));
 
-    // 5. Recommendation Breakdown
     const recCounts = { YES: 0, MAYBE: 0, NO: 0 };
     allFeedbacks.forEach((f) => {
       if (recCounts[f.attendSimilar] !== undefined) {
@@ -467,7 +431,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
       },
     };
 
-    // 6. Anonymized written responses
     let writtenResponses = allFeedbacks
       .filter((f) => Boolean(f.liked || f.improvements || f.comments))
       .map((f) => {
@@ -492,12 +455,10 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
         };
       });
 
-    // Apply sentiment filter
     if (filter && filter !== "all") {
       writtenResponses = writtenResponses.filter((r) => r.sentiment === filter.toLowerCase());
     }
 
-    // Apply search filter
     if (search && typeof search === "string" && search.trim()) {
       const q = search.trim().toLowerCase();
       writtenResponses = writtenResponses.filter(
@@ -533,10 +494,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
   }
 });
 
-/**
- * ── GET /api/feedback/:eventId/ai-reviews ──────────────────────────────────
- * Returns existing AI reviews (Review #1 & #2), review counts, and 72h window status.
- */
 router.get("/:eventId/ai-reviews", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -625,7 +582,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       });
     }
 
-    // 2. Count existing completed reviews & cleanup stale in-progress attempts (> 60s)
     const [completedReviews, totalAttendees] = await Promise.all([
       prisma.eventAIReview.findMany({
         where: { eventId: event.id, status: "COMPLETED" },
@@ -644,7 +600,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       });
     }
 
-    // Clean up any stale IN_PROGRESS reservations older than 60s
     await prisma.eventAIReview.deleteMany({
       where: {
         eventId: event.id,
@@ -653,7 +608,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       },
     });
 
-    // Check if an active IN_PROGRESS generation is currently running
     const activeLock = await prisma.eventAIReview.findFirst({
       where: {
         eventId: event.id,
@@ -669,7 +623,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
 
     const reviewNumber = completedReviews.length + 1;
 
-    // 3. Atomically reserve slot
     const newReservationId = createObjectId();
     const reservation = await prisma.eventAIReview.create({
       data: {
@@ -693,7 +646,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
     });
     reservationId = reservation.id;
 
-    // 4. Fetch all feedbacks for this event
     const allFeedbacks = await prisma.eventFeedback.findMany({
       where: { eventId: event.id },
       orderBy: { submittedAt: "desc" },
@@ -707,7 +659,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       });
     }
 
-    // Calculate objective attendAgain breakdown from database
     const recCounts = { YES: 0, MAYBE: 0, NO: 0 };
     allFeedbacks.forEach((f) => {
       if (recCounts[f.attendSimilar] !== undefined) recCounts[f.attendSimilar]++;
@@ -719,7 +670,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       noPercentage: Math.round((recCounts.NO / allFeedbacks.length) * 100),
     };
 
-    // 5. Generate AI Review via OpenRouter
     let aiResult;
     try {
       aiResult = await generateAIFeedbackReview({
@@ -738,7 +688,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
       });
     }
 
-    // 6. Complete and save review
     const completedReview = await prisma.eventAIReview.update({
       where: { id: reservation.id },
       data: {
@@ -781,10 +730,6 @@ router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * ── GET /api/feedback/:eventId/ai-reviews/:reviewNumber/pdf ──────────────────
- * Streams a clean publication-ready PDF report of the stored AI review (0 AI consumption).
- */
 router.get("/:eventId/ai-reviews/:reviewNumber/pdf", verifyToken, async (req, res) => {
   try {
     const { eventId, reviewNumber } = req.params;
@@ -877,10 +822,6 @@ router.get("/:eventId/ai-reviews/:reviewNumber/pdf", verifyToken, async (req, re
   }
 });
 
-/**
- * ── GET /api/feedback/:eventId/ai-reviews/:reviewNumber/json ─────────────────
- * Returns structured JSON for export (0 AI consumption).
- */
 router.get("/:eventId/ai-reviews/:reviewNumber/json", verifyToken, async (req, res) => {
   try {
     const { eventId, reviewNumber } = req.params;
@@ -911,5 +852,4 @@ router.get("/:eventId/ai-reviews/:reviewNumber/json", verifyToken, async (req, r
 });
 
 export default router;
-
-
+

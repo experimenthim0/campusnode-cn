@@ -392,7 +392,6 @@ export function hasPermission(user, permission, resource = null) {
   const role = user.role || localStorage.getItem("role");
   const perm = normalizePermission(permission);
 
-  // 1. Super Admin wildcard check
   if (role === "admin" || role === "SUPER_ADMIN" || user.principalType === "ADMIN") {
     return true;
   }
@@ -418,7 +417,6 @@ export function hasPermission(user, permission, resource = null) {
   const targetUserId = resource?.userId ?? resource?.createdById ?? resource?.id ?? null;
   const currentUserId = user?.id || user?.userId;
 
-  // ── PRINCIPAL: INSTITUTIONAL DIRECT LOGIN ─────────────────────────────
   if (principalType === "INSTITUTIONAL") {
     if (targetClubId && !isInstitutionalResource) {
       return false;
@@ -426,7 +424,6 @@ export function hasPermission(user, permission, resource = null) {
     return INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission);
   }
 
-  // ── PRINCIPAL: CLUB ACCOUNT ───────────────────────────────────────────
   if (principalType === "CLUB") {
     if (isInstitutionalResource) {
       return false;
@@ -444,7 +441,6 @@ export function hasPermission(user, permission, resource = null) {
     return true;
   }
 
-  // ── PRINCIPAL: FACULTY COORDINATOR ────────────────────────────────────
   if (principalType === "FACULTY") {
     if (isInstitutionalResource) {
       return false;
@@ -458,7 +454,6 @@ export function hasPermission(user, permission, resource = null) {
     return true;
   }
 
-  // ── SPECIALIZED ADMINS ────────────────────────────────────────────────
   if (role === "lostFoundAdmin") {
     return [
       PERMISSIONS.LOSTFOUND_VIEW,
@@ -501,9 +496,7 @@ export function hasPermission(user, permission, resource = null) {
     ].includes(permission);
   }
 
-  // ── PRINCIPAL: STUDENT ────────────────────────────────────────────────
 
-  // 1. Institutional Account Assignment (DSW)
   const activeInstAssignment = (user.institutionalAssignments || []).find((a) => a.status === "ACTIVE" || a.status === undefined);
   const isLegacyCentralOrganizer = user.accessLevel === "central_organizer" || role === "central_organizer";
 
@@ -573,7 +566,6 @@ export function hasPermission(user, permission, resource = null) {
     }
   }
 
-  // 2. Club-scoped student membership check
   if (targetClubId && user.memberships && user.memberships.length > 0) {
     const membership = user.memberships.find((m) => String(m.clubId) === String(targetClubId));
     if (membership && membership.status !== "INACTIVE") {

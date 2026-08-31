@@ -13,7 +13,6 @@ const EventDataTable = ({
     setTypeFilter,
     onDownloadCSV
 }) => {
-    /* Comprehensive Filter Event List */
     const filteredEventList = useMemo(() => {
         return (events || []).filter(e => {
             const title = e.eventName || e.title || '';
@@ -21,18 +20,15 @@ const EventDataTable = ({
                 ? e.clubName
                 : (e.club?.clubName || 'ODSW');
             
-            // 1. Search Query (Title or Club)
             const matchesSearch = !searchQuery || 
                 title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                 club.toLowerCase().includes(searchQuery.toLowerCase());
             
-            // 2. Paid / Free Type Filter
             const isPaid = (e.entryFee > 0) || (e.eventType === 'Paid');
             const matchesType = !typeFilter || typeFilter === 'all' || 
                 (typeFilter === 'paid' && isPaid) || 
                 (typeFilter === 'free' && !isPaid);
 
-            // 3. Club Filter
             let matchesClub = true;
             if (filters?.clubId && filters.clubId !== 'all') {
                 if (filters.clubId === 'ODSW' || filters.clubId === 'CENTRAL' || filters.clubId === 'central') {
@@ -52,13 +48,11 @@ const EventDataTable = ({
             const dateObj = new Date(e.eventDate || e.startTime);
             const isValidDate = !isNaN(dateObj.getTime());
 
-            // 4. Month Filter
             let matchesMonth = true;
             if (filters?.month && filters.month !== 'all') {
                 matchesMonth = isValidDate && (dateObj.getMonth() + 1 === parseInt(filters.month, 10));
             }
 
-            // 5. Year Filter
             let matchesYear = true;
             if (filters?.year && filters.year !== 'all') {
                 matchesYear = isValidDate && (dateObj.getFullYear().toString() === filters.year.toString());
@@ -134,13 +128,10 @@ const EventDataTable = ({
 
     return (
         <div className="space-y-4">
-            {/* Filter Controls Toolbar */}
             <div className="bg-white dark:bg-[#0c0c0c] p-3.5 sm:p-4 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl shadow-xs">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     
-                    {/* Filter Inputs Grid */}
                     <div className="flex flex-wrap items-center gap-2.5 flex-1">
-                        {/* Search Input */}
                         <div className="relative flex-1 min-w-[200px] max-w-sm">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                             <input
@@ -157,7 +148,6 @@ const EventDataTable = ({
                             )}
                         </div>
 
-                        {/* Club Filter */}
                         <FilterSelect 
                             value={filters?.clubId || 'all'} 
                             onChange={(val) => setFilters(prev => ({ ...prev, clubId: val }))}
@@ -169,7 +159,6 @@ const EventDataTable = ({
                             ))}
                         </FilterSelect>
 
-                        {/* Event Fee Filter */}
                         <FilterSelect 
                             value={typeFilter || 'all'} 
                             onChange={(val) => setTypeFilter(val)}
@@ -179,7 +168,6 @@ const EventDataTable = ({
                             <option value="paid">Paid Events</option>
                         </FilterSelect>
 
-                        {/* Month Filter */}
                         <FilterSelect 
                             value={filters?.month || 'all'} 
                             onChange={(val) => setFilters(prev => ({ ...prev, month: val }))}
@@ -192,7 +180,6 @@ const EventDataTable = ({
                             ))}
                         </FilterSelect>
 
-                        {/* Year Filter */}
                         <FilterSelect 
                             value={filters?.year || 'all'} 
                             onChange={(val) => setFilters(prev => ({ ...prev, year: val }))}
@@ -203,7 +190,6 @@ const EventDataTable = ({
                             ))}
                         </FilterSelect>
 
-                        {/* Reset Filters button */}
                         {isAnyFilterActive && (
                             <button
                                 onClick={handleResetFilters}
@@ -216,7 +202,6 @@ const EventDataTable = ({
                         )}
                     </div>
 
-                    {/* Actions & Result Count */}
                     <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-zinc-800/80 shrink-0">
                         <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                             Showing <strong className="text-black dark:text-white">{filteredEventList.length}</strong> of {events.length}
@@ -235,7 +220,6 @@ const EventDataTable = ({
                 </div>
             </div>
 
-            {/* Event Data Table */}
             <DataTable>
                 <thead>
                     <tr>

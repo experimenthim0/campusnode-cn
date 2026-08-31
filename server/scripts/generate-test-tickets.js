@@ -1,11 +1,3 @@
-/**
- * Generate 30 visual test tickets (HTML file with QR codes)
- * aligned in a single vertical column for continuous rapid-fire scan testing.
- *
- * Pre-bakes PNG base64 images so NO internet or CDN is required to view!
- *
- * Usage: node scripts/generate-test-tickets.js
- */
 
 import "dotenv/config";
 import fs from "fs";
@@ -18,9 +10,7 @@ const QRCode = QRCodeModule.default || QRCodeModule;
 const DEMO_EVENT_ID = "demo_event_2026";
 const WRONG_EVENT_ID = "other_hackathon_2026";
 
-// 30 Diverse Test Cases
 const sampleTickets = [
-  // 1-20: Rapid-fire Valid Student Passes
   { id: 1, ticketId: "tkt_demo_001", name: "Alex Johnson", branch: "Computer Science", rollNo: "21BCS001", eventId: DEMO_EVENT_ID, testType: "VALID_ENTRY", desc: "✓ Pass #1 — Valid Entry" },
   { id: 2, ticketId: "tkt_demo_002", name: "Priya Sharma", branch: "Electronics & Comm", rollNo: "21BEC002", eventId: DEMO_EVENT_ID, testType: "VALID_ENTRY", desc: "✓ Pass #2 — Valid Entry" },
   { id: 3, ticketId: "tkt_demo_003", name: "Rahul Verma", branch: "Information Tech", rollNo: "21BIT003", eventId: DEMO_EVENT_ID, testType: "VALID_ENTRY", desc: "✓ Pass #3 — Valid Entry" },
@@ -42,17 +32,14 @@ const sampleTickets = [
   { id: 19, ticketId: "tkt_demo_019", name: "Shreya Ghoshal", branch: "Computer Science", rollNo: "21BCS019", eventId: DEMO_EVENT_ID, testType: "VALID_ENTRY", desc: "✓ Pass #19 — Valid Entry" },
   { id: 20, ticketId: "tkt_demo_020", name: "Manish Pandey", branch: "Information Tech", rollNo: "21BIT020", eventId: DEMO_EVENT_ID, testType: "VALID_ENTRY", desc: "✓ Pass #20 — Valid Entry" },
 
-  // 21-23: Duplicate Check-in Tests
   { id: 21, ticketId: "tkt_demo_001", name: "Alex Johnson (Duplicate Test)", branch: "Computer Science", rollNo: "21BCS001", eventId: DEMO_EVENT_ID, testType: "DUPLICATE_TEST", desc: "⚠ Duplicate Test (Same as Pass #1) — Should alert ALREADY CHECKED IN" },
   { id: 22, ticketId: "tkt_demo_002", name: "Priya Sharma (Duplicate Test)", branch: "Electronics & Comm", rollNo: "21BEC002", eventId: DEMO_EVENT_ID, testType: "DUPLICATE_TEST", desc: "⚠ Duplicate Test (Same as Pass #2) — Should alert ALREADY CHECKED IN" },
   { id: 23, ticketId: "tkt_demo_003", name: "Rahul Verma (Duplicate Test)", branch: "Information Tech", rollNo: "21BIT003", eventId: DEMO_EVENT_ID, testType: "DUPLICATE_TEST", desc: "⚠ Duplicate Test (Same as Pass #3) — Should alert ALREADY CHECKED IN" },
 
-  // 24-26: Cancelled / Revoked Registration Tests
   { id: 24, ticketId: "tkt_demo_024", name: "Marcus Lee (Refunded)", branch: "Computer Science", rollNo: "21BCS024", eventId: DEMO_EVENT_ID, testType: "CANCELLED_TEST", desc: "✕ Cancelled Pass — Should show REGISTRATION CANCELLED" },
   { id: 25, ticketId: "tkt_demo_025", name: "Zara Khan (Cancelled)", branch: "Biotechnology", rollNo: "21BBT025", eventId: DEMO_EVENT_ID, testType: "CANCELLED_TEST", desc: "✕ Cancelled Pass — Should show REGISTRATION CANCELLED" },
   { id: 26, ticketId: "tkt_demo_026", name: "Kunal Bahl (Revoked)", branch: "Data Science", rollNo: "21BDS026", eventId: DEMO_EVENT_ID, testType: "CANCELLED_TEST", desc: "✕ Cancelled Pass — Should show REGISTRATION CANCELLED" },
 
-  // 27-28: Wrong Event Passes
   { id: 27, ticketId: "tkt_demo_027", name: "Devansh Roy (Other Event)", branch: "Robotics", rollNo: "21BRO027", eventId: WRONG_EVENT_ID, testType: "WRONG_EVENT", desc: "✕ Wrong Event — Ticket issued for RoboWars, not HackSprint" },
   { id: 28, ticketId: "tkt_demo_028", name: "Natasha Roman (Other Event)", branch: "Aerospace", rollNo: "21BAE028", eventId: WRONG_EVENT_ID, testType: "WRONG_EVENT", desc: "✕ Wrong Event — Ticket issued for AeroExpo, not HackSprint" },
 
@@ -160,7 +147,6 @@ async function generateHtml() {
     .stat-pill strong {
       color: #38bdf8;
     }
-    /* Single vertical column layout for smooth one-by-one scrolling */
     .column {
       display: flex;
       flex-direction: column;
@@ -321,7 +307,6 @@ async function generateHtml() {
       }
     }
 
-    // Keyboard Arrow Keys (Up/Down) for hands-free one-by-one pass switching
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown' || e.key === 'j' || e.key === ' ') {
         e.preventDefault();

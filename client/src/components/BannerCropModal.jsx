@@ -119,7 +119,6 @@ const BannerCropModal = ({
 
   const handleDragOver = (e) => e.preventDefault();
 
-  // ── LIVE CANVAS RENDERING ──
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !imageObj || !imageLoaded) return;
@@ -178,7 +177,6 @@ const BannerCropModal = ({
     ctx.restore();
   }, [imageObj, imageLoaded, position, zoom, rotation]);
 
-  // Re-draw whenever state changes
   useEffect(() => {
     drawCanvas();
   }, [drawCanvas]);
@@ -341,7 +339,6 @@ const BannerCropModal = ({
         className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-base">
@@ -508,7 +505,6 @@ const BannerCropModal = ({
             </div>
           )}
 
-          {/* Hidden File Input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -518,7 +514,6 @@ const BannerCropModal = ({
           />
         </div>
 
-        {/* Footer Actions */}
         <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
           <button
             type="button"

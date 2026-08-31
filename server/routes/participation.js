@@ -26,7 +26,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
     let targetTicketId = rawInput;
     let targetEventId = null;
 
-    // Check if input is a signed binary QR payload
     try {
       const verified = verifyTicket(rawInput);
       if (verified) {
@@ -46,10 +45,8 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
         }
       }
     } catch {
-      // Not a signed binary payload, fallback to raw ticketId / qrCode string
     }
 
-    // Step 1: Look up participation by ticketId, qrPayload, qrCode, or ID
     const participation = await prisma.participation.findFirst({
       where: {
         OR: [
@@ -83,7 +80,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
-    // Step 2: Check caller has permission (Admin, Faculty Coordinator, Club Manager, Central Organizer, or Event Staff with ATTENDANCE_OPERATOR)
     const { userId } = req.user;
     const isAuthorized = await verifyAttendancePermission(userId, participation.eventId, participation.event, req.user);
 
@@ -94,7 +90,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
-    // Step 3: Check cancelled
     if (participation.status === 'CANCELLED') {
       return res.status(400).json({
         status: 'TICKET_REVOKED',
@@ -102,7 +97,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
-    // Step 4: Guard against double-marking (both participation status and AttendanceRecord check)
     const existingRecord = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId: participation.eventId, participationId: participation.id } },
     });
@@ -119,7 +113,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
-    // Step 5: Mark attendance in participation and attendanceRecord
     const attendanceId = createObjectId();
     const now = new Date();
     await prisma.$transaction([
@@ -142,7 +135,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       }),
     ]);
 
-    // Step 6: Return attendance confirmation
     const participantName = participation.student?.name || participation.externalUser?.name || participation.externalName || 'Unknown';
     const branch = participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null);
     const rollNo = participation.student?.rollNo || (participation.externalUser ? 'External' : null);
@@ -169,15 +161,13 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
   }
 }
 
-// ── PATCH /verify/:qrCode — QR attendance scan (URL param) ────────────────────
 router.patch('/verify/:qrCode', verifyToken, async (req, res) => {
   await handleVerify(req, res, req.params.qrCode, req.body?.eventId || req.query?.eventId);
 });
 
-// ── POST /verify — QR attendance scan (Request body) ──────────────────────────
 router.post('/verify', verifyToken, async (req, res) => {
   await handleVerify(req, res, req.body?.qrCode, req.body?.eventId);
 });
 
 export default router;
-
+

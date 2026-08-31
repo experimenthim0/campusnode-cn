@@ -12,19 +12,16 @@ import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 const router = express.Router();
 
-// Rate limit profile photo uploads — 10 per 15 minutes
 const photoUploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { message: "Too many upload attempts. Please try again later." },
 });
 
-// GET /api/users/me — fetch the authenticated user's profile
 router.get("/me", verifyToken, async (req, res) => {
   const { userId, userType, principalType } = req.user;
 
   try {
-    // 1. Club Account
     if (principalType === "CLUB" || userType === "club") {
       const clubAccount = await prisma.clubAccount.findUnique({
         where: { id: req.user.clubAccountId || userId },
@@ -113,7 +110,6 @@ router.get("/me", verifyToken, async (req, res) => {
       });
     }
 
-    // 1.5 Institutional Account (Central Organizer)
     if (principalType === "INSTITUTIONAL" || userType === "institutional") {
       const inst = await prisma.institutionalAccount.findUnique({
         where: { id: req.user.institutionalAccountId || userId },
@@ -144,7 +140,6 @@ router.get("/me", verifyToken, async (req, res) => {
       });
     }
 
-    // 2. Admin / Faculty
     if (userType === "admin" || principalType === "FACULTY" || principalType === "ADMIN") {
       const user = await prisma.adminRole.findUnique({ where: { id: userId } });
       if (!user) {
@@ -195,7 +190,6 @@ router.get("/me", verifyToken, async (req, res) => {
       });
     }
 
-    // 2.5 External User
     if (principalType === "EXTERNAL" || userType === "external" || req.user.role === "external") {
       const externalUser = await prisma.externalUser.findUnique({ where: { id: userId } });
       if (!externalUser) {
@@ -236,7 +230,6 @@ router.get("/me", verifyToken, async (req, res) => {
       });
     }
 
-    // 3. Student
     const user = await prisma.studentUser.findUnique({ where: { id: userId } });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
@@ -273,7 +266,6 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/users/:role/:id — update profile for the authenticated user
 // The :role segment is kept for URL compatibility; actual table is determined by JWT userType.
 
 router.put("/:role/:id", verifyToken, async (req, res) => {
@@ -287,7 +279,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    // ─── 1. CLUB PRINCIPAL / USER ───
     if (isClub) {
       let effectiveClubId = clubId;
       if (!effectiveClubId) {
@@ -325,7 +316,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
         }
       });
 
-      // Prepare social links to synchronize
       const socialLinksList = [];
       const addLink = (platform, url) => {
         if (url && typeof url === "string" && url.trim()) {
@@ -435,7 +425,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       return res.json({ message: "Club profile updated successfully", user: safeClubUser, role: "club", userType: "club", principalType: "CLUB" });
     }
 
-    // ─── 2. ADMIN / FACULTY, EXTERNAL, OR STUDENT ───
     const isExternal = userType === "external" || principalType === "EXTERNAL" || role === "external";
     const externalAllowedFields = [
       "name", "collegeName", "phone", "whatsappNumber", "isTwoStepEnabled",
@@ -524,7 +513,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/users/search — search student by roll number, email, or name
 router.get("/search", verifyToken, async (req, res) => {
   const { query } = req.query;
   const q = String(query || "").trim();
@@ -535,7 +523,6 @@ router.get("/search", verifyToken, async (req, res) => {
     const isExternalCaller = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
 
     if (isExternalCaller) {
-      // External participants searching for teammates (by email or name)
       const externals = await prisma.externalUser.findMany({
         where: {
           OR: [
@@ -602,7 +589,6 @@ router.get("/search", verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/users/lookup/:rollNo — lookup student name and branch by roll number
 router.get("/lookup/:rollNo", verifyToken, async (req, res) => {
   const { rollNo } = req.params;
   const q = String(rollNo || "").trim();
@@ -641,12 +627,6 @@ router.get("/lookup/:rollNo", verifyToken, async (req, res) => {
   }
 });
 
-// ── Profile Photo Endpoints ──────────────────────────────────────────────────
-
-/**
- * Helper to extract Cloudinary public_id from a full URL.
- * e.g. "https://res.cloudinary.com/.../profile-photos/abc123" → "profile-photos/abc123"
- */
 function extractCloudinaryPublicId(url) {
   if (!url) return null;
   try {
@@ -660,7 +640,6 @@ function extractCloudinaryPublicId(url) {
   }
 }
 
-// POST /api/users/profile-photo — upload or replace profile photo
 router.post(
   "/profile-photo",
   verifyToken,
@@ -691,7 +670,6 @@ router.post(
         });
       }
 
-      // Process image: auto-orient, strip EXIF, resize ≤800px, convert to WEBP
       const processedBuffer = await processProfileImage(req.file.buffer);
 
       const { userId, userType, clubId, principalType } = req.user;
@@ -752,7 +730,6 @@ router.post(
         publicId = `student-${rollOrId}`;
       }
 
-      // Delete old photo from Cloudinary if exists with different publicId
       if (existingPhotoUrl) {
         const oldPublicId = extractCloudinaryPublicId(existingPhotoUrl);
         if (oldPublicId && oldPublicId !== `${folder}/${publicId}` && oldPublicId !== publicId) {
@@ -795,7 +772,6 @@ router.post(
   }
 );
 
-// DELETE /api/users/profile-photo — remove profile photo
 router.delete("/profile-photo", verifyToken, async (req, res) => {
   try {
     const { userId, userType, clubId, principalType } = req.user;
@@ -827,7 +803,6 @@ router.delete("/profile-photo", verifyToken, async (req, res) => {
       return res.status(400).json({ message: isClub ? "No club logo to remove." : "No profile photo to remove." });
     }
 
-    // Delete from Cloudinary
     const publicId = extractCloudinaryPublicId(existingPhotoUrl);
     if (publicId) {
       try {
@@ -837,7 +812,6 @@ router.delete("/profile-photo", verifyToken, async (req, res) => {
       }
     }
 
-    // Clear from database
     if (isClub && effectiveClubId) {
       await prisma.club.update({ where: { id: effectiveClubId }, data: { clubLogo: null } });
     } else if (isAdmin) {

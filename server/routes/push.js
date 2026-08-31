@@ -40,7 +40,6 @@ router.get("/vapid-public-key", (req, res) => {
   }
 });
 
-// ── POST /api/push/subscribe ──────────────────────────────────────────────────
 router.post("/subscribe", verifyToken, async (req, res) => {
   try {
     await ensurePushTable();
@@ -85,8 +84,7 @@ router.post("/subscribe", verifyToken, async (req, res) => {
       return res.status(201).json({ message: "Push subscription saved successfully.", subscription });
     }
 
-    // Fallback using raw SQL if prisma.pushSubscription is not present on Prisma client instance
-    const existingRows = await prisma.$queryRaw`
+        const existingRows = await prisma.$queryRaw`
       SELECT id FROM "PushSubscription" WHERE endpoint = ${endpoint} LIMIT 1
     `;
 
@@ -114,7 +112,6 @@ router.post("/subscribe", verifyToken, async (req, res) => {
   }
 });
 
-// ── POST /api/push/unsubscribe ────────────────────────────────────────────────
 router.post("/unsubscribe", verifyToken, async (req, res) => {
   try {
     await ensurePushTable();

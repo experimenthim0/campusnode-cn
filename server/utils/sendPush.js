@@ -62,13 +62,11 @@ export async function sendWebPushNotification(recipientUserIds, notificationPayl
 
         if (response.status === 200 || response.status === 201 || response.status === 202) {
           console.log(`[CampusNode Push] Push delivered to ${sub.endpoint.slice(0, 35)}...`);
-          // Update lastUsedAt
           await prisma.pushSubscription.update({
             where: { id: sub.id },
             data: { lastUsedAt: new Date() },
           }).catch(() => {});
         } else if (response.status === 404 || response.status === 410) {
-          // Subscription expired or unsubscribed on browser side — remove from DB
           console.log(`[CampusNode Push] Removing expired subscription (${response.status}): ${sub.id}`);
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
         } else {

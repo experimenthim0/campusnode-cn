@@ -25,7 +25,6 @@ export const ColorExtractorDemo = () => {
 
   return (
     <div className="min-h-screen bg-[#070708] text-white py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
-      {/* Header Section */}
       <div className="max-w-4xl mx-auto text-center mb-16">
         <span className="px-3 py-1 text-xs font-semibold tracking-wider text-purple-400 uppercase bg-purple-950/40 rounded-full border border-purple-800/30">
           Component Showcase

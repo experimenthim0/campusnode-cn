@@ -17,7 +17,6 @@ const AdminNavbar = () => {
   return (
     <nav className="sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white dark:bg-[#0a0a0a] border-b border-neutral-100 dark:border-neutral-800/80 myfont">
       <div className="max-w-full mx-auto px-5 lg:px-8 h-14 flex items-center justify-between gap-4">
-        {/* ── Left: Logo + Brand ── */}
         <div className="flex items-center gap-3 sm:gap-4">
           <img src="/nitjlogo.png" alt="NITJ Logo" className="w-9 h-10" />
           <span className="font-light text-[22px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
@@ -28,7 +27,6 @@ const AdminNavbar = () => {
           </span>
         </div>
 
-        {/* ── Right: Actions ── */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Visit Website */}
           <button

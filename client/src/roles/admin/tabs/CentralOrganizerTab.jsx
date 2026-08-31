@@ -112,7 +112,6 @@ const CentralOrganizerTab = ({
 
     return (
         <div className="space-y-6">
-            {/* DSW Account Header Card */}
             <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-zinc-800">
                     <div>
@@ -309,7 +308,6 @@ const CentralOrganizerTab = ({
                 </div>
             )}
 
-            {/* Search & Assignment Panel */}
             <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a] space-y-4">
                 <h3 className="text-sm font-black text-black dark:text-white tracking-wide">
                     Assign Institutional Roles to Students

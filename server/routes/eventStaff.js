@@ -1,9 +1,3 @@
-/**
- * Event Staff Student Routes
- *
- * Student-facing routes for managing their own event staff invitations and assignments.
- * All identity is derived from req.user.userId (server authentication context).
- */
 
 import express from "express";
 import { verifyToken } from "../middleware/auth.js";
@@ -13,10 +7,6 @@ import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 const router = express.Router();
 
 router.use(verifyToken);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /event-staff/my-assignments — List user's active/pending staff assignments
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.get("/my-assignments", async (req, res) => {
   try {
@@ -47,7 +37,6 @@ router.get("/my-assignments", async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    // Separate active, pending, and past/revoked
     const now = new Date();
     const active = [];
     const pending = [];
@@ -73,10 +62,6 @@ router.get("/my-assignments", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /event-staff/invitations/:staffId/accept — Accept staff invitation
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.post("/invitations/:staffId/accept", async (req, res) => {
   try {
     const { staffId } = req.params;
@@ -91,7 +76,6 @@ router.post("/invitations/:staffId/accept", async (req, res) => {
       return res.status(404).json({ message: "Invitation not found." });
     }
 
-    // Must belong to authenticated user
     if (staffRecord.userId !== userId) {
       return res.status(403).json({ message: "This invitation was not sent to you." });
     }
@@ -135,10 +119,6 @@ router.post("/invitations/:staffId/accept", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// POST /event-staff/invitations/:staffId/reject — Reject staff invitation
-// ═══════════════════════════════════════════════════════════════════════════════
 
 router.post("/invitations/:staffId/reject", async (req, res) => {
   try {
@@ -185,16 +165,11 @@ router.post("/invitations/:staffId/reject", async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GET /event-staff/events/:eventId/overview — Event overview for active staff
-// ═══════════════════════════════════════════════════════════════════════════════
-
 router.get("/events/:eventId/overview", async (req, res) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.userId;
 
-    // Verify user is active staff on this event or admin/CO
     const staffRecord = await prisma.eventStaff.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });

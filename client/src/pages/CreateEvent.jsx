@@ -135,7 +135,6 @@ const CreateEvent = () => {
         });
     };
 
-    // ── Sponsor Handlers ───────────────────────────────────────────────
     const addSponsor = () => {
         setSponsors(prev => [...prev, { name: '', logoUrl: '', websiteUrl: '' }]);
         setSponsorErrors(prev => [...prev, {}]);
@@ -154,7 +153,6 @@ const CreateEvent = () => {
         });
     };
 
-    // ── Media Handlers ─────────────────────────────────────────────────
     const addMedia = () => {
         setMedia(prev => [...prev, { url: '', type: MediaType.IMAGE }]);
         setMediaErrors(prev => [...prev, {}]);
@@ -173,7 +171,6 @@ const CreateEvent = () => {
         });
     };
 
-    // ── Validation ─────────────────────────────────────────────────────
     const URL_PATTERN = /^https?:\/\/.+/;
 
     const validateSponsorsAndMedia = () => {
@@ -196,7 +193,6 @@ const CreateEvent = () => {
         return valid;
     };
 
-    // ── Step-wise Validation Logic ────────────────────────────────────
     const validateStep1 = () => {
         if (!formData.title || !formData.title.trim()) {
             return 'Event Title is required.';
@@ -339,7 +335,6 @@ const CreateEvent = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ── Custom Fields Handlers ──────────────────────────────────────────
     const addCustomField = () => {
         setFormData(prev => ({
             ...prev,
@@ -457,7 +452,6 @@ const CreateEvent = () => {
     return (
         <div className="min-h-screen bg-neutral-50 py-12 px-4">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
                 <div className="mb-6">
                     <button
                         type="button"
@@ -599,7 +593,6 @@ const CreateEvent = () => {
                                 <p className="text-xs text-neutral-500 mt-1">Optional: If left blank, registrations stay open until start time.</p>
                             </div>
 
-                            {/* Registration Restrictions Card */}
                             <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-6">
                                 <div>
                                     <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">Registration Restrictions</h3>
@@ -719,7 +712,6 @@ const CreateEvent = () => {
                                 </div>
                             )}
 
-                            {/* Total Seats */}
                             <div>
                                 <label className={labelCls}>Total Seats <span className="text-orange-600">*</span></label>
                                 <div className="flex items-center gap-4 mb-3">
@@ -796,7 +788,6 @@ const CreateEvent = () => {
                                     </div>
                                 </div>
 
-                                {/* Registration Fee Input (Conditional) */}
                                 {formData.paymentMethod !== 'FREE' && (
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-orange-600">*</span></label>
@@ -1193,7 +1184,6 @@ const CreateEvent = () => {
                         </div>
                     )}
 
-                    {/* Step Navigation Bar */}
                     <div className="flex gap-4 pt-6 border-t-2 border-neutral-100">
                         {currentStep === 1 ? (
                             <button

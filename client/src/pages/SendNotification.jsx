@@ -33,7 +33,6 @@ const SendNotification = () => {
     setSearchParams(tab === "notifications" ? {} : { tab });
   };
 
-  // Push Notifications state
   const [targetType, setTargetType] = useState("ALL_STUDENTS");
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -44,13 +43,11 @@ const SendNotification = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [history, setHistory] = useState([]);
 
-  // Club Announcements state
   const [managedClubs, setManagedClubs] = useState([]);
   const [selectedClubId, setSelectedClubId] = useState(null);
   const [activeClubData, setActiveClubData] = useState(null);
   const [loadingClub, setLoadingClub] = useState(false);
 
-  // Compute available managed clubs
   useEffect(() => {
     if (user) {
       const clubs = [];
@@ -88,7 +85,6 @@ const SendNotification = () => {
     }
   }, [user, role, selectedClubId]);
 
-  // Fetch club data for announcements
   const fetchActiveClubDetails = useCallback(async (clubIdToFetch) => {
     const targetId = clubIdToFetch || selectedClubId;
     if (!targetId) return;
@@ -113,7 +109,6 @@ const SendNotification = () => {
     }
   }, [selectedClubId, fetchActiveClubDetails]);
 
-  // Fetch Push Notifications data
   useEffect(() => {
     if (user && (user.id || user.clubId || user._id)) {
       const isCentral = role === "central_organizer" || user?.principalType === "INSTITUTIONAL";
@@ -174,7 +169,6 @@ const SendNotification = () => {
 
   return (
     <div className="max-w-[850px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 myfont space-y-6 md:space-y-8">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50 rounded-full">
@@ -189,7 +183,6 @@ const SendNotification = () => {
         </p>
       </div>
 
-      {/* Top Tab Bar Navigation */}
       <div className="flex items-center gap-2 p-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800">
         <button
           type="button"
@@ -223,10 +216,8 @@ const SendNotification = () => {
         </button>
       </div>
 
-      {/* ── TAB 1: PUSH NOTIFICATIONS ────────────────────────────────────────── */}
       {currentTab === "notifications" && (
         <div className="space-y-8 animate-in fade-in duration-200">
-          {/* Form Card */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs">
             {successMsg && (
               <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 font-semibold text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm rounded-xl flex items-center gap-2">
@@ -331,7 +322,6 @@ const SendNotification = () => {
                 />
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
@@ -405,7 +395,6 @@ const SendNotification = () => {
         </div>
       )}
 
-      {/* ── TAB 2: CLUB ANNOUNCEMENTS ────────────────────────────────────────── */}
       {currentTab === "announcements" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Multiple Managed Clubs Selector if applicable */}

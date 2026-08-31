@@ -25,13 +25,11 @@ export function normalizeYearToNumber(yearVal) {
 
   const str = String(yearVal).trim().toLowerCase();
 
-  // Match direct integer strings like "1", "2"
   const directNum = parseInt(str, 10);
   if (!isNaN(directNum) && directNum > 0 && directNum <= 10) {
     return directNum;
   }
 
-  // Match ordinal / label formats
   if (str.includes("1st") || str.includes("first") || str === "year 1" || str === "year1") return 1;
   if (str.includes("2nd") || str.includes("second") || str === "year 2" || str === "year2") return 2;
   if (str.includes("3rd") || str.includes("third") || str === "year 3" || str === "year3") return 3;
@@ -98,16 +96,11 @@ export function calculateAcademicProgress(student = {}, currentDate = new Date()
 
   const gradYear = expectedGraduationYear ? parseInt(expectedGraduationYear, 10) : null;
 
-  // 1. If graduation year is provided and valid:
   if (gradYear && !isNaN(gradYear)) {
-    // Remaining academic years until graduation
-    // For a student graduating in 2028:
     // In session 2026-27: yearsRemaining = 2028 - (2026 + 1) = 1 year remaining
-    // Academic Year = 4 (duration) - 1 = 3 (3rd Year)
     const yearsRemaining = gradYear - (sessionStartYear + 1);
     let calculatedYear = maxDuration - yearsRemaining;
 
-    // Graduated case: graduation session is in the past
     if (yearsRemaining < 0 || calculatedYear > maxDuration) {
       return {
         academicYear: maxDuration,
@@ -120,12 +113,10 @@ export function calculateAcademicProgress(student = {}, currentDate = new Date()
       };
     }
 
-    // Pre-admission case: student entered a future graduation year beyond duration
     if (calculatedYear <= 0) {
       calculatedYear = 1;
     }
 
-    // Clamp to valid range [1..maxDuration]
     const academicYear = Math.min(Math.max(calculatedYear, 1), maxDuration);
     const semester = isOddSemester ? (academicYear * 2) - 1 : academicYear * 2;
 
@@ -140,13 +131,11 @@ export function calculateAcademicProgress(student = {}, currentDate = new Date()
     };
   }
 
-  // 2. Fallback: Parse legacy yearFallback if expectedGraduationYear is not set
   if (yearFallback) {
     const parsedYear = normalizeYearToNumber(yearFallback);
     if (parsedYear) {
       const academicYear = Math.min(Math.max(parsedYear, 1), maxDuration);
       const semester = isOddSemester ? (academicYear * 2) - 1 : academicYear * 2;
-      // Infer expected graduation year for convenience
       const inferredGradYear = sessionStartYear + 1 + (maxDuration - academicYear);
 
       return {
@@ -161,7 +150,6 @@ export function calculateAcademicProgress(student = {}, currentDate = new Date()
     }
   }
 
-  // 3. Fallback for uninitialized/incomplete records
   return {
     academicYear: 1,
     academicYearLabel: "1st Year",

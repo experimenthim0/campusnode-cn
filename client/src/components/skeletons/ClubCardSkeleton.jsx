@@ -34,7 +34,6 @@ const ClubCardSkeleton = () => {
         {/* Divider */}
         <div className="border-t border-neutral-100 dark:border-neutral-800/80 my-4" />
 
-        {/* Coordinators List (Stacked Rows) */}
         <div className="space-y-3">
           <div className="space-y-1">
             <Skeleton className="w-12 h-2.5 rounded" />
@@ -46,9 +45,7 @@ const ClubCardSkeleton = () => {
           </div>
         </div>
 
-        {/* Footer Skeletons */}
         <div className="mt-auto pt-5 space-y-3.5">
-          {/* Social Icons Skeletons Row */}
           <div>
             <Skeleton className="w-12 h-2 rounded mb-1.5" />
             <div className="flex gap-2">
@@ -57,7 +54,6 @@ const ClubCardSkeleton = () => {
             </div>
           </div>
           
-          {/* Action Button Skeleton Row */}
           <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5">
             <Skeleton className="w-full h-[38px] rounded-xl" />
           </div>

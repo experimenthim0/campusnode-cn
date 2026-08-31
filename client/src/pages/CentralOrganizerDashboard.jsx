@@ -93,11 +93,9 @@ const CentralOrganizerDashboard = () => {
   const [allBranches, setAllBranches] = useState(true);
   const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
 
-  // Form State
   const [formData, setFormData] = useState(initialFormData);
   const [creating, setCreating] = useState(false);
 
-  // Participating club form state
   const [selectedClubId, setSelectedClubId] = useState("");
   const [addingClub, setAddingClub] = useState(false);
 
@@ -347,7 +345,6 @@ const CentralOrganizerDashboard = () => {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* ── Top Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
           <div>
             <div className="flex items-center gap-2">
@@ -372,10 +369,8 @@ const CentralOrganizerDashboard = () => {
           </button>
         </div>
 
-        {/* ── Metric Cards ── */}
         <CentralOrganizerStats stats={stats} />
 
-        {/* ── Tab Navigation ── */}
         <div className="flex border-b border-neutral-200 dark:border-neutral-800 gap-6 text-sm font-bold overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("events")}
@@ -461,9 +456,7 @@ const CentralOrganizerDashboard = () => {
           )}
         </div>
 
-        {/* ── Tab Content ── */}
 
-        {/* 1. EVENTS LIST TAB */}
         {activeTab === "events" && (
           <CentralEventList
             events={events}
@@ -479,7 +472,6 @@ const CentralOrganizerDashboard = () => {
           />
         )}
 
-        {/* 2. CREATE / EDIT EVENT TAB */}
         {activeTab === "create" && (
           <CentralEventForm
             formData={formData}
@@ -503,7 +495,6 @@ const CentralOrganizerDashboard = () => {
           />
         )}
 
-        {/* 3. STAFF DELEGATION TAB */}
         {activeTab === "staff" && (
           <CentralStaffDelegation
             events={events}
@@ -513,7 +504,6 @@ const CentralOrganizerDashboard = () => {
           />
         )}
 
-        {/* 4. PARTICIPATING CLUBS TAB */}
         {activeTab === "clubs" && (
           <CentralParticipatingClubs
             events={events}
@@ -529,7 +519,6 @@ const CentralOrganizerDashboard = () => {
           />
         )}
 
-        {/* 5. AUDIT LOGS TAB */}
         {activeTab === "audit" && (
           <CentralAuditLogs events={events} />
         )}

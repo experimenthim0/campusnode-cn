@@ -21,7 +21,6 @@ const upload = multer({
   },
 });
 
-// Helper to check if user is blocked
 const checkBlocked = async (req, res, next) => {
   try {
     const user = await prisma.studentUser.findUnique({
@@ -47,14 +46,12 @@ const checkBlocked = async (req, res, next) => {
   }
 };
 
-// POST /api/lost-found - Create a new item
 router.post("/", verifyToken, checkBlocked, async (req, res) => {
   try {
     sanitizeFields(req.body, ["title", "description", "whatsapp"]);
     const { title, description, type, image_url, image_public_id, whatsapp } = req.body;
     const student = req.fullUser;
 
-    // Rate limiting: 2 posts per day
     const today = new Date().setHours(0, 0, 0, 0);
     const lastPostDate = student.lastLostFoundPostDate ? new Date(student.lastLostFoundPostDate).setHours(0, 0, 0, 0) : null;
 
@@ -100,7 +97,6 @@ router.post("/", verifyToken, checkBlocked, async (req, res) => {
   }
 });
 
-// POST /api/lost-found/upload - Handle image upload
 router.post("/upload", verifyToken, upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
@@ -150,7 +146,6 @@ router.get("/signature", verifyToken, (req, res) => {
   }
 });
 
-// GET /api/lost-found - Fetch all active items + recently reunited (within 1 day), sorted by newest first
 router.get("/", verifyToken, async (req, res) => {
   try {
     const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
@@ -175,7 +170,6 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/lost-found/my-posts - Fetch items posted by the user
 router.get("/my-posts", verifyToken, async (req, res) => {
   try {
     const items = await prisma.lostFoundItem.findMany({
@@ -188,7 +182,6 @@ router.get("/my-posts", verifyToken, async (req, res) => {
   }
 });
 
-// PATCH /api/lost-found/:id/reunite - Mark as reunited
 router.patch("/:id/reunite", verifyToken, async (req, res) => {
   try {
     const item = await prisma.lostFoundItem.findUnique({
@@ -222,7 +215,6 @@ router.patch("/:id/reunite", verifyToken, async (req, res) => {
   }
 });
 
-// POST /api/lost-found/:id/report - Report fraud
 router.post("/:id/report", verifyToken, async (req, res) => {
   try {
     sanitizeFields(req.body, ["reason"]);
@@ -234,7 +226,6 @@ router.post("/:id/report", verifyToken, async (req, res) => {
     const { userId } = req.user;
 
     const result = await prisma.$transaction(async (tx) => {
-      // Select the row with FOR UPDATE lock to serialize concurrent reports
       const items = await tx.$queryRaw`
         SELECT * FROM "LostFoundItem" WHERE id = ${req.params.id} FOR UPDATE
       `;
@@ -274,13 +265,11 @@ router.post("/:id/report", verifyToken, async (req, res) => {
       return { updated, itemTitle: dbItem.title, ownerId: dbItem.userId };
     });
 
-    // Get reporter name
     const reporter = await prisma.studentUser.findUnique({
       where: { id: userId },
       select: { name: true }
     });
 
-    // 1. Notify the post owner about the report
     const ownerNotification = await prisma.notification.create({
       data: {
         id: createObjectId(),
@@ -292,7 +281,6 @@ router.post("/:id/report", verifyToken, async (req, res) => {
       }
     });
 
-    // 2. Notify the reporter confirming their submission
     const reporterNotification = await prisma.notification.create({
       data: {
         id: createObjectId(),
@@ -304,14 +292,11 @@ router.post("/:id/report", verifyToken, async (req, res) => {
       }
     });
 
-    // Send real-time notifications via socket if available
     if (req.io) {
-      // Emit to post owner
       req.io.to(result.ownerId).emit("new-notification", {
         ...ownerNotification,
         _id: ownerNotification.id
       });
-      // Emit to reporter
       req.io.to(req.user.userId).emit("new-notification", {
         ...reporterNotification,
         _id: reporterNotification.id
@@ -336,7 +321,6 @@ router.post("/:id/report", verifyToken, async (req, res) => {
   }
 });
 
-// POST /api/lost-found/:id/claim - Claim item (returns finder contact)
 router.post("/:id/claim", verifyToken, checkBlocked, async (req, res) => {
   try {
     const item = await prisma.lostFoundItem.findUnique({
@@ -349,9 +333,6 @@ router.post("/:id/claim", verifyToken, checkBlocked, async (req, res) => {
     if (!item) return res.status(404).json({ message: "Item not found." });
     if (item.userId === req.user.userId) return res.status(400).json({ message: "You cannot claim your own item." });
 
-    // In a full implementation, we'd send a notification here
-    // For now, return the contact info to the claimer
-    
     res.json({ 
       message: "Item claim requested", 
       contact: {
@@ -365,7 +346,6 @@ router.post("/:id/claim", verifyToken, checkBlocked, async (req, res) => {
   }
 });
 
-// POST /api/lost-found/:id/report-liar - Finder reports false claimer
 router.post("/:id/report-liar", verifyToken, async (req, res) => {
   try {
     const { liarId, reason } = req.body;

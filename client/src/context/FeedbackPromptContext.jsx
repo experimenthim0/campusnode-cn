@@ -43,12 +43,10 @@ export const FeedbackPromptProvider = ({ children }) => {
       setNextPending(next);
       setPendingEvents(events);
 
-      // Check if session has dismissed this user's popup
       if (autoPrompt && count > 0) {
         const sessionDismissedKey = `feedback_dismissed_${studentId}`;
         const isDismissed = sessionStorage.getItem(sessionDismissedKey);
         if (!isDismissed) {
-          // Open modal after a short smooth delay so page loads cleanly
           setTimeout(() => {
             setIsModalOpen(true);
           }, 1200);

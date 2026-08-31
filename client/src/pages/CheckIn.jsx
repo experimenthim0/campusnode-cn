@@ -37,7 +37,6 @@ const CheckIn = () => {
   // Session attendance history (successful check-ins only)
   const [attendanceLog, setAttendanceLog] = useState([]);
 
-  // Unified scan state
   const [scanState, setScanState] = useState('idle');
   const [scanResult, setScanResult] = useState(null);
   const [attendedCount, setAttendedCount] = useState(0);

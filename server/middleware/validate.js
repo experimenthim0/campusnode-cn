@@ -9,7 +9,6 @@ export const validate = (schema) => (req, res, next) => {
       query: req.query,
       params: req.params,
     });
-    // Only overwrite req.body — Express 5 makes req.query and req.params
     // read-only getters, so assigning to them throws TypeError.
     if (validData.body) req.body = validData.body;
     next();

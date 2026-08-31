@@ -7,7 +7,6 @@ const TermsAndConditions = () => {
     return (
         <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 py-12 px-4 transition-colors duration-300">
             <div className="max-w-4xl mx-auto">
-                {/* Top Navigation */}
                 <div className="mb-8 flex items-center justify-between">
                     <button 
                         onClick={() => navigate(-1)}
@@ -33,7 +32,6 @@ const TermsAndConditions = () => {
                     </p>
                 </div>
 
-                {/* Highlight Summary Card */}
                 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
                     <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-orange-600/10 dark:bg-orange-500/15 text-orange-600 flex items-center justify-center text-2xl shrink-0">
@@ -50,7 +48,6 @@ const TermsAndConditions = () => {
                     </div>
                 </div>
 
-                {/* Sections List */}
                 <div className="space-y-6">
 
                     {/* Section 1: Acceptance */}
@@ -64,7 +61,6 @@ const TermsAndConditions = () => {
                         </p>
                     </section>
 
-                    {/* Section 2: User Accounts */}
                     <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm">
                         <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">2</span>
@@ -200,7 +196,6 @@ const TermsAndConditions = () => {
 
                 </div>
 
-                {/* Footer Disclaimer */}
                 <div className="mt-10 text-center text-xs text-neutral-400 dark:text-neutral-600">
                     <p>CampusNode · NIT Jalandhar Student Portal</p>
                 </div>

@@ -17,12 +17,10 @@ const VenuesTab = ({
     const [venueStatusFilter, setVenueStatusFilter] = useState('all');
     const [openMenuVenueId, setOpenMenuVenueId] = useState(null);
 
-    // Add Venue state
     const [newVenueName, setNewVenueName] = useState('');
     const [newVenueIsOpen, setNewVenueIsOpen] = useState(true);
     const [isCreatingVenue, setIsCreatingVenue] = useState(false);
 
-    // Edit Venue state
     const [editingVenue, setEditingVenue] = useState(null);
     const [isEditVenueModalOpen, setIsEditVenueModalOpen] = useState(false);
 
@@ -99,7 +97,6 @@ const VenuesTab = ({
 
     return (
         <div className="space-y-6">
-            {/* 1. Minimal Summary KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800/80 bg-white dark:bg-[#0c0c0c] flex items-center justify-between">
                     <div>
@@ -130,7 +127,6 @@ const VenuesTab = ({
                 </div>
             </div>
 
-            {/* 2. Search & Filters Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#0a0a0a] p-2.5 border border-neutral-200 dark:border-zinc-800 rounded-2xl">
                 <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto flex-1">
                     <div className="relative flex-1 max-w-sm">
@@ -154,7 +150,6 @@ const VenuesTab = ({
                 </span>
             </div>
 
-            {/* 3. 3-Column Clean Table */}
             <DataTable>
                 <thead>
                     <tr className="border-b border-neutral-200 dark:border-zinc-800">
@@ -263,7 +258,6 @@ const VenuesTab = ({
                 </tbody>
             </DataTable>
 
-            {/* Edit Venue Modal */}
             {isEditVenueModalOpen && editingVenue && (
                 <Modal
                     onClose={() => { setIsEditVenueModalOpen(false); setEditingVenue(null); }}
@@ -315,7 +309,6 @@ const VenuesTab = ({
                 </Modal>
             )}
 
-            {/* Add Venue Modal */}
             {isAddVenueModalOpen && (
                 <Modal
                     onClose={() => setIsAddVenueModalOpen(false)}

@@ -1,11 +1,7 @@
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "./objectId.js";
 
-/**
- * Granular Permission Definitions (resource.action)
- */
 export const PERMISSIONS = {
-  // Event Lifecycle (Club & Base)
   EVENT_CREATE: "event.create",
   EVENT_UPDATE: "event.update",
   EVENT_DELETE_REQUEST: "event.delete.request",
@@ -13,11 +9,9 @@ export const PERMISSIONS = {
   EVENT_APPROVE: "event.approve",
   EVENT_PUBLISH: "event.publish",
 
-  // Operations
   ATTENDANCE_TAKE: "attendance.take",
   CERTIFICATE_MANAGE: "certificate.manage",
 
-  // Club & Team Governance
   CLUB_UPDATE: "club.update",
   CLUB_MANAGE_MEMBERS: "club.manage_members",
   CLUB_INVITE_MEMBERS: "club.invite_members",
@@ -25,26 +19,21 @@ export const PERMISSIONS = {
   CLUB_ASSIGN_ROLES: "club.assign_roles",
   CLUB_TRANSFER_LEADERSHIP: "club.transfer_leadership",
 
-  // Finance
   PAYMENT_REVIEW: "payment.review",
   PAYMENT_VERIFY: "payment.verify",
   PAYOUT_REQUEST: "payout.request",
   PAYOUT_APPROVE: "payout.approve",
 
-  // Broadcasts
   NOTIFICATION_SEND_REGISTRANTS: "notification.send.registrants",
   NOTIFICATION_SEND_CAMPUS: "notification.send.campus",
 
-  // Registrations & Participation
   REGISTRATION_CREATE: "registration.create",
   REGISTRATION_CANCEL: "registration.cancel",
 
-  // Lost & Found
   LOSTFOUND_CREATE: "lostfound.create",
   LOSTFOUND_VIEW: "lostfound.view",
   LOSTFOUND_MODERATE: "lostfound.moderate",
 
-  // Institutional Permissions (DSW / Institute-wide)
   EVENT_CREATE_INSTITUTION: "event.create.institution",
   EVENT_UPDATE_INSTITUTION: "event.update.institution",
   EVENT_DELETE_REQUEST_INSTITUTION: "event.delete.request.institution",
@@ -59,7 +48,6 @@ export const PERMISSIONS = {
   EVENT_STAFF_MANAGE_INSTITUTION: "event_staff.manage.institution",
   AUDIT_VIEW_INSTITUTION: "audit.view.institution",
 
-  // --- Backward Compatibility Aliases ---
   EVENT_VIEW: "event.view",
   EVENT_DELETE: "event.delete",
   EVENT_ATTENDANCE: "event.manage_attendance",
@@ -91,9 +79,6 @@ export const PERMISSIONS = {
   EVENT_STAFF_MANAGE: "event_staff.manage",
 };
 
-/**
- * Normalizes legacy permission strings to canonical ones.
- */
 export function normalizePermission(permission) {
   switch (permission) {
     case PERMISSIONS.EVENT_ATTENDANCE:
@@ -111,9 +96,6 @@ export function normalizePermission(permission) {
   }
 }
 
-/**
- * Institutional Permissions granted to DSW Account or Central Event Organiser Lead.
- */
 export const INSTITUTIONAL_LEAD_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_UPDATE,
@@ -156,9 +138,6 @@ export const INSTITUTIONAL_LEAD_PERMISSIONS = [
   PERMISSIONS.AUDIT_EXPORT,
 ];
 
-/**
- * Operational permissions granted to an official ClubAccount for its club.
- */
 export const CLUB_ACCOUNT_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_UPDATE,
@@ -179,7 +158,6 @@ export const CLUB_ACCOUNT_PERMISSIONS = [
   PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
   PERMISSIONS.REGISTRATION_CREATE,
   PERMISSIONS.REGISTRATION_CANCEL,
-  // Aliases
   PERMISSIONS.EVENT_VIEW,
   PERMISSIONS.EVENT_ATTENDANCE,
   PERMISSIONS.EVENT_CERTIFICATE,
@@ -197,9 +175,6 @@ export const CLUB_ACCOUNT_PERMISSIONS = [
   PERMISSIONS.TEAM_MANAGE,
 ];
 
-/**
- * Permissions granted to a Faculty Coordinator for their assigned club.
- */
 export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_UPDATE,
@@ -220,7 +195,6 @@ export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.PAYMENT_VERIFY,
   PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
   PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
-  // Aliases
   PERMISSIONS.EVENT_VIEW,
   PERMISSIONS.EVENT_ATTENDANCE,
   PERMISSIONS.EVENT_CERTIFICATE,
@@ -241,9 +215,6 @@ export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.LOST_FOUND_CREATE,
 ];
 
-/**
- * Permissions granted to a student with CLUB_HEAD membership for that club.
- */
 export const STUDENT_CLUB_HEAD_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_UPDATE,
@@ -262,7 +233,6 @@ export const STUDENT_CLUB_HEAD_PERMISSIONS = [
   PERMISSIONS.PAYOUT_REQUEST,
   PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
   PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
-  // Aliases
   PERMISSIONS.EVENT_VIEW,
   PERMISSIONS.EVENT_ATTENDANCE,
   PERMISSIONS.EVENT_CERTIFICATE,
@@ -282,9 +252,6 @@ export const STUDENT_CLUB_HEAD_PERMISSIONS = [
   PERMISSIONS.TEAM_MANAGE,
 ];
 
-/**
- * Permissions granted to a student with COORDINATOR membership for that club.
- */
 export const STUDENT_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_UPDATE,
@@ -294,7 +261,6 @@ export const STUDENT_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.PAYMENT_REVIEW,
   PERMISSIONS.PAYMENT_VERIFY,
   PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
-  // Aliases
   PERMISSIONS.EVENT_VIEW,
   PERMISSIONS.EVENT_ATTENDANCE,
   PERMISSIONS.EVENT_CERTIFICATE,
@@ -310,9 +276,6 @@ export const STUDENT_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.TEAM_MANAGE,
 ];
 
-/**
- * Base permissions common to all student accounts regardless of club membership.
- */
 export const BASE_STUDENT_PERMISSIONS = [
   PERMISSIONS.EVENT_VIEW,
   PERMISSIONS.REGISTRATION_CREATE,
@@ -360,9 +323,6 @@ export const ROLE_PERMISSIONS_MAP = {
   INSTITUTIONAL: INSTITUTIONAL_LEAD_PERMISSIONS,
 };
 
-/**
- * Check if a role string has a given permission (for backward compatibility).
- */
 export function roleHasPermission(role, permission) {
   if (!role || !permission) return false;
   if (role === "admin" || role === "SUPER_ADMIN") return true;
@@ -423,12 +383,10 @@ export function hasPermission(user, permission, resource = null) {
 
   const perm = normalizePermission(permission);
 
-  // 1. Super Admin wildcard
   if (user.role === "admin" || user.role === "SUPER_ADMIN" || user.principalType === "ADMIN") {
     return true;
   }
 
-  // Determine principal type
   const principalType = user.principalType || (
     user.role === "facultyCoordinator" ? "FACULTY" :
     user.role === "lostFoundAdmin" ? "ADMIN" :
@@ -448,7 +406,6 @@ export function hasPermission(user, permission, resource = null) {
   const targetClubId = resource?.clubId ?? (!isInstitutionalResource ? resource?.id : null);
   const targetUserId = resource?.userId ?? resource?.createdById ?? resource?.id ?? null;
 
-  // ── PRINCIPAL: EXTERNAL PARTICIPANT ──────────────────────────────────
   if (principalType === "EXTERNAL" || user.role === "external" || user.userType === "external") {
     if (targetUserId && String(targetUserId) === String(user.userId || user.id)) {
       if (perm === PERMISSIONS.USER_UPDATE || perm === PERMISSIONS.USER_VIEW) return true;
@@ -456,16 +413,13 @@ export function hasPermission(user, permission, resource = null) {
     return EXTERNAL_USER_PERMISSIONS.includes(perm) || EXTERNAL_USER_PERMISSIONS.includes(permission);
   }
 
-  // ── PRINCIPAL: INSTITUTIONAL ACCOUNT DIRECT LOGIN ─────────────────────
   if (principalType === "INSTITUTIONAL") {
-    // Institutional account cannot manage individual clubs
     if (targetClubId && !isInstitutionalResource) {
       return false;
     }
     return INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission);
   }
 
-  // ── PRINCIPAL: CLUB ACCOUNT ───────────────────────────────────────────
   if (principalType === "CLUB") {
     // Club accounts strictly cannot manage institutional events (e.g. Fresher Party)
     if (isInstitutionalResource) {
@@ -478,14 +432,12 @@ export function hasPermission(user, permission, resource = null) {
     const hasBase = CLUB_ACCOUNT_PERMISSIONS.includes(perm) || CLUB_ACCOUNT_PERMISSIONS.includes(permission);
     if (!hasBase) return false;
 
-    // Scope check: If a clubId is specified, must match this club account's clubId
     if (targetClubId && user.clubId) {
       return String(user.clubId) === String(targetClubId);
     }
     return true;
   }
 
-  // ── PRINCIPAL: FACULTY COORDINATOR ────────────────────────────────────
   if (principalType === "FACULTY") {
     // Faculty coordinator of a club cannot manage institutional events unless assigned
     if (isInstitutionalResource) {
@@ -494,14 +446,12 @@ export function hasPermission(user, permission, resource = null) {
     const hasBase = FACULTY_COORDINATOR_PERMISSIONS.includes(perm) || FACULTY_COORDINATOR_PERMISSIONS.includes(permission);
     if (!hasBase) return false;
 
-    // Club-scoped actions require matching the faculty coordinator's assigned club
     if (targetClubId && user.clubId) {
       return String(user.clubId) === String(targetClubId);
     }
     return true;
   }
 
-  // ── SPECIALIZED ADMINS ────────────────────────────────────────────────
   if (user.role === "lostFoundAdmin") {
     return [
       PERMISSIONS.LOSTFOUND_VIEW,
@@ -544,30 +494,23 @@ export function hasPermission(user, permission, resource = null) {
     ].includes(permission);
   }
 
-  // ── PRINCIPAL: STUDENT ────────────────────────────────────────────────
-
-  // 1. Check Institutional Account Assignments (DSW)
   const activeInstAssignment = (user.institutionalAssignments || []).find((a) => a.status === "ACTIVE" || a.status === undefined);
   const isLegacyCentralOrganizer = user.accessLevel === "central_organizer" || user.role === "central_organizer";
 
   if (activeInstAssignment || isLegacyCentralOrganizer) {
     const isLeadCO = isLegacyCentralOrganizer || activeInstAssignment?.role === "CENTRAL_EVENT_ORGANISER";
 
-    // Campus-wide broadcasts
     if (perm === PERMISSIONS.NOTIFICATION_SEND_CAMPUS || permission === PERMISSIONS.NOTIFICATION_SEND_CAMPUS) {
       if (isLeadCO || activeInstAssignment?.canManageEvents) return true;
     }
 
-    // Checking institutional-scoped event permissions
     if (isInstitutionalResource || perm.endsWith(".institution") || permission.endsWith(".institution") || !targetClubId) {
-      // Full Lead Central Event Organiser
       if (isLeadCO) {
         if (INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission)) {
           return true;
         }
       }
 
-      // Capability: Event Management
       if (activeInstAssignment?.canManageEvents || activeInstAssignment?.role === "EVENT_COORDINATOR") {
         const eventPerms = [
           PERMISSIONS.EVENT_CREATE,
@@ -583,7 +526,6 @@ export function hasPermission(user, permission, resource = null) {
         if (eventPerms.includes(perm) || eventPerms.includes(permission)) return true;
       }
 
-      // Capability: Attendance
       if (activeInstAssignment?.canTakeAttendance || activeInstAssignment?.role === "ATTENDANCE_COORDINATOR") {
         const attPerms = [
           PERMISSIONS.ATTENDANCE_TAKE,
@@ -593,7 +535,6 @@ export function hasPermission(user, permission, resource = null) {
         if (attPerms.includes(perm) || attPerms.includes(permission)) return true;
       }
 
-      // Capability: Payment Verification
       if (activeInstAssignment?.canVerifyPayments || activeInstAssignment?.role === "PAYMENT_COORDINATOR") {
         const payPerms = [
           PERMISSIONS.PAYMENT_REVIEW,
@@ -605,7 +546,6 @@ export function hasPermission(user, permission, resource = null) {
         if (payPerms.includes(perm) || payPerms.includes(permission)) return true;
       }
 
-      // Capability: Staff Delegation
       if (activeInstAssignment?.canDelegateStaff) {
         const staffPerms = [
           PERMISSIONS.EVENT_STAFF_MANAGE,
@@ -614,7 +554,6 @@ export function hasPermission(user, permission, resource = null) {
         if (staffPerms.includes(perm) || staffPerms.includes(permission)) return true;
       }
 
-      // Custom permissions on institutional assignment
       const customInstPerms = activeInstAssignment?.customPermissions || [];
       if (customInstPerms.includes(perm) || customInstPerms.includes(permission)) {
         return true;
@@ -622,20 +561,16 @@ export function hasPermission(user, permission, resource = null) {
     }
   }
 
-  // 2. Check Club-scoped student membership permissions
   if (targetClubId && user.memberships && user.memberships.length > 0) {
     const membership = user.memberships.find((m) => String(m.clubId) === String(targetClubId));
     if (membership && membership.status !== "INACTIVE") {
-      // 1. Student CLUB_HEAD
       if (membership.role === "CLUB_HEAD") {
         if (STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission)) {
           return true;
         }
       }
 
-      // 2. Student COORDINATOR
       if (membership.role === "COORDINATOR") {
-        // Explicitly denied member management
         if (
           perm === PERMISSIONS.CLUB_MANAGE_MEMBERS ||
           perm === PERMISSIONS.CLUB_INVITE_MEMBERS ||
@@ -653,12 +588,10 @@ export function hasPermission(user, permission, resource = null) {
         }
       }
 
-      // 3. Custom Permissions on membership (for any member/coordinator)
       const customPerms = membership.customPermissions || [];
       if (customPerms.includes(perm) || customPerms.includes(permission)) {
         return true;
       }
-      // Backward-compat flags on membership
       if ((perm === PERMISSIONS.ATTENDANCE_TAKE || permission === PERMISSIONS.EVENT_ATTENDANCE) && (membership.canTakeAttendance || membership.permissions?.canTakeAttendance)) {
         return true;
       }
@@ -668,7 +601,6 @@ export function hasPermission(user, permission, resource = null) {
     }
   }
 
-  // 3. Creator self-permission
   if (targetUserId && String(targetUserId) === String(user.userId || user.studentId)) {
     if (perm === PERMISSIONS.USER_UPDATE || perm === PERMISSIONS.LOST_FOUND_UPDATE || perm === PERMISSIONS.LOST_FOUND_RESOLVE) {
       return true;
@@ -680,7 +612,6 @@ export function hasPermission(user, permission, resource = null) {
     }
   }
 
-  // 4. Base student permissions (available globally to all registered students)
   if (BASE_STUDENT_PERMISSIONS.includes(perm) || BASE_STUDENT_PERMISSIONS.includes(permission)) {
     return true;
   }
@@ -707,9 +638,6 @@ export function getEffectivePermissions(user, resource = null) {
   return Array.from(effective);
 }
 
-/**
- * Seed permissions into database if model exists.
- */
 export async function seedPermissions() {
   try {
     if (!prisma.permission) return;

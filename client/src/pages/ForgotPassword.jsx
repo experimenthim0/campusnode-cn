@@ -38,7 +38,6 @@ const ForgotPassword = () => {
         </div>
 
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm">
-          {/* Header */}
           <h2 className="text-lg font-bold text-black dark:text-white text-center">
             Forgot Password
           </h2>
@@ -46,7 +45,6 @@ const ForgotPassword = () => {
             Enter your registered email address and we'll send you a password reset link
           </p>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
@@ -82,7 +80,6 @@ const ForgotPassword = () => {
             </div>
           )}
 
-          {/* Footer */}
           <div className="mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800 text-center">
             <Link
               to="/login"

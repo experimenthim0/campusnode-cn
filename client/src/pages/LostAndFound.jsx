@@ -6,15 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import ShimmerText from '../components/ShimmerText';
 
-/* ─────────────────────────────────────────────
-   DESIGN TOKENS  (mirrors Tailwind + CSS vars)
-   Accent:   #E8500A  (ember orange)
-   Lost:     amber-tinted (#FEF3C7 / text-amber-700)
-   Found:    emerald-tinted (#D1FAE5 / text-emerald-700)
-   Reunited: slate-tinted  (blur + muted overlay)
-───────────────────────────────────────────── */
 
-// ── Inline style block injected once ─────────
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
 
@@ -63,7 +55,6 @@ const GLOBAL_STYLES = `
   .lf-modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 `;
 
-// ── Utility: inject styles once ───────────────
 let stylesInjected = false;
 function ensureStyles() {
   if (stylesInjected || typeof document === 'undefined') return;
@@ -74,7 +65,6 @@ function ensureStyles() {
   stylesInjected = true;
 }
 
-// ── Component ─────────────────────────────────
 const LostAndFound = () => {
   ensureStyles();
 
@@ -222,12 +212,10 @@ const LostAndFound = () => {
     finally { setUploading(false); }
   };
 
-  // ── Counts for hero stats ──
   const totalActive  = items.filter(i => i.status === 'ACTIVE').length;
   const totalLost    = items.filter(i => i.type === 'LOST').length;
   const totalReunited = items.filter(i => i.status === 'REUNITED').length;
 
-  // ── Login gate for unauthenticated users ────────────────────
   if (!user) {
     const mockPreviewItems = [
       { id: 1, type: 'LOST', title: 'Boat Airdopes 141 Case', location: 'CS Department, Lab 3', date: 'Today' },
@@ -241,7 +229,6 @@ const LostAndFound = () => {
     return (
       <div className="myfont min-h-screen bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#1A1917] dark:text-[#F5F4F0] relative overflow-hidden flex flex-col justify-between">
         
-        {/* ── Background Preview Feed (Visible, softly blurred) ────────────────── */}
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-60 dark:opacity-45 blur-[3px] scale-[1.01] transition-all">
           <header className="bg-white/80 dark:bg-[#161614]/80 border-b border-[#E5E4E0] dark:border-[#2A2A27] py-10 px-6 text-center">
             <h1 className="font-myfont text-5xl font-normal text-[#1A1917] dark:text-[#F5F4F0]">
@@ -271,7 +258,6 @@ const LostAndFound = () => {
         {/* Soft Ambient Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAF9]/40 via-[#FAFAF9]/75 to-[#FAFAF9]/95 dark:from-[#0D0D0C]/40 dark:via-[#0D0D0C]/75 dark:to-[#0D0D0C]/95 pointer-events-none" />
 
-        {/* ── Center Content / Minimal Student Card ────────────── */}
         <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 my-auto">
           <div className="bg-white/85 dark:bg-[#161614]/85 backdrop-blur-md border border-[#E5E4E0] dark:border-[#2A2A27] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-[0_12px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] transition-all">
             
@@ -322,7 +308,6 @@ const LostAndFound = () => {
 
   const filtered = getFilteredItems();
 
-  // ── Main render ───────────────────────────────────────────
   return (
     <div className="myfont min-h-screen bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#1A1917] dark:text-[#F5F4F0] transition-colors duration-300">
       <Toaster
@@ -339,7 +324,6 @@ const LostAndFound = () => {
         }}
       />
 
-      {/* ── Hero ─────────────────────────────────────────── */}
       <header className="bg-white dark:bg-[#161614] border-b border-[#E5E4E0] dark:border-[#2A2A27] py-16 px-6 md:px-8 relative overflow-hidden">
         {/* Glow / Pattern overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,var(--border)_1px,transparent_0)] bg-[size:28px_28px] opacity-50 pointer-events-none" />
@@ -357,7 +341,6 @@ const LostAndFound = () => {
         </div>
       </header>
 
-      {/* ── Sticky Control Bar ───────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white dark:bg-[#161614] border-b border-[#E5E4E0] dark:border-[#2A2A27] backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center gap-3 flex-wrap">
           <div className="flex bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl p-1 gap-0.5">
@@ -382,7 +365,6 @@ const LostAndFound = () => {
         </div>
       </div>
 
-      {/* ── Filter Pills Bar ─────────────────────────────── */}
       <div className="bg-[#FAFAF9] dark:bg-[#0D0D0C] border-b border-[#E5E4E0] dark:border-[#2A2A27]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mr-1">Filter</span>
@@ -431,7 +413,6 @@ const LostAndFound = () => {
         </div>
       </div>
 
-      {/* ── Content ──────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-6 py-10 pb-20">
 
         {/* Section label */}
@@ -478,7 +459,6 @@ const LostAndFound = () => {
           )}
         </div>
 
-        {/* ── Community Rules ───────────────────────────── */}
         <div className="mt-14 p-9 bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl">
           <div className="flex items-start justify-between gap-4 mb-7">
             <div className="flex flex-col">
@@ -528,9 +508,7 @@ const LostAndFound = () => {
         </div>
       </main>
 
-      {/* ═══════════ MODALS ══════════════════════════════════ */}
 
-      {/* ── Post Modal ───────────────────────────────────── */}
       {showModal && (
         <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -642,7 +620,6 @@ const LostAndFound = () => {
         </div>
       )}
 
-      {/* ── Contact Modal ─────────────────────────────────── */}
       {selectedContact?.contact_info && (
         <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setSelectedContact(null)}>
           <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -701,7 +678,6 @@ const LostAndFound = () => {
         </div>
       )}
 
-      {/* ── Report Modal ─────────────────────────────────── */}
       {reportModalItem && (
         <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && (setReportModalItem(null), setReportReason(''))}>
           <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -769,7 +745,6 @@ const LostAndFound = () => {
         </div>
       )}
 
-      {/* ── Confirm Modal ─────────────────────────────────── */}
       {confirmModal.isOpen && (
         <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200">
           <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -810,7 +785,6 @@ const LostAndFound = () => {
   );
 };
 
-// ── ItemCard sub-component ────────────────────
 const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
   const isReunited = item.status === 'REUNITED';
   const isLost     = item.type === 'LOST';
@@ -845,7 +819,6 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
         )}
       </div>
 
-      {/* Body */}
       <div className="p-5 flex flex-col flex-grow">
         <h3 className="text-sm font-bold text-[#1A1917] dark:text-[#F5F4F0] line-clamp-1 mb-1.5">{item.title}</h3>
         <p className="text-xs font-light leading-relaxed text-[#6B6963] dark:text-[#9E9990] line-clamp-2 mb-4 flex-grow">{item.description}</p>
@@ -869,7 +842,6 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex gap-2">
           {activeTab === 'my-items' && item.status === 'ACTIVE' && (
             <button className="flex-grow px-3 py-2 bg-[#1A1917] dark:bg-[#F5F4F0] text-white dark:text-[#161614] text-xs font-bold text-center rounded-lg hover:opacity-85 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer" onClick={() => onResolve(item.id)}>

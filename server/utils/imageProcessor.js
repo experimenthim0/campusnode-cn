@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import crypto from "crypto";
 
-// Formats that sharp can actually decode — anything else is rejected
 const VALID_FORMATS = new Set(["jpeg", "png", "webp"]);
 
 /**

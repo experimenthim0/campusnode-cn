@@ -76,7 +76,6 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
       if (res.data?.success) {
         showNotification(res.data.message || 'Profile photo updated successfully', 'success');
 
-        // Update localStorage user data
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         storedUser.profileImage = res.data.imageUrl;
         storedUser.clubLogo = res.data.imageUrl;
@@ -127,7 +126,6 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
     }
   };
 
-  // File input change
   const onFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) handleFile(file);
@@ -276,7 +274,6 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
         JPG, PNG or WEBP · Max {MAX_SIZE_MB} MB · Drag & drop or click
       </p>
 
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"

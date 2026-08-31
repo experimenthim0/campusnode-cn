@@ -92,12 +92,10 @@ export function processNotification(rawNotif, options = {}) {
 
   console.log(`[NotificationManager] Processing new notification: ${norm.title} (${norm.id})`);
 
-  // 1. Show In-App Toast (foreground UX)
   if (typeof options.onToast === 'function') {
     options.onToast(norm);
   }
 
-  // 2. Trigger Native OS Push Notification if permitted
   sendLocalPushNotification(norm.title, {
     body: norm.message,
     tag: norm.id,

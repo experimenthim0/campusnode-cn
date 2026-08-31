@@ -86,7 +86,6 @@ export function htmlToMarkdown(input) {
   }
 
   const result = serializeNode(container).trim();
-  // Clean multiple excess newlines
   return result.replace(/\n{3,}/g, '\n\n');
 }
 

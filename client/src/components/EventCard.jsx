@@ -84,6 +84,15 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
 
+    const eventDate = new Date(startTime);
+    const isValidDate = !isNaN(eventDate.getTime());
+    const monthName = isValidDate
+        ? eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase()
+        : '';
+    const dayNumber = isValidDate
+        ? eventDate.getDate()
+        : '';
+
     const getDeadlineText = () => {
         const dl = new Date(registrationDeadline || startTime);
         const ev = new Date(startTime);
@@ -180,7 +189,6 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 </div>
             </div>
 
-            {/* Body */}
             <div className="px-4 pt-2 flex flex-auto flex-col">
                 {(event.club?.clubName || event.createdBy?.clubName) && (
                     <div className="flex items-center min-w-0">
@@ -203,90 +211,132 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-wide mb-2 line-clamp-2">{title}</h3>
 
                 {/* Info row */}
-                {isEnded && showWinner ? (
-                    /* ONLY SHOW WINNERS WHEN ENDED AND showWinner is TRUE */
-                    <div className="flex gap-2 mb-2 ">
-                        {event.winners && event.winners.length > 0 ? (
-                            <div className="flex flex-col gap-2 w-full">
-                                {/* Winners Header */}
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 flex items-center justify-center shrink-0">
-                                        <i className="ri-time-line text-orange-600 text-sm" />
-                                    </div>
-                                    <span className="font-medium text-neutral-500 dark:text-neutral-200 text-xs">{formattedTime}</span>
-                                </div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-5 flex items-center justify-center shrink-0">
-                                        <i className="ri-trophy-fill text-orange-600 text-sm" />
-                                    </div>
-                                    <span className="text-[11px] font-bold tracking-wider text-orange-600 uppercase">Winners</span>
-                                </div>
-                                {/* Winner Rows */}
-                                {event.winners.map((winner, index) => (
-                                    <div key={index} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/40 p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm gap-2">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
-                                                    winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
-                                                        'bg-orange-100 dark:bg-orange-950/40 text-orange-855 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60'
-                                                }`}>
-                                                #{winner.rank}
-                                            </span>
-                                            <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
+                {isEnded ? (
+                    showWinner ? (
+                        /* ONLY SHOW WINNERS WHEN ENDED AND showWinner is TRUE */
+                        <div className="flex gap-2 mb-2 ">
+                            {event.winners && event.winners.length > 0 ? (
+                                <div className="flex flex-col gap-2 w-full">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 flex items-center justify-center shrink-0">
+                                            <i className="ri-time-line text-orange-600 text-sm" />
                                         </div>
-                                        {winner.rank === 1 && <i className="ri-medal-fill text-amber-500" />}
-                                        {winner.rank === 2 && <i className="ri-medal-fill text-neutral-400" />}
-                                        {winner.rank === 3 && <i className="ri-medal-fill text-[#CD7F32]" />}
+                                        <span className="font-medium text-neutral-500 dark:text-neutral-200 text-xs">{formattedTime}</span>
                                     </div>
-                                ))}
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-5 flex items-center justify-center shrink-0">
+                                            <i className="ri-trophy-fill text-orange-600 text-sm" />
+                                        </div>
+                                        <span className="text-[11px] font-bold tracking-wider text-orange-600 uppercase">Winners</span>
+                                    </div>
+                                    {/* Winner Rows */}
+                                    {event.winners.map((winner, index) => (
+                                        <div key={index} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/40 p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
+                                                        winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
+                                                            'bg-orange-100 dark:bg-orange-950/40 text-orange-855 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60'
+                                                    }`}>
+                                                    #{winner.rank}
+                                                </span>
+                                                <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
+                                            </div>
+                                            {winner.rank === 1 && <i className="ri-medal-fill text-amber-500" />}
+                                            {winner.rank === 2 && <i className="ri-medal-fill text-neutral-400" />}
+                                            {winner.rank === 3 && <i className="ri-medal-fill text-[#CD7F32]" />}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                /* Results not yet declared */
+                                <div className="flex gap-2 py-2 flex-col text-neutral-600 dark:text-neutral-400">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 flex items-center justify-center shrink-0">
+                                            <i className="ri-time-line text-orange-600 text-sm" />
+                                        </div>
+                                        <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{formattedTime}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 flex items-center justify-center shrink-0">
+                                            <i className="ri-map-pin-line text-orange-600 text-sm" />
+                                        </div>
+                                        <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{venue}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 flex items-center justify-center shrink-0">
+                                            <i className="ri-trophy-fill text-orange-600 text-sm" />
+                                        </div>
+                                        <p className="text-sm text-neutral-400 dark:text-neutral-550 italic">Results being finalized...</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        /* Ended event without winners */
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-neutral-600 dark:text-neutral-400">
+                            <div className="col-span-2 flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
+                                <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate">
+                                    {formattedTime} (Ended)
+                                </span>
                             </div>
-                        ) : (
-                            /* Results not yet declared */
-                            <div className="flex gap-2 py-2 flex-col text-neutral-600 dark:text-neutral-400">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 flex items-center justify-center shrink-0">
-                                        <i className="ri-time-line text-orange-600 text-sm" />
-                                    </div>
-                                    <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{formattedTime}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 flex items-center justify-center shrink-0">
-                                        <i className="ri-map-pin-line text-orange-600 text-sm" />
-                                    </div>
-                                    <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{venue}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 flex items-center justify-center shrink-0">
-                                        <i className="ri-trophy-fill text-orange-600 text-sm" />
-                                    </div>
-                                    <p className="text-sm text-neutral-400 dark:text-neutral-550 italic">Results being finalized...</p>
-                                </div>
+
+                            <div className="flex items-center gap-1.5 min-w-0">
+                                <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                             </div>
-                        )}
-                    </div>
+
+                            <div className="flex items-center gap-1.5 col-span-2 min-w-0">
+                                <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
+                                    {event.registrationType === 'none' ? 'Open Entry • No Registration' : (isUnlimited ? 'Unlimited Seats' : seatsText)}
+                                </span>
+                            </div>
+                        </div>
+                    )
                 ) : (
+                    /* Live or Upcoming: Divided into Left Info + Right Big Calendar Date Badge */
+                    <div className="flex items-center justify-between gap-2.5 mb-1">
+                        {/* Left Information Section */}
+                        <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+                            <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300 min-w-0">
+                                <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate">
+                                    {formattedTime} {`(${getDeadlineText()})`}
+                                </span>
+                            </div>
 
-                    /* SHOW DETAILS WHILE ACTIVE OR IF showWinner IS FALSE */
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-neutral-600 dark:text-neutral-400">
-                      
-                        <div className="col-span-2 flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-                            <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                            <span className="truncate">
-                                {formattedTime} {isEnded ? '(Ended)' : `(${getDeadlineText()})`}
-                            </span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                                <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 min-w-0">
+                                <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
+                                    {event.registrationType === 'none' ? 'Open Entry • No Registration' : (isUnlimited ? 'Unlimited Seats' : seatsText)}
+                                </span>
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 min-w-0">
-                            <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                            <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
-                        </div>
+                        {/* Right Section: Big Calendar Date Badge */}
+                        <div className="shrink-0 self-center pl-1">
+                            <div className="relative flex flex-col items-center justify-center min-w-[50px] sm:min-w-[54px] bg-white dark:bg-neutral-900 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-xs group-hover:scale-105 transition-transform duration-300">
+                                {/* Top Binder Rings */}
+                                {/* <div className="absolute -top-1 left-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" />
+                                <div className="absolute -top-1 right-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" /> */}
 
+                                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center pt-1.5 pb-0.5 px-1.5 leading-none">
+                                    {monthName}
+                                </div>
 
-                      
-                        <div className="flex items-center gap-1.5 col-span-2 min-w-0">
-                            <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                            <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
-                                {event.registrationType === 'none' ? 'Open Entry • No Registration' : (isUnlimited ? 'Unlimited Seats' : seatsText)}
-                            </span>
+                                {/* Big Day Number */}
+                                <div className="w-full flex items-center justify-center py-1 sm:py-1.5 bg-neutral-50 dark:bg-neutral-900/90">
+                                    <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
+                                        {dayNumber}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

@@ -3,14 +3,9 @@ import { createObjectId } from "../utils/objectId.js";
 import { PERMISSIONS, hasPermission } from "../utils/rbac.js";
 import { calculateAcademicProgress, normalizeYearToNumber } from "../utils/academicProgress.js";
 
-// In-memory fallback history buffer for export audit logging
 const exportHistoryMemoryLog = [];
 const MAX_MEMORY_LOGS = 100;
 
-/**
- * Dataset Definitions & Metadata
- * (Attendance and Lost & Found datasets removed per user instructions)
- */
 export const DATASETS = {
   events: {
     id: "events",
@@ -160,9 +155,6 @@ export function getSessionDateRange(session, semester) {
   return { gte, lte };
 }
 
-/**
- * Filter available datasets based on user permissions
- */
 export function getAuthorizedDatasets(user) {
   if (!user) return [];
   const isSuperAdmin = user.role === "admin" || user.role === "SUPER_ADMIN";
@@ -173,9 +165,6 @@ export function getAuthorizedDatasets(user) {
   });
 }
 
-/**
- * Helper to fetch events for selector dropdown
- */
 export async function getEventsList(user, clubId = "all") {
   const isSuperAdmin = user.role === "admin" || user.role === "SUPER_ADMIN";
   const where = {};
@@ -201,22 +190,17 @@ export async function getEventsList(user, clubId = "all") {
   });
 }
 
-/**
- * Main query builder & executor for previews and CSV export
- */
 export async function queryDatasetRecords({ datasetId, user, filters = {}, page = 1, limit = 50, isExport = false }) {
   const datasetConfig = DATASETS[datasetId];
   if (!datasetConfig) {
     throw new Error(`Invalid dataset: ${datasetId}`);
   }
 
-  // Permission check
   const isSuperAdmin = user.role === "admin" || user.role === "SUPER_ADMIN";
   if (!isSuperAdmin && !hasPermission(user, datasetConfig.requiredPermission)) {
     throw new Error(`Forbidden: You do not have permission to view or export dataset '${datasetId}'.`);
   }
 
-  // Scope restriction for club users & faculty coordinators
   let restrictedClubId = null;
   if (!isSuperAdmin && (user.role === "facultyCoordinator" || user.role === "club")) {
     restrictedClubId = user.clubId;
@@ -328,7 +312,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       if (filters.isBlocked === "true") where.isBlocked = true;
       if (filters.isBlocked === "false") where.isBlocked = false;
 
-      // User Category filter (Students only vs Club Heads vs All)
       const userCategory = filters.userCategory || "students_only";
       if (userCategory === "students_only") {
         where.NOT = { memberships: { some: { role: "CLUB_HEAD" } } };
@@ -435,7 +418,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
     }
 
     case "transactions": {
-      // Strictly paid events only: event.entryFee > 0 or amountPaid > 0
       const where = {
         event: { entryFee: { gt: 0 } },
         OR: [
@@ -567,9 +549,6 @@ export function generateCSV(records, selectedColumns, datasetId) {
   return `\uFEFF${headers.map(escapeCSV).join(",")}\n${rows.join("\n")}`;
 }
 
-/**
- * Record Audit Log for Export Activity
- */
 export async function recordExportLog({ dataset, recordCount, actorId, actorEmail, actorRole, filters, columns }) {
   const logEntry = {
     id: createObjectId(),
@@ -610,9 +589,6 @@ export async function recordExportLog({ dataset, recordCount, actorId, actorEmai
   return logEntry;
 }
 
-/**
- * Fetch Export Audit History
- */
 export async function getExportHistory(limit = 20) {
   try {
     if (prisma.exportLog) {
