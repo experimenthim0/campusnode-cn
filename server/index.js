@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+
 app.use(requestMetrics);
 app.use(overloadProtection);
 app.use(publicReadCache);
@@ -228,4 +228,4 @@ app.use(errorHandler);
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
+
