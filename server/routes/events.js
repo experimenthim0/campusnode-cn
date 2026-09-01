@@ -18,6 +18,9 @@ import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../ut
 
 const router = express.Router();
 
+// Older registrations may predate signed QR payloads. Repair them when they
+// are read so every ticket returned to the web app or scanner is usable and
+// the generated payload is persisted for future requests.
 const ensureParticipationTicket = async (participation) => {
   if (participation?.qrCode && participation?.qrPayload) return participation;
 
@@ -49,6 +52,7 @@ const upload = multer({
   },
 });
 
+// POST /api/events/upload - Handle image upload for event poster
 router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
@@ -86,7 +90,6 @@ router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE),
   }
 });
 
-// Helper function to check if a user has management/attendance access to an event or club
 async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
   const user = req.user;
   if (!user) return false;
@@ -97,6 +100,7 @@ async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
 
   if (userRole === "admin" || userRole === "SUPER_ADMIN" || principalType === "ADMIN") return true;
 
+  // If passed an event object or eventId
   let event = null;
   let clubId = null;
 
@@ -104,6 +108,7 @@ async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
     event = eventOrClubId;
     clubId = event.clubId;
   } else if (typeof eventOrClubId === "string") {
+    // Check if it's an event or a club
     event = await prisma.event.findUnique({
       where: { id: eventOrClubId },
       select: { id: true, clubId: true, createdById: true, organizerType: true, centralOrganizerId: true, institutionalAccountId: true }
@@ -203,6 +208,7 @@ const eventUpdateSchema = z.object({
   params: z.object({}).passthrough().optional(),
 });
 
+// createdBy now comes from StudentUser
 const eventInclude = {
   createdBy: {
     select: { id: true, name: true, email: true },
@@ -232,6 +238,9 @@ const eventInclude = {
   },
 };
 
+// The feed does not need the large sponsor/media/custom payment payloads used
+// by the event detail and management screens. Keeping this selection narrow
+// reduces database work, response size, and JSON serialization time.
 const publicEventSelect = {
   id: true,
   title: true,
@@ -295,6 +304,7 @@ const publicEventSelect = {
     },
   },
 };
+// Decode token without middleware — for optional auth on event detail endpoint
 const getDecodedToken = (req) => {
   const authHeader = req.headers.authorization;
   const token = (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader) || req.cookies?.token;
@@ -311,6 +321,7 @@ const getEventByIdOrSlug = async (id) =>
     where: { OR: [{ id }, { slug: id }] },
     include: eventInclude,
   });
+
 
 router.get("/", async (req, res) => {
   try {
@@ -348,6 +359,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+
 const clubIdParamSchema = z.object({
   params: z.object({ clubId: objectIdSchema }).passthrough(),
   body: z.any().optional(),
@@ -367,6 +379,7 @@ router.get("/club/:clubId", validate(clubIdParamSchema), async (req, res) => {
   }
 });
 
+// ── GET /events/calendar — Admin date-range query for Calendar & Venue Timeline ─
 router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), async (req, res) => {
   try {
     const { start, end, venue, clubId, reviewStatus, category } = req.query;
@@ -392,6 +405,7 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
       ];
     }
 
+    // Venue filter (supports comma-separated multi-select)
     if (venue && venue !== "all") {
       const venueList = venue.split(",").map(v => v.trim()).filter(Boolean);
       if (venueList.length === 1) {
@@ -409,6 +423,7 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
       where.reviewStatus = reviewStatus;
     }
 
+    // Role scoping: if faculty coordinator, scope to assigned club if not admin
     if (req.user.role === "facultyCoordinator" && req.user.clubId) {
       where.clubId = req.user.clubId;
     }
@@ -423,6 +438,7 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
       orderBy: { startTime: "asc" },
     });
 
+    // Also fetch venue blackouts for the date range
     const blackoutWhere = {};
     if (start && end) {
       blackoutWhere.startTime = { lt: new Date(end) };
@@ -576,6 +592,7 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
       return res.status(400).json({ message: "Start time must be before end time." });
     }
 
+    // Run authoritative booking validation
     const validation = await validateBooking({
       venue: newVenue,
       startTime: newStart,
@@ -600,6 +617,7 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
       include: eventInclude
     });
 
+    // Notify creator if admin rescheduled their event
     if (event.createdById && event.createdById !== req.user.userId) {
       try {
         const notifTitle = `Event Rescheduled: ${event.title}`;
@@ -637,6 +655,7 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
   }
 });
 
+
 router.get(
   "/club-co/:id",
   verifyToken,
@@ -658,6 +677,7 @@ router.get(
   },
 );
 
+
 router.get(
   "/club-manage/:clubId",
   verifyToken,
@@ -675,6 +695,7 @@ router.get(
     }
   }
 );
+
 
 router.get(
   "/club-manage/:clubId/export",
@@ -709,6 +730,7 @@ router.get(
     }
   }
 );
+
 
 router.get(
   "/user/:userId",
@@ -762,6 +784,8 @@ router.get(
           formResponses: true,
           createdAt: true,
           updatedAt: true,
+          // The old query loaded the complete event graph and every student
+          // column. This projection contains what My Events/tickets need.
           event: {
             select: {
               ...publicEventSelect,
@@ -828,6 +852,7 @@ router.get(
           });
           return {
             ...serialized,
+            // Frontend compatibility: eventId is often treated as the object
             eventId: serialized.event,
           };
         }),
@@ -837,6 +862,7 @@ router.get(
     }
   },
 );
+
 
 router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), validate(eventSchema), async (req, res) => {
   try {
@@ -950,6 +976,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
   }
 });
 
+
 router.put(
   "/:id/review",
   verifyToken,
@@ -989,6 +1016,7 @@ router.put(
     }
   },
 );
+
 
 router.get("/:id", async (req, res) => {
   try {
@@ -1065,6 +1093,8 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// ── POST /events/:id/register — register for an event (unified Participation) ─
 
 const registerParamSchema = z.object({
   body: z.object({}).passthrough(),
@@ -1274,6 +1304,7 @@ router.post(
   },
 );
 
+
 const registrationsParamSchema = z.object({
   params: z.object({ id: objectIdSchema }).passthrough(),
   body: z.any().optional(),
@@ -1482,6 +1513,7 @@ router.get(
   },
 );
 
+
 router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), validate(eventUpdateSchema), async (req, res) => {
   try {
     const event = await prisma.event.findUnique({ where: { id: req.params.id } });
@@ -1529,6 +1561,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     const isCompleted = new Date(event.endTime) < new Date();
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
+        // Lock feedbackEnabled once event is completed
         if (field === "feedbackEnabled" && isCompleted) {
           return;
         }
@@ -1539,7 +1572,10 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (updates.title && updates.title !== event.title) updates.slug = await slugifyUnique(updates.title, 'event', 'slug', req.params.id);
     if (updates.startTime) updates.startTime = new Date(updates.startTime);
     if (updates.endTime) updates.endTime = new Date(updates.endTime);
+    if (updates.allowExternal !== undefined) updates.allowExternal = Boolean(updates.allowExternal);
+    if (updates.registrationDeadline !== undefined) updates.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : null;
 
+    // Validate booking conflict if venue or times changed
     const targetVenue = updates.venue || event.venue;
     const targetStart = updates.startTime || new Date(event.startTime);
     const targetEnd = updates.endTime || new Date(event.endTime);
@@ -1615,6 +1651,7 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
       return res.status(403).json({ message: "Unauthorized to request deletion of this event." });
     }
 
+    // Admin / Faculty Coordinator role: can delete/approve deletion immediately
     if (isAdmin || isFaculty) {
       if (isFaculty && req.user.clubId && String(event.clubId) !== String(req.user.clubId)) {
         return res.status(403).json({ message: "You can only delete events for your assigned club." });
@@ -1624,6 +1661,7 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
       return res.json({ message: "Event deleted successfully." });
     }
 
+    // Club / Member role: submit deletion request for faculty approval
     await prisma.event.update({
       where: { id: req.params.id },
       data: { reviewStatus: "DELETION_REQUESTED" }
@@ -1691,6 +1729,7 @@ router.delete(
           });
 
           if (team && team.leaderId === (userId || studentId)) {
+            // Leader deregistering deletes the whole team registration
             const teamParticipations = await prisma.participation.findMany({
               where: { teamId: p.teamId },
             });
@@ -1734,6 +1773,7 @@ router.delete(
 
       const event = participation.event;
 
+      // Check if it is a team registration
       if (participation.teamId) {
         const team = await prisma.team.findUnique({
           where: { id: participation.teamId },
@@ -1741,6 +1781,8 @@ router.delete(
         });
 
         if (team && team.leaderId === studentId) {
+          // The student deregistering is the team leader.
+          // Deregister the entire team!
           const teamParticipations = await prisma.participation.findMany({
             where: { teamId: participation.teamId },
             include: { student: true }
@@ -1774,6 +1816,7 @@ router.delete(
 
           invalidatePublicResponses(["events:public:*"]);
 
+          // Send notifications to all team members (except the leader)
           for (const tp of teamParticipations) {
             if (tp.studentId && tp.studentId !== team.leaderId) {
               await notifyMemberDeregistered(
@@ -1787,6 +1830,7 @@ router.delete(
 
           return res.json({ message: "Team and all members deregistered successfully." });
         } else if (team) {
+          // Teammate leaving individually
           await prisma.$transaction(async (tx) => {
             await tx.participation.delete({ where: { id: participation.id } });
             await tx.teamMember.deleteMany({
@@ -1816,6 +1860,7 @@ router.delete(
 
           invalidatePublicResponses(["events:public:*"]);
 
+          // Notify the leader that a teammate left
           const student = await prisma.studentUser.findUnique({ where: { id: studentId } });
           await notifyMemberDeregistered(
             req.io,
@@ -1828,6 +1873,7 @@ router.delete(
         }
       }
 
+      // Individual registration
       await prisma.$transaction(async (tx) => {
         await tx.participation.delete({ where: { id: participation.id } });
 
@@ -1877,6 +1923,7 @@ router.post(
         return res.status(403).json({ message: "Unauthorized scanner." });
       }
 
+      // Check both internal and external participations
       let participation = await prisma.participation.findFirst({
         where: { qrCode, eventId },
         include: { student: { select: { name: true, rollNo: true } } },
@@ -1884,6 +1931,7 @@ router.post(
 
       let type = "internal";
       if (participation && !participation.studentId) {
+        // Handle as external if studentId is null
         type = "external";
       }
 
@@ -1899,6 +1947,7 @@ router.post(
         });
       }
 
+      // Update participation using the unified Participation model
       await prisma.participation.update({
         where: { id: participation.id },
         data: {
@@ -1961,12 +2010,14 @@ router.post(
   }
 );
 
+// PATCH /api/events/:id/feature - Toggle featured status for event (Club Admin/Event Manager)
 router.patch("/:id/feature", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) return res.status(404).json({ message: "Event not found" });
 
+    // If club event, unset any other featured event in this club if enabling
     const newFeaturedState = !event.isFeatured;
     if (newFeaturedState && event.clubId) {
       await prisma.event.updateMany({
@@ -1996,4 +2047,4 @@ router.patch("/:id/feature", verifyToken, async (req, res) => {
 });
 
 export default router;
-
+

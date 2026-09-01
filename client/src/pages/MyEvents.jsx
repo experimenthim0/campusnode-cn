@@ -15,6 +15,298 @@ import QRCode from 'qrcode';
 import { invalidateCache } from '../lib/cacheManager';
 import { getMyFeedbackHistory } from '../services/feedbackService';
 
+const MyRegisteredEventCard = ({
+  reg,
+  user,
+  isHighlighted,
+  onShowTicket,
+  onDeregister,
+  onEditPayment,
+  onUpdateTeam,
+  onDownloadCertificate,
+  downloadingCert,
+}) => {
+  const event = reg.eventId;
+  if (!event) return null;
+  const regId = reg.id || reg._id;
+  const now = new Date();
+  const isPast = new Date(event.endTime) < now;
+  const isLive = new Date(event.startTime) <= now && new Date(event.endTime) > now;
+  const isUpcoming = !isPast && !isLive;
+
+  const eventDate = new Date(event.startTime);
+  const isValidDate = !isNaN(eventDate.getTime());
+  const monthName = isValidDate
+    ? eventDate.toLocaleString('en-US', { month: 'short', timeZone: 'Asia/Kolkata' }).toUpperCase()
+    : '';
+  const dayNumber = isValidDate
+    ? eventDate.getDate()
+    : '';
+  const dayName = isValidDate
+    ? eventDate.toLocaleString('en-US', { weekday: 'short', timeZone: 'Asia/Kolkata' }).toUpperCase()
+    : '';
+
+  const formattedTime = new Date(event.startTime).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+
+  const posterImage = event.imageUrl || '/CLUBSETU.png';
+  const isPaidEvent = event.paymentMethod && event.paymentMethod !== 'FREE';
+  const isTeamMember = reg.team && reg.team.leaderId !== (user?.id || user?._id);
+  const isPaymentSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
+  const isPaymentRejected = reg.paymentStatus === 'REJECTED';
+  const isPaymentPending = isPaidEvent && reg.paymentStatus === 'PENDING';
+  const canShowTicket = !isPaidEvent || isTeamMember || isPaymentSuccess;
+
+  const clubName = event.club?.clubName || event.createdBy?.clubName;
+  const clubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
+
+  return (
+    <div
+      id={`reg-card-${regId}`}
+      className={`border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md ${
+        isHighlighted
+          ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 dark:bg-orange-950/10'
+          : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
+      }`}
+    >
+      {/* Top Poster / Banner */}
+      <div className="relative w-full aspect-[21/9] overflow-hidden bg-neutral-100 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+        <img
+          src={posterImage}
+          alt={event.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/CLUBSETU.png';
+          }}
+        />
+
+        {/* Top-Left: Timing Status Badge */}
+        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+          {isLive && (
+            <span className="inline-flex items-center gap-1.5 bg-orange-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md animate-pulse shadow-sm">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+              Live
+            </span>
+          )}
+          {isUpcoming && (
+            <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
+              Upcoming
+            </span>
+          )}
+          {isPast && (
+            <span className="inline-flex items-center bg-neutral-100/95 dark:bg-neutral-800/95 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs backdrop-blur-xs">
+              Ended
+            </span>
+          )}
+        </div>
+
+        {/* Top-Right: Registration Status Badge */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          <span
+            className={`inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs ${
+              reg.status === 'ATTENDED' || reg.attended
+                ? 'bg-blue-600 text-white'
+                : reg.status === 'WAITLISTED'
+                ? 'bg-amber-500 text-white'
+                : 'bg-emerald-600 text-white'
+            }`}
+          >
+            {reg.status === 'ATTENDED' || reg.attended
+              ? '✓ Attended'
+              : reg.status === 'WAITLISTED'
+              ? 'Waitlisted'
+              : '✓ Registered'}
+          </span>
+        </div>
+      </div>
+
+      {/* Card Content */}
+      <div className="p-4 sm:p-3 flex flex-col flex-1 gap-2.5">
+        {/* Club line */}
+        {clubName && (
+          <div className="flex items-center min-w-0">
+            {clubLogo ? (
+              <img
+                src={clubLogo}
+                alt={clubName}
+                className="w-4 h-4 rounded-full object-cover mr-1.5 border border-neutral-200 dark:border-neutral-700"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/lightthemelogo.png';
+                }}
+              />
+            ) : (
+              <div className="w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center mr-1.5 text-orange-600 text-[9px] font-bold">
+                <i className="ri-team-line" />
+              </div>
+            )}
+            <span className="text-[11px] font-bold text-orange-600 truncate">{clubName}</span>
+          </div>
+        )}
+
+        {/* Event Title */}
+        <h3 className="text-base font-bold text-neutral-900 dark:text-white leading-snug line-clamp-2">
+          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-orange-600 transition-colors">
+            {event.title}
+          </Link>
+        </h3>
+
+        {/* Middle Info & Calendar Date Box */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          {/* Left Info Column */}
+          <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+            <div className="flex items-center gap-1.5 min-w-0 font-medium text-neutral-700 dark:text-neutral-300">
+              <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0" />
+              <span className="truncate">{event.venue || 'Campus Venue'}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 min-w-0 text-neutral-500 dark:text-neutral-400">
+              <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+              <span className="truncate">{formattedTime}</span>
+            </div>
+
+            {/* Payment badge if paid event */}
+            {isPaidEvent && (
+              <div className="pt-0.5">
+                <span
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                    isPaymentSuccess
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800'
+                      : isPaymentRejected
+                      ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
+                  }`}
+                >
+                  {isPaymentSuccess ? 'Payment: Paid' : `Payment: ${reg.paymentStatus || 'Pending'}`}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Right Calendar Date Box */}
+          {isValidDate && (
+            <div className="shrink-0 self-center">
+              <div className="flex flex-col items-center justify-center min-w-[50px] bg-neutral-50 dark:bg-neutral-800/80 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[9px] font-black uppercase tracking-wider text-center py-0.5 px-1.5 leading-none">
+                  {monthName}
+                </div>
+                <div className="text-base font-black text-neutral-900 dark:text-white leading-tight px-2 pt-0.5">
+                  {dayNumber}
+                </div>
+                <div className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider pb-1">
+                  {dayName}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Team Details (if team registration) */}
+        {reg.team && (
+          <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800/80 rounded-xl text-xs space-y-1 text-left">
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+              <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200">
+                <Users className="w-3.5 h-3.5 text-orange-600" />
+                <span>Team: <span className="text-orange-600 dark:text-orange-500 font-extrabold">{reg.team.teamName}</span></span>
+              </div>
+              {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
+                <button
+                  type="button"
+                  onClick={() => onUpdateTeam(reg)}
+                  className="px-2 py-0.5 text-[10px] font-bold text-orange-600 hover:text-white hover:bg-orange-600 border border-orange-200 hover:border-orange-600 rounded-lg transition-all cursor-pointer bg-transparent"
+                >
+                  Update
+                </button>
+              )}
+            </div>
+            <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
+              Leader: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{reg.team.leader?.name}</span>
+            </div>
+            <div className="text-neutral-500 dark:text-neutral-400 text-[11px] line-clamp-1">
+              Members: <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                {(reg.team.members || []).map(m => m.user?.name).filter(Boolean).join(', ')}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons Footer */}
+        <div className="mt-auto pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {(!reg.team || reg.team.leaderId === (user?.id || user?._id)) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
+              <button
+                type="button"
+                onClick={() => onEditPayment(reg)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 dark:text-orange-350 transition-colors shadow-2xs cursor-pointer border-0 outline-none whitespace-nowrap"
+              >
+                <i className="ri-edit-2-line mr-1" /> Edit Payment Info
+              </button>
+            )}
+
+            {canShowTicket && (
+              <button
+                type="button"
+                onClick={() => onShowTicket(reg)}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-black text-white hover:bg-orange-600 dark:bg-white dark:text-black dark:hover:bg-orange-600 dark:hover:text-white transition-all shadow-xs cursor-pointer"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Show Ticket</span>
+              </button>
+            )}
+
+            {isPaidEvent && isPaymentPending && (
+              <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
+                <i className="ri-time-line mr-1" /> Ticket after approval
+              </span>
+            )}
+
+            {isPaidEvent && isPaymentRejected && (
+              <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap">
+                <i className="ri-close-circle-line mr-1" /> Payment rejected
+              </span>
+            )}
+
+            {!isPast && (
+              isPaidEvent ? (
+                <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 rounded-xl cursor-not-allowed whitespace-nowrap">
+                  <i className="ri-lock-2-line mr-1" /> Paid
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onDeregister(reg)}
+                  className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer border-0 outline-none rounded-xl whitespace-nowrap"
+                >
+                  Deregister
+                </button>
+              )
+            )}
+          </div>
+
+          {/* Certificate Download Button */}
+          {isPast && (reg.status === 'ATTENDED' || reg.attended) && event.provideCertificate && (
+            <button
+              type="button"
+              onClick={() => onDownloadCertificate(event.id || event._id)}
+              disabled={downloadingCert === (event.id || event._id)}
+              className="inline-flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 w-full px-4 py-2 text-neutral-800 dark:text-neutral-200 transition border border-neutral-200 dark:border-neutral-700 rounded-xl font-bold text-xs shadow-2xs cursor-pointer disabled:opacity-50"
+            >
+              <DownloadIcon size={14} />
+              {downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MyEvents = () => {
   const location = useLocation();
   const targetEventId = new URLSearchParams(location.search).get('eventId');
@@ -239,6 +531,25 @@ const MyEvents = () => {
       link.click();
     };
     qrImage.src = qrDataUrl;
+  };
+
+  const handleShowTicket = async (reg) => {
+    setSelectedTicket(reg);
+    setTicketModalOpen(true);
+    try {
+      const payloadToEncode = reg.qrPayload || reg.qrCode;
+      if (!payloadToEncode) {
+        showNotification('Ticket data is unavailable. Please refresh and try again.', 'error');
+        setTicketModalOpen(false);
+        return;
+      }
+      const url = await QRCode.toDataURL(payloadToEncode, { width: 400, margin: 2 });
+      setQrDataUrl(url);
+    } catch (err) {
+      console.error(err);
+      setTicketModalOpen(false);
+      showNotification('Unable to generate ticket.', 'error');
+    }
   };
 
   const handleDownloadCertificate = async (eventId) => {
@@ -590,209 +901,29 @@ const MyEvents = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {registrations.map(reg => {
               const event = reg.eventId;
               if (!event) return null;
               const regId = reg.id || reg._id;
               const isHighlighted = highlightedRegId === regId;
-              const now = new Date();
-              const isPast = new Date(event.endTime) < now;
-              const isLive = new Date(event.startTime) <= now && new Date(event.endTime) > now;
 
               return (
-                <div
-                  id={`reg-card-${regId}`}
+                <MyRegisteredEventCard
                   key={regId}
-                  className={`bg-white dark:bg-neutral-900 border rounded-2xl shadow-2xs hover:shadow-sm transition-all duration-300 p-4 sm:p-5 flex flex-col gap-3 ${
-                    isHighlighted
-                      ? 'border-orange-500 dark:border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/30 dark:bg-orange-950/10'
-                      : 'border-neutral-200 dark:border-neutral-800'
-                  }`}
-                >
-                  {/* Top Row: Title + Past/Live Badge */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 leading-tight truncate">
-                        <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-orange-600 transition-colors">
-                          {event.title}
-                        </Link>
-                      </h3>
-                      {isPast && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-neutral-50 text-neutral-500 border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 shrink-0">
-                          Past Event
-                        </span>
-                      )}
-                      {isLive && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30 animate-pulse-slow shrink-0">
-                          Live Now
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Meta Info Row */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
-                    <span className="flex items-center gap-1 font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-400" /> {event.venue || 'Campus Venue'}
-                    </span>
-                    <span className="text-neutral-300 dark:text-neutral-700">|</span>
-                    <span className="flex items-center gap-1 text-orange-600 dark:text-orange-500 font-medium">
-                      <Clock className="w-3.5 h-3.5" /> {new Date(event.startTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })}
-                    </span>
-                  </div>
-
-                  {/* Team Details (if team registration) */}
-                  {reg.team && (
-                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800/80 rounded-xl text-xs space-y-1 text-left">
-                      <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                        <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200">
-                          <Users className="w-3.5 h-3.5 text-orange-600" />
-                          <span>Team: <span className="text-orange-600 dark:text-orange-500 font-extrabold">{reg.team.teamName}</span></span>
-                        </div>
-                        {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
-                          <button
-                            onClick={() => {
-                              setTeamToUpdate(reg);
-                              setUpdateTeamModalOpen(true);
-                            }}
-                            className="px-2.5 py-1 text-[10px] font-bold text-orange-600 hover:text-white hover:bg-orange-600 border border-orange-200 hover:border-orange-600 rounded-lg transition-all cursor-pointer bg-transparent"
-                          >
-                            Update Team
-                          </button>
-                        )}
-                      </div>
-                      <div className="text-neutral-500 dark:text-neutral-400">
-                        Leader: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{reg.team.leader?.name}</span>
-                      </div>
-                      <div className="text-neutral-500 dark:text-neutral-400">
-                        Members: <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                          {(reg.team.members || []).map(m => m.user?.name).filter(Boolean).join(', ')}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Row */}
-                  <div className="flex items-center gap-2 mt-1 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
-                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border-0 ${
-                      reg.status === 'CONFIRMED' || reg.status === 'REGISTERED' || reg.status === 'ATTENDED'
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-400'
-                        : 'bg-orange-50 text-orange-700 dark:bg-orange-950/25 dark:text-orange-400'
-                    }`}>
-                      ✓ {reg.status === 'CONFIRMED' || reg.status === 'REGISTERED' ? 'Registered' : reg.status}
-                    </span>
-
-                    {event.paymentMethod && event.paymentMethod !== 'FREE' && (() => {
-                      const isTeamMember = reg.team && reg.team.leaderId !== (user?.id || user?._id);
-                      const isSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
-                      const isRejected = reg.paymentStatus === 'REJECTED';
-
-                      return (
-                        <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                          isSuccess
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50'
-                            : isRejected
-                            ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/50'
-                            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/50 animate-pulse-slow'
-                        }`}>
-                          Payment: {isSuccess ? 'Successful' : reg.paymentStatus}
-                        </span>
-                      );
-                    })()}
-                    
-                    <div className="ml-auto flex items-center gap-2">
-                      {(!reg.team || reg.team.leaderId === (user?.id || user?._id)) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
-                        <button
-                          onClick={() => openEditPaymentModal(reg)}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 dark:text-orange-350 transition-colors shadow-2xs cursor-pointer border-0 outline-none whitespace-nowrap"
-                        >
-                          <i className="ri-edit-2-line mr-1" /> Edit Payment Info
-                        </button>
-                      )}
-                      {(() => {
-                        const isPaidEvent = event.paymentMethod && event.paymentMethod !== 'FREE';
-                        const isTeamMember = reg.team && reg.team.leaderId !== (user?.id || user?._id);
-                        const canShowTicket = !isPaidEvent || isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
-
-                        if (canShowTicket) {
-                          return (
-                            <button
-                              onClick={async () => { 
-                                setSelectedTicket(reg); 
-                                setTicketModalOpen(true);
-                                try {
-                                  const payloadToEncode = reg.qrPayload || reg.qrCode;
-                                  if (!payloadToEncode) {
-                                    showNotification('Ticket data is unavailable. Please refresh and try again.', 'error');
-                                    setTicketModalOpen(false);
-                                    return;
-                                  }
-                                  const url = await QRCode.toDataURL(payloadToEncode, { width: 400, margin: 2 });
-                                  setQrDataUrl(url);
-                                } catch (err) {
-                                  console.error(err);
-                                  setTicketModalOpen(false);
-                                  showNotification('Unable to generate ticket.', 'error');
-                                }
-                              }}
-                              className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors shadow-2xs cursor-pointer border-0 outline-none"
-                            >
-                              Show Ticket
-                            </button>
-                          );
-                        }
-
-                        if (isPaidEvent && reg.paymentStatus === 'PENDING') {
-                          return (
-                            <span className="px-3 py-1.5 text-[10px] font-semibold rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
-                              <i className="ri-time-line mr-1" /> Ticket after payment approval
-                            </span>
-                          );
-                        }
-
-                        if (isPaidEvent && reg.paymentStatus === 'REJECTED') {
-                          return (
-                            <span className="px-3 py-1.5 text-[10px] font-semibold rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap">
-                              <i className="ri-close-circle-line mr-1" /> Payment rejected — update details
-                            </span>
-                          );
-                        }
-
-                        return null;
-                      })()}
-
-                      {!isPast && (
-                        (event.paymentMethod && event.paymentMethod !== 'FREE') ? (
-                          <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-1.5 rounded-full cursor-not-allowed whitespace-nowrap">
-                            <i className="ri-lock-2-line mr-1" /> Paid Entry
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => handleDeregister(reg)}
-                            className="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer border-0 outline-none rounded-full whitespace-nowrap"
-                          >
-                            Deregister
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Prominent Certificate Button for Past Events */}
-                  {isPast && (reg.status === 'ATTENDED' || reg.attended) && event.provideCertificate && (
-                    <div className="pt-2">
-                      <button
-                        onClick={() => handleDownloadCertificate(event.id || event._id)}
-                        disabled={downloadingCert === (event.id || event._id)}
-                        className="inline-flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 w-full px-4 py-2 text-neutral-800 dark:text-neutral-200 transition border border-neutral-200 dark:border-neutral-700 rounded-full font-bold text-xs shadow-2xs cursor-pointer disabled:opacity-50"
-                      >
-                        <DownloadIcon size={16} />
-                        {downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  reg={reg}
+                  user={user}
+                  isHighlighted={isHighlighted}
+                  onShowTicket={handleShowTicket}
+                  onDeregister={handleDeregister}
+                  onEditPayment={openEditPaymentModal}
+                  onUpdateTeam={(r) => {
+                    setTeamToUpdate(r);
+                    setUpdateTeamModalOpen(true);
+                  }}
+                  onDownloadCertificate={handleDownloadCertificate}
+                  downloadingCert={downloadingCert}
+                />
               );
             })}
           </div>

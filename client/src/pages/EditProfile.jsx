@@ -38,6 +38,7 @@ const EditProfile = () => {
 
     const [formData, setFormData] = useState({
         name: '',
+        phone: '',
         year: '',
         category: '',
         motto: '',
@@ -61,7 +62,20 @@ const EditProfile = () => {
             setUser(authUser);
             setRole(authRole);
 
-            const isStudentAcc = Boolean(
+            const isExternalAcc = Boolean(
+                authRole === 'external' ||
+                authUser?.role === 'external' ||
+                authUser?.isExternal ||
+                authUser?.principalType === 'EXTERNAL' ||
+                localStorage.getItem('role') === 'external'
+            );
+            const isFacultyAcc = !isExternalAcc && Boolean(
+                authRole === 'facultyCoordinator' ||
+                authUser?.role === 'facultyCoordinator' ||
+                authUser?.principalType === 'FACULTY' ||
+                localStorage.getItem('role') === 'facultyCoordinator'
+            );
+            const isStudentAcc = !isFacultyAcc && !isExternalAcc && Boolean(
                 authUser?.rollNo ||
                 authUser?.branch ||
                 authUser?.expectedGraduationYear ||
@@ -72,7 +86,7 @@ const EditProfile = () => {
                 localStorage.getItem('role') === 'member' ||
                 localStorage.getItem('role') === 'student'
             );
-            const isClubAcc = !isStudentAcc && (authRole === 'club' || authUser?.principalType === 'CLUB');
+            const isClubAcc = !isFacultyAcc && !isExternalAcc && !isStudentAcc && (authRole === 'club' || authUser?.principalType === 'CLUB');
 
             const socialMap = {};
             const rawLinks = Array.isArray(authUser.socialLinks)
@@ -92,6 +106,7 @@ const EditProfile = () => {
             if (isClubAcc) {
                 setFormData({
                     name: authUser.clubName || authUser.club?.clubName || authUser.name || '',
+                    phone: '',
                     year: '',
                     category: authUser.category || authUser.club?.category || '',
                     motto: authUser.motto || authUser.club?.motto || '',
@@ -109,9 +124,52 @@ const EditProfile = () => {
                     upiId: authUser.upiId || authUser.club?.upiId || '',
                     bankPhone: authUser.bankPhone || authUser.club?.bankPhone || ''
                 });
+            } else if (isFacultyAcc) {
+                setFormData({
+                    name: authUser.name || '',
+                    phone: '',
+                    year: '',
+                    category: authUser.category || '',
+                    motto: '',
+                    githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
+                    linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
+                    xProfile: authUser.xProfile || socialMap.xProfile || '',
+                    portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
+                    instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
+                    whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
+                    isTwoStepEnabled: authUser.isTwoStepEnabled || false,
+                    bankName: authUser.bankName || '',
+                    accountHolderName: authUser.accountHolderName || '',
+                    accountNumber: authUser.accountNumber || '',
+                    ifscCode: authUser.ifscCode || '',
+                    upiId: authUser.upiId || '',
+                    bankPhone: authUser.bankPhone || ''
+                });
+            } else if (isExternalAcc) {
+                setFormData({
+                    name: authUser.name || '',
+                    phone: authUser.phone || '',
+                    year: authUser.graduationYear || '',
+                    category: '',
+                    motto: '',
+                    githubProfile: authUser.githubProfile || socialMap.githubProfile || '',
+                    linkedinProfile: authUser.linkedinProfile || socialMap.linkedinProfile || '',
+                    xProfile: authUser.xProfile || socialMap.xProfile || '',
+                    portfolioUrl: authUser.portfolioUrl || socialMap.portfolioUrl || '',
+                    instagramProfile: authUser.instagramProfile || socialMap.instagramProfile || '',
+                    whatsappNumber: authUser.whatsappNumber || socialMap.whatsappNumber || '',
+                    isTwoStepEnabled: authUser.isTwoStepEnabled || false,
+                    bankName: '',
+                    accountHolderName: '',
+                    accountNumber: '',
+                    ifscCode: '',
+                    upiId: '',
+                    bankPhone: ''
+                });
             } else {
                 setFormData({
                     name: authUser.name || '',
+                    phone: authUser.phone || '',
                     year: authUser.academicYearLabel || authUser.year || '',
                     category: '',
                     motto: '',
@@ -144,7 +202,22 @@ const EditProfile = () => {
         }
     }, [location.hash, activeTab]);
 
-    const isStudentAccount = Boolean(
+    const isExternalAccount = Boolean(
+        role === 'external' ||
+        authRole === 'external' ||
+        user?.role === 'external' ||
+        user?.isExternal ||
+        user?.principalType === 'EXTERNAL' ||
+        localStorage.getItem('role') === 'external'
+    );
+    const isFacultyAccount = !isExternalAccount && Boolean(
+        role === 'facultyCoordinator' ||
+        authRole === 'facultyCoordinator' ||
+        user?.role === 'facultyCoordinator' ||
+        user?.principalType === 'FACULTY' ||
+        localStorage.getItem('role') === 'facultyCoordinator'
+    );
+    const isStudentAccount = !isFacultyAccount && !isExternalAccount && Boolean(
         user?.rollNo ||
         user?.branch ||
         user?.expectedGraduationYear ||
@@ -157,7 +230,7 @@ const EditProfile = () => {
         localStorage.getItem('role') === 'member' ||
         localStorage.getItem('role') === 'student'
     );
-    const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
+    const isClubAccount = !isFacultyAccount && !isExternalAccount && !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
 
     // Dynamic Academic Progress for Students / Student Leads
     const studentProgress = isStudentAccount ? calculateAcademicProgress(user) : null;
@@ -183,7 +256,7 @@ const EditProfile = () => {
             delete updateData.newPassword;
             delete updateData.confirmPassword;
 
-            // For personal student accounts, strip out club fields
+            // For personal student/external accounts, strip out club fields
             if (!isClubAccount) {
                 delete updateData.category;
                 delete updateData.motto;
@@ -195,7 +268,7 @@ const EditProfile = () => {
                 delete updateData.bankPhone;
             }
 
-            const targetRole = isClubAccount ? 'club' : 'student';
+            const targetRole = isClubAccount ? 'club' : (isExternalAccount ? 'external' : 'student');
             const res = await updateProfile(targetRole, user.id || user._id, updateData);
             setSession(res.data.user, authRole || role);
             
@@ -336,7 +409,51 @@ const EditProfile = () => {
                     </div>
                     
                     {/* Read Only Academic & Core Fields (Immutability enforced) */}
-                    {isClubAccount ? (
+                    {isFacultyAccount ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Faculty Name</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
+                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate" title={user.email}>{user.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Role Designation</label>
+                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">Faculty Coordinator</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Assigned Club</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">
+                                    {user.clubName || user.club?.clubName || user.memberships?.[0]?.clubName || user.clubId || 'Assigned Club'}
+                                </p>
+                            </div>
+                        </div>
+                    ) : isExternalAccount ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Participant Name</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
+                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-semibold text-xs truncate" title={user.email}>{user.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">College / Institution</label>
+                                <p className="font-semibold text-neutral-800 dark:text-neutral-100 text-xs truncate" title={user.collegeName || user.college || 'External Institution'}>
+                                    {user.collegeName || user.college || user.institution || 'External Institution'}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Graduation</label>
+                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">
+                                    {[user.program || user.branch, user.graduationYear || user.expectedGraduationYear].filter(Boolean).join(" • ") || 'External Participant'}
+                                </p>
+                            </div>
+                        </div>
+                    ) : isClubAccount ? (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club Name</label>

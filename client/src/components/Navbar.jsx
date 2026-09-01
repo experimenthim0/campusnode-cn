@@ -454,7 +454,7 @@ const Navbar = () => {
                   <span className="absolute ml-2 bottom-0 left-0 w-full h-[2px] bg-orange-600 dark:bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                 </Link>
                 <Link
-                  to="/register"
+                  to="/register/student"
                   className="flex items-center gap-1.5 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-150 hover:-translate-y-px"
                 >
                   <ArrowRightIcon size={18}>

@@ -9,6 +9,7 @@ import profileUpload from "../middleware/profileUpload.js";
 import { validateFileSignature, processProfileImage, generateProfileFilename } from "../utils/imageProcessor.js";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
+import { getStudentRoleAndClub } from "./auth.js";
 
 const router = express.Router();
 

@@ -80,14 +80,14 @@ const MemberSocials = ({ student }) => {
   if (links.length === 0) return null;
 
   return (
-    <div className="flex items-center justify-center flex-wrap gap-1 pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 w-full">
+    <div className="flex items-center flex-wrap gap-1 w-full">
       {links.map((l, idx) => (
         <a
           key={idx}
           href={l.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           title={l.title}
         >
           {l.icon}
@@ -303,17 +303,26 @@ const ClubCalendarView = ({ events }) => {
   );
 };
 
-/* ─── Student Avatar with Image & Fallback ───────────────────────────────── */
-const StudentAvatar = ({ student, size = "md" }) => {
+/* ─── Modern Portrait Team Member Card ───────────────────────────────────── */
+const TeamMemberCard = ({
+  name,
+  role,
+  image,
+  subtitle,
+  email,
+  student,
+  isLeadership = false,
+}) => {
   const [imgError, setImgError] = useState(false);
   const imageUrl =
+    image ||
     student?.profileImage ||
     student?.profilePicture ||
     student?.picture ||
     student?.user?.profileImage;
 
-  const initials = student?.name
-    ? student.name
+  const initials = name
+    ? name
         .split(" ")
         .map((w) => w[0])
         .join("")
@@ -321,34 +330,68 @@ const StudentAvatar = ({ student, size = "md" }) => {
         .toUpperCase()
     : "U";
 
-  const sizeClasses = {
-    lg: "w-24 h-24 text-base",
-    md: "w-12 h-12 text-sm",
-    sm: "w-20 h-20 text-xs",
-  };
-
-  const selectedSize = sizeClasses[size] || sizeClasses.md;
-
-  if (imageUrl && !imgError) {
-    return (
-      <div
-        className={`${selectedSize} rounded-full overflow-hidden border-2 border-orange-500/20 bg-neutral-100 dark:bg-neutral-800 shrink-0 mx-auto mb-2 shadow-2xs`}
-      >
-        <img
-          src={imageUrl}
-          alt={student?.name || "Member"}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  }
+  const hasImage = imageUrl && !imgError;
 
   return (
-    <div
-      className={`${selectedSize} rounded-full  text-orange-600 dark:text-orange-400 border-2 border-orange-500/20 flex items-center justify-center font-black shrink-0 mx-auto mb-2 shadow-2xs`}
-    >
-      {initials}
+    <div className="group relative flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-300">
+      {/* Top Portrait Image Section */}
+      <div className="relative w-full aspect-[4/4.6] bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
+        {hasImage ? (
+          <img
+            src={imageUrl}
+            alt={name || "Member"}
+            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-neutral-100 to-neutral-200/70 dark:from-neutral-800 dark:to-neutral-900 select-none">
+            <span className="text-3xl sm:text-4xl font-black tracking-wider text-neutral-600 dark:text-neutral-300">
+              {initials}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Card Info Footer */}
+      <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between text-left">
+        <div>
+          <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+            {name || "Member"}
+          </h4>
+          <p
+            className={`text-[11px] sm:text-xs font-semibold truncate mt-0.5 ${
+              isLeadership
+                ? "text-orange-600 dark:text-orange-400"
+                : "text-neutral-500 dark:text-neutral-400"
+            }`}
+          >
+            {role}
+          </p>
+          {subtitle && (
+            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Email or Social Links */}
+        {(email || student) && (
+          <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+            {email ? (
+              <a
+                href={`mailto:${email}`}
+                className="inline-flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors truncate max-w-full"
+                title={`Email ${name}`}
+              >
+                <i className="ri-mail-line text-sm shrink-0" />
+                <span className="truncate">{email}</span>
+              </a>
+            ) : (
+              <MemberSocials student={student} />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -851,11 +894,11 @@ const ClubDetails = () => {
 
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
-            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400 dark:text-neutral-500">
+            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-600 dark:text-neutral-500">
               About the Club
             </h2>
             {club.establishedYear && (
-              <span className="text-xs text-neutral-400 font-medium">
+              <span className="text-xs text-neutral-500 font-medium">
                 Serving NITJ since {club.establishedYear}
               </span>
             )}
@@ -1198,7 +1241,7 @@ const ClubDetails = () => {
               )}
 
               <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 mb-4">
                   Upcoming Events
                 </h3>
                 {upcomingEvents.length > 0 ? (
@@ -1284,160 +1327,102 @@ const ClubDetails = () => {
           studentHeads.length > 0 ||
           studentCoordinators.length > 0 ||
           regularMembers.length > 0) && (
-          <section className=" max-w-7xl w-full px-2 sm:px-4 space-y-8 sm:space-y-10">
-             <div className=" pb-4">
-            <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <i className="ri-group-line text-orange-600 font-light" /> Club Leadership & Team
-            </h2>
-            <p className="text-xs text-neutral-400">Guiding faculty, student coordinators, and active members</p>
-          </div>
-           
+          <section className="w-full space-y-6 sm:space-y-8">
+            <div className="flex items-center justify-between pb-2">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <i className="ri-group-line text-orange-600 font-light" /> Club Leadership & Team
+                </h2>
+                <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p>
+              </div>
+            </div>
 
-            <div className="max-w-5xl space-y-10 sm:space-y-12">
+            <div className="space-y-8 sm:space-y-10">
+              {/* Leadership Row */}
               {((club.facultyName || club.facultyCoordinator?.name) || studentHeads.length > 0) && (
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-3">
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
                       Leadership
                     </h3>
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
                   </div>
 
-                  {/* Centered Leadership Cards */}
-                  <div className="flex flex-wrap justify-center items-stretch gap-6 sm:gap-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                     {(club.facultyName || club.facultyCoordinator?.name) && (
-                      <div className="w-full sm:w-[320px] max-w-[340px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-5 rounded-2xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between">
-                        <div className="w-full flex flex-col items-center">
-                          <StudentAvatar
-                            student={{
-                              name: club.facultyName || club.facultyCoordinator?.name,
-                              profileImage: club.facultyCoordinator?.profileImage,
-                            }}
-                            size="lg"
-                          />
-                          <h4 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
-                            {club.facultyName || club.facultyCoordinator?.name}
-                          </h4>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full mt-1.5">
-                            Faculty Coordinator
-                          </span>
-                        </div>
-
-                        {(club.facultyEmail || club.facultyCoordinator?.email) && (
-                          <div className="flex items-center justify-center pt-2.5 mt-2.5 border-t border-neutral-100 dark:border-neutral-800 w-full">
-                            <a
-                              href={`mailto:${club.facultyEmail || club.facultyCoordinator?.email}`}
-                              className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium py-0.5 transition-colors group"
-                              title="Contact Faculty"
-                            >
-                              <i className="ri-mail-line text-sm text-neutral-400 group-hover:text-orange-500 transition-colors" />
-                              <span className="truncate max-w-[220px]">
-                                {club.facultyEmail || club.facultyCoordinator?.email}
-                              </span>
-                            </a>
-                          </div>
-                        )}
-                      </div>
+                      <TeamMemberCard
+                        name={club.facultyName || club.facultyCoordinator?.name}
+                        role="Faculty Coordinator"
+                        image={club.facultyCoordinator?.profileImage}
+                        email={club.facultyEmail || club.facultyCoordinator?.email}
+                        isLeadership={true}
+                      />
                     )}
 
                     {/* Student Lead Cards */}
                     {studentHeads.map((m) => (
-                      <div
+                      <TeamMemberCard
                         key={m.id}
-                        className="w-full sm:w-[320px] max-w-[340px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-5 rounded-2xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
-                      >
-                        <div className="w-full flex flex-col items-center">
-                          <StudentAvatar student={m.student} size="lg" />
-                          <h4 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
-                            {m.student?.name}
-                          </h4>
-                          {(m.student?.branch || m.student?.year) && (
-                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-                              {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                            </p>
-                          )}
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-0.5 rounded-full mt-1.5">
-                            Student Lead
-                          </span>
-                        </div>
-                        <MemberSocials student={m.student} />
-                      </div>
+                        name={m.student?.name}
+                        role="Student Lead"
+                        image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
+                        subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                        student={m.student}
+                        isLeadership={true}
+                      />
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Coordinators Grid */}
               {studentCoordinators.length > 0 && (
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-3">
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
                       Coordinators
                     </h3>
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
                   </div>
 
-                  {/* Responsive Coordinators Grid / Centered Flex */}
-                  <div className="flex flex-wrap justify-center items-stretch gap-4 sm:gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
                     {studentCoordinators.map((m) => (
-                      <div
+                      <TeamMemberCard
                         key={m.id}
-                        className="w-full sm:w-[230px] md:w-[250px] max-w-[270px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-4 rounded-xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
-                      >
-                        <div className="w-full flex flex-col items-center">
-                          <StudentAvatar student={m.student} size="md" />
-                          <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
-                            {m.student?.name}
-                          </h4>
-                          {(m.student?.branch || m.student?.year) && (
-                            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-                              {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                            </p>
-                          )}
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded mt-1.5">
-                            Coordinator
-                          </span>
-                        </div>
-                        <MemberSocials student={m.student} />
-                      </div>
+                        name={m.student?.name}
+                        role="Coordinator"
+                        image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
+                        subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                        student={m.student}
+                      />
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Members Grid */}
               {regularMembers.length > 0 && (
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-3">
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
                       Club Members ({regularMembers.length})
                     </h3>
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" />
+                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
                   </div>
 
-                  <div className="flex flex-wrap justify-center items-stretch gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
                     {regularMembers.map((m) => (
-                      <div
+                      <TeamMemberCard
                         key={m.id}
-                        className="w-full sm:w-[200px] md:w-[220px] max-w-[240px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 p-3.5 rounded-xl shadow-xs transition-all duration-200 text-center flex flex-col items-center justify-between"
-                      >
-                        <div className="w-full flex flex-col items-center">
-                          <StudentAvatar student={m.student} size="md" />
-                          <h4 className="text-xs font-bold text-neutral-900 dark:text-white truncate w-full mt-1">
-                            {m.student?.name}
-                          </h4>
-                          {(m.student?.branch || m.student?.year) && (
-                            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-                              {[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                            </p>
-                          )}
-                          <span className="text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 mt-1">
-                            Member
-                          </span>
-                        </div>
-                        <MemberSocials student={m.student} />
-                      </div>
+                        name={m.student?.name}
+                        role="Member"
+                        image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
+                        subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                        student={m.student}
+                      />
                     ))}
                   </div>
                 </div>

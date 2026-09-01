@@ -45,8 +45,10 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
         }
       }
     } catch {
+      // Not a signed binary payload, fallback to raw ticketId / qrCode string
     }
 
+    // Step 1: Look up participation by ticketId, qrPayload, qrCode, or ID
     const participation = await prisma.participation.findFirst({
       where: {
         OR: [
@@ -71,7 +73,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
-    // Check event match if eventId was specified or extracted from QR signature
     const expectedEventId = eventIdFromRequest || targetEventId;
     if (expectedEventId && participation.eventId !== expectedEventId) {
       return res.status(400).json({
@@ -80,6 +81,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
+    // Step 2: Check caller has permission (Admin, Faculty Coordinator, Club Manager, Central Organizer, or Event Staff with ATTENDANCE_OPERATOR)
     const { userId } = req.user;
     const isAuthorized = await verifyAttendancePermission(userId, participation.eventId, participation.event, req.user);
 
@@ -97,6 +99,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
+    // Step 4: Guard against double-marking (both participation status and AttendanceRecord check)
     const existingRecord = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId: participation.eventId, participationId: participation.id } },
     });
@@ -113,6 +116,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
+    // Step 5: Mark attendance in participation and attendanceRecord
     const attendanceId = createObjectId();
     const now = new Date();
     await prisma.$transaction([
@@ -170,4 +174,4 @@ router.post('/verify', verifyToken, async (req, res) => {
 });
 
 export default router;
-
+

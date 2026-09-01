@@ -60,8 +60,10 @@ const Profile = () => {
     const effectiveClubId =
       customClubId ||
       authUser?.clubId ||
-      (authRole === 'club' ? (authUser?.id || authUser?._id) : null) ||
-      authUser?.memberships?.find(m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId;
+      user?.clubId ||
+      authUser?.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
+      user?.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
+      (authRole === 'club' ? (authUser?.id || authUser?._id) : null);
 
     if (effectiveClubId) {
       try {
@@ -88,7 +90,7 @@ const Profile = () => {
         console.debug("Error fetching club events in Profile.jsx:", err);
       }
     }
-  }, [authUser, authRole]);
+  }, [authUser, authRole, user?.clubId, user?.memberships]);
 
   useEffect(() => {
     cachedFetch('/api/clubs', { ttlMs: 15 * 60 * 1000 })
@@ -107,13 +109,48 @@ const Profile = () => {
       .catch(err => console.debug("Could not fetch clubs map in Profile:", err));
   }, []);
 
+  const isExternalAccount = Boolean(
+    role === 'external' ||
+    authRole === 'external' ||
+    user?.role === 'external' ||
+    user?.isExternal ||
+    user?.principalType === 'EXTERNAL' ||
+    localStorage.getItem('role') === 'external'
+  );
+
+  const isFacultyCoordinator = !isExternalAccount && Boolean(
+    role === 'facultyCoordinator' ||
+    authRole === 'facultyCoordinator' ||
+    user?.principalType === 'FACULTY' ||
+    user?.role === 'facultyCoordinator' ||
+    (user?.userType === 'admin' && user?.role === 'facultyCoordinator') ||
+    localStorage.getItem('role') === 'facultyCoordinator'
+  );
+
+  const isStudentAccount = !isFacultyCoordinator && !isExternalAccount && Boolean(
+    user?.rollNo ||
+    user?.branch ||
+    user?.expectedGraduationYear ||
+    user?.academicYear ||
+    user?.year ||
+    role === 'student' ||
+    role === 'member' ||
+    localStorage.getItem('role') === 'member' ||
+    localStorage.getItem('role') === 'student'
+  );
+
+  const isClubAccount = !isStudentAccount && !isFacultyCoordinator && !isExternalAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
+
   useEffect(() => {
     if (authUser) {
       setUser(authUser);
       setRole(authRole);
       fetchClubInfo();
 
-      const isStudentUser = Boolean(authUser?.rollNo || authUser?.branch || authRole === 'member' || authRole === 'student' || authRole !== 'club');
+      const isStudentUser = Boolean(
+        !isFacultyCoordinator &&
+        (authUser?.rollNo || authUser?.branch || authUser?.collegeName || authRole === 'member' || authRole === 'student' || authRole === 'external' || (authRole !== 'club' && authRole !== 'facultyCoordinator' && authUser?.principalType !== 'FACULTY'))
+      );
       if (isStudentUser) {
         getUserEvents(authUser.id || authUser._id)
           .then(res => {
@@ -145,7 +182,7 @@ const Profile = () => {
       }
     }
     setLoading(false);
-  }, [authUser?.id, authUser?.rollNo, authRole, fetchClubInfo]);
+  }, [authUser?.id, authUser?.rollNo, authRole, fetchClubInfo, isFacultyCoordinator]);
 
   // Handle hash scrolling (e.g. #announcements)
   useEffect(() => {
@@ -164,19 +201,6 @@ const Profile = () => {
 
   if (!user) return <div className="text-center mt-10">Please login to view profile.</div>;
   if (loading) return <div className="text-center mt-10">Loading profile...</div>;
-
-  const isStudentAccount = Boolean(
-    user?.rollNo ||
-    user?.branch ||
-    user?.expectedGraduationYear ||
-    user?.academicYear ||
-    user?.year ||
-    role === 'student' ||
-    role === 'member' ||
-    localStorage.getItem('role') === 'member' ||
-    localStorage.getItem('role') === 'student'
-  );
-  const isClubAccount = !isStudentAccount && (role === 'club' || authRole === 'club' || user?.principalType === 'CLUB');
 
   // Dynamic Academic Progress for Students / Student Leads
   const studentProgress = isStudentAccount ? calculateAcademicProgress(user) : null;
@@ -310,7 +334,433 @@ const Profile = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
-      {isClubAccount ? (
+      {isFacultyCoordinator ? (
+        <div className="space-y-6 md:space-y-8">
+
+          {/* Faculty Coordinator Identity Card */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-7 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left flex-1 min-w-0">
+                {/* Faculty Avatar */}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 shadow-xs">
+                  {user.profileImage ? (
+                    <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl sm:text-3xl font-extrabold text-neutral-800 dark:text-neutral-200 select-none">
+                      {profileInitials}
+                    </span>
+                  )}
+                </div>
+
+                {/* Identity details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight truncate">
+                      {user.name}
+                    </h1>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 my-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
+                      Faculty Coordinator
+                    </span>
+
+                    {(clubData?.clubName || user.clubName || user.memberships?.[0]?.clubName) && (
+                      <span className="px-2.5 py-0.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full">
+                        {clubData?.clubName || user.clubName || user.memberships?.[0]?.clubName}
+                      </span>
+                    )}
+
+                    {(clubData?.category || user.category) && (
+                      <span className="px-2.5 py-0.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full">
+                        {clubData?.category || user.category}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Contact */}
+                  <p className="text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1">
+                    <span className="inline-flex items-center gap-1.5">
+                      {user.email}
+                    </span>
+                    {(clubData?.slug || user.clubId) && (
+                      <span className="inline-flex items-center gap-1 text-neutral-400">
+                        <i className="ri-hashtag text-neutral-400" />
+                        ID: <span className="font-mono text-neutral-700 dark:text-neutral-300 font-semibold">{clubData?.slug || user.clubId}</span>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex sm:flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
+                <Link
+                  to="/profile/edit"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
+                >
+                  <i className="ri-edit-line text-sm font-light" /> Edit Profile
+                </Link>
+                {(clubData?.id || user.clubId || user.memberships?.[0]?.clubId) && (
+                  <Link
+                    to={`/club-events/${clubData?.id || user.clubId || user.memberships?.[0]?.clubId}`}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-xl transition-colors font-semibold text-xs cursor-pointer w-full"
+                  >
+                    <i className="ri-calendar-event-line text-sm" /> Club Dashboard
+                  </Link>
+                )}
+                {(clubData?.slug || clubData?.id || user.clubId) && (
+                  <Link
+                    to={`/club/${clubData?.slug || clubData?.id || user.clubId}`}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 font-semibold text-xs transition-colors w-full"
+                  >
+                    <i className="ri-external-link-line text-sm" /> Public Page
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Statistics Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
+                  {totalMembersCount}
+                </p>
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mt-0.5">
+                  Club Members
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
+                  {totalEventsCount}
+                </p>
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mt-0.5">
+                  Total Events
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight font-mono">
+                  {totalRegistrationsCount}
+                </p>
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mt-0.5">
+                  Total Registrations
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Club Information Card */}
+          {clubData && (
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
+              <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2.5">
+                  <i className="ri-information-line text-lg text-orange-600" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Assigned Club Information
+                  </h2>
+                </div>
+                <Link
+                  to={`/club/edit/${clubData?.id || user.clubId}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-semibold transition-colors"
+                >
+                  <i className="ri-edit-box-line text-xs" /> Edit Club Details
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-8">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Club Name</p>
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{clubData.clubName}</p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Club ID / Slug</p>
+                  <p className="text-sm font-semibold font-mono text-neutral-800 dark:text-neutral-200">{clubData.slug || clubData.id || '—'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Category</p>
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{clubData.category || 'General'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Official Email</p>
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 break-all">{clubData.clubEmail || '—'}</p>
+                </div>
+
+                {clubData.motto && (
+                  <div className="md:col-span-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Motto</p>
+                    <p className="text-sm italic text-neutral-700 dark:text-neutral-300">"{clubData.motto}"</p>
+                  </div>
+                )}
+
+                {clubData.description && (
+                  <div className="md:col-span-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About the Club</p>
+                    <div
+                      className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
+                      dangerouslySetInnerHTML={{
+                        __html: markdownToHtml(clubData.description),
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Club Leadership */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
+            <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2.5">
+                <i className="ri-user-star-line text-lg text-orange-600" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                  Club Leadership
+                </h2>
+              </div>
+              <Link
+                to={`/club/${clubData?.id || user.clubId || user.memberships?.[0]?.clubId || ''}/team`}
+                className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+              >
+                Manage Team <i className="ri-arrow-right-line" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {/* Faculty In-Charge (Self) */}
+              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/40">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                  Faculty Coordinator
+                </span>
+                <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                  {user.email}
+                </p>
+              </div>
+
+              {/* Student Leads */}
+              {studentLeads.map((head, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-600 rounded-md">
+                    Student Lead
+                  </span>
+                  <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
+                    {head.student?.name || head.name || 'Student Lead'}
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                    {head.student?.email || head.email || '—'}
+                  </p>
+                </div>
+              ))}
+
+              {/* Coordinators */}
+              {clubCoordinators.map((coord, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-600 rounded-md">
+                    Coordinator
+                  </span>
+                  <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
+                    {coord.student?.name || coord.name || 'Coordinator'}
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                    {coord.student?.email || coord.email || '—'}
+                  </p>
+                </div>
+              ))}
+
+              {studentLeads.length === 0 && clubCoordinators.length === 0 && (
+                <div className="col-span-full text-center py-4 text-xs text-neutral-500 dark:text-neutral-400">
+                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Club Events */}
+          {clubEvents.length > 0 && (
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
+              <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2.5">
+                  <i className="ri-history-line text-lg text-orange-600" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Recent Activity
+                  </h2>
+                </div>
+                <Link
+                  to={`/club-events/${clubData?.id || user.clubId || user.memberships?.[0]?.clubId || ''}`}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                >
+                  View All Events <i className="ri-arrow-right-line" />
+                </Link>
+              </div>
+
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                {clubEvents.slice(0, 4).map((event, idx) => (
+                  <div key={event.id || idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/30 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <i className="ri-calendar-check-line text-sm" />
+                      </div>
+                      <div className="min-w-0">
+                        <Link
+                          to={`/event/${event.slug || event.id}`}
+                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate block"
+                        >
+                          {event.title}
+                        </Link>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                          {new Date(event.startTime).toLocaleDateString(undefined, { dateStyle: 'medium' })} • <span className="font-semibold text-neutral-700 dark:text-neutral-300">{event.registeredCount || 0} registered</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 border ${event.reviewStatus === 'PUBLISHED'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
+                        : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                      }`}>
+                      {event.reviewStatus || 'ACTIVE'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Payment Account */}
+          {(clubData?.bankName || user.bankName || clubData?.accountNumber || user.accountNumber) && (
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
+              <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2.5">
+                  <i className="ri-bank-card-line text-lg text-orange-600" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Payment Account
+                  </h2>
+                </div>
+                <Link
+                  to="/payments"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-semibold transition-colors"
+                >
+                  <i className="ri-wallet-line text-xs" /> Payments
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 bg-neutral-50/50 dark:bg-neutral-800/30 p-5 sm:p-6 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Bank Name</p>
+                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankName || user.bankName || 'Not Set'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Holder</p>
+                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.accountHolderName || user.accountHolderName || 'Not Set'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Number</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">
+                      {maskAccountNumber(clubData?.accountNumber || user.accountNumber)}
+                    </p>
+                    {(clubData?.accountNumber || user.accountNumber) && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAccountNumber(!showAccountNumber)}
+                        className="text-neutral-400 hover:text-orange-600 transition-colors cursor-pointer"
+                        title={showAccountNumber ? "Hide account number" : "Show account number"}
+                      >
+                        <i className={showAccountNumber ? "ri-eye-off-line text-sm" : "ri-eye-line text-sm"} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">IFSC Code</p>
+                  <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.ifscCode || user.ifscCode || 'Not Set'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">UPI ID</p>
+                  <p className="font-semibold text-sm text-orange-600 dark:text-orange-400">{clubData?.upiId || user.upiId || 'Not Set'}</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Linked Phone</p>
+                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankPhone || user.bankPhone || 'Not Set'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Security & Access */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
+              <i className="ri-shield-keyhole-line text-lg text-orange-600" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                Security & Access
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold text-neutral-900 dark:text-white">Two-Factor Authentication</p>
+                    <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full ${user.isTwoStepEnabled
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                      }`}>
+                      {user.isTwoStepEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    Protects your administrative login with email OTP verification.
+                  </p>
+                </div>
+                <Link
+                  to="/profile/edit?tab=security"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                >
+                  {user.isTwoStepEnabled ? 'Manage' : 'Enable'}
+                </Link>
+              </div>
+
+              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold text-neutral-900 dark:text-white">Account Password</p>
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-600">
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    Update administrative login password and access credentials.
+                  </p>
+                </div>
+                <Link
+                  to="/profile/edit?tab=security"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                >
+                  Change Password
+                </Link>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      ) : isClubAccount ? (
         <div className="space-y-6 md:space-y-8">
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-7 shadow-xs">
@@ -928,7 +1378,7 @@ const Profile = () => {
                       {user.name}
                     </h1>
                     <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
-                      {user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Club Head' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
+                      {isExternalAccount ? 'External Participant' : user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Club Head' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
@@ -940,7 +1390,7 @@ const Profile = () => {
                     >
                       <i className="ri-edit-line text-sm font-light" /> Edit Profile
                     </Link>
-                    {!user?.rollNo && (role === 'club' || authRole === 'club') ? (
+                    {!user?.rollNo && !isExternalAccount && (role === 'club' || authRole === 'club') ? (
                       <Link
                         to={`/club-events/${user.clubId || user.id || user._id || ''}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
@@ -960,11 +1410,19 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Academic Attributes */}
+            {/* Academic / Participant Attributes */}
             <div className="pt-8">
-              <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">Academic & Account Attributes</h3>
+              <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+                {isExternalAccount ? 'Participant & Institution Details' : 'Academic & Account Attributes'}
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {user.rollNo && (
+                {isExternalAccount && (user.collegeName || user.college) && (
+                  <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">College / Institution</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.collegeName || user.college}</p>
+                  </div>
+                )}
+                {user.rollNo && !isExternalAccount && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
@@ -982,7 +1440,13 @@ const Profile = () => {
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
                   </div>
                 )}
-                {displayAcademicStanding && (
+                {isExternalAccount && user.phone && (
+                  <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
+                  </div>
+                )}
+                {!isExternalAccount && displayAcademicStanding && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
@@ -990,10 +1454,10 @@ const Profile = () => {
                     </p>
                   </div>
                 )}
-                {displayGraduationYear && (
+                {(user.graduationYear || displayGraduationYear) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{displayGraduationYear}</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
                   </div>
                 )}
               </div>

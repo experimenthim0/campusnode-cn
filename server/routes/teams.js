@@ -389,8 +389,19 @@ router.post(
         });
       }
 
-      if (event && new Date() > new Date(event.endTime)) {
-        return res.status(400).json({ message: "This event has already ended. Invitations can no longer be accepted." });
+      if (event) {
+        const now = new Date();
+        if (now > new Date(event.endTime)) {
+          return res.status(400).json({ message: "This event has already ended. Invitations can no longer be accepted." });
+        }
+
+        const registrationDeadline = event.registrationDeadline
+          ? new Date(event.registrationDeadline)
+          : new Date(event.startTime);
+
+        if (now > registrationDeadline) {
+          return res.status(400).json({ message: "Registration deadline has passed for this event. Invitations can no longer be accepted." });
+        }
       }
 
       await prisma.$transaction(async (tx) => {

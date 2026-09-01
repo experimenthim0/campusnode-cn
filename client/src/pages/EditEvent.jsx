@@ -33,6 +33,7 @@ const EditEvent = () => {
         allowedPrograms: ['BTECH', 'MTECH', 'OTHER'],
         allowedYears: [],
         allowedBranches: [],
+        allowExternal: true,
         winners: [],
         showWinner: false,
         provideCertificate: false,
@@ -127,6 +128,7 @@ const EditEvent = () => {
                         allowedPrograms: event.allowedPrograms || ['BTECH', 'MTECH', 'OTHER'],
                         allowedYears: yearArr,
                         allowedBranches: branchArr,
+                        allowExternal: event.allowExternal !== undefined ? Boolean(event.allowExternal) : true,
                         winners: event.winners || [],
                         showWinner: event.showWinner || false,
                         provideCertificate: event.provideCertificate || false,
@@ -591,6 +593,7 @@ const EditEvent = () => {
             registrationDeadline: formData.registrationDeadline ? new Date(formData.registrationDeadline).toISOString() : null,
             allowedYears: allYears ? [] : formData.allowedYears,
             allowedBranches: allBranches ? [] : formData.allowedBranches,
+            allowExternal: Boolean(formData.allowExternal),
             registrationType: formData.registrationType || 'individual',
             minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
             maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
@@ -873,6 +876,30 @@ const EditEvent = () => {
                                             ))}
                                         </div>
                                     )}
+                                </div>
+
+                                <hr className="border-neutral-200 dark:border-neutral-855" />
+
+                                {/* Allow External Participants */}
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">External Participant Access</label>
+                                    <label className="inline-flex items-center cursor-pointer gap-2 select-none">
+                                        <input
+                                            type="checkbox"
+                                            name="allowExternal"
+                                            className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                            checked={formData.allowExternal}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
+                                        />
+                                        <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                            Allow External Participants (Other Colleges & Universities)
+                                        </span>
+                                    </label>
+                                    <p className="text-xs text-neutral-500">
+                                        {formData.allowExternal
+                                            ? 'Students from other colleges and institutions are eligible to register and participate in this event.'
+                                            : 'Participation is strictly restricted to internal NITJ students only. External accounts cannot register.'}
+                                    </p>
                                 </div>
                             </div>
                         </div>

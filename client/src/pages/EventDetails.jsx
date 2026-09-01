@@ -295,7 +295,7 @@ const EventDetails = () => {
 
     try {
       const registerBody = user
-        ? { studentId: user.id }
+        ? { studentId: user.id || user._id }
         : { externalEmail, externalName };
 
       const res = await registerForEvent(event.id || event._id, registerBody);
@@ -330,10 +330,9 @@ const EventDetails = () => {
 
   const handleIndividualRegister = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
-    const role = localStorage.getItem('role');
 
-    // Authenticated path
-    if (user && role === 'member') {
+    // Authenticated path (both internal students and external users)
+    if (user) {
       if (event.customFields && event.customFields.length > 0) {
         setCustomFormResponses({});
         setCustomFormModalOpen(true);
@@ -342,7 +341,7 @@ const EventDetails = () => {
       if (event.paymentMethod && event.paymentMethod !== 'FREE') {
         setPaymentPayload({
           isTeam: false,
-          studentId: user.id,
+          studentId: user.id || user._id,
           formResponses: {}
         });
         setPaymentType(event.paymentMethod);
@@ -353,26 +352,9 @@ const EventDetails = () => {
       return;
     }
 
-    // Unauthenticated (external) path
-    if (!user) {
-      if (!externalEmail || !externalName) {
-        showNotification('Please Login first to register for events', 'warning');
-        return;
-      }
-      if (event.paymentMethod && event.paymentMethod !== 'FREE') {
-        setPaymentPayload({
-          isTeam: false,
-          externalEmail,
-          externalName,
-          formResponses: {}
-        });
-        setPaymentType(event.paymentMethod);
-        setPaymentModalOpen(true);
-        return;
-      }
-      setConfirmModalOpen(true);
-      return;
-    }
+    // Unauthenticated path
+    showNotification('Please login first to register for events', 'warning');
+    navigate('/login');
   };
 
   const handleRegister = async () => {
@@ -386,9 +368,17 @@ const EventDetails = () => {
       return;
     }
 
-    if (role !== 'member') {
-      showNotification('Please login as a student to register.', 'warning');
+    const isStudentOrExternal = role === 'member' || role === 'student' || role === 'external' || user?.role === 'external' || user?.isExternal || Boolean(user?.rollNo || user?.collegeName);
+
+    if (!isStudentOrExternal) {
+      showNotification('Please login as a student or participant to register.', 'warning');
       navigate('/login');
+      return;
+    }
+
+    const isExternalUser = role === 'external' || user?.role === 'external' || user?.isExternal || user?.principalType === 'EXTERNAL';
+    if (isExternalUser && event.allowExternal === false) {
+      showNotification('This event is exclusive to internal NITJ students only. External participation is not allowed.', 'error');
       return;
     }
 
@@ -496,7 +486,7 @@ const EventDetails = () => {
       if (event.paymentMethod && event.paymentMethod !== 'FREE') {
         setPaymentPayload({
           isTeam: false,
-          studentId: updatedUser.id,
+          studentId: updatedUser.id || updatedUser._id || user.id || user._id,
           formResponses: {}
         });
         setPaymentType(event.paymentMethod);
@@ -523,7 +513,7 @@ const EventDetails = () => {
     if (event.paymentMethod && event.paymentMethod !== 'FREE') {
       setPaymentPayload({
         isTeam: false,
-        studentId: user.id,
+        studentId: user?.id || user?._id,
         formResponses: customFormResponses
       });
       setPaymentType(event.paymentMethod);
@@ -624,27 +614,39 @@ const EventDetails = () => {
   const displayName = isCentralEvent ? 'Office of DSW' : (event.club?.clubName || event.createdBy?.clubName || '—');
 
   const isOpenEvent = event.registrationType === 'none';
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentRole = localStorage.getItem('role');
+  const isExternalUser = Boolean(
+    currentRole === 'external' ||
+    currentUser?.role === 'external' ||
+    currentUser?.isExternal ||
+    currentUser?.principalType === 'EXTERNAL'
+  );
+  const isExternalRestricted = isExternalUser && event.allowExternal === false;
 
   const btnConfig = isOpenEvent
     ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default', disabled: true }
     : isEnded
-    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
+    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
     ? { label: 'Event is Live', cls: 'bg-orange-600 text-white border-orange-600 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
-    ? { label: 'DeadlinePassed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    ? { label: 'Deadline Passed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    : isExternalRestricted
+    ? { label: ' NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : alreadyRegistered
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isFull
     ? { label: 'Join Waitlist', cls: 'bg-yellow-400 text-black border-black hover:bg-yellow-300 cursor-pointer', disabled: false }
     : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-orange-600 hover:border-orange-600 hover:text-white cursor-pointer', disabled: false };
 
-  const isUpcoming = !isEnded && !isLive && !isDeadlinePassed;
+  const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
 
   const highlights = [
     { icon: 'ri-group-line', label: 'Capacity', value: isUnlimited ? 'Unlimited Seats' : `${totalSeats} Seats` },
     { icon: 'ri-coin-line', label: 'Entry Fee', value: entryFee > 0 ? `₹${entryFee}` : 'Free Entry' },
+    // { icon: 'ri-community-line', label: 'Eligibility', value: event.allowExternal !== false ? 'All Colleges & Universities' : 'Internal NITJ Students Only' },
     { icon: 'ri-time-line', label: 'Duration', value: (() => {
       const diff = new Date(endTime) - new Date(startTime);
       const hrs = Math.floor(diff / 3600000);
@@ -653,17 +655,13 @@ const EventDetails = () => {
     })() },
     ...(event.provideCertificate ? [{ icon: 'ri-award-line', label: 'Certificate', value: 'Provided' }] : []),
     ...(event.showWinner ? [{ icon: 'ri-trophy-line', label: 'Competition', value: 'Winners Announced' }] : []),
-    ...(event.allowedPrograms && event.allowedPrograms.length > 0 && event.allowedPrograms.length <= 3
+    ...(event.allowedPrograms && event.allowedPrograms.length > 0
       ? [{ icon: 'ri-graduation-cap-line', label: 'Open To', value: event.allowedPrograms.join(', ') }]
-      : event.allowedPrograms && event.allowedPrograms.length > 3
-      ? [{ icon: 'ri-graduation-cap-line', label: 'Open To', value: `${event.allowedPrograms.length} Programs` }]
       : [{ icon: 'ri-graduation-cap-line', label: 'Open To', value: 'All Programs' }]),
-    ...(event.allowedBranches && event.allowedBranches.length > 0 && event.allowedBranches.length <= 3
+    ...(event.allowedBranches && event.allowedBranches.length > 0
       ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: event.allowedBranches.join(', ') }]
-      : event.allowedBranches && event.allowedBranches.length > 3
-      ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: `${event.allowedBranches.length} Branches Allowed` }]
       : []),
-    ...(event.allowedYears && event.allowedYears.length > 0 && event.allowedYears.length < 4
+    ...(event.allowedYears && event.allowedYears.length > 0
       ? [{ icon: 'ri-calendar-check-line', label: 'Eligible Year', value: event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ') }]
       : []),
   ];
