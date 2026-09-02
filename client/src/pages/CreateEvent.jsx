@@ -447,9 +447,9 @@ const CreateEvent = () => {
     };
 
     const inputCls =
-        'w-full px-4 py-3 border-2 border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-[#0a0a0a] text-black dark:text-white';
+        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 transition-all bg-white dark:bg-[#0a0a0a] text-black dark:text-white placeholder:text-neutral-400';
     const labelCls =
-        'block text-sm font-bold text-black dark:text-white mb-2';
+        'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
 
     return (
         <div className="min-h-screen bg-neutral-50 py-12 px-4">
@@ -463,15 +463,15 @@ const CreateEvent = () => {
                         <i className="ri-arrow-left-line" /> Back
                     </button>
                     <h1 className="text-4xl font-black text-black">Create New Event</h1>
-                    <p className="text-neutral-600 mt-2">Fill in the details across 4 simple steps to publish your event</p>
+                    <p className="text-sm text-neutral-500 mt-1.5">Fill in the details across 4 simple steps to publish your event</p>
                 </div>
 
                 {/* Stepper Component */}
                 <EventFormStepper currentStep={currentStep} onStepClick={handleStepClick} />
 
-                <form onSubmit={handleSubmit} className="bg-white border border-neutral-300 rounded-lg p-6 md:p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
                     {error && (
-                        <div className="flex items-center gap-2 bg-red-50 border-2 border-red-400 text-red-700 text-[13px] font-bold px-4 py-3 rounded-sm animate-step-fadeIn">
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 text-[13px] font-bold px-4 py-3 rounded-lg animate-step-fadeIn">
                             <i className="ri-error-warning-line text-lg flex-shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -480,11 +480,18 @@ const CreateEvent = () => {
                     {/* STEP 1: Basic Details */}
                     {currentStep === 1 && (
                         <div className="space-y-6 animate-step-fadeIn">
-                            <div className="border-b border-neutral-200 pb-3">
-                                <h2 className="text-xl font-bold text-black uppercase tracking-wide flex items-center gap-2">
-                                     Step 1: Basic Details
-                                </h2>
-                                <p className="text-xs text-neutral-500 mt-1">Provide core event title, description, venue and poster.</p>
+                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-file-text-line text-orange-600 text-base" />
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                        Step 1
+                                    </span>
+                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
+                                        Basic Details
+                                    </h2>
+                                </div>
                             </div>
 
                             {/* Event Title */}
@@ -517,7 +524,7 @@ const CreateEvent = () => {
                                 />
                                 <label
                                     htmlFor="poster-upload"
-                                    className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-300 rounded-sm p-6 text-sm font-semibold text-neutral-500 cursor-pointer hover:border-orange-600 hover:text-orange-600 hover:bg-neutral-50 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center gap-2">
@@ -526,7 +533,7 @@ const CreateEvent = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <i className="ri-image-add-line text-3xl" />
+                                            <i className="ri-image-add-line text-4xl text-neutral-300 group-hover:text-orange-500 transition-colors" />
                                             <div className="text-center">
                                                 <span className="text-orange-600 underline">Click to upload</span> or drag and drop
                                                 <p className="text-xs text-neutral-400 mt-1">Supports PNG, JPG, JPEG, WEBP, GIF</p>
@@ -536,8 +543,8 @@ const CreateEvent = () => {
                                 </label>
 
                                 {formData.imageUrl && (
-                                    <div className="relative mt-4 border-2 border-neutral-200 rounded-sm p-2 bg-neutral-50 flex flex-col items-center">
-                                        <img src={formData.imageUrl} alt="Poster Preview" className="max-h-64 object-contain rounded-sm" />
+                                    <div className="relative mt-4 border border-neutral-200 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
+                                        <img src={formData.imageUrl} alt="Poster Preview" className="max-h-64 object-contain rounded-lg" />
                                         <button
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
@@ -566,11 +573,18 @@ const CreateEvent = () => {
                     {/* STEP 2: Timings & Access */}
                     {currentStep === 2 && (
                         <div className="space-y-6 animate-step-fadeIn">
-                            <div className="border-b border-neutral-200 pb-3">
-                                <h2 className="text-xl font-bold text-black uppercase tracking-wide flex items-center gap-2">
-                                     Step 2: Timings & Access
-                                </h2>
-                                <p className="text-xs text-neutral-500 mt-1">Set event timings, registration deadline, and target audience restrictions.</p>
+                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-calendar-line text-orange-600 text-base" />
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                        Step 2
+                                    </span>
+                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
+                                        Timings & Access
+                                    </h2>
+                                </div>
                             </div>
 
                             {/* Start / End Time */}
@@ -595,7 +609,7 @@ const CreateEvent = () => {
                                 <p className="text-xs text-neutral-500 mt-1">Optional: If left blank, registrations stay open until start time.</p>
                             </div>
 
-                            <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-6">
+                            <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col gap-5">
                                 <div>
                                     <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">Registration Restrictions</h3>
                                     <p className="text-xs text-neutral-500 mt-1">Restrict event registration to specific programs, years, or branches.</p>
@@ -616,7 +630,7 @@ const CreateEvent = () => {
                                     </div>
                                 </div>
 
-                                <hr className="border-neutral-200 dark:border-neutral-850" />
+                                <hr className="border-neutral-200 dark:border-neutral-800" />
 
                                 {/* Allowed Years */}
                                 <div className="flex flex-col gap-2">
@@ -632,7 +646,7 @@ const CreateEvent = () => {
                                         </label>
                                     </div>
                                     {!allYears && (
-                                        <div className="flex flex-wrap gap-4 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+                                        <div className="flex flex-wrap gap-4 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
                                             {YEARS.map(year => (
                                                 <label key={year} className="inline-flex items-center cursor-pointer gap-2 select-none">
                                                     <input type="checkbox" className="w-4 h-4 accent-orange-600 border-neutral-300 rounded focus:ring-orange-600"
@@ -645,7 +659,7 @@ const CreateEvent = () => {
                                     )}
                                 </div>
 
-                                <hr className="border-neutral-200 dark:border-neutral-850" />
+                                <hr className="border-neutral-200 dark:border-neutral-800" />
 
                                 {/* Allowed Branches */}
                                 <div className="flex flex-col gap-2">
@@ -661,7 +675,7 @@ const CreateEvent = () => {
                                         </label>
                                     </div>
                                     {!allBranches && (
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
                                             {BRANCHES.map(branch => (
                                                 <label key={branch} className="inline-flex items-center cursor-pointer gap-2 select-none">
                                                     <input type="checkbox" className="w-4 h-4 accent-orange-600 border-neutral-300 rounded focus:ring-orange-600"
@@ -674,7 +688,7 @@ const CreateEvent = () => {
                                     )}
                                 </div>
 
-                                <hr className="border-neutral-200 dark:border-neutral-850" />
+                                <hr className="border-neutral-200 dark:border-neutral-800" />
 
                                 {/* Allow External Participants */}
                                 <div className="flex flex-col gap-2">
@@ -704,11 +718,18 @@ const CreateEvent = () => {
                     {/* STEP 3: Registration & Payments */}
                     {currentStep === 3 && (
                         <div className="space-y-6 animate-step-fadeIn">
-                            <div className="border-b border-neutral-200 pb-3">
-                                <h2 className="text-xl font-bold text-black uppercase tracking-wide flex items-center gap-2">
-                                     Step 3: Registration & Payments
-                                </h2>
-                                <p className="text-xs text-neutral-500 mt-1">Configure registration types, capacity, payment methods, and custom form fields.</p>
+                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-ticket-line text-orange-600 text-base" />
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                        Step 3
+                                    </span>
+                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
+                                        Registration & Payments
+                                    </h2>
+                                </div>
                             </div>
 
                             {/* Registration Type */}
@@ -724,7 +745,7 @@ const CreateEvent = () => {
 
                             {/* Team Size Configurations (conditional) */}
                             {(formData.registrationType === 'team' || formData.registrationType === 'both') && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-neutral-50 border border-neutral-200 rounded-sm">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
                                     <div>
                                         <label className={labelCls}>Minimum Team Size <span className="text-orange-600">*</span></label>
                                         <input type="number" name="minTeamSize" min="1" className={inputCls}
@@ -757,17 +778,17 @@ const CreateEvent = () => {
                             </div>
 
                             {/* Payment Settings */}
-                            <div className="bg-neutral-50 border border-neutral-300 rounded-sm p-6 space-y-6">
+                            <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-black uppercase tracking-wider">Payment Settings</h3>
-                                    <p className="text-xs text-neutral-600 mt-1">Choose how users pay for event registration.</p>
+                                    <h3 className="text-lg font-bold text-black dark:text-white uppercase tracking-wider">Payment Settings</h3>
+                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Choose how users pay for event registration.</p>
                                 </div>
 
                                 {/* Payment Method Option Selector */}
                                 <div>
                                     <label className={labelCls}>Payment Method <span className="text-orange-600">*</span></label>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <label className={`flex flex-col p-4 border-2 rounded-sm cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-orange-600 bg-orange-50/30' : 'border-neutral-200 hover:border-neutral-400 bg-white'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -777,12 +798,12 @@ const CreateEvent = () => {
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'FREE', registrationFee: 0 })}
                                                     className="w-4 h-4 accent-orange-600"
                                                 />
-                                                <span className="text-sm font-bold text-black">Free</span>
+                                                <span className="text-sm font-bold text-black dark:text-white">Free</span>
                                             </div>
                                             <span className="text-xs text-neutral-500 mt-2">No entry fee required to join the event.</span>
                                         </label>
 
-                                        <label className={`flex flex-col p-4 border-2 rounded-sm cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-orange-600 bg-orange-50/30' : 'border-neutral-200 hover:border-neutral-400 bg-white'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -792,12 +813,12 @@ const CreateEvent = () => {
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'MANUAL_TRANSACTION' })}
                                                     className="w-4 h-4 accent-orange-600"
                                                 />
-                                                <span className="text-sm font-bold text-black">Manual Transaction</span>
+                                                <span className="text-sm font-bold text-black dark:text-white">Manual Transaction</span>
                                             </div>
                                             <span className="text-xs text-neutral-500 mt-2">Users scan your QR code/UPI ID and submit Transaction ID.</span>
                                         </label>
 
-                                        <label className={`flex flex-col p-4 border-2 rounded-sm cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-orange-600 bg-orange-50/30' : 'border-neutral-200 hover:border-neutral-400 bg-white'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -807,7 +828,7 @@ const CreateEvent = () => {
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'COLLEGE_PAYMENT' })}
                                                     className="w-4 h-4 accent-orange-600 cursor-pointer"
                                                 />
-                                                <span className="text-sm font-bold text-black">College Portal</span>
+                                                <span className="text-sm font-bold text-black dark:text-white">College Portal</span>
                                             </div>
                                             <span className="text-xs text-neutral-500 mt-2">Direct users to official college payment portal URL.</span>
                                         </label>
@@ -831,7 +852,7 @@ const CreateEvent = () => {
 
                                 {/* Manual Transaction Verification Fields (Conditional) */}
                                 {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
-                                    <div className="space-y-4 border-t border-neutral-200 pt-4">
+                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className={labelCls}>UPI ID / Phone Number <span className="text-orange-600">*</span></label>
@@ -873,7 +894,7 @@ const CreateEvent = () => {
 
                                 {/* College Payment Portal Fields (Conditional) */}
                                 {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
-                                    <div className="space-y-4 border-t border-neutral-200 pt-4">
+                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
                                         <div>
                                             <label className={labelCls}>College Payment Portal URL <span className="text-orange-600">*</span></label>
                                             <input
@@ -940,7 +961,7 @@ const CreateEvent = () => {
                                                     }));
                                                 }}
                                                 className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600" />
-                                            <span className="text-sm text-neutral-700">{field.label}</span>
+                                            <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -955,11 +976,11 @@ const CreateEvent = () => {
 
                                 <div className="space-y-4">
                                     {formData.customFields.map((cf, idx) => (
-                                        <div key={idx} className="border-2 border-neutral-200 rounded-sm p-4 relative bg-neutral-50">
+                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-sm transition-colors cursor-pointer"
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
                                                 title="Remove field"
                                             >
                                                 <i className="ri-delete-bin-line text-lg" />
@@ -967,7 +988,7 @@ const CreateEvent = () => {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Field Label <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Label <span className="text-orange-600">*</span></label>
                                                     <input
                                                         type="text"
                                                         placeholder="e.g. Team Name, GitHub Repo..."
@@ -977,7 +998,7 @@ const CreateEvent = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Field Type</label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Type</label>
                                                     <select
                                                         value={cf.type}
                                                         onChange={(e) => updateCustomField(idx, 'type', e.target.value)}
@@ -998,12 +1019,12 @@ const CreateEvent = () => {
                                                     onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
                                                     className="w-4 h-4 text-orange-600 border-neutral-300 rounded focus:ring-orange-600 cursor-pointer"
                                                 />
-                                                <span className="text-sm text-neutral-600">Required</span>
+                                                <span className="text-sm text-neutral-600 dark:text-neutral-400">Required</span>
                                             </label>
 
                                             {cf.type === 'select' && (
                                                 <div className="mt-3 pl-4 border-l-2 border-orange-300">
-                                                    <p className="text-xs font-bold text-neutral-600 mb-2">Dropdown Options</p>
+                                                    <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-2">Dropdown Options</p>
                                                     {(cf.options || []).map((opt, optIdx) => (
                                                         <div key={optIdx} className="flex items-center gap-2 mb-2">
                                                             <input
@@ -1011,7 +1032,7 @@ const CreateEvent = () => {
                                                                 placeholder={`Option ${optIdx + 1}`}
                                                                 value={opt}
                                                                 onChange={(e) => updateCustomFieldOption(idx, optIdx, e.target.value)}
-                                                                className="flex-1 px-3 py-2 border-2 border-neutral-200 rounded-sm text-sm focus:border-orange-600 focus:outline-none transition-colors"
+                                                                className="flex-1 px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-[#0a0a0a] text-black dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:outline-none transition-all"
                                                             />
                                                             <button
                                                                 type="button"
@@ -1038,7 +1059,7 @@ const CreateEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addCustomField}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-300 rounded-sm text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Custom Field
                                 </button>
@@ -1049,17 +1070,24 @@ const CreateEvent = () => {
                     {/* STEP 4: Extras & Publishing */}
                     {currentStep === 4 && (
                         <div className="space-y-6 animate-step-fadeIn">
-                            <div className="border-b border-neutral-200 pb-3">
-                                <h2 className="text-xl font-bold text-black uppercase tracking-wide flex items-center gap-2">
-                                     Step 4: Extras & Publishing
-                                </h2>
-                                <p className="text-xs text-neutral-500 mt-1">Configure winner display, digital certificates, event sponsors, and media assets.</p>
+                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-sparkling-line text-orange-600 text-base" />
+                                </div>
+                                <div>
+                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                        Step 4
+                                    </span>
+                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
+                                        Extras & Publishing
+                                    </h2>
+                                </div>
                             </div>
 
                             {/* Status Toggles Grid (Display Results & Digital Certificates) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Show Winners Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 rounded-sm cursor-pointer hover:border-neutral-400 transition-colors select-none">
+                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
                                     <input
                                         type="checkbox"
                                         name="showWinner"
@@ -1068,13 +1096,13 @@ const CreateEvent = () => {
                                         className="w-4 h-4 mt-0.5 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
                                     />
                                     <div>
-                                        <span className="block text-sm font-bold text-black tracking-wide">Display Results / Winners</span>
+                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Display Results / Winners</span>
                                         <p className="text-xs text-neutral-500 mt-1">Show winners on the event card after completion.</p>
                                     </div>
                                 </label>
 
                                 {/* Provide Certificate Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 rounded-sm cursor-pointer hover:border-neutral-400 transition-colors select-none">
+                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
                                     <input
                                         type="checkbox"
                                         name="provideCertificate"
@@ -1083,7 +1111,7 @@ const CreateEvent = () => {
                                         className="w-4 h-4 mt-0.5 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
                                     />
                                     <div>
-                                        <span className="block text-sm font-bold text-black tracking-wide">Digital Certificates</span>
+                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Digital Certificates</span>
                                         <p className="text-xs text-neutral-500 mt-1">Enable downloadable certificates for participants after the event ends.</p>
                                     </div>
                                 </label>
@@ -1095,18 +1123,18 @@ const CreateEvent = () => {
                                 <p className="text-xs text-neutral-500 mb-4">Add sponsors for this event (optional)</p>
                                 <div className="space-y-4">
                                     {sponsors.map((s, idx) => (
-                                        <div key={idx} className="border-2 border-neutral-200 rounded-sm p-4 relative bg-neutral-50">
+                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
                                             <button
                                                 type="button"
                                                 onClick={() => removeSponsor(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-sm transition-colors cursor-pointer"
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
                                                 title="Remove sponsor"
                                             >
                                                 <i className="ri-delete-bin-line text-lg" />
                                             </button>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Sponsor Name <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Sponsor Name <span className="text-orange-600">*</span></label>
                                                     <input
                                                         type="text"
                                                         placeholder="e.g. Acme Corp"
@@ -1119,7 +1147,7 @@ const CreateEvent = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Logo URL <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Logo URL <span className="text-orange-600">*</span></label>
                                                     <input
                                                         type="url"
                                                         placeholder="https://example.com/logo.png"
@@ -1133,7 +1161,7 @@ const CreateEvent = () => {
                                                 </div>
                                             </div>
                                             <div className="mt-3 pr-10">
-                                                <label className="text-xs font-bold text-neutral-600 mb-1 block">Website URL <span className="text-neutral-400 font-normal">(optional)</span></label>
+                                                <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Website URL <span className="text-neutral-400 font-normal">(optional)</span></label>
                                                 <input
                                                     type="url"
                                                     placeholder="https://sponsor-website.com"
@@ -1148,7 +1176,7 @@ const CreateEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addSponsor}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-300 rounded-sm text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Sponsor
                                 </button>
@@ -1160,18 +1188,18 @@ const CreateEvent = () => {
                                 <p className="text-xs text-neutral-500 mb-4">Add images, videos, or sponsor logos for this event (optional)</p>
                                 <div className="space-y-4">
                                     {media.map((m, idx) => (
-                                        <div key={idx} className="border-2 border-neutral-200 rounded-sm p-4 relative bg-neutral-50">
+                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
                                             <button
                                                 type="button"
                                                 onClick={() => removeMedia(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-sm transition-colors cursor-pointer"
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
                                                 title="Remove media"
                                             >
                                                 <i className="ri-delete-bin-line text-lg" />
                                             </button>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Media URL <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Media URL <span className="text-orange-600">*</span></label>
                                                     <input
                                                         type="url"
                                                         placeholder="https://example.com/media.jpg"
@@ -1184,7 +1212,7 @@ const CreateEvent = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 mb-1 block">Type</label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Type</label>
                                                     <select
                                                         value={m.type}
                                                         onChange={(e) => updateMedia(idx, 'type', e.target.value)}
@@ -1202,7 +1230,7 @@ const CreateEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addMedia}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-300 rounded-sm text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Media
                                 </button>
@@ -1216,7 +1244,7 @@ const CreateEvent = () => {
                                 key="cancel-btn"
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-850 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-200 transition-colors border-0 outline-none"
+                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2"
                             >
                                 Cancel
                             </button>
@@ -1225,7 +1253,7 @@ const CreateEvent = () => {
                                 key="prev-step-btn"
                                 type="button"
                                 onClick={handlePrevStep}
-                                className="flex-1 px-6 py-3 bg-neutral-100 text-neutral-850 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-200 transition-colors border-0 outline-none flex items-center justify-center gap-2"
+                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2"
                             >
                                 <i className="ri-arrow-left-line" /> Back
                             </button>
@@ -1236,7 +1264,7 @@ const CreateEvent = () => {
                                 key="next-step-btn"
                                 type="button"
                                 onClick={handleNextStep}
-                                className="flex-1 px-6 py-3 bg-black hover:bg-orange-600 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-colors border-0 outline-none flex items-center justify-center gap-2"
+                                className="flex-1 px-6 py-3 bg-black hover:bg-neutral-800 hover:shadow-md text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all border-0 outline-none flex items-center justify-center gap-2"
                             >
                                 Next Step <i className="ri-arrow-right-line" />
                             </button>
@@ -1245,8 +1273,8 @@ const CreateEvent = () => {
                                 key="submit-event-btn"
                                 type="submit"
                                 disabled={isSubmitting}
-                                className={`flex-1 px-6 py-3 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-colors border-0 outline-none ${
-                                    isSubmitting ? 'bg-neutral-400 cursor-not-allowed' : 'bg-black hover:bg-orange-600'
+                                className={`flex-1 px-6 py-3 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all border-0 outline-none ${
+                                    isSubmitting ? 'bg-neutral-400 cursor-not-allowed' : 'bg-black hover:bg-neutral-800 hover:shadow-md'
                                 }`}
                             >
                                 {isSubmitting ? 'Creating...' : 'Create Event'}

@@ -8,6 +8,7 @@ import EventCardSkeleton from '../components/skeletons/EventCardSkeleton';
 import { Skeleton } from '../components/ui/Skeleton';
 import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
+import Section from '../components/layout/Section';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -173,17 +174,23 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   };
 
   if (loading) {
-    return (
-      <div className={`max-w-7xl mx-auto px-6 ${hideHeader ? '' : 'py-12'}`}>
-        {!hideHeader && (
-          <Skeleton className="w-48 h-8 mb-6" />
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(limit || 6)].map((_, i) => (
-            <EventCardSkeleton key={i} />
-          ))}
-        </div>
+    const skeletonGrid = (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        {[...Array(limit || 6)].map((_, i) => (
+          <EventCardSkeleton key={i} />
+        ))}
       </div>
+    );
+
+    if (hideHeader) {
+      return <div className="w-full">{skeletonGrid}</div>;
+    }
+
+    return (
+      <Section className="py-10 sm:py-12 lg:py-16">
+        <Skeleton className="w-48 h-8 mb-6 rounded-xl" />
+        {skeletonGrid}
+      </Section>
     );
   }
 
@@ -290,21 +297,25 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
   const isFilterActive = filterStatus !== 'ALL' || filterClub !== 'ALL' || filterMonth !== 'ALL' || filterYear !== 'ALL' || searchQuery.trim() !== '';
   const showEmptyBanner = events.length === 0 || totalFiltered === 0 || (!isFilterActive && hasNoActiveEvents);
-
   const statusButtons = [
     { key: 'ALL', label: 'All', icon: 'ri-layout-grid-line' },
     { key: 'LIVE', label: 'Live', icon: 'ri-live-line' },
     { key: 'UPCOMING', label: 'Upcoming', icon: 'ri-calendar-event-line' },
     { key: 'ENDED', label: 'Ended', icon: 'ri-history-line' },
   ];
+  const Container = hideHeader ? 'div' : Section;
+  const containerProps = hideHeader ? { className: "w-full" } : { className: "py-10 sm:py-12 lg:py-16" };
 
   return (
-    <div className={`max-w-7xl mx-auto px-4 ${hideHeader ? '' : 'py-12'}`}>
+    <Container {...containerProps}>
 
       {!hideHeader && (
-        <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
-          Events
-        </h1>
+        <div className="mb-8 sm:mb-10 text-center">
+         
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
+            Events & Activities
+          </h1>
+        </div>
       )}
 
       {(!hideHeader || showFilters) && (
@@ -330,10 +341,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             )}
           </div>
 
-          {/* Row 2: Status + Selects */}
           <div className="flex flex-col md:flex-row md:items-center gap-2 sm:gap-2.5 mt-2 sm:mt-2.5 min-w-0 max-w-full">
 
-            {/* Status buttons */}
             <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 shrink-0 max-w-full">
               {statusButtons.map(btn => (
                 <button
@@ -344,166 +353,53 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                         ? 'bg-red-500 text-white border-red-500 shadow-2xs'
                         : btn.key === 'UPCOMING'
                           ? 'bg-orange-600 text-white border-orange-600 shadow-2xs'
-                          : btn.key === 'ENDED'
-                            ? 'bg-neutral-800 text-white border-neutral-800'
-                            : 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
-                      : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700/60 hover:border-orange-600 hover:text-orange-600'
+                          : 'bg-neutral-800 text-white border-neutral-800 dark:bg-neutral-200 dark:text-neutral-900 dark:border-neutral-200 shadow-2xs'
+                      : 'bg-neutral-50 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-100 dark:hover:bg-neutral-750'
                     }`}
                 >
                   <i className={`${btn.icon} text-xs`} />
-                  {btn.label}
+                  <span>{btn.label}</span>
                 </button>
               ))}
             </div>
 
-            {/* Vertical divider — desktop */}
-            <div className="hidden md:block h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-0.5 shrink-0" />
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 grow min-w-0">
+              <select
+                value={filterClub}
+                onChange={(e) => setFilterClub(e.target.value)}
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+              >
+                <option value="ALL">All Clubs</option>
+                <option value="CENTRAL">Central (ODSW)</option>
+                {clubNames.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
 
-            {/* Selects: Club, Year, Month in 1 single row */}
-           <div className="grid grid-cols-3 gap-1 sm:gap-1.5 flex-1 min-w-0">
+              <select
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+              >
+                <option value="ALL">All Months</option>
+                {availableMonths.map(m => (
+                  <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'long' })}</option>
+                ))}
+              </select>
 
-  {/* Club */}
-  <div className="relative group min-w-0">
-    <i className="ri-building-line absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-xs pointer-events-none z-10" />
+              <select
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+              >
+                <option value="ALL">All Years</option>
+                {availableYears.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
 
-    <select
-      value={
-        filterClub === "CENTRAL"
-          ? "CENTRAL"
-          : clubNames.find(
-              (c) => c.toLowerCase() === filterClub.toLowerCase()
-            ) || filterClub
-      }
-      onChange={(e) => setFilterClub(e.target.value)}
-      className="
-        w-full min-w-0
-        pl-5 sm:pl-6 pr-5 sm:pr-6
-        py-1.5
-        !text-[10px] sm:!text-[11px]
-        !leading-4
-        font-semibold
-        tracking-wide
-        border border-neutral-200 dark:border-neutral-700/70
-        rounded-lg
-        bg-neutral-50 dark:bg-neutral-800
-        text-neutral-800 dark:text-neutral-200
-        focus:outline-none
-        focus:border-orange-600
-        focus:bg-white dark:focus:bg-neutral-800
-        transition-all
-        cursor-pointer
-        appearance-none
-        truncate
-      "
-      style={{ fontSize: "10px" }}
-    >
-      <option value="ALL">All Clubs</option>
-
-      <option value="CENTRAL">Central (ODSW)</option>
-
-      {clubNames.map((name) => (
-        <option key={name} value={name}>
-          {name}
-        </option>
-      ))}
-    </select>
-
-    <i className="ri-arrow-down-s-line absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs pointer-events-none" />
-  </div>
-
-
-  {/* Year */}
-  <div className="relative group min-w-0">
-    <i className="ri-calendar-line absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-xs pointer-events-none z-10" />
-
-    <select
-      value={filterYear}
-      onChange={(e) => setFilterYear(e.target.value)}
-      className="
-        w-full min-w-0
-        pl-5 sm:pl-6 pr-5 sm:pr-6
-        py-1.5
-        !text-[10px] sm:!text-[11px]
-        !leading-4
-        font-semibold
-        tracking-wide
-        border border-neutral-200 dark:border-neutral-700/70
-        rounded-lg
-        bg-neutral-50 dark:bg-neutral-800
-        text-neutral-800 dark:text-neutral-200
-        focus:outline-none
-        focus:border-orange-600
-        focus:bg-white dark:focus:bg-neutral-800
-        transition-all
-        cursor-pointer
-        appearance-none
-        truncate
-      "
-      style={{ fontSize: "10px" }}
-    >
-      <option value="ALL">All Years</option>
-
-      {availableYears.map((y) => (
-        <option key={y} value={y}>
-          {y}
-        </option>
-      ))}
-    </select>
-
-    <i className="ri-arrow-down-s-line absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs pointer-events-none" />
-  </div>
-
-
-  {/* Month */}
-  <div className="relative group min-w-0">
-    <i className="ri-time-line absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-xs pointer-events-none z-10" />
-
-    <select
-      value={filterMonth}
-      onChange={(e) => setFilterMonth(e.target.value)}
-      className="
-        w-full min-w-0
-        pl-5 sm:pl-6 pr-5 sm:pr-6
-        py-1.5
-        !text-[10px] sm:!text-[11px]
-        !leading-4
-        font-semibold
-        tracking-wide
-        border border-neutral-200 dark:border-neutral-700/70
-        rounded-lg
-        bg-neutral-50 dark:bg-neutral-800
-        text-neutral-800 dark:text-neutral-200
-        focus:outline-none
-        focus:border-orange-600
-        focus:bg-white dark:focus:bg-neutral-800
-        transition-all
-        cursor-pointer
-        appearance-none
-        truncate
-      "
-      style={{ fontSize: "10px" }}
-    >
-      <option value="ALL">All Months</option>
-
-      {monthNames.map((m, i) => (
-        <option key={m} value={i + 1}>
-          {m}
-        </option>
-      ))}
-    </select>
-
-    <i className="ri-arrow-down-s-line absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs pointer-events-none" />
-  </div>
-
-</div>
-          </div>
-
-          {isFilterActive && (
-            <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[10px] sm:text-[11px]">
-              <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-bold truncate pr-2">
-                {totalFiltered} event{totalFiltered !== 1 ? 's' : ''} found
-                {searchQuery && <span className="text-orange-600 ml-1">for "{searchQuery}"</span>}
-              </span>
+            {isFilterActive && (
               <button
                 onClick={() => {
                   setFilterStatus('ALL');
@@ -513,29 +409,45 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   setSearchQuery('');
                   setSearchParams({});
                 }}
-                className="font-bold uppercase tracking-wider text-orange-600 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-500 bg-neutral-100 dark:bg-neutral-800 hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
+                title="Reset all filters"
               >
-                <i className="ri-close-line" /> Clear
+                <i className="ri-refresh-line text-xs" />
+                <span>Reset</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
+
+          <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
+            <span>
+              Showing <span className="font-bold text-neutral-800 dark:text-neutral-200">{totalFiltered}</span> {totalFiltered === 1 ? 'event' : 'events'}
+            </span>
+            {isFilterActive && (
+              <span className="text-[10px] font-bold text-orange-600 dark:text-orange-500 uppercase tracking-wider">
+                Filters applied
+              </span>
+            )}
+          </div>
         </div>
       )}
 
-      {/* If No Active/Upcoming Events or No Filter Matches */}
       {showEmptyBanner && (
-        <div className="text-center py-8 px-4 mb-14">
-          <div className="w-50 h-65 sm:w-44 sm:h-44 flex items-center justify-center mx-auto mb-4 overflow-hidden">
-            <img className='w-full h-full object-contain' src={randomCat} alt="No events" />
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 sm:p-12 text-center shadow-2xs mb-8">
+          <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-4 flex items-center justify-center">
+            <img
+              src={randomCat}
+              alt="Friendly Campus Cat"
+              className="max-h-full max-w-full object-contain drop-shadow-xs"
+            />
           </div>
-          <h3 className="text-xl font-black text-neutral-800 dark:text-neutral-100 mb-2">
+          <h3 className="font-extrabold text-base sm:text-lg text-neutral-900 dark:text-white mb-1 tracking-tight">
             {events.length === 0
-              ? 'No Events Found'
+              ? 'No events scheduled yet'
               : totalFiltered === 0
-                ? 'No Matching Events Found'
-                : 'No Active or Upcoming Events Found'}
+                ? 'No matching events found'
+                : 'No active events currently'}
           </h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-8 leading-relaxed">
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-4 leading-relaxed font-light">
             {events.length === 0
               ? 'Please check back later for new events.'
               : totalFiltered === 0
@@ -581,7 +493,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h3>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {liveEvents.map(event => (
               <EventCard
                 key={event.id || event._id}
@@ -598,12 +510,11 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div className={endedEvents.length > 0 ? 'mb-14' : ''}>
           {!hideHeader && (
             <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
-         
               Upcoming Events
             </h2>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {upcomingEvents.map(event => (
               <EventCard
                 key={event.id || event._id}
@@ -620,17 +531,15 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div>
           {!hideHeader && (
             <h2 className="text-lg font-semibold text-neutral-400 mb-6 flex items-center gap-2">
-          
               Past Events 
             </h2>
           )}
           {hideHeader && (
             <h3 className="text-md font-bold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
-             
               Past Events
             </h3>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {endedEvents.map(event => (
               <EventCard
                 key={event.id || event._id}
@@ -643,8 +552,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-
-    </div>
+    </Container>
   );
 }
 

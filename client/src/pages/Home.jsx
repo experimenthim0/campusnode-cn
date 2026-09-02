@@ -11,6 +11,7 @@ import ClubLeaderboard from '../components/ClubLeaderboard';
 import HomeFooter from '../components/HomeFooter';
 import Maintainance from './Maintainance';
 import ScrollReveal from '../components/ScrollReveal';
+import Section from '../components/layout/Section';
 import {ArrowRightIcon} from '../components/ui/arrow-right';
 import ShimmerText from '../components/ShimmerText';
 import { InstagramIcon } from '@/components/ui/instagram';
@@ -556,22 +557,15 @@ const Home = () => {
   }
 
   return (
-    <div className="myfont text-neutral-900 bg-[#fafafa] dark:text-neutral-100 dark:bg-[#0a0a0a] transition-colors duration-300 -mt-12 ">
+    <div className="myfont text-neutral-900 bg-[#fafafa] dark:text-neutral-100 dark:bg-[#0a0a0a] transition-colors duration-300 -mt-12">
 
       {user ? (
         <>
-          <section className="relative pt-28 pb-12 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800/80 text-neutral-900 dark:text-white transition-colors duration-300 overflow-hidden">
-            {/* Glow Effects */}
-            {/* <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-orange-500/[0.05] dark:bg-orange-600/[0.08] rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-yellow-500/[0.03] dark:bg-yellow-500/[0.05] rounded-full blur-[100px] pointer-events-none" /> */}
-            
-            <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 w-full">
+          <section className="relative pt-24 sm:pt-28 pb-10 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800/80 text-neutral-900 dark:text-white transition-colors duration-300 overflow-hidden">
+            <Section className="relative z-10 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-4">
                   <div>
-                    {/* <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-widest text-orange-500 ">{dashboardTag}</span>
-                    </div> */}
                     <h1 className="text-3xl md:text-4xl font-black tracking-tight text-neutral-900 dark:text-white mt-1">
                       Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400">{greetingName}</span>
                     </h1>
@@ -623,15 +617,15 @@ const Home = () => {
                   })}
                 </div>
               </div>
-            </div>
+            </Section>
           </section>
 
-          <section className="py-16 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-              <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+            <Section>
+              <div className="mb-10 sm:mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <SectionLabel>{isStudent ? "Your Timeline" : "Management Dashboard"}</SectionLabel>
-                  <h2 className="font-black text-[clamp(28px,4vw,40px)] text-neutral-900 dark:text-white leading-tight tracking-tight">
+                  <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     {isStudent ? "My Registered Events" : isClub ? "Club Hub" : isFaculty ? "Approvals Dashboard" : "Platform Management"}
                   </h2>
                 </div>
@@ -661,7 +655,7 @@ const Home = () => {
                     </p>
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center px-5 py-2.5 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-lg transition-all shadow-sm"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-bold text-xs uppercase tracking-widest rounded-full transition-all shadow-sm"
                     >
                       Find Events to Join
                     </Link>
@@ -843,12 +837,12 @@ const Home = () => {
                   )}
                 </div>
               )}
-            </div>
+            </Section>
           </section>
         </>
       ) : (
         <>
-          <section className="relative flex flex-col justify-center pt-24 pb-8 lg:pt-32 lg:pb-12 overflow-hidden">
+          <section className="relative flex flex-col justify-center pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
             {/* Background Image & Overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none">
               {bgImages.map((img, idx) => (
@@ -856,88 +850,84 @@ const Home = () => {
                   key={idx}
                   src={img} 
                   alt="University Campus" 
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-[center_40%]  ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-[center_40%] ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
                 />
               ))}
               <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/20 to-white dark:from-[#0a0a0a]/10 dark:via-[#0a0a0a]/60 dark:to-[#0a0a0a]"></div>
             </div>
 
-            <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 w-full mt-4">
+            <Section className="relative z-10 w-full mt-4">
               {/* Headline */}
               <ScrollReveal delay={0.2}>
                 <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-white dark:text-white text-center mx-auto max-w-5xl">
-  Everything at <span className="text-orange-500">NIT Jalandhar.</span>
-  <br />
-  One Platform.
-</h1>
+                  Everything at <span className="text-orange-500">NIT Jalandhar.</span>
+                  <br />
+                  One Platform.
+                </h1>
               </ScrollReveal>
 
               {/* Sub + CTAs */}
               <ScrollReveal delay={0.3}>
-                <div className="mt-10 flex flex-col items-center text-center gap-8 max-w-3xl mx-auto">
+                <div className="mt-8 sm:mt-10 flex flex-col items-center text-center gap-8 max-w-3xl mx-auto">
                   <div className="max-w-2xl">
                     <p className="text-base md:text-lg font-normal text-white/90 dark:text-neutral-300 leading-relaxed max-w-3xl mx-auto">
-  Discover campus events, explore student clubs, receive official announcements,
-  and access secure student services—all from one verified platform built for
-  the NIT Jalandhar community.
-</p>
+                      Discover campus events, explore student clubs, receive official announcements,
+                      and access secure student services—all from one verified platform built for
+                      the NIT Jalandhar community.
+                    </p>
                   </div>
                   <div className="flex gap-3 flex-wrap justify-center">
                     <Link
                       to="/events"
-                      className="text-white bg-[#0f1419] hover:bg-transparent hover:text-[#0a0a0a] hover:border-[#0a0a0a] dark:bg-[#f5f5f5] dark:text-[#0a0a0a] dark:hover:bg-transparent dark:hover:text-[#f5f5f5] dark:hover:border-[#f5f5f5] transition-all duration-200 ease-in-out focus:ring-4 focus:outline-none focus:ring-[#0f1419]/50 box-border border border-transparent font-medium leading-5 text-sm px-4 py-2.5 inline-flex items-center rounded-4xl cursor-pointer"
+                      className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
                     >
                       <i className="ri-calendar-event-line text-lg mr-2" /> Browse Events
                     </Link>
 
                     <Link
                       to="/clubs"
-                      className="text-white bg-[#0f1419] hover:bg-transparent hover:text-[#0a0a0a] hover:border-[#0a0a0a] dark:bg-[#f5f5f5] dark:text-[#0a0a0a] dark:hover:bg-transparent dark:hover:text-[#f5f5f5] dark:hover:border-[#f5f5f5] transition-all duration-200 ease-in-out focus:ring-4 focus:outline-none focus:ring-[#0f1419]/50 box-border border border-transparent font-medium leading-5 text-sm px-4 py-2.5 inline-flex items-center rounded-4xl cursor-pointer"
+                      className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
                     >
-                      <i className="ri-group-line text-lg mr-2" /> Explore Clubs
+                      <i className="ri-group-line text-lg mr-2 text-orange-500" /> Explore Clubs
                     </Link>
 
                     <Link
                       to="/register"
-                      className="text-white bg-[#0f1419] hover:bg-transparent hover:text-[#0a0a0a] hover:border-[#0a0a0a] dark:bg-[#f5f5f5] dark:text-[#0a0a0a] dark:hover:bg-transparent dark:hover:text-[#f5f5f5] dark:hover:border-[#f5f5f5] transition-all duration-200 ease-in-out focus:ring-4 focus:outline-none focus:ring-[#0f1419]/50 box-border border border-transparent font-medium leading-5 text-sm px-4 py-2.5 inline-flex items-center rounded-4xl cursor-pointer"
+                      className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
                     >
-                    <ArrowRightIcon size={18}>
-                      Join CampusNode
-                    </ArrowRightIcon>
+                      <ArrowRightIcon size={18}>
+                        Join CampusNode
+                      </ArrowRightIcon>
                     </Link>
                   </div>
 
-                  <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-800 dark:text-white/80 hidden sm:flex ">
-
-  <div className="flex items-center gap-2">
-    <i className="ri-shield-check-line text-orange-500" />
-    Verified Student Access
-  </div>
-
-  <div className="flex items-center gap-2">
-    <i className="ri-community-line text-orange-500" />
-    Official Club Community
-  </div>
-
-  <div className="flex items-center gap-2">
-    <i className="ri-lock-line text-orange-500" />
-    Secure Campus Services
-  </div>
-
-</div>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold text-black/90 dark:text-neutral-300 transition-colors duration-200">
+                    <div className="flex items-center gap-2">
+                      <i className="ri-shield-check-line text-orange-500 text-base" />
+                      Verified Student Access
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <i className="ri-community-line text-orange-500 text-base" />
+                      Official Club Community
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <i className="ri-lock-line text-orange-500 text-base" />
+                      Secure Campus Services
+                    </div>
+                  </div>
                 </div>
               </ScrollReveal>
-            </div>
+            </Section>
           </section>
         </>
       )}
 
-      <section className="pt-12 pb-16 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
+      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+        <Section>
           <ScrollReveal direction="up">
-            <div className="mb-12">
+            <div className="mb-10 sm:mb-12">
               <SectionLabel>Latest Happenings</SectionLabel>
-              <h2 className="font-black text-[clamp(28px,4vw,44px)] text-neutral-900 dark:text-white leading-[1.1] tracking-wide">
+              <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight">
                 What's Buzzing on Campus
               </h2>
             </div>
@@ -947,7 +937,7 @@ const Home = () => {
             <EventFeed limit={6} hideHeader={true} showFilters={false} onlyActive={!!user} />
           </ScrollReveal>
           <ScrollReveal delay={0.3}>
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-center mt-10 sm:mt-12">
               <BtnSecondary to="/events">
                 <ArrowRightIcon size={20}>
                   Browse Events 
@@ -955,14 +945,14 @@ const Home = () => {
               </BtnSecondary>
             </div>
           </ScrollReveal>
-        </div>
+        </Section>
       </section>
 
-      <section className="py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+        <Section>
           <ScrollReveal direction="up">
-            <div className="mb-12">
-              <h2 className="font-black text-[clamp(28px,4vw,44px)] text-neutral-900 dark:text-white leading-[1.1] tracking-wide text-center">
+            <div className="mb-10 sm:mb-12">
+              <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight text-center">
                 NITJ Clubs & Societies
               </h2>
             </div>
@@ -971,7 +961,7 @@ const Home = () => {
             <Clubspage isHome={true} />
           </ScrollReveal>
           <ScrollReveal delay={0.3}>
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-center mt-10 sm:mt-12">
               <BtnSecondary to="/clubs">
                 <ArrowRightIcon size={20}>
                   Explore All 
@@ -979,17 +969,16 @@ const Home = () => {
               </BtnSecondary>
             </div>
           </ScrollReveal>
-        </div>
+        </Section>
       </section>
 
-      <section className="py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+        <Section>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
-                
-                <h2 className="font-black text-[clamp(28px,4vw,44px)] text-neutral-900 dark:text-white leading-[1.1] tracking-wide mb-6">
-                  Club<br /><span className="text-orange-600 dark:text-orange-500 text-6xl">Hall of Fame</span>
+                <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
+                  Club<br /><span className="text-orange-600 dark:text-orange-500 text-5xl sm:text-6xl">Hall of Fame</span>
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6">
                   Recognition for the top student organizations at NITJ. Rankings and points are calculated based on hosted events, student participation, and attendee feedback satisfaction ratings.
@@ -1009,20 +998,20 @@ const Home = () => {
               </ScrollReveal>
             </div>
           </div>
-        </div>
+        </Section>
       </section>
 
       {!user && (
         <>
-          <section className="py-20 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <div className="max-w-6xl mx-auto px-6">
+          <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+            <Section>
               {/* Tab switcher */}
-              <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-12">
+              <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-10 sm:mb-12 max-w-md mx-auto sm:max-w-none">
                 {["students", "clubs"].map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
-                    className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer
+                    className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 -mb-px cursor-pointer uppercase tracking-wider
                       ${tab === t
                         ? "border-orange-600 text-orange-600 dark:border-orange-500 dark:text-orange-400"
                         : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
@@ -1034,21 +1023,21 @@ const Home = () => {
               </div>
 
               {tab === "students" && (
-                <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
-                    <p className="text-xs font-semibold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
+                    <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
                       Students
                     </p>
-                    <h2 className="text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-8">
+                    <h2 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                       Never miss a<br />campus beat{" "}
                       <span className="text-orange-600 dark:text-orange-500">again.</span>
                     </h2>
 
                     <div className="flex flex-col gap-4">
                       {studentItems.map((item, i) => (
-                        <div key={i} className="flex gap-3 items-start">
-                          <div className="w-9 h-9 flex-shrink-0 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                        <div key={i} className="flex gap-3.5 items-start">
+                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 text-base">
                             {item.icon}
                           </div>
                           <div className="pt-0.5">
@@ -1059,9 +1048,9 @@ const Home = () => {
                       ))}
                     </div>
 
-                    <Link to="/register" className="mt-8 inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors text-white dark:text-black text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+                    <Link to="/register" className="mt-8 inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full shadow-sm">
                       Join now
-                      <i className="ri-arrow-right-line" />
+                      <i className="ri-arrow-right-line text-sm" />
                     </Link>
                   </div>
 
@@ -1070,10 +1059,10 @@ const Home = () => {
                     <img
                       src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80"
                       alt="Student life"
-                      className="w-full h-[400px] object-cover rounded-xl border border-neutral-200 dark:border-neutral-800"
+                      className="w-full h-[380px] object-cover rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm"
                       style={{ filter: "saturate(0.9)" }}
                     />
-                    <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-lg px-4 py-3 shadow-md">
+                    <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-xl px-4 py-3 shadow-md">
                       <p className="text-lg font-black text-[#0d1422] leading-none">1-Click</p>
                       <p className="text-[11px] text-[#0d1422] mt-0.5 font-bold">Event Registration</p>
                     </div>
@@ -1083,45 +1072,45 @@ const Home = () => {
 
               {tab === "clubs" && (
                 <div>
-                  <div className="mb-10">
-                    <p className="text-xs font-semibold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
+                  <div className="mb-8 sm:mb-10">
+                    <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
                       Clubs & Societies
                     </p>
-                    <h2 className="text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
+                    <h2 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
                       Less logistics,{" "}
                       <span className="text-orange-600 dark:text-orange-500">more impact.</span>
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
                     {clubFeatures.map((f, i) => (
                       <div
                         key={i}
-                        className="p-4 sm:p-5 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl hover:border-orange-400 dark:hover:border-orange-500 transition-colors group"
+                        className="p-5 sm:p-6 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-2xl hover:border-orange-400 dark:hover:border-orange-500/60 transition-colors group shadow-2xs"
                       >
-                        <div className="w-9 h-9 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <div className="w-10 h-10 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors text-lg">
                           {f.icon}
                         </div>
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-1">{f.title}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
+                        <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
+                        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
+            </Section>
           </section>
 
-          <section className="py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+            <Section>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 <ScrollReveal direction="left">
                   <div>
                     <SectionLabel>Our Vision</SectionLabel>
-                    <h2 className="font-black text-[clamp(32px,4vw,56px)] leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-8">
+                    <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                       Creating a Truly<br /><span className="text-orange-600 dark:text-orange-500">Connected Campus.</span>
                     </h2>
-                    <div className="space-y-6 text-neutral-700 dark:text-neutral-300 leading-relaxed text-[17px]">
+                    <div className="space-y-5 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
                       <p>
                         CampusNode serves as the central hub for the NIT Jalandhar community. By bringing together events, clubs, announcements, and a structured Lost & Found system, we simplify campus life. We believe that accessing campus resources, engaging with student organizations, and finding opportunities should be simple and seamless.
                       </p>
@@ -1131,18 +1120,18 @@ const Home = () => {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3 sm:gap-8 mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+                    <div className="grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800">
                       <div className="min-w-0">
                         <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">25+</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold tracking-widest text-neutral-400 mt-1">Active Clubs & Societies</div>
+                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Active Clubs & Societies</div>
                       </div>
                       <div className="min-w-0">
                         <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">5k+</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold tracking-widest text-neutral-400 mt-1">Student Base</div>
+                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Student Base</div>
                       </div>
                       <div className="min-w-0">
                         <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">100%</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold tracking-widest text-neutral-400 mt-1">NITJ Focused</div>
+                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">NITJ Focused</div>
                       </div>
                     </div>
                   </div>
@@ -1150,12 +1139,12 @@ const Home = () => {
 
                 <ScrollReveal direction="right" delay={0.2}>
                   <div className="flex gap-4 items-center justify-center lg:justify-end">
-                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-100 dark:bg-neutral-800 overflow-hidden translate-y-8 shadow-sm">
+                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-100 dark:bg-neutral-800 overflow-hidden translate-y-6 sm:translate-y-8 shadow-sm">
                       <div className="w-full h-full flex items-center justify-center text-neutral-300">
                         <img src="/mainbuilding.jpeg" alt="NITJ Main Building" className="w-full h-full object-cover"/>
                       </div>
                     </div>
-                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-200 dark:bg-neutral-800 overflow-hidden -translate-y-4 shadow-sm">
+                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-200 dark:bg-neutral-800 overflow-hidden -translate-y-3 sm:-translate-y-4 shadow-sm">
                       <div className="w-full h-full flex items-center justify-center text-neutral-400">
                         <img src="/itbuilding.jpeg" alt="NITJ IT Building" className="w-full h-full object-cover"/>
                       </div>
@@ -1163,7 +1152,7 @@ const Home = () => {
                   </div>
                 </ScrollReveal>
               </div>
-            </div>
+            </Section>
           </section>
         </>
       )}
@@ -1210,12 +1199,12 @@ const Home = () => {
           }
         }
       `}</style>
-      <section id="team" className="py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
+      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Glow accent */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-orange-500/[0.02] dark:bg-orange-500/[0.04] rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col items-center mb-16 text-center max-w-3xl mx-auto">
+        <Section className="relative z-10">
+          <div className="flex flex-col items-center mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
               <span className="text-orange-600 dark:text-orange-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
                 The Innovators
@@ -1223,16 +1212,15 @@ const Home = () => {
             </ScrollReveal>
             
             <ScrollReveal direction="up" delay={0.2}>
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
                 The Minds Behind <span className="logofont font-light">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span>
               </h2>
             </ScrollReveal>
             
             <ScrollReveal direction="up" delay={0.3}>
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed font-light mb-6">
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed font-light">
                 We are student innovators, creators, and engineers building the digital gateway for NITJ.
               </p>
-
             </ScrollReveal>
           </div>
 
@@ -1252,29 +1240,19 @@ const Home = () => {
           ) : (
             <ScrollReveal direction="up" delay={0.2}>
               <div
-                className="mx-auto text-center flex items-center justify-center flex-col"
-                style={{
-                  maxWidth: '480px',
-                  padding: '64px 32px',
-                  border: '0.5px solid',
-                  borderColor: 'rgba(234,88,12,0.18)',
-                  borderRadius: '20px',
-                  background: 'rgba(234,88,12,0.02)',
-                   
-                }}
+                className="mx-auto text-center flex items-center justify-center flex-col max-w-md p-10 sm:p-14 border border-orange-500/20 rounded-2xl bg-orange-500/[0.02] shadow-2xs"
               >
-               
-                  <ZapIcon style={{ fontSize: '22px' }} className='mb-4' />
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+                <ZapIcon style={{ fontSize: '22px' }} className="mb-4 text-orange-500" />
+                <h3 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white mb-2">
                   Team expansion in progress
                 </h3>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-light">
+                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-light">
                   Our roster is being assembled. Check back soon — great things are coming together.
                 </p>
               </div>
             </ScrollReveal>
           )}
-        </div>
+        </Section>
       </section>
 
       {celebrationEvent && (

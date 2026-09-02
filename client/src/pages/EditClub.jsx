@@ -294,7 +294,7 @@ const EditClub = () => {
             </div>
             <div>
               <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">
-                Faculty Coordinator/s (Comma separated names)
+                Faculty Coordinator
               </label>
               <input
                 type="text"

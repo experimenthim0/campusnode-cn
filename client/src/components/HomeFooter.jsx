@@ -6,6 +6,7 @@ import { LinkedinIcon } from './ui/linkedin';
 import {TwitterIcon} from './ui/twitter';
 import ScrollReveal from './ScrollReveal';
 import ContactModal from './ContactModal';
+import Section from './layout/Section';
 
 const HomeFooter = () => {
   const currentYear = new Date().getFullYear();
@@ -33,7 +34,7 @@ const HomeFooter = () => {
 
   return (
     <footer className="bg-[#fafafa] dark:bg-[#0c0c0c] text-neutral-900 dark:text-white border-t border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-14 border-x border-neutral-200 dark:border-neutral-800">
+      <Section className="py-12 sm:py-14 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
           {/* Brand column */}
@@ -116,8 +117,8 @@ const HomeFooter = () => {
               ))}
             </ul>
           </div>
-      </div>
-      </div>
+        </div>
+      </Section>
 
       {/* Custom Contact & Suggestion Modal */}
       <ContactModal 

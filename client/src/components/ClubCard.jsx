@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { getColorSync } from "colorthief";
 import { useImageBlob } from "../hooks/useImageBlob";
@@ -18,7 +18,9 @@ const ClubCard = ({ club }) => {
   const [rgb, setRgb] = useState(null);
   const [isColorLoaded, setIsColorLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [transformOrigin, setTransformOrigin] = useState("center center");
   const imgRef = useRef(null);
+  const cardRef = useRef(null);
 
   // Use fallback logo instantly, preload real clubLogo in background
   const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
@@ -40,7 +42,7 @@ const ClubCard = ({ club }) => {
 
   const handleImageLoad = () => {
     const imageEl = imgRef.current;
-    if (!imageEl || !club.clubLogo) return; // Only extract color from actual club logos
+    if (!imageEl || !club.clubLogo) return;
     try {
       if (imageEl.complete && isBlobLoaded) {
         const color = getColorSync(imageEl);
@@ -69,15 +71,53 @@ const ClubCard = ({ club }) => {
     }
   }, [displayUrl, isBlobLoaded]);
 
+  // Determine transform-origin based on which edge the cursor entered from
+  const handleMouseEnter = useCallback((e) => {
+    const card = cardRef.current;
+    if (!card) {
+      setIsHovered(true);
+      return;
+    }
+
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;  // cursor x relative to card
+    const y = e.clientY - rect.top;   // cursor y relative to card
+    const w = rect.width;
+    const h = rect.height;
+
+    // Distance from each edge
+    const distLeft   = x;
+    const distRight  = w - x;
+    const distTop    = y;
+    const distBottom = h - y;
+
+    const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+    let origin;
+    if (minDist === distLeft)        origin = "left center";
+    else if (minDist === distRight)  origin = "right center";
+    else if (minDist === distTop)    origin = "center top";
+    else                             origin = "center bottom";
+
+    setTransformOrigin(origin);
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
   // Construct premium card styles dynamically
   const cardStyle = (isHovered && rgb)
     ? {
       borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35)`,
       boxShadow: `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15), 0 0 20px 2px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.05)`,
+      transformOrigin,
     }
-    : {};
+    : {
+      transformOrigin,
+    };
 
-  // Interactive dynamic styles for buttons/badges on hover
   const glowOverlayStyle = (isHovered && rgb)
     ? {
       background: `radial-gradient(circle at top right, rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.09) 0%, transparent 60%)`,
@@ -105,10 +145,11 @@ const ClubCard = ({ club }) => {
 
   return (
     <div
+      ref={cardRef}
       style={cardStyle}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800/80 rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 flex flex-col h-full group shadow-sm hover:shadow-xl"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800/80 rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] flex flex-col h-full group shadow-sm hover:shadow-xl"
     >
       {/* Top right ambient color gradient overlay */}
       <div
@@ -136,14 +177,14 @@ const ClubCard = ({ club }) => {
         <div className="flex items-end gap-3.5 -mt-1 sm:-mt-9 mb-2 min-w-0">
           
           {/* Logo with border */}
-          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white dark:bg-[#0d0d0d] rounded-full flex items-center justify-center border-3 border-white dark:border-[#0d0d0d] shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 p-1">
+          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white dark:bg-[#0d0d0d] rounded-full flex items-center justify-center border-2 border-white dark:border-[#0d0d0d] shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 ">
             <img
               ref={imgRef}
               src={displayUrl}
               alt={club.clubName}
               crossOrigin={isBlobLoaded && club.clubLogo ? "anonymous" : undefined}
               onLoad={handleImageLoad}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = fallbackLogo;

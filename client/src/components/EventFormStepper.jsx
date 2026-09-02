@@ -24,15 +24,21 @@ const CheckIcon = () => (
 
 const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
   return (
-    <div className="w-full bg-white border border-neutral-300 rounded-lg p-4 md:p-6 mb-8">
+    <div className="w-full bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm">
       <div className="relative flex items-start justify-between">
         {/* Background track */}
-        <div className="absolute top-5 left-5 right-5 h-px bg-neutral-200 z-0" />
+        <div
+          className="absolute top-5 h-px bg-neutral-200 z-0"
+          style={{ left: 'calc(12.5%)', right: 'calc(12.5%)' }}
+        />
 
         {/* Progress fill */}
         <div
-          className="absolute top-5 left-5 h-px bg-orange-500 z-0 transition-all duration-500"
-          style={{ width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}% - 0px)` }}
+          className="absolute top-5 h-px bg-orange-500 z-0 transition-all duration-500"
+          style={{
+            left: 'calc(12.5%)',
+            width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 75}%)`
+          }}
         />
 
         {STEPS.map((step) => {
@@ -47,6 +53,8 @@ const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
             >
               <button
                 type="button"
+                aria-label={`Go to step ${step.id}: ${step.label}`}
+                aria-current={isActive ? 'step' : undefined}
                 onClick={(e) => {
                   e.stopPropagation();
                   onStepClick?.(step.id);
@@ -69,6 +77,13 @@ const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
                   }`}
                 >
                   {step.label}
+                </span>
+                <span
+                  className={`block text-[10px] mt-0.5 transition-colors duration-200 hidden md:block ${
+                    isActive ? 'text-neutral-500' : 'text-neutral-400'
+                  }`}
+                >
+                  {step.sub}
                 </span>
               </div>
             </div>

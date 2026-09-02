@@ -826,19 +826,19 @@ const EventDetails = () => {
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
 
       <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+        <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-orange-600 transition-colors cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[13px] font-medium text-neutral-500 dark text-neutral-500 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[15px] font-bold text-neutral-600 dark dark:text-neutral-500 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
+      <div className="max-w-[1300px] mx-auto px-6 lg:px-10 py-8">
         {/* Rejection Feedback Banner */}
         {event.reviewStatus === 'REJECTED' && (
           <div className="mb-6 bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900 rounded-xl p-5 shadow-xs flex items-start gap-4">
@@ -878,7 +878,7 @@ const EventDetails = () => {
 
           <div className="w-full lg:w-[65%] min-w-0">
 
-            <nav className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-500 mb-5 flex-wrap">
+            {/* <nav className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-500 mb-5 flex-wrap">
               <Link to="/" className="hover:text-orange-600 transition-colors">Home</Link>
               <i className="ri-arrow-right-s-line text-[10px]" />
               <Link to="/events" className="hover:text-orange-600 transition-colors">Events</Link>
@@ -890,7 +890,7 @@ const EventDetails = () => {
               )}
               <i className="ri-arrow-right-s-line text-[10px]" />
               <span className="text-neutral-600 dark:text-neutral-300 font-medium truncate max-w-[180px]">{title}</span>
-            </nav>
+            </nav> */}
 
             <div 
               onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
@@ -1451,8 +1451,8 @@ const EventDetails = () => {
  
  {event.sponsors && event.sponsors.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
-                  Sponsors
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  Sponsors/Partners
                 </h3>
                 <div className="flex flex-wrap gap-5 items-center ">
                   {event.sponsors.map((sponsor, i) => (
