@@ -84,20 +84,6 @@ const OverviewTab = ({
                 });
             }
 
-            if (e.payoutStatus === 'PENDING' && collected > 0 && ((isValidStart && startDate < now) || (deadlineDate && deadlineDate < now))) {
-                items.push({
-                    id: `payout-${e.id || e.eventId}`,
-                    type: 'financial',
-                    icon: Wallet,
-                    badge: 'Pending Payout',
-                    badgeColor: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
-                    title,
-                    club,
-                    detail: `₹${collected.toLocaleString('en-IN')} revenue • Awaiting settlement`,
-                    link: `/admin-dashboard?tab=payouts`
-                });
-            }
-
             if (isValidStart && startDate > now && startDate <= sevenDaysFromNow && e.registrationType !== 'none' && regCount < 5) {
                 items.push({
                     id: `low-reg-${e.id || e.eventId}`,
@@ -387,7 +373,7 @@ const OverviewTab = ({
                                         All Systems Operational
                                     </p>
                                     <p className="text-[11px] text-neutral-400 dark:text-neutral-500 max-w-xs mx-auto">
-                                        No pending payouts, low registration alerts, or imminent event start deadlocks.
+                                        No low registration alerts or imminent event start deadlocks.
                                     </p>
                                 </div>
                             )}

@@ -5,11 +5,12 @@ import { getClubMembers } from '../services/clubService';
 import { CLUB_EVENT_EXPORT_COLUMNS, downloadClubEventExport } from '../utils/clubEventExport';
 import { getClubManagedEvents, reviewEvent, deleteEvent } from '../services/eventService';
 import { useNotification } from '../context/NotificationContext';
-import { Clock, MapPin, Users, QrCode, MoreVertical, Trophy, FileText, Edit, Trash2, Award, Star } from 'lucide-react';
+import { Clock, MapPin, Users, QrCode, MoreVertical, Trophy, FileText, Edit, Trash2, Award, Star, Eye } from 'lucide-react';
 import { DownloadIcon } from '@/components/ui/download';
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
 import ColumnExportModal from '../components/ColumnExportModal';
+import EventApprovalPreviewModal from '../components/EventApprovalPreviewModal';
 
 const ClubEvents = () => {
   const { clubId } = useParams();
@@ -30,6 +31,7 @@ const ClubEvents = () => {
   const [openMenuEventId, setOpenMenuEventId] = useState(null);
   const [menuPlacement, setMenuPlacement] = useState({ openUpward: false, alignRight: true });
   const [winnerModalEvent, setWinnerModalEvent] = useState(null);
+  const [previewEvent, setPreviewEvent] = useState(null);
   const [eventExportModalOpen, setEventExportModalOpen] = useState(false);
   const [selectedEventExportColumns, setSelectedEventExportColumns] = useState(CLUB_EVENT_EXPORT_COLUMNS.map(column => column.key));
   const [eventExporting, setEventExporting] = useState(false);
@@ -316,10 +318,18 @@ const ClubEvents = () => {
 
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   {canReview && event.reviewStatus?.toUpperCase() === 'PENDING' ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => setPreviewEvent(event)}
+                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
+                        title="Preview all event and payment details before approving"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-orange-400 dark:text-orange-600" />
+                        Preview &amp; Review
+                      </button>
                       <button
                         onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                        className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm animate-pulse-slow"
+                        className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm"
                       >
                         Approve
                       </button>
@@ -328,22 +338,29 @@ const ClubEvents = () => {
                           const reason = prompt('Enter rejection reason:');
                           if (reason) handleReview(eventIdStr, 'REJECTED', reason);
                         }}
-                        className="px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
+                        className="px-3.5 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
                       >
                         Reject
                       </button>
                     </div>
                   ) : canReview && event.reviewStatus?.toUpperCase() === 'DELETION_REQUESTED' ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => setPreviewEvent(event)}
+                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-orange-400 dark:text-orange-600" />
+                        Inspect
+                      </button>
                       <button
                         onClick={() => handleDelete(eventIdStr)}
-                        className="px-4 py-1.5 bg-rose-650 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
+                        className="px-3.5 py-1.5 bg-rose-650 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
                       >
                         Approve Deletion
                       </button>
                       <button
                         onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                        className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm"
+                        className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm"
                       >
                         Restore Event
                       </button>
@@ -389,6 +406,16 @@ const ClubEvents = () => {
                                 menuPlacement.openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
                               } w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl z-50 py-1.5 text-xs animate-in fade-in zoom-in-95 duration-100 max-h-[calc(100dvh-60px)] overflow-y-auto`}
                             >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenMenuEventId(null);
+                                  setPreviewEvent(event);
+                                }}
+                                className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium transition cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-neutral-400" /> Full Preview &amp; Details
+                              </button>
                               {canViewReg && (
                                 <Link
                                   to={`/event/${eventIdStr}/registrations`}
@@ -572,6 +599,16 @@ const ClubEvents = () => {
             )
           );
         }}
+      />
+      <EventApprovalPreviewModal
+        event={previewEvent}
+        isOpen={Boolean(previewEvent)}
+        onClose={() => setPreviewEvent(null)}
+        onApprove={handleReview}
+        onReject={(id, reason) => handleReview(id, 'REJECTED', reason)}
+        onDeleteApprove={handleDelete}
+        onRestore={(id) => handleReview(id, 'PUBLISHED')}
+        userRole={authRole}
       />
     </div>
   );

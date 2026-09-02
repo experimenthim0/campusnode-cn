@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { markAsRead, markAllAsRead } from "../services/notificationService";
-import { Link } from "react-router-dom";
 import { useNotification } from "../context/NotificationContext";
 import {
   getNotificationPermissionState,
@@ -15,10 +15,12 @@ import {
   isPushSubscribed,
 } from "../utils/pushSubscription";
 
-
 const formatRelativeTime = (dateStr) => {
+  if (!dateStr) return "";
   const now = new Date();
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+
   const diffMs = now - date;
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
@@ -26,13 +28,79 @@ const formatRelativeTime = (dateStr) => {
   const diffDay = Math.floor(diffHr / 24);
 
   if (diffSec < 60) return "Just now";
-  if (diffMin < 60) return `${diffMin} min ago`;
-  if (diffHr < 24) return `${diffHr} hour${diffHr > 1 ? "s" : ""} ago`;
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
   if (diffDay === 1) return "Yesterday";
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
 
+const getDateGroup = (dateStr) => {
+  if (!dateStr) return "EARLIER";
+  const notifDate = new Date(dateStr);
+  if (isNaN(notifDate.getTime())) return "EARLIER";
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const itemDate = new Date(notifDate.getFullYear(), notifDate.getMonth(), notifDate.getDate());
+
+  const diffDays = Math.round((today.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) return "TODAY";
+  if (diffDays === 1) return "YESTERDAY";
+  return "EARLIER";
+};
+
+const NotificationAvatar = ({ notif }) => {
+  const logoUrl =
+    notif.sender?.clubLogo ||
+    notif.sender?.club?.clubLogo ||
+    notif.sender?.logo ||
+    notif.clubLogo;
+
+  if (logoUrl) {
+    return (
+      <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 flex items-center justify-center shadow-2xs">
+        <img
+          src={logoUrl}
+          alt=""
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  const isTeam = notif.type === "TEAM_INVITATION" || notif.title?.toLowerCase().includes("team");
+  const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
+  const isEvent = Boolean(notif.eventId) || notif.type === "EVENT_UPDATE" || notif.title?.toLowerCase().includes("event");
+
+  let iconClass = "ri-notification-3-line text-neutral-600 dark:text-neutral-400";
+  let bgClass = "bg-neutral-100 dark:bg-neutral-800/80 border-neutral-200/80 dark:border-neutral-700/80";
+
+  if (isTeam) {
+    iconClass = "ri-team-line text-orange-600 dark:text-orange-400";
+    bgClass = "bg-orange-50 dark:bg-orange-950/30 border-orange-200/80 dark:border-orange-900/40";
+  } else if (isPayment) {
+    iconClass = "ri-wallet-3-line text-emerald-600 dark:text-emerald-400";
+    bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/40";
+  } else if (isEvent) {
+    iconClass = "ri-calendar-event-line text-neutral-700 dark:text-neutral-300";
+    bgClass = "bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700";
+  }
+
+  return (
+    <div
+      className={`w-10 h-10 rounded-xl shrink-0 border flex items-center justify-center shadow-2xs ${bgClass}`}
+    >
+      <i className={`${iconClass} text-lg`} />
+    </div>
+  );
+};
+
 const Notifications = () => {
+  const navigate = useNavigate();
   const { notifications, unreadCount, setUnreadCount, setNotifications, syncNotifications } =
     useSocket() || {};
   const { showNotification } = useNotification() || {};
@@ -45,15 +113,18 @@ const Notifications = () => {
     () => localStorage.getItem("hidePushBanner") === "true"
   );
 
+  const { user } = useAuth();
+  const currentUserId = String(user?._id || user?.id || "");
+
   useEffect(() => {
     document.title = "Notifications - CampusNode";
     const state = getNotificationPermissionState();
     setPermissionState(state);
     isPushSubscribed().then((sub) => setIsSubscribed(sub));
-  }, []);
-
-  const { user } = useAuth();
-  const currentUserId = String(user?._id || user?.id || "");
+    if (syncNotifications) {
+      syncNotifications(true);
+    }
+  }, [syncNotifications]);
 
   const handleEnablePush = async () => {
     setEnablingPush(true);
@@ -92,7 +163,8 @@ const Notifications = () => {
     localStorage.setItem("hidePushBanner", "true");
   };
 
-  const handleAcceptInvite = async (notifId) => {
+  const handleAcceptInvite = async (notifId, e) => {
+    if (e) e.stopPropagation();
     if (actionLoading[notifId]) return;
     setActionLoading((prev) => ({ ...prev, [notifId]: "accept" }));
     try {
@@ -106,7 +178,8 @@ const Notifications = () => {
     }
   };
 
-  const handleDeclineInvite = async (notifId) => {
+  const handleDeclineInvite = async (notifId, e) => {
+    if (e) e.stopPropagation();
     if (actionLoading[notifId]) return;
     setActionLoading((prev) => ({ ...prev, [notifId]: "decline" }));
     try {
@@ -127,7 +200,7 @@ const Notifications = () => {
       await markAllAsRead();
       setUnreadCount(0);
       setNotifications((prev) =>
-        prev.map((n) => ({
+        (prev || []).map((n) => ({
           ...n,
           readBy: [...(n.readBy || []), currentUserId],
         }))
@@ -139,18 +212,19 @@ const Notifications = () => {
     }
   };
 
-  const handleMarkAsRead = async (id) => {
+  const handleMarkAsRead = async (id, e) => {
+    if (e) e.stopPropagation();
     try {
       await markAsRead(id);
       setNotifications((prev) =>
-        prev.map((n) =>
-          (n.id === id || n._id === id)
+        (prev || []).map((n) =>
+          n.id === id || n._id === id
             ? { ...n, readBy: [...(n.readBy || []), currentUserId] }
             : n
         )
       );
-      const newUnread = notifications.filter(
-        (n) => (n.id !== id && n._id !== id) && !(n.readBy || []).includes(currentUserId)
+      const newUnread = (notifications || []).filter(
+        (n) => n.id !== id && n._id !== id && !(n.readBy || []).includes(currentUserId)
       ).length;
       setUnreadCount(newUnread);
     } catch (err) {
@@ -158,23 +232,87 @@ const Notifications = () => {
     }
   };
 
+  const handleCardClick = (notif, e) => {
+    if (e.target.closest("button") || e.target.closest("a")) {
+      return;
+    }
+
+    const notifId = notif.id || notif._id;
+    const isRead = (notif.readBy || []).includes(currentUserId);
+    if (!isRead) {
+      handleMarkAsRead(notifId);
+    }
+
+    if (notif.type === "TEAM_INVITATION") {
+      if (notif.eventId) {
+        navigate(`/event/${notif.eventId}`);
+      }
+      return;
+    }
+
+    const targetUrl =
+      notif.url ||
+      (notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment")
+        ? `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`
+        : notif.eventId
+        ? `/event/${notif.eventId}`
+        : null);
+
+    if (targetUrl) {
+      navigate(targetUrl);
+    }
+  };
+
+  // Group notifications into TODAY, YESTERDAY, EARLIER
+  const groupedNotifications = useMemo(() => {
+    if (!notifications || notifications.length === 0) return {};
+
+    const groups = {
+      TODAY: [],
+      YESTERDAY: [],
+      EARLIER: [],
+    };
+
+    notifications.forEach((notif) => {
+      const groupKey = getDateGroup(notif.createdAt);
+      if (groups[groupKey]) {
+        groups[groupKey].push(notif);
+      } else {
+        groups.EARLIER.push(notif);
+      }
+    });
+
+    return groups;
+  }, [notifications]);
+
+  const activeGroupKeys = useMemo(() => {
+    return ["TODAY", "YESTERDAY", "EARLIER"].filter(
+      (key) => groupedNotifications[key] && groupedNotifications[key].length > 0
+    );
+  }, [groupedNotifications]);
+
+  const totalCount = notifications?.length || 0;
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
-      <div className="max-w-3xl mx-auto px-5 md:px-6 py-10 md:py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-10">
 
+        {/* Page Header */}
         <div className="mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-black dark:text-white">
-                Notifications
-              </h1>
-              {unreadCount > 0 && (
-                <p className="text-sm text-orange-600 font-semibold mt-1">
-                  {unreadCount} unread
-                </p>
-              )}
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-900 dark:text-white">
+                  Notifications
+                </h1>
+                {unreadCount > 0 && (
+                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-orange-100 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40">
+                    {unreadCount} new
+                  </span>
+                )}
+              </div>
               <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm mt-1">
-                Updates from clubs, event organizers, and system.
+                Updates from clubs, event organizers, and campus activities.
               </p>
             </div>
 
@@ -182,15 +320,15 @@ const Notifications = () => {
               <button
                 onClick={isSubscribed ? handleDisablePush : handleEnablePush}
                 disabled={enablingPush}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
                 title={isSubscribed ? "Click to unsubscribe from Push Notifications" : "Click to enable Push Notifications"}
               >
                 {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-orange-500 font-light" />
+                  <i className="ri-loader-4-line animate-spin text-orange-500 text-xs" />
                 ) : isSubscribed ? (
-                  <i className="ri-notification-3-fill text-emerald-500 font-light" />
+                  <i className="ri-notification-3-fill text-emerald-500 text-xs" />
                 ) : (
-                  <i className="ri-notification-3-line text-neutral-400 font-light" />
+                  <i className="ri-notification-3-line text-neutral-400 text-xs" />
                 )}
                 <span>{enablingPush ? "Updating..." : isSubscribed ? "Push Enabled" : "Enable Push"}</span>
               </button>
@@ -199,42 +337,43 @@ const Notifications = () => {
                 <button
                   onClick={handleMarkAllAsRead}
                   disabled={loading}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
                 >
                   {loading ? (
-                    <i className="ri-loader-4-line animate-spin text-sm font-light" />
+                    <i className="ri-loader-4-line animate-spin text-xs" />
                   ) : (
-                    <i className="ri-check-double-line text-sm font-light" />
+                    <i className="ri-check-double-line text-xs text-orange-600 dark:text-orange-400" />
                   )}
-                  Mark all read
+                  <span>Mark all read</span>
                 </button>
               )}
             </div>
           </div>
         </div>
 
+        {/* Push Notification Banner */}
         {!isSubscribed && !bannerDismissed && permissionState !== "denied" && (
-          <div className="mb-6 p-4 md:p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm relative transition-all">
+          <div className="mb-6 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs relative transition-all">
             <button
               onClick={handleDismissBanner}
-              className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 transition-colors cursor-pointer"
-              title="Dismiss notification banner"
+              className="absolute top-2.5 right-2.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 transition-colors cursor-pointer"
+              title="Dismiss banner"
             >
-              <i className="ri-close-line text-lg" />
+              <i className="ri-close-line text-base" />
             </button>
 
             <div className="flex items-center justify-between gap-4 flex-wrap pr-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50 flex items-center justify-center text-lg shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/80 dark:border-orange-900/40 flex items-center justify-center text-base shrink-0">
                   <i className="ri-notification-badge-line" />
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-black dark:text-white">
+                  <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
                     Get Real-time Event Alerts
                   </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    Enable push notifications for direct updates on registered events, approvals, and messages.
+                  <p className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400">
+                    Enable push notifications for registered events and invitations.
                   </p>
                 </div>
               </div>
@@ -242,168 +381,229 @@ const Notifications = () => {
               <button
                 onClick={handleEnablePush}
                 disabled={enablingPush}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60 shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-60 shrink-0"
               >
                 {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-sm" />
+                  <i className="ri-loader-4-line animate-spin text-xs" />
                 ) : (
-                  <i className="ri-notification-badge-line text-sm" />
+                  <i className="ri-notification-badge-line text-xs" />
                 )}
-                Enable Push Notifications
+                <span>Enable Notifications</span>
               </button>
             </div>
           </div>
         )}
 
-        <div className="mb-6 h-px bg-neutral-200 dark:bg-neutral-800 w-full" />
-
-        {notifications?.length > 0 ? (
-          <div className="space-y-4">
-            {notifications.map((notif) => {
-              const notifId = notif.id || notif._id;
-              const isRead = (notif.readBy || []).includes(currentUserId);
-              return (
-                <div
-                  key={notifId}
-                  className={`relative bg-white dark:bg-neutral-900 border rounded-xl transition-all duration-200 overflow-hidden
-                    ${!isRead
-                      ? "border-orange-200 dark:border-orange-900/40 bg-orange-50/50 dark:bg-orange-950/10"
-                      : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
-                    }`}
-                >
-                  <div className="p-5 md:p-6">
-                    {/* Top row: sender + time */}
-                    <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                          {notif.sender?.clubName || notif.sender?.name || "CampusNode"}
-                        </span>
-                        {!isRead && (
-                          <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                        )}
-                      </div>
-                      <span
-                        className="text-[11px] font-medium text-neutral-400"
-                        title={new Date(notif.createdAt).toLocaleString()}
-                      >
-                        {formatRelativeTime(notif.createdAt)}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <h3 className={`text-sm sm:text-base font-bold leading-snug mb-1.5 ${
-                      !isRead ? "text-black dark:text-white" : "text-neutral-700 dark:text-neutral-300"
-                    }`}>
-                      {notif.title}
-                    </h3>
-
-                    {/* Message */}
-                    <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed break-words">
-                      {notif.message}
-                    </p>
-
-                    {notif.type === "TEAM_INVITATION" && notif.title === "Team Invitation" ? (
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        <button
-                          onClick={() => handleAcceptInvite(notifId)}
-                          disabled={!!actionLoading[notifId]}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:opacity-60 text-white text-[11px] font-bold transition-colors cursor-pointer border-0 outline-none shadow-sm"
-                        >
-                          {actionLoading[notifId] === "accept" ? (
-                            <>
-                              <i className="ri-loader-4-line animate-spin text-xs" /> Accepting...
-                            </>
-                          ) : (
-                            "Accept Invite"
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleDeclineInvite(notifId)}
-                          disabled={!!actionLoading[notifId]}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 disabled:bg-rose-800 disabled:opacity-60 text-white text-[11px] font-bold transition-colors cursor-pointer border-0 outline-none shadow-sm"
-                        >
-                          {actionLoading[notifId] === "decline" ? (
-                            <>
-                              <i className="ri-loader-4-line animate-spin text-xs" /> Declining...
-                            </>
-                          ) : (
-                            "Decline"
-                          )}
-                        </button>
-                        {notif.eventId && (
-                          <Link
-                            to={`/event/${notif.eventId}`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white transition-colors text-[11px] font-semibold"
-                          >
-                            View Event
-                          </Link>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        {(notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment")) ? (
-                          <>
-                            <Link
-                              to={notif.url || `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-semibold transition-colors shadow-sm"
-                            >
-                              <i className="ri-wallet-3-line text-xs font-light" />
-                              {notif.title?.includes("Approved") ? "View Ticket in My Events" : "Update Payment Info"}
-                            </Link>
-                            {notif.eventId && (
-                              <Link
-                                to={`/event/${notif.eventId}`}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors text-[11px] font-semibold"
-                              >
-                                View Event
-                              </Link>
-                            )}
-                          </>
-                        ) : notif.eventId ? (
-                          <Link
-                            to={`/event/${notif.eventId}`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 hover:text-white dark:hover:text-white text-[11px] font-semibold transition-colors"
-                          >
-                            View Event
-                          </Link>
-                        ) : null}
-
-                        {!isRead && (
-                          <button
-                            onClick={() => handleMarkAsRead(notifId)}
-                            className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white hover:border-neutral-300 transition-colors text-[11px] font-semibold cursor-pointer border-0 outline-none"
-                          >
-                            Mark as read
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
+        {/* Notification Activity Feed Grouped by Date */}
+        {totalCount > 0 ? (
+          <div className="space-y-6">
+            {activeGroupKeys.map((groupKey) => (
+              <section key={groupKey} className="space-y-3">
+                {/* Date Section Heading */}
+                <div className="flex items-center gap-2.5 px-0.5">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    {groupKey}
+                  </span>
+                  <div className="h-px flex-1 bg-neutral-200/70 dark:bg-neutral-800/80" />
                 </div>
-              );
-            })}
+
+                {/* Group Notifications List */}
+                <div className="space-y-2.5">
+                  {groupedNotifications[groupKey].map((notif) => {
+                    const notifId = notif.id || notif._id;
+                    const isRead = (notif.readBy || []).includes(currentUserId);
+                    const isTeamInvite = notif.type === "TEAM_INVITATION" && notif.title === "Team Invitation";
+                    const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
+                    const hasClickableDestination = Boolean(
+                      notif.url ||
+                      notif.eventId ||
+                      isPayment ||
+                      (isTeamInvite && notif.eventId)
+                    );
+
+                    return (
+                      <div
+                        key={notifId}
+                        onClick={(e) => handleCardClick(notif, e)}
+                        className={`group relative rounded-xl border p-3.5 sm:p-4 transition-all duration-150 flex items-start gap-3 sm:gap-3.5 ${
+                          hasClickableDestination
+                            ? "cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-2xs"
+                            : ""
+                        } ${
+                          !isRead
+                            ? "border-orange-200/80 dark:border-orange-900/40 bg-orange-50/20 dark:bg-orange-950/10"
+                            : "border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900"
+                        }`}
+                      >
+                        {/* Source Avatar / Icon */}
+                        <NotificationAvatar notif={notif} />
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          {/* Source Name + Time + Dot */}
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${
+                                !isRead
+                                  ? "text-orange-600 dark:text-orange-400"
+                                  : "text-neutral-500 dark:text-neutral-400"
+                              }`}>
+                                {notif.sender?.clubName || notif.sender?.name || "CampusNode"}
+                              </span>
+                              {!isRead && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" title="Unread" />
+                              )}
+                            </div>
+
+                            <span
+                              className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 shrink-0 whitespace-nowrap"
+                              title={new Date(notif.createdAt).toLocaleString()}
+                            >
+                              {formatRelativeTime(notif.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* Title */}
+                          <h3 className={`text-xs sm:text-sm leading-snug ${
+                            !isRead
+                              ? "font-bold text-neutral-900 dark:text-white"
+                              : "font-semibold text-neutral-800 dark:text-neutral-200"
+                          }`}>
+                            {notif.title}
+                          </h3>
+
+                          {/* Message Body */}
+                          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed break-words">
+                            {notif.message}
+                          </p>
+
+                          {/* Action Buttons */}
+                          {isTeamInvite ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <button
+                                onClick={(e) => handleAcceptInvite(notifId, e)}
+                                disabled={!!actionLoading[notifId]}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:opacity-60 text-white text-xs font-semibold transition-colors cursor-pointer border-0 shadow-2xs"
+                              >
+                                {actionLoading[notifId] === "accept" ? (
+                                  <>
+                                    <i className="ri-loader-4-line animate-spin text-xs" />
+                                    <span>Accepting...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="ri-check-line text-xs" />
+                                    <span>Accept</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                onClick={(e) => handleDeclineInvite(notifId, e)}
+                                disabled={!!actionLoading[notifId]}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
+                              >
+                                {actionLoading[notifId] === "decline" ? (
+                                  <>
+                                    <i className="ri-loader-4-line animate-spin text-xs" />
+                                    <span>Declining...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="ri-close-line text-xs" />
+                                    <span>Decline</span>
+                                  </>
+                                )}
+                              </button>
+                              {notif.eventId && (
+                                <Link
+                                  to={`/event/${notif.eventId}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium transition-colors"
+                                >
+                                  <span>View Event</span>
+                                  <i className="ri-arrow-right-s-line text-xs" />
+                                </Link>
+                              )}
+                            </div>
+                          ) : isPayment ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <Link
+                                to={notif.url || `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold transition-colors shadow-2xs"
+                              >
+                                <i className="ri-wallet-3-line text-xs font-light" />
+                                <span>{notif.title?.includes("Approved") ? "View Ticket" : "Update Payment"}</span>
+                              </Link>
+                              {!isRead && (
+                                <button
+                                  onClick={(e) => handleMarkAsRead(notifId, e)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 text-xs font-medium transition-colors cursor-pointer"
+                                >
+                                  Mark read
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                              {notif.eventId && (
+                                <Link
+                                  to={`/event/${notif.eventId}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline"
+                                >
+                                  <span>View Event</span>
+                                  <i className="ri-arrow-right-line text-xs" />
+                                </Link>
+                              )}
+
+                              {!isRead && (
+                                <button
+                                  onClick={(e) => handleMarkAsRead(notifId, e)}
+                                  className="text-[11px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer inline-flex items-center gap-1"
+                                >
+                                  <i className="ri-check-line text-xs" /> Mark read
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Subtle Right Chevron on hover for clickable cards */}
+                        {hasClickableDestination && (
+                          <div className="hidden sm:flex items-center self-center text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all shrink-0">
+                            <i className="ri-arrow-right-s-line text-lg" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl py-16 flex flex-col items-center gap-4 text-center px-6">
-            <div className="w-14 h-14 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-center text-neutral-300 dark:text-neutral-700">
-              <i className="ri-notification-off-line text-2xl"></i>
+          <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl py-16 flex flex-col items-center gap-3 text-center px-6 shadow-2xs">
+            <div className="w-12 h-12 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-center text-neutral-400 dark:text-neutral-600 text-xl">
+              <i className="ri-notification-off-line" />
             </div>
             <div>
-              <p className="text-base font-bold text-black dark:text-white">
+              <p className="text-sm font-bold text-neutral-900 dark:text-white">
                 You're all caught up!
               </p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1.5">
-                No new notifications.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                No new notifications or pending announcements.
               </p>
             </div>
             <Link
               to="/"
-              className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-xs font-semibold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 hover:text-white dark:hover:text-white transition-colors cursor-pointer mt-2"
+              className="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 hover:text-white dark:hover:text-white transition-colors cursor-pointer mt-1"
             >
               Go to Home
             </Link>
           </div>
         )}
+
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { registerExternal } from '../services/authService';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Check, ArrowRight } from 'lucide-react';
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
 
 const RegisterExternal = () => {
@@ -85,92 +85,88 @@ const RegisterExternal = () => {
   };
 
   const inputCls =
-    'w-full px-4 py-2.5 sm:py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400';
+    'w-full px-3.5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500';
   const labelCls =
     'block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5';
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 dark:bg-[#0a0a0a] flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 transition-colors duration-300">
-      <div className="w-full max-w-6xl mx-auto">
-        
+    <div className="min-h-screen bg-neutral-50/70 dark:bg-[#0a0a0a] flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+      <div className="w-full max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          <div className="lg:col-span-5 flex flex-col justify-center space-y-6 sm:space-y-8 py-2 lg:py-6">
+          {/* Left Column: Compact Introduction */}
+          <div className="lg:col-span-5 flex flex-col justify-center space-y-6">
             <div>
-              <Link to="/" className="inline-flex items-center gap-2 select-none group">
-                <span className="font-light text-2xl sm:text-3xl tracking-wider text-black dark:text-neutral-100 leading-none logofont">
+              <Link to="/" className="inline-flex items-center select-none group">
+                <span className="font-light text-2xl sm:text-3xl tracking-wider text-neutral-900 dark:text-neutral-100 leading-none logofont">
                   Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
                 </span>
               </Link>
             </div>
 
-            <div className="space-y-3">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white leading-[1.18]">
-                External Participant<br />
-                <span className="text-orange-600 dark:text-orange-500 font-extrabold">Registration.</span>
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-500">
+                For Students From Other Institutions
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                External Registration
               </h1>
-              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-md">
-                Participate in open hackathons, cultural festivals, technical competitions, and workshops.
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm pt-1">
+                Join hackathons, competitions, festivals and workshops hosted across campuses.
               </p>
             </div>
 
+            {/* Compact Benefits List */}
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-5 h-5 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs shrink-0">
-                  <i className="ri-check-line font-bold" />
+                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>Register for open inter-college events</span>
+                <span>Open inter-college events</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-5 h-5 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs shrink-0">
-                  <i className="ri-check-line font-bold" />
+                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>Create and join event teams</span>
+                <span>Create or join teams</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-5 h-5 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs shrink-0">
-                  <i className="ri-check-line font-bold" />
+                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>Access digital event passes and certificates</span>
+                <span>Digital passes and certificates</span>
               </div>
             </div>
 
-            <div className="p-4 bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20 dark:border-orange-500/30 rounded-2xl flex items-start gap-3 mt-4">
-              <i className="ri-information-line text-orange-600 dark:text-orange-400 text-lg shrink-0 mt-0.5" />
-              <div className="text-xs">
-                <p className="font-semibold text-neutral-900 dark:text-white">
-                  Academic Email Requirement
-                </p>
-                <p className="text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed text-[11.5px]">
-                  Registration requires an official college/university email ending with <strong>.edu</strong> or <strong>.ac.in</strong>.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2 text-xs text-neutral-500 dark:text-neutral-400">
-              Are you an NIT Jalandhar student?{' '}
-              <Link to="/register/student" className="font-semibold text-orange-600 dark:text-orange-500 hover:underline">
-                Register here
+            {/* Small Bottom Link */}
+            <div className="pt-2">
+              <Link 
+                to="/register" 
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors group"
+              >
+                <span>Studying at NIT Jalandhar? Register as a student</span>
+                <ArrowRight className="w-3.5 h-3.5 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>
 
-          <div className="lg:col-span-7 w-full max-w-xl mx-auto">
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 sm:p-8 lg:p-9 shadow-sm">
+          {/* Right Column: Registration Card */}
+          <div className="lg:col-span-7 w-full">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-xs">
               
-              <div className="mb-6">
+              <div className="mb-5">
                 <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                  Create Participant Account
+                  Create your account
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  Enter your details to register as an external participant
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                  Register as an external participant
                 </p>
               </div>
 
-              <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
                 {error && (
-                  <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs sm:text-sm font-medium rounded-xl flex items-center gap-2">
-                    <i className="ri-error-warning-line text-base flex-shrink-0" />
+                  <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs font-medium rounded-xl flex items-center gap-2">
+                    <i className="ri-error-warning-line text-base shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -204,7 +200,7 @@ const RegisterExternal = () => {
                     className={inputCls}
                   />
                   <span className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 block">
-                    Must end with .edu or .ac.in
+                    Use your official college email (.edu, .edu.in or .ac.in)
                   </span>
                 </div>
 
@@ -223,7 +219,7 @@ const RegisterExternal = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className={labelCls}>
                       Program / Degree <span className="text-orange-600">*</span>
@@ -295,7 +291,7 @@ const RegisterExternal = () => {
                     </button>
                   </div>
                   {formData.password && (
-                    <div className="mt-2">
+                    <div className="mt-1.5">
                       <PasswordStrengthChecker password={formData.password} />
                     </div>
                   )}
@@ -304,11 +300,11 @@ const RegisterExternal = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  className="w-full mt-2 py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   {loading ? (
                     <>
-                      <i className="ri-loader-4-line animate-spin text-lg" />
+                      <i className="ri-loader-4-line animate-spin text-base" />
                       <span>Creating account...</span>
                     </>
                   ) : (
@@ -317,8 +313,8 @@ const RegisterExternal = () => {
                 </button>
               </form>
 
-              <div className="mt-6 text-center">
-                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+              <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-center">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Already have an account?{' '}
                   <Link to="/login" className="font-semibold text-orange-600 dark:text-orange-500 hover:underline">
                     Log in

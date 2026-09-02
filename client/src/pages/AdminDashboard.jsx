@@ -7,8 +7,6 @@ import {
     getDashboardStats,
     getClubsList,
     getCoordinators,
-    getUserInfo,
-    completePayout,
     getVenues
 } from '../services/adminService';
 import {
@@ -28,7 +26,6 @@ import {
     ClubsTab,
     CoordinatorsTab,
     ManualPaymentsTab,
-    PayoutsTab,
     BroadcastsTab,
     NotificationsTab,
     ProfileTab
@@ -47,9 +44,6 @@ const AdminDashboard = () => {
     const [typeFilter, setTypeFilter] = useState('all');
     const [showYearWise, setShowYearWise] = useState(false);
 
-    const [modalOpen, setModalOpen] = useState(false);
-    const [selectedClub, setSelectedClub] = useState(null);
-    const [selectedEventId, setSelectedEventId] = useState(null);
 
     // Clubs & Coordinators states
     const [coordinators, setCoordinators] = useState([]);
@@ -124,21 +118,28 @@ const AdminDashboard = () => {
 
             const fetchData = async () => {
                 try {
-                    const statsRes = await getDashboardStats();
-                    setStats(statsRes.data);
+                    const query = new URLSearchParams(filters).toString();
+                    const [statsRes, clubsRes, coordsRes, paymentsRes, eventsRes] = await Promise.allSettled([
+                        getDashboardStats(),
+                        getClubsList(),
+                        getCoordinators(),
+                        api.get('/api/admin/manual-payments'),
+                        api.get(`/api/admin/event-data-export?${query}`)
+                    ]);
 
-                    const clubsRes = await getClubsList();
-                    setClubHeads(clubsRes.data);
-
-                    const coordsRes = await getCoordinators();
-                    setCoordinators(coordsRes.data);
-
-                    await fetchManualPayments();
-
-                    fetchFilteredEventData();
-                    setLoading(false);
+                    if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+                    if (clubsRes.status === 'fulfilled') setClubHeads(clubsRes.value.data);
+                    if (coordsRes.status === 'fulfilled') setCoordinators(coordsRes.value.data);
+                    if (paymentsRes.status === 'fulfilled') {
+                        setManualPayments(paymentsRes.value.data.participations || []);
+                        setManualPaymentsSummary(paymentsRes.value.data.summary || null);
+                    }
+                    if (eventsRes.status === 'fulfilled') {
+                        setEventData(eventsRes.value.data.events || []);
+                    }
                 } catch (err) {
                     showNotification('Failed to fetch admin data', 'error');
+                } finally {
                     setLoading(false);
                 }
             };
@@ -146,11 +147,11 @@ const AdminDashboard = () => {
         }
     }, [adminUser, authRole, navigate, showNotification]);
 
-    // Fetch tab-specific data on tab changes
+    // Fetch tab-specific data on tab changes (with smart caching)
     useEffect(() => {
-        if (activeTab === 'broadcasts') fetchBroadcasts();
-        if (activeTab === 'notifications') fetchAdminNotifications();
-        if (activeTab === 'venues') fetchVenues();
+        if (activeTab === 'broadcasts' && broadcasts.length === 0) fetchBroadcasts();
+        if (activeTab === 'notifications' && adminNotifications.length === 0) fetchAdminNotifications();
+        if (activeTab === 'venues' && venues.length === 0) fetchVenues();
     }, [activeTab]);
 
     const fetchBroadcasts = async () => {
@@ -250,29 +251,6 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleFetchPayoutInfo = async (clubHeadId, eventId) => {
-        try {
-            const res = await getUserInfo(clubHeadId);
-            setSelectedClub(res.data);
-            setSelectedEventId(eventId);
-            setModalOpen(true);
-        } catch (err) {
-            showNotification('Error fetching payout info', 'error');
-        }
-    };
-
-    const handleConfirmPayout = async () => {
-        try {
-            const res = await completePayout(selectedEventId);
-            if (res.data.success) {
-                showNotification('Payout marked as complete!', 'success');
-                setModalOpen(false);
-                refreshStats();
-            }
-        } catch (err) {
-            showNotification('Failed to update payout status', 'error');
-        }
-    };
 
     const fetchVenues = async () => {
         setVenuesLoading(true);
@@ -296,7 +274,6 @@ const AdminDashboard = () => {
         'club-heads': { title: 'Clubs Management', subtitle: 'Create, edit, and configure registered student clubs' },
         coordinators: { title: 'Coordinators Management', subtitle: 'Manage faculty coordinator accounts' },
         'payments-overview': { title: 'Transactions Management', subtitle: 'Overview of manual transaction registrations and UTR verifications' },
-        payouts: { title: 'Financial Payouts', subtitle: 'Manage revenue settlements and payouts for club heads' },
         broadcasts: { title: 'Outgoing Broadcasts', subtitle: 'Dispatch real-time broadcast announcements to all students or event participants' },
         notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
         'export-center': { title: 'Export Center', subtitle: 'Export & download structured administrative data' },
@@ -457,16 +434,6 @@ const AdminDashboard = () => {
                     />
                 )}
 
-                {activeTab === 'payouts' && (
-                    <PayoutsTab
-                        eventStats={stats?.eventStats || []}
-                        modalOpen={modalOpen}
-                        setModalOpen={setModalOpen}
-                        selectedClub={selectedClub}
-                        handleFetchPayoutInfo={handleFetchPayoutInfo}
-                        handleConfirmPayout={handleConfirmPayout}
-                    />
-                )}
 
                 {activeTab === 'broadcasts' && (
                     <BroadcastsTab

@@ -41,12 +41,6 @@ router.get("/me", verifyToken, async (req, res) => {
               clubEmail: true,
               facultyEmail: true,
               facultyName: true,
-              bankName: true,
-              accountHolderName: true,
-              accountNumber: true,
-              ifscCode: true,
-              upiId: true,
-              bankPhone: true,
               socialLinks: true,
             },
           },
@@ -92,12 +86,6 @@ router.get("/me", verifyToken, async (req, res) => {
         whatsappNumber: socialMap.whatsappNumber || "",
         portfolioUrl: socialMap.portfolioUrl || "",
         githubProfile: socialMap.githubProfile || "",
-        bankName: clubAccount.club?.bankName,
-        accountHolderName: clubAccount.club?.accountHolderName,
-        accountNumber: clubAccount.club?.accountNumber,
-        ifscCode: clubAccount.club?.ifscCode,
-        upiId: clubAccount.club?.upiId,
-        bankPhone: clubAccount.club?.bankPhone,
       };
 
       const effectivePermissions = getEffectivePermissions(req.user, clubAccount.clubId);
@@ -155,14 +143,6 @@ router.get("/me", verifyToken, async (req, res) => {
         ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } })
         : null;
       safeUser.clubId = clubInfo?.id ?? null;
-      if (clubInfo) {
-        safeUser.bankName = clubInfo.bankName;
-        safeUser.accountHolderName = clubInfo.accountHolderName;
-        safeUser.accountNumber = clubInfo.accountNumber;
-        safeUser.ifscCode = clubInfo.ifscCode;
-        safeUser.upiId = clubInfo.upiId;
-        safeUser.bankPhone = clubInfo.bankPhone;
-      }
       safeUser.memberships = clubInfo ? [{
         id: `fac_${clubInfo.id}`,
         clubId: clubInfo.id,
@@ -310,13 +290,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       if (req.body.description !== undefined) clubDataUpdates.description = req.body.description ? String(req.body.description).trim() : null;
       if (req.body.establishedYear !== undefined) clubDataUpdates.establishedYear = req.body.establishedYear ? String(req.body.establishedYear).trim() : null;
 
-      const bankFields = ["bankName", "accountHolderName", "accountNumber", "ifscCode", "upiId", "bankPhone"];
-      bankFields.forEach((field) => {
-        if (req.body[field] !== undefined) {
-          clubDataUpdates[field] = req.body[field] ? String(req.body[field]).trim() : null;
-        }
-      });
-
       const socialLinksList = [];
       const addLink = (platform, url) => {
         if (url && typeof url === "string" && url.trim()) {
@@ -415,12 +388,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
         whatsappNumber: socialMap.whatsappNumber || "",
         portfolioUrl: socialMap.portfolioUrl || "",
         githubProfile: socialMap.githubProfile || "",
-        bankName: updatedClub?.bankName,
-        accountHolderName: updatedClub?.accountHolderName,
-        accountNumber: updatedClub?.accountNumber,
-        ifscCode: updatedClub?.ifscCode,
-        upiId: updatedClub?.upiId,
-        bankPhone: updatedClub?.bankPhone,
       };
 
       return res.json({ message: "Club profile updated successfully", user: safeClubUser, role: "club", userType: "club", principalType: "CLUB" });
@@ -472,14 +439,6 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
       const clubInfo = isFaculty ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } }) : null;
       safeUser.clubId = clubInfo?.id ?? null;
-      if (clubInfo) {
-        safeUser.bankName = clubInfo.bankName;
-        safeUser.accountHolderName = clubInfo.accountHolderName;
-        safeUser.accountNumber = clubInfo.accountNumber;
-        safeUser.ifscCode = clubInfo.ifscCode;
-        safeUser.upiId = clubInfo.upiId;
-        safeUser.bankPhone = clubInfo.bankPhone;
-      }
       safeUser.memberships = clubInfo ? [{
         clubId: clubInfo.id,
         clubName: clubInfo.clubName,

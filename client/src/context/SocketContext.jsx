@@ -80,7 +80,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!userId) return;
 
-    registerPushSubscription().catch(() => {});
+    registerPushSubscription().catch(() => { });
 
     // Initial sync
     syncNotifications(true);

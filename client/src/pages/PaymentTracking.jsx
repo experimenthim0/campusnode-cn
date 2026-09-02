@@ -73,8 +73,7 @@ const PaymentTracking = () => {
 
   const totalRevenue = Object.values(paymentStats).reduce((sum, s) => sum + (s.totalCollected || 0), 0);
   const totalPaidRegistrations = Object.values(paymentStats).reduce((sum, s) => sum + (s.registrations?.length || 0), 0);
-  const payoutsCompleted = events.filter(e => e.paymentMethod !== 'MANUAL_TRANSACTION' && e.payoutStatus === 'COMPLETED').length;
-  const totalPayoutEvents = events.filter(e => e.paymentMethod !== 'MANUAL_TRANSACTION').length;
+  const totalPaidEventsCount = events.length;
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 py-10 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100">
@@ -89,7 +88,7 @@ const PaymentTracking = () => {
             Payment <span className="text-orange-600 dark:text-orange-500">Tracking</span>
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 font-medium max-w-xl">
-            Track entry fees collected from participants, manage manual verification workflows, and monitor payouts.
+            Track entry fees collected from participants, verify transaction receipts, and monitor paid event registrations.
           </p>
         </div>
 
@@ -113,11 +112,11 @@ const PaymentTracking = () => {
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
             <div className="absolute right-4 top-4 opacity-10 dark:opacity-20">
-              <i className="ri-bank-card-line text-4xl text-neutral-900 dark:text-white" />
+              <i className="ri-calendar-event-line text-4xl text-neutral-900 dark:text-white" />
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Payouts Received</p>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-500">
-              {totalPayoutEvents > 0 ? `${payoutsCompleted} / ${totalPayoutEvents}` : 'N/A'}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Total Paid Events</p>
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-500">
+              {totalPaidEventsCount}
             </p>
           </div>
         </div>
@@ -139,7 +138,7 @@ const PaymentTracking = () => {
                       <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Entry Fee</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Collected</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Registrations</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Payout Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Payment Mode</th>
                       <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">Details</th>
                     </tr>
                   </thead>
@@ -164,18 +163,17 @@ const PaymentTracking = () => {
                           <td className="px-6 py-4">
                             {event.paymentMethod === 'MANUAL_TRANSACTION' ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 dark:bg-neutral-850 text-neutral-700 dark:text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-full border border-neutral-200 dark:border-neutral-750">
-                                <i className="ri-wallet-3-line text-xs text-neutral-500 dark:text-neutral-400" />
-                                Direct to Bank
+                                <i className="ri-qr-code-line text-xs text-neutral-500 dark:text-neutral-400" />
+                                Direct UPI
                               </span>
-                            ) : event.payoutStatus === 'COMPLETED' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-200/50 dark:border-emerald-900/50">
-                                <i className="ri-checkbox-circle-fill text-xs" />
-                                Received
+                            ) : event.paymentMethod === 'COLLEGE_PAYMENT' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-200/50 dark:border-blue-900/50">
+                                <i className="ri-bank-line text-xs" />
+                                College Portal
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-450 text-[10px] font-bold uppercase tracking-wider rounded-full border border-amber-250 dark:border-amber-900/50 animate-pulse-slow">
-                                <i className="ri-time-line text-xs" />
-                                Pending
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-200/50 dark:border-emerald-900/50">
+                                Free
                               </span>
                             )}
                           </td>

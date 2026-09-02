@@ -17,7 +17,7 @@ import lostFoundAdminRoutes from "./routes/lostFoundAdmin.js";
 import teamRoutes from "./routes/teams.js";
 import exportCenterRoutes from "./routes/exportCenter.js";
 import pushRoutes from "./routes/push.js";
-import venueRoutes from "./routes/venues.js";
+import venueRoutes, { ensureVenuesTableAndSeed } from "./routes/venues.js";
 import blackoutRoutes, { ensureBlackoutTable } from "./routes/blackouts.js";
 import scannerRoutes from "./routes/scanner.js";
 import centralOrganizerRoutes from "./routes/centralOrganizer.js";
@@ -219,6 +219,7 @@ cleanupUnverifiedStudents();
 syncRegisteredCounts();
 seedPermissions();
 ensureBlackoutTable();
+ensureVenuesTableAndSeed();
 
 setInterval(cleanupReunitedItems, 8 * 60 * 60 * 1000);
 setInterval(cleanupUnverifiedStudents, 60 * 60 * 1000);

@@ -598,8 +598,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div className={endedEvents.length > 0 ? 'mb-14' : ''}>
           {!hideHeader && (
             <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
-              <i className="ri-calendar-event-line text-orange-600 font-light"></i>
-              Upcoming
+         
+              Upcoming Events
             </h2>
           )}
 
@@ -620,13 +620,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div>
           {!hideHeader && (
             <h2 className="text-lg font-semibold text-neutral-400 mb-6 flex items-center gap-2">
-              <i className="ri-history-line"></i>
-              Past Events
+          
+              Past Events 
             </h2>
           )}
           {hideHeader && (
             <h3 className="text-md font-bold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
-              <i className="ri-history-line"></i>
+             
               Past Events
             </h3>
           )}

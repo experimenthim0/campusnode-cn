@@ -11,6 +11,7 @@ import WeekView from "../components/calendar/WeekView";
 import DayView from "../components/calendar/DayView";
 import VenueTimelineView from "../components/calendar/VenueTimelineView";
 import EventQuickViewDrawer from "../components/calendar/EventQuickViewDrawer";
+import EventApprovalPreviewModal from "../components/EventApprovalPreviewModal";
 import RescheduleConfirmModal from "../components/calendar/RescheduleConfirmModal";
 import BlackoutModal from "../components/calendar/BlackoutModal";
 import ConflictCenter from "../components/calendar/ConflictCenter";
@@ -70,6 +71,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [previewModalEvent, setPreviewModalEvent] = useState(null);
 
   const [rescheduleData, setRescheduleData] = useState(null);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
@@ -214,30 +216,39 @@ const EventCalendarPage = ({ readOnly = false }) => {
     setRescheduleModalOpen(true);
   };
 
-  const handleApproveEvent = async (eventItem) => {
+  const handleApproveEvent = async (eventItemOrId, comment = "Approved by faculty coordinator") => {
+    const eventId = typeof eventItemOrId === 'string' ? eventItemOrId : (eventItemOrId?.id || eventItemOrId?._id);
+    const title = typeof eventItemOrId === 'object' ? eventItemOrId?.title : 'Event';
     try {
-      await reviewEvent(eventItem.id || eventItem._id, {
+      await reviewEvent(eventId, {
         status: "PUBLISHED",
-        comment: "Approved from Event Calendar"
+        comment: comment || "Approved by faculty coordinator"
       });
-      showNotification(`Event "${eventItem.title}" approved successfully.`, "success");
+      showNotification(`Event approved successfully.`, "success");
       setDrawerOpen(false);
+      setPreviewModalEvent(null);
       fetchCalendarData();
     } catch (err) {
       showNotification("Failed to approve event.", "error");
     }
   };
 
-  const handleRejectEvent = async (eventItem) => {
-    const reason = prompt(`Enter rejection reason for "${eventItem.title}":`);
-    if (reason === null) return; // Cancelled
+  const handleRejectEvent = async (eventItemOrId, customReason = null) => {
+    const eventId = typeof eventItemOrId === 'string' ? eventItemOrId : (eventItemOrId?.id || eventItemOrId?._id);
+    const title = typeof eventItemOrId === 'object' ? eventItemOrId?.title : 'Event';
+    let reason = customReason;
+    if (reason === null) {
+      reason = prompt(`Enter rejection reason for "${title}":`);
+      if (reason === null) return; // Cancelled
+    }
     try {
-      await reviewEvent(eventItem.id || eventItem._id, {
+      await reviewEvent(eventId, {
         status: "REJECTED",
         comment: reason.trim() || "Proposal rejected by faculty coordinator."
       });
-      showNotification(`Event "${eventItem.title}" rejected.`, "info");
+      showNotification(`Event rejected.`, "info");
       setDrawerOpen(false);
+      setPreviewModalEvent(null);
       fetchCalendarData();
     } catch (err) {
       showNotification("Failed to reject event.", "error");
@@ -455,6 +466,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
         event={selectedEvent}
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        onOpenPreview={(ev) => setPreviewModalEvent(ev)}
         onApprove={userRole === "facultyCoordinator" ? handleApproveEvent : null}
         onReject={userRole === "facultyCoordinator" ? handleRejectEvent : null}
         onOpenReschedule={canManageCalendar ? (ev) => {
@@ -466,6 +478,15 @@ const EventCalendarPage = ({ readOnly = false }) => {
           });
           setRescheduleModalOpen(true);
         } : undefined}
+        userRole={userRole}
+      />
+
+      <EventApprovalPreviewModal
+        event={previewModalEvent}
+        isOpen={Boolean(previewModalEvent)}
+        onClose={() => setPreviewModalEvent(null)}
+        onApprove={handleApproveEvent}
+        onReject={handleRejectEvent}
         userRole={userRole}
       />
 

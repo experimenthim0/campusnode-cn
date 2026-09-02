@@ -235,34 +235,6 @@ router.get(
   },
 );
 
-router.post(
-  "/complete-payout/:eventId",
-  verifyToken,
-  requirePermission(PERMISSIONS.PAYOUT_APPROVE),
-  async (req, res) => {
-    try {
-      const event = await prisma.event.findUnique({ where: { id: req.params.eventId } });
-      if (!event) return res.status(404).json({ message: "Event not found" });
-
-      const deadline = event.registrationDeadline || event.startTime;
-      if (new Date() < new Date(deadline)) {
-        return res.status(400).json({
-          message: "Payout can only be completed after the registration deadline has passed.",
-        });
-      }
-
-      await prisma.event.update({
-        where: { id: req.params.eventId },
-        data: { payoutStatus: "COMPLETED" },
-      });
-
-      res.json({ success: true, message: "Payout marked as completed" });
-    } catch {
-      res.status(500).json({ message: "Failed to update payout status" });
-    }
-  },
-);
-
 router.get("/user-info/:id", verifyToken, requirePermission(PERMISSIONS.USER_VIEW), async (req, res) => {
   try {
     const student = await prisma.studentUser.findUnique({ where: { id: req.params.id } });
@@ -274,12 +246,6 @@ router.get("/user-info/:id", verifyToken, requirePermission(PERMISSIONS.USER_VIE
         club: {
           select: {
             clubName: true,
-            bankName: true,
-            accountHolderName: true,
-            accountNumber: true,
-            ifscCode: true,
-            upiId: true,
-            bankPhone: true,
           },
         },
       },
@@ -292,16 +258,6 @@ router.get("/user-info/:id", verifyToken, requirePermission(PERMISSIONS.USER_VIE
       role: membership ? "club" : "member",
       clubId: membership?.clubId ?? null,
       clubName: club?.clubName ?? null,
-      bankInfo: {
-        bankName: club?.bankName ?? null,
-        accountHolderName: club?.accountHolderName ?? null,
-        accountNumber: club?.accountNumber
-          ? club.accountNumber.slice(-4).padStart(club.accountNumber.length, "X")
-          : null,
-        ifscCode: club?.ifscCode ?? null,
-        upiId: club?.upiId ?? null,
-        bankPhone: club?.bankPhone ?? null,
-      },
     });
   } catch {
     res.status(500).json({ message: "Error fetching user info" });

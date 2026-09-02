@@ -73,7 +73,7 @@ export const DATASETS = {
   clubs: {
     id: "clubs",
     label: "Clubs",
-    description: "Registered campus clubs, faculty coordinators, and bank settlement details.",
+    description: "Registered campus clubs, faculty coordinators, and official contact details.",
     requiredPermission: PERMISSIONS.CLUB_VIEW,
     defaultColumns: ["clubName", "category", "facultyName", "facultyEmail", "officialClubEmail", "createdAt"],
     allColumns: [
@@ -83,11 +83,6 @@ export const DATASETS = {
       { id: "facultyName", label: "Faculty Coordinator" },
       { id: "facultyEmail", label: "Faculty Email" },
       { id: "officialClubEmail", label: "Official Club Email" },
-      { id: "bankName", label: "Bank Name" },
-      { id: "accountHolderName", label: "Account Holder" },
-      { id: "accountNumberMasked", label: "Account Number (Masked)" },
-      { id: "ifscCode", label: "IFSC Code" },
-      { id: "upiId", label: "UPI ID" },
       { id: "createdAt", label: "Created Date" },
     ],
   },
@@ -114,10 +109,10 @@ export const DATASETS = {
   },
   payouts: {
     id: "payouts",
-    label: "Payouts",
-    description: "Paid event settlement totals, registration revenues, and payout statuses.",
-    requiredPermission: PERMISSIONS.PAYOUT_VIEW,
-    defaultColumns: ["title", "clubName", "entryFee", "registeredCount", "totalRevenue", "payoutStatus"],
+    label: "Paid Events Tracking",
+    description: "Paid event totals, entry fees, and registration revenue collections.",
+    requiredPermission: PERMISSIONS.PAYMENT_VIEW,
+    defaultColumns: ["title", "clubName", "entryFee", "registeredCount", "totalRevenue"],
     allColumns: [
       { id: "id", label: "Event ID" },
       { id: "title", label: "Event Title" },
@@ -125,7 +120,6 @@ export const DATASETS = {
       { id: "entryFee", label: "Entry Fee (₹)" },
       { id: "registeredCount", label: "Registrations" },
       { id: "totalRevenue", label: "Total Revenue (₹)" },
-      { id: "payoutStatus", label: "Payout Status" },
       { id: "startTime", label: "Event Start Date" },
       { id: "registrationDeadline", label: "Deadline" },
     ],
@@ -404,13 +398,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           facultyName: c.facultyName || c.facultyCoordinator?.name || "N/A",
           facultyEmail: c.facultyEmail || c.facultyCoordinator?.email || "N/A",
           officialClubEmail,
-          bankName: c.bankName || "N/A",
-          accountHolderName: c.accountHolderName || "N/A",
-          accountNumberMasked: c.accountNumber
-            ? c.accountNumber.slice(-4).padStart(c.accountNumber.length, "X")
-            : "N/A",
-          ifscCode: c.ifscCode || "N/A",
-          upiId: c.upiId || "N/A",
           createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "",
         };
       });

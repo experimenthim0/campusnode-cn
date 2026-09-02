@@ -216,11 +216,11 @@ export const getClubMembers = async (req, res) => {
       );
       const student = m.student
         ? {
-            ...m.student,
-            year: calculateAcademicProgress(m.student).academicYearLabel,
-            academicYear: calculateAcademicProgress(m.student).academicYear,
-            semester: calculateAcademicProgress(m.student).semester,
-          }
+          ...m.student,
+          year: calculateAcademicProgress(m.student).academicYearLabel,
+          academicYear: calculateAcademicProgress(m.student).academicYear,
+          semester: calculateAcademicProgress(m.student).semester,
+        }
         : null;
       return {
         ...m,

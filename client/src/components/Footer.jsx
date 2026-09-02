@@ -6,8 +6,8 @@ const Footer = () => {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   return (
-    <footer className="bg-[#fafafa] dark:bg-[#0c0c0c] border-t border-neutral-200 dark:border-neutral-800 py-4 px-6 hidden md:block transition-colors duration-300">
-      <div className="max-w-7xl mx-auto">
+    <footer className="bg-[#fafafa] dark:bg-[#0c0c0c] border-t border-neutral-200 dark:border-neutral-800 py-4 px-6  hidden md:block transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <div className="flex sm:flex-row items-center justify-between gap-4">
           <p className="text-[12px] text-neutral-500 dark:text-neutral-400 tracking-wide">
             © {new Date().getFullYear()} <span className="font-light text-black dark:text-neutral-100 logofont tracking-wider select-none">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span>

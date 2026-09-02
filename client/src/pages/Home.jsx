@@ -527,7 +527,7 @@ const Home = () => {
   } else if (isClub) {
     dashboardTag = 'Club Organizer Portal';
     greetingName = user?.clubName || user?.name || 'Club Organizer';
-    greetingSubtext = 'Manage your events, coordinate payouts, and issue certificates.';
+    greetingSubtext = 'Manage your events, track paid registrations, and issue certificates.';
     quickActions = [
       { to: '/create', label: 'Create Event', icon: Plus },
       { to: user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events', label: 'Club Events', icon: Calendar },
@@ -546,7 +546,7 @@ const Home = () => {
     ];
   } else if (isAdmin) {
     dashboardTag = 'Admin Command Center';
-    greetingSubtext = 'Oversee campus fests, payouts, moderation queues, and broadcasts.';
+    greetingSubtext = 'Oversee campus events, transactions, moderation queues, and broadcasts.';
     quickActions = [
       { to: '/admin-dashboard', label: 'Admin Panel', icon: LayoutDashboard },
       { to: '/send-notification', label: 'Broadcast Info', icon: Bell },
@@ -556,7 +556,7 @@ const Home = () => {
   }
 
   return (
-    <div className="myfont text-neutral-900 bg-[#fafafa] dark:text-neutral-100 dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div className="myfont text-neutral-900 bg-[#fafafa] dark:text-neutral-100 dark:bg-[#0a0a0a] transition-colors duration-300 -mt-12 ">
 
       {user ? (
         <>
@@ -766,9 +766,9 @@ const Home = () => {
                           <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
                             <Wallet className="w-6 h-6" />
                           </div>
-                          <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Finance & Payouts</h3>
+                          <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Finance & Payments</h3>
                           <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
-                            Track event registrations fees, view verified receipts, update bank details, and monitor payout requests.
+                            Track event registration fees, view verified receipts, and monitor participant payment records.
                           </p>
                         </div>
                         <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
@@ -789,7 +789,7 @@ const Home = () => {
                             Review detailed proposals for upcoming club events. Approve them for public release or send them back with coordinator comments.
                           </p>
                         </div>
-                        <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
+                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
                           Review Proposals <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
@@ -818,7 +818,7 @@ const Home = () => {
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
                           <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
-                            Access system statistics, register or block clubs, review payout requests, and maintain core platform configurations.
+                            Access system statistics, manage registered clubs, review transaction logs, and maintain core platform configurations.
                           </p>
                         </div>
                         <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
@@ -848,7 +848,7 @@ const Home = () => {
         </>
       ) : (
         <>
-          <section className="relative flex flex-col justify-center pt-22 pb-8 lg:pt-36 lg:pb-12 overflow-hidden">
+          <section className="relative flex flex-col justify-center pt-24 pb-8 lg:pt-32 lg:pb-12 overflow-hidden">
             {/* Background Image & Overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none">
               {bgImages.map((img, idx) => (
@@ -856,13 +856,13 @@ const Home = () => {
                   key={idx}
                   src={img} 
                   alt="University Campus" 
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-[center_40%]  ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
                 />
               ))}
               <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/20 to-white dark:from-[#0a0a0a]/10 dark:via-[#0a0a0a]/60 dark:to-[#0a0a0a]"></div>
             </div>
 
-            <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 w-full">
+            <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 w-full mt-4">
               {/* Headline */}
               <ScrollReveal delay={0.2}>
                 <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-white dark:text-white text-center mx-auto max-w-5xl">
@@ -938,7 +938,7 @@ const Home = () => {
             <div className="mb-12">
               <SectionLabel>Latest Happenings</SectionLabel>
               <h2 className="font-black text-[clamp(28px,4vw,44px)] text-neutral-900 dark:text-white leading-[1.1] tracking-wide">
-                What's Buzzing<br />on Campus
+                What's Buzzing on Campus
               </h2>
             </div>
           </ScrollReveal>

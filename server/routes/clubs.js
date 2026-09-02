@@ -319,7 +319,11 @@ router.get("/:id", async (req, res) => {
   try {
     const club = await prisma.club.findFirst({
       where: {
-        OR: [{ id: req.params.id }, { slug: req.params.id }],
+        OR: [
+          { id: req.params.id },
+          { slug: req.params.id },
+          { account: { id: req.params.id } },
+        ],
       },
       include: {
         facultyCoordinator: { select: { id: true, name: true, email: true } },
@@ -429,12 +433,6 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
       "facultyName",
       "clubLogo",
       "bannerImage",
-      "bankName",
-      "accountHolderName",
-      "accountNumber",
-      "ifscCode",
-      "upiId",
-      "bankPhone",
       "studentCoordinators",
     ];
 

@@ -94,12 +94,6 @@ export async function getAdminClubId(adminId) {
       clubName: true,
       slug: true,
       clubLogo: true,
-      bankName: true,
-      accountHolderName: true,
-      accountNumber: true,
-      ifscCode: true,
-      upiId: true,
-      bankPhone: true,
     },
   });
   return club;
@@ -269,12 +263,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
             mission: true,
             establishedYear: true,
             description: true,
-            bankName: true,
-            accountHolderName: true,
-            accountNumber: true,
-            ifscCode: true,
-            upiId: true,
-            bankPhone: true,
             socialLinks: true,
           },
         },
@@ -323,12 +311,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         whatsappNumber: socialMap.whatsappNumber || "",
         portfolioUrl: socialMap.portfolioUrl || "",
         githubProfile: socialMap.githubProfile || "",
-        bankName: clubAccount.club?.bankName,
-        accountHolderName: clubAccount.club?.accountHolderName,
-        accountNumber: clubAccount.club?.accountNumber,
-        ifscCode: clubAccount.club?.ifscCode,
-        upiId: clubAccount.club?.upiId,
-        bankPhone: clubAccount.club?.bankPhone,
       };
 
       res.cookie("token", token, getCookieOptions());
@@ -536,14 +518,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         clubName: clubInfo?.clubName ?? null,
         memberships,
       };
-      if (clubInfo) {
-        userObj.bankName = clubInfo.bankName;
-        userObj.accountHolderName = clubInfo.accountHolderName;
-        userObj.accountNumber = clubInfo.accountNumber;
-        userObj.ifscCode = clubInfo.ifscCode;
-        userObj.upiId = clubInfo.upiId;
-        userObj.bankPhone = clubInfo.bankPhone;
-      }
 
       res.cookie("token", token, getCookieOptions());
       return res.json({
@@ -722,14 +696,6 @@ router.post("/login/admin", async (req, res) => {
       clubName: club?.clubName ?? null,
       memberships,
     };
-    if (club) {
-      userObj.bankName = club.bankName;
-      userObj.accountHolderName = club.accountHolderName;
-      userObj.accountNumber = club.accountNumber;
-      userObj.ifscCode = club.ifscCode;
-      userObj.upiId = club.upiId;
-      userObj.bankPhone = club.bankPhone;
-    }
 
     res.cookie("token", token, getCookieOptions());
 

@@ -179,13 +179,10 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white/30 dark:bg-[#0a0a0a]/75 border-b border-transparent backdrop-blur-md transition-all duration-300 myfont  ${scrolled ? "shadow-sm border-neutral-100/80 dark:border-white/10" : ""
+        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-white/20 dark:bg-[#0a0a0a]/20  border-b border-transparent backdrop-blur-lg transition-all duration-300 myfont  ${scrolled ? "shadow-sm border-neutral-100/80 dark:border-white/10" : ""
           }`}
       >
-        {/* Orange top accent on scroll */}
-        {/* {scrolled && (
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-orange-600 z-10 pointer-events-none" />
-        )} */}
+
 
         <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between gap-4 rounded-full">
           <div className="flex items-center sm:gap-5 gap-auto">
@@ -368,18 +365,18 @@ const Navbar = () => {
                           {user?.memberships?.some(m => m.role === "CLUB_HEAD")
                             ? "Student • Student Lead"
                             : user?.memberships?.some(m => m.role === "COORDINATOR")
-                            ? "Student • Coordinator"
-                            : role === "club"
-                            ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
-                            : role === "facultyCoordinator"
-                            ? "Faculty Coordinator"
-                            : (role === "central_organizer" || user?.principalType === "INSTITUTIONAL")
-                            ? "Central Event Organiser"
-                            : role === "admin"
-                            ? "Admin"
-                            : role === "lostFoundAdmin"
-                            ? "L&F Admin"
-                            : "Student"}
+                              ? "Student • Coordinator"
+                              : role === "club"
+                                ? (user?.rollNo ? "Student • Student Lead" : "Club Account")
+                                : role === "facultyCoordinator"
+                                  ? "Faculty Coordinator"
+                                  : (role === "central_organizer" || user?.principalType === "INSTITUTIONAL")
+                                    ? "Central Event Organiser"
+                                    : role === "admin"
+                                      ? "Admin"
+                                      : role === "lostFoundAdmin"
+                                        ? "L&F Admin"
+                                        : "Student"}
                         </p>
                       </div>
 
@@ -454,7 +451,7 @@ const Navbar = () => {
                   <span className="absolute ml-2 bottom-0 left-0 w-full h-[2px] bg-orange-600 dark:bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                 </Link>
                 <Link
-                  to="/register/student"
+                  to="/register"
                   className="flex items-center gap-1.5 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-150 hover:-translate-y-px"
                 >
                   <ArrowRightIcon size={18}>

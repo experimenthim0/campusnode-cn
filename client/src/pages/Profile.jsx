@@ -38,6 +38,66 @@ const ClubLogoImage = ({ clubLogo, clubName }) => {
   );
 };
 
+const ClubDescription = ({ description }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    if (!description) return;
+    const plainText = description.replace(/<[^>]*>?/gm, '').trim();
+    const isLongText = plainText.length > 180 || description.includes('\n') || (description.match(/<p>/g) || []).length > 1;
+
+    const checkOverflow = () => {
+      if (contentRef.current) {
+        const isOverflowing = contentRef.current.scrollHeight > contentRef.current.clientHeight + 4;
+        setShowButton(isLongText || isOverflowing);
+      } else {
+        setShowButton(isLongText);
+      }
+    };
+
+    checkOverflow();
+    const timer = setTimeout(checkOverflow, 100);
+    return () => clearTimeout(timer);
+  }, [description]);
+
+  if (!description) return null;
+
+  return (
+    <div>
+      <div
+        ref={contentRef}
+        className={`transition-all duration-300 ${
+          !isExpanded ? 'line-clamp-3 sm:line-clamp-4 overflow-hidden' : ''
+        }`}
+      >
+        <div
+          className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
+          dangerouslySetInnerHTML={{
+            __html: markdownToHtml(description),
+          }}
+        />
+      </div>
+
+      {showButton && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="mt-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
+        >
+          <span>{isExpanded ? 'Show less' : 'Expand description'}</span>
+          <i
+            className={`ri-arrow-down-s-line text-sm transition-transform duration-300 ${
+              isExpanded ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+      )}
+    </div>
+  );
+};
+
 const Profile = () => {
   const { user: authUser, role: authRole, setSession } = useAuth();
   const { showNotification } = useNotification();
@@ -54,7 +114,6 @@ const Profile = () => {
   const [clubData, setClubData] = useState(null);
   const [clubMembers, setClubMembers] = useState([]);
   const [clubEvents, setClubEvents] = useState([]);
-  const [showAccountNumber, setShowAccountNumber] = useState(false);
 
   const fetchClubInfo = useCallback(async (customClubId) => {
     const effectiveClubId =
@@ -245,8 +304,8 @@ const Profile = () => {
   const savedCoordinators = Array.isArray(clubData?.studentCoordinators)
     ? clubData.studentCoordinators.filter(Boolean)
     : (typeof clubData?.studentCoordinators === 'string' && clubData.studentCoordinators
-        ? clubData.studentCoordinators.split(',').map(s => s.trim()).filter(Boolean)
-        : []);
+      ? clubData.studentCoordinators.split(',').map(s => s.trim()).filter(Boolean)
+      : []);
 
   const displayStudentLead = roleLeadNames.length > 0
     ? roleLeadNames.join(', ')
@@ -255,8 +314,8 @@ const Profile = () => {
   const displayStudentCoordinators = roleCoordinatorNames.length > 0
     ? roleCoordinatorNames.join(', ')
     : (savedCoordinators.length > 0
-        ? savedCoordinators.join(', ')
-        : (roleLeadNames.length > 0 ? roleLeadNames.join(', ') : 'Not Assigned'));
+      ? savedCoordinators.join(', ')
+      : (roleLeadNames.length > 0 ? roleLeadNames.join(', ') : 'Not Assigned'));
 
   const getSocialLink = (platformQuery) => {
     if (Array.isArray(clubData?.socialLinks) && clubData.socialLinks.length > 0) {
@@ -275,13 +334,6 @@ const Profile = () => {
   const whatsappUrl = getSocialLink('whatsapp') || user.whatsappNumber;
   const websiteUrl = getSocialLink('website') || user.portfolioUrl;
 
-  const maskAccountNumber = (acc) => {
-    if (!acc) return 'Not Set';
-    const clean = String(acc).trim();
-    if (showAccountNumber) return clean;
-    if (clean.length <= 4) return `•••• ${clean}`;
-    return `•••• •••• •••• ${clean.slice(-4)}`;
-  };
 
   // Initials for fallback avatar
   const profileInitials = (clubData?.clubName || user?.name || 'C').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -398,7 +450,7 @@ const Profile = () => {
               <div className="flex sm:flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
                 <Link
                   to="/profile/edit"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-black dark:bg-white hover:bg-gray-600 dark:hover:bg-gray-400 text-white dark:text-black rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
                 >
                   <i className="ri-edit-line text-sm font-light" /> Edit Profile
                 </Link>
@@ -507,12 +559,7 @@ const Profile = () => {
                 {clubData.description && (
                   <div className="md:col-span-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About the Club</p>
-                    <div
-                      className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
-                      dangerouslySetInnerHTML={{
-                        __html: markdownToHtml(clubData.description),
-                      }}
-                    />
+                    <ClubDescription description={clubData.description} />
                   </div>
                 )}
               </div>
@@ -627,8 +674,8 @@ const Profile = () => {
                     </div>
 
                     <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 border ${event.reviewStatus === 'PUBLISHED'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
-                        : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
                       }`}>
                       {event.reviewStatus || 'ACTIVE'}
                     </span>
@@ -638,71 +685,6 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Payment Account */}
-          {(clubData?.bankName || user.bankName || clubData?.accountNumber || user.accountNumber) && (
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
-              <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
-                <div className="flex items-center gap-2.5">
-                  <i className="ri-bank-card-line text-lg text-orange-600" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
-                    Payment Account
-                  </h2>
-                </div>
-                <Link
-                  to="/payments"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-semibold transition-colors"
-                >
-                  <i className="ri-wallet-line text-xs" /> Payments
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 bg-neutral-50/50 dark:bg-neutral-800/30 p-5 sm:p-6 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Bank Name</p>
-                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankName || user.bankName || 'Not Set'}</p>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Holder</p>
-                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.accountHolderName || user.accountHolderName || 'Not Set'}</p>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Number</p>
-                  <div className="flex items-center gap-2">
-                    <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">
-                      {maskAccountNumber(clubData?.accountNumber || user.accountNumber)}
-                    </p>
-                    {(clubData?.accountNumber || user.accountNumber) && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAccountNumber(!showAccountNumber)}
-                        className="text-neutral-400 hover:text-orange-600 transition-colors cursor-pointer"
-                        title={showAccountNumber ? "Hide account number" : "Show account number"}
-                      >
-                        <i className={showAccountNumber ? "ri-eye-off-line text-sm" : "ri-eye-line text-sm"} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">IFSC Code</p>
-                  <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.ifscCode || user.ifscCode || 'Not Set'}</p>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">UPI ID</p>
-                  <p className="font-semibold text-sm text-orange-600 dark:text-orange-400">{clubData?.upiId || user.upiId || 'Not Set'}</p>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Linked Phone</p>
-                  <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankPhone || user.bankPhone || 'Not Set'}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Security & Access */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
@@ -719,8 +701,8 @@ const Profile = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-bold text-neutral-900 dark:text-white">Two-Factor Authentication</p>
                     <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full ${user.isTwoStepEnabled
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                       }`}>
                       {user.isTwoStepEnabled ? 'Enabled' : 'Disabled'}
                     </span>
@@ -850,7 +832,7 @@ const Profile = () => {
               <div className="flex sm:flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
                 <Link
                   to="/profile/edit"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-black dark:bg-white hover:bg-gray-600 dark:hover:bg-gray-400 text-white dark:text-black rounded-xl transition-all font-semibold text-xs shadow-xs cursor-pointer w-full"
                 >
                   <i className="ri-edit-line text-sm font-light" /> Edit Profile
                 </Link>
@@ -963,12 +945,7 @@ const Profile = () => {
               {clubData?.description && (
                 <div className="md:col-span-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About the Club</p>
-                  <div
-                    className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
-                    dangerouslySetInnerHTML={{
-                      __html: markdownToHtml(clubData.description),
-                    }}
-                  />
+                  <ClubDescription description={clubData.description} />
                 </div>
               )}
             </div>
@@ -1072,8 +1049,8 @@ const Profile = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-bold text-neutral-900 dark:text-white">Two-Factor Authentication</p>
                     <span className={`px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full ${user.isTwoStepEnabled
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                       }`}>
                       {user.isTwoStepEnabled ? 'Enabled' : 'Disabled'}
                     </span>
@@ -1112,73 +1089,6 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
-            <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2.5">
-                <i className="ri-bank-card-line text-lg text-orange-600" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
-                  Payment Account
-                </h2>
-              </div>
-              <Link
-                to="/profile/edit#payment-details"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-semibold transition-colors"
-              >
-                <i className="ri-edit-line text-xs" /> Edit Payment Details
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 bg-neutral-50/50 dark:bg-neutral-800/30 p-5 sm:p-6 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Bank Name</p>
-                <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankName || user.bankName || 'Not Set'}</p>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Holder</p>
-                <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.accountHolderName || user.accountHolderName || 'Not Set'}</p>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Account Number</p>
-                <div className="flex items-center gap-2">
-                  <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">
-                    {maskAccountNumber(clubData?.accountNumber || user.accountNumber)}
-                  </p>
-                  {(clubData?.accountNumber || user.accountNumber) && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAccountNumber(!showAccountNumber)}
-                      className="text-neutral-400 hover:text-orange-600 transition-colors cursor-pointer"
-                      title={showAccountNumber ? "Hide account number" : "Show account number"}
-                    >
-                      <i className={showAccountNumber ? "ri-eye-off-line text-sm" : "ri-eye-line text-sm"} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">IFSC Code</p>
-                <p className="font-mono font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.ifscCode || user.ifscCode || 'Not Set'}</p>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">UPI ID</p>
-                <p className="font-semibold text-sm text-orange-600 dark:text-orange-400">{clubData?.upiId || user.upiId || 'Not Set'}</p>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">Linked Phone</p>
-                <p className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{clubData?.bankPhone || user.bankPhone || 'Not Set'}</p>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-3 flex items-center gap-1.5">
-              <i className="ri-information-line text-xs" />
-              Event ticket payouts and fee collections are disbursed to this configured account. Manage transactions in <Link to="/payments" className="text-orange-600 hover:underline font-semibold">Payments</Link>.
-            </p>
-          </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
@@ -1345,8 +1255,8 @@ const Profile = () => {
                     </div>
 
                     <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 border ${event.reviewStatus === 'PUBLISHED'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
-                        : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
                       }`}>
                       {event.reviewStatus || 'ACTIVE'}
                     </span>
@@ -1378,7 +1288,7 @@ const Profile = () => {
                       {user.name}
                     </h1>
                     <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
-                      {isExternalAccount ? 'External Participant' : user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Club Head' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
+                      {isExternalAccount ? 'External Participant' : user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Club Lead' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
@@ -1386,7 +1296,7 @@ const Profile = () => {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-4">
                     <Link
                       to="/profile/edit"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full transition-all font-semibold text-xs shadow-xs cursor-pointer border-0"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white hover:bg-gray-600 dark:hover:bg-gray-400 text-white dark:text-black rounded-full transition-all font-semibold text-xs shadow-xs cursor-pointer border-0"
                     >
                       <i className="ri-edit-line text-sm font-light" /> Edit Profile
                     </Link>
@@ -1550,8 +1460,8 @@ const Profile = () => {
                                 {m.clubName || "Club Management"}
                               </h3>
                               <span className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-full border ${isHead
-                                  ? "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800"
-                                  : "bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-400 border-orange-300 dark:border-orange-800"
+                                ? "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800"
+                                : "bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-400 border-orange-300 dark:border-orange-800"
                                 }`}>
                                 {isHead ? "★ Student Lead" : "Coordinator"}
                               </span>

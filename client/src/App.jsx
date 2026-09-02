@@ -60,7 +60,7 @@ const StaffAttendanceView = lazy(() => import('./pages/StaffAttendanceView'));
 const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
 const FeedbackSurveyPreview = lazy(() => import('./pages/FeedbackSurveyPreview'));
 const LeaderboardGuide = lazy(() => import('./pages/LeaderboardGuide'));
-
+const RegisterExternal = lazy(() => import('./pages/RegisterExternal'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
 import { FeedbackPromptProvider } from './context/FeedbackPromptContext';
@@ -113,7 +113,7 @@ function App() {
                   <Route path="/lost-found" element={<LostAndFound />} />
                   <Route path="/lost-found/guide" element={<LostFoundGuide />} />
                   <Route path="/ranking-guide" element={<LeaderboardGuide />} />
-
+  <Route path="/register/external" element={<RegisterExternal />} />
                   {/* Protected routes (require login) */}
                   <Route path="/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -138,7 +138,7 @@ function App() {
                   <Route path="/event-calendar" element={<ProtectedRoute><EventCalendarPage readOnly /></ProtectedRoute>} />
                   <Route path="/feedback-questions" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />
                   <Route path="/feedback-survey-preview" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />
-
+                
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

@@ -89,15 +89,9 @@ model Club {
   facultyCoordinatorId String?          @db.VarChar(24)
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-  accountHolderName    String?
-  accountNumber        String?
-  bankName             String?
-  bankPhone            String?
   clubEmail            String?
   facultyEmail         String?
   facultyName          String?
-  ifscCode             String?
-  upiId                String?
   studentCoordinators  String[]         @default([]) @map("studentcoordinators")
   motto                String?
   mission              String?

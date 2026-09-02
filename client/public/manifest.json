@@ -24,10 +24,10 @@
   ],
   "id": "/",
   "start_url": "/",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
-  "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "display": "minimal-ui",
+  "display_override": ["minimal-ui", "standalone", "browser"],
   "orientation": "portrait-primary",
   "categories": ["education", "events", "productivity"]
 }

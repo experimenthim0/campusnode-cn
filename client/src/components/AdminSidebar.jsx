@@ -195,7 +195,6 @@ const AdminSidebar = () => {
       label: "Financial Operations",
       items: [
         { label: "Transactions", tab: "payments-overview" },
-        { label: "Payouts", tab: "payouts" },
       ]
     },
     {
@@ -320,17 +319,10 @@ const AdminSidebar = () => {
         {role === "paymentAdmin" && (
           <>
             <AdminSidebarLink
-              to="/admin-dashboard?tab=payouts"
-              icon={Wallet}
-              label="Payouts"
-              isActive={location.pathname === "/admin-dashboard" && currentTab === "payouts"}
-              collapsed={collapsed}
-            />
-            <AdminSidebarLink
               to="/admin-dashboard?tab=payments-overview"
               icon={Layers}
               label="Transactions"
-              isActive={location.pathname === "/admin-dashboard" && currentTab === "payments-overview"}
+              isActive={location.pathname === "/admin-dashboard" && (!currentTab || currentTab === "payments-overview")}
               collapsed={collapsed}
             />
           </>

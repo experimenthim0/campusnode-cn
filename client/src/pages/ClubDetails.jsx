@@ -1038,7 +1038,7 @@ const ClubDetails = () => {
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="space-y-2 max-w-xl">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-black uppercase tracking-widest text-orange-600">
-                  <i className="ri-star-fill text-amber-300" /> Featured Club Event
+                  Featured Club Event
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
                   {featuredEvent.title}
@@ -1183,7 +1183,7 @@ const ClubDetails = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 pb-4">
             <div>
               <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <i className="ri-calendar-line text-orange-600 font-light" /> Club Events & Calendar
+ Club Events & Calendar
               </h2>
               <p className="text-xs text-neutral-400">Browse schedules, workshops, and activities</p>
             </div>
@@ -1331,7 +1331,7 @@ const ClubDetails = () => {
             <div className="flex items-center justify-between pb-2">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                  <i className="ri-group-line text-orange-600 font-light" /> Club Leadership & Team
+            Club Leadership & Team
                 </h2>
                 <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p>
               </div>
@@ -1483,7 +1483,7 @@ const ClubDetails = () => {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <i className="ri-image-line text-orange-600 font-light" /> Club Gallery
+            Club Gallery
               </h2>
               <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600 mx-2"/>
               {galleryMedia.length > 0 && (
@@ -1543,7 +1543,7 @@ const ClubDetails = () => {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <i className="ri-hand-heart-line text-orange-600 font-light" /> Sponsors & Partners
+            Sponsors & Partners
               </h2>
             </div>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">

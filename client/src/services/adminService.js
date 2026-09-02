@@ -17,9 +17,6 @@ export const createClub = (data) =>
 export const getUserInfo = (id) =>
   api.get(`/api/admin/user-info/${id}`);
 
-export const completePayout = (eventId) =>
-  api.post(`/api/admin/complete-payout/${eventId}`);
-
 export const exportEventData = () =>
   api.get('/api/admin/event-data-export');
 

@@ -25,44 +25,59 @@ const DEFAULT_VENUES = [
   "Other"
 ];
 
+let isTableInitialized = false;
+let tableInitPromise = null;
+
 export async function ensureVenuesTableAndSeed() {
-  try {
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "Venue" (
-        "id" VARCHAR(24) NOT NULL,
-        "name" TEXT NOT NULL,
-        "isOpen" BOOLEAN NOT NULL DEFAULT true,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "Venue_pkey" PRIMARY KEY ("id")
-      );
-    `;
-    await prisma.$executeRaw`
-      CREATE UNIQUE INDEX IF NOT EXISTS "Venue_name_key" ON "Venue"("name");
-    `;
+  if (isTableInitialized) return;
+  if (tableInitPromise) return tableInitPromise;
 
-    const countResult = await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM "Venue"`;
-    const count = Number(countResult[0]?.count || 0);
+  tableInitPromise = (async () => {
+    try {
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS "Venue" (
+          "id" VARCHAR(24) NOT NULL,
+          "name" TEXT NOT NULL,
+          "isOpen" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "Venue_pkey" PRIMARY KEY ("id")
+        );
+      `;
+      await prisma.$executeRaw`
+        CREATE UNIQUE INDEX IF NOT EXISTS "Venue_name_key" ON "Venue"("name");
+      `;
 
-    if (count === 0) {
-      console.log("Seeding default campus venues into database...");
-      for (const name of DEFAULT_VENUES) {
-        const id = createObjectId();
-        await prisma.$executeRaw`
-          INSERT INTO "Venue" ("id", "name", "isOpen", "createdAt", "updatedAt")
-          VALUES (${id}, ${name}, true, NOW(), NOW())
-          ON CONFLICT ("name") DO NOTHING;
-        `;
+      const countResult = await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM "Venue"`;
+      const count = Number(countResult[0]?.count || 0);
+
+      if (count === 0) {
+        console.log("Seeding default campus venues into database...");
+        for (const name of DEFAULT_VENUES) {
+          const id = createObjectId();
+          await prisma.$executeRaw`
+            INSERT INTO "Venue" ("id", "name", "isOpen", "createdAt", "updatedAt")
+            VALUES (${id}, ${name}, true, NOW(), NOW())
+            ON CONFLICT ("name") DO NOTHING;
+          `;
+        }
       }
+      isTableInitialized = true;
+    } catch (err) {
+      console.error("Error ensuring Venue table and seed:", err.message);
+    } finally {
+      tableInitPromise = null;
     }
-  } catch (err) {
-    console.error("Error ensuring Venue table and seed:", err.message);
-  }
+  })();
+
+  return tableInitPromise;
 }
 
 router.get("/", async (req, res) => {
   try {
-    await ensureVenuesTableAndSeed();
+    if (!isTableInitialized) {
+      await ensureVenuesTableAndSeed();
+    }
     const openOnly = req.query.openOnly === "true";
 
     let venues = [];
@@ -89,7 +104,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
-    await ensureVenuesTableAndSeed();
+    if (!isTableInitialized) {
+      await ensureVenuesTableAndSeed();
+    }
     const { name, isOpen } = req.body;
 
     if (!name || !name.trim()) {
@@ -109,20 +126,19 @@ router.post("/", verifyToken, allowRoles("admin"), async (req, res) => {
     const newId = createObjectId();
     const isVenueOpen = isOpen !== undefined ? Boolean(isOpen) : true;
 
-    await prisma.$executeRaw`
+    const insertedRows = await prisma.$queryRaw`
       INSERT INTO "Venue" ("id", "name", "isOpen", "createdAt", "updatedAt")
       VALUES (${newId}, ${trimmedName}, ${isVenueOpen}, NOW(), NOW())
+      RETURNING id, name, "isOpen", "createdAt", "updatedAt"
     `;
 
-    const created = {
+    res.status(201).json(insertedRows[0] || {
       id: newId,
       name: trimmedName,
       isOpen: isVenueOpen,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
-
-    res.status(201).json(created);
+    });
   } catch (err) {
     console.error("Failed to create venue:", err);
     res.status(500).json({ message: "Failed to create venue", error: err.message });
@@ -134,43 +150,33 @@ router.put("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
     const { id } = req.params;
     const { name, isOpen } = req.body;
 
-    const existingRows = await prisma.$queryRaw`
-      SELECT * FROM "Venue" WHERE id = ${id} LIMIT 1
-    `;
-    const venueExists = existingRows[0];
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: "Venue name is required." });
+    }
 
-    if (!venueExists) {
+    const trimmedName = name.trim();
+
+    const dupes = await prisma.$queryRaw`
+      SELECT id FROM "Venue" WHERE LOWER(name) = LOWER(${trimmedName}) AND id != ${id} LIMIT 1
+    `;
+    if (dupes && dupes.length > 0) {
+      return res.status(400).json({ message: `Venue "${trimmedName}" already exists.` });
+    }
+
+    const newIsOpen = isOpen !== undefined ? Boolean(isOpen) : true;
+
+    const updatedRows = await prisma.$queryRaw`
+      UPDATE "Venue"
+      SET name = ${trimmedName}, "isOpen" = ${newIsOpen}, "updatedAt" = NOW()
+      WHERE id = ${id}
+      RETURNING id, name, "isOpen", "createdAt", "updatedAt"
+    `;
+
+    if (!updatedRows || updatedRows.length === 0) {
       return res.status(404).json({ message: "Venue not found." });
     }
 
-    let newName = venueExists.name;
-    if (name !== undefined && name.trim()) {
-      const trimmedName = name.trim();
-      if (trimmedName.toLowerCase() !== venueExists.name.toLowerCase()) {
-        const dupes = await prisma.$queryRaw`
-          SELECT id FROM "Venue" WHERE LOWER(name) = LOWER(${trimmedName}) AND id != ${id} LIMIT 1
-        `;
-        if (dupes && dupes.length > 0) {
-          return res.status(400).json({ message: `Venue "${trimmedName}" already exists.` });
-        }
-      }
-      newName = trimmedName;
-    }
-
-    const newIsOpen = isOpen !== undefined ? Boolean(isOpen) : venueExists.isOpen;
-
-    await prisma.$executeRaw`
-      UPDATE "Venue"
-      SET name = ${newName}, "isOpen" = ${newIsOpen}, "updatedAt" = NOW()
-      WHERE id = ${id}
-    `;
-
-    res.json({
-      ...venueExists,
-      name: newName,
-      isOpen: newIsOpen,
-      updatedAt: new Date(),
-    });
+    res.json(updatedRows[0]);
   } catch (err) {
     console.error("Failed to update venue:", err);
     res.status(500).json({ message: "Failed to update venue", error: err.message });
@@ -180,27 +186,20 @@ router.put("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
 router.patch("/:id/toggle-status", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { id } = req.params;
-    const existingRows = await prisma.$queryRaw`
-      SELECT * FROM "Venue" WHERE id = ${id} LIMIT 1
+    
+    // Single atomic roundtrip with RETURNING
+    const updatedRows = await prisma.$queryRaw`
+      UPDATE "Venue"
+      SET "isOpen" = NOT "isOpen", "updatedAt" = NOW()
+      WHERE id = ${id}
+      RETURNING id, name, "isOpen", "createdAt", "updatedAt"
     `;
-    const venue = existingRows[0];
 
-    if (!venue) {
+    if (!updatedRows || updatedRows.length === 0) {
       return res.status(404).json({ message: "Venue not found." });
     }
 
-    const nextState = !venue.isOpen;
-    await prisma.$executeRaw`
-      UPDATE "Venue"
-      SET "isOpen" = ${nextState}, "updatedAt" = NOW()
-      WHERE id = ${id}
-    `;
-
-    res.json({
-      ...venue,
-      isOpen: nextState,
-      updatedAt: new Date(),
-    });
+    res.json(updatedRows[0]);
   } catch (err) {
     console.error("Failed to toggle venue status:", err);
     res.status(500).json({ message: "Failed to toggle venue status", error: err.message });
@@ -210,20 +209,16 @@ router.patch("/:id/toggle-status", verifyToken, allowRoles("admin"), async (req,
 router.delete("/:id", verifyToken, allowRoles("admin"), async (req, res) => {
   try {
     const { id } = req.params;
-    const existingRows = await prisma.$queryRaw`
-      SELECT name FROM "Venue" WHERE id = ${id} LIMIT 1
+    const deletedRows = await prisma.$queryRaw`
+      DELETE FROM "Venue" WHERE id = ${id}
+      RETURNING id, name
     `;
-    const venue = existingRows[0];
 
-    if (!venue) {
+    if (!deletedRows || deletedRows.length === 0) {
       return res.status(404).json({ message: "Venue not found." });
     }
 
-    await prisma.$executeRaw`
-      DELETE FROM "Venue" WHERE id = ${id}
-    `;
-
-    res.json({ message: `Venue "${venue.name}" deleted successfully.` });
+    res.json({ message: `Venue "${deletedRows[0].name}" deleted successfully.` });
   } catch (err) {
     console.error("Failed to delete venue:", err);
     res.status(500).json({ message: "Failed to delete venue", error: err.message });

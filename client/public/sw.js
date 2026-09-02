@@ -23,7 +23,7 @@
 
 const CACHE_STATIC = 'campusnode-static-v2';
 const CACHE_IMAGES = 'campusnode-images-v1';
-const CACHE_SHELL  = 'campusnode-shell-v1';
+const CACHE_SHELL  = 'campusnode-shell-v2';
 
 /** All current cache names — anything not in this set gets deleted on activate */
 const CURRENT_CACHES = new Set([CACHE_STATIC, CACHE_IMAGES, CACHE_SHELL]);

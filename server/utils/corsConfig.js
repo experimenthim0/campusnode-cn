@@ -21,15 +21,15 @@ export const getClientUrl = (origin) => {
 export const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    
+
     const isAllowed = allowedOrigins.includes(origin);
-    
+
     const isPreview = origin && (
       /\.nikhim\.me$/.test(origin) ||
       /\.vercel\.app$/.test(origin) ||
       origin.startsWith("http://192.168.") // typical local network IPs
     );
-    
+
     if (isAllowed || isPreview) {
       callback(null, true);
     } else {

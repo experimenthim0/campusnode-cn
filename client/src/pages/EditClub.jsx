@@ -42,12 +42,6 @@ const EditClub = () => {
     establishedYear: "",
     facultyEmail: "",
     facultyName: "",
-    bankName: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifscCode: "",
-    upiId: "",
-    bankPhone: "",
   });
 
   useEffect(() => {
@@ -84,12 +78,6 @@ const EditClub = () => {
         establishedYear: club.establishedYear || "",
         facultyEmail: club.facultyEmail || club.facultyCoordinator?.email || "",
         facultyName: club.facultyName || club.facultyCoordinator?.name || "",
-        bankName: club.bankName || "",
-        accountHolderName: club.accountHolderName || "",
-        accountNumber: club.accountNumber || "",
-        ifscCode: club.ifscCode || "",
-        upiId: club.upiId || "",
-        bankPhone: club.bankPhone || "",
       });
     };
 

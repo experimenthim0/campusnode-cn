@@ -215,7 +215,21 @@ const EventQuickViewDrawer = ({
         </div>
 
         <div className="p-5 border-t border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 space-y-2">
-          {/* {userRole === "facultyCoordinator" && event.reviewStatus === "PENDING" && onApprove && onReject && (
+          {onOpenPreview && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenPreview(event);
+              }}
+              className="w-full py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm mb-2"
+            >
+              <ExternalLink size={14} className="text-orange-400 dark:text-orange-600" />
+              <span>Full Event &amp; Payment Preview</span>
+            </button>
+          )}
+
+          {userRole === "facultyCoordinator" && event.reviewStatus === "PENDING" && onApprove && onReject && (
             <div className="grid grid-cols-2 gap-2 mb-2">
               <button
                 type="button"
@@ -234,20 +248,22 @@ const EventQuickViewDrawer = ({
                 <span>Reject</span>
               </button>
             </div>
-          )} */}
+          )}
 
-          {/* <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (onOpenReschedule) onOpenReschedule(event);
-              }}
-              className="py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Clock size={14} />
-              <span>Reschedule</span>
-            </button>
+          <div className="grid grid-cols-2 gap-2">
+            {onOpenReschedule && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenReschedule(event);
+                }}
+                className="py-2.5 bg-neutral-200 dark:bg-zinc-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-zinc-700 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Clock size={14} />
+                <span>Reschedule</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -260,7 +276,7 @@ const EventQuickViewDrawer = ({
               <Edit2 size={14} />
               <span>Edit Details</span>
             </button>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>

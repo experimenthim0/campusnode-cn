@@ -447,7 +447,7 @@ const ClubMembers = () => {
               setSelectedNewLeadId("");
               setIsTransferModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl border border-orange-300 dark:border-orange-700/60 bg-orange-50 dark:bg-orange-950/40 px-4 py-2 text-xs font-bold text-orange-700 dark:text-orange-300 shadow-2xs hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all cursor-pointer"
           >
             <i className="ri-swap-line text-sm" /> Transfer Leadership
           </button>
@@ -457,7 +457,7 @@ const ClubMembers = () => {
       {/* Role Quota Indicators */}
       <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Student Lead</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Student Lead</p>
           <div className="mt-1 flex items-center justify-between">
             <span className="text-sm font-bold text-neutral-900 dark:text-white truncate">
               {activeStudentLead?.student?.name || "Not assigned"}
@@ -469,7 +469,7 @@ const ClubMembers = () => {
         </div>
 
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Coordinators</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Coordinators</p>
           <div className="mt-1 flex items-center justify-between">
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
               {coordinatorCount} Active
@@ -484,7 +484,7 @@ const ClubMembers = () => {
         </div>
 
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Total Team</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Total Team</p>
           <div className="mt-1 flex items-center justify-between">
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
               {members.filter((m) => !m.isClubAccount).length} Members
@@ -498,12 +498,10 @@ const ClubMembers = () => {
 
       <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs space-y-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+          <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">
             Add New Team Member
           </p>
-          <p className="text-[11px] text-neutral-500 mt-0.5">
-            Search students by name, email, or roll number. Only registered students are eligible (club and admin accounts are strictly excluded).
-          </p>
+         
         </div>
 
         <form onSubmit={handleInvite} className="space-y-3">
@@ -572,14 +570,14 @@ const ClubMembers = () => {
                 Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
               </option>
               <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
-                Student Lead (Head) {activeStudentLead ? "(Assigned - use Transfer)" : ""}
+                Student Lead {activeStudentLead ? "(Assigned - use Transfer)" : ""}
               </option>
             </select>
 
             <button
               type="submit"
               disabled={inviting}
-              className="h-10 rounded-xl bg-orange-600 hover:bg-orange-700 px-5 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+              className="h-10 rounded-xl bg-black dark:bg-white hover:bg-gray-600 dark:hover:bg-gray-400 px-5 text-sm font-bold text-white dark:text-black transition-all shadow-xs disabled:opacity-40 cursor-pointer"
             >
               {inviting ? "Adding…" : "Add Member"}
             </button>

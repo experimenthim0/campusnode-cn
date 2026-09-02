@@ -80,7 +80,7 @@ router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE),
     }
 
     const result = await uploadImage(req.file.buffer, "event-posters", uploadOptions);
-    res.json({ 
+    res.json({
       secure_url: result.secure_url,
       public_id: result.public_id
     });
@@ -349,7 +349,7 @@ router.get("/", async (req, res) => {
       take: limit,
     });
 
-      const response = events.map(serializeEvent);
+    const response = events.map(serializeEvent);
     setPublicResponse(cacheKey, response);
     res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
     res.set("X-Public-Cache", "MISS");
@@ -622,7 +622,7 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
       try {
         const notifTitle = `Event Rescheduled: ${event.title}`;
         const notifMsg = `Your event "${event.title}" has been rescheduled to ${newStart.toLocaleDateString()} ${newStart.toLocaleTimeString()} at ${newVenue}.`;
-        
+
         await prisma.notification.create({
           data: {
             id: createObjectId(),
@@ -749,13 +749,13 @@ router.get(
       const participations = await prisma.participation.findMany({
         where: isExternal
           ? {
-              OR: [
-                { externalUserId: userId },
-                { externalUserId: authUserId },
-                { externalEmail: authEmail || userId },
-                { studentId: userId },
-              ],
-            }
+            OR: [
+              { externalUserId: userId },
+              { externalUserId: authUserId },
+              { externalEmail: authEmail || userId },
+              { studentId: userId },
+            ],
+          }
           : { studentId: userId },
         select: {
           id: true,
@@ -1044,8 +1044,8 @@ router.get("/:id", async (req, res) => {
       const isClubAccount =
         (decoded.principalType === "CLUB" || decoded.userType === "club" || decoded.role === "club" || decoded.role === "club_account") &&
         (String(event.clubId) === String(decoded.clubId) ||
-         String(event.clubId) === String(decoded.userId) ||
-         String(event.clubId) === String(decoded.clubAccountId));
+          String(event.clubId) === String(decoded.userId) ||
+          String(event.clubId) === String(decoded.clubAccountId));
       const isClubOwner =
         (decoded.clubId && String(event.clubId) === String(decoded.clubId)) ||
         (decoded.userId && String(event.clubId) === String(decoded.userId));
@@ -1063,8 +1063,8 @@ router.get("/:id", async (req, res) => {
           if (
             membership &&
             (["CLUB_HEAD", "COORDINATOR", "CORE_MEMBER", "MEMBER"].includes(membership.role) ||
-             membership.canEditEvents ||
-             membership.canTakeAttendance)
+              membership.canEditEvents ||
+              membership.canTakeAttendance)
           ) {
             isClubMemberAuthorized = true;
           }
@@ -1412,16 +1412,16 @@ router.get(
         participations: participations.map((p) => {
           const student = p.student
             ? {
-                ...p.student,
-                year: calculateAcademicProgress(p.student).academicYearLabel,
-                academicYear: calculateAcademicProgress(p.student).academicYear,
-                academicYearLabel: calculateAcademicProgress(p.student).academicYearLabel,
-                semester: calculateAcademicProgress(p.student).semester,
-                semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
-                isExternal: false,
-              }
+              ...p.student,
+              year: calculateAcademicProgress(p.student).academicYearLabel,
+              academicYear: calculateAcademicProgress(p.student).academicYear,
+              academicYearLabel: calculateAcademicProgress(p.student).academicYearLabel,
+              semester: calculateAcademicProgress(p.student).semester,
+              semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
+              isExternal: false,
+            }
             : (p.externalUser || p.externalName || p.externalEmail)
-            ? {
+              ? {
                 id: p.externalUserId || p.externalUser?.id || null,
                 _id: p.externalUserId || p.externalUser?.id || null,
                 name: p.externalUser?.name || p.externalName || "External Participant",
@@ -1434,51 +1434,51 @@ router.get(
                 phone: p.externalUser?.phone || null,
                 isExternal: true,
               }
-            : null;
+              : null;
 
           const team = p.team
             ? {
-                ...p.team,
-                leader: p.team.leader
+              ...p.team,
+              leader: p.team.leader
+                ? {
+                  ...p.team.leader,
+                  year: calculateAcademicProgress(p.team.leader).academicYearLabel,
+                  academicYear: calculateAcademicProgress(p.team.leader).academicYear,
+                  semester: calculateAcademicProgress(p.team.leader).semester,
+                  isExternal: false,
+                }
+                : p.team.leaderExternal
                   ? {
-                      ...p.team.leader,
-                      year: calculateAcademicProgress(p.team.leader).academicYearLabel,
-                      academicYear: calculateAcademicProgress(p.team.leader).academicYear,
-                      semester: calculateAcademicProgress(p.team.leader).semester,
-                      isExternal: false,
-                    }
-                  : p.team.leaderExternal
+                    ...p.team.leaderExternal,
+                    rollNo: p.team.leaderExternal.collegeName,
+                    year: p.team.leaderExternal.graduationYear ? `Class of ${p.team.leaderExternal.graduationYear}` : 'Verified Guest',
+                    isExternal: true,
+                  }
+                  : null,
+              members: (p.team.members || []).map((m) => {
+                const memberUser = m.user
                   ? {
-                      ...p.team.leaderExternal,
-                      rollNo: p.team.leaderExternal.collegeName,
-                      year: p.team.leaderExternal.graduationYear ? `Class of ${p.team.leaderExternal.graduationYear}` : 'Verified Guest',
+                    ...m.user,
+                    year: calculateAcademicProgress(m.user).academicYearLabel,
+                    academicYear: calculateAcademicProgress(m.user).academicYear,
+                    semester: calculateAcademicProgress(m.user).semester,
+                    isExternal: false,
+                  }
+                  : m.externalUser
+                    ? {
+                      ...m.externalUser,
+                      rollNo: m.externalUser.collegeName,
+                      year: m.externalUser.graduationYear ? `Class of ${m.externalUser.graduationYear}` : 'Verified Guest',
                       isExternal: true,
                     }
-                  : null,
-                members: (p.team.members || []).map((m) => {
-                  const memberUser = m.user
-                    ? {
-                        ...m.user,
-                        year: calculateAcademicProgress(m.user).academicYearLabel,
-                        academicYear: calculateAcademicProgress(m.user).academicYear,
-                        semester: calculateAcademicProgress(m.user).semester,
-                        isExternal: false,
-                      }
-                    : m.externalUser
-                    ? {
-                        ...m.externalUser,
-                        rollNo: m.externalUser.collegeName,
-                        year: m.externalUser.graduationYear ? `Class of ${m.externalUser.graduationYear}` : 'Verified Guest',
-                        isExternal: true,
-                      }
                     : null;
-                  return {
-                    ...m,
-                    user: memberUser,
-                    student: memberUser,
-                  };
-                }),
-              }
+                return {
+                  ...m,
+                  user: memberUser,
+                  student: memberUser,
+                };
+              }),
+            }
             : null;
 
           return {

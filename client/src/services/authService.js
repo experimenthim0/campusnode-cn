@@ -17,6 +17,9 @@ export const adminLogin = (email, password) =>
 export const registerStudent = (formData) =>
   api.post('/api/auth/register/student', formData);
 
+export const registerExternal = (formData) =>
+  api.post('/api/auth/register/external', formData);
+
 export const forgotPassword = (email) =>
   api.post('/api/auth/forgot-password', { email });
 
