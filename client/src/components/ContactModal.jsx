@@ -163,7 +163,7 @@ const ContactModal = ({
   return (
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md transition-opacity duration-300 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-opacity duration-300 overflow-y-auto"
         onClick={handleClose}
       >
         <motion.div
@@ -172,35 +172,50 @@ const ContactModal = ({
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[85dvh] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden my-auto"
+          className="relative w-full max-w-md max-h-[85dvh] flex flex-col bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden my-auto transition-colors"
         >
-          <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 shrink-0" />
-
-          <button
-            onClick={handleClose}
-            disabled={status === 'submitting'}
-            className="absolute top-4 right-4 z-10 p-2 text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  Send a Suggestion
+                </h3>
+                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-xs mt-0.5">
+                  Have an idea or feedback? Share it below.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleClose}
+              disabled={status === 'submitting'}
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors disabled:opacity-50 cursor-pointer"
+              aria-label="Close modal"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Body Content */}
-          <div className="p-6 sm:p-8 overflow-y-auto">
+          <div className="p-6 overflow-y-auto text-[#555555] dark:text-[#B5B5B5]">
             {status === 'success' ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="py-6 text-center flex flex-col items-center justify-center space-y-4"
               >
-                <div className="w-16 h-16 rounded-full  text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  <h3 className="text-xl font-bold text-[#111111] dark:text-[#F5F5F5]">
                     Thank You!
                   </h3>
-                  <p className="text-neutral-600 dark:text-neutral-300 text-sm max-w-sm mx-auto leading-relaxed">
+                  <p className="text-[#555555] dark:text-[#B5B5B5] text-xs sm:text-sm max-w-sm mx-auto leading-relaxed">
                     Your response has been recorded successfully. Thank you for helping us improve CampusNode!
                   </p>
                 </div>
@@ -211,13 +226,13 @@ const ContactModal = ({
                       setStatus('idle');
                       setFormData({ name: '', email: '', suggestion: '' });
                     }}
-                    className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 font-medium text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 px-4 rounded-xl border border-[#E5E5E5] dark:border-[#303030] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] font-bold text-xs transition-colors cursor-pointer"
                   >
                     Submit Another
                   </button>
                   <button
                     onClick={handleClose}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium text-sm shadow-md transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] text-white dark:text-[#111111] font-bold text-xs shadow-xs transition-colors cursor-pointer"
                   >
                     Done
                   </button>
@@ -225,21 +240,8 @@ const ContactModal = ({
               </motion.div>
             ) : (
               <div>
-                <div className="mb-6">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 text-xs font-semibold tracking-wide mb-2">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Contact & Suggestion</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                    Send a Suggestion
-                  </h2>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm mt-1">
-                    Have an idea or feedback? Share it below.
-                  </p>
-                </div>
-
                 {status === 'error' && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2">
+                  <div className="mb-4 p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{errorMessage}</span>
                   </div>
@@ -249,11 +251,11 @@ const ContactModal = ({
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Name Field */}
                   <div>
-                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Your Name <span className="text-orange-500">*</span>
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      Your Name <span className="text-[#F97316]">*</span>
                     </label>
                     <div className="relative">
-                      <User className="w-4 h-4 absolute left-3 top-3 text-neutral-400" />
+                      <User className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
                       <input
                         type="text"
                         name="name"
@@ -261,25 +263,25 @@ const ContactModal = ({
                         onChange={handleChange}
                         placeholder="Himanshu"
                         disabled={status === 'submitting'}
-                        className={`w-full pl-9 pr-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/80 border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
                           formErrors.name 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-neutral-200 dark:border-neutral-700 focus:border-orange-500 focus:ring-orange-500'
-                        } rounded-xl text-base sm:text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-all`}
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
+                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors`}
                       />
                     </div>
                     {formErrors.name && (
-                      <p className="text-[11px] text-red-500 mt-1">{formErrors.name}</p>
+                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.name}</p>
                     )}
                   </div>
 
                   {/* Email Field */}
                   <div>
-                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Email Address <span className="text-orange-500">*</span>
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      Email Address <span className="text-[#F97316]">*</span>
                     </label>
                     <div className="relative">
-                      <Mail className="w-4 h-4 absolute left-3 top-3 text-neutral-400" />
+                      <Mail className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
                       <input
                         type="email"
                         name="email"
@@ -287,30 +289,30 @@ const ContactModal = ({
                         onChange={handleChange}
                         placeholder="you@example.com"
                         disabled={status === 'submitting'}
-                        className={`w-full pl-9 pr-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/80 border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
                           formErrors.email 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-neutral-200 dark:border-neutral-700 focus:border-orange-500 focus:ring-orange-500'
-                        } rounded-xl text-base sm:text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-all`}
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
+                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors`}
                       />
                     </div>
                     {formErrors.email && (
-                      <p className="text-[11px] text-red-500 mt-1">{formErrors.email}</p>
+                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.email}</p>
                     )}
                   </div>
 
                   {/* Description / Suggestion Field */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                        Description / Suggestion <span className="text-orange-500">*</span>
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
+                        Description / Suggestion <span className="text-[#F97316]">*</span>
                       </label>
-                      <span className="text-[11px] text-neutral-400">
+                      <span className="text-[11px] text-[#888888] dark:text-[#808080]">
                         {formData.suggestion.length}/1000
                       </span>
                     </div>
                     <div className="relative">
-                      <Lightbulb className="w-4 h-4 absolute left-3 top-3 text-neutral-400" />
+                      <Lightbulb className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
                       <textarea
                         name="suggestion"
                         value={formData.suggestion}
@@ -319,15 +321,15 @@ const ContactModal = ({
                         rows={4}
                         placeholder="Write your description or suggestion here..."
                         disabled={status === 'submitting'}
-                        className={`w-full pl-9 pr-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/80 border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
                           formErrors.suggestion 
-                            ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-neutral-200 dark:border-neutral-700 focus:border-orange-500 focus:ring-orange-500'
-                        } rounded-xl text-base sm:text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-all resize-none`}
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
+                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors resize-none`}
                       />
                     </div>
                     {formErrors.suggestion && (
-                      <p className="text-[11px] text-red-500 mt-1">{formErrors.suggestion}</p>
+                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.suggestion}</p>
                     )}
                   </div>
 
@@ -335,7 +337,7 @@ const ContactModal = ({
                     <button
                       type="submit"
                       disabled={status === 'submitting'}
-                      className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 active:scale-[0.99] text-white font-medium text-sm rounded-xl shadow-lg shadow-orange-600/20 flex items-center justify-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full py-2.5 px-4 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {status === 'submitting' ? (
                         <>

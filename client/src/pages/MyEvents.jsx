@@ -993,7 +993,7 @@ const MyEvents = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setTicketModalOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+            className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
           />
 
           <motion.div
@@ -1006,21 +1006,23 @@ const MyEvents = () => {
             }}
             className="
               relative z-10
-              bg-white dark:bg-neutral-900
-              border border-neutral-200 dark:border-neutral-800
-              rounded-3xl
+              bg-white dark:bg-[#181818]
+              border border-[#E5E5E5] dark:border-[#303030]
+              rounded-2xl
               max-w-sm w-full
               p-5
               shadow-2xl
+              transition-colors
             "
           >
             <div className="mb-4">
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-2 pr-8">
                 <span
                   className="
-                    text-[9px] font-black uppercase tracking-widest
-                    text-orange-600 dark:text-orange-400
-                    bg-orange-500/10
+                    text-[10px] font-bold uppercase tracking-wider
+                    text-[#F97316] dark:text-[#FB923C]
+                    bg-[#FFF7ED] dark:bg-[#2A1A0F]
+                    border border-orange-200/60 dark:border-orange-900/40
                     px-2.5 py-1
                     rounded-full
                     shrink-0
@@ -1032,9 +1034,10 @@ const MyEvents = () => {
                 {selectedTicket.team?.teamName && (
                   <span
                     className="
-                      text-[9px] font-bold
-                      text-neutral-500 dark:text-neutral-400
-                      bg-neutral-100 dark:bg-neutral-800
+                      text-[10px] font-bold
+                      text-[#555555] dark:text-[#B5B5B5]
+                      bg-[#FAFAFA] dark:bg-[#222222]
+                      border border-[#E5E5E5] dark:border-[#303030]
                       px-2.5 py-1
                       rounded-full
                       truncate
@@ -1044,15 +1047,14 @@ const MyEvents = () => {
                   </span>
                 )}
 
-<button
-  type="button"
-  onClick={() => setTicketModalOpen(false)}
-  className="absolute top-4 right-4 z-20 p-1.5 rounded-full text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-  aria-label="Close ticket modal"
->
-  <X size={18} />
-</button>
-
+                <button
+                  type="button"
+                  onClick={() => setTicketModalOpen(false)}
+                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  aria-label="Close ticket modal"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
               {/* Event title */}
@@ -1256,32 +1258,34 @@ const MyEvents = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.93, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center"
+              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center transition-colors"
             >
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-500/10 text-red-600 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <i className="ri-alert-line text-2xl" />
               </div>
-              <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Cancel Registration?</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] mb-1.5">Cancel Registration?</h3>
+              <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
                 Are you sure you want to cancel your registration for this event? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
-                  className="flex-1 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs rounded-xl hover:bg-neutral-200 transition-colors border-0 cursor-pointer"
+                  className="flex-1 px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Keep Registration
                 </button>
                 <button
+                  type="button"
                   onClick={confirmDeregister}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl hover:bg-red-700 transition-colors border-0 shadow-sm cursor-pointer"
+                  className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer"
                 >
                   Yes, Deregister
                 </button>
@@ -1300,30 +1304,49 @@ const MyEvents = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.93, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-colors"
             >
-              <div className="bg-orange-600 px-6 py-4 border-b border-orange-700 shrink-0">
-                <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                  <Users size={20} /> Manage Team: {teamToUpdate.team?.teamName}
-                </h3>
+              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                    <Users size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                      Manage Team
+                    </h3>
+                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-xs mt-0.5">
+                      {teamToUpdate.team?.teamName}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <div className="p-6 space-y-4 text-left overflow-y-auto flex-1">
+
+              <div className="p-6 space-y-4 text-left overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] uppercase tracking-wider mb-2">
                     Current Team Members
                   </label>
-                  <div className="divide-y divide-neutral-100 dark:divide-neutral-800 text-xs">
+                  <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A] text-xs">
                     <div className="py-2.5 flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-neutral-800 dark:text-neutral-200">{teamToUpdate.team?.leader?.name} <span className="text-orange-600 font-bold">(Leader)</span></p>
-                        <p className="text-neutral-400 font-mono mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
+                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{teamToUpdate.team?.leader?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(Leader)</span></p>
+                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
                       </div>
                     </div>
                     {(teamToUpdate.team?.members || [])
@@ -1331,10 +1354,10 @@ const MyEvents = () => {
                       .map(m => (
                         <div key={m.id || m.userId} className="py-2.5 flex justify-between items-center">
                           <div>
-                            <p className="font-bold text-neutral-800 dark:text-neutral-200">
+                            <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">
                               {m.user?.name || "Pending Invitation"}
                             </p>
-                            <p className="text-neutral-400 font-mono mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
+                            <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
                           </div>
                         </div>
                       ))}
@@ -1348,7 +1371,7 @@ const MyEvents = () => {
                   
                   if (currentCount >= maxLimit) {
                     return (
-                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 p-4 rounded-xl text-xs text-amber-700 dark:text-amber-400 font-medium">
+                      <div className="bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/80 dark:border-orange-900/40 p-4 rounded-xl text-xs text-[#F97316] dark:text-[#FB923C] font-semibold">
                         <i className="ri-information-fill mr-1" />
                         Your team has reached the maximum size of {maxLimit} members.
                       </div>
@@ -1357,38 +1380,38 @@ const MyEvents = () => {
 
                   return (
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                        Invite Teammate <span className="text-[10px] text-neutral-400 font-medium">(Size: {currentCount} / max {maxLimit})</span>
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
+                        Invite Teammate <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Size: {currentCount} / max {maxLimit})</span>
                       </label>
                       <div className="relative">
-                        <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                        <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
                         <input
                           type="text"
                           placeholder="Search by Email or Roll Number..."
                           value={updateTeamSearchQuery}
                           onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
-                          className="w-full pl-9 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs focus:border-orange-500 focus:outline-none bg-white dark:bg-neutral-800 text-black dark:text-white"
+                          className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] transition-colors"
                         />
                         {updateTeamSearching && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <i className="ri-loader-4-line animate-spin text-orange-600" />
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                            <i className="ri-loader-4-line animate-spin text-[#F97316]" />
                           </div>
                         )}
                       </div>
 
                       {updateTeamSearchResults.length > 0 && (
-                        <div className="mt-1 max-h-48 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg divide-y divide-neutral-100 dark:divide-neutral-800">
+                        <div className="mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
                           {updateTeamSearchResults.map((s) => (
                             <div
                               key={s.id}
                               onClick={() => handleInviteTeammate(s)}
-                              className="p-3 text-xs hover:bg-orange-50 dark:hover:bg-neutral-800 cursor-pointer flex justify-between items-center transition-colors"
+                              className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
                             >
                               <div className="text-left">
-                                <p className="font-bold text-neutral-800 dark:text-neutral-200">{s.name}</p>
-                                <p className="text-neutral-400 font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                                <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
+                                <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                               </div>
-                              <span className="text-orange-600 font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 rounded cursor-pointer">Invite</span>
+                              <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-lg cursor-pointer">Invite</span>
                             </div>
                           ))}
                         </div>
@@ -1397,10 +1420,11 @@ const MyEvents = () => {
                   );
                 })()}
               </div>
-              <div className="px-6 pb-6 shrink-0">
+              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] shrink-0">
                 <button
+                  type="button"
                   onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                  className="w-full px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs rounded-lg transition-colors cursor-pointer border-0 outline-none"
+                  className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Close
                 </button>
@@ -1419,86 +1443,104 @@ const MyEvents = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.93, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden"
+              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors"
             >
-              <div className="bg-orange-600 px-6 py-4 border-b border-orange-700">
-                <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                  <i className="ri-edit-box-line" /> Edit Payment Information
-                </h3>
+              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                    <i className="ri-edit-box-line text-lg" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                      Edit Payment Information
+                    </h3>
+                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+                      Update your transaction details for verification.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
               </div>
               
               <form onSubmit={submitPaymentEdit}>
-                <div className="p-6 space-y-4 text-left">
+                <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
-                      UTR / Transaction ID <span className="text-red-500">*</span>
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      UTR / Transaction ID <span className="text-[#F97316]">*</span>
                     </label>
                     <input
                       type="text"
                       required
                       value={editTxId}
                       onChange={(e) => setEditTxId(e.target.value)}
-                      className="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl focus:outline-none focus:border-orange-500 text-neutral-800 dark:text-neutral-200 font-mono"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] font-mono transition-colors"
                       placeholder="Enter 12-digit UPI/UTR Transaction ID"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                       Payer Name
                     </label>
                     <input
                       type="text"
                       value={editPayerName}
                       onChange={(e) => setEditPayerName(e.target.value)}
-                      className="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl focus:outline-none focus:border-orange-500 text-neutral-800 dark:text-neutral-200"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
                       placeholder="Name of account owner"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                       Payment Remarks
                     </label>
                     <textarea
                       value={editRemarks}
                       onChange={(e) => setEditRemarks(e.target.value)}
-                      className="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl focus:outline-none focus:border-orange-500 text-neutral-800 dark:text-neutral-200 resize-none h-20"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] resize-none h-20 transition-colors"
                       placeholder="Add remarks or notes..."
                     />
                   </div>
 
                   {editingReg.paymentReviewMessage && (
-                    <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-xl">
-                      <p className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider mb-1">
+                    <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-xl">
+                      <p className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider mb-1">
                         Reviewer Message
                       </p>
-                      <p className="text-xs text-rose-600 dark:text-rose-400 leading-relaxed font-medium">
+                      <p className="text-xs text-rose-600 dark:text-rose-400 leading-relaxed font-semibold">
                         {editingReg.paymentReviewMessage}
                       </p>
                     </div>
                   )}
                 </div>
                 
-                <div className="px-6 pb-6 flex gap-3">
+                <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
                     onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-                    className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer border-0"
+                    className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingEdit}
-                    className="flex-1 px-4 py-2.5 bg-orange-600 text-white font-semibold text-xs rounded-xl hover:bg-orange-700 transition-colors cursor-pointer disabled:opacity-50 border-0 shadow-sm"
+                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
                   >
                     {submittingEdit ? 'Submitting...' : 'Update Details'}
                   </button>

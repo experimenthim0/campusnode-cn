@@ -57,7 +57,7 @@ server/
 │   ├── lostFoundAdmin.js               # Moderation panel & resolution controls for Lost & Found
 │   ├── notifications.js                # In-app notifications & announcement broadcasts
 │   ├── participation.js                # Student event attendance & participation verification
-│   ├── payment.js                      # Event fee tracking, payment proofs & payout reviews
+│   ├── payment.js                      # Event fee tracking, payment proofs & transaction reviews
 │   ├── push.js                         # Web Push subscription registration & notification dispatch
 │   ├── scanner.js                      # High-speed cryptographic QR ticket scanning & check-in
 │   ├── teams.js                        # Hackathon & team competition management

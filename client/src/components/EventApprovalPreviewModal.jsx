@@ -29,6 +29,8 @@ import {
 import DOMPurify from 'dompurify';
 import { markdownToHtml } from '../utils/htmlMarkdownConverter';
 
+import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
+
 const EventApprovalPreviewModal = ({
   event,
   isOpen,
@@ -88,7 +90,8 @@ const EventApprovalPreviewModal = ({
   const maxTeam = event.maxTeamSize || 1;
 
   // Eligibility
-  const allowedPrograms = Array.isArray(event.allowedPrograms) && event.allowedPrograms.length > 0 ? event.allowedPrograms : ['All Programs'];
+  const isAllPrograms = !event.allowedPrograms || !Array.isArray(event.allowedPrograms) || event.allowedPrograms.length === 0 || event.allowedPrograms.length >= PROGRAM_OPTIONS.length || (PROGRAM_OPTIONS.length > 0 && PROGRAM_OPTIONS.every(p => event.allowedPrograms.includes(p)));
+  const allowedPrograms = isAllPrograms ? ['All'] : event.allowedPrograms.map(p => PROGRAM_LABELS[p] || p);
   const allowedYears = Array.isArray(event.allowedYears) && event.allowedYears.length > 0 ? event.allowedYears : ['All Years'];
   const allowedBranches = Array.isArray(event.allowedBranches) && event.allowedBranches.length > 0 ? event.allowedBranches : ['All Branches'];
   const allowExternal = event.allowExternal !== false;
@@ -149,7 +152,7 @@ const EventApprovalPreviewModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer shadow-lg"
+          className="absolute top-5 right-5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer shadow-lg"
           title="Close preview"
         >
           <X size={18} />
@@ -168,7 +171,7 @@ const EventApprovalPreviewModal = ({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-          <div className="absolute bottom-4 left-5 right-14 flex items-end justify-between gap-4">
+          <div className="absolute bottom-5 left-6 right-16 flex items-end justify-between gap-4">
             <div className="flex items-center gap-3">
               {clubLogo ? (
                 <img
@@ -217,7 +220,7 @@ const EventApprovalPreviewModal = ({
         </div>
 
         {/* Quick Metrics Bar */}
-        <div className="bg-neutral-50 dark:bg-zinc-900/70 border-b border-neutral-200 dark:border-zinc-800 px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="bg-neutral-50 dark:bg-zinc-900/70 border-b border-neutral-200 dark:border-zinc-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-4 text-neutral-600 dark:text-neutral-300 font-medium">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} className="text-orange-500" />
@@ -272,7 +275,7 @@ const EventApprovalPreviewModal = ({
                 <Icon size={14} />
                 <span>{tab.label}</span>
                 {tab.badge && (
-                  <span className="px-1.5 py-0.2 bg-neutral-100 dark:bg-zinc-800 text-[10px] rounded-md font-mono">
+                  <span className="px-1.5 py-0.5 bg-neutral-100 dark:bg-zinc-800 text-[10px] rounded-md font-mono">
                     {tab.badge}
                   </span>
                 )}
@@ -619,7 +622,7 @@ const EventApprovalPreviewModal = ({
         </div>
 
         {/* Action Decision Footer for Faculty Coordinator */}
-        <div className="p-5 border-t border-neutral-200 dark:border-zinc-800 bg-neutral-50/80 dark:bg-zinc-900/80 shrink-0 space-y-3">
+        <div className="px-6 py-5 border-t border-neutral-200 dark:border-zinc-800 bg-neutral-50/80 dark:bg-zinc-900/80 shrink-0 space-y-3.5">
           {/* Rejection / Note Input */}
           {(isPendingReview || isRejecting) && (
             <div className="space-y-1.5">
@@ -632,11 +635,12 @@ const EventApprovalPreviewModal = ({
                 onChange={(e) => setReviewComment(e.target.value)}
                 placeholder="e.g. Please verify SAC venue booking confirmation before publishing / Fee details look correct..."
                 rows={2}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0c0c0c] border border-neutral-300 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-orange-600 transition-colors text-neutral-900 dark:text-white"
+                className="w-full px-3.5 py-3 bg-white dark:bg-[#0c0c0c] border border-neutral-300 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-orange-600 transition-colors text-neutral-900 dark:text-white"
               />
             </div>
           )}
 
+          {/* Button padding scale: Secondary/destructive actions use px-4 py-2.5; primary confirm (Approve & Publish) uses px-5 py-2.5 */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"

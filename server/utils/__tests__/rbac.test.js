@@ -19,7 +19,7 @@ describe("Granular RBAC Engine Tests", () => {
 
       expect(roleHasPermission("member", PERMISSIONS.EVENT_APPROVE)).toBe(false);
       expect(roleHasPermission("member", PERMISSIONS.CLUB_CREATE)).toBe(false);
-      expect(roleHasPermission("member", PERMISSIONS.PAYOUT_APPROVE)).toBe(false);
+      expect(roleHasPermission("member", PERMISSIONS.PAYMENT_REVIEW)).toBe(false);
     });
 
     it("external role should have event view, registration create, and registration cancel permissions", () => {

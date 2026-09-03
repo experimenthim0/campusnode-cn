@@ -40,6 +40,19 @@
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+
+  /* ── CampusNode Standardized Modal System ── */
+  .modal-backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  :is(.dark, .dark *) .modal-backdrop-blur,
+  .dark .modal-backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
 }
 
 @keyframes ai-shimmer-sweep {

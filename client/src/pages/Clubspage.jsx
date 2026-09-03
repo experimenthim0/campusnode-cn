@@ -61,6 +61,27 @@ const getCategoryIcon = (category) => {
   return "ri-team-line";
 };
 
+/**
+ * Fisher-Yates (Knuth) Shuffle algorithm.
+ * Creates an unbiased, randomly shuffled shallow copy of the array
+ * without mutating the original source array.
+ *
+ * @template T
+ * @param {T[]} array
+ * @returns {T[]} New shuffled array
+ */
+const shuffleArray = (array) => {
+  if (!Array.isArray(array) || array.length <= 1) {
+    return Array.isArray(array) ? [...array] : [];
+  }
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const ClubsPage = ({ isHome = false, showFilters = false }) => {
   const { isDark } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -95,7 +116,8 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
     const fetchClubs = async () => {
       try {
         const clubData = await getPublicJson(clubsUrl);
-        setClubs(Array.isArray(clubData) ? clubData : []);
+        // Randomize order on initial fetch using Fisher-Yates shuffle
+        setClubs(Array.isArray(clubData) ? shuffleArray(clubData) : []);
       } catch (err) {
         console.error("Error fetching clubs:", err);
       } finally {
@@ -105,7 +127,10 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
     fetchClubs();
 
     const handleUpdate = (newData) => {
-      if (Array.isArray(newData)) setClubs(newData);
+      if (Array.isArray(newData)) {
+        // Randomize when fresh data is intentionally pushed
+        setClubs(shuffleArray(newData));
+      }
     };
     registerUpdateCallback(clubsUrl, handleUpdate);
 

@@ -10,6 +10,7 @@ import { generateToken } from "../middleware/auth.js";
 import sendEmail from "../utils/sendEmail.js";
 import { getStudentRoleAndClub } from "./auth.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
+import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 
 const router = express.Router();
 
@@ -149,7 +150,6 @@ router.get(
               entryFee: true,
               registeredCount: true,
               registrationType: true,
-              payoutStatus: true,
               registrationDeadline: true,
               startTime: true,
               organizerType: true,
@@ -202,7 +202,6 @@ router.get(
           totalCollected: collected,
           regCount: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
           entryFee: event.entryFee,
-          payoutStatus: event.payoutStatus || "PENDING",
           registrationDeadline: event.registrationDeadline,
           startTime: event.startTime,
         };
@@ -383,44 +382,78 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
       return res.status(400).json({ message: "All fields are required: clubName, facultyName, facultyEmail, clubEmail" });
     }
 
-    const existingClub = await prisma.club.findUnique({ where: { clubName } });
+    const trimmedClubName = clubName.trim();
+    const trimmedFacultyEmail = facultyEmail.toLowerCase().trim();
+    const trimmedClubEmail = clubEmail.toLowerCase().trim();
+    const trimmedFacultyName = facultyName.trim();
+
+    const existingClub = await prisma.club.findUnique({ where: { clubName: trimmedClubName } });
     if (existingClub) {
-      return res.status(400).json({ message: `A club named "${clubName}" already exists.` });
+      return res.status(400).json({ message: `A club named "${trimmedClubName}" already exists.` });
     }
 
-    const existingStudent = await prisma.studentUser.findUnique({ where: { email: clubEmail } });
+    // Role guard: Faculty coordinator cannot be a student account
+    const studentWithFacultyEmail = await prisma.studentUser.findUnique({ where: { email: trimmedFacultyEmail } });
+    if (studentWithFacultyEmail) {
+      return res.status(400).json({
+        message: `The email "${trimmedFacultyEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
+      });
+    }
+
+    // Uniqueness checks for clubEmail
+    const existingStudent = await prisma.studentUser.findUnique({ where: { email: trimmedClubEmail } });
     if (existingStudent) {
-      return res.status(400).json({ message: `A user account with email "${clubEmail}" already exists.` });
+      return res.status(400).json({ message: `A student account with email "${trimmedClubEmail}" already exists. Club email must be unique.` });
     }
 
-    const slug = await slugifyUnique(clubName, 'club', 'slug');
+    const existingAdminWithClubEmail = await prisma.adminRole.findUnique({ where: { email: trimmedClubEmail } });
+    if (existingAdminWithClubEmail) {
+      return res.status(400).json({ message: `An admin or faculty account with email "${trimmedClubEmail}" already exists.` });
+    }
+
+    const existingClubAccount = await prisma.clubAccount.findUnique({ where: { email: trimmedClubEmail } });
+    if (existingClubAccount) {
+      return res.status(400).json({ message: `A club account with email "${trimmedClubEmail}" already exists.` });
+    }
+
+    const slug = await slugifyUnique(trimmedClubName, 'club', 'slug');
     const defaultPassword = `${slug}@him0148`;
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
     let isNewFaculty = false;
 
     const result = await prisma.$transaction(async (tx) => {
-      let facultyUser = await tx.adminRole.findUnique({ where: { email: facultyEmail } });
+      let facultyUser = await tx.adminRole.findUnique({ where: { email: trimmedFacultyEmail } });
       if (!facultyUser) {
         isNewFaculty = true;
         facultyUser = await tx.adminRole.create({
           data: {
             id: createObjectId(),
-            name: facultyName,
-            email: facultyEmail,
+            name: trimmedFacultyName,
+            email: trimmedFacultyEmail,
             password: passwordHash,
             role: "facultyCoordinator",
           },
         });
+      } else {
+        if (facultyUser.role !== "facultyCoordinator" && facultyUser.role !== "admin" && facultyUser.role !== "SUPER_ADMIN") {
+          throw new Error(`The account "${trimmedFacultyEmail}" has role "${facultyUser.role}" and cannot be assigned as faculty coordinator.`);
+        }
+        if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
+          facultyUser = await tx.adminRole.update({
+            where: { id: facultyUser.id },
+            data: { name: trimmedFacultyName },
+          });
+        }
       }
 
       const club = await tx.club.create({
         data: {
           id: createObjectId(),
-          clubName,
+          clubName: trimmedClubName,
           slug,
-          facultyName,
-          facultyEmail,
-          clubEmail,
+          facultyName: trimmedFacultyName,
+          facultyEmail: trimmedFacultyEmail,
+          clubEmail: trimmedClubEmail,
           facultyCoordinatorId: facultyUser.id,
         },
       });
@@ -429,7 +462,7 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
         data: {
           id: createObjectId(),
           clubId: club.id,
-          email: clubEmail,
+          email: trimmedClubEmail,
           password: passwordHash,
           isActive: true,
         },
@@ -438,24 +471,26 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
       return club;
     });
 
+    invalidatePublicResponses(["clubs*", "events*"]);
+
     const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
 
     try {
       await sendEmail({
-        email: clubEmail,
-        subject: `Welcome to CampusNode - ${clubName} Account Credentials`,
+        email: trimmedClubEmail,
+        subject: `Welcome to CampusNode - ${trimmedClubName} Account Credentials`,
         message: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; color: #1f2937;">
             <div style="margin-bottom: 20px;">
               <h2 style="color: #ea580c; margin: 0; font-size: 22px;">Welcome to CampusNode</h2>
               <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Official Club Management Account</p>
             </div>
-            <p>Hello <strong>${clubName} Team</strong>,</p>
-            <p>Your official club organizer account for <strong>${clubName}</strong> has been created and verified by the administrator.</p>
+            <p>Hello <strong>${trimmedClubName} Team</strong>,</p>
+            <p>Your official club organizer account for <strong>${trimmedClubName}</strong> has been created and verified by the administrator.</p>
             
             <div style="background-color: #f9fafb; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #e5e7eb;">
               <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Assigned Role:</strong> Club Head / Organizer</p>
-              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Login Email:</strong> <span style="color: #ea580c; font-weight: bold;">${clubEmail}</span></p>
+              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Login Email:</strong> <span style="color: #ea580c; font-weight: bold;">${trimmedClubEmail}</span></p>
               <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Default Password:</strong> <code style="background: #e5e7eb; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-weight: bold;">${defaultPassword}</code></p>
               <p style="margin: 0; font-size: 14px;"><strong>Account Status:</strong> <span style="color: #16a34a; font-weight: bold;">Verified & Active</span></p>
             </div>
@@ -478,25 +513,25 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
 
     try {
       await sendEmail({
-        email: facultyEmail,
-        subject: `CampusNode - Assigned as Faculty Coordinator for ${clubName}`,
+        email: trimmedFacultyEmail,
+        subject: `CampusNode - Assigned as Faculty Coordinator for ${trimmedClubName}`,
         message: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; color: #1f2937;">
             <div style="margin-bottom: 20px;">
               <h2 style="color: #ea580c; margin: 0; font-size: 22px;">Faculty Coordinator Portal</h2>
               <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Club Oversight & Governance</p>
             </div>
-            <p>Dear <strong>${facultyName}</strong>,</p>
-            <p>You have been assigned as the <strong>Faculty Coordinator</strong> for <strong>${clubName}</strong> on CampusNode.</p>
+            <p>Dear <strong>${trimmedFacultyName}</strong>,</p>
+            <p>You have been assigned as the <strong>Faculty Coordinator</strong> for <strong>${trimmedClubName}</strong> on CampusNode.</p>
             
             <div style="background-color: #f9fafb; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #e5e7eb;">
               <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Assigned Role:</strong> Faculty Coordinator</p>
-              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Coordinator Email:</strong> <span style="color: #ea580c; font-weight: bold;">${facultyEmail}</span></p>
+              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Coordinator Email:</strong> <span style="color: #ea580c; font-weight: bold;">${trimmedFacultyEmail}</span></p>
               ${isNewFaculty
                 ? `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Default Password:</strong> <code style="background: #e5e7eb; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-weight: bold;">${defaultPassword}</code></p>`
                 : `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Password:</strong> Use your existing Faculty Coordinator password.</p>`
               }
-              <p style="margin: 0; font-size: 14px;"><strong>Assigned Club:</strong> ${clubName}</p>
+              <p style="margin: 0; font-size: 14px;"><strong>Assigned Club:</strong> ${trimmedClubName}</p>
             </div>
 
             <p style="font-size: 14px;">As Faculty Coordinator, you can review and approve club events, supervise team members, verify payments, and oversee compliance.</p>
@@ -545,13 +580,32 @@ router.get("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_VIEW
 router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ message: "Name and email are required" });
+    }
+    const trimmedEmail = email.toLowerCase().trim();
+    const trimmedName = name.trim();
+
+    // Check if email belongs to student account
+    const studentUser = await prisma.studentUser.findUnique({ where: { email: trimmedEmail } });
+    if (studentUser) {
+      return res.status(400).json({
+        message: `The email "${trimmedEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
+      });
+    }
+
+    const existingAdmin = await prisma.adminRole.findUnique({ where: { email: trimmedEmail } });
+    if (existingAdmin) {
+      return res.status(400).json({ message: `An account with email "${trimmedEmail}" already exists.` });
+    }
+
     const passwordHash = await bcrypt.hash(password || "coordinator123", 10);
 
     const coordinator = await prisma.adminRole.create({
       data: {
         id: createObjectId(),
-        name,
-        email,
+        name: trimmedName,
+        email: trimmedEmail,
         password: passwordHash,
         role: "facultyCoordinator",
       },
@@ -562,7 +616,7 @@ router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASS
 
     try {
       await sendEmail({
-        email,
+        email: trimmedEmail,
         subject: "Welcome to CampusNode - Faculty Coordinator Account Created",
         message: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; color: #1f2937;">
@@ -570,12 +624,12 @@ router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASS
               <h2 style="color: #ea580c; margin: 0; font-size: 22px;">Welcome to CampusNode</h2>
               <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Faculty Coordinator Portal</p>
             </div>
-            <p>Dear <strong>${name}</strong>,</p>
+            <p>Dear <strong>${trimmedName}</strong>,</p>
             <p>Your <strong>Faculty Coordinator</strong> account has been created on CampusNode.</p>
             
             <div style="background-color: #f9fafb; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #e5e7eb;">
               <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Assigned Role:</strong> Faculty Coordinator</p>
-              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Coordinator Email:</strong> <span style="color: #ea580c; font-weight: bold;">${email}</span></p>
+              <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Coordinator Email:</strong> <span style="color: #ea580c; font-weight: bold;">${trimmedEmail}</span></p>
               <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Default Password:</strong> <code style="background: #e5e7eb; padding: 3px 8px; border-radius: 6px; font-family: monospace; font-weight: bold;">${plainPassword}</code></p>
             </div>
 
@@ -607,7 +661,24 @@ router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASS
 router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const data = { name, email };
+    const data = {};
+    if (name) data.name = name.trim();
+    if (email) {
+      const trimmedEmail = email.toLowerCase().trim();
+      const studentUser = await prisma.studentUser.findUnique({ where: { email: trimmedEmail } });
+      if (studentUser) {
+        return res.status(400).json({
+          message: `The email "${trimmedEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
+        });
+      }
+      const existingAdmin = await prisma.adminRole.findFirst({
+        where: { email: trimmedEmail, id: { not: req.params.id } }
+      });
+      if (existingAdmin) {
+        return res.status(400).json({ message: `An account with email "${trimmedEmail}" already exists.` });
+      }
+      data.email = trimmedEmail;
+    }
     if (password) {
       data.password = await bcrypt.hash(password, 10);
     }
@@ -615,6 +686,15 @@ router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_
     const coordinator = await prisma.adminRole.update({
       where: { id: req.params.id },
       data,
+    });
+
+    // Synchronize faculty coordinator details in coordinated clubs
+    await prisma.club.updateMany({
+      where: { facultyCoordinatorId: req.params.id },
+      data: {
+        ...(data.name && { facultyName: data.name }),
+        ...(data.email && { facultyEmail: data.email }),
+      }
     });
 
     res.json({
@@ -628,24 +708,258 @@ router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_
 
 router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), async (req, res) => {
   try {
-    const { clubName, clubEmail, facultyCoordinatorId, facultyName, facultyEmail } = req.body;
-    const updates = { clubName, clubEmail, facultyCoordinatorId, facultyName, facultyEmail };
+    const targetClubId = req.params.id;
+    const existingClub = await prisma.club.findUnique({
+      where: { id: targetClubId },
+      include: { facultyCoordinator: true, account: true }
+    });
 
-    if (clubName) {
-      updates.slug = await slugifyUnique(clubName, 'club', 'slug', req.params.id);
+    if (!existingClub) {
+      return res.status(404).json({ message: "Club not found" });
     }
 
-    const club = await prisma.club.update({
-      where: { id: req.params.id },
-      data: updates,
+    const { clubName, clubEmail, facultyCoordinatorId, facultyName, facultyEmail } = req.body;
+    const updates = {};
+
+    if (clubName && clubName.trim() !== existingClub.clubName) {
+      const trimmedClubName = clubName.trim();
+      const duplicate = await prisma.club.findFirst({
+        where: { clubName: trimmedClubName, id: { not: targetClubId } }
+      });
+      if (duplicate) {
+        return res.status(400).json({ message: `A club named "${trimmedClubName}" already exists.` });
+      }
+      updates.clubName = trimmedClubName;
+      updates.slug = await slugifyUnique(trimmedClubName, 'club', 'slug', targetClubId);
+    }
+
+    // Handle Faculty Coordinator Assignment / Reassignment
+    if (facultyEmail !== undefined || facultyCoordinatorId !== undefined || facultyName !== undefined) {
+      const trimmedFacultyEmail = facultyEmail ? facultyEmail.toLowerCase().trim() : (existingClub.facultyEmail || existingClub.facultyCoordinator?.email);
+      const trimmedFacultyName = facultyName ? facultyName.trim() : (existingClub.facultyName || existingClub.facultyCoordinator?.name || "Faculty Coordinator");
+
+      if (trimmedFacultyEmail) {
+        // Validation: Cannot be a student account
+        const studentWithEmail = await prisma.studentUser.findUnique({ where: { email: trimmedFacultyEmail } });
+        if (studentWithEmail) {
+          return res.status(400).json({
+            message: `The email "${trimmedFacultyEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
+          });
+        }
+
+        let facultyUser = await prisma.adminRole.findUnique({ where: { email: trimmedFacultyEmail } });
+        let isNewFaculty = false;
+
+        if (facultyUser) {
+          if (facultyUser.role !== "facultyCoordinator" && facultyUser.role !== "admin" && facultyUser.role !== "SUPER_ADMIN") {
+            return res.status(400).json({
+              message: `The account "${trimmedFacultyEmail}" has role "${facultyUser.role}" and cannot be assigned as faculty coordinator.`
+            });
+          }
+          if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
+            facultyUser = await prisma.adminRole.update({
+              where: { id: facultyUser.id },
+              data: { name: trimmedFacultyName }
+            });
+          }
+        } else {
+          isNewFaculty = true;
+          const slug = updates.slug || existingClub.slug || "club";
+          const defaultPassword = `${slug}@him0148`;
+          const passwordHash = await bcrypt.hash(defaultPassword, 10);
+          facultyUser = await prisma.adminRole.create({
+            data: {
+              id: createObjectId(),
+              name: trimmedFacultyName,
+              email: trimmedFacultyEmail,
+              password: passwordHash,
+              role: "facultyCoordinator"
+            }
+          });
+
+          const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
+          try {
+            await sendEmail({
+              email: trimmedFacultyEmail,
+              subject: `CampusNode - Assigned as Faculty Coordinator for ${updates.clubName || existingClub.clubName}`,
+              message: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; color: #1f2937;">
+                  <h2 style="color: #ea580c;">Welcome to CampusNode</h2>
+                  <p>You have been assigned as Faculty Coordinator for <strong>${updates.clubName || existingClub.clubName}</strong>.</p>
+                  <p><strong>Login Email:</strong> ${trimmedFacultyEmail}</p>
+                  <p><strong>Default Password:</strong> ${defaultPassword}</p>
+                  <a href="${clientUrl}/admin-secret-login" style="background: #171717; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Access Faculty Portal</a>
+                </div>
+              `
+            });
+          } catch (emailErr) {
+            console.error("Failed to send faculty email:", emailErr?.message || emailErr);
+          }
+        }
+
+        updates.facultyCoordinatorId = facultyUser.id;
+        updates.facultyEmail = trimmedFacultyEmail;
+        updates.facultyName = trimmedFacultyName;
+      } else if (facultyCoordinatorId) {
+        const facultyUser = await prisma.adminRole.findUnique({ where: { id: facultyCoordinatorId } });
+        if (!facultyUser) {
+          return res.status(400).json({ message: "Faculty coordinator account not found." });
+        }
+        updates.facultyCoordinatorId = facultyUser.id;
+        updates.facultyEmail = facultyUser.email;
+        updates.facultyName = trimmedFacultyName || facultyUser.name;
+      }
+    }
+
+    // Handle Club Email Change & ClubAccount sync
+    if (clubEmail !== undefined) {
+      const trimmedClubEmail = clubEmail.toLowerCase().trim();
+      if (trimmedClubEmail && trimmedClubEmail !== existingClub.clubEmail) {
+        const studentConflict = await prisma.studentUser.findUnique({ where: { email: trimmedClubEmail } });
+        if (studentConflict) {
+          return res.status(400).json({ message: `A student account with email "${trimmedClubEmail}" already exists.` });
+        }
+        const adminConflict = await prisma.adminRole.findUnique({ where: { email: trimmedClubEmail } });
+        if (adminConflict) {
+          return res.status(400).json({ message: `An admin or faculty account with email "${trimmedClubEmail}" already exists.` });
+        }
+        const clubAccConflict = await prisma.clubAccount.findFirst({
+          where: { email: trimmedClubEmail, clubId: { not: targetClubId } }
+        });
+        if (clubAccConflict) {
+          return res.status(400).json({ message: `A club account with email "${trimmedClubEmail}" already exists.` });
+        }
+        updates.clubEmail = trimmedClubEmail;
+      }
+    }
+
+    const updatedClub = await prisma.$transaction(async (tx) => {
+      const club = await tx.club.update({
+        where: { id: targetClubId },
+        data: updates,
+        include: {
+          facultyCoordinator: { select: { id: true, name: true, email: true } },
+          account: true,
+        }
+      });
+
+      if (updates.clubEmail) {
+        await tx.clubAccount.upsert({
+          where: { clubId: targetClubId },
+          create: {
+            id: createObjectId(),
+            clubId: targetClubId,
+            email: updates.clubEmail,
+            password: await bcrypt.hash(`${club.slug || 'club'}@him0148`, 10),
+            isActive: true,
+          },
+          update: {
+            email: updates.clubEmail,
+          }
+        });
+      }
+
+      return club;
     });
+
+    invalidatePublicResponses(["clubs*", "events*"]);
 
     res.json({
       message: "Club updated successfully",
-      club: { ...club, _id: club.id },
+      club: { ...updatedClub, _id: updatedClub.id },
     });
   } catch (err) {
+    if (err.code === 'P2002') {
+      return res.status(400).json({ message: "A record with these details already exists." });
+    }
     res.status(500).json({ message: err.message || "Failed to update club" });
+  }
+});
+
+router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELETE), async (req, res) => {
+  try {
+    const clubId = req.params.id;
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      include: {
+        events: { select: { id: true } },
+        account: { select: { id: true } },
+      }
+    });
+
+    if (!club) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    const eventIds = club.events.map((e) => e.id);
+    const clubAccountId = club.account?.id;
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete notifications related to club account or club events
+      if (clubAccountId) {
+        await tx.notification.deleteMany({
+          where: { senderClubAccountId: clubAccountId }
+        });
+      }
+      if (eventIds.length > 0) {
+        await tx.notification.deleteMany({
+          where: { eventId: { in: eventIds } }
+        });
+      }
+
+      // 2. Delete media and sponsors linked to club or its events
+      await tx.media.deleteMany({
+        where: {
+          OR: [
+            { clubId },
+            ...(eventIds.length > 0 ? [{ eventId: { in: eventIds } }] : [])
+          ]
+        }
+      });
+
+      await tx.sponsor.deleteMany({
+        where: {
+          OR: [
+            { clubId },
+            ...(eventIds.length > 0 ? [{ eventId: { in: eventIds } }] : [])
+          ]
+        }
+      });
+
+      // 3. Delete scanner sessions, attendance records, feedbacks, event staff for club events
+      if (eventIds.length > 0) {
+        await tx.attendanceRecord.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.scannerSession.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.eventFeedback.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.eventAIReview.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.eventStaff.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.participation.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.teamMember.deleteMany({ where: { team: { eventId: { in: eventIds } } } });
+        await tx.team.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.eventClub.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.event.deleteMany({ where: { id: { in: eventIds } } });
+      }
+
+      // 4. Delete club specific relations
+      await tx.eventClub.deleteMany({ where: { clubId } });
+      await tx.clubSocialLink.deleteMany({ where: { clubId } });
+      await tx.clubAnnouncement.deleteMany({ where: { clubId } });
+      await tx.clubAchievement.deleteMany({ where: { clubId } });
+      await tx.clubMembership.deleteMany({ where: { clubId } });
+      await tx.clubAccount.deleteMany({ where: { clubId } });
+
+      // 5. Delete the club record
+      await tx.club.delete({
+        where: { id: clubId }
+      });
+    });
+
+    invalidatePublicResponses(["clubs*", "events*"]);
+
+    res.json({ message: `Club "${club.clubName}" and all associated data have been deleted successfully.` });
+  } catch (err) {
+    console.error("Delete club error:", err);
+    res.status(500).json({ message: err.message || "Failed to delete club" });
   }
 });
 

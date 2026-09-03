@@ -48,18 +48,18 @@ const RescheduleConfirmModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-      <div className="w-full max-w-lg bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-all">
+      <div className="w-full max-w-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden transition-colors">
+        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0 font-bold">
               <Clock size={18} />
             </div>
             <div>
-              <h3 className="text-base font-black text-black dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
                 Reschedule Event?
               </h3>
-              <p className="text-xs text-neutral-400 font-medium">
+              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
                 Please confirm the proposed schedule changes.
               </p>
             </div>
@@ -67,62 +67,65 @@ const RescheduleConfirmModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+            title="Close"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Event Title */}
-        <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-zinc-900 border border-neutral-200/80 dark:border-zinc-800">
-          <p className="text-[10px] font-black uppercase text-neutral-400">Target Event</p>
-          <p className="text-sm font-black text-black dark:text-white mt-0.5">{event.title}</p>
-          <p className="text-xs text-orange-600 dark:text-orange-400 font-bold">{event.club?.clubName}</p>
-        </div>
-
-        {/* Schedule Comparison Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Current Schedule */}
-          <div className="p-4 rounded-2xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/40 space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400">
-              Current Schedule
-            </p>
-            <div>
-              <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200">{formatDt(origStart)}</p>
-              <p className="text-[11px] text-neutral-400">to {formatDt(origEnd)}</p>
-            </div>
-            <p className="text-xs font-extrabold text-neutral-600 dark:text-neutral-400 pt-1 border-t border-neutral-200/60 dark:border-zinc-800">
-              Venue: {origVenue}
-            </p>
+        <div className="p-6 space-y-4 text-[#555555] dark:text-[#B5B5B5]">
+          {/* Event Title */}
+          <div className="p-4 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">Target Event</p>
+            <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] mt-0.5">{event.title}</p>
+            <p className="text-xs text-[#F97316] dark:text-[#FB923C] font-bold">{event.club?.clubName}</p>
           </div>
 
-          {/* New Proposed Schedule */}
-          <div className="p-4 rounded-2xl border-2 border-orange-500/60 bg-orange-50/30 dark:bg-orange-950/20 space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400">
-              New Schedule
-            </p>
-            <div>
-              <p className="text-xs font-bold text-black dark:text-white">{formatDt(newStart)}</p>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">to {formatDt(newEnd)}</p>
+          {/* Schedule Comparison Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Current Schedule */}
+            <div className="p-4 rounded-xl border border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                Current Schedule
+              </p>
+              <div>
+                <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">{formatDt(origStart)}</p>
+                <p className="text-[11px] text-[#888888] dark:text-[#808080]">to {formatDt(origEnd)}</p>
+              </div>
+              <p className="text-xs font-bold text-[#555555] dark:text-[#B5B5B5] pt-1.5 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                Venue: {origVenue}
+              </p>
             </div>
-            <p className="text-xs font-extrabold text-orange-600 dark:text-orange-400 pt-1 border-t border-orange-200 dark:border-orange-900">
-              Venue: {newVenue}
-            </p>
+
+            {/* New Proposed Schedule */}
+            <div className="p-4 rounded-xl border border-orange-200/80 dark:border-orange-900/60 bg-[#FFF7ED] dark:bg-[#2A1A0F] space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] dark:text-[#FB923C]">
+                New Schedule
+              </p>
+              <div>
+                <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">{formatDt(newStart)}</p>
+                <p className="text-[11px] text-[#555555] dark:text-[#B5B5B5]">to {formatDt(newEnd)}</p>
+              </div>
+              <p className="text-xs font-bold text-[#F97316] dark:text-[#FB923C] pt-1.5 border-t border-orange-200/60 dark:border-orange-900/40">
+                Venue: {newVenue}
+              </p>
+            </div>
           </div>
+
+          {/* Info Note */}
+          <p className="text-xs text-[#888888] dark:text-[#808080] flex items-center gap-1.5">
+            <AlertTriangle size={13} className="text-amber-500 shrink-0" />
+            The change will be validated against active venue bookings & blackouts before saving.
+          </p>
         </div>
 
-        {/* Info Note */}
-        <p className="text-[11px] text-neutral-400 flex items-center gap-1.5">
-          <AlertTriangle size={13} className="text-amber-500 shrink-0" />
-          The change will be validated against active venue bookings & blackouts before saving.
-        </p>
-
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-zinc-800">
+        <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2.5 bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -130,7 +133,7 @@ const RescheduleConfirmModal = ({
             type="button"
             onClick={handleConfirm}
             disabled={submitting}
-            className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
           >
             {submitting ? "Validating & Saving..." : "Confirm Reschedule"}
           </button>

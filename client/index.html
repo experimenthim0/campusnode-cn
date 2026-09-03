@@ -2,6 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+    <meta name="theme-color" id="theme-color-meta" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CampusNode" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="/lightthemelogo2.png" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+
     <script>
       // Helper to dynamically round the favicon using HTML Canvas
       window.setRoundedFavicon = function(src) {
@@ -37,15 +49,18 @@
         };
       };
 
-      // FOUC prevention — apply dark class before React mounts
+      // FOUC prevention — apply dark class and set theme-color before React mounts
       (function(){
         try {
           const theme = localStorage.getItem('theme');
-          const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const isDark = theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if(isDark) document.documentElement.classList.add('dark');
           
-          const meta = document.querySelector("meta[name='theme-color']");
-          if(meta) meta.setAttribute('content', isDark ? '#0a0a0a' : '#ffffff');
+          const targetColor = isDark ? '#0a0a0a' : '#ffffff';
+          const metas = document.querySelectorAll("meta[name='theme-color']");
+          metas.forEach(function(m) {
+            m.setAttribute('content', targetColor);
+          });
 
           // Set initial rounded favicon
           const faviconSrc = isDark ? '/darkthemelogo.png' : '/lightthemelogo2.png';
@@ -62,15 +77,6 @@
         font-display: swap;
       }
     </style>
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#ebebeb" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="CampusNode" />
-    <link rel="icon" id="dynamic-favicon" type="image/png" href="/lightthemelogo2.png"  />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>CampusNode</title>
     <link
       href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"

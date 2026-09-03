@@ -76,9 +76,9 @@ const publicClubSelect = {
   facultyCoordinator: { select: { id: true, name: true, email: true } },
   socialLinks: true,
   memberships: {
-    where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
+    where: { status: { not: "INACTIVE" } },
     include: {
-      student: { select: { id: true, name: true, email: true } }
+      student: { select: { id: true, name: true, email: true, branch: true, profileImage: true } }
     }
   },
 };
@@ -121,6 +121,7 @@ router.get("/", async (req, res) => {
         studentHeads: roleHeads,
         studentCoordinators: resolvedStudentCoordinators,
         roleCoordinators: roleCoords,
+        memberships: club.memberships || [],
       };
     });
 

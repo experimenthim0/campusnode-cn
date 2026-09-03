@@ -1601,24 +1601,30 @@ const ClubDetails = () => {
       )}
 
       {adminHubOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-                  Club Management Hub
-                </h3>
-                <p className="text-xs text-neutral-400">Post updates, achievements, and curate gallery</p>
+        <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center text-lg shrink-0">
+                  <i className="ri-settings-3-line" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Club Management Hub
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Post updates, achievements, and curate gallery</p>
+                </div>
               </div>
               <button
                 onClick={() => setAdminHubOpen(false)}
-                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
               >
-                <i className="ri-close-line" />
+                <i className="ri-close-line text-lg" />
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex flex-wrap gap-2 px-6 pt-4 pb-3 border-b border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
               {[
                 { id: "announcements", label: "Announcements", icon: "ri-megaphone-line" },
                 { id: "achievements", label: "Achievements", icon: "ri-trophy-line" },
@@ -1628,10 +1634,10 @@ const ClubDetails = () => {
                 <button
                   key={tab.id}
                   onClick={() => setAdminTab(tab.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
                     adminTab === tab.id
-                      ? "bg-orange-600 text-white"
-                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                      ? "bg-[#FFF7ED] text-[#F97316] border border-orange-200/80 dark:bg-[#2A1A0F] dark:text-[#FB923C] dark:border-orange-900/60"
+                      : "bg-transparent text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] border border-transparent"
                   }`}
                 >
                   <i className={tab.icon} /> {tab.label}
@@ -1639,290 +1645,294 @@ const ClubDetails = () => {
               ))}
             </div>
 
-            {/* TAB: ANNOUNCEMENTS */}
-            {adminTab === "announcements" && (
-              <div className="space-y-6">
-                <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Publish New Announcement
-                  </h4>
-                  <input
-                    type="text"
-                    placeholder="Announcement Title"
-                    value={announcementForm.title}
-                    onChange={(e) =>
-                      setAnnouncementForm({ ...announcementForm, title: e.target.value })
-                    }
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                    required
-                  />
-                  <textarea
-                    rows="3"
-                    placeholder="Announcement content..."
-                    value={announcementForm.content}
-                    onChange={(e) =>
-                      setAnnouncementForm({ ...announcementForm, content: e.target.value })
-                    }
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                    required
-                  />
-                  <div className="flex items-center justify-between">
-                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={announcementForm.isPinned}
-                        onChange={(e) =>
-                          setAnnouncementForm({ ...announcementForm, isPinned: e.target.checked })
-                        }
-                        className="rounded accent-orange-600"
-                      />
-                      Pin to top
-                    </label>
-                    <button
-                      type="submit"
-                      disabled={submittingAdmin}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-orange-700 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {submittingAdmin ? "Publishing..." : "Post Announcement"}
-                    </button>
-                  </div>
-                </form>
+            <div className="p-6 overflow-y-auto space-y-6 text-[#555555] dark:text-[#B5B5B5]">
+              {/* TAB: ANNOUNCEMENTS */}
+              {adminTab === "announcements" && (
+                <div className="space-y-6">
+                  <form onSubmit={handleCreateAnnouncement} className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Publish New Announcement
+                    </h4>
+                    <input
+                      type="text"
+                      placeholder="Announcement Title"
+                      value={announcementForm.title}
+                      onChange={(e) =>
+                        setAnnouncementForm({ ...announcementForm, title: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      required
+                    />
+                    <textarea
+                      rows="3"
+                      placeholder="Announcement content..."
+                      value={announcementForm.content}
+                      onChange={(e) =>
+                        setAnnouncementForm({ ...announcementForm, content: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors resize-none"
+                      required
+                    />
+                    <div className="flex items-center justify-between">
+                      <label className="inline-flex items-center gap-2 text-xs font-semibold text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={announcementForm.isPinned}
+                          onChange={(e) =>
+                            setAnnouncementForm({ ...announcementForm, isPinned: e.target.checked })
+                          }
+                          className="rounded accent-[#F97316]"
+                        />
+                        Pin to top
+                      </label>
+                      <button
+                        type="submit"
+                        disabled={submittingAdmin}
+                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {submittingAdmin ? "Publishing..." : "Post Announcement"}
+                      </button>
+                    </div>
+                  </form>
 
-                <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Existing Announcements
-                  </h4>
-                  {announcements.map((a) => (
-                    <div
-                      key={a.id}
-                      className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 bg-neutral-50 dark:bg-neutral-800/40"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <h5 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                          {a.title}
-                        </h5>
-                        <p className="text-[11px] text-neutral-400 truncate">{a.content}</p>
+                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Existing Announcements
+                    </h4>
+                    {announcements.map((a) => (
+                      <div
+                        key={a.id}
+                        className="p-3.5 rounded-xl border border-[#E5E5E5] dark:border-[#303030] flex items-center justify-between gap-3 bg-[#FAFAFA] dark:bg-[#222222]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                            {a.title}
+                          </h5>
+                          <p className="text-[11px] text-[#888888] dark:text-[#808080] truncate">{a.content}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleTogglePinAnnouncement(a.id)}
+                            className={`p-1.5 rounded-lg border text-xs cursor-pointer ${
+                              a.isPinned
+                                ? "bg-[#FFF7ED] border-orange-200/80 text-[#F97316] dark:bg-[#2A1A0F] dark:border-orange-900/60 dark:text-[#FB923C]"
+                                : "border-[#E5E5E5] dark:border-[#3A3A3A] text-[#888888] dark:text-[#808080]"
+                            }`}
+                            title={a.isPinned ? "Unpin" : "Pin"}
+                          >
+                            <i className="ri-pushpin-line" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnnouncement(a.id)}
+                            className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
+                            title="Delete"
+                          >
+                            <i className="ri-delete-bin-line" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: ACHIEVEMENTS */}
+              {adminTab === "achievements" && (
+                <div className="space-y-6">
+                  <form onSubmit={handleCreateAchievement} className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Add Club Achievement / Award
+                    </h4>
+                    <input
+                      type="text"
+                      placeholder="Achievement Title (e.g. 1st Prize at Smart India Hackathon)"
+                      value={achievementForm.title}
+                      onChange={(e) =>
+                        setAchievementForm({ ...achievementForm, title: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      required
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Year / Date (e.g. 2026 or Oct 2025)"
+                        value={achievementForm.date}
+                        onChange={(e) =>
+                          setAchievementForm({ ...achievementForm, date: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      />
+                      <input
+                        type="url"
+                        placeholder="External Link / Certificate URL (Optional)"
+                        value={achievementForm.externalUrl}
+                        onChange={(e) =>
+                          setAchievementForm({ ...achievementForm, externalUrl: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      />
+                    </div>
+                    <textarea
+                      rows="2"
+                      placeholder="Brief description of the accomplishment..."
+                      value={achievementForm.description}
+                      onChange={(e) =>
+                        setAchievementForm({ ...achievementForm, description: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors resize-none"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={submittingAdmin}
+                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {submittingAdmin ? "Adding..." : "Add Achievement"}
+                      </button>
+                    </div>
+                  </form>
+
+                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Existing Achievements
+                    </h4>
+                    {achievements.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-3.5 rounded-xl border border-[#E5E5E5] dark:border-[#303030] flex items-center justify-between gap-3 bg-[#FAFAFA] dark:bg-[#222222]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                            {item.title}
+                          </h5>
+                          <p className="text-[11px] text-[#888888] dark:text-[#808080] truncate">
+                            {item.date} · {item.description}
+                          </p>
+                        </div>
                         <button
-                          onClick={() => handleTogglePinAnnouncement(a.id)}
-                          className={`p-1.5 rounded-lg border text-xs cursor-pointer ${
-                            a.isPinned
-                              ? "bg-orange-500/10 border-orange-500 text-orange-600"
-                              : "border-neutral-200 dark:border-neutral-700 text-neutral-400"
-                          }`}
-                          title={a.isPinned ? "Unpin" : "Pin"}
-                        >
-                          <i className="ri-pushpin-line" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAnnouncement(a.id)}
-                          className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs cursor-pointer"
+                          onClick={() => handleDeleteAchievement(item.id)}
+                          className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
                           title="Delete"
                         >
                           <i className="ri-delete-bin-line" />
                         </button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* TAB: ACHIEVEMENTS */}
-            {adminTab === "achievements" && (
-              <div className="space-y-6">
-                <form onSubmit={handleCreateAchievement} className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Add Club Achievement / Award
-                  </h4>
-                  <input
-                    type="text"
-                    placeholder="Achievement Title (e.g. 1st Prize at Smart India Hackathon)"
-                    value={achievementForm.title}
-                    onChange={(e) =>
-                      setAchievementForm({ ...achievementForm, title: e.target.value })
-                    }
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                    required
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Year / Date (e.g. 2026 or Oct 2025)"
-                      value={achievementForm.date}
-                      onChange={(e) =>
-                        setAchievementForm({ ...achievementForm, date: e.target.value })
-                      }
-                      className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                    />
+              {/* TAB: GALLERY */}
+              {adminTab === "gallery" && (
+                <div className="space-y-6">
+                  <form onSubmit={handleAddGalleryMedia} className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Add Photo to Club Gallery
+                    </h4>
                     <input
                       type="url"
-                      placeholder="External Link / Certificate URL (Optional)"
-                      value={achievementForm.externalUrl}
-                      onChange={(e) =>
-                        setAchievementForm({ ...achievementForm, externalUrl: e.target.value })
-                      }
-                      className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
+                      placeholder="Image URL (Direct Cloudinary / Web link)"
+                      value={galleryForm.url}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, url: e.target.value })}
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      required
                     />
-                  </div>
-                  <textarea
-                    rows="2"
-                    placeholder="Brief description of the accomplishment..."
-                    value={achievementForm.description}
-                    onChange={(e) =>
-                      setAchievementForm({ ...achievementForm, description: e.target.value })
-                    }
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={submittingAdmin}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-orange-700 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {submittingAdmin ? "Adding..." : "Add Achievement"}
-                    </button>
-                  </div>
-                </form>
-
-                <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Existing Achievements
-                  </h4>
-                  {achievements.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 bg-neutral-50 dark:bg-neutral-800/40"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <h5 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                          {item.title}
-                        </h5>
-                        <p className="text-[11px] text-neutral-400 truncate">
-                          {item.date} · {item.description}
-                        </p>
-                      </div>
+                    <input
+                      type="text"
+                      placeholder="Photo caption / Event name (Optional)"
+                      value={galleryForm.caption}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                    />
+                    <div className="flex justify-end">
                       <button
-                        onClick={() => handleDeleteAchievement(item.id)}
-                        className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs cursor-pointer"
-                        title="Delete"
+                        type="submit"
+                        disabled={submittingAdmin}
+                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        <i className="ri-delete-bin-line" />
+                        {submittingAdmin ? "Adding..." : "Add to Gallery"}
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </form>
 
-            {/* TAB: GALLERY */}
-            {adminTab === "gallery" && (
-              <div className="space-y-6">
-                <form onSubmit={handleAddGalleryMedia} className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Add Photo to Club Gallery
-                  </h4>
-                  <input
-                    type="url"
-                    placeholder="Image URL (Direct Cloudinary / Web link)"
-                    value={galleryForm.url}
-                    onChange={(e) => setGalleryForm({ ...galleryForm, url: e.target.value })}
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Photo caption / Event name (Optional)"
-                    value={galleryForm.caption}
-                    onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
-                    className="w-full p-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={submittingAdmin}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-orange-700 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {submittingAdmin ? "Adding..." : "Add to Gallery"}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Existing media items */}
-                <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                    Gallery Items
-                  </h4>
-                  <div className="grid grid-cols-3 gap-3">
-                    {galleryMedia.map((m, i) => {
-                      const imgUrl = typeof m === "string" ? m : m.url;
-                      const mediaId = typeof m === "object" ? m.id : null;
-                      return (
-                        <div
-                          key={i}
-                          className="relative aspect-square rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 group"
-                        >
-                          <img src={imgUrl} alt="" className="w-full h-full object-cover" />
-                          {mediaId && (
-                            <button
-                              onClick={() => handleDeleteGalleryMedia(mediaId)}
-                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition cursor-pointer text-xs"
-                              title="Delete photo"
-                            >
-                              <i className="ri-delete-bin-line" />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                  {/* Existing media items */}
+                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Gallery Items
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      {galleryMedia.map((m, i) => {
+                        const imgUrl = typeof m === "string" ? m : m.url;
+                        const mediaId = typeof m === "object" ? m.id : null;
+                        return (
+                          <div
+                            key={i}
+                            className="relative aspect-square rounded-xl overflow-hidden bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] group"
+                          >
+                            <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                            {mediaId && (
+                              <button
+                                onClick={() => handleDeleteGalleryMedia(mediaId)}
+                                className="absolute top-1.5 right-1.5 p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs shadow-xs"
+                                title="Delete photo"
+                              >
+                                <i className="ri-delete-bin-line" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* TAB: FEATURE EVENT */}
-            {adminTab === "featured" && (
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                  Select Spotlight / Featured Event
-                </h4>
-                <p className="text-xs text-neutral-400">
-                  Choose an event to feature prominently at the top banner of the Club Page.
-                </p>
-                <div className="space-y-2.5">
-                  {events.map((ev) => (
-                    <div
-                      key={ev._id || ev.id}
-                      className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
-                        ev.isFeatured
-                          ? "bg-orange-500/10 border-orange-500/40"
-                          : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700"
-                      }`}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <h5 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                          {ev.title}
-                        </h5>
-                        <p className="text-[11px] text-neutral-400">
-                          {new Date(ev.startTime).toLocaleDateString()} · {ev.venue}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleToggleFeatureEvent(ev._id || ev.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider cursor-pointer transition ${
+              {/* TAB: FEATURE EVENT */}
+              {adminTab === "featured" && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                      Select Spotlight / Featured Event
+                    </h4>
+                    <p className="text-xs text-[#888888] dark:text-[#808080] mt-0.5">
+                      Choose an event to feature prominently at the top banner of the Club Page.
+                    </p>
+                  </div>
+                  <div className="space-y-2.5">
+                    {events.map((ev) => (
+                      <div
+                        key={ev._id || ev.id}
+                        className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${
                           ev.isFeatured
-                            ? "bg-orange-600 text-white"
-                            : "bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-orange-600 hover:text-white"
+                            ? "bg-[#FFF7ED] border-orange-200/80 dark:bg-[#2A1A0F] dark:border-orange-900/60"
+                            : "bg-[#FAFAFA] dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030]"
                         }`}
                       >
-                        {ev.isFeatured ? "Featured ✓" : "Feature"}
-                      </button>
-                    </div>
-                  ))}
+                        <div className="min-w-0 flex-1">
+                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                            {ev.title}
+                          </h5>
+                          <p className="text-[11px] text-[#888888] dark:text-[#808080]">
+                            {new Date(ev.startTime).toLocaleDateString()} · {ev.venue}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleToggleFeatureEvent(ev._id || ev.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs ${
+                            ev.isFeatured
+                              ? "bg-[#F97316] text-white hover:bg-[#EA580C] dark:bg-[#FB923C] dark:text-[#111111] dark:hover:bg-[#F97316]"
+                              : "bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]"
+                          }`}
+                        >
+                          {ev.isFeatured ? "Featured ✓" : "Feature"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

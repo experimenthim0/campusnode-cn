@@ -26,15 +26,13 @@ describe("3-Principal RBAC Permission Matrix & Scope Isolation", () => {
       expect(hasPermission(clubAAccount, PERMISSIONS.ATTENDANCE_TAKE, { clubId: clubAId })).toBe(true);
       expect(hasPermission(clubAAccount, PERMISSIONS.CERTIFICATE_MANAGE, { clubId: clubAId })).toBe(true);
       expect(hasPermission(clubAAccount, PERMISSIONS.PAYMENT_REVIEW, { clubId: clubAId })).toBe(true);
-      expect(hasPermission(clubAAccount, PERMISSIONS.PAYOUT_REQUEST, { clubId: clubAId })).toBe(true);
       expect(hasPermission(clubAAccount, PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS, { clubId: clubAId })).toBe(true);
       expect(hasPermission(clubAAccount, PERMISSIONS.NOTIFICATION_SEND_CAMPUS, { clubId: clubAId })).toBe(true);
     });
 
-    it("Denies approving events or payouts (reserved for Faculty/Admin)", () => {
+    it("Denies approving events or deletion (reserved for Faculty/Admin)", () => {
       expect(hasPermission(clubAAccount, PERMISSIONS.EVENT_APPROVE, { clubId: clubAId })).toBe(false);
       expect(hasPermission(clubAAccount, PERMISSIONS.EVENT_DELETE_APPROVE, { clubId: clubAId })).toBe(false);
-      expect(hasPermission(clubAAccount, PERMISSIONS.PAYOUT_APPROVE, { clubId: clubAId })).toBe(false);
     });
 
     it("Enforces strict cross-club isolation (cannot manage Club B)", () => {
@@ -188,7 +186,6 @@ describe("3-Principal RBAC Permission Matrix & Scope Isolation", () => {
     it("Grants all permissions unconditionally across any club scope", () => {
       expect(hasPermission(admin, PERMISSIONS.EVENT_APPROVE, { clubId: clubAId })).toBe(true);
       expect(hasPermission(admin, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubBId })).toBe(true);
-      expect(hasPermission(admin, PERMISSIONS.PAYOUT_APPROVE, { clubId: clubAId })).toBe(true);
       expect(hasPermission(admin, "any.future.permission")).toBe(true);
     });
   });

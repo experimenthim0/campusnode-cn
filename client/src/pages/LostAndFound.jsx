@@ -507,31 +507,29 @@ const LostAndFound = () => {
           </div>
         </div>
       </main>
-
-
       {showModal && (
-        <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="p-7 pb-0 flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
               <div>
-                <p className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] leading-none mb-1">Post an Item</p>
-                <p className="text-xs text-[#A8A49D] dark:text-[#5C5A55]">Help the community find what's been lost or claimed.</p>
+                <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Post an Item</p>
+                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Help the community find what's been lost or claimed.</p>
               </div>
-              <button className="w-8 h-8 rounded-full bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] text-[#6B6963] dark:text-[#9E9990] hover:bg-[#E5E4E0] dark:hover:bg-[#2A2A27] hover:text-[#1A1917] dark:hover:text-[#F5F4F0] flex items-center justify-center cursor-pointer transition-all shrink-0" onClick={() => setShowModal(false)}>
-                <i className="ri-close-line" />
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => setShowModal(false)} title="Close">
+                <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-7 pt-5">
-              <form onSubmit={handleSubmit}>
+            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+              <form onSubmit={handleSubmit} className="space-y-4">
 
-                <div className="mb-4.5">
-                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">Item type</label>
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Item type</label>
                   <div className="flex gap-2">
                     {['Lost', 'Found'].map(t => (
                       <button
                         key={t}
                         type="button"
-                        className={`flex-grow p-2.5 text-center rounded-lg text-xs font-bold transition-colors cursor-pointer border-[1.5px] ${formData.type === t ? (t === 'Lost' ? 'bg-[#FFFBEB] dark:bg-[#2A1A08]/60 text-[#92400E] dark:text-[#FCD34D] border-[#FDE68A] dark:border-[#78350F]' : 'bg-[#ECFDF5] dark:bg-[#052E1A]/60 text-[#065F46] dark:text-[#6EE7B7] border-[#A7F3D0] dark:border-[#065F46]') : 'bg-[#FAFAF9] dark:bg-[#0D0D0C] border-[#E5E4E0] dark:border-[#2A2A27] text-[#6B6963] dark:text-[#9E9990] hover:border-[#A8A49D] dark:hover:border-[#5C5A55]'}`}
+                        className={`flex-grow p-2.5 text-center rounded-xl text-xs font-bold transition-colors cursor-pointer border ${formData.type === t ? (t === 'Lost' ? 'bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] border-orange-200/80 dark:border-orange-900/60' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40') : 'bg-white dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]'}`}
                         onClick={() => setFormData(p => ({ ...p, type: t }))}
                       >
                         <i className={t === 'Lost' ? 'ri-question-mark' : 'ri-checkbox-circle-line'} style={{ marginRight: 6 }} />
@@ -541,10 +539,10 @@ const LostAndFound = () => {
                   </div>
                 </div>
 
-                <div className="mb-4.5">
-                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">Title</label>
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Title <span className="text-[#F97316]">*</span></label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] border-[1.5px] border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg text-sm text-[#1A1917] dark:text-[#F5F4F0] outline-none transition-colors duration-150 focus:border-[#E8500A] focus:ring-2 focus:ring-[#E8500A]/10"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C]"
                     type="text" name="title"
                     value={formData.title} onChange={handleChange}
                     placeholder="e.g. Blue water bottle at Library"
@@ -552,10 +550,10 @@ const LostAndFound = () => {
                   />
                 </div>
 
-                <div className="mb-4.5">
-                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">Description</label>
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Description <span className="text-[#F97316]">*</span></label>
                   <textarea
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] border-[1.5px] border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg text-sm text-[#1A1917] dark:text-[#F5F4F0] outline-none transition-colors duration-150 focus:border-[#E8500A] focus:ring-2 focus:ring-[#E8500A]/10 resize-none h-24"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none h-24"
                     name="description"
                     value={formData.description} onChange={handleChange}
                     placeholder="Where, when, and any unique identifying marks…"
@@ -563,35 +561,35 @@ const LostAndFound = () => {
                   />
                 </div>
 
-                <div className="mb-4.5">
-                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                     WhatsApp number
-                    <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 4, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                    <span className="font-normal text-xs text-[#888888] dark:text-[#808080] ml-1">(optional)</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] border-[1.5px] border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg text-sm text-[#1A1917] dark:text-[#F5F4F0] outline-none transition-colors duration-150 focus:border-[#E8500A] focus:ring-2 focus:ring-[#E8500A]/10"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C]"
                     type="text" name="whatsapp"
                     value={formData.whatsapp} onChange={handleChange}
                     placeholder="e.g. 9876543210"
                   />
                 </div>
 
-                <div className="mb-4.5">
-                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                     Photo
-                    <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 4, textTransform: 'none', letterSpacing: 0 }}>(max 5 MB)</span>
+                    <span className="font-normal text-xs text-[#888888] dark:text-[#808080] ml-1">(max 5 MB)</span>
                   </label>
                   <input type="file" id="lf-file-input" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                   <label
                     htmlFor="lf-file-input"
-                    className="w-full border-[1.5px] border-dashed border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-150 text-[#6B6963] dark:text-[#9E9990] text-xs hover:border-[#E8500A] hover:bg-[#FFF0E8] dark:hover:bg-[#E8500A]/5"
+                    className="w-full border border-dashed border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors text-[#555555] dark:text-[#B5B5B5] text-xs hover:border-[#F97316] dark:hover:border-[#FB923C] hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F]"
                     style={uploading ? { opacity: 0.5, pointerEvents: 'none' } : {}}
                   >
-                    <i className={`mb-1.5 text-lg ${uploading ? 'ri-loader-4-line animate-spin' : 'ri-cloud-upload-line'}`} />
+                    <i className={`mb-1.5 text-lg ${uploading ? 'ri-loader-4-line animate-spin text-[#F97316]' : 'ri-cloud-upload-line'}`} />
                     {uploading ? 'Uploading…' : formData.image_url ? 'Replace image' : 'Click to select an image'}
                   </label>
                   {formData.image_url && (
-                    <div className="w-full h-[140px] flex items-center justify-center bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg overflow-hidden mt-3 relative">
+                    <div className="w-full h-[140px] flex items-center justify-center bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl overflow-hidden mt-3 relative">
                       <img className="w-full h-full object-contain" src={formData.image_url} alt="Preview" />
                       <button
                         type="button"
@@ -606,7 +604,7 @@ const LostAndFound = () => {
 
                 <button
                   type="submit"
-                  className="w-full p-[13px] bg-[#1A1917] dark:bg-[#F5F4F0] text-white dark:text-[#161614] border-none rounded-xl text-sm font-bold cursor-pointer transition-all hover:opacity-88 active:translate-y-0 hover:-translate-y-0.5 mt-2 font-myfont"
+                  className="w-full py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-xl text-xs cursor-pointer transition-colors shadow-xs mt-2 disabled:opacity-50"
                   disabled={loading || uploading}
                 >
                   {loading
@@ -621,54 +619,54 @@ const LostAndFound = () => {
       )}
 
       {selectedContact?.contact_info && (
-        <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setSelectedContact(null)}>
-          <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="p-7 pb-0 flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setSelectedContact(null)}>
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
               <div>
-                <p className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] leading-none mb-1">Contact Details</p>
-                <p className="text-xs text-[#A8A49D] dark:text-[#5C5A55]">Reach out to the post owner directly.</p>
+                <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Contact Details</p>
+                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Reach out to the post owner directly.</p>
               </div>
-              <button className="w-8 h-8 rounded-full bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] text-[#6B6963] dark:text-[#9E9990] hover:bg-[#E5E4E0] dark:hover:bg-[#2A2A27] hover:text-[#1A1917] dark:hover:text-[#F5F4F0] flex items-center justify-center cursor-pointer transition-all shrink-0" onClick={() => setSelectedContact(null)}>
-                <i className="ri-close-line" />
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => setSelectedContact(null)} title="Close">
+                <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-7 pt-5">
+            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
               <div className="mb-4">
-                <div className="text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-0.5">Posted by</div>
-                <div className="text-sm font-semibold text-[#1A1917] dark:text-[#F5F4F0] break-all">{selectedContact.contact_info.name}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Posted by</div>
+                <div className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] break-all">{selectedContact.contact_info.name}</div>
               </div>
               <div className="mb-4">
-                <div className="text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-0.5">Email</div>
-                <div className="text-sm font-semibold text-[#1A1917] dark:text-[#F5F4F0] break-all" style={{ fontSize: 14 }}>{selectedContact.contact_info.email}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Email</div>
+                <div className="text-sm font-semibold text-[#111111] dark:text-[#F5F5F5] break-all">{selectedContact.contact_info.email}</div>
               </div>
 
               {selectedContact.contact_info.whatsapp ? (
                 <>
                   <div className="mb-4">
-                    <div className="text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-0.5">Phone</div>
-                    <div className="text-sm font-semibold text-[#1A1917] dark:text-[#F5F4F0] font-mono break-all">+91 {selectedContact.contact_info.whatsapp}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Phone</div>
+                    <div className="text-sm font-semibold text-[#111111] dark:text-[#F5F5F5] font-mono break-all">+91 {selectedContact.contact_info.whatsapp}</div>
                   </div>
                   <div className="flex gap-2 mt-5">
                     <a
                       href={`https://wa.me/91${selectedContact.contact_info.whatsapp}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex-grow p-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none"
+                      className="flex-grow p-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none shadow-xs"
                     >
                       <i className="ri-whatsapp-line" /> Message
                     </a>
-                    <a href={`tel:+91${selectedContact.contact_info.whatsapp}`} className="flex-grow p-2.5 bg-[#E8500A] hover:bg-[#C23F06] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none text-center">
+                    <a href={`tel:+91${selectedContact.contact_info.whatsapp}`} className="flex-grow p-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none text-center shadow-xs">
                       <i className="ri-phone-line" /> Call
                     </a>
                   </div>
                 </>
               ) : (
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 12 }}>
+                <p className="text-xs text-[#888888] dark:text-[#808080] italic mt-3">
                   No phone number provided — reach out via email.
                 </p>
               )}
 
               <button
-                className="w-full p-[13px] bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#6B6963] dark:text-[#9E9990] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl text-sm font-bold cursor-pointer transition-all hover:opacity-88 mt-5 font-myfont"
+                className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors mt-5"
                 onClick={() => setSelectedContact(null)}
               >
                 Close
@@ -679,61 +677,57 @@ const LostAndFound = () => {
       )}
 
       {reportModalItem && (
-        <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && (setReportModalItem(null), setReportReason(''))}>
-          <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="p-7 pb-0 flex items-start justify-between gap-4">
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 12,
-                  background: '#FFF1F2', border: '1px solid #FCA5A5',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#EF4444', fontSize: 18, flexShrink: 0
-                }}>
+        <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && (setReportModalItem(null), setReportReason(''))}>
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg shrink-0">
                   <i className="ri-flag-line" />
                 </div>
                 <div>
-                  <p className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] leading-none mb-1">Report Post</p>
-                  <p className="text-xs text-[#A8A49D] dark:text-[#5C5A55]">The post owner will be notified with your reason.</p>
+                  <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Report Post</p>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">The post owner will be notified with your reason.</p>
                 </div>
               </div>
-              <button className="w-8 h-8 rounded-full bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] text-[#6B6963] dark:text-[#9E9990] hover:bg-[#E5E4E0] dark:hover:bg-[#2A2A27] hover:text-[#1A1917] dark:hover:text-[#F5F4F0] flex items-center justify-center cursor-pointer transition-all shrink-0" onClick={() => { setReportModalItem(null); setReportReason(''); }}>
-                <i className="ri-close-line" />
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => { setReportModalItem(null); setReportReason(''); }} title="Close">
+                <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-7 pt-5">
+            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
               {REPORT_REASONS.map(reason => (
-                <label key={reason} className={`flex items-center gap-2.5 p-3.5 bg-white dark:bg-[#161614] border-[1.5px] rounded-xl text-xs cursor-pointer transition-all mb-2 select-none ${reportReason === reason ? 'bg-[#FFF1F2] dark:bg-red-500/10 text-[#991B1B] dark:text-red-400 border-red-500 dark:border-red-800' : 'border-[#E5E4E0] dark:border-[#2A2A27] text-[#6B6963] dark:text-[#9E9990] hover:border-[#A8A49D] dark:hover:border-[#5C5A55]'}`}>
+                <label key={reason} className={`flex items-center gap-2.5 p-3.5 bg-white dark:bg-[#222222] border rounded-xl text-xs cursor-pointer transition-all mb-2 select-none ${reportReason === reason ? 'bg-rose-50/60 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-900/50' : 'border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#FAFAFA] dark:hover:bg-[#252525]'}`}>
                   <input
                     type="radio"
                     name="reportReason"
                     value={reason}
                     checked={reportReason === reason}
                     onChange={(e) => setReportReason(e.target.value)}
+                    className="accent-[#F97316]"
                     style={{ width: 15, height: 15, flexShrink: 0 }}
                   />
                   {reason}
                 </label>
               ))}
 
-              <div className="mb-4.5 mt-3">
-                <label className="block text-[11px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">Or describe your concern</label>
+              <div className="mb-4 mt-3">
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Or describe your concern</label>
                 <textarea
-                  className="w-full px-3.5 py-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] border-[1.5px] border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg text-sm text-[#1A1917] dark:text-[#F5F4F0] outline-none transition-colors duration-150 focus:border-[#E8500A] focus:ring-2 focus:ring-[#E8500A]/10 resize-none h-[76px]"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none h-[76px]"
                   value={!REPORT_REASONS.includes(reportReason) ? reportReason : ''}
                   onChange={(e) => setReportReason(e.target.value)}
                   placeholder="Tell us why you're reporting this post…"
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="flex gap-3">
                 <button
-                  className="flex-grow p-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#6B6963] dark:text-[#9E9990] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl text-xs font-bold cursor-pointer transition-all hover:opacity-88 text-center"
+                  className="flex-grow px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors text-center"
                   onClick={() => { setReportModalItem(null); setReportReason(''); }}
                 >
                   Cancel
                 </button>
                 <button
-                  className={`flex-grow p-2.5 text-white rounded-xl text-xs font-bold transition-all hover:opacity-88 cursor-pointer text-center ${!reportReason.trim() || reportSubmitting ? 'bg-[#1A1917]/40 dark:bg-[#F5F4F0]/40 text-[#6B6963] dark:text-[#9E9990] cursor-not-allowed' : 'bg-[#EF4444]'}`}
+                  className={`flex-grow px-5 py-2.5 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shadow-xs ${!reportReason.trim() || reportSubmitting ? 'bg-rose-400 dark:bg-rose-900/50 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
                   onClick={submitReport}
                   disabled={!reportReason.trim() || reportSubmitting}
                 >
@@ -746,37 +740,31 @@ const LostAndFound = () => {
       )}
 
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-6 transition-all duration-200">
-          <div className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="p-7 pt-8 text-center">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl mx-auto mb-4 border" style={{
-                background: confirmModal.isDanger ? '#FFF1F2' : 'var(--accent-light)',
-                color: confirmModal.isDanger ? '#EF4444' : 'var(--accent)',
-                border: `1px solid ${confirmModal.isDanger ? '#FCA5A5' : 'rgba(232,80,10,0.2)'}`,
-              }}>
-                <i className={confirmModal.isDanger ? 'ri-alert-line' : 'ri-checkbox-circle-line'} />
-              </div>
-              <p className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] leading-none mb-1 text-center">{confirmModal.title}</p>
-              <p className="text-sm text-[#6B6963] dark:text-[#9E9990] mt-2 mb-7 text-center leading-relaxed">
-                {confirmModal.message}
-              </p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  className="flex-grow p-2.5 bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#6B6963] dark:text-[#9E9990] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl text-xs font-bold cursor-pointer transition-all hover:opacity-88 text-center"
-                  onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                >
-                  {confirmModal.cancelText}
-                </button>
-                <button
-                  className="flex-grow p-2.5 text-white rounded-xl text-xs font-bold cursor-pointer transition-all hover:opacity-88 text-center"
-                  style={{
-                    background: confirmModal.isDanger ? '#EF4444' : 'var(--accent)'
-                  }}
-                  onClick={confirmModal.onConfirm}
-                >
-                  {confirmModal.confirmText}
-                </button>
-              </div>
+        <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto p-6 text-center transition-colors">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto mb-3" style={{
+              background: confirmModal.isDanger ? 'rgba(239, 68, 68, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+              color: confirmModal.isDanger ? '#EF4444' : '#F97316',
+            }}>
+              <i className={confirmModal.isDanger ? 'ri-alert-line' : 'ri-checkbox-circle-line'} />
+            </div>
+            <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">{confirmModal.title}</p>
+            <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
+              {confirmModal.message}
+            </p>
+            <div className="flex gap-3">
+              <button
+                className="flex-1 px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors text-center"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                {confirmModal.cancelText}
+              </button>
+              <button
+                className={`flex-1 px-5 py-2.5 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors text-center shadow-xs ${confirmModal.isDanger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111]'}`}
+                onClick={confirmModal.onConfirm}
+              >
+                {confirmModal.confirmText}
+              </button>
             </div>
           </div>
         </div>

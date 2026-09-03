@@ -374,15 +374,14 @@ const EventRegistrations = () => {
                     );
                 })()}
 
-                {/* Settlement Info */}
+                {/* Payment Information */}
                 {stats && stats.entryFee > 0 && (
-                    <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900/40 p-4 rounded-xl flex gap-3 items-start mb-8">
-                        <i className="ri-information-fill text-yellow-600 dark:text-yellow-500 text-lg mt-0.5" />
+                    <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 p-4 rounded-xl flex gap-3 items-start mb-8">
+                        <i className="ri-information-fill text-orange-600 dark:text-orange-500 text-lg mt-0.5" />
                         <div>
-                            <p className="text-sm font-bold text-yellow-800 dark:text-yellow-400">Payment Settlement Information</p>
-                            <p className="text-xs text-yellow-700 dark:text-yellow-500 mt-1 leading-relaxed">
-                                Total money collected will be credited to your linked bank account within 7 working days of event completion.
-                                For payout queries, contact <a href="mailto:contact.nikhim@gmail.com" className="underline font-bold">contact.nikhim@gmail.com</a>.
+                            <p className="text-sm font-bold text-orange-800 dark:text-orange-400">Payment Collection Notice</p>
+                            <p className="text-xs text-orange-700 dark:text-orange-500 mt-1 leading-relaxed">
+                                Registration fees for this event are collected directly via your configured payment account (club UPI or college payment portal).
                             </p>
                         </div>
                     </div>
@@ -752,72 +751,87 @@ const EventRegistrations = () => {
                 )}
 
                 {exportModalOpen && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-3 py-4 backdrop-blur-sm sm:px-4" role="presentation">
-                        <div ref={exportModalRef} tabIndex="-1" role="dialog" aria-modal="true" aria-labelledby="export-registrations-title" className="flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-none dark:border-neutral-800 dark:bg-neutral-900">
-                            <div className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800 sm:px-6">
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 dark:bg-black/75 px-3 py-4 backdrop-blur-sm sm:px-4" role="presentation">
+                        <div ref={exportModalRef} tabIndex="-1" role="dialog" aria-modal="true" aria-labelledby="export-registrations-title" className="flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#E5E5E5] bg-white shadow-2xl outline-none dark:border-[#303030] dark:bg-[#181818] transition-colors">
+                            <div className="flex items-center justify-between gap-4 border-b border-[#F0F0F0] px-6 py-4 dark:border-[#2A2A2A]">
                                 <div>
-                                    <h2 id="export-registrations-title" className="text-lg font-black text-neutral-900 dark:text-white">Export Registrations</h2>
-                                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Choose the information you want to include in your Excel file.</p>
+                                    <h2 id="export-registrations-title" className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Export Registrations</h2>
+                                    <p className="mt-0.5 text-xs text-[#888888] dark:text-[#808080]">Choose the information you want to include in your Excel file.</p>
                                 </div>
-                                <button type="button" aria-label="Close export dialog" onClick={() => !isExporting && setExportModalOpen(false)} disabled={isExporting} className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-40 dark:hover:bg-neutral-800 dark:hover:text-white"><i className="ri-close-line text-lg" /></button>
+                                <button type="button" aria-label="Close export dialog" onClick={() => !isExporting && setExportModalOpen(false)} disabled={isExporting} className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer disabled:opacity-40"><i className="ri-close-line text-lg" /></button>
                             </div>
-                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800 sm:px-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F0F0F0] px-6 py-3 dark:border-[#2A2A2A]">
                                 <div className="flex gap-2">
-                                    <button type="button" onClick={() => setSelectedExportColumns(exportColumns.map(column => column.key))} className="rounded-lg border border-neutral-300 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Select All</button>
-                                    <button type="button" onClick={() => setSelectedExportColumns([])} className="rounded-lg border border-neutral-300 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Clear All</button>
+                                    <button type="button" onClick={() => setSelectedExportColumns(exportColumns.map(column => column.key))} className="rounded-xl border border-[#E5E5E5] px-3 py-1.5 text-[11px] font-bold text-[#111111] hover:bg-[#F5F5F5] dark:border-[#303030] dark:bg-[#222222] dark:text-[#F5F5F5] dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer">Select All</button>
+                                    <button type="button" onClick={() => setSelectedExportColumns([])} className="rounded-xl border border-[#E5E5E5] px-3 py-1.5 text-[11px] font-bold text-[#111111] hover:bg-[#F5F5F5] dark:border-[#303030] dark:bg-[#222222] dark:text-[#F5F5F5] dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer">Clear All</button>
                                 </div>
-                                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{selectedExportColumns.length} of {exportColumns.length} columns selected</span>
+                                <span className="text-xs font-semibold text-[#888888] dark:text-[#808080]">{selectedExportColumns.length} of {exportColumns.length} columns selected</span>
                             </div>
-                            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3 sm:px-6">
-                                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-3">
+                                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                                     {exportColumns.map(column => {
                                         const checked = selectedExportColumns.includes(column.key);
                                         return (
-                                            <label key={column.key} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-orange-200 hover:bg-orange-50/60 dark:hover:border-orange-900/50 dark:hover:bg-orange-950/20">
-                                                <input type="checkbox" checked={checked} onChange={() => setSelectedExportColumns(current => checked ? current.filter(key => key !== column.key) : [...current, column.key])} className="mt-1 h-4 w-4 accent-orange-600" />
-                                                <span><span className="block text-sm font-semibold text-neutral-800 dark:text-neutral-100">{column.label}</span>{column.description && <span className="mt-0.5 block text-[11px] text-neutral-500 dark:text-neutral-400">{column.description}</span>}</span>
+                                            <label key={column.key} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-orange-200/80 hover:bg-[#FFF7ED] dark:hover:border-orange-900/40 dark:hover:bg-[#2A1A0F] transition-colors">
+                                                <input type="checkbox" checked={checked} onChange={() => setSelectedExportColumns(current => checked ? current.filter(key => key !== column.key) : [...current, column.key])} className="mt-1 h-4 w-4 accent-[#F97316]" />
+                                                <span><span className="block text-xs sm:text-[13px] font-bold text-[#111111] dark:text-[#F5F5F5]">{column.label}</span>{column.description && <span className="mt-0.5 block text-[11px] text-[#888888] dark:text-[#808080]">{column.description}</span>}</span>
                                             </label>
                                         );
                                     })}
                                 </div>
                             </div>
-                            {exportError && <p role="alert" className="px-5 pb-2 text-xs font-semibold text-rose-600 sm:px-6">{exportError}</p>}
-                            <div className="flex flex-col-reverse gap-2 border-t border-neutral-200 px-5 py-4 sm:flex-row sm:justify-end sm:px-6 dark:border-neutral-800">
-                                <button type="button" onClick={() => setExportModalOpen(false)} disabled={isExporting} className="rounded-xl border border-neutral-300 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Cancel</button>
-                                <button type="button" onClick={exportSelectedRegistrations} disabled={isExporting || selectedExportColumns.length === 0} className="rounded-xl bg-green-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"><i className={`${isExporting ? 'ri-loader-4-line animate-spin' : 'ri-file-excel-2-line'} mr-1`} />{isExporting ? 'Exporting...' : 'Export Excel'}</button>
+                            {exportError && <p role="alert" className="px-6 pb-2 text-xs font-semibold text-rose-600">{exportError}</p>}
+                            <div className="flex flex-col-reverse gap-3 border-t border-[#F0F0F0] px-6 py-4 sm:flex-row sm:justify-end dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818]">
+                                <button type="button" onClick={() => setExportModalOpen(false)} disabled={isExporting} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-40">Cancel</button>
+                                <button type="button" onClick={exportSelectedRegistrations} disabled={isExporting || selectedExportColumns.length === 0} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs disabled:cursor-not-allowed disabled:opacity-40 flex items-center justify-center gap-1.5"><i className={`${isExporting ? 'ri-loader-4-line animate-spin' : 'ri-file-excel-2-line'}`} />{isExporting ? 'Exporting...' : 'Export Excel'}</button>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {reviewModalOpen && selectedReg && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-                        <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                            <div className="bg-orange-600 px-6 py-4 border-b-2 border-black dark:border-neutral-700">
-                                <h3 className="font-black text-white text-lg flex items-center gap-2">
-                                    <i className="ri-shield-check-line" /> Review Registration Payment
-                                </h3>
-                                <p className="text-white/80 text-xs mt-1">Review student transaction reference details</p>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+                        <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 transition-colors">
+                            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                                        <i className="ri-shield-check-line text-lg" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                                            Review Registration Payment
+                                        </h3>
+                                        <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Review student transaction reference details</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setReviewModalOpen(false)}
+                                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                                    title="Close"
+                                >
+                                    <i className="ri-close-line text-lg" />
+                                </button>
                             </div>
                             
-                            <div className="p-6 space-y-4 text-left">
-                                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-250 dark:border-neutral-800 p-4 rounded-xl space-y-2 text-xs text-neutral-800 dark:text-neutral-100">
-                                    <p><span className="font-bold text-neutral-400">Student:</span> {selectedReg.student?.name || selectedReg.externalName}</p>
-                                    {selectedReg.student?.rollNo && <p><span className="font-bold text-neutral-400">Roll No:</span> {selectedReg.student.rollNo}</p>}
-                                    <p><span className="font-bold text-neutral-400">Registration Fee:</span> ₹{eventData?.registrationFee || eventData?.entryFee}</p>
-                                    <p><span className="font-bold text-neutral-400">UTR / Transaction ID:</span> <span className="font-mono font-bold select-all text-neutral-900 dark:text-neutral-100">{selectedReg.transactionId}</span></p>
-                                    <p><span className="font-bold text-neutral-400">Payer Name:</span> {selectedReg.payerName || 'N/A'}</p>
-                                    {selectedReg.paymentRemarks && <p><span className="font-bold text-neutral-400">Payer Remarks:</span> {selectedReg.paymentRemarks}</p>}
-                                    <p><span className="font-bold text-neutral-400">Action:</span> <span className={`font-black ${reviewStatus === 'APPROVED' ? 'text-emerald-600' : reviewStatus === 'REJECTED' ? 'text-rose-600' : 'text-amber-600'}`}>{reviewStatus}</span></p>
+                            <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
+                                <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] p-4 rounded-xl space-y-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
+                                    <p><span className="font-bold text-[#888888] dark:text-[#808080]">Student:</span> <strong className="text-[#111111] dark:text-[#F5F5F5] font-semibold">{selectedReg.student?.name || selectedReg.externalName}</strong></p>
+                                    {selectedReg.student?.rollNo && <p><span className="font-bold text-[#888888] dark:text-[#808080]">Roll No:</span> <strong className="text-[#111111] dark:text-[#F5F5F5] font-mono font-semibold">{selectedReg.student.rollNo}</strong></p>}
+                                    <p><span className="font-bold text-[#888888] dark:text-[#808080]">Registration Fee:</span> ₹{eventData?.registrationFee || eventData?.entryFee}</p>
+                                    <p><span className="font-bold text-[#888888] dark:text-[#808080]">UTR / Transaction ID:</span> <span className="font-mono font-bold select-all text-[#111111] dark:text-[#F5F5F5]">{selectedReg.transactionId}</span></p>
+                                    <p><span className="font-bold text-[#888888] dark:text-[#808080]">Payer Name:</span> {selectedReg.payerName || 'N/A'}</p>
+                                    {selectedReg.paymentRemarks && <p><span className="font-bold text-[#888888] dark:text-[#808080]">Payer Remarks:</span> {selectedReg.paymentRemarks}</p>}
+                                    <p><span className="font-bold text-[#888888] dark:text-[#808080]">Action:</span> <span className={`font-bold ${reviewStatus === 'APPROVED' ? 'text-emerald-600 dark:text-emerald-400' : reviewStatus === 'REJECTED' ? 'text-rose-600 dark:text-rose-400' : 'text-[#F97316] dark:text-[#FB923C]'}`}>{reviewStatus}</span></p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
-                                        Review Comment / Message (Optional for approval, highly recommended for rejection/need details)
+                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                                        Review Comment / Message <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Optional for approval, recommended for rejection)</span>
                                     </label>
                                     <textarea
                                         rows="3"
-                                        className="w-full px-3 py-2 border border-neutral-350 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:border-orange-600"
+                                        className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors resize-none"
                                         placeholder={reviewStatus === 'REJECTED' ? 'Please specify why the transaction was rejected (e.g. UTR mismatch/incorrect amount paid)...' : 'Add any review comments here...'}
                                         value={reviewComment}
                                         onChange={(e) => setReviewComment(e.target.value)}
@@ -825,17 +839,19 @@ const EventRegistrations = () => {
                                 </div>
                             </div>
 
-                            <div className="px-6 pb-6 flex gap-3">
+                            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
                                 <button
+                                    type="button"
                                     onClick={() => setReviewModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-850 border border-neutral-300 dark:border-neutral-700 text-neutral-750 dark:text-neutral-350 font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer border-0 outline-none"
+                                    className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={submitReview}
                                     disabled={submittingReview}
-                                    className="flex-1 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-0 outline-none"
+                                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
                                 >
                                     {submittingReview ? 'Submitting...' : 'Submit Review'}
                                 </button>

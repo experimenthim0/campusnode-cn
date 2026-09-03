@@ -107,18 +107,18 @@ const BlackoutModal = ({
   const venueList = venues.map((v) => (typeof v === "string" ? v : v.name));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-      <div className="w-full max-w-md bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-all">
+      <div className="w-full max-w-md bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden transition-colors">
+        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 font-bold">
               <Building2 size={18} />
             </div>
             <div>
-              <h3 className="text-base font-black text-black dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
                 {editingBlackout ? "Edit Venue Blackout" : "Add Venue Blackout"}
               </h3>
-              <p className="text-xs text-neutral-400 font-medium">
+              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
                 Block a venue for maintenance, exams, or convocation.
               </p>
             </div>
@@ -126,21 +126,22 @@ const BlackoutModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+            title="Close"
           >
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[#555555] dark:text-[#B5B5B5]">
           <div>
-            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-              Select Venue *
+            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+              Select Venue <span className="text-[#F97316]">*</span>
             </label>
             <select
               value={venue}
               onChange={(e) => setVenue(e.target.value)}
-              className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-black dark:text-white outline-none focus:border-orange-500"
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-bold text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
               required
             >
               {venueList.map((v) => (
@@ -152,21 +153,21 @@ const BlackoutModal = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-              Blackout Title / Reason *
+            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+              Blackout Title / Reason <span className="text-[#F97316]">*</span>
             </label>
             <input
               type="text"
               placeholder="e.g. Annual Maintenance, Examination, Convocation"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500"
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
+            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
               Additional Details / Description
             </label>
             <textarea
@@ -174,45 +175,45 @@ const BlackoutModal = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
-              className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500 resize-none"
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                Start Date & Time *
+              <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                Start Date & Time <span className="text-[#F97316]">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                End Date & Time *
+              <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                End Date & Time <span className="text-[#F97316]">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
                 required
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
             {editingBlackout ? (
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={submitting}
-                className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="px-3.5 py-2.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/40 text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
                 Remove
               </button>
@@ -225,14 +226,14 @@ const BlackoutModal = ({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {submitting ? "Saving..." : editingBlackout ? "Update Blackout" : "Save Blackout"}
               </button>

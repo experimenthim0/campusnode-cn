@@ -605,60 +605,72 @@ const ClubMembers = () => {
       </div>
 
       {isTransferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-2xl">
-            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <i className="ri-swap-box-line text-xl" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl border border-[#E5E5E5] dark:border-[#303030] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] shrink-0">
+                  <i className="ri-swap-box-line text-lg" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Transfer Student Lead Role</h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Atomic transition of club leadership</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Transfer Student Lead Role</h3>
-                <p className="text-xs text-neutral-500">Atomic transition of club leadership</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsTransferModalOpen(false)}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <i className="ri-close-line text-lg" />
+              </button>
             </div>
 
-            <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed">
-              Transferring leadership will atomically assign <strong>Student Lead</strong> to the selected student and demote the current lead to <strong>Coordinator</strong>.
-            </p>
+            <form onSubmit={handleTransferLeadership}>
+              <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
+                <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
+                  Transferring leadership will atomically assign <strong className="text-[#111111] dark:text-[#F5F5F5]">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-[#111111] dark:text-[#F5F5F5]">Coordinator</strong>.
+                </p>
 
-            <form onSubmit={handleTransferLeadership} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Select New Student Lead:
-                </label>
-                <select
-                  value={selectedNewLeadId}
-                  onChange={(e) => setSelectedNewLeadId(e.target.value)}
-                  required
-                  className="w-full h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm text-neutral-900 dark:text-white focus:border-orange-500 focus:outline-none"
-                >
-                  <option value="">-- Choose member --</option>
-                  {members
-                    .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
-                    .map((m) => {
-                      const id = m.id || m._id;
-                      return (
-                        <option key={id} value={id}>
-                          {m.student?.name} ({m.student?.email}) — [{m.role}]
-                        </option>
-                      );
-                    })}
-                </select>
+                <div>
+                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                    Select New Student Lead:
+                  </label>
+                  <select
+                    value={selectedNewLeadId}
+                    onChange={(e) => setSelectedNewLeadId(e.target.value)}
+                    required
+                    className="w-full h-10 rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] px-3.5 text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors"
+                  >
+                    <option value="">-- Choose member --</option>
+                    {members
+                      .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
+                      .map((m) => {
+                        const id = m.id || m._id;
+                        return (
+                          <option key={id} value={id}>
+                            {m.student?.name} ({m.student?.email}) — [{m.role}]
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsTransferModalOpen(false)}
                   disabled={transferring}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={transferring || !selectedNewLeadId}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-xs transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {transferring ? "Transferring…" : "Confirm Transfer"}
                 </button>

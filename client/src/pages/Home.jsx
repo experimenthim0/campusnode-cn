@@ -414,7 +414,6 @@ const Home = () => {
   const [registrations, setRegistrations] = useState([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [openMapEventId, setOpenMapEventId] = useState(null);
-  const [tab, setTab] = useState("students");
   const [celebrationEvent, setCelebrationEvent] = useState(null);
   const [celebrationWinnerRank, setCelebrationWinnerRank] = useState(null);
 
@@ -853,7 +852,7 @@ const Home = () => {
                   className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-[center_40%] ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
                 />
               ))}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/20 to-white dark:from-[#0a0a0a]/10 dark:via-[#0a0a0a]/60 dark:to-[#0a0a0a]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/20 to-white/70 dark:from-[#0a0a0a]/10 dark:via-[#0a0a0a]/30 dark:to-[#0a0a0a]/90"></div>
             </div>
 
             <Section className="relative z-10 w-full mt-4">
@@ -881,14 +880,14 @@ const Home = () => {
                       to="/events"
                       className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
                     >
-                      <i className="ri-calendar-event-line text-lg mr-2" /> Browse Events
+                      <i className="ri-calendar-event-line text-lg mr-2 font-light" /> Browse Events
                     </Link>
 
                     <Link
                       to="/clubs"
                       className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
                     >
-                      <i className="ri-group-line text-lg mr-2 text-orange-500" /> Explore Clubs
+                      <i className="ri-group-line text-lg mr-2 text-orange-500 font-light" /> Explore Clubs
                     </Link>
 
                     <Link
@@ -1003,33 +1002,17 @@ const Home = () => {
 
       {!user && (
         <>
+          {/* Section 1: For Students */}
           <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <Section>
-              {/* Tab switcher */}
-              <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-10 sm:mb-12 max-w-md mx-auto sm:max-w-none">
-                {["students", "clubs"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 -mb-px cursor-pointer uppercase tracking-wider
-                      ${tab === t
-                        ? "border-orange-600 text-orange-600 dark:border-orange-500 dark:text-orange-400"
-                        : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                      }`}
-                  >
-                    {t === "students" ? "For Students" : "For Clubs & Societies"}
-                  </button>
-                ))}
-              </div>
-
-              {tab === "students" && (
+              <ScrollReveal direction="up">
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
                     <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
-                      Students
+                      For Students
                     </p>
-                    <h2 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                       Never miss a<br />campus beat{" "}
                       <span className="text-orange-600 dark:text-orange-500">again.</span>
                     </h2>
@@ -1048,10 +1031,15 @@ const Home = () => {
                       ))}
                     </div>
 
-                    <Link to="/register" className="mt-8 inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full shadow-sm">
-                      Join now
-                      <i className="ri-arrow-right-line text-sm" />
-                    </Link>
+                    <div className="mt-8 flex flex-wrap items-center gap-3">
+                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full shadow-sm">
+                        Join now
+                        <i className="ri-arrow-right-line text-sm" />
+                      </Link>
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-orange-500 text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full">
+                        Browse Events
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Right: image */}
@@ -1068,36 +1056,48 @@ const Home = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              </ScrollReveal>
+            </Section>
+          </section>
 
-              {tab === "clubs" && (
-                <div>
-                  <div className="mb-8 sm:mb-10">
+          {/* Section 2: For Clubs & Societies */}
+          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+            <Section>
+              <ScrollReveal direction="up">
+                <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
                     <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
-                      Clubs & Societies
+                      For Clubs & Societies
                     </p>
-                    <h2 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
                       Less logistics,{" "}
                       <span className="text-orange-600 dark:text-orange-500">more impact.</span>
                     </h2>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
-                    {clubFeatures.map((f, i) => (
-                      <div
-                        key={i}
-                        className="p-5 sm:p-6 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-2xl hover:border-orange-400 dark:hover:border-orange-500/60 transition-colors group shadow-2xs"
-                      >
-                        <div className="w-10 h-10 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors text-lg">
-                          {f.icon}
-                        </div>
-                        <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
-                        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <Link
+                    to="/clubs"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors group self-start md:self-auto"
+                  >
+                    <span>Explore All Societies</span>
+                    <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
-              )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
+                  {clubFeatures.map((f, i) => (
+                    <div
+                      key={i}
+                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-orange-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs"
+                    >
+                      <div className="w-10 h-10 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors text-lg">
+                        {f.icon}
+                      </div>
+                      <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
+                      <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollReveal>
             </Section>
           </section>
 
@@ -1256,7 +1256,7 @@ const Home = () => {
       </section>
 
       {celebrationEvent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-lg px-4 py-6 overflow-hidden ticket-backdrop-animate">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-hidden ticket-backdrop-animate">
           {/* Confetti Animation Background Overlay */}
           <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
             <img
@@ -1266,24 +1266,23 @@ const Home = () => {
             />
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
             <div className="relative shrink-0">
-              <img src="/Trophy.svg" alt="Trophy" className="w-28 h-28 sm:w-36 sm:h-36 mx-auto animate-bounce-slow" />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
+              <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
             </div>
             
-            <h3 className="text-2xl font-black text-amber-600 dark:text-amber-500 mt-4 uppercase tracking-wider">Congratulations!</h3>
-            <p className="text-base font-extrabold text-neutral-900 dark:text-white mt-1 leading-tight">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#111111] dark:text-[#F5F5F5] mt-4 leading-tight">Congratulations!</h3>
+            <p className="text-sm sm:text-base font-semibold text-[#F97316] dark:text-[#FB923C] mt-1.5 leading-tight">
               You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
             </p>
             
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-4 leading-relaxed italic px-2">
+            <p className="text-xs text-[#888888] dark:text-[#808080] mt-3 leading-relaxed italic px-2">
               "Hard work pays off! Congratulations to the winners of {celebrationEvent.title}. Keep striving for excellence and inspiring those around you."
             </p>
             
             <button
               onClick={acknowledgeWin}
-              className="mt-6 w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-full transition shadow-sm border-0 outline-none text-xs uppercase tracking-wider cursor-pointer"
+              className="mt-6 w-full py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-xl transition-colors shadow-xs text-xs cursor-pointer"
             >
               Claim Victory 🏆
             </button>

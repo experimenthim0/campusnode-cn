@@ -110,17 +110,17 @@ const CoordinatorsTab = ({
                         <ModalFormField label="Email Address" name="email" type="email" placeholder="Email Address" required />
                         <ModalFormField label="Password" name="password" type="password" placeholder="Password (default: coordinator123)" />
 
-                        <div className="pt-4 flex justify-end gap-3 border-t border-neutral-100 dark:border-zinc-800">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
                             <button
                                 type="button"
                                 onClick={() => setIsAddCoordModalOpen(false)}
-                                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-5 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Create Coordinator
                             </button>
@@ -139,9 +139,20 @@ const CoordinatorsTab = ({
                         <ModalFormField label="Full Name" name="name" defaultValue={editingCoord.name} required />
                         <ModalFormField label="Email Address" name="email" type="email" defaultValue={editingCoord.email} required />
                         <ModalFormField label="New Password (optional)" name="password" type="password" placeholder="Leave blank to keep current" />
-                        <div className="flex justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-zinc-800">
-                            <button type="button" onClick={() => { setIsCoordModalOpen(false); setEditingCoord(null); }} className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors">Cancel</button>
-                            <button type="submit" className="px-5 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors">Save Changes</button>
+                        <div className="flex justify-end gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                            <button 
+                                type="button" 
+                                onClick={() => { setIsCoordModalOpen(false); setEditingCoord(null); }} 
+                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                            >
+                                Save Changes
+                            </button>
                         </div>
                     </form>
                 </Modal>

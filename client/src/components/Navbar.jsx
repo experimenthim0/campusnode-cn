@@ -571,11 +571,6 @@ const Navbar = () => {
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
-
-      <div
-        className={`search-overlay ${searchOpen ? 'search-overlay-visible' : ''}`}
-        onClick={() => setSearchOpen(false)}
-      />
     </>
   );
 };

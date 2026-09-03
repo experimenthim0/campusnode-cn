@@ -25,7 +25,6 @@ export const DATASETS = {
       { id: "eventType", label: "Type (Paid/Free)" },
       { id: "registeredCount", label: "Registrations" },
       { id: "registrationType", label: "Reg. Type (Individual/Team)" },
-      { id: "payoutStatus", label: "Payout Status" },
       { id: "registrationDeadline", label: "Reg. Deadline" },
       { id: "createdAt", label: "Created Date" },
     ],
@@ -214,7 +213,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       if (effectiveClubId) where.clubId = effectiveClubId;
       if (filters.eventId && filters.eventId !== "all") where.id = filters.eventId;
       if (filters.reviewStatus && filters.reviewStatus !== "all") where.reviewStatus = filters.reviewStatus;
-      if (filters.payoutStatus && filters.payoutStatus !== "all") where.payoutStatus = filters.payoutStatus;
       if (filters.registrationType && filters.registrationType !== "all") where.registrationType = filters.registrationType;
 
       if (filters.eventType === "Paid") where.entryFee = { gt: 0 };
@@ -247,7 +245,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           eventType: e.entryFee > 0 ? "Paid" : "Free",
           registeredCount: e.registeredCount || 0,
           registrationType: e.registrationType || "individual",
-          payoutStatus: e.payoutStatus || "PENDING",
           registrationDeadline: e.registrationDeadline ? new Date(e.registrationDeadline).toLocaleString() : "",
           createdAt: e.createdAt ? new Date(e.createdAt).toLocaleDateString() : "",
         };
@@ -457,7 +454,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       const where = { entryFee: { gt: 0 } };
       if (effectiveClubId) where.clubId = effectiveClubId;
       if (filters.eventId && filters.eventId !== "all") where.id = filters.eventId;
-      if (filters.payoutStatus && filters.payoutStatus !== "all") where.payoutStatus = filters.payoutStatus;
 
       if (dateRange) {
         where.startTime = { gte: dateRange.gte, lte: dateRange.lte };
@@ -488,7 +484,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           entryFee: e.entryFee || 0,
           registeredCount: e.registeredCount || 0,
           totalRevenue,
-          payoutStatus: e.payoutStatus || "PENDING",
           startTime: e.startTime ? new Date(e.startTime).toLocaleString() : "",
           registrationDeadline: e.registrationDeadline ? new Date(e.registrationDeadline).toLocaleString() : "",
         };

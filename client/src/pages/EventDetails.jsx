@@ -23,6 +23,7 @@ import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
 import ImageZoomModal from '../components/ImageZoomModal';
 import { formatAcademicYear } from '../utils/academicProgress';
+import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
@@ -643,6 +644,16 @@ const EventDetails = () => {
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
 
+  const isAllPrograms = !event.allowedPrograms || 
+    !Array.isArray(event.allowedPrograms) ||
+    event.allowedPrograms.length === 0 || 
+    event.allowedPrograms.length >= PROGRAM_OPTIONS.length || 
+    (PROGRAM_OPTIONS.length > 0 && PROGRAM_OPTIONS.every(p => event.allowedPrograms.includes(p)));
+
+  const programDisplay = isAllPrograms
+    ? 'All'
+    : event.allowedPrograms.map(p => PROGRAM_LABELS[p] || p).join(', ');
+
   const highlights = [
     { icon: 'ri-group-line', label: 'Capacity', value: isUnlimited ? 'Unlimited Seats' : `${totalSeats} Seats` },
     { icon: 'ri-coin-line', label: 'Entry Fee', value: entryFee > 0 ? `₹${entryFee}` : 'Free Entry' },
@@ -655,9 +666,7 @@ const EventDetails = () => {
     })() },
     ...(event.provideCertificate ? [{ icon: 'ri-award-line', label: 'Certificate', value: 'Provided' }] : []),
     ...(event.showWinner ? [{ icon: 'ri-trophy-line', label: 'Competition', value: 'Winners Announced' }] : []),
-    ...(event.allowedPrograms && event.allowedPrograms.length > 0
-      ? [{ icon: 'ri-graduation-cap-line', label: 'Open To', value: event.allowedPrograms.join(', ') }]
-      : [{ icon: 'ri-graduation-cap-line', label: 'Open To', value: 'All Programs' }]),
+    { icon: 'ri-graduation-cap-line', label: 'Open To', value: programDisplay },
     ...(event.allowedBranches && event.allowedBranches.length > 0
       ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: event.allowedBranches.join(', ') }]
       : []),
@@ -757,11 +766,11 @@ const EventDetails = () => {
               out of {totalSeats} total seats.{' '}
             </>
           )}
-          {event.allowedPrograms && event.allowedPrograms.length > 0 ? (
+          {!isAllPrograms && event.allowedPrograms && event.allowedPrograms.length > 0 ? (
             <>
               Eligibility is open to programs:{' '}
               <strong className="font-bold text-black dark:text-white">
-                {event.allowedPrograms.join(', ')}
+                {programDisplay}
               </strong>.{' '}
             </>
           ) : (
@@ -906,14 +915,14 @@ const EventDetails = () => {
               />
 
               {/* Zoom prompt badge on top right */}
-              <div className="absolute top-4 right-4 z-10">
+              <div className="absolute top-2 right-2 z-10">
                 <span className="inline-flex items-center gap-1.5 bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full border border-white/20 shadow-lg group-hover:scale-105 transition-all">
                   <i className="ri-zoom-in-line text-sm" />
                 </span>
               </div>
 
               {/* Status badge overlay */}
-              <div className="absolute top-4 left-4">
+              <div className="absolute top-2 left-2">
                 {isLive && (
                   <span className="inline-flex items-center gap-1.5 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
@@ -966,7 +975,7 @@ const EventDetails = () => {
      
           
 
-            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
               <span className="inline-flex items-center gap-1.5">
                 <i className="ri-calendar-event-line text-orange-500" />
                 {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -1136,7 +1145,7 @@ const EventDetails = () => {
                             const uniqueNames = Array.from(new Set(namesArr));
                             if (uniqueNames.length === 0) return null;
                             return (
-                              <p className="text-[11px] font-medium text-neutral-500 dark text-neutral-500 mt-0.5 truncate">
+                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
                                 <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
                                 {uniqueNames.join(', ')}
                               </p>
@@ -1145,7 +1154,7 @@ const EventDetails = () => {
                         </div>
 
                         {/* Rank Label */}
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
                           {medal ? `${medal.label} Place` : `#${winner.rank}`}
                         </span>
                       </div>
@@ -1507,16 +1516,34 @@ const EventDetails = () => {
       {showMobileCTA && <div className="lg:hidden h-24 md:h-16" />}
 
       {missingFieldsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-orange-600 px-6 py-4 rounded-t-xl border-b-2 border-black dark:border-neutral-700">
-              <h3 className="font-black text-white text-lg flex items-center gap-2">
-                <i className="ri-information-line" /> Complete Your Profile
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <i className="ri-information-line text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Complete Your Profile
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+                    Required to continue with registration.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <div className="p-6">
-              <p className="text-sm text-neutral-600 dark text-neutral-500 mb-5 leading-relaxed">
-                This event requires the following profile information. Please add them to continue with registration:
+            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+              <p className="text-xs text-[#888888] dark:text-[#808080] mb-5 leading-relaxed">
+                This event requires the following profile information. Please provide them to continue:
               </p>
               <div className="space-y-4">
                 {missingFields.map((field) => {
@@ -1524,21 +1551,21 @@ const EventDetails = () => {
                   const placeholder = field === 'portfolioUrl' ? 'https://yourportfolio.com' : `https://${fieldLabel.toLowerCase()}.com/yourprofile`;
                   return (
                     <div key={field}>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-1.5 capitalize">
-                        {fieldLabel} <span className="text-orange-600">*</span>
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 capitalize">
+                        {fieldLabel} <span className="text-[#F97316]">*</span>
                       </label>
                       <input type="url" placeholder={placeholder} value={modalInputs[field] || ''} onChange={(e) => setModalInputs({ ...modalInputs, [field]: e.target.value })}
-                        className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" />
+                        className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className="px-6 pb-6 flex gap-3">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="flex-1 px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-black dark:border-neutral-600 text-black dark:text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="flex-1 px-4 py-3 bg-black dark:bg-white border-2 border-black dark:border-white text-white dark:text-black font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1547,17 +1574,32 @@ const EventDetails = () => {
       )}
 
       {customFormModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="bg-orange-600 px-6 py-4 rounded-t-xl border-b-2 border-black dark:border-neutral-700 shrink-0">
-              <h3 className="font-black text-white text-lg flex items-center gap-2">
-                <i className="ri-file-list-3-line" /> Registration Form
-              </h3>
-              <p className="text-white/80 text-xs mt-1">Fill in the details to complete your registration</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <i className="ri-file-list-3-line text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Registration Form
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Fill in the details to complete your registration</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <div className="p-6 overflow-y-auto flex-1">
+            <div className="p-6 overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
               <div className="mb-6">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1567,32 +1609,32 @@ const EventDetails = () => {
                     { label: 'Year', value: JSON.parse(localStorage.getItem('user'))?.year },
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
-                    <div key={i} className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">{item.label}</p>
-                      <p className="text-sm font-medium text-black dark:text-white truncate">{item.value || '—'}</p>
+                    <div key={i} className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl px-3 py-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">{item.label}</p>
+                      <p className="text-xs sm:text-[13px] font-semibold text-[#111111] dark:text-[#F5F5F5] truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="border-t-2 border-neutral-100 dark:border-neutral-800 mb-6" />
-              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Additional Information</p>
+              <div className="border-t border-[#F0F0F0] dark:border-[#2A2A2A] mb-6" />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
-                    <label className="block text-sm font-bold text-black dark:text-white mb-1.5">
-                      {field.label}{' '}{field.required && <span className="text-orange-600">*</span>}
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
                     </label>
                     {field.type === 'text' && (
-                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" />
+                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
                     )}
                     {field.type === 'url' && (
-                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" />
+                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
                     )}
                     {field.type === 'textarea' && (
-                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors resize-none bg-white dark:bg-neutral-800 text-black dark:text-white" />
+                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
                     )}
                     {field.type === 'select' && (
-                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white">
+                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]">
                         <option value="">Select an option</option>
                         {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                       </select>
@@ -1601,11 +1643,11 @@ const EventDetails = () => {
                 ))}
               </div>
             </div>
-            <div className="px-6 pb-6 pt-3 flex gap-3 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
-              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="flex-1 px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-black dark:border-neutral-600 text-black dark:text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
                 Cancel
               </button>
-              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="flex-1 px-4 py-3 bg-black dark:bg-white border-2 border-black dark:border-white text-white dark:text-black font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs">
                 {isRegistering ? 'Processing...' : (event.paymentMethod && event.paymentMethod !== 'FREE' ? 'Pay & Register' : 'Register')}
               </button>
             </div>
@@ -1614,32 +1656,48 @@ const EventDetails = () => {
       )}
 
       {confirmModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-neutral-900 border-2  dark:border-neutral-700 rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-orange-600 px-6 py-4 rounded-t-xl border-b-2  dark:border-neutral-700">
-              <h3 className="font-black text-white text-lg flex items-center gap-2">
-                <i className="ri-question-line font-medium" /> Confirm Registration
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <i className="ri-question-line text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Confirm Registration
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Please review the event details below.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmModalOpen(false)}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <div className="p-6">
-              <p className="text-base font-bold text-black dark:text-white mb-3">
+            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+              <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] mb-3">
                 Are you sure you want to register for this event?
               </p>
-              <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 mb-4 space-y-2">
-                <p className="text-sm font-extrabold text-black dark:text-white truncate">
+              <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl p-4 mb-4 space-y-2">
+                <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
                   {event.title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
-                  <i className="ri-calendar-event-line text-orange-500" />
+                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
+                  <i className="ri-calendar-event-line text-[#F97316]" />
                   <span>{new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
-                  <i className="ri-map-pin-2-line text-orange-500" />
+                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
+                  <i className="ri-map-pin-2-line text-[#F97316]" />
                   <span className="truncate">{venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-600 dark text-neutral-500">
-                  <i className="ri-ticket-2-line text-orange-500" />
-                  <span className="font-bold text-green-600 dark:text-green-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
+                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
+                  <i className="ri-ticket-2-line text-[#F97316]" />
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
               {isFull && (
@@ -1648,17 +1706,17 @@ const EventDetails = () => {
                 </p>
               )}
             </div>
-            <div className="px-6 pb-6 flex gap-3">
+            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="flex-1 px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-black dark:border-neutral-600 text-black dark:text-white font-bold text-sm uppercase tracking-widest rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="flex-1 px-4 py-3 bg-black dark:bg-white border-2 border-black dark:border-white text-white dark:text-black font-bold text-sm uppercase tracking-widest rounded-full hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1679,7 +1737,7 @@ const EventDetails = () => {
               const isWhatsApp = part.includes('chat.whatsapp.com') || part.includes('wa.me');
               return (
                 <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-orange-600 dark:text-orange-500 font-semibold underline underline-offset-2 hover:text-orange-700 dark:hover:text-orange-400 break-all"
+                  className="inline-flex items-center gap-1 text-[#F97316] dark:text-[#FB923C] font-semibold underline underline-offset-2 hover:opacity-80 break-all"
                 >
                   {isWhatsApp && <i className="ri-whatsapp-line text-green-500" />}
                   {isWhatsApp ? 'Join WhatsApp Group' : 'Open Link'}
@@ -1692,39 +1750,38 @@ const EventDetails = () => {
         };
 
         return (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 py-6 overflow-y-auto ticket-backdrop-animate">
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto ticket-backdrop-animate">
+            <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
               <div className="relative">
-                <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-48 h-48 mx-auto animate-bounce-slow" />
-                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
+                <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-40 h-40 mx-auto animate-bounce-slow" />
               </div>
               
-              <h3 className="text-xl font-black text-neutral-900 dark:text-white mt-4">
+              <h3 className="text-lg font-bold text-[#111111] dark:text-[#F5F5F5] mt-4">
                 {isPendingPayment ? 'Registration Received!' : 'Registration Successful!'}
               </h3>
 
               {isPendingPayment ? (
                 <>
-                  <div className="my-4 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-                    <div className="flex items-center justify-center gap-2 mb-1.5">
-                      <i className="ri-time-line text-orange-600 dark:text-orange-500 text-base" />
-                      <p className="text-sm font-bold text-neutral-900 dark:text-white">Payment Under Review</p>
+                  <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <i className="ri-time-line text-[#F97316] dark:text-[#FB923C] text-base" />
+                      <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">Payment Under Review</p>
                     </div>
-                    <p className="text-xs text-neutral-500 dark text-neutral-500 leading-relaxed">
-                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">My Events</strong> section.
+                    <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
+                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-[#111111] dark:text-[#F5F5F5] font-semibold">My Events</strong> section.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-neutral-500 dark text-neutral-500 mt-2 leading-relaxed">
+                  <p className="text-xs text-[#888888] dark:text-[#808080] mt-2 leading-relaxed">
                     You are in! Your ticket has been confirmed. You can view your ticket in the My Events section.
                   </p>
                   
                   {registrationId && (
-                    <div className="my-5 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Your Registration ID</p>
-                      <p className="text-lg font-black text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
+                    <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1.5">Your Registration ID</p>
+                      <p className="text-base font-bold text-[#111111] dark:text-[#F5F5F5] tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
                     </div>
@@ -1734,27 +1791,29 @@ const EventDetails = () => {
 
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
-                <div className="my-3 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2 flex items-center gap-1.5">
-                    <i className="ri-information-line text-orange-600 dark:text-orange-500 text-xs" />
+                <div className="my-3 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-2 flex items-center gap-1.5">
+                    <i className="ri-information-line text-[#F97316] dark:text-[#FB923C] text-xs" />
                     Next Steps from Club
                   </p>
-                  <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed break-words whitespace-pre-wrap">
+                  <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed break-words whitespace-pre-wrap">
                     {renderWithLinks(postRegMessage)}
                   </p>
                 </div>
               )}
 
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-4">
                 <button
+                  type="button"
                   onClick={() => { setShowSuccessModal(false); navigate('/my-events'); }}
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-full transition shadow-sm border-0 outline-none text-xs uppercase tracking-wider cursor-pointer"
+                  className="w-full bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-xs border-0 outline-none text-xs cursor-pointer"
                 >
                   Go to My Events
                 </button>
                 <button
+                  type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="w-full text-xs text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                  className="w-full text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
                 >
                   Stay on this page
                 </button>
@@ -1765,29 +1824,32 @@ const EventDetails = () => {
       })()}
 
       {teamChoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-2xl max-w-sm w-full shadow-2xl p-6">
-            <h3 className="font-black text-black dark:text-white text-lg mb-2">Registration Mode</h3>
-            <p className="text-neutral-500 text-xs mb-6">Choose how you want to participate in this event.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
+            <h3 className="font-bold text-[#111111] dark:text-[#F5F5F5] text-base sm:text-lg mb-1.5">Registration Mode</h3>
+            <p className="text-[#888888] dark:text-[#808080] text-xs mb-6">Choose how you want to participate in this event.</p>
             <div className="flex flex-col gap-3">
               <button
+                type="button"
                 onClick={() => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-black dark:border-neutral-600 text-black dark:text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Register as Individual
               </button>
               <button
+                type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-4 py-3 bg-black dark:bg-white border-2 border-black dark:border-white text-white dark:text-black font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors cursor-pointer"
+                className="w-full px-4 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
               >
                 Register as Team
               </button>
               <button
+                type="button"
                 onClick={() => setTeamChoiceModalOpen(false)}
-                className="w-full px-4 py-2 mt-2 text-xs text-neutral-500 hover:text-black dark:hover:text-white transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                className="w-full px-4 py-2 text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] transition-colors border-0 bg-transparent outline-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -1797,53 +1859,68 @@ const EventDetails = () => {
       )}
 
       {teamModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="bg-orange-600 px-6 py-4 rounded-t-xl border-b-2 border-black dark:border-neutral-700 shrink-0">
-              <h3 className="font-black text-white text-lg flex items-center gap-2">
-                <i className="ri-group-line" /> Create Team
-              </h3>
-              <p className="text-white/80 text-xs mt-1">Form a team to register for {event.title}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <i className="ri-group-line text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Create Team
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Form a team to register for {event.title}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
             
-            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5">
+            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-[#555555] dark:text-[#B5B5B5]">
               {/* Team Name */}
               <div>
-                <label className="block text-sm font-bold text-black dark:text-white mb-1.5 font-sans">Team Name <span className="text-orange-600">*</span></label>
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Team Name <span className="text-[#F97316]">*</span></label>
                 <input
                   type="text"
                   required
                   placeholder="Enter a unique team name"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white"
+                  className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
                 />
               </div>
 
               {/* Members/Teammates selection */}
               <div>
-                <label className="block text-sm font-bold text-black dark:text-white mb-1.5">
-                  Add Teammates <span className="text-xs text-neutral-500 font-medium">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  Add Teammates <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
-                  <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                  <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
                   <input
                     type="text"
                     placeholder="Search by Email or Roll Number..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-500 focus:outline-none bg-white dark:bg-neutral-800 text-black dark:text-white"
+                    className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
                   />
                   {searching && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <i className="ri-loader-4-line animate-spin text-orange-600" />
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      <i className="ri-loader-4-line animate-spin text-[#F97316]" />
                     </div>
                   )}
                 </div>
 
                 {/* Autocomplete dropdown */}
                 {searchResults.length > 0 && (
-                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-neutral-100 dark:divide-neutral-800">
+                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
                     {searchResults.map((s) => (
                       <div
                         key={s.id}
@@ -1852,48 +1929,48 @@ const EventDetails = () => {
                           setSearchQuery('');
                           setSearchResults([]);
                         }}
-                        className="p-3 text-xs hover:bg-orange-50 dark:hover:bg-neutral-800 cursor-pointer flex justify-between items-center transition-colors"
+                        className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
                       >
                         <div className="text-left">
-                          <p className="font-bold text-neutral-800 dark:text-neutral-200">{s.name}</p>
-                          <p className= "text-neutral-500 font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                          <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
+                          <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-orange-600 font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 rounded">Add</span>
+                        <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-200 dark:border-neutral-850 rounded-xl space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 text-left">Team Roster</p>
-                <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <div className="bg-[#FAFAFA] dark:bg-[#222222] p-4 border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] text-left">Team Roster</p>
+                <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <p className="font-bold text-neutral-800 dark:text-neutral-200">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-orange-600 font-extrabold">(You)</span></p>
-                      <p className= "text-neutral-500 font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
+                      <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(You)</span></p>
+                      <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-bold text-[#888888] dark:text-[#808080] uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
-                        <p className="font-bold text-neutral-800 dark:text-neutral-200">{member.name}</p>
-                        <p className= "text-neutral-500 font-mono mt-0.5">{member.rollNo}</p>
+                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{member.name}</p>
+                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setTeammates(teammates.filter(t => t.id !== member.id))}
-                        className="px-2.5 py-1 text-[10px] font-bold text-red-600 hover:text-red-700 bg-transparent border-0 outline-none cursor-pointer"
+                        className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-transparent border-0 outline-none cursor-pointer"
                       >
                         Remove
                       </button>
                     </div>
                   ))}
                   {teammates.length === 0 && (
-                    <div className="py-3 text-center text-xs text-neutral-500 font-medium">
+                    <div className="py-3 text-center text-xs text-[#888888] dark:text-[#808080] font-medium">
                       No teammates added yet. Search above to add.
                     </div>
                   )}
@@ -1902,24 +1979,24 @@ const EventDetails = () => {
 
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
-                <div className="space-y-4 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-1 text-left">Additional Information</p>
+                <div className="space-y-4 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-1.5 text-left">
-                        {field.label}{' '}{field.required && <span className="text-orange-600">*</span>}
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 text-left">
+                        {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
                       </label>
                       {field.type === 'text' && (
-                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" required={field.required} />
+                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
                       )}
                       {field.type === 'url' && (
-                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" required={field.required} />
+                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
                       )}
                       {field.type === 'textarea' && (
-                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors resize-none bg-white dark:bg-neutral-800 text-black dark:text-white" required={field.required} />
+                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
                       )}
                       {field.type === 'select' && (
-                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-4 py-2.5 border-2 border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:border-orange-600 focus:outline-none transition-colors bg-white dark:bg-neutral-800 text-black dark:text-white" required={field.required}>
+                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]" required={field.required}>
                           <option value="">Select an option</option>
                           {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                         </select>
@@ -1929,18 +2006,18 @@ const EventDetails = () => {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="flex-1 px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-black dark:border-neutral-600 text-black dark:text-white font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer border-0 outline-none"
+                  className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="flex-1 px-4 py-3 bg-black dark:bg-white border-2 border-black dark:border-white text-white dark:text-black font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-orange-600 hover:border-orange-600 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-0 outline-none"
+                  className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

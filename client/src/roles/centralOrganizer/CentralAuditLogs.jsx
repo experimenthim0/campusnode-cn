@@ -314,70 +314,76 @@ const CentralAuditLogs = ({ events = [] }) => {
       </div>
 
       {selectedMetadata && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs font-mono">
-          <div className="bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-xl max-w-xl w-full p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Terminal size={16} className="text-black dark:text-white" />
-                <h3 className="text-sm font-bold uppercase text-black dark:text-white">
-                  Audit Payload Inspector
-                </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden transition-colors flex flex-col">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <Terminal size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    Audit Payload Inspector
+                  </h3>
+                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Raw transaction telemetry</p>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedMetadata(null)}
-                className="p-1 text-neutral-400 hover:text-black dark:hover:text-white rounded cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-100 dark:bg-neutral-900 rounded-lg text-[11px]">
+            <div className="p-6 space-y-4 text-xs text-[#555555] dark:text-[#B5B5B5]">
+              <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-[11px]">
                 <div>
-                  <span className="text-neutral-500 uppercase block">Log ID:</span>
-                  <span className="text-black dark:text-white font-bold">{selectedMetadata.id}</span>
+                  <span className="text-[#888888] dark:text-[#808080] uppercase block font-bold text-[10px]">Log ID:</span>
+                  <span className="text-[#111111] dark:text-[#F5F5F5] font-mono font-bold">{selectedMetadata.id}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 uppercase block">Action:</span>
-                  <span className={`font-bold ${isAlertAction(selectedMetadata.action) ? "text-red-500" : "text-black dark:text-white"}`}>
+                  <span className="text-[#888888] dark:text-[#808080] uppercase block font-bold text-[10px]">Action:</span>
+                  <span className={`font-bold ${isAlertAction(selectedMetadata.action) ? "text-rose-600 dark:text-rose-400" : "text-[#111111] dark:text-[#F5F5F5]"}`}>
                     {selectedMetadata.action}
                   </span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 uppercase block">Actor:</span>
-                  <span className="text-black dark:text-white">{selectedMetadata.actorEmail}</span>
+                  <span className="text-[#888888] dark:text-[#808080] uppercase block font-bold text-[10px]">Actor:</span>
+                  <span className="text-[#111111] dark:text-[#F5F5F5]">{selectedMetadata.actorEmail}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 uppercase block">Timestamp:</span>
-                  <span className="text-black dark:text-white">{formatTimestamp(selectedMetadata.createdAt)}</span>
+                  <span className="text-[#888888] dark:text-[#808080] uppercase block font-bold text-[10px]">Timestamp:</span>
+                  <span className="text-[#111111] dark:text-[#F5F5F5]">{formatTimestamp(selectedMetadata.createdAt)}</span>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5 pt-1">
-                  <span className="text-[11px] font-bold text-neutral-500 uppercase">
+                  <span className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
                     Metadata Payload (JSON):
                   </span>
                   <button
                     onClick={() => handleCopyPayload(selectedMetadata.metadata)}
-                    className="inline-flex items-center gap-1 text-[11px] text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs text-[#888888] dark:text-[#808080] hover:text-[#F97316] dark:hover:text-[#FB923C] cursor-pointer transition-colors"
                   >
-                    {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-                    <span>{copied ? "COPIED" : "COPY JSON"}</span>
+                    {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                    <span className="font-bold">{copied ? "COPIED" : "COPY JSON"}</span>
                   </button>
                 </div>
-                <pre className="p-3.5 bg-neutral-950 text-neutral-100 rounded-lg text-[11px] font-mono overflow-x-auto max-h-64 border border-neutral-800">
+                <pre className="p-3.5 bg-[#FAFAFA] dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] rounded-xl text-[11px] font-mono overflow-x-auto max-h-64 border border-[#E5E5E5] dark:border-[#303030]">
                   {JSON.stringify(selectedMetadata.metadata, null, 2)}
                 </pre>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex justify-end shrink-0">
               <button
                 onClick={() => setSelectedMetadata(null)}
-                className="px-4 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-bold font-mono rounded cursor-pointer transition-colors"
+                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] text-xs font-bold rounded-xl cursor-pointer transition-colors"
               >
-                CLOSE
+                Close
               </button>
             </div>
           </div>

@@ -19,13 +19,16 @@ export const setPublicResponse = (key, value, ttlMs = DEFAULT_TTL_MS) => {
 };
 
 export const invalidatePublicResponses = (patterns = []) => {
-  for (const pattern of patterns) {
+  const patternList = Array.isArray(patterns) ? patterns : [patterns];
+  for (const pattern of patternList) {
+    if (!pattern || typeof pattern !== "string") continue;
     for (const key of cache.keys()) {
       if (pattern.endsWith("*")) {
         if (key.startsWith(pattern.slice(0, -1))) cache.delete(key);
-      } else if (key === pattern) {
+      } else if (key === pattern || key.startsWith(`${pattern}:`)) {
         cache.delete(key);
       }
     }
   }
 };
+

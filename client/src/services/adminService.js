@@ -14,6 +14,12 @@ export const getClubsList = () =>
 export const createClub = (data) =>
   api.post('/api/admin/clubs', data);
 
+export const updateClub = (id, data) =>
+  api.put(`/api/admin/clubs/${id}`, data);
+
+export const deleteClub = (id) =>
+  api.delete(`/api/admin/clubs/${id}`);
+
 export const getUserInfo = (id) =>
   api.get(`/api/admin/user-info/${id}`);
 

@@ -215,7 +215,7 @@ export const EventFeedbackModal = ({
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm transition-all"
+        className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-all"
         role="dialog"
         aria-modal="true"
         aria-labelledby="feedback-dialog-title"
@@ -226,35 +226,35 @@ export const EventFeedbackModal = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white dark:bg-[#111418] border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden text-neutral-900 dark:text-neutral-100"
+          className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden text-[#555555] dark:text-[#B5B5B5] transition-colors"
         >
-          <div className="relative shrink-0 px-6 py-5 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/70 dark:bg-neutral-900/50 flex items-start justify-between gap-4">
+          <div className="relative shrink-0 px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-start justify-between gap-4">
             <div className="space-y-1 pr-6">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 border border-orange-200/60 dark:border-orange-800/40">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#F97316] dark:bg-[#2A1A0F] dark:text-[#FB923C] border border-orange-200/60 dark:border-orange-800/40">
                   <Sparkles className="w-3 h-3" /> Event Feedback
                 </span>
                 {totalPending > 1 && (
-                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  <span className="text-xs font-semibold text-[#888888] dark:text-[#808080]">
                     {currentIndex + 1} of {totalPending}
                   </span>
                 )}
               </div>
               <h2
                 id="feedback-dialog-title"
-                className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950 dark:text-white"
+                className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-[#F5F5F5]"
               >
                 How was your experience?
               </h2>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400 pt-0.5">
-                <span className="font-bold text-neutral-800 dark:text-neutral-200 line-clamp-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#888888] dark:text-[#808080] pt-0.5">
+                <span className="font-bold text-[#111111] dark:text-[#F5F5F5] line-clamp-1">
                   {currentEvent.title}
                 </span>
                 {formattedDate && (
                   <>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-orange-500" />
+                      <Calendar className="w-3 h-3 text-[#F97316] dark:text-[#FB923C]" />
                       {formattedDate}
                     </span>
                   </>
@@ -263,7 +263,7 @@ export const EventFeedbackModal = ({
                   <>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-orange-500" />
+                      <MapPin className="w-3 h-3 text-[#F97316] dark:text-[#FB923C]" />
                       {currentEvent.venue}
                     </span>
                   </>
@@ -276,8 +276,9 @@ export const EventFeedbackModal = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="w-9 h-9 flex items-center justify-center rounded-full text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200/50 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0"
               aria-label="Close feedback modal"
+              title="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -286,14 +287,14 @@ export const EventFeedbackModal = ({
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
             {isSuccess ? (
               <div className="py-8 text-center space-y-5">
-                <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto shadow-inner">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
                 <div className="space-y-2 max-w-sm mx-auto">
-                  <h3 className="text-2xl font-black text-neutral-900 dark:text-white">
+                  <h3 className="text-2xl font-bold text-[#111111] dark:text-[#F5F5F5]">
                     Thank you!
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                  <p className="text-sm text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
                     Your feedback has been submitted successfully and will help improve future campus events.
                   </p>
                 </div>
@@ -303,7 +304,7 @@ export const EventFeedbackModal = ({
                     <button
                       type="button"
                       onClick={handleNextPending}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-2xl shadow-md transition-all cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                     >
                       Next Feedback <ChevronRight className="w-4 h-4" />
                     </button>
@@ -311,7 +312,7 @@ export const EventFeedbackModal = ({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-full sm:w-auto px-6 py-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-bold text-sm rounded-2xl transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Done
                   </button>
@@ -320,15 +321,15 @@ export const EventFeedbackModal = ({
             ) : (
               <form id="event-feedback-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* 72h window indicator */}
-                <div className="flex items-center gap-2 p-3 bg-neutral-50/80 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-800 rounded-xl text-xs text-neutral-600 dark:text-neutral-400">
-                  <Clock className="w-4 h-4 shrink-0 text-neutral-500" />
+                <div className="flex items-center gap-2 p-3 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs text-[#555555] dark:text-[#B5B5B5]">
+                  <Clock className="w-4 h-4 shrink-0 text-[#888888]" />
                   <span>
                     Feedback closes 72 hours after event completion. Quick rating takes under a minute!
                   </span>
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-900 border border-red-300 dark:border-red-900/60 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400">
+                  <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <p>{error}</p>
                   </div>
@@ -336,11 +337,11 @@ export const EventFeedbackModal = ({
 
                 {/* 1-5 Ratings Section */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                  <div className="flex items-center justify-between border-b border-[#F0F0F0] dark:border-[#2A2A2A] pb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-[#F5F5F5]">
                       Required Ratings (1–5)
                     </h3>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
+                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
                       All 6 required
                     </span>
                   </div>
@@ -349,10 +350,10 @@ export const EventFeedbackModal = ({
                     {RATING_CRITERIA.map((criterion, idx) => (
                       <div
                         key={criterion.key}
-                        className="p-3.5 bg-neutral-50/50 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-800/80 rounded-xl space-y-1.5"
+                        className="p-3.5 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-1.5"
                       >
-                        <label className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                          {idx + 1}. {criterion.label} <span className="text-neutral-400">*</span>
+                        <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
+                          {idx + 1}. {criterion.label} <span className="text-[#F97316]">*</span>
                         </label>
                         <StarRatingSelector
                           name={criterion.label}
@@ -366,12 +367,12 @@ export const EventFeedbackModal = ({
                 </div>
 
                 {/* Recommendation Question */}
-                <div className="p-4 bg-neutral-50/50 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-800/80 rounded-xl space-y-2.5">
+                <div className="p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                      Would you attend a similar event again? <span className="text-neutral-400">*</span>
+                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
+                      Would you attend a similar event again? <span className="text-[#F97316]">*</span>
                     </label>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
+                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
                       Required
                     </span>
                   </div>
@@ -390,10 +391,10 @@ export const EventFeedbackModal = ({
                             setAttendSimilar(opt.val);
                             if (error) setError('');
                           }}
-                          className={`py-2 px-3 rounded-lg font-semibold text-xs sm:text-sm transition-all cursor-pointer border ${
+                          className={`py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
                             isSelected
-                              ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900 dark:border-white shadow-xs'
-                              : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-200/80 dark:border-neutral-700/80 hover:border-neutral-300 dark:hover:border-neutral-600'
+                              ? 'bg-[#F97316] text-white border-[#F97316] dark:bg-[#FB923C] dark:text-[#111111] dark:border-[#FB923C] shadow-xs'
+                              : 'bg-white dark:bg-[#181818] text-[#111111] dark:text-[#F5F5F5] border-[#E5E5E5] dark:border-[#3A3A3A] hover:border-neutral-300 dark:hover:border-zinc-700'
                           }`}
                         >
                           {opt.label}
@@ -405,18 +406,18 @@ export const EventFeedbackModal = ({
 
                 {/* Optional Written Feedback */}
                 <div className="space-y-3 pt-1">
-                  <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                  <div className="flex items-center justify-between border-b border-[#F0F0F0] dark:border-[#2A2A2A] pb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-[#F5F5F5]">
                       Optional Written Feedback
                     </h3>
-                    <span className="text-[11px] text-neutral-400 font-medium">
+                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
                       Optional
                     </span>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                         What did you like?
                       </label>
                       <input
@@ -425,12 +426,12 @@ export const EventFeedbackModal = ({
                         value={liked}
                         onChange={(e) => setLiked(e.target.value)}
                         maxLength={500}
-                        className="w-full px-3 py-2 text-xs bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-neutral-400 text-neutral-900 dark:text-neutral-100"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                         What could be improved?
                       </label>
                       <input
@@ -439,12 +440,12 @@ export const EventFeedbackModal = ({
                         value={improvements}
                         onChange={(e) => setImprovements(e.target.value)}
                         maxLength={500}
-                        className="w-full px-3 py-2 text-xs bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-neutral-400 text-neutral-900 dark:text-neutral-100"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                         Additional comments
                       </label>
                       <textarea
@@ -453,7 +454,7 @@ export const EventFeedbackModal = ({
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
                         maxLength={1000}
-                        className="w-full px-3 py-2 text-xs bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-neutral-400 text-neutral-900 dark:text-neutral-100 resize-none"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors resize-none"
                       />
                     </div>
                   </div>
@@ -463,12 +464,12 @@ export const EventFeedbackModal = ({
           </div>
 
           {!isSuccess && (
-            <div className="shrink-0 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 flex items-center justify-between gap-3">
+            <div className="shrink-0 px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-bold text-[#111111] dark:text-[#F5F5F5] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] rounded-xl transition-colors cursor-pointer"
               >
                 Remind me later
               </button>
@@ -477,7 +478,7 @@ export const EventFeedbackModal = ({
                 type="submit"
                 form="event-feedback-form"
                 disabled={submitting || !isFormValid}
-                className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] font-bold text-xs rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
               >
                 {submitting ? (
                   <>

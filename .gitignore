@@ -23,7 +23,7 @@ dist/
 _tests_/
 
 POSTGRESQL_MIGRATION_PLAN.md
-docs
+docs/
 map/
 timer/
 EventTimerContext.jsx

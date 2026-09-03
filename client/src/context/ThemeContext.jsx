@@ -34,10 +34,16 @@ export const ThemeProvider = ({ children }) => {
 
     localStorage.setItem("theme", theme);
 
-    // Dynamically update theme-color meta tag for PWA top bar / status bar
-    const metaThemeColor = document.querySelector("meta[name='theme-color']");
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+    // Dynamically update theme-color meta tags for PWA top bar / Android status bar
+    const targetColor = isDark ? "#0a0a0a" : "#ffffff";
+    const metas = document.querySelectorAll("meta[name='theme-color']");
+    if (metas.length > 0) {
+      metas.forEach((meta) => meta.setAttribute("content", targetColor));
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "theme-color";
+      meta.content = targetColor;
+      document.head.appendChild(meta);
     }
 
     const faviconSrc = isDark

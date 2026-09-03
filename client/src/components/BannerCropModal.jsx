@@ -329,26 +329,26 @@ const BannerCropModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       <div
-        className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh] transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-base">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center text-base shrink-0">
               <i className="ri-image-edit-line" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
                 Club Cover Banner
               </h2>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
                 Resize, reposition and upload your club's header banner
               </p>
             </div>
@@ -357,34 +357,35 @@ const BannerCropModal = ({
           <button
             onClick={onClose}
             disabled={isUploading}
-            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors disabled:opacity-50 cursor-pointer"
+            title="Close"
           >
             <i className="ri-close-line text-lg" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+        <div className="p-6 overflow-y-auto space-y-4 text-[#555555] dark:text-[#B5B5B5]">
           {/* Dropzone if No Image Selected */}
           {!imageObj || !imageLoaded ? (
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-orange-500 dark:hover:border-orange-500 rounded-2xl p-8 sm:p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-neutral-50/50 dark:bg-neutral-950/40 hover:bg-orange-500/5 group"
+              className="border-2 border-dashed border-[#E5E5E5] dark:border-[#303030] hover:border-[#F97316] dark:hover:border-[#FB923C] rounded-2xl p-8 sm:p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-[#FAFAFA] dark:bg-[#222222] hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] group"
             >
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-2xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
                 <i className="ri-upload-cloud-2-line" />
               </div>
-              <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+              <h3 className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] mb-1">
                 Choose a banner photo
               </h3>
-              <p className="text-xs text-neutral-400 max-w-sm mb-4">
+              <p className="text-xs text-[#888888] dark:text-[#808080] max-w-sm mb-4">
                 Drag and drop your image here, or browse from your device. Recommended: 1400×450px (JPG, PNG, WebP)
               </p>
               <button
                 type="button"
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                className="px-4 py-2 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] text-white dark:text-[#111111] rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer"
               >
                 Browse Files
               </button>
@@ -398,7 +399,7 @@ const BannerCropModal = ({
                 onMouseDown={handleMouseDown}
                 onTouchStart={handleTouchStart}
                 onWheel={handleWheel}
-                className="relative w-full aspect-[1400/450] bg-neutral-950 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing border-2 border-neutral-300 dark:border-neutral-700 shadow-inner select-none"
+                className="relative w-full aspect-[1400/450] bg-neutral-950 rounded-xl overflow-hidden cursor-grab active:cursor-grabbing border border-[#E5E5E5] dark:border-[#303030] shadow-inner select-none"
               >
                 {/* Active WYSIWYG Canvas */}
                 <canvas
@@ -427,13 +428,13 @@ const BannerCropModal = ({
 
                 {/* Instruction Badge */}
                 <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[10px] font-semibold text-white/90 pointer-events-none flex items-center gap-1.5 shadow-sm">
-                  <i className="ri-drag-move-line text-xs text-orange-400" />
+                  <i className="ri-drag-move-line text-xs text-[#F97316]" />
                   Drag to reposition image
                 </div>
               </div>
 
               {/* Toolbar: Zoom Slider, Rotate, Reset, Change File */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030]">
                 {/* Zoom Controls */}
                 <div className="flex items-center gap-2.5 flex-1 min-w-[200px]">
                   <button
@@ -442,7 +443,7 @@ const BannerCropModal = ({
                       setZoom((prev) => Math.max(Number((prev - 0.1).toFixed(2)), 1))
                     }
                     title="Zoom Out"
-                    className="w-7 h-7 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-200 flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-600 transition text-xs"
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#3A3A3A] text-[#555555] dark:text-[#B5B5B5] flex items-center justify-center hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition text-xs cursor-pointer"
                   >
                     <i className="ri-zoom-out-line" />
                   </button>
@@ -454,7 +455,7 @@ const BannerCropModal = ({
                     step="0.01"
                     value={zoom}
                     onChange={(e) => setZoom(parseFloat(e.target.value))}
-                    className="flex-1 accent-orange-600 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
+                    className="flex-1 accent-[#F97316] h-1.5 bg-[#E5E5E5] dark:bg-[#303030] rounded-lg cursor-pointer"
                   />
 
                   <button
@@ -463,12 +464,12 @@ const BannerCropModal = ({
                       setZoom((prev) => Math.min(Number((prev + 0.1).toFixed(2)), 3))
                     }
                     title="Zoom In"
-                    className="w-7 h-7 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-200 flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-600 transition text-xs"
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#3A3A3A] text-[#555555] dark:text-[#B5B5B5] flex items-center justify-center hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition text-xs cursor-pointer"
                   >
                     <i className="ri-zoom-in-line" />
                   </button>
 
-                  <span className="text-[11px] font-mono text-neutral-500 w-10 text-right">
+                  <span className="text-[11px] font-mono text-[#888888] dark:text-[#808080] w-10 text-right font-semibold">
                     {Math.round(zoom * 100)}%
                   </span>
                 </div>
@@ -479,7 +480,7 @@ const BannerCropModal = ({
                     type="button"
                     onClick={handleRotate}
                     title="Rotate 90°"
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition text-xs font-semibold cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#3A3A3A] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition text-xs font-bold cursor-pointer"
                   >
                     <i className="ri-anticlockwise-line" /> Rotate
                   </button>
@@ -488,7 +489,7 @@ const BannerCropModal = ({
                     type="button"
                     onClick={handleReset}
                     title="Reset Alignment"
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition text-xs font-semibold cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#3A3A3A] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition text-xs font-bold cursor-pointer"
                   >
                     <i className="ri-refresh-line" /> Reset
                   </button>
@@ -496,7 +497,7 @@ const BannerCropModal = ({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition text-xs font-semibold cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#3A3A3A] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition text-xs font-bold cursor-pointer"
                   >
                     <i className="ri-image-line" /> Change Photo
                   </button>
@@ -514,12 +515,12 @@ const BannerCropModal = ({
           />
         </div>
 
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isUploading}
-            className="px-4 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl transition cursor-pointer"
+            className="px-4 py-2.5 text-xs font-bold text-[#111111] dark:text-[#F5F5F5] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -528,10 +529,10 @@ const BannerCropModal = ({
             type="button"
             onClick={handleSaveAndUpload}
             disabled={!imageLoaded || isUploading}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white transition shadow-sm ${
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors shadow-xs ${
               !imageLoaded || isUploading
-                ? "bg-neutral-400 dark:bg-neutral-700 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700 cursor-pointer shadow-orange-500/20"
+                ? "bg-neutral-400 dark:bg-neutral-700 cursor-not-allowed opacity-50"
+                : "bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] cursor-pointer"
             }`}
           >
             {isUploading ? (

@@ -1,7 +1,45 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const STUDENT_FAILURE_MESSAGES = [
+  {
+    title: "Wrong Password Again?",
+    body: "Was the password your crush's birthday? Because clearly, it's not working out. 💔",
+    hint: "Double check your spelling or use 'Forgot password?'"
+  },
+  {
+    title: "Midterm Flashbacks?",
+    body: "You're forgetting this password just like Chapter 4 during the end-sem exams. 📚",
+    hint: "Don't guess blindly — take a quick breath."
+  },
+  {
+    title: "Ex's Nickname Detected?",
+    body: "Still trying your ex's nickname? It didn't work then, and it's definitely not working now. 💀",
+    hint: "Time to let it go and reset the password."
+  },
+  {
+    title: "3 AM Sleep Deprivation",
+    body: "That late-night Maggi and 2 hours of sleep are finally taking their toll on your memory. 🍜",
+    hint: "Type slowly, check your Caps Lock."
+  },
+  {
+    title: "Viva Exam Strategy?",
+    body: "Typing random passwords with the exact same confidence as an unprepared external viva. 📝",
+    hint: "Multiple failed attempts might trigger the rate limiter."
+  },
+  {
+    title: "8:30 AM Monday Energy",
+    body: "Struggling to remember this password harder than making it to the 75% attendance threshold. ⏰",
+    hint: "Take a second to verify before hitting Sign In again."
+  },
+  {
+    title: "Left on Seen?",
+    body: "Entering wrong passwords faster than your crush leaves you on 'Delivered'. 📱",
+    hint: "Hit 'Forgot password?' to get back in quickly."
+  }
+];
 
 const Login = () => {
   const { login, verify2FA: authVerify2FA } = useAuth();
@@ -12,6 +50,7 @@ const Login = () => {
   const [otp, setOtp] = useState('');
   const [showOTP, setShowOTP] = useState(false);
   const [error, setError] = useState('');
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -26,6 +65,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       const result = await login(formData.email, formData.password);
+      setFailedAttempts(0);
 
       if (result.needs2FA) {
         setShowOTP(true);
@@ -33,6 +73,7 @@ const Login = () => {
       }
       // Navigation is handled by AuthContext
     } catch (err) {
+      setFailedAttempts((prev) => prev + 1);
       setError(err.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
@@ -45,6 +86,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       await authVerify2FA(formData.email, otp);
+      setFailedAttempts(0);
       // Navigation is handled by AuthContext
     } catch (err) {
       setError(err.response?.data?.message || 'OTP verification failed');
@@ -74,7 +116,31 @@ const Login = () => {
 
           {!showOTP ? (
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-              {error && (
+              {/* Funny Student Message after 2 failed attempts */}
+              {failedAttempts >= 2 && (
+                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
+                  <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                  <div className="space-y-0.5 w-full">
+                    <div className="flex items-center justify-between gap-2">
+                      <strong className="block font-semibold text-xs text-amber-950 dark:text-amber-100">
+                        {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].title}
+                      </strong>
+                      <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                        Attempt {failedAttempts}
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-900/90 dark:text-amber-300 leading-relaxed font-normal">
+                      {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].body}
+                    </p>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-400/80 italic pt-0.5">
+                      💡 {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].hint}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Standard error for 1st failed attempt */}
+              {error && failedAttempts < 2 && (
                 <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm font-medium text-center rounded-xl">
                   {error}
                 </div>

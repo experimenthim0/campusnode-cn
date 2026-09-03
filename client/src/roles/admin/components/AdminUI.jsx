@@ -107,28 +107,32 @@ export const FilterSelect = ({ children, value, onChange, className = "" }) => (
 );
 
 export const Modal = ({ onClose, title, subtitle, children }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm px-4" onClick={onClose}>
-        <div className="bg-white dark:bg-[#0f0f0f] border border-neutral-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-neutral-100 dark:border-zinc-850">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4" onClick={onClose}>
+        <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transition-colors" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 flex justify-between items-center border-b border-[#F0F0F0] dark:border-[#2A2A2A]">
                 <div>
-                    <h3 className="text-lg font-black text-black dark:text-white tracking-tight">{title}</h3>
-                    {subtitle && <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mt-0.5 tracking-wide">{subtitle}</p>}
+                    <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] tracking-tight">{title}</h3>
+                    {subtitle && <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">{subtitle}</p>}
                 </div>
-                <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
+                <button 
+                    onClick={onClose} 
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                    title="Close"
+                >
                     <X size={18} />
                 </button>
             </div>
-            <div className="px-6 py-5">{children}</div>
+            <div className="px-6 py-5 text-[#555555] dark:text-[#B5B5B5]">{children}</div>
         </div>
     </div>
 );
 
 export const ModalField = ({ label, value, mono, accent }) => (
     <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">{label}</label>
-        <p className={`font-semibold text-sm border-b border-neutral-200 dark:border-zinc-800 pb-1.5 ${
+        <label className="block text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1">{label}</label>
+        <p className={`font-semibold text-sm border-b border-[#F0F0F0] dark:border-[#2A2A2A] pb-1.5 ${
             mono ? "font-mono" : ""
-        } ${accent ? "text-orange-600 dark:text-orange-400" : "text-black dark:text-white"}`}>
+        } ${accent ? "text-[#F97316] dark:text-[#FB923C]" : "text-[#111111] dark:text-[#F5F5F5]"}`}>
             {value || 'N/A'}
         </p>
     </div>
@@ -136,14 +140,14 @@ export const ModalField = ({ label, value, mono, accent }) => (
 
 export const ModalFormField = ({ label, name, type = "text", defaultValue, placeholder, required }) => (
     <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">{label}</label>
+        <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">{label}</label>
         <input 
             name={name} 
             type={type} 
             defaultValue={defaultValue} 
             placeholder={placeholder} 
             required={required} 
-            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors" 
         />
     </div>
 );

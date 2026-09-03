@@ -91,7 +91,7 @@ const AdminDashboard = () => {
             setActiveTab(tabParam);
         } else if (role) {
             if (role === 'paymentAdmin') {
-                setActiveTab('payouts');
+                setActiveTab('payments-overview');
             } else {
                 setActiveTab('overview');
             }

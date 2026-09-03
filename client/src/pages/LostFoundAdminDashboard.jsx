@@ -311,77 +311,81 @@ const LostFoundAdminDashboard = () => {
             </div>
 
             {showPasswordModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1a1a1a] w-full max-w-md rounded-2xl border border-neutral-200 dark:border-zinc-800 p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
-                        <button 
-                            onClick={() => setShowPasswordModal(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors cursor-pointer"
-                        >
-                            <i className="ri-close-line text-xl"></i>
-                        </button>
-                        
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center">
-                                <i className="ri-lock-password-line text-xl"></i>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#181818] w-full max-w-md rounded-2xl border border-[#E5E5E5] dark:border-[#303030] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-colors">
+                        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                                    <i className="ri-lock-password-line text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Change Password</h3>
+                                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Update your dashboard credentials</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Change Password</h3>
-                                <p className="text-xs text-gray-400 dark:text-neutral-500">Update your dashboard credentials</p>
-                            </div>
+                            <button 
+                                onClick={() => setShowPasswordModal(false)}
+                                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                                title="Close"
+                            >
+                                <i className="ri-close-line text-lg"></i>
+                            </button>
                         </div>
 
-                        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-neutral-500 mb-1.5">Current Password</label>
-                                <input 
-                                    type="password"
-                                    name="currentPassword"
-                                    required
-                                    value={passwordForm.currentPassword}
-                                    onChange={handlePasswordChange}
-                                    placeholder="Enter current password"
-                                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-orange-500 transition-colors text-black dark:text-white"
-                                />
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
+                                <div>
+                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Current Password</label>
+                                    <input 
+                                        type="password"
+                                        name="currentPassword"
+                                        required
+                                        value={passwordForm.currentPassword}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Enter current password"
+                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">New Password</label>
+                                    <input 
+                                        type="password"
+                                        name="newPassword"
+                                        required
+                                        value={passwordForm.newPassword}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Enter new password (min. 6 chars)"
+                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Confirm New Password</label>
+                                    <input 
+                                        type="password"
+                                        name="confirmPassword"
+                                        required
+                                        value={passwordForm.confirmPassword}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Confirm new password"
+                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                    />
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-neutral-500 mb-1.5">New Password</label>
-                                <input 
-                                    type="password"
-                                    name="newPassword"
-                                    required
-                                    value={passwordForm.newPassword}
-                                    onChange={handlePasswordChange}
-                                    placeholder="Enter new password (min. 6 chars)"
-                                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-orange-500 transition-colors text-black dark:text-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-neutral-500 mb-1.5">Confirm New Password</label>
-                                <input 
-                                    type="password"
-                                    name="confirmPassword"
-                                    required
-                                    value={passwordForm.confirmPassword}
-                                    onChange={handlePasswordChange}
-                                    placeholder="Confirm new password"
-                                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-orange-500 transition-colors text-black dark:text-white"
-                                />
-                            </div>
-
-                            <div className="flex gap-3 justify-end pt-4">
+                            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
                                 <button 
                                     type="button"
                                     onClick={() => setShowPasswordModal(false)}
-                                    className="px-4 py-2 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300 transition-colors cursor-pointer"
+                                    className="px-4 py-2.5 border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] bg-transparent transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
                                     disabled={isChangingPassword}
-                                    className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 >
                                     {isChangingPassword ? "Saving..." : "Update Password"}
                                 </button>

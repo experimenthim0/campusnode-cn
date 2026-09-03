@@ -345,13 +345,13 @@ const VenuesTab = ({
                                 required
                                 autoFocus
                                 placeholder="e.g. Student Activity Centre"
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] text-neutral-900 dark:text-white focus:border-orange-600 outline-none transition-colors"
+                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
                             />
                         </div>
 
                         {/* Availability Radio / Pill Selectors */}
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
+                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-2">
                                 Booking Availability Status
                             </label>
                             <div className="grid grid-cols-2 gap-2.5">
@@ -361,7 +361,7 @@ const VenuesTab = ({
                                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                                         editingVenue.isOpen
                                             ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 shadow-sm'
-                                            : 'border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-zinc-700'
+                                            : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] hover:border-neutral-300 dark:hover:border-zinc-700'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -380,7 +380,7 @@ const VenuesTab = ({
                                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                                         !editingVenue.isOpen
                                             ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 shadow-sm'
-                                            : 'border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-zinc-700'
+                                            : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] hover:border-neutral-300 dark:hover:border-zinc-700'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -395,7 +395,7 @@ const VenuesTab = ({
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-zinc-800">
+                        <div className="flex justify-end gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
                             <button
                                 type="button"
                                 disabled={isUpdatingVenue}
@@ -403,14 +403,14 @@ const VenuesTab = ({
                                     setIsEditVenueModalOpen(false);
                                     setEditingVenue(null);
                                 }}
-                                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isUpdatingVenue}
-                                className="px-5 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                             >
                                 {isUpdatingVenue && <Loader2 size={13} className="animate-spin" />}
                                 <span>{isUpdatingVenue ? 'Saving...' : 'Save Changes'}</span>
@@ -431,7 +431,7 @@ const VenuesTab = ({
                 >
                     <form onSubmit={handleCreateVenue} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
+                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                                 Venue Name <span className="text-orange-600">*</span>
                             </label>
                             <input
@@ -441,13 +441,13 @@ const VenuesTab = ({
                                 placeholder="e.g. Main Auditorium / SAC Ground"
                                 required
                                 autoFocus
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 outline-none transition-colors text-neutral-900 dark:text-white"
+                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
                             />
                         </div>
 
                         {/* Availability Radio / Pill Selectors */}
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
+                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-2">
                                 Initial Availability Status
                             </label>
                             <div className="grid grid-cols-2 gap-2.5">
@@ -457,7 +457,7 @@ const VenuesTab = ({
                                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                                         newVenueIsOpen
                                             ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 shadow-sm'
-                                            : 'border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-zinc-700'
+                                            : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] hover:border-neutral-300 dark:hover:border-zinc-700'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -476,7 +476,7 @@ const VenuesTab = ({
                                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                                         !newVenueIsOpen
                                             ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 shadow-sm'
-                                            : 'border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-zinc-700'
+                                            : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] hover:border-neutral-300 dark:hover:border-zinc-700'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -491,19 +491,19 @@ const VenuesTab = ({
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-zinc-800">
+                        <div className="flex justify-end gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
                             <button
                                 type="button"
                                 disabled={isCreatingVenue}
                                 onClick={() => setIsAddVenueModalOpen(false)}
-                                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isCreatingVenue}
-                                className="px-5 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                             >
                                 {isCreatingVenue && <Loader2 size={13} className="animate-spin" />}
                                 <span>{isCreatingVenue ? 'Adding...' : 'Add Venue'}</span>

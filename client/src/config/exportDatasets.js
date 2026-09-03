@@ -38,7 +38,6 @@ export const EXPORT_DATASETS = {
       { id: "eventType", label: "Type (Paid/Free)" },
       { id: "registeredCount", label: "Registrations" },
       { id: "registrationType", label: "Registration Mode" },
-      { id: "payoutStatus", label: "Payout Status" },
       { id: "registrationDeadline", label: "Deadline" },
       { id: "createdAt", label: "Created Date" },
     ],
@@ -277,11 +276,11 @@ export const EXPORT_DATASETS = {
 
   payouts: {
     id: "payouts",
-    label: "Payouts",
+    label: "Paid Events & Revenue Summary",
     category: "Finance & Accounting",
-    description: "Export settlement totals, fee collection revenues, and payout completion statuses.",
+    description: "Export paid event registration totals, entry fees, and revenue collections.",
     icon: "ri-bank-card-line",
-    defaultColumns: ["title", "clubName", "entryFee", "registeredCount", "totalRevenue", "payoutStatus"],
+    defaultColumns: ["title", "clubName", "entryFee", "registeredCount", "totalRevenue"],
     allColumns: [
       { id: "id", label: "Event ID" },
       { id: "title", label: "Event Title" },
@@ -289,21 +288,9 @@ export const EXPORT_DATASETS = {
       { id: "entryFee", label: "Entry Fee (₹)" },
       { id: "registeredCount", label: "Registrations" },
       { id: "totalRevenue", label: "Total Revenue (₹)" },
-      { id: "payoutStatus", label: "Payout Status" },
       { id: "startTime", label: "Event Start Date" },
       { id: "registrationDeadline", label: "Deadline" },
     ],
-    filterFields: [
-      {
-        id: "payoutStatus",
-        label: "Settlement Status",
-        type: "select",
-        options: [
-          { value: "all", label: "All Statuses" },
-          { value: "PENDING", label: "Pending" },
-          { value: "COMPLETED", label: "Completed" },
-        ],
-      },
-    ],
+    filterFields: [],
   },
 };

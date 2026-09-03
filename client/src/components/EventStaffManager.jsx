@@ -297,19 +297,19 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
       )}
 
       {showInviteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-md shadow-2xl p-5 sm:p-6 space-y-4">
-            <div className="flex items-start justify-between gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+                <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
                   Invite Event Staff
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
                   {eventTitle} •{" "}
                   <Link
                     to="/central-organizer/guide"
                     target="_blank"
-                    className="text-orange-600 dark:text-orange-400 hover:underline font-semibold"
+                    className="text-[#F97316] dark:text-[#FB923C] hover:underline font-bold"
                   >
                     View Guide
                   </Link>
@@ -318,16 +318,17 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
               <button
                 type="button"
                 onClick={() => setShowInviteModal(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 text-xs"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                title="Close"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleInviteStaff} className="space-y-4">
+            <form onSubmit={handleInviteStaff} className="p-6 space-y-4 text-[#555555] dark:text-[#B5B5B5]">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
-                  Student Account
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  Student Account <span className="text-[#F97316]">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -336,31 +337,31 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                     placeholder="Search student by name, email, or roll no..."
                     value={email}
                     onChange={(e) => handleSearchStudents(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-orange-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors"
                   />
 
                   {searchingStudents && (
-                    <span className="absolute right-3 top-2 text-[10px] text-neutral-400">
+                    <span className="absolute right-3.5 top-3 text-[10px] text-[#888888] dark:text-[#808080]">
                       Searching...
                     </span>
                   )}
 
                   {studentSearchResults.length > 0 && (
-                    <div className="absolute left-0 right-0 top-10 z-30 max-h-48 overflow-y-auto rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl divide-y divide-neutral-100 dark:divide-neutral-800">
+                    <div className="absolute left-0 right-0 top-12 z-30 max-h-48 overflow-y-auto rounded-xl border border-[#E5E5E5] dark:border-[#303030] bg-white dark:bg-[#181818] shadow-xl divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
                       {studentSearchResults.map((st) => (
                         <button
                           key={st.id}
                           type="button"
                           onClick={() => handleSelectStudent(st)}
-                          className="w-full text-left p-2.5 flex items-center justify-between gap-2 hover:bg-orange-50/50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                          className="w-full text-left p-3 flex items-center justify-between gap-2 hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] transition-colors cursor-pointer"
                         >
                           <div>
-                            <p className="text-xs font-bold text-neutral-900 dark:text-white">{st.name}</p>
-                            <p className="text-[10px] text-neutral-400">
+                            <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">{st.name}</p>
+                            <p className="text-[11px] text-[#888888] dark:text-[#808080]">
                               {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
                             </p>
                           </div>
-                          <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">
+                          <span className="text-[11px] font-bold text-[#F97316] dark:text-[#FB923C]">
                             Select
                           </span>
                         </button>
@@ -370,16 +371,16 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                 </div>
 
                 {selectedStudent && (
-                  <div className="mt-1.5 flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-xs">
+                  <div className="mt-2 flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-xs">
                     <span className="font-bold text-emerald-800 dark:text-emerald-300 text-[11px]">Selected:</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 text-[11px] truncate">{selectedStudent.name}</span>
+                    <span className="font-semibold text-[#111111] dark:text-[#F5F5F5] text-[11px] truncate">{selectedStudent.name}</span>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedStudent(null);
                         setEmail("");
                       }}
-                      className="ml-auto text-[10px] text-neutral-400 hover:text-neutral-600 underline shrink-0"
+                      className="ml-auto text-[11px] text-[#888888] hover:text-[#111111] dark:hover:text-white underline shrink-0 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -387,30 +388,30 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                 )}
               </div>
 
-              {/* Minimal Permissions Grid */}
+              {/* Permissions Grid */}
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
-                  Roles & Permissions
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  Roles & Permissions <span className="text-[#F97316]">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {AVAILABLE_PERMISSIONS.map((perm) => {
                     const isSelected = selectedPermissions.includes(perm.id);
                     return (
                       <label
                         key={perm.id}
-                        className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                        className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
                           isSelected
-                            ? "border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-300"
-                            : "border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                            ? "border-[#F97316] dark:border-[#FB923C] bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C]"
+                            : "border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#FAFAFA] dark:hover:bg-[#222222]"
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handlePermissionToggle(perm.id)}
-                          className="rounded text-orange-600 focus:ring-orange-500"
+                          className="h-4 w-4 accent-[#F97316] rounded cursor-pointer"
                         />
-                        <span className="text-[11px] font-medium leading-tight">{perm.label}</span>
+                        <span className="text-[11px] font-bold leading-tight">{perm.label}</span>
                       </label>
                     );
                   })}
@@ -419,29 +420,29 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
 
               {/* Expiry */}
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
+                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
                   Access Expiry (Optional)
                 </label>
                 <input
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-orange-500 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="px-3.5 py-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-bold text-[#111111] dark:text-[#F5F5F5] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
+                  className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] disabled:opacity-50 text-white text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-xs"
                 >
                   {inviting ? "Inviting..." : "Send Invite"}
                 </button>
