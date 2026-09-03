@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+
     <meta name="theme-color" id="theme-color-meta" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -55,7 +54,8 @@
           const theme = localStorage.getItem('theme');
           const isDark = theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if(isDark) document.documentElement.classList.add('dark');
-          
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
           const targetColor = isDark ? '#0a0a0a' : '#ffffff';
           const metas = document.querySelectorAll("meta[name='theme-color']");
           metas.forEach(function(m) {

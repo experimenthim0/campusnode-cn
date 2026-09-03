@@ -6,6 +6,7 @@ import RouteLoader from './components/RouteLoader';
 import PageLoader from './components/PageLoader';
 import NetworkGuard from './components/NetworkGuard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Maintainance from './pages/Maintainance';
 import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
 
 // Lazy loaded page components (with auto-retry on stale cache/network error)
@@ -28,7 +29,6 @@ const ClubDetails = lazy(() => import('./pages/ClubDetails'));
 const EditClub = lazy(() => import('./pages/EditClub'));
 const ClubMembers = lazy(() => import('./pages/ClubMembers'));
 const ClubEvents = lazy(() => import('./pages/ClubEvents'));
-const Maintainance = lazy(() => import('./pages/Maintainance'));
 const Maintenance = Maintainance;
 const Home = lazy(() => import('./pages/Home'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
@@ -79,6 +79,9 @@ function App() {
             <RouteLoader>
               <Suspense fallback={<PageLoader />}>
               <Routes>
+                {/* Standalone full-screen routes (no Navbar / Footer / Sidebar) */}
+                <Route path="/maintenance" element={<Maintenance />} />
+
                 <Route element={
                   <ProtectedRoute roles={['admin', 'paymentAdmin', 'lostFoundAdmin']}>
                     <AdminLayout />
@@ -100,7 +103,6 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<RegisterStudent />} />
                   <Route path="/admin-secret-login" element={<AdminLogin />} />
-                  <Route path="/maintenance" element={<Maintenance />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsAndConditions />} />
                   <Route path="/payment-policy" element={<PaymentPolicy />} />

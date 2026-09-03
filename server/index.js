@@ -105,6 +105,34 @@ app.use(express.urlencoded({ extended: false, limit: process.env.JSON_BODY_LIMIT
 app.use(cookieParser());
 
 console.log("Using PostgreSQL via Prisma");
+
+// Maintenance Mode Guard: Block backend access when MAINTENANCE_MODE=true
+if (process.env.MAINTENANCE_MODE === "true") {
+  const startupNotice = process.env.MAINTENANCE_MESSAGE || "CampusNode backend is currently undergoing scheduled maintenance.";
+  console.log("\n=======================================================");
+  console.log("🚧 [MAINTENANCE MODE ACTIVE] 🚧");
+  console.log(`Notice: ${startupNotice}`);
+  console.log("=======================================================\n");
+}
+
+app.use((req, res, next) => {
+  if (process.env.MAINTENANCE_MODE === "true") {
+    const customMessage = process.env.MAINTENANCE_MESSAGE || "CampusNode is currently undergoing scheduled maintenance. All API access is temporarily paused.";
+
+    console.warn(`\n[MAINTENANCE BLOCKED] ${new Date().toLocaleTimeString()} | ${req.method} ${req.originalUrl} | Client IP: ${req.ip || req.socket?.remoteAddress}`);
+    console.warn(`Terminal Notice: "${customMessage}"\n`);
+
+    return res.status(503).json({
+      success: false,
+      code: "MAINTENANCE_OVERLOAD",
+      maintenance: true,
+      message: customMessage,
+      timestamp: new Date().toISOString()
+    });
+  }
+  next();
+});
+
 app.get("/", (req, res) => {
   res.send("CampusNode API Running");
 });

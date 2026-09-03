@@ -32,6 +32,7 @@ const EventQuickViewDrawer = ({
   event,
   isOpen,
   onClose,
+  onOpenPreview,
   onApprove,
   onReject,
   onOpenReschedule,

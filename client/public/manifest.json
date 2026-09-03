@@ -26,8 +26,8 @@
   "start_url": "/",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "display": "minimal-ui",
-  "display_override": ["minimal-ui", "standalone", "browser"],
+  "display": "standalone",
+  "display_override": ["standalone"],
   "orientation": "portrait-primary",
   "categories": ["education", "events", "productivity"]
 }

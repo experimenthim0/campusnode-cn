@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const ThemeContext = createContext();
 
@@ -16,62 +16,58 @@ export const ThemeProvider = ({ children }) => {
     return localStorage.getItem("theme") || "system";
   });
 
-  const getSystemTheme = () =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  // Track system dark preference as reactive state so OS changes trigger re-renders
+  const [systemDark, setSystemDark] = useState(() =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
 
   const isDark =
     theme === "dark" ||
-    (theme === "system" && getSystemTheme());
+    ((theme === "system" || !theme) && systemDark);
 
-  useEffect(() => {
+  // Apply all theme side-effects whenever isDark changes
+  const applyTheme = useCallback((dark) => {
     const root = document.documentElement;
 
-    if (isDark) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    // Tailwind dark class
+    root.classList.toggle("dark", dark);
+
+    // CSS color-scheme — controls native UI chrome (scrollbars, form controls, PWA status bar)
+    root.style.colorScheme = dark ? "dark" : "light";
+
+    // Single runtime-controlled theme-color meta tag
+    const metaThemeColor = document.getElementById("theme-color-meta");
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", dark ? "#0a0a0a" : "#ffffff");
     }
 
-    localStorage.setItem("theme", theme);
-
-    // Dynamically update theme-color meta tags for PWA top bar / Android status bar
-    const targetColor = isDark ? "#0a0a0a" : "#ffffff";
-    const metas = document.querySelectorAll("meta[name='theme-color']");
-    if (metas.length > 0) {
-      metas.forEach((meta) => meta.setAttribute("content", targetColor));
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "theme-color";
-      meta.content = targetColor;
-      document.head.appendChild(meta);
-    }
-
-    const faviconSrc = isDark
-      ? "/darkthemelogo.png"
-      : "/lightthemelogo2.png";
-
+    // Dynamic favicon
+    const faviconSrc = dark ? "/darkthemelogo.png" : "/lightthemelogo2.png";
     if (window.setRoundedFavicon) {
       window.setRoundedFavicon(faviconSrc);
     } else {
       const favicon = document.getElementById("dynamic-favicon");
       if (favicon) favicon.href = faviconSrc;
     }
-  }, [theme, isDark]);
+  }, []);
 
-  // Update automatically when OS theme changes
+  // Apply theme whenever isDark or theme changes
+  useEffect(() => {
+    applyTheme(isDark);
+    localStorage.setItem("theme", theme);
+  }, [theme, isDark, applyTheme]);
+
+  // Listen for OS theme changes — update systemDark state so isDark recomputes
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const handler = () => {
-      if (theme === "system") {
-        setTheme("system");
-      }
+    const handler = (e) => {
+      setSystemDark(e.matches);
     };
 
     media.addEventListener("change", handler);
-
     return () => media.removeEventListener("change", handler);
-  }, [theme]);
+  }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -91,4 +87,4 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-export default ThemeContext;
+export default ThemeContext;

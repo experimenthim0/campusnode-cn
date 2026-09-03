@@ -540,25 +540,28 @@ const EventDetails = () => {
 
   const getShareText = () => {
     if (!event) return '';
-    return `*_Event Alert 🚨_*\n\n*${event.title}*\n*Venue*: ${event.venue}\n*Date*: ${new Date(event.startTime).toLocaleDateString('en-IN')}\n*Time*: ${new Date(event.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}\n*Entry Fee*: ${event.entryFee ? `₹${event.entryFee}` : 'Free'}\n*Event By*: ${event.club?.clubName || event.createdBy?.clubName}\n*Hosted On*: *_CampusNode_*\n\n*More Info*: `;
+    const organizer = (event.organizerType === 'CENTRAL' || event.centralOrganizerId)
+      ? 'Office of DSW'
+      : (event.club?.clubName || event.createdBy?.clubName || '');
+    return organizer ? `${event.title} by ${organizer}` : event.title;
   };
 
   const handleShare = () => {
     const message = getShareText();
     if (navigator.share) {
-      navigator.share({ title: `${event.title} - CampusNode`, text: message, url: window.location.href }).catch((error) => console.error('Error sharing:', error));
+      navigator.share({ title: message, text: message, url: window.location.href }).catch((error) => console.error('Error sharing:', error));
     } else {
-      navigator.clipboard.writeText(message + window.location.href).then(() => showNotification('Event details copied to clipboard', 'success')).catch((error) => console.error('Clipboard error:', error));
+      navigator.clipboard.writeText(`${message} - ${window.location.href}`).then(() => showNotification('Event details copied to clipboard', 'success')).catch((error) => console.error('Clipboard error:', error));
     }
   };
 
   const handleWhatsAppShare = () => {
-    const message = getShareText() + window.location.href;
+    const message = `${getShareText()} - ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleXShare = () => {
-    const text = `Check out "${event.title}" on CampusNode! 🎉`;
+    const text = getShareText();
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
   };
 
@@ -654,10 +657,33 @@ const EventDetails = () => {
     ? 'All'
     : event.allowedPrograms.map(p => PROGRAM_LABELS[p] || p).join(', ');
 
+  const getRegistrationTypeDisplay = () => {
+    const type = event.registrationType;
+    if (type === 'none') return 'Open Entry';
+    if (type === 'team') {
+      const min = event.minTeamSize;
+      const max = event.maxTeamSize;
+      if (min && max && min === max) return `Team (${min})`;
+      if (min && max) return `Team (${min}-${max})`;
+      return 'Team';
+    }
+    if (type === 'both') {
+      const min = event.minTeamSize;
+      const max = event.maxTeamSize;
+      if (min && max) return `Solo / Team (${min}-${max})`;
+      return 'Solo / Team';
+    }
+    return 'Individual';
+  };
+
   const highlights = [
     { icon: 'ri-group-line', label: 'Capacity', value: isUnlimited ? 'Unlimited Seats' : `${totalSeats} Seats` },
     { icon: 'ri-coin-line', label: 'Entry Fee', value: entryFee > 0 ? `₹${entryFee}` : 'Free Entry' },
-    // { icon: 'ri-community-line', label: 'Eligibility', value: event.allowExternal !== false ? 'All Colleges & Universities' : 'Internal NITJ Students Only' },
+    {
+      icon: event.registrationType === 'team' || event.registrationType === 'both' ? 'ri-team-line' : 'ri-user-line',
+      label: 'Registration',
+      value: getRegistrationTypeDisplay(),
+    },
     { icon: 'ri-time-line', label: 'Duration', value: (() => {
       const diff = new Date(endTime) - new Date(startTime);
       const hrs = Math.floor(diff / 3600000);
@@ -665,7 +691,11 @@ const EventDetails = () => {
       return hrs > 0 ? `${hrs}h ${mins > 0 ? `${mins}m` : ''}` : `${mins}m`;
     })() },
     ...(event.provideCertificate ? [{ icon: 'ri-award-line', label: 'Certificate', value: 'Provided' }] : []),
-    ...(event.showWinner ? [{ icon: 'ri-trophy-line', label: 'Competition', value: 'Winners Announced' }] : []),
+    ...(event.showWinner ? [{
+      icon: 'ri-trophy-line',
+      label: 'Competition',
+      value: showWinners ? 'Winners Announced' : 'Winners will be announced',
+    }] : []),
     { icon: 'ri-graduation-cap-line', label: 'Open To', value: programDisplay },
     ...(event.allowedBranches && event.allowedBranches.length > 0
       ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: event.allowedBranches.join(', ') }]
@@ -914,11 +944,20 @@ const EventDetails = () => {
                 onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
               />
 
-              {/* Zoom prompt badge on top right */}
+              {/* Share button on top right */}
               <div className="absolute top-2 right-2 z-10">
-                <span className="inline-flex items-center gap-1.5 bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full border border-white/20 shadow-lg group-hover:scale-105 transition-all">
-                  <i className="ri-zoom-in-line text-sm" />
-                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare();
+                  }}
+                  className="inline-flex items-center justify-center bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/20 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  title="Share Event"
+                  aria-label="Share Event"
+                >
+                  <i className="ri-share-forward-line text-sm" />
+                </button>
               </div>
 
               {/* Status badge overlay */}
@@ -1419,51 +1458,14 @@ const EventDetails = () => {
                   )}
                 </div>
               )}
+            </div>
 
-              <div className="px-6 pb-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-3">Share Event</p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleWhatsAppShare}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/40 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors cursor-pointer"
-                    title="Share on WhatsApp"
-                  >
-                    <i className="ri-whatsapp-line text-lg" />
-                  </button>
-                  <button
-                    onClick={handleXShare}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                    title="Share on X"
-                  >
-                    <i className="ri-twitter-x-line text-lg" />
-                  </button>
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                    title="Copy link"
-                  >
-                    <i className="ri-link text-lg" />
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/40 text-orange-600 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors cursor-pointer"
-                    title="More sharing options"
-                  >
-                    <i className="ri-share-forward-line text-lg" />
-                  </button>
-                </div>
-              </div>
-              
-<div className="px-6 pb-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-
-       
- 
- {event.sponsors && event.sponsors.length > 0 && (
-              <div className="mb-8">
+            {event.sponsors && event.sponsors.length > 0 && (
+              <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
                 <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Sponsors/Partners
                 </h3>
-                <div className="flex flex-wrap gap-5 items-center ">
+                <div className="flex flex-wrap gap-5 items-center">
                   {event.sponsors.map((sponsor, i) => (
                     <a
                       key={i}
@@ -1480,16 +1482,11 @@ const EventDetails = () => {
                         className="h-7 w-auto object-contain bg-white dark:bg-black"
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
                       />
-                      {/* <span className="text-[11px] font-medium text-black dark:text-white tracking-wide text-center">
-                        {sponsor.name}
-                      </span> */}
                     </a>
                   ))}
                 </div>
               </div>
             )}
-              </div>
-            </div>
           </div>
         </div>
       </div>

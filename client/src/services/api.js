@@ -31,12 +31,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Maintenance / overload mode
-    if (error.response?.status === 503 && error.response?.data?.code === 'MAINTENANCE_OVERLOAD') {
-      window.location.href = '/maintenance';
-      return Promise.reject(error);
-    }
-
     // Unauthorized — session expired
     if (error.response?.status === 401) {
       const path = window.location.pathname;

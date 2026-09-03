@@ -17,6 +17,7 @@ import { LayoutDashboard, Shield } from "lucide-react";
 import SearchBar from "./SearchBar";
 import { ArrowRightIcon } from "./ui/arrow-right";
 import { usePwaInstall } from "../hooks/usePwaInstall";
+import DesktopPWAControls from "./DesktopPWAControls";
 import api from "../services/api";
 
 
@@ -186,6 +187,7 @@ const Navbar = () => {
 
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center sm:gap-5 gap-auto">
+            <DesktopPWAControls />
             <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12" />
             <Link
               to="/"

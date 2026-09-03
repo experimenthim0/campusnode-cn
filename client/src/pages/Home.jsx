@@ -9,7 +9,6 @@ import EventFeed from './EventFeed';
 import Clubspage from './Clubspage';
 import ClubLeaderboard from '../components/ClubLeaderboard';
 import HomeFooter from '../components/HomeFooter';
-import Maintainance from './Maintainance';
 import ScrollReveal from '../components/ScrollReveal';
 import Section from '../components/layout/Section';
 import {ArrowRightIcon} from '../components/ui/arrow-right';
@@ -489,11 +488,7 @@ const Home = () => {
     e.currentTarget.style.setProperty("--x-px", `${x}px`);
     e.currentTarget.style.setProperty("--y-px", `${y}px`);
   };
-  
-   const isMaintenance = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
-  if (isMaintenance) {
-    return <Maintainance />;
-  }
+
   const bgImages = ["mainbuilding.jpeg"];
   const [bgIndex, setBgIndex] = useState(0);
 
