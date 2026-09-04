@@ -8,7 +8,8 @@ import NetworkGuard from './components/NetworkGuard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Maintainance from './pages/Maintainance';
 import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
-
+import { SpeedInsights } from "@vercel/speed-insights/react"
+import { Analytics } from "@vercel/analytics/react"
 // Lazy loaded page components (with auto-retry on stale cache/network error)
 const EventFeed = lazy(() => import('./pages/EventFeed'));
 const RegisterStudent = lazy(() => import('./pages/RegisterStudent'));
