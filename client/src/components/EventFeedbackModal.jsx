@@ -62,7 +62,7 @@ const StarRatingSelector = ({ value, onChange, name, disabled }) => {
               onMouseLeave={() => setHovered(0)}
               onFocus={() => setHovered(star)}
               onBlur={() => setHovered(0)}
-              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-150 transform hover:scale-115 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-150 transform hover:scale-115 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer ${
                 isActive
                   ? 'text-amber-500 dark:text-amber-400 drop-shadow-sm'
                   : 'text-neutral-300 dark:text-neutral-700 hover:text-amber-300'
@@ -231,7 +231,7 @@ export const EventFeedbackModal = ({
           <div className="relative shrink-0 px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-start justify-between gap-4">
             <div className="space-y-1 pr-6">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#F97316] dark:bg-[#2A1A0F] dark:text-[#FB923C] border border-orange-200/60 dark:border-orange-800/40">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#F97316] dark:bg-[#2A1A0F] dark:text-[#FB923C] border border-brand-200/60 dark:border-brand-800/40">
                   <Sparkles className="w-3 h-3" /> Event Feedback
                 </span>
                 {totalPending > 1 && (

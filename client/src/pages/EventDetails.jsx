@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { X } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { searchUsers, updateProfile } from '../services/userService';
@@ -27,28 +28,8 @@ import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants'
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
-const CATEGORY_EMOJI = {
-  'sports': '🏃',
-  'sports & fitness': '🏃',
-  'fitness': '💪',
-  'tech': '💻',
-  'technology': '💻',
-  'cultural': '🎭',
-  'arts': '🎨',
-  'music': '🎵',
-  'wellness': '🧘',
-  'wellness & yoga': '🧘',
-  'academic': '📚',
-  'social': '🤝',
-  'gaming': '🎮',
-  'photography': '📸',
-  'dance': '💃',
-  'debate': '🎤',
-  'literary': '📖',
-  'science': '🔬',
-  'business': '💼',
-  'environment': '🌱',
-};
+const CATEGORY_EMOJI={}
+
 
 const getCategoryEmoji = (category) => {
   if (!category) return '🎉';
@@ -583,12 +564,12 @@ const EventDetails = () => {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
         <div className="border-2 border-black dark:border-neutral-700 rounded-sm p-10 text-center max-w-sm bg-white dark:bg-neutral-900">
-          <div className="w-14 h-14 bg-orange-600 rounded-sm flex items-center justify-center text-white text-2xl mx-auto mb-5">
+          <div className="w-14 h-14 bg-brand-600 rounded-sm flex items-center justify-center text-white text-2xl mx-auto mb-5">
             <i className="ri-error-warning-line" />
           </div>
           <h2 className="font-black text-xl text-black dark:text-white mb-2">Oops!</h2>
           <p className="text-neutral-500 text-[14px] mb-6">{error || 'Event not found'}</p>
-          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-orange-600 transition-colors cursor-pointer border-2 border-black">
+          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors cursor-pointer border-2 border-black">
             <i className="ri-arrow-left-line" /> Back to Events
           </button>
         </div>
@@ -633,7 +614,7 @@ const EventDetails = () => {
     : isEnded
     ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
-    ? { label: 'Event is Live', cls: 'bg-orange-600 text-white border-orange-600 cursor-not-allowed', disabled: true }
+    ? { label: 'Event is Live', cls: 'bg-brand-600 text-white border-brand-600 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
     ? { label: 'Deadline Passed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isExternalRestricted
@@ -642,7 +623,7 @@ const EventDetails = () => {
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isFull
     ? { label: 'Join Waitlist', cls: 'bg-yellow-400 text-black border-black hover:bg-yellow-300 cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-orange-600 hover:border-orange-600 hover:text-white cursor-pointer', disabled: false };
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-brand-600 hover:border-brand-600 hover:text-white cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -868,7 +849,7 @@ const EventDetails = () => {
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-orange-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-brand-600 transition-colors cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
@@ -917,19 +898,7 @@ const EventDetails = () => {
 
           <div className="w-full lg:w-[65%] min-w-0">
 
-            {/* <nav className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-500 mb-5 flex-wrap">
-              <Link to="/" className="hover:text-orange-600 transition-colors">Home</Link>
-              <i className="ri-arrow-right-s-line text-[10px]" />
-              <Link to="/events" className="hover:text-orange-600 transition-colors">Events</Link>
-              {clubCategory && (
-                <>
-                  <i className="ri-arrow-right-s-line text-[10px]" />
-                  <span className="text-neutral-500 dark text-neutral-500">{clubCategory}</span>
-                </>
-              )}
-              <i className="ri-arrow-right-s-line text-[10px]" />
-              <span className="text-neutral-600 dark:text-neutral-300 font-medium truncate max-w-[180px]">{title}</span>
-            </nav> */}
+          
 
             <div 
               onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
@@ -963,7 +932,7 @@ const EventDetails = () => {
               {/* Status badge overlay */}
               <div className="absolute top-2 left-2">
                 {isLive && (
-                  <span className="inline-flex items-center gap-1.5 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
+                  <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
                   </span>
                 )}
@@ -985,16 +954,16 @@ const EventDetails = () => {
             {/* <div className="flex items-center gap-2 flex-wrap mb-3">
               {isCentralEvent ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-[10px] font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">
                     <i className="ri-sparkling-line" /> College-Wide Event
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                    <i className="ri-building-2-line text-orange-600" /> Office of DSW
+                    <i className="ri-building-2-line text-brand-600" /> Office of DSW
                   </span>
                 </>
               ) : (
                 clubCategory && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-[10px] font-light uppercase tracking-wider text-orange-700 dark:text-orange-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-light uppercase tracking-wider text-brand-700 dark:text-brand-400">
                     {clubCategory}
                   </span>
                 )
@@ -1016,39 +985,39 @@ const EventDetails = () => {
 
             <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
               <span className="inline-flex items-center gap-1.5">
-                <i className="ri-calendar-event-line text-orange-500" />
+                <i className="ri-calendar-event-line text-brand-500" />
                 {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
               <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
               <span className="inline-flex items-center gap-1.5">
-                <i className="ri-map-pin-2-line text-orange-500" />
+                <i className="ri-map-pin-2-line text-brand-500" />
                 <span className="truncate max-w-[160px]">{venue}</span>
               </span>
               <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
               {isCentralEvent ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <i className="ri-building-2-line text-orange-500" />
+                  <i className="ri-building-2-line text-brand-500" />
                   <span className="truncate max-w-[140px]">Office of DSW</span>
                 </span>
               ) : clubSlugOrId ? (
-                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-orange-600 transition-colors">
-                  <i className="ri-team-line text-orange-500" />
+                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-brand-600 transition-colors">
+                  <i className="ri-team-line text-brand-500" />
                   <span className="truncate max-w-[140px]">{displayName}</span>
                 </Link>
               ) : (
                 <span className="inline-flex items-center gap-1.5">
-                  <i className="ri-team-line text-orange-500" />
+                  <i className="ri-team-line text-brand-500" />
                   <span className="truncate max-w-[140px]">{displayName}</span>
                 </span>
               )}
               <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
               <span className="inline-flex items-center gap-1.5">
-                <i className="ri-user-line text-orange-500" />
+                <i className="ri-user-line text-brand-500" />
                 {registeredCount} Registered
               </span>
               <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
               <span className="inline-flex items-center gap-1.5" title="Total event views">
-                <i className="ri-eye-line text-orange-500" />
+                <i className="ri-eye-line text-brand-500" />
                 {views || 0} Views
               </span>
             </div>
@@ -1073,10 +1042,10 @@ const EventDetails = () => {
                 {highlights.map((h, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-300 dark:hover:border-brand-700 transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/50 flex items-center justify-center shrink-0">
-                      <i className={`${h.icon} text-orange-600 dark:text-orange-400 text-base`} />
+                    <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
+                      <i className={`${h.icon} text-brand-600 dark:text-brand-400 text-base`} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
@@ -1171,7 +1140,7 @@ const EventDetails = () => {
                               {winner.name}
                             </p>
                             {isTeamWinner && (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border border-orange-200/50 dark:border-orange-800/40 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
                                 <i className="ri-team-line text-[10px]" /> Team
                               </span>
                             )}
@@ -1234,7 +1203,7 @@ const EventDetails = () => {
                     <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
                       {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
-                    <p className="text-[14px] font-semibold text-orange-600">
+                    <p className="text-[14px] font-semibold text-brand-600">
                       {new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                     </p>
                   </div>
@@ -1266,15 +1235,15 @@ const EventDetails = () => {
                     {registeredCount} / {totalSeats} seats filled
                   </p>
                   {isFull && (
-                    <p className="text-[11px] text-orange-600 font-semibold mt-1">All seats filled — registering adds you to the waitlist.</p>
+                    <p className="text-[11px] text-brand-600 font-semibold mt-1">All seats filled — registering adds you to the waitlist.</p>
                   )}
                 </div>
               )}
 
               {alreadyRegistered && (
-                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50 rounded-full">
-                  <i className="ri-checkbox-circle-line text-orange-600 text-lg shrink-0" />
-                  <p className="text-[13px] font-semibold text-orange-700 dark:text-orange-400">You are already registered for this event.</p>
+                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800/50 rounded-full">
+                  <i className="ri-checkbox-circle-line text-brand-600 text-lg shrink-0" />
+                  <p className="text-[13px] font-semibold text-brand-700 dark:text-brand-400">You are already registered for this event.</p>
                 </div>
               )}
 
@@ -1297,7 +1266,7 @@ const EventDetails = () => {
 
                   <Link 
                     to="/my-events" 
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400 hover:underline"
                   >
                     View My Tickets <i className="ri-arrow-right-s-line" />
                   </Link>
@@ -1353,13 +1322,13 @@ const EventDetails = () => {
               {isCentralEvent ? (
                 <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                   <div className="px-3 flex items-center gap-3 pb-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/50 flex items-center justify-center shrink-0 border border-orange-200 dark:border-orange-900/50">
-                      <i className="ri-building-2-line text-orange-600 text-lg" />
+                    <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-900/50">
+                      <i className="ri-building-2-line text-brand-600 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
                       <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
-                      <p className="text-[11px] font-medium text-orange-600 dark:text-orange-400">Dean Student Welfare</p>
+                      <p className="text-[11px] font-medium text-brand-600 dark:text-brand-400">Dean Student Welfare</p>
                     </div>
                   </div>
 
@@ -1373,7 +1342,7 @@ const EventDetails = () => {
                           <Link
                             key={pc.id}
                             to={`/club/${pc.club?.slug || pc.club?.id}`}
-                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-orange-50 dark:hover:bg-orange-950/40 text-neutral-700 dark:text-neutral-300 hover:text-orange-600 rounded-lg transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 rounded-lg transition-colors"
                           >
                             {pc.club?.clubName}
                           </Link>
@@ -1388,17 +1357,17 @@ const EventDetails = () => {
                     {clubSlugOrId ? (
                       <Link
                         to={`/club/${clubSlugOrId}`}
-                        className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/50 flex items-center justify-center shrink-0 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors overflow-hidden"
+                        className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 hover:bg-brand-200 dark:hover:bg-brand-900/50 transition-colors overflow-hidden"
                       >
                         {event.club?.clubLogo ? (
                           <img src={event.club.clubLogo} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
                         ) : (
-                          <i className="ri-team-line text-orange-600 text-sm" />
+                          <i className="ri-team-line text-brand-600 text-sm" />
                         )}
                       </Link>
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/50 flex items-center justify-center shrink-0">
-                        <i className="ri-team-line text-orange-600 text-sm" />
+                      <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
+                        <i className="ri-team-line text-brand-600 text-sm" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -1406,7 +1375,7 @@ const EventDetails = () => {
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-bold text-black dark:text-white hover:text-orange-600 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-bold text-black dark:text-white hover:text-brand-600 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
@@ -1446,7 +1415,7 @@ const EventDetails = () => {
                               href={href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors cursor-pointer"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
                               title={link.platform}
                             >
                               {getIcon()}
@@ -1932,7 +1901,7 @@ const EventDetails = () => {
                           <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
                           <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-lg">Add</span>
+                        <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>

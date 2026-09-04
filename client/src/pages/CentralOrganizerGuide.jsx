@@ -26,16 +26,16 @@ const CentralOrganizerGuide = () => {
         <div>
           <Link
             to="/central-organizer"
-            className="inline-flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline mb-4"
+            className="inline-flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline mb-4"
           >
             <ArrowLeft size={14} /> Back to Central Organizer Dashboard
           </Link>
-          <div className="flex items-center gap-2 mb-2 text-orange-600">
-            <span className="block w-6 h-[1px] bg-orange-600" />
+          <div className="flex items-center gap-2 mb-2 text-brand-600">
+            <span className="block w-6 h-[1px] bg-brand-600" />
             <span className="text-[10px] font-bold uppercase tracking-wider">Official Manual</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-            Central Organizer <span className="text-orange-600">Dashboard Guide</span>
+            Central Organizer <span className="text-brand-600">Dashboard Guide</span>
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-2xl text-sm md:text-base leading-relaxed">
             Complete operational manual for managing institute-level events under the Dean Student Welfare (DSW) office, delegating staff, linking co-hosting clubs, and running on-ground logistics.
@@ -45,11 +45,11 @@ const CentralOrganizerGuide = () => {
         {/* Section 1: DSW Institutional Account Architecture */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
           <div className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold text-base">
-            <Building2 className="text-orange-600" size={20} />
+            <Building2 className="text-brand-600" size={20} />
             <h2>1. DSW Institutional Account Architecture</h2>
           </div>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs sm:text-sm">
-            Central Events (e.g., Freshers' Induction, Utkansh, Bharat Dhwani, Hackathons, Youth Festivals) represent institute-wide functions under the <strong className="text-neutral-900 dark:text-neutral-100">Dean Student Welfare (DSW) Office</strong> (<code className="text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded text-xs">odsw@nitj.ac.in</code>).
+            Central Events (e.g., Freshers' Induction, Utkansh, Bharat Dhwani, Hackathons, Youth Festivals) represent institute-wide functions under the <strong className="text-neutral-900 dark:text-neutral-100">Dean Student Welfare (DSW) Office</strong> (<code className="text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-1.5 py-0.5 rounded text-xs">odsw@nitj.ac.in</code>).
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
@@ -70,7 +70,7 @@ const CentralOrganizerGuide = () => {
         {/* Section 2: Creating & Managing Central Events */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
           <div className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold text-base">
-            <Calendar className="text-orange-600" size={20} />
+            <Calendar className="text-brand-600" size={20} />
             <h2>2. Creating & Publishing Events (Events Tab)</h2>
           </div>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs sm:text-sm">
@@ -86,17 +86,17 @@ const CentralOrganizerGuide = () => {
         {/* Section 3: Event Staff Delegation Matrix */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs space-y-4">
           <div className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold text-base">
-            <Users className="text-orange-600" size={20} />
+            <Users className="text-brand-600" size={20} />
             <h2>3. Event Staff Delegation (Staff Tab)</h2>
           </div>
           <p className="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm leading-relaxed">
-            Organizers can invite registered students as on-ground operators. Staff members use their own CampusNode account to access the <Link to="/event-staff" className="text-orange-600 hover:underline font-semibold">Event Staff Portal</Link>.
+            Organizers can invite registered students as on-ground operators. Staff members use their own CampusNode account to access the <Link to="/event-staff" className="text-brand-600 hover:underline font-semibold">Event Staff Portal</Link>.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <QrCode size={15} className="text-orange-600" />
+                <QrCode size={15} className="text-brand-600" />
                 Attendance Operator
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -106,7 +106,7 @@ const CentralOrganizerGuide = () => {
 
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <FileText size={15} className="text-orange-600" />
+                <FileText size={15} className="text-brand-600" />
                 Registration Operator
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -116,7 +116,7 @@ const CentralOrganizerGuide = () => {
 
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <Award size={15} className="text-orange-600" />
+                <Award size={15} className="text-brand-600" />
                 Certificate Operator
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -126,7 +126,7 @@ const CentralOrganizerGuide = () => {
 
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <Bell size={15} className="text-orange-600" />
+                <Bell size={15} className="text-brand-600" />
                 Announcement Operator
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -136,7 +136,7 @@ const CentralOrganizerGuide = () => {
 
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <BarChart3 size={15} className="text-orange-600" />
+                <BarChart3 size={15} className="text-brand-600" />
                 Analytics Viewer
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -146,7 +146,7 @@ const CentralOrganizerGuide = () => {
 
             <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs mb-1">
-                <Calendar size={15} className="text-orange-600" />
+                <Calendar size={15} className="text-brand-600" />
                 Event Manager
               </div>
               <p className="text-[11px] text-neutral-500">
@@ -159,7 +159,7 @@ const CentralOrganizerGuide = () => {
         {/* Section 4: Participating Clubs Co-Hosting */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
           <div className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold text-base">
-            <Layers className="text-orange-600" size={20} />
+            <Layers className="text-brand-600" size={20} />
             <h2>4. Co-Hosting with Student Clubs (Clubs Tab)</h2>
           </div>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs sm:text-sm">
@@ -175,7 +175,7 @@ const CentralOrganizerGuide = () => {
         {/* Section 5: Audit & Accountability */}
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
           <div className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold text-base">
-            <History className="text-orange-600" size={20} />
+            <History className="text-brand-600" size={20} />
             <h2>5. Institutional Audit Logs (Audit Tab)</h2>
           </div>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs sm:text-sm">
@@ -191,7 +191,7 @@ const CentralOrganizerGuide = () => {
         <div className="text-center pt-4">
           <Link
             to="/central-organizer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
           >
             Open Central Organizer Dashboard
           </Link>

@@ -10,21 +10,21 @@ const LeaderboardGuide = () => {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full border border-orange-500/20">
+          <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full border border-brand-500/20">
             Official Ranking Methodology
           </span>
         </div>
 
         <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 rounded-3xl p-8 sm:p-12 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-orange-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-brand-300">
               <Award className="w-3.5 h-3.5 text-amber-400" />
               <span>CampusNode Club Hall of Fame</span>
             </div>
@@ -43,7 +43,7 @@ const LeaderboardGuide = () => {
         <div className="space-y-6">
           <div className="space-y-1">
             <h2 className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-orange-500" />
+              <Zap className="w-6 h-6 text-brand-500" />
               The 3 Pillars of Club Points
             </h2>
             <p className="text-neutral-500 dark:text-neutral-400 text-sm">
@@ -53,9 +53,9 @@ const LeaderboardGuide = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Pillar 1 */}
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs relative overflow-hidden flex flex-col justify-between hover:border-orange-500/40 transition-all">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs relative overflow-hidden flex flex-col justify-between hover:border-brand-500/40 transition-all">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
@@ -69,7 +69,7 @@ const LeaderboardGuide = () => {
                 </p>
               </div>
               <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <div className="text-sm font-black text-orange-600 dark:text-orange-400">
+                <div className="text-sm font-black text-brand-600 dark:text-brand-400">
                   +10 Points / Event
                 </div>
                 <div className="text-[10px] text-neutral-400 mt-0.5 font-medium">Max 10 pts per event</div>
@@ -177,8 +177,8 @@ const LeaderboardGuide = () => {
             </table>
           </div>
 
-          <div className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 rounded-2xl text-xs text-orange-900 dark:text-orange-300 flex items-start gap-3">
-            <AlertCircle className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+          <div className="p-4 bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-2xl text-xs text-brand-900 dark:text-brand-300 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
             <div>
               <strong className="block font-bold mb-0.5">Minimum 10 Feedback Submissions Threshold:</strong>
               To prevent artificial skewing (such as 2 responses yielding 100%), the feedback bonus activates only when an event receives at least <strong>10 verified attendee responses</strong>.
@@ -222,13 +222,13 @@ const LeaderboardGuide = () => {
         {/* Concrete Example Calculation */}
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
           <h2 className="text-xl font-black text-neutral-900 dark:text-white flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-orange-500" />
+            <TrendingUp className="w-5 h-5 text-brand-500" />
             Example Calculation
           </h2>
 
           <div className="p-5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-750 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">Scenario: Debate Championship</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Scenario: Debate Championship</span>
               <span className="text-xs font-semibold px-2.5 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full">Completed Event</span>
             </div>
 
@@ -249,7 +249,7 @@ const LeaderboardGuide = () => {
 
             <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between font-bold text-sm sm:text-base">
               <span className="text-neutral-900 dark:text-white">Total Event Score Earned:</span>
-              <span className="text-orange-600 dark:text-orange-400 font-black font-mono">10 + 20 + 15 = 45 Points</span>
+              <span className="text-brand-600 dark:text-brand-400 font-black font-mono">10 + 20 + 15 = 45 Points</span>
             </div>
           </div>
         </div>
@@ -257,7 +257,7 @@ const LeaderboardGuide = () => {
         {/* 72-Hour Quality Lock & Anti-Cheating Safeguards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 space-y-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
@@ -285,7 +285,7 @@ const LeaderboardGuide = () => {
         <div className="text-center pt-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-600/20 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-600/20 transition-all"
           >
             <Award className="w-4 h-4" />
             View Live Club Leaderboard

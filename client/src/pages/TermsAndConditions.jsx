@@ -21,20 +21,20 @@ const TermsAndConditions = () => {
 
                 {/* Hero / Title Section */}
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-4">
                         <i className="ri-file-text-line text-sm" /> Terms of Service
                     </div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                        Terms <span className="text-orange-600">&amp;</span> Conditions
+                        Terms <span className="text-brand-600">&amp;</span> Conditions
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        Please review the rules and agreements governing your use of Campus<span className="text-orange-600 font-semibold">Node</span>, event registrations, and community interactions across NIT Jalandhar.
+                        Please review the rules and agreements governing your use of Campus<span className="text-brand-600 font-semibold">Node</span>, event registrations, and community interactions across NIT Jalandhar.
                     </p>
                 </div>
 
                 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
                     <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-orange-600/10 dark:bg-orange-500/15 text-orange-600 flex items-center justify-center text-2xl shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-brand-600/10 dark:bg-brand-500/15 text-brand-600 flex items-center justify-center text-2xl shrink-0">
                             <i className="ri-scales-3-line" />
                         </div>
                         <div>
@@ -68,15 +68,15 @@ const TermsAndConditions = () => {
                         </h2>
                         <ul className="space-y-2.5 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-checkbox-circle-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-checkbox-circle-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Authentic Information:</strong> You must register using valid NITJ credentials (official email, roll number, department details).</span>
                             </li>
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-checkbox-circle-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-checkbox-circle-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Account Security:</strong> You are responsible for keeping your account password secure. Sharing credentials or creating duplicate proxy accounts is prohibited.</span>
                             </li>
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-checkbox-circle-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-checkbox-circle-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Account Suspension:</strong> CampusNode reserves the right to restrict or terminate accounts violating institutional rules or community standards.</span>
                             </li>
                         </ul>
@@ -91,7 +91,7 @@ const TermsAndConditions = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3">
                             <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/60 dark:border-neutral-800/60">
                                 <h3 className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                                    <i className="ri-ticket-line text-orange-600" /> Attendance Commitment
+                                    <i className="ri-ticket-line text-brand-600" /> Attendance Commitment
                                 </h3>
                                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                                     Registering for limited-seat workshops or contests is a commitment to attend. If you cannot make it, deregister promptly to free seats for waitlisted peers.
@@ -99,7 +99,7 @@ const TermsAndConditions = () => {
                             </div>
                             <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/60 dark:border-neutral-800/60">
                                 <h3 className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                                    <i className="ri-filter-3-line text-orange-600" /> Eligibility Criteria
+                                    <i className="ri-filter-3-line text-brand-600" /> Eligibility Criteria
                                 </h3>
                                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                                     Events may specify year or program requirements (e.g. BTech/MTech). Attempting to bypass eligibility filters will result in registration cancellation.
@@ -116,15 +116,15 @@ const TermsAndConditions = () => {
                         </h2>
                         <ul className="space-y-2.5 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-shield-check-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-shield-check-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Content Accuracy:</strong> Club heads are solely responsible for ensuring event schedules, descriptions, venue details, and entry fees are accurate.</span>
                             </li>
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-shield-check-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-shield-check-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Data Handling:</strong> Participant information must be used strictly for event execution and never disclosed to unauthorized parties.</span>
                             </li>
                             <li className="flex items-start gap-2.5">
-                                <i className="ri-shield-check-line text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-shield-check-line text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Campus Guidelines:</strong> All published events must adhere strictly to NIT Jalandhar institutional rules and code of conduct.</span>
                             </li>
                         </ul>
@@ -181,14 +181,14 @@ const TermsAndConditions = () => {
                     {/* Section 8: Contact */}
                     <section className="bg-neutral-900 dark:bg-neutral-950 text-white rounded-2xl p-6 md:p-8 shadow-md">
                         <h2 className="text-base font-bold mb-2 flex items-center gap-2">
-                            <i className="ri-mail-line text-orange-500 text-lg" /> Terms &amp; Policy Inquiries
+                            <i className="ri-mail-line text-brand-500 text-lg" /> Terms &amp; Policy Inquiries
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-400 leading-relaxed mb-4">
                             For questions regarding our terms of service, governance, or institutional inquiries:
                         </p>
                         <a 
                             href="mailto:contact.nikhim@gmail.com" 
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Email CampusNode Team
                         </a>

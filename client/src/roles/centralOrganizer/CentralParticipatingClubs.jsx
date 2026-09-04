@@ -23,7 +23,7 @@ const CentralParticipatingClubs = ({
         </p>
         <button
           onClick={onCreateClick}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
         >
           <PlusCircle size={15} />
           Create College Event
@@ -42,7 +42,7 @@ const CentralParticipatingClubs = ({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
             Managing Clubs For
           </p>
           <h3 className="text-base font-black text-neutral-900 dark:text-neutral-100">
@@ -57,7 +57,7 @@ const CentralParticipatingClubs = ({
               const ev = events.find((x) => x.id === e.target.value);
               if (ev) setSelectedEvent(ev);
             }}
-            className="px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
           >
             {events.map((ev) => (
               <option key={ev.id} value={ev.id}>
@@ -84,7 +84,7 @@ const CentralParticipatingClubs = ({
             required
             value={selectedClubId}
             onChange={(e) => setSelectedClubId(e.target.value)}
-            className="flex-1 px-3.5 py-2.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+            className="flex-1 px-3.5 py-2.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
           >
             <option value="">Select a club to add...</option>
             {availableClubsToAdd.map((c) => (
@@ -96,7 +96,7 @@ const CentralParticipatingClubs = ({
           <button
             type="submit"
             disabled={addingClub || !selectedClubId}
-            className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-bold rounded-lg cursor-pointer shrink-0 transition-colors shadow-xs"
+            className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold rounded-lg cursor-pointer shrink-0 transition-colors shadow-xs"
           >
             {addingClub ? "Adding..." : "Add Club"}
           </button>
@@ -113,7 +113,7 @@ const CentralParticipatingClubs = ({
             selectedEvent.participatingClubs.map((pc) => (
               <div key={pc.id} className="py-3.5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center font-bold text-orange-600 dark:text-orange-400 text-xs shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center font-bold text-brand-600 dark:text-brand-400 text-xs shrink-0">
                     {pc.club?.clubLogo ? (
                       <img
                         src={pc.club.clubLogo}

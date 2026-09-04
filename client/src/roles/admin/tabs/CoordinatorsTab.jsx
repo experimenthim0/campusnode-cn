@@ -59,7 +59,7 @@ const CoordinatorsTab = ({
                 <button
                     type="button"
                     onClick={() => setIsAddCoordModalOpen(true)}
-                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
+                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
                 >
                     <Plus size={16} />
                     <span>Add New Coordinator</span>

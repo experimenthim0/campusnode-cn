@@ -15,6 +15,7 @@ import { getPublicResponse, setPublicResponse, invalidatePublicResponses } from 
 import { validateBooking, checkEventConflict } from "../services/conflictService.js";
 import { signTicket } from "../services/qrSigningService.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
+import { validateCustomFields } from "../utils/customFields.js";
 
 const router = express.Router();
 
@@ -795,6 +796,7 @@ router.get(
               collegePaymentUrl: true,
               upiId: true,
               accountHolderName: true,
+              certificateTemplate: true,
             },
           },
           student: {
@@ -1110,7 +1112,7 @@ router.post(
   async (req, res) => {
     try {
       const eventId = req.params.id;
-      const { externalEmail, externalName, transactionId, payerName, paymentRemarks } = req.body;
+      const { externalEmail, externalName, transactionId, payerName, paymentRemarks, formResponses } = req.body;
       const isExternalUser = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
       const isExternal = isExternalUser || !!externalEmail;
 
@@ -1151,6 +1153,15 @@ router.post(
           message: "This event only allows team registration. Please register with a team.",
         });
       }
+
+      // Validate required and typed custom fields
+      const customFieldCheck = validateCustomFields(event.customFields, formResponses);
+      if (!customFieldCheck.valid) {
+        return res.status(400).json({ message: customFieldCheck.message });
+      }
+      const validatedResponses = Object.keys(customFieldCheck.sanitizedResponses).length > 0
+        ? customFieldCheck.sanitizedResponses
+        : null;
 
       const extUserId = isExternalUser ? req.user.userId : null;
       const extEmail = isExternalUser ? req.user.email : (externalEmail || null);
@@ -1236,6 +1247,7 @@ router.post(
           transactionId: transactionId || null,
           payerName: payerName || null,
           paymentRemarks: paymentRemarks || null,
+          formResponses: validatedResponses,
           amountPaid: (event.paymentMethod === 'FREE') ? 0 : (event.registrationFee || event.entryFee || 0),
           paymentStatus: (event.paymentMethod === 'MANUAL_TRANSACTION') ? 'PENDING' : (event.paymentMethod === 'COLLEGE_PAYMENT') ? 'PENDING' : 'SUCCESS',
         }
@@ -1254,6 +1266,7 @@ router.post(
           transactionId: transactionId || null,
           payerName: payerName || null,
           paymentRemarks: paymentRemarks || null,
+          formResponses: validatedResponses,
           amountPaid: (event.paymentMethod === 'FREE') ? 0 : (event.registrationFee || event.entryFee || 0),
           paymentStatus: (event.paymentMethod === 'MANUAL_TRANSACTION') ? 'PENDING' : (event.paymentMethod === 'COLLEGE_PAYMENT') ? 'PENDING' : 'SUCCESS',
         };
@@ -1728,7 +1741,12 @@ router.delete(
             where: { id: p.teamId },
           });
 
-          if (team && team.leaderId === (userId || studentId)) {
+          if (team) {
+            const isLeader = team.leaderId === (userId || studentId);
+            if (!isLeader && req.user?.role !== "admin") {
+              return res.status(403).json({ message: "Only the team leader can deregister a team registration." });
+            }
+
             // Leader deregistering deletes the whole team registration
             const teamParticipations = await prisma.participation.findMany({
               where: { teamId: p.teamId },
@@ -1780,8 +1798,13 @@ router.delete(
           include: { leader: true }
         });
 
-        if (team && team.leaderId === studentId) {
-          // The student deregistering is the team leader.
+        if (team) {
+          const isLeader = team.leaderId === studentId;
+          if (!isLeader && req.user.role !== "admin") {
+            return res.status(403).json({ message: "Only the team leader can deregister a team registration." });
+          }
+
+          // The student deregistering is the team leader (or admin).
           // Deregister the entire team!
           const teamParticipations = await prisma.participation.findMany({
             where: { teamId: participation.teamId },
@@ -1823,53 +1846,12 @@ router.delete(
                 req.io,
                 tp.studentId,
                 "Team Deregistered",
-                `The team leader ${team.leader?.name || 'leader'} has deregistered team "${team.teamName}" from "${event.title}". Your registration has been cancelled.`
+                `The team leader ${team.leader?.name || 'leader'} has deregistered team "${team.teamName}" for event "${event.title}". Your registration has been cancelled.`
               );
             }
           }
 
           return res.json({ message: "Team and all members deregistered successfully." });
-        } else if (team) {
-          // Teammate leaving individually
-          await prisma.$transaction(async (tx) => {
-            await tx.participation.delete({ where: { id: participation.id } });
-            await tx.teamMember.deleteMany({
-              where: {
-                teamId: participation.teamId,
-                userId: studentId
-              }
-            });
-
-            if (participation.status === "REGISTERED") {
-              await tx.event.update({
-                where: { id: eventId },
-                data: { registeredCount: { decrement: 1 } },
-              });
-            } else {
-              const latestEvent = await tx.event.findUnique({ where: { id: eventId } });
-              await tx.event.update({
-                where: { id: eventId },
-                data: {
-                  waitingListIds: (latestEvent?.waitingListIds || []).filter(
-                    (id) => id !== participation.id,
-                  ),
-                },
-              });
-            }
-          });
-
-          invalidatePublicResponses(["events:public:*"]);
-
-          // Notify the leader that a teammate left
-          const student = await prisma.studentUser.findUnique({ where: { id: studentId } });
-          await notifyMemberDeregistered(
-            req.io,
-            team.leaderId,
-            "Teammate Left Team",
-            `${student?.name || 'A teammate'} has left team "${team.teamName}" for event "${event.title}".`
-          );
-
-          return res.json({ message: "Deregistered successfully from the team." });
         }
       }
 

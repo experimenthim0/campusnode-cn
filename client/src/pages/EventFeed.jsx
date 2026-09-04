@@ -322,18 +322,18 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div className="mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
 
           <div className="relative group">
-            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-orange-600 text-sm sm:text-base transition-colors pointer-events-none" />
+            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
               type="text"
               placeholder="Search events, clubs, or categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/70 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-orange-600 dark:focus:border-orange-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
+              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/70 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-600 dark:focus:border-brand-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-orange-600 transition-colors p-1"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-600 transition-colors p-1"
                 aria-label="Clear search"
               >
                 <i className="ri-close-circle-fill text-sm sm:text-base" />
@@ -352,7 +352,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                       ? btn.key === 'LIVE'
                         ? 'bg-red-500 text-white border-red-500 shadow-2xs'
                         : btn.key === 'UPCOMING'
-                          ? 'bg-orange-600 text-white border-orange-600 shadow-2xs'
+                          ? 'bg-brand-600 text-white border-brand-600 shadow-2xs'
                           : 'bg-neutral-800 text-white border-neutral-800 dark:bg-neutral-200 dark:text-neutral-900 dark:border-neutral-200 shadow-2xs'
                       : 'bg-neutral-50 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-100 dark:hover:bg-neutral-750'
                     }`}
@@ -367,7 +367,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterClub}
                 onChange={(e) => setFilterClub(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Clubs</option>
                 <option value="CENTRAL">Central (ODSW)</option>
@@ -379,7 +379,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Months</option>
                 {availableMonths.map(m => (
@@ -390,7 +390,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-orange-600 dark:focus:border-orange-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Years</option>
                 {availableYears.map(y => (
@@ -409,7 +409,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   setSearchQuery('');
                   setSearchParams({});
                 }}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-500 bg-neutral-100 dark:bg-neutral-800 hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-500 bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
                 title="Reset all filters"
               >
                 <i className="ri-refresh-line text-xs" />
@@ -423,7 +423,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               Showing <span className="font-bold text-neutral-800 dark:text-neutral-200">{totalFiltered}</span> {totalFiltered === 1 ? 'event' : 'events'}
             </span>
             {isFilterActive && (
-              <span className="text-[10px] font-bold text-orange-600 dark:text-orange-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-brand-600 dark:text-brand-500 uppercase tracking-wider">
                 Filters applied
               </span>
             )}
@@ -465,7 +465,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 setSearchQuery('');
                 setSearchParams({});
               }}
-              className="text-orange-600 font-bold uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
+              className="text-brand-600 font-bold uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
             >
               Clear all filters
             </button>

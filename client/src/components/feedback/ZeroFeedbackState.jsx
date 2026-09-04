@@ -15,7 +15,7 @@ const ZeroFeedbackState = ({ isCompleted }) => {
       </p>
       {!isCompleted ? (
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300">
-          <Clock className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+          <Clock className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
           <span>Feedback collection unlocks when event ends</span>
         </div>
       ) : (

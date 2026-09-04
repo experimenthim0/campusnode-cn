@@ -19,7 +19,7 @@ export const ColorExtractorDemo = () => {
       id: 3,
       imageSrc: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
       title: 'Solitude Coast',
-      description: 'Feel the warmth of the setting sun over soft tropical waters. Dynamically tints with pastel orange, sand yellow, and deep teal.',
+      description: 'Feel the warmth of the setting sun over soft tropical waters. Dynamically tints with pastel brand, sand yellow, and deep teal.',
     },
   ];
 

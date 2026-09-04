@@ -80,8 +80,8 @@ const NotificationAvatar = ({ notif }) => {
   let bgClass = "bg-neutral-100 dark:bg-neutral-800/80 border-neutral-200/80 dark:border-neutral-700/80";
 
   if (isTeam) {
-    iconClass = "ri-team-line text-orange-600 dark:text-orange-400";
-    bgClass = "bg-orange-50 dark:bg-orange-950/30 border-orange-200/80 dark:border-orange-900/40";
+    iconClass = "ri-team-line text-brand-600 dark:text-brand-400";
+    bgClass = "bg-brand-50 dark:bg-brand-950/30 border-brand-200/80 dark:border-brand-900/40";
   } else if (isPayment) {
     iconClass = "ri-wallet-3-line text-emerald-600 dark:text-emerald-400";
     bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/40";
@@ -306,7 +306,7 @@ const Notifications = () => {
                   Notifications
                 </h1>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-orange-100 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40">
+                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-brand-100 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/40">
                     {unreadCount} new
                   </span>
                 )}
@@ -320,11 +320,11 @@ const Notifications = () => {
               <button
                 onClick={isSubscribed ? handleDisablePush : handleEnablePush}
                 disabled={enablingPush}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-brand-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
                 title={isSubscribed ? "Click to unsubscribe from Push Notifications" : "Click to enable Push Notifications"}
               >
                 {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-orange-500 text-xs" />
+                  <i className="ri-loader-4-line animate-spin text-brand-500 text-xs" />
                 ) : isSubscribed ? (
                   <i className="ri-notification-3-fill text-emerald-500 text-xs" />
                 ) : (
@@ -337,12 +337,12 @@ const Notifications = () => {
                 <button
                   onClick={handleMarkAllAsRead}
                   disabled={loading}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-orange-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-brand-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
                 >
                   {loading ? (
                     <i className="ri-loader-4-line animate-spin text-xs" />
                   ) : (
-                    <i className="ri-check-double-line text-xs text-orange-600 dark:text-orange-400" />
+                    <i className="ri-check-double-line text-xs text-brand-600 dark:text-brand-400" />
                   )}
                   <span>Mark all read</span>
                 </button>
@@ -364,7 +364,7 @@ const Notifications = () => {
 
             <div className="flex items-center justify-between gap-4 flex-wrap pr-6">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/80 dark:border-orange-900/40 flex items-center justify-center text-base shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200/80 dark:border-brand-900/40 flex items-center justify-center text-base shrink-0">
                   <i className="ri-notification-badge-line" />
                 </div>
 
@@ -381,7 +381,7 @@ const Notifications = () => {
               <button
                 onClick={handleEnablePush}
                 disabled={enablingPush}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-60 shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-60 shrink-0"
               >
                 {enablingPush ? (
                   <i className="ri-loader-4-line animate-spin text-xs" />
@@ -431,7 +431,7 @@ const Notifications = () => {
                             : ""
                         } ${
                           !isRead
-                            ? "border-orange-200/80 dark:border-orange-900/40 bg-orange-50/20 dark:bg-orange-950/10"
+                            ? "border-brand-200/80 dark:border-brand-900/40 bg-brand-50/20 dark:bg-brand-950/10"
                             : "border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900"
                         }`}
                       >
@@ -445,13 +445,13 @@ const Notifications = () => {
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${
                                 !isRead
-                                  ? "text-orange-600 dark:text-orange-400"
+                                  ? "text-brand-600 dark:text-brand-400"
                                   : "text-neutral-500 dark:text-neutral-400"
                               }`}>
                                 {notif.sender?.clubName || notif.sender?.name || "CampusNode"}
                               </span>
                               {!isRead && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" title="Unread" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" title="Unread" />
                               )}
                             </div>
 
@@ -530,7 +530,7 @@ const Notifications = () => {
                               <Link
                                 to={notif.url || `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-colors shadow-2xs"
                               >
                                 <i className="ri-wallet-3-line text-xs font-light" />
                                 <span>{notif.title?.includes("Approved") ? "View Ticket" : "Update Payment"}</span>
@@ -550,7 +550,7 @@ const Notifications = () => {
                                 <Link
                                   to={`/event/${notif.eventId}`}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline"
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
                                 >
                                   <span>View Event</span>
                                   <i className="ri-arrow-right-line text-xs" />
@@ -597,7 +597,7 @@ const Notifications = () => {
             </div>
             <Link
               to="/"
-              className="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 hover:text-white dark:hover:text-white transition-colors cursor-pointer mt-1"
+              className="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 hover:text-white dark:hover:text-white transition-colors cursor-pointer mt-1"
             >
               Go to Home
             </Link>

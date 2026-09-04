@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 
 const SectionTag = ({ label }) => (
   <div className="flex items-center gap-2.5 mb-4">
-    <span className="h-px w-7 bg-orange-500" />
-    <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-orange-500">
+    <span className="h-px w-7 bg-brand-500" />
+    <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-brand-500">
       {label}
     </span>
   </div>
@@ -34,7 +34,7 @@ const SectionDesc = ({ children, dark = false }) => (
 
 
 const StudentCard = ({ icon, title, desc }) => (
-  <div className="group bg-white hover:bg-orange-50 transition-colors duration-200 p-8 flex flex-col gap-5 border-r border-b border-neutral-200 last:border-r-0">
+  <div className="group bg-white hover:bg-brand-50 transition-colors duration-200 p-8 flex flex-col gap-5 border-r border-b border-neutral-200 last:border-r-0">
     <div className="w-10 h-10 rounded-full bg-neutral-950 flex items-center justify-center shrink-0">
       <span className="text-white text-base">{icon}</span>
     </div>
@@ -55,7 +55,7 @@ const OrgCard = ({ icon, title, desc, soon = false, className = '' }) => (
   <div
     className={`border border-neutral-800 rounded-sm p-7 flex flex-col gap-4 hover:border-neutral-600 transition-colors duration-200 ${className}`}
   >
-    <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+    <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center shrink-0">
       <span className="text-black text-sm">{icon}</span>
     </div>
     <div>
@@ -65,7 +65,7 @@ const OrgCard = ({ icon, title, desc, soon = false, className = '' }) => (
       >
         {title}
         {soon && (
-          <span className="ml-2 text-[10px] font-bold tracking-widest text-orange-500 uppercase">
+          <span className="ml-2 text-[10px] font-bold tracking-widest text-brand-500 uppercase">
             Soon
           </span>
         )}
@@ -96,9 +96,9 @@ const Aboutfeatures = () => {
 
           {/* Eyebrow */}
           <div className="flex items-center gap-2.5 mb-8 relative z-10">
-            <span className="w-2 h-2 rounded-full bg-orange-500" />
+            <span className="w-2 h-2 rounded-full bg-brand-500" />
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-700 flex items-center gap-1.5 flex-wrap">
-              <span className="logofont font-light normal-case text-xs text-black dark:text-neutral-200">Campus<span className="text-orange-500">Node</span></span> — Campus Events Platform
+              <span className="logofont font-light normal-case text-xs text-black dark:text-neutral-200">Campus<span className="text-brand-500">Node</span></span> — Campus Events Platform
             </span>
           </div>
 
@@ -109,7 +109,7 @@ const Aboutfeatures = () => {
           >
             Events,
             <br />
-            <span className="text-orange-500">Simplified.</span>
+            <span className="text-brand-500">Simplified.</span>
           </h1>
 
           <p className="text-[16px] font-light text-neutral-600 max-w-lg leading-relaxed mb-10 relative z-10">
@@ -119,7 +119,7 @@ const Aboutfeatures = () => {
           <div className="flex flex-wrap gap-3 relative z-10">
             <a
               href="#students"
-              className="px-7 py-3.5 bg-orange-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-orange-600 transition-colors"
+              className="px-7 py-3.5 bg-brand-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               For Students
@@ -166,7 +166,7 @@ const Aboutfeatures = () => {
           </div>
 
           {/* CTA banner */}
-          <div className="mt-10 bg-orange-500 rounded-sm px-10 py-9 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="mt-10 bg-brand-500 rounded-sm px-10 py-9 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <h3
                 className="text-[22px] font-extrabold text-white tracking-[-0.5px] mb-1"
@@ -174,13 +174,13 @@ const Aboutfeatures = () => {
               >
                 Ready to dive in?
               </h3>
-              <p className="text-[13px] text-orange-100 font-light">
+              <p className="text-[13px] text-brand-100 font-light">
                 Join 500+ NITJ students already on CampusNode.
               </p>
             </div>
             <Link
               to="/register/student"
-              className="shrink-0 px-8 py-3.5 bg-white text-neutral-950 text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-orange-50 transition-colors"
+              className="shrink-0 px-8 py-3.5 bg-white text-neutral-950 text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-50 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Create Student Account →
@@ -211,7 +211,7 @@ const Aboutfeatures = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 border border-neutral-800 bg-white rounded-sm p-8 flex flex-col gap-5 hover:border-neutral-700 transition-colors duration-200">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-500 flex items-center justify-center shrink-0">
                    
                     <i class="ri-settings-2-line text-black text-xl"></i>
                   </div>
@@ -277,7 +277,7 @@ const Aboutfeatures = () => {
             <div className="mt-12 text-center">
               <Link
                 to="/register/club-head"
-                className="inline-block px-10 py-4 bg-orange-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-orange-600 transition-colors"
+                className="inline-block px-10 py-4 bg-brand-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 Onboard Your Club →
@@ -292,7 +292,7 @@ const Aboutfeatures = () => {
             style={{ fontFamily: "'Syne', sans-serif" }}
           >
             Ready to{' '}
-            <span className="text-orange-500">Connect?</span>
+            <span className="text-brand-500">Connect?</span>
           </h2>
           <p className="text-[15px] font-light text-neutral-500 max-w-md mx-auto mb-10 leading-relaxed">
             Whether you're hunting your next hackathon or running the grandest fest, CampusNode has you covered.

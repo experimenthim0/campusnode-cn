@@ -287,7 +287,7 @@ const CheckIn = () => {
               <div className="flex items-center gap-1.5 mb-[3px]">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Events</span>
                 <span className="text-[10px] text-neutral-300 dark:text-neutral-700">/</span>
-                <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest">Attendance</span>
+                <span className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Attendance</span>
               </div>
               <h1 className="m-0 text-base font-extrabold text-black dark:text-white leading-tight">{event?.title}</h1>
               {event?.startTime && (
@@ -360,14 +360,14 @@ const CheckIn = () => {
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 md:p-6 shadow-sm">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Attendance Progress</span>
-                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 font-mono">{attendedCount} / {event?.registeredCount ?? 0}</span>
+                <span className="text-xs font-bold text-brand-600 dark:text-brand-400 font-mono">{attendedCount} / {event?.registeredCount ?? 0}</span>
               </div>
               <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${attendRate}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full bg-orange-600 rounded-full"
+                  className="h-full bg-brand-600 rounded-full"
                 />
               </div>
             </div>
@@ -452,7 +452,7 @@ const CheckIn = () => {
               {activeTab === 'scan' ? (
                 <>
                   <div className="relative bg-[#0F0F10] overflow-hidden m-4 rounded-xl">
-                    <div className="scan-line absolute left-3 right-3 h-[2px] bg-orange-500 rounded z-[9]"></div>
+                    <div className="scan-line absolute left-3 right-3 h-[2px] bg-brand-500 rounded z-[9]"></div>
                     <div id="reader" className="w-full"></div>
 
                     {/* Result Overlay */}

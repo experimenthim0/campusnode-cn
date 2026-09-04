@@ -199,7 +199,7 @@ const VenuesTab = ({
                             value={venueSearch}
                             onChange={(e) => setVenueSearch(e.target.value)}
                             placeholder="Search venue by name..."
-                            className="w-full pl-9 pr-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-orange-600 dark:focus:border-orange-500 transition-colors text-neutral-900 dark:text-white"
+                            className="w-full pl-9 pr-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-brand-600 dark:focus:border-brand-500 transition-colors text-neutral-900 dark:text-white"
                         />
                     </div>
                     <FilterSelect value={venueStatusFilter} onChange={(val) => setVenueStatusFilter(val)}>
@@ -216,7 +216,7 @@ const VenuesTab = ({
                         type="button"
                         onClick={fetchVenues}
                         disabled={venuesLoading}
-                        className="text-xs text-neutral-500 hover:text-orange-600 dark:hover:text-orange-400 font-semibold px-2 py-1 transition-colors cursor-pointer disabled:opacity-50"
+                        className="text-xs text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 font-semibold px-2 py-1 transition-colors cursor-pointer disabled:opacity-50"
                         title="Refresh venue list"
                     >
                         {venuesLoading ? 'Refreshing...' : 'Refresh'}
@@ -307,7 +307,7 @@ const VenuesTab = ({
                             <td colSpan="3" className="px-5 py-12 text-center text-neutral-400 text-sm">
                                 {venuesLoading ? (
                                     <div className="flex items-center justify-center gap-2 text-neutral-400">
-                                        <Loader2 size={16} className="animate-spin text-orange-500" />
+                                        <Loader2 size={16} className="animate-spin text-brand-500" />
                                         <span>Loading campus venues...</span>
                                     </div>
                                 ) : venueSearch ? (
@@ -336,7 +336,7 @@ const VenuesTab = ({
                     <form onSubmit={handleUpdateVenue} className="space-y-4 pt-2">
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
-                                Venue Name <span className="text-orange-600">*</span>
+                                Venue Name <span className="text-brand-600">*</span>
                             </label>
                             <input
                                 type="text"
@@ -432,7 +432,7 @@ const VenuesTab = ({
                     <form onSubmit={handleCreateVenue} className="space-y-4 pt-2">
                         <div>
                             <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                                Venue Name <span className="text-orange-600">*</span>
+                                Venue Name <span className="text-brand-600">*</span>
                             </label>
                             <input
                                 type="text"

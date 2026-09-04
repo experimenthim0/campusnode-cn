@@ -271,7 +271,7 @@ const AdminLogin = () => {
         {/* Brand Header */}
         <div className="text-center mb-8">
           <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
-            Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
+            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
           </span>
           <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-2 flex items-center justify-center gap-1.5">
             <ShieldAlert size={14} className="text-neutral-900 dark:text-white" />

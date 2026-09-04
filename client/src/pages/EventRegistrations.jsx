@@ -139,6 +139,38 @@ const EventRegistrations = () => {
         return responses instanceof Map ? responses.get(label) : responses[label];
     };
 
+    const getFieldCategoryLabel = (cf, index, allFields = []) => {
+        const type = (cf?.type || 'text').toLowerCase();
+        let base = 'Custom Field';
+        if (type === 'url') base = 'Custom Link';
+        else if (type === 'textarea') base = 'Long Text';
+        else if (type === 'text') base = 'Text';
+        else if (type === 'select') base = 'Dropdown';
+        else if (type === 'number') base = 'Number';
+        else if (type === 'file') base = 'File';
+        else base = type.charAt(0).toUpperCase() + type.slice(1);
+
+        const sameTypeFields = allFields.filter(f => {
+            const fType = (f?.type || 'text').toLowerCase();
+            let fBase = 'Custom Field';
+            if (fType === 'url') fBase = 'Custom Link';
+            else if (fType === 'textarea') fBase = 'Long Text';
+            else if (fType === 'text') fBase = 'Text';
+            else if (fType === 'select') fBase = 'Dropdown';
+            else if (fType === 'number') fBase = 'Number';
+            else if (fType === 'file') fBase = 'File';
+            else fBase = fType.charAt(0).toUpperCase() + fType.slice(1);
+            return fBase === base;
+        });
+
+        if (sameTypeFields.length > 1) {
+            const subIndex = sameTypeFields.findIndex(f => f === cf);
+            return `${base} ${subIndex + 1}`;
+        }
+
+        return base;
+    };
+
     const filteredRegistrations = (Array.isArray(registrations) ? registrations : []).filter(reg => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
@@ -353,7 +385,7 @@ const EventRegistrations = () => {
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                                             Money Collected
                                         </p>
-                                        <p className="text-3xl font-black text-orange-600">
+                                        <p className="text-3xl font-black text-brand-600">
                                             ₹{totalCollected}
                                         </p>
                                         <p className="text-[11px] text-neutral-500 mt-2">
@@ -361,7 +393,7 @@ const EventRegistrations = () => {
                                         </p>
                                     </div>
 
-                                    <div className="bg-orange-600 p-6 rounded-2xl text-white shadow-sm">
+                                    <div className="bg-brand-600 p-6 rounded-2xl text-white shadow-sm">
                                         <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">
                                             Entry Fee
                                         </p>
@@ -376,11 +408,11 @@ const EventRegistrations = () => {
 
                 {/* Payment Information */}
                 {stats && stats.entryFee > 0 && (
-                    <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 p-4 rounded-xl flex gap-3 items-start mb-8">
-                        <i className="ri-information-fill text-orange-600 dark:text-orange-500 text-lg mt-0.5" />
+                    <div className="bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 p-4 rounded-xl flex gap-3 items-start mb-8">
+                        <i className="ri-information-fill text-brand-600 dark:text-brand-500 text-lg mt-0.5" />
                         <div>
-                            <p className="text-sm font-bold text-orange-800 dark:text-orange-400">Payment Collection Notice</p>
-                            <p className="text-xs text-orange-700 dark:text-orange-500 mt-1 leading-relaxed">
+                            <p className="text-sm font-bold text-brand-800 dark:text-brand-400">Payment Collection Notice</p>
+                            <p className="text-xs text-brand-700 dark:text-brand-500 mt-1 leading-relaxed">
                                 Registration fees for this event are collected directly via your configured payment account (club UPI or college payment portal).
                             </p>
                         </div>
@@ -396,7 +428,7 @@ const EventRegistrations = () => {
                                 placeholder={activeTab === 'team' ? 'Search by team name, leader, member name, roll no…' : 'Search by name, roll no, email, or branch…'}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-10 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
+                                className="w-full pl-11 pr-10 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer">
@@ -420,7 +452,7 @@ const EventRegistrations = () => {
                             onClick={() => setActiveTab('individual')}
                             className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
                                 activeTab === 'individual'
-                                    ? 'border-orange-600 text-orange-600 font-extrabold'
+                                    ? 'border-brand-600 text-brand-600 font-extrabold'
                                     : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
                             } bg-transparent border-0 outline-none`}
                         >
@@ -430,7 +462,7 @@ const EventRegistrations = () => {
                             onClick={() => setActiveTab('team')}
                             className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
                                 activeTab === 'team'
-                                    ? 'border-orange-600 text-orange-600 font-extrabold'
+                                    ? 'border-brand-600 text-brand-600 font-extrabold'
                                     : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
                             } bg-transparent border-0 outline-none`}
                         >
@@ -455,7 +487,7 @@ const EventRegistrations = () => {
                                     >
                                         <div className="text-left">
                                             <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                                                Team: <span className="text-orange-600 font-extrabold">{team.teamName}</span>
+                                                Team: <span className="text-brand-600 font-extrabold">{team.teamName}</span>
                                             </h4>
                                             <p className="text-[11px] text-neutral-500 mt-1">
                                                 Leader: <span className="font-semibold">{team.leader?.name}</span> • {team.members.length} members
@@ -468,7 +500,7 @@ const EventRegistrations = () => {
                                             <span className={`px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider rounded-lg ${
                                                 team.status === 'CONFIRMED' || team.status === 'REGISTERED'
                                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-450'
-                                                    : 'bg-orange-50 text-orange-700 dark:bg-orange-950/25 dark:text-orange-450'
+                                                    : 'bg-brand-50 text-brand-700 dark:bg-brand-950/25 dark:text-brand-450'
                                             }`}>
                                                 {team.status}
                                             </span>
@@ -483,7 +515,7 @@ const EventRegistrations = () => {
                                                 const leaderPart = team.members.find(m => m.studentId === team.leader?.id) || team.members[0];
                                                 if (!leaderPart) return null;
                                                 return (
-                                                    <div className="p-4 bg-orange-50/20 dark:bg-neutral-900 border-b border-neutral-150 dark:border-neutral-850 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                    <div className="p-4 bg-brand-50/20 dark:bg-neutral-900 border-b border-neutral-150 dark:border-neutral-850 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                         <div className="text-xs space-y-1 text-left">
                                                             <p className="font-bold text-neutral-800 dark:text-neutral-200">
                                                                 Payment Status: <span className={`uppercase font-black ${
@@ -547,8 +579,15 @@ const EventRegistrations = () => {
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Acaedmic Info</th>
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Status</th>
                                                         {customFields.map((cf, i) => (
-                                                            <th key={`team-cf-${i}`} className="px-5 py-3 text-left text-[10px] font-bold text-orange-600 uppercase tracking-wider">
-                                                                {cf.label}
+                                                            <th
+                                                                key={`team-cf-${i}`}
+                                                                className="px-5 py-3 text-left text-[10px] font-bold text-brand-600 uppercase tracking-wider whitespace-nowrap"
+                                                                title={cf.label || 'Custom Field'}
+                                                            >
+                                                                <span className="inline-flex items-center gap-1 cursor-help border-b border-dotted border-brand-400/60 pb-0.5">
+                                                                    {getFieldCategoryLabel(cf, i, customFields)}
+                                                                    <i className="ri-information-line text-[10px] text-brand-500/70" />
+                                                                </span>
                                                             </th>
                                                         ))}
                                                     </tr>
@@ -560,7 +599,7 @@ const EventRegistrations = () => {
                                                             <tr key={m.id} className="hover:bg-neutral-100/30 dark:hover:bg-neutral-800/50 transition-colors">
                                                                 <td className="px-5 py-3 font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-[10px] text-left">
                                                                     {isLeader ? (
-                                                                        <span className="text-orange-600 font-extrabold bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 rounded px-1.5 py-0.5">Leader</span>
+                                                                        <span className="text-brand-600 font-extrabold bg-brand-50 dark:bg-brand-950/20 border border-brand-200/50 rounded px-1.5 py-0.5">Leader</span>
                                                                     ) : (
                                                                         <span className="text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded">Member</span>
                                                                     )}
@@ -585,8 +624,14 @@ const EventRegistrations = () => {
                                                                     return (
                                                                         <td key={`team-cf-val-${i}`} className="px-5 py-3 text-neutral-600 dark:text-neutral-350 text-left">
                                                                             {cf.type === 'url' && val ? (
-                                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-semibold">Link</a>
-                                                                            ) : val || '-'}
+                                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-semibold inline-flex items-center gap-1">
+                                                                                    Link <i className="ri-external-link-line text-[10px]" />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span className="max-w-[180px] truncate inline-block" title={typeof val === 'string' ? val : ''}>
+                                                                                    {val || '-'}
+                                                                                </span>
+                                                                            )}
                                                                         </td>
                                                                     );
                                                                 })}
@@ -620,8 +665,15 @@ const EventRegistrations = () => {
                                         )}
                                         <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Registered At</th>
                                         {customFields.map((cf, i) => (
-                                            <th key={`cf-${i}`} className="px-5 py-3.5 text-left text-xs font-semibold text-orange-600 uppercase tracking-wider">
-                                                {cf.label}
+                                            <th
+                                                key={`cf-${i}`}
+                                                className="px-5 py-3.5 text-left text-xs font-semibold text-brand-600 uppercase tracking-wider whitespace-nowrap"
+                                                title={cf.label || 'Custom Field'}
+                                            >
+                                                <span className="inline-flex items-center gap-1 cursor-help border-b border-dotted border-brand-400/60 pb-0.5">
+                                                    {getFieldCategoryLabel(cf, i, customFields)}
+                                                    <i className="ri-information-line text-[11px] text-brand-500/70" />
+                                                </span>
                                             </th>
                                         ))}
                                     </tr>
@@ -734,10 +786,14 @@ const EventRegistrations = () => {
                                                     return (
                                                         <td key={`cf-${i}`} className="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
                                                             {cf.type === 'url' && val ? (
-                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline font-semibold">
-                                                                    Link
+                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-semibold inline-flex items-center gap-1">
+                                                                    Link <i className="ri-external-link-line text-xs" />
                                                                 </a>
-                                                            ) : val || <span className="text-neutral-300 dark:text-neutral-700">-</span>}
+                                                            ) : (
+                                                                <span className="max-w-[220px] truncate inline-block" title={typeof val === 'string' ? val : ''}>
+                                                                    {val || <span className="text-neutral-300 dark:text-neutral-700">-</span>}
+                                                                </span>
+                                                            )}
                                                         </td>
                                                     );
                                                 })}
@@ -772,7 +828,7 @@ const EventRegistrations = () => {
                                     {exportColumns.map(column => {
                                         const checked = selectedExportColumns.includes(column.key);
                                         return (
-                                            <label key={column.key} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-orange-200/80 hover:bg-[#FFF7ED] dark:hover:border-orange-900/40 dark:hover:bg-[#2A1A0F] transition-colors">
+                                            <label key={column.key} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-brand-200/80 hover:bg-[#FFF7ED] dark:hover:border-brand-900/40 dark:hover:bg-[#2A1A0F] transition-colors">
                                                 <input type="checkbox" checked={checked} onChange={() => setSelectedExportColumns(current => checked ? current.filter(key => key !== column.key) : [...current, column.key])} className="mt-1 h-4 w-4 accent-[#F97316]" />
                                                 <span><span className="block text-xs sm:text-[13px] font-bold text-[#111111] dark:text-[#F5F5F5]">{column.label}</span>{column.description && <span className="mt-0.5 block text-[11px] text-[#888888] dark:text-[#808080]">{column.description}</span>}</span>
                                             </label>

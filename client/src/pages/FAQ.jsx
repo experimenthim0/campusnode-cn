@@ -11,8 +11,8 @@ const FAQ = () => {
           {/* Email Verification Issues */}
           <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
-                <i className="ri-mail-close-line text-orange-600 text-lg"></i>
+              <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                <i className="ri-mail-close-line text-brand-600 text-lg"></i>
               </div>
               <h2 className="text-lg font-bold text-neutral-800">
                 I didn't receive the verification email.
@@ -58,7 +58,7 @@ const FAQ = () => {
                 <li>The event ID in the URL is invalid.</li>
               </ul>
               <p className="mt-3">
-                Please go back to the <a href="/events" className="text-orange-600 font-bold hover:underline">Events Feed</a> to find the correct event.
+                Please go back to the <a href="/events" className="text-brand-600 font-bold hover:underline">Events Feed</a> to find the correct event.
               </p>
             </div>
           </div>
@@ -80,16 +80,16 @@ const FAQ = () => {
           </div>
 
           {/* Contact Support */}
-          <div className="bg-orange-50/60 border border-orange-100 p-6 rounded-xl shadow-sm flex items-start gap-4">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
-              <i className="ri-question-line text-orange-600 text-xl"></i>
+          <div className="bg-brand-50/60 border border-brand-100 p-6 rounded-xl shadow-sm flex items-start gap-4">
+            <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center shrink-0">
+              <i className="ri-question-line text-brand-600 text-xl"></i>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-orange-850 mb-1">
+              <h2 className="text-lg font-bold text-brand-850 mb-1">
                 Still have questions?
               </h2>
-              <p className="text-orange-700 text-sm leading-relaxed">
-                Reach out to us at <a href="mailto:clubsetu@nikhim.me" className="font-semibold underline hover:text-orange-900 transition-colors">clubsetu@nikhim.me</a> or contact your respective Club Head.
+              <p className="text-brand-700 text-sm leading-relaxed">
+                Reach out to us at <a href="mailto:clubsetu@nikhim.me" className="font-semibold underline hover:text-brand-900 transition-colors">clubsetu@nikhim.me</a> or contact your respective Club Head.
               </p>
             </div>
           </div>

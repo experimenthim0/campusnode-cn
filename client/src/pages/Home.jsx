@@ -128,7 +128,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
 };
 
 const SectionLabel = ({ children, light = false }) => (
-  <div className="flex items-center gap-2 mb-5 text-orange-600 dark:text-orange-500">
+  <div className="flex items-center gap-2 mb-5 text-brand-600 dark:text-brand-500">
     <span className="text-[11px] font-bold uppercase tracking-[0.15em]">{children}</span>
   </div>
 );
@@ -489,14 +489,8 @@ const Home = () => {
     e.currentTarget.style.setProperty("--y-px", `${y}px`);
   };
 
-  const bgImages = ["mainbuilding.jpeg"];
-  const [bgIndex, setBgIndex] = useState(0);
 
-  //   const interval = setInterval(() => {
-  //     setBgIndex((prev) => (prev + 1) % bgImages.length);
-  //   }, 4000);
-  //   return () => clearInterval(interval);
-  // }, []);
+
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Student';
 
@@ -561,7 +555,7 @@ const Home = () => {
                 <div className="flex items-center gap-4">
                   <div>
                     <h1 className="text-3xl md:text-4xl font-black tracking-tight text-neutral-900 dark:text-white mt-1">
-                      Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400">{greetingName}</span>
+                      Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-amber-500 dark:from-brand-400 dark:to-amber-400">{greetingName}</span>
                     </h1>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light mt-1">
                       {greetingSubtext}
@@ -604,7 +598,7 @@ const Home = () => {
                             : "bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800"
                         }`}
                       >
-                        <IconComponent className={action.primary ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-white dark:text-black shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0"} />
+                        <IconComponent className={action.primary ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-white dark:text-black shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500 shrink-0"} />
                         <span className="truncate">{action.label}</span>
                       </Link>
                     );
@@ -626,9 +620,9 @@ const Home = () => {
                 {isStudent && (
                   <Link
                     to="/my-events"
-                    className="inline-flex items-center gap-1.5 text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 hover:underline transition-all"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400 hover:underline transition-all"
                   >
-                    Manage Tickets & QR Codes <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 shrink-0" />
+                    Manage Tickets & QR Codes <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 shrink-0" />
                   </Link>
                 )}
               </div>
@@ -640,7 +634,7 @@ const Home = () => {
                   </div>
                 ) : registrations.length === 0 ? (
                   <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-10 text-center shadow-sm max-w-xl mx-auto">
-                    <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4">
                       <Calendar className="w-6 h-6" />
                     </div>
                     <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-1">Your timeline is empty</h3>
@@ -655,7 +649,7 @@ const Home = () => {
                     </Link>
                   </div>
                 ) : (
-                  <div className="relative border-l-2 border-orange-100 dark:border-orange-900/40 pl-6 md:pl-8 ml-4 md:ml-6 space-y-8">
+                  <div className="relative border-l-2 border-brand-100 dark:border-brand-900/40 pl-6 md:pl-8 ml-4 md:ml-6 space-y-8">
                     {registrations.map((reg) => {
                       const event = reg.eventId;
                       if (!event) return null;
@@ -663,7 +657,7 @@ const Home = () => {
                       return (
                         <div key={reg._id} className="relative group">
                           {/* Timeline Node Icon */}
-                          <div className="absolute -left-[35px] md:-left-[43px] top-1.5 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white dark:bg-neutral-900 border-2 border-orange-500 flex items-center justify-center text-orange-600 shadow-sm z-10 group-hover:scale-110 transition-transform">
+                          <div className="absolute -left-[35px] md:-left-[43px] top-1.5 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white dark:bg-neutral-900 border-2 border-brand-500 flex items-center justify-center text-brand-600 shadow-sm z-10 group-hover:scale-110 transition-transform">
                             <Clock className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />
                           </div>
 
@@ -671,7 +665,7 @@ const Home = () => {
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                               <div className="space-y-2">
                                 {/* Event Title */}
-                                <h3 className="text-lg font-bold text-neutral-900 dark:text-white group-hover:text-orange-600 transition-colors">
+                                <h3 className="text-lg font-bold text-neutral-900 dark:text-white group-hover:text-brand-600 transition-colors">
                                   <Link to={`/event/${event.slug || event.id || event._id}`}>
                                     {event.title}
                                   </Link>
@@ -679,7 +673,7 @@ const Home = () => {
                                 
                                 {/* DateTime */}
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                  <span className="font-semibold text-orange-600 uppercase tracking-wide">
+                                  <span className="font-semibold text-brand-600 uppercase tracking-wide">
                                     {new Date(event.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                   </span>
                                   <span>•</span>
@@ -699,12 +693,12 @@ const Home = () => {
                             <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col items-start gap-1">
                               <button
                                 onClick={() => setOpenMapEventId(openMapEventId === event._id ? null : event._id)}
-                                className="flex items-center gap-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors"
+                                className="flex items-center gap-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors"
                               >
-                                <MapPin className="w-4 h-4 text-orange-500 shrink-0" />
+                                <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
                                 <span>Venue: <strong className="text-neutral-900 dark:text-white">{event.venue}</strong></span>
                                 {event.venue !== 'Online' && (
-                                  <span className="text-[10px] text-orange-600 hover:underline">
+                                  <span className="text-[10px] text-brand-600 hover:underline">
                                     ({openMapEventId === event._id ? 'Close Map' : 'Locate on Map'})
                                   </span>
                                 )}
@@ -737,7 +731,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Events & Attendance</h3>
@@ -745,13 +739,13 @@ const Home = () => {
                             Organize campus fests, hackathons, and technical talks. Use the check-in scanner to verify QR code tickets and record live attendance.
                           </p>
                         </div>
-                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          Manage Club Events <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          Manage Club Events <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Wallet className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Finance & Payments</h3>
@@ -759,8 +753,8 @@ const Home = () => {
                             Track event registration fees, view verified receipts, and monitor participant payment records.
                           </p>
                         </div>
-                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          Track Financials & Payments <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          Track Financials & Payments <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -769,7 +763,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Pending Proposals</h3>
@@ -777,13 +771,13 @@ const Home = () => {
                             Review detailed proposals for upcoming club events. Approve them for public release or send them back with coordinator comments.
                           </p>
                         </div>
-                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          Review Proposals <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          Review Proposals <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Users className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
@@ -791,8 +785,8 @@ const Home = () => {
                             Oversee active student memberships, coordinate schedules, and send urgent notifications or alerts to students.
                           </p>
                         </div>
-                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          View Club Directory <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          View Club Directory <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -801,7 +795,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <LayoutDashboard className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
@@ -809,13 +803,13 @@ const Home = () => {
                             Access system statistics, manage registered clubs, review transaction logs, and maintain core platform configurations.
                           </p>
                         </div>
-                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          Open Admin Control Panel <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          Open Admin Control Panel <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Bell className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
@@ -823,8 +817,8 @@ const Home = () => {
                             Send direct push notifications and official announcements to all registered student accounts.
                           </p>
                         </div>
-                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors mt-auto group">
-                          Create System Broadcast <ArrowRightIcon className="w-4 h-4 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                          Create System Broadcast <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -836,87 +830,85 @@ const Home = () => {
         </>
       ) : (
         <>
-          <section className="relative flex flex-col justify-center pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
-            {/* Background Image & Overlay */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-              {bgImages.map((img, idx) => (
-                <img 
-                  key={idx}
-                  src={img} 
-                  alt="University Campus" 
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-[center_40%] ${bgIndex === idx ? 'opacity-100' : 'opacity-0'}`}
-                />
-              ))}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/20 to-white/70 dark:from-[#0a0a0a]/10 dark:via-[#0a0a0a]/30 dark:to-[#0a0a0a]/90"></div>
-            </div>
+          <section className="relative pt-24 pb-6 sm:pt-28 sm:pb-8 lg:pt-32 lg:pb-10 bg-white dark:bg-[#0c0c0c] overflow-hidden">
+            <Section className="w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+                {/* Left: Text & CTAs */}
+                <div className="flex flex-col gap-6 items-center lg:items-start text-center lg:text-left">
+                  <ScrollReveal delay={0.2}>
+                    <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-neutral-900 dark:text-white ">
+                     Discover What's Happening.
+                      <br />
+                     <span className="text-brand-500 text-[clamp(39px,5.5vw,78px)] ">Be Part of It.</span>
+                    </h1>
+                  </ScrollReveal>
 
-            <Section className="relative z-10 w-full mt-4">
-              {/* Headline */}
-              <ScrollReveal delay={0.2}>
-                <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-white dark:text-white text-center mx-auto max-w-5xl">
-                  Everything at <span className="text-orange-500">NIT Jalandhar.</span>
-                  <br />
-                  One Platform.
-                </h1>
-              </ScrollReveal>
+                  <ScrollReveal delay={0.3}>
+                    <div className="flex flex-col gap-8">
+                      <p className="text-base md:text-lg font-normal text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-xl">
+                        Discover campus events, explore student clubs, receive official announcements,
+                        and access secure student services—all from one verified platform built for
+                        the NIT Jalandhar community.
+                      </p>
 
-              {/* Sub + CTAs */}
-              <ScrollReveal delay={0.3}>
-                <div className="mt-8 sm:mt-10 flex flex-col items-center text-center gap-8 max-w-3xl mx-auto">
-                  <div className="max-w-2xl">
-                    <p className="text-base md:text-lg font-normal text-white/90 dark:text-neutral-300 leading-relaxed max-w-3xl mx-auto">
-                      Discover campus events, explore student clubs, receive official announcements,
-                      and access secure student services—all from one verified platform built for
-                      the NIT Jalandhar community.
-                    </p>
-                  </div>
-                  <div className="flex gap-3 flex-wrap justify-center">
-                    <Link
-                      to="/events"
-                      className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
-                    >
-                      <i className="ri-calendar-event-line text-lg mr-2 font-light" /> Browse Events
-                    </Link>
+                      <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
+                        <Link
+                          to="/events"
+                          className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                        >
+                          <i className="ri-calendar-event-line text-lg mr-2 font-light" /> Browse Events
+                        </Link>
 
-                    <Link
-                      to="/clubs"
-                      className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
-                    >
-                      <i className="ri-group-line text-lg mr-2 text-orange-500 font-light" /> Explore Clubs
-                    </Link>
+                        <Link
+                          to="/clubs"
+                          className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
+                        >
+                          <i className="ri-group-line text-lg mr-2 text-brand-500 font-light" /> Explore Clubs
+                        </Link>
 
-                    <Link
-                      to="/register"
-                      className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
-                    >
-                      <ArrowRightIcon size={18}>
-                        Join CampusNode
-                      </ArrowRightIcon>
-                    </Link>
-                  </div>
+                        <Link
+                          to="/register"
+                          className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                        >
+                           Get Involved Now! <ArrowRightIcon className="w-4 h-4 ml-1"/>
+                        </Link>
+                      </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold text-black/90 dark:text-neutral-300 transition-colors duration-200">
-                    <div className="flex items-center gap-2">
-                      <i className="ri-shield-check-line text-orange-500 text-base" />
-                      Verified Student Access
+                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 sm:gap-12 pt-2">
+                        <div className="flex flex-col items-center lg:items-start">
+                          <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">5K+</span>
+                          <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Students</span>
+                        </div>
+                        <div className="flex flex-col items-center lg:items-start">
+                          <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">25+</span>
+                          <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Clubs & Societies</span>
+                        </div>
+                        <div className="flex flex-col items-center lg:items-start">
+                          <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">100+</span>
+                          <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Events Every Year</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <i className="ri-community-line text-orange-500 text-base" />
-                      Official Club Community
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <i className="ri-lock-line text-orange-500 text-base" />
-                      Secure Campus Services
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 </div>
-              </ScrollReveal>
+
+                {/* Right: College Building Image */}
+                <ScrollReveal delay={0.4} direction="right">
+                  <div className="flex items-center justify-center">
+                    <img
+                      src="/main-building-svg.svg"
+                      alt="NIT Jalandhar Main Building"
+                      className="w-full max-w-xl h-auto object-contain"
+                    />
+                  </div>
+                </ScrollReveal>
+              </div>
             </Section>
           </section>
         </>
       )}
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <Section>
           <ScrollReveal direction="up">
             <div className="mb-10 sm:mb-12">
@@ -972,14 +964,14 @@ const Home = () => {
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
                 <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
-                  Club<br /><span className="text-orange-600 dark:text-orange-500 text-5xl sm:text-6xl">Hall of Fame</span>
+                  Club<br /><span className="text-brand-600 dark:text-brand-500 text-5xl sm:text-6xl">Hall of Fame</span>
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6">
                   Recognition for the top student organizations at NITJ. Rankings and points are calculated based on hosted events, student participation, and attendee feedback satisfaction ratings.
                 </p>
                 <Link
                   to="/leaderboard/how-it-works"
-                  className="inline-flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors uppercase tracking-wider group mb-8"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors uppercase tracking-wider group mb-8"
                 >
                   <span>How Points Are Calculated</span>
                   <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -1004,18 +996,18 @@ const Home = () => {
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
+                    <p className="text-xs font-bold tracking-widest uppercase text-brand-600 dark:text-brand-500 mb-3">
                       For Students
                     </p>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                       Never miss a<br />campus beat{" "}
-                      <span className="text-orange-600 dark:text-orange-500">again.</span>
+                      <span className="text-brand-600 dark:text-brand-500">again.</span>
                     </h2>
 
                     <div className="flex flex-col gap-4">
                       {studentItems.map((item, i) => (
                         <div key={i} className="flex gap-3.5 items-start">
-                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 text-base">
+                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900/40 flex items-center justify-center text-brand-600 dark:text-brand-400 text-base">
                             {item.icon}
                           </div>
                           <div className="pt-0.5">
@@ -1031,7 +1023,7 @@ const Home = () => {
                         Join now
                         <i className="ri-arrow-right-line text-sm" />
                       </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-orange-500 text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full">
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-brand-500 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full">
                         Browse Events
                       </Link>
                     </div>
@@ -1061,17 +1053,17 @@ const Home = () => {
               <ScrollReveal direction="up">
                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-orange-600 dark:text-orange-500 mb-3">
+                    <p className="text-xs font-bold tracking-widest uppercase text-brand-600 dark:text-brand-500 mb-3">
                       For Clubs & Societies
                     </p>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
                       Less logistics,{" "}
-                      <span className="text-orange-600 dark:text-orange-500">more impact.</span>
+                      <span className="text-brand-600 dark:text-brand-500">more impact.</span>
                     </h2>
                   </div>
                   <Link
                     to="/clubs"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 hover:text-orange-500 transition-colors group self-start md:self-auto"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors group self-start md:self-auto"
                   >
                     <span>Explore All Societies</span>
                     <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -1082,9 +1074,9 @@ const Home = () => {
                   {clubFeatures.map((f, i) => (
                     <div
                       key={i}
-                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-orange-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs"
+                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-brand-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs"
                     >
-                      <div className="w-10 h-10 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors text-lg">
+                      <div className="w-10 h-10 bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors text-lg">
                         {f.icon}
                       </div>
                       <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
@@ -1101,49 +1093,29 @@ const Home = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 <ScrollReveal direction="left">
                   <div>
-                    <SectionLabel>Our Vision</SectionLabel>
+                    <SectionLabel>OUR VISION</SectionLabel>
                     <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                      Creating a Truly<br /><span className="text-orange-600 dark:text-orange-500">Connected Campus.</span>
+                      One Campus.<br />
+                      <span className="text-brand-600 dark:text-brand-500">Better Connected.</span>
                     </h2>
-                    <div className="space-y-5 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
+                    <div className="space-y-4 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
                       <p>
-                        CampusNode serves as the central hub for the NIT Jalandhar community. By bringing together events, clubs, announcements, and a structured Lost & Found system, we simplify campus life. We believe that accessing campus resources, engaging with student organizations, and finding opportunities should be simple and seamless.
+                        Campus life is full of events, communities, announcements and opportunities—but finding them shouldn't be difficult.
                       </p>
                       <p>
-                        Our vision is to build a vibrant and digitally integrated ecosystem where student groups can reach their audience effectively and students can easily discover their passions, collaborate on ideas, and never miss out on key campus events and opportunities.
+                        CampusNode brings everything together, making it easier to discover what's happening, connect with others and be part of campus life.
                       </p>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3 sm:gap-8 mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800">
-                      <div className="min-w-0">
-                        <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">25+</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Active Clubs & Societies</div>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">5k+</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Student Base</div>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white">100%</div>
-                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 mt-1">NITJ Focused</div>
-                      </div>
                     </div>
                   </div>
                 </ScrollReveal>
 
                 <ScrollReveal direction="right" delay={0.2}>
-                  <div className="flex gap-4 items-center justify-center lg:justify-end">
-                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-100 dark:bg-neutral-800 overflow-hidden translate-y-6 sm:translate-y-8 shadow-sm">
-                      <div className="w-full h-full flex items-center justify-center text-neutral-300">
-                        <img src="/mainbuilding.jpeg" alt="NITJ Main Building" className="w-full h-full object-cover"/>
-                      </div>
-                    </div>
-                    <div className="w-1/2 max-w-[280px] aspect-[3/4] border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-200 dark:bg-neutral-800 overflow-hidden -translate-y-3 sm:-translate-y-4 shadow-sm">
-                      <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                        <img src="/itbuilding.jpeg" alt="NITJ IT Building" className="w-full h-full object-cover"/>
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-center lg:justify-end">
+                    <img
+                      src="/whatcn.png"
+                      alt="CampusNode Ecosystem"
+                      className="w-full max-w-lg h-auto object-contain"
+                    />
                   </div>
                 </ScrollReveal>
               </div>
@@ -1152,63 +1124,22 @@ const Home = () => {
         </>
       )}
 
-      <style>{`
-        :root {
-          --domain-core:     #ea580c;
-          --domain-frontend: #2563eb;
-          --domain-design:   #9333ea;
-          --domain-ops:      #059669;
-
-          --avatar-bg:       #f4f4f5;
-          --avatar-text:     #71717a;
-
-          --batch-bg:        rgba(234,88,12,0.08);
-          --batch-text:      #ea580c;
-
-          --divider-color:   rgba(0,0,0,0.07);
-          --border-base-rgb: 0,0,0;
-          --border-hover-rgb: 234,88,12;
-        }
-
-        .dark {
-          --avatar-bg:       #27272a;
-          --avatar-text:     #a1a1aa;
-
-          --batch-bg:        rgba(249,115,22,0.12);
-          --batch-text:      #fb923c;
-
-          --divider-color:   rgba(255,255,255,0.07);
-          --border-base-rgb: 255,255,255;
-          --border-hover-rgb: 249,115,22;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          :root:not([data-theme="light"]) {
-            --avatar-bg:       #27272a;
-            --avatar-text:     #a1a1aa;
-            --batch-bg:        rgba(249,115,22,0.12);
-            --batch-text:      #fb923c;
-            --divider-color:   rgba(255,255,255,0.07);
-            --border-base-rgb: 255,255,255;
-            --border-hover-rgb: 249,115,22;
-          }
-        }
-      `}</style>
+     
       <section id="team" className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Glow accent */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-orange-500/[0.02] dark:bg-orange-500/[0.04] rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-brand-500/[0.02] dark:bg-brand-500/[0.04] rounded-full blur-[140px] pointer-events-none" />
 
         <Section className="relative z-10">
           <div className="flex flex-col items-center mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
-              <span className="text-orange-600 dark:text-orange-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
+              <span className="text-brand-600 dark:text-brand-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
                 The Innovators
               </span>
             </ScrollReveal>
             
             <ScrollReveal direction="up" delay={0.2}>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                The Minds Behind <span className="logofont font-light">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span>
+                The Minds Behind <span className="logofont font-light tracking-wide">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span>
               </h2>
             </ScrollReveal>
             
@@ -1235,9 +1166,9 @@ const Home = () => {
           ) : (
             <ScrollReveal direction="up" delay={0.2}>
               <div
-                className="mx-auto text-center flex items-center justify-center flex-col max-w-md p-10 sm:p-14 border border-orange-500/20 rounded-2xl bg-orange-500/[0.02] shadow-2xs"
+                className="mx-auto text-center flex items-center justify-center flex-col max-w-md p-10 sm:p-14 border border-brand-500/20 rounded-2xl bg-brand-500/[0.02] shadow-2xs"
               >
-                <ZapIcon style={{ fontSize: '22px' }} className="mb-4 text-orange-500" />
+                <ZapIcon style={{ fontSize: '22px' }} className="mb-4 text-brand-500" />
                 <h3 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white mb-2">
                   Team expansion in progress
                 </h3>
@@ -1249,6 +1180,46 @@ const Home = () => {
           )}
         </Section>
       </section>
+      {/* ── Bottom Call to Action Section ── */}
+      {!user && (
+        <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors duration-300">
+          {/* Glow accent */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[320px] bg-brand-500/[0.04] dark:bg-brand-500/[0.07] rounded-full blur-[130px] pointer-events-none" />
+
+          <Section className="relative z-10">
+            <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+              <ScrollReveal direction="up" delay={0.1}>
+                <span className="text-brand-600 dark:text-brand-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
+                  STAY CONNECTED
+                </span>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up" delay={0.2}>
+                <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.12] tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
+                  Something Is Always Happening.
+                  <br />
+                  <span className="text-brand-500">Don't Miss Out.</span>
+                </h2>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up" delay={0.3}>
+                <p className="text-base sm:text-lg font-normal text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-xl mx-auto mb-8">
+                  Discover events, explore communities, and stay connected to everything happening around you.
+                </p>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up" delay={0.35}>
+                <Link
+                  to="/register"
+                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-6 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                >
+                  Be Part of It <ArrowRightIcon className="w-4 h-4 ml-1.5" />
+                </Link>
+              </ScrollReveal>
+            </div>
+          </Section>
+        </section>
+      )}
 
       {celebrationEvent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-hidden ticket-backdrop-animate">

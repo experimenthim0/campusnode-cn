@@ -59,13 +59,13 @@ const PaymentPolicy = () => {
                         <ul className="list-disc pl-6 space-y-1.5">
                             <li>Refund rules for paid entries are at the sole discretion of the organizing club.</li>
                             <li>If an event is cancelled by the club, the organizers are responsible for processing refunds directly.</li>
-                            <li>For disputes or refund requests, please contact the respective club leads or mail <a href="mailto:clubsetu@nikhim.me" className="text-orange-600 dark:text-orange-400 font-semibold hover:underline">clubsetu@nikhim.me</a>.</li>
+                            <li>For disputes or refund requests, please contact the respective club leads or mail <a href="mailto:clubsetu@nikhim.me" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">clubsetu@nikhim.me</a>.</li>
                         </ul>
                     </section>
 
                     <section>
                         <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">5. Failed Transactions</h2>
-                        <p>If money was deducted from your account but your registration remains unverified, please check with the club coordinator first. You may also contact us at <a href="mailto:clubsetu@nikhim.me" className="text-orange-600 dark:text-orange-400 font-semibold hover:underline">clubsetu@nikhim.me</a> with your email, roll number, and transaction UTR receipt for assistance.</p>
+                        <p>If money was deducted from your account but your registration remains unverified, please check with the club coordinator first. You may also contact us at <a href="mailto:clubsetu@nikhim.me" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">clubsetu@nikhim.me</a> with your email, roll number, and transaction UTR receipt for assistance.</p>
                     </section>
                 </div>
             </div>

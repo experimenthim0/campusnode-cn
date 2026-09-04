@@ -64,11 +64,11 @@ const InAppNotificationToast = ({ toast, onClose }) => {
     >
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-4 sm:p-5 relative overflow-hidden backdrop-blur-xl">
         {/* Subtle accent top border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 via-amber-500 to-brand-600" />
 
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-400 text-sm shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-brand-100 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-900/50 flex items-center justify-center text-brand-600 dark:text-brand-400 text-sm shrink-0">
               <i className="ri-notification-3-line" />
             </div>
             <span className="text-[11px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -88,7 +88,7 @@ const InAppNotificationToast = ({ toast, onClose }) => {
         {/* Notification Title */}
         <h4
           onClick={handleNavigate}
-          className="text-sm font-bold text-black dark:text-white leading-snug mb-1 cursor-pointer hover:text-orange-600 dark:hover:text-orange-400 transition-colors line-clamp-2"
+          className="text-sm font-bold text-black dark:text-white leading-snug mb-1 cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors line-clamp-2"
         >
           {toast.title}
         </h4>
@@ -101,7 +101,7 @@ const InAppNotificationToast = ({ toast, onClose }) => {
         <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800/60">
           <button
             onClick={handleNavigate}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer"
           >
             <span>View</span>
             <i className="ri-arrow-right-line text-xs" />

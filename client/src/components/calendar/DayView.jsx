@@ -8,7 +8,7 @@ const CATEGORY_COLORS = {
   Cultural: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800/40",
   Sports: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40",
   Academic: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/40",
-  DEFAULT: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800/40"
+  DEFAULT: "bg-brand-500/10 text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-800/40"
 };
 
 const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) => {

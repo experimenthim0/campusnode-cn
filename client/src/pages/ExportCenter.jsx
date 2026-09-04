@@ -264,7 +264,7 @@ const ExportCenter = () => {
             <h1 className="text-xl font-extrabold tracking-tight text-black dark:text-white">
               Export Center
             </h1>
-            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">
+            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50">
               Data Management
             </span>
           </div>
@@ -276,7 +276,7 @@ const ExportCenter = () => {
         {/* Global Academic Session Context Indicator */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/50 text-xs">
-            <i className="ri-building-line text-orange-500" />
+            <i className="ri-building-line text-brand-500" />
             <span className="text-neutral-500 dark:text-neutral-400 font-medium">
               Active Context:
             </span>
@@ -318,7 +318,7 @@ const ExportCenter = () => {
                 }`}
               >
                 <div>
-                  <i className={`${ds.icon} text-lg ${isSelected ? "text-orange-400 dark:text-orange-600" : "text-neutral-400"}`} />
+                  <i className={`${ds.icon} text-lg ${isSelected ? "text-brand-400 dark:text-brand-600" : "text-neutral-400"}`} />
                   <p className="text-xs font-bold mt-2 truncate">{ds.label}</p>
                 </div>
                 {!isAuthorized && (
@@ -333,7 +333,7 @@ const ExportCenter = () => {
       <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
-            <i className="ri-filter-3-line text-orange-500" />
+            <i className="ri-filter-3-line text-brand-500" />
             Filters & Scope ({activeDataset.label})
           </h2>
           <button
@@ -347,7 +347,7 @@ const ExportCenter = () => {
               setDatasetFilters(reset);
               setPage(1);
             }}
-            className="text-[11px] font-semibold text-neutral-400 hover:text-orange-500 cursor-pointer border-0 bg-transparent"
+            className="text-[11px] font-semibold text-neutral-400 hover:text-brand-500 cursor-pointer border-0 bg-transparent"
           >
             Reset Filters
           </button>
@@ -365,7 +365,7 @@ const ExportCenter = () => {
                 setSession(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
             >
               {ACADEMIC_SESSIONS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -386,7 +386,7 @@ const ExportCenter = () => {
                 setSemester(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
             >
               {SEMESTERS.map((sem) => (
                 <option key={sem.id} value={sem.id}>
@@ -411,7 +411,7 @@ const ExportCenter = () => {
                   setEventId("all");
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
               >
                 <option value="all">All Clubs</option>
                 {clubs.map((c) => (
@@ -438,7 +438,7 @@ const ExportCenter = () => {
                     setEventId(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-orange-500 transition-colors font-semibold text-orange-600 dark:text-orange-400"
+                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors font-semibold text-brand-600 dark:text-brand-400"
                 >
                   <option value="all">All Events in Club</option>
                   {eventsList.map((e) => (
@@ -462,7 +462,7 @@ const ExportCenter = () => {
                   setDatasetFilters({ ...datasetFilters, [field.id]: e.target.value });
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
               >
                 {field.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -494,7 +494,7 @@ const ExportCenter = () => {
         <button
           onClick={handleExportCSV}
           disabled={isExporting || totalCount === 0}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           {isExporting ? (
             <>
@@ -520,7 +520,7 @@ const ExportCenter = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSelectAllColumns}
-                className="text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer border-0 bg-transparent"
+                className="text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer border-0 bg-transparent"
               >
                 Select All
               </button>
@@ -550,7 +550,7 @@ const ExportCenter = () => {
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleColumn(col.id)}
-                    className="w-3.5 h-3.5 accent-orange-600 rounded cursor-pointer"
+                    className="w-3.5 h-3.5 accent-brand-600 rounded cursor-pointer"
                   />
                   <span className="truncate">{col.label}</span>
                 </label>
@@ -592,7 +592,7 @@ const ExportCenter = () => {
 
         {isLoadingPreview ? (
           <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#0a0a0a]">
-            <i className="ri-loader-4-line text-2xl animate-spin text-orange-500" />
+            <i className="ri-loader-4-line text-2xl animate-spin text-brand-500" />
             <p className="text-xs text-neutral-400 mt-2 font-medium">Fetching dataset preview...</p>
           </div>
         ) : previewData.length === 0 ? (
@@ -640,7 +640,7 @@ const ExportCenter = () => {
         <div className="p-5 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
-              <i className="ri-history-line text-orange-500" />
+              <i className="ri-history-line text-brand-500" />
               Recent Export Audit Log
             </h3>
             <button
@@ -675,7 +675,7 @@ const ExportCenter = () => {
                     <Td className="font-bold text-black dark:text-white uppercase">
                       {item.dataset}
                     </Td>
-                    <Td className="font-mono font-bold text-orange-600 dark:text-orange-400">
+                    <Td className="font-mono font-bold text-brand-600 dark:text-brand-400">
                       {item.recordCount}
                     </Td>
                     <Td>{item.actorEmail || item.actorId}</Td>

@@ -250,16 +250,16 @@ router.get("/me", verifyToken, async (req, res) => {
 // The :role segment is kept for URL compatibility; actual table is determined by JWT userType.
 
 router.put("/:role/:id", verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { userId, userType, role, principalType, clubId, clubAccountId } = req.u  // Strict check: Only genuine club accounts (ClubAccount table) enter the club branch
-  const isClub = (userType === "club" || principalType === "CLUB") && userType !== "student" && principalType !== "STUDENT";
-
-  const isSelf = (userId === id) || (clubAccountId === id) || (clubId === id) || (req.user.id === id);
-  if (!isSelf && role !== "admin") {
-    return res.status(403).json({ message: "Access denied." });
-  }
-
   try {
+    const { id } = req.params;
+    const { userId, userType, role, principalType, clubId, clubAccountId } = req.user;
+    // Strict check: Only genuine club accounts (ClubAccount table) enter the club branch
+    const isClub = (userType === "club" || principalType === "CLUB") && userType !== "student" && principalType !== "STUDENT";
+
+    const isSelf = (userId === id) || (clubAccountId === id) || (clubId === id) || (req.user.id === id);
+    if (!isSelf && role !== "admin") {
+      return res.status(403).json({ message: "Access denied." });
+    }
     if (isClub) {
       let effectiveClubId = clubId;
       if (!effectiveClubId) {
@@ -683,10 +683,10 @@ router.post(
         folder = "profile-photos";
         const currentStudent = await prisma.studentUser.findUnique({
           where: { id: userId },
-          select: { profileImage: true, rollNumber: true },
+          select: { profileImage: true, rollNo: true },
         });
         existingPhotoUrl = currentStudent?.profileImage;
-        const rollOrId = currentStudent?.rollNumber ? currentStudent.rollNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-') : userId;
+        const rollOrId = currentStudent?.rollNo ? currentStudent.rollNo.toLowerCase().replace(/[^a-z0-9]+/g, '-') : userId;
         publicId = `student-${rollOrId}`;
       }
 

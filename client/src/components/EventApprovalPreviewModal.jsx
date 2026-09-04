@@ -180,12 +180,12 @@ const EventApprovalPreviewModal = ({
                   className="w-12 h-12 rounded-2xl object-cover border-2 border-white/80 dark:border-zinc-700 bg-white shadow-md shrink-0"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-black text-lg border-2 border-white/80 shadow-md shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-black text-lg border-2 border-white/80 shadow-md shrink-0">
                   {clubName[0] || 'C'}
                 </div>
               )}
               <div className="min-w-0">
-                <span className="text-xs font-bold text-orange-400 uppercase tracking-widest block drop-shadow-sm">
+                <span className="text-xs font-bold text-brand-400 uppercase tracking-widest block drop-shadow-sm">
                   {clubName}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black text-white leading-tight truncate drop-shadow-md">
@@ -223,15 +223,15 @@ const EventApprovalPreviewModal = ({
         <div className="bg-neutral-50 dark:bg-zinc-900/70 border-b border-neutral-200 dark:border-zinc-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-4 text-neutral-600 dark:text-neutral-300 font-medium">
             <span className="flex items-center gap-1.5">
-              <Calendar size={14} className="text-orange-500" />
+              <Calendar size={14} className="text-brand-500" />
               <strong className="text-neutral-900 dark:text-white">{formattedDate}</strong>
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock size={14} className="text-orange-500" />
+              <Clock size={14} className="text-brand-500" />
               <span>{formattedStartTime} - {formattedEndTime}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <MapPin size={14} className="text-orange-500" />
+              <MapPin size={14} className="text-brand-500" />
               <strong className="text-neutral-900 dark:text-white">{event.venue || 'TBA'}</strong>
             </span>
           </div>
@@ -268,7 +268,7 @@ const EventApprovalPreviewModal = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3.5 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                   isActive
-                    ? 'border-orange-600 text-orange-600 dark:text-orange-500'
+                    ? 'border-brand-600 text-brand-600 dark:text-brand-500'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -309,8 +309,8 @@ const EventApprovalPreviewModal = ({
 
               {/* Post Registration Message (if any) */}
               {event.postRegistrationMessage && (
-                <div className="p-4 rounded-2xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 space-y-1">
-                  <p className="text-xs font-bold text-orange-800 dark:text-orange-400 flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-brand-50/60 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 space-y-1">
+                  <p className="text-xs font-bold text-brand-800 dark:text-brand-400 flex items-center gap-1.5">
                     <Sparkles size={14} /> Post-Registration Confirmation Note for Students:
                   </p>
                   <p className="text-xs text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap font-medium">
@@ -390,7 +390,7 @@ const EventApprovalPreviewModal = ({
                           <span className="text-[10px] font-bold uppercase text-neutral-400 tracking-wider block mb-1">
                             UPI ID / VPA
                           </span>
-                          <p className="font-mono font-bold text-sm text-orange-600 dark:text-orange-400">
+                          <p className="font-mono font-bold text-sm text-brand-600 dark:text-brand-400">
                             {event.upiId || 'Not provided'}
                           </p>
                         </div>
@@ -417,7 +417,7 @@ const EventApprovalPreviewModal = ({
                           href={event.collegePaymentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="font-medium text-orange-600 hover:underline flex items-center gap-1.5 break-all"
+                          className="font-medium text-brand-600 hover:underline flex items-center gap-1.5 break-all"
                         >
                           <span>{event.collegePaymentUrl}</span>
                           <ExternalLink size={13} className="shrink-0" />
@@ -583,7 +583,7 @@ const EventApprovalPreviewModal = ({
                 </span>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-orange-600 font-bold">
+                    <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center text-brand-600 font-bold">
                       <User size={15} />
                     </div>
                     <div>
@@ -635,7 +635,7 @@ const EventApprovalPreviewModal = ({
                 onChange={(e) => setReviewComment(e.target.value)}
                 placeholder="e.g. Please verify SAC venue booking confirmation before publishing / Fee details look correct..."
                 rows={2}
-                className="w-full px-3.5 py-3 bg-white dark:bg-[#0c0c0c] border border-neutral-300 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-orange-600 transition-colors text-neutral-900 dark:text-white"
+                className="w-full px-3.5 py-3 bg-white dark:bg-[#0c0c0c] border border-neutral-300 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-brand-600 transition-colors text-neutral-900 dark:text-white"
               />
             </div>
           )}

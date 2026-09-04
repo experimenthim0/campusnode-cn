@@ -33,7 +33,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
   <div
     className={`p-4 rounded-2xl border transition-all ${
       accent
-        ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400"
+        ? "bg-brand-500/10 border-brand-500/30 text-brand-600 dark:text-brand-400"
         : "bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800"
     }`}
   >
@@ -349,7 +349,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                     >
                       <td className="py-3.5 px-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-black dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs line-clamp-1">
+                          <span className="font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs line-clamp-1">
                             {e.title}
                           </span>
                           <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
@@ -376,7 +376,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className={`font-semibold ${clubName === 'ODSW' ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
+                        <span className={`font-semibold ${clubName === 'ODSW' ? 'text-brand-600 dark:text-brand-400 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
                           {clubName}
                         </span>
                       </td>

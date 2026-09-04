@@ -176,11 +176,13 @@ const CertificateDesigner = () => {
       loadBackgroundImage(secure_url);
       showNotification("Template uploaded successfully!", "success");
     } catch (err) {
-      console.error(err);
-      showNotification(
-        `Upload error: ${err.response?.data?.message || err.message}`,
-        "error",
-      );
+      console.error("Certificate upload error:", err);
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Upload failed. Please try again.";
+      showNotification(`Upload error: ${errMsg}`, "error");
     } finally {
       setUploading(false);
     }

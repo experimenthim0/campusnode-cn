@@ -158,16 +158,16 @@ const ClubLeaderboard = () => {
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[1.5rem] p-6 shadow-sm overflow-hidden relative group">
       {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-80 h-80 bg-orange-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-80 h-80 bg-brand-500/5 rounded-full blur-[100px] pointer-events-none"></div>
       
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-orange-600 dark:text-orange-500">Live Ranking</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-500">Live Ranking</span>
               <Link 
                 to="/ranking-guide"
-                className="text-[10px] font-bold text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-400 underline decoration-dotted transition-colors"
+                className="text-[10px] font-bold text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 underline decoration-dotted transition-colors"
               >
                 How points work?
               </Link>
@@ -178,7 +178,7 @@ const ClubLeaderboard = () => {
            
             className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors rounded-2xl rotate-3 flex items-center justify-center shadow-md shadow-black/10"
           >
-            <i className="ri-medal-fill text-orange-500 text-2xl" />
+            <i className="ri-medal-fill text-brand-500 text-2xl" />
           </div>
         </div>
 
@@ -186,9 +186,9 @@ const ClubLeaderboard = () => {
           {leaderboard.map((club, index) => {
             const isTop3 = index < 3;
             const rankStyles = [
-              { bg: 'bg-orange-400/10 dark:bg-orange-500/15', border: 'border-orange-400/40 dark:border-orange-500/30', text: 'text-orange-700 dark:text-orange-400', icon: 'ri-vip-crown-fill', label: 'Champion' },
+              { bg: 'bg-brand-400/10 dark:bg-brand-500/15', border: 'border-brand-400/40 dark:border-brand-500/30', text: 'text-brand-700 dark:text-brand-400', icon: 'ri-vip-crown-fill', label: 'Champion' },
               { bg: 'bg-neutral-500/10 dark:bg-neutral-700/20', border: 'border-neutral-300 dark:border-neutral-700', text: 'text-neutral-700 dark:text-neutral-300', icon: 'ri-award-fill', label: 'Runner Up' },
-              { bg: 'bg-orange-500/10 dark:bg-orange-500/15', border: 'border-orange-400/40 dark:border-orange-500/30', text: 'text-orange-700 dark:text-orange-400', icon: 'ri-medal-line', label: 'Third Place' }
+              { bg: 'bg-brand-500/10 dark:bg-brand-500/15', border: 'border-brand-400/40 dark:border-brand-500/30', text: 'text-brand-700 dark:text-brand-400', icon: 'ri-medal-line', label: 'Third Place' }
             ];
 
             return (
@@ -214,7 +214,7 @@ const ClubLeaderboard = () => {
                     <div className="flex items-center gap-2">
                       <Link 
                         to={`/club/${club.slug || club._id}`}
-                        className="text-[16px] font-black text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors block truncate tracking-tight"
+                        className="text-[16px] font-black text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors block truncate tracking-tight"
                       >
                         {club.clubName}
                       </Link>

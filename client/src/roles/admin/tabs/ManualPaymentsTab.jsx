@@ -67,7 +67,7 @@ const ManualPaymentsTab = ({
                     </div>
                     <div className="p-5 rounded-2xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800 transition-colors">
                         <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Need Details</p>
-                        <p className="text-2xl font-black mt-1 text-orange-500">{manualPaymentsSummary.needMoreDetails}</p>
+                        <p className="text-2xl font-black mt-1 text-brand-500">{manualPaymentsSummary.needMoreDetails}</p>
                     </div>
                 </div>
             )}
@@ -81,7 +81,7 @@ const ManualPaymentsTab = ({
                             placeholder="Search student, team, event, roll no or UTR..."
                             value={paymentsSearch}
                             onChange={(e) => setPaymentsSearch(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2 bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+                            className="w-full pl-9 pr-8 py-2 bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
                         />
                         {paymentsSearch && (
                             <button onClick={() => setPaymentsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white">
@@ -135,7 +135,7 @@ const ManualPaymentsTab = ({
                                 
                                 <Td>
                                     <p className="font-bold text-black dark:text-white text-sm">{p.eventName}</p>
-                                    <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mt-0.5" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>
+                                    <p className="text-[11px] text-brand-600 dark:text-brand-400 font-semibold mt-0.5" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>
                                         {displayClubName}
                                     </p>
                                     {/* <div className="mt-1.5 flex items-center gap-1.5">
@@ -158,7 +158,7 @@ const ManualPaymentsTab = ({
                                                 <span className="font-bold text-sm text-black dark:text-white truncate">
                                                    Team {p.teamName || 'Team'}
                                                 </span>
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold text-[10px] uppercase tracking-wider border border-orange-200/60 dark:border-orange-900/40">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold text-[10px] uppercase tracking-wider border border-brand-200/60 dark:border-brand-900/40">
                                                     <Users size={11} /> {p.teamMemberCount || p.teamMembers?.length || 2}
                                                 </span>
                                                 
@@ -201,7 +201,7 @@ const ManualPaymentsTab = ({
                                     {p.paymentRemarks && <p className="text-[10px] text-neutral-400 dark:text-neutral-500 italic mt-0.5">"{p.paymentRemarks}"</p>}
                                 </Td>
 
-                                <Td className="font-mono font-black text-orange-600 dark:text-orange-400 text-base">₹{p.amountPaid}</Td>
+                                <Td className="font-mono font-black text-brand-600 dark:text-brand-400 text-base">₹{p.amountPaid}</Td>
 
                                 <Td>
                                     <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg border ${
@@ -210,7 +210,7 @@ const ManualPaymentsTab = ({
                                             : p.paymentStatus === 'REJECTED'
                                             ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
                                             : p.paymentStatus === 'NEED_MORE_DETAILS'
-                                            ? 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20'
+                                            ? 'bg-brand-50 text-brand-600 border-brand-200 dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20'
                                             : 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
                                     }`}>
                                         {p.paymentStatus}

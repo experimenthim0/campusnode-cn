@@ -145,11 +145,11 @@ const NotFound = () => {
 
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-brand-600">
               Page Not Found
             </p>
             {/* <span className="flex items-center gap-1 text-[9px] font-medium text-neutral-400 dark:text-neutral-500">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
               Live Campus Humor
             </span> */}
           </div>
@@ -160,7 +160,7 @@ const NotFound = () => {
 
         <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium mb-6 tracking-wide flex items-center justify-center gap-1.5">
           Auto-redirecting to home in{' '}
-          <span className="inline-flex items-center justify-center w-7 h-7 bg-orange-600 text-white text-[11px] font-extrabold rounded-full shadow-sm">
+          <span className="inline-flex items-center justify-center w-7 h-7 bg-brand-600 text-white text-[11px] font-extrabold rounded-full shadow-sm">
             {countdown}
           </span>{' '}
           seconds
@@ -170,7 +170,7 @@ const NotFound = () => {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm"
+            className="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm"
           >
             <i className="ri-home-4-line mr-2" />
             Take Me Home
@@ -185,7 +185,7 @@ const NotFound = () => {
         </div>
 
         <p className="mt-10 text-[10px] text-neutral-300 dark:text-neutral-700 tracking-widest font-bold uppercase flex items-center justify-center gap-1.5 flex-wrap">
-          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span> • You're off the map 🗺️
+          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span> • You're off the map 🗺️
         </p>
       </div>
     </div>

@@ -9,7 +9,7 @@ const CalendarDropdown = ({ event, btnClassName }) => {
 
     // Check if already synced on mount
     useEffect(() => {
-        const eventId = event._id || event.slug;
+        const eventId = event?._id || event?.id || event?.slug;
         if (eventId && localStorage.getItem(`calendar_synced_${eventId}`) === 'true') {
             setIsSynced(true);
         }
@@ -25,10 +25,12 @@ const CalendarDropdown = ({ event, btnClassName }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    if (!event) return null;
+
     const calendarEvent = {
-        title: event.title,
-        description: event.description,
-        location: event.venue,
+        title: event.title || '',
+        description: event.description || '',
+        location: event.venue || '',
         startTime: event.startTime,
         endTime: event.endTime // might be undefined, handled in utils
     };
@@ -99,7 +101,7 @@ const CalendarDropdown = ({ event, btnClassName }) => {
                         onClick={handleICS}
                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-neutral-50 flex items-center gap-2 text-neutral-700"
                     >
-                        <Download className="w-4 h-4 text-orange-500" />
+                        <Download className="w-4 h-4 text-brand-500" />
                         Apple / Outlook (.ics)
                     </button>
                 </div>

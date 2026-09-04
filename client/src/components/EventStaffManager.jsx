@@ -177,7 +177,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800">
         <div>
           <div className="flex items-center gap-2">
-            <Shield className="text-orange-600 dark:text-orange-500" size={18} />
+            <Shield className="text-brand-600 dark:text-brand-500" size={18} />
             <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
               Event Staff
             </h3>
@@ -186,7 +186,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
             Delegate operator roles to students.{" "}
             <Link
               to="/central-organizer/guide"
-              className="text-orange-600 dark:text-orange-400 hover:underline font-semibold inline-flex items-center gap-0.5"
+              className="text-brand-600 dark:text-brand-400 hover:underline font-semibold inline-flex items-center gap-0.5"
             >
               Read Guide <ExternalLink size={10} />
             </Link>
@@ -194,7 +194,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
         </div>
         <button
           onClick={() => setShowInviteModal(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
         >
           <UserPlus size={14} />
           Invite Staff
@@ -244,7 +244,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                 <tr key={staff.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-bold flex items-center justify-center text-[11px]">
+                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-bold flex items-center justify-center text-[11px]">
                         {staff.user?.name ? staff.user.name.charAt(0).toUpperCase() : "?"}
                       </div>
                       <div>

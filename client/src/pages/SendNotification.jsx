@@ -171,7 +171,7 @@ const SendNotification = () => {
     <div className="max-w-[850px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 myfont space-y-6 md:space-y-8">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50 rounded-full">
+          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50 rounded-full">
             Broadcasts & Communication
           </span>
         </div>
@@ -193,7 +193,7 @@ const SendNotification = () => {
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
-          <i className="ri-broadcast-line text-orange-600 text-base font-light" />
+          <i className="ri-broadcast-line text-brand-600 text-base font-light" />
           <span>Push Notification</span>
         </button>
 
@@ -206,10 +206,10 @@ const SendNotification = () => {
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
-          <i className="ri-megaphone-line text-orange-600 text-base font-light" />
+          <i className="ri-megaphone-line text-brand-600 text-base font-light" />
           <span>Club Announcements</span>
           {activeClubData?.announcements?.length > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-black bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 rounded-full">
+            <span className="px-1.5 py-0.5 text-[10px] font-black bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-full">
               {activeClubData.announcements.length}
             </span>
           )}
@@ -247,7 +247,7 @@ const SendNotification = () => {
                       key={opt.value}
                       className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
                         targetType === opt.value
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-600"
+                          ? "border-brand-500 bg-brand-50 dark:bg-brand-950/20 dark:border-brand-600"
                           : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
                       }`}
                     >
@@ -257,7 +257,7 @@ const SendNotification = () => {
                         value={opt.value}
                         checked={targetType === opt.value}
                         onChange={() => setTargetType(opt.value)}
-                        className="accent-orange-600 scale-110"
+                        className="accent-brand-600 scale-110"
                       />
                       <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{opt.label}</span>
                     </label>
@@ -275,7 +275,7 @@ const SendNotification = () => {
                     value={selectedEventId}
                     onChange={(e) => setSelectedEventId(e.target.value)}
                     required
-                    className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all"
+                    className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all"
                   >
                     <option value="" disabled>
                       -- Select an event --
@@ -303,7 +303,7 @@ const SendNotification = () => {
                   onChange={(e) => setTitle(e.target.value)}
                   required
                   placeholder="e.g., Important Venue Change"
-                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
+                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
                 />
               </div>
 
@@ -318,14 +318,14 @@ const SendNotification = () => {
                   required
                   rows={4}
                   placeholder="Write your message here..."
-                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400 resize-y"
+                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400 resize-y"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-xs ${
+                className={`w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-xs ${
                   loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 cursor-pointer"
                 }`}
               >
@@ -365,7 +365,7 @@ const SendNotification = () => {
                       <span
                         className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg ${
                           notif.targetType === "ALL_STUDENTS"
-                            ? "bg-orange-50 dark:bg-orange-950/20 text-orange-600 border border-orange-200/50 dark:border-orange-900/40"
+                            ? "bg-brand-50 dark:bg-brand-950/20 text-brand-600 border border-brand-200/50 dark:border-brand-900/40"
                             : "bg-blue-50 dark:bg-blue-950/20 text-blue-600 border border-blue-200/50 dark:border-blue-900/40"
                         }`}
                       >
@@ -406,7 +406,7 @@ const SendNotification = () => {
               <select
                 value={selectedClubId || ""}
                 onChange={(e) => setSelectedClubId(e.target.value)}
-                className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-orange-500"
+                className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-brand-500"
               >
                 {managedClubs.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -419,7 +419,7 @@ const SendNotification = () => {
 
           {loadingClub && !activeClubData ? (
             <div className="p-12 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <i className="ri-loader-4-line animate-spin text-2xl text-orange-600 mb-2 inline-block" />
+              <i className="ri-loader-4-line animate-spin text-2xl text-brand-600 mb-2 inline-block" />
               <p className="text-xs font-semibold text-neutral-400">Loading club announcements...</p>
             </div>
           ) : selectedClubId ? (

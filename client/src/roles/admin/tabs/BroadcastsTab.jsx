@@ -15,7 +15,7 @@ const BroadcastsTab = ({
 }) => {
     return (
         <div className="space-y-6">
-            <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 flex items-start gap-3">
+            <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 flex items-start gap-3">
                 <Radio size={20} className="shrink-0 mt-0.5" />
                 <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider">Real-Time Broadcast Engine</h4>
@@ -45,7 +45,7 @@ const BroadcastsTab = ({
                             </Td>
                             <Td>
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
-                                    <Radio size={11} className="text-orange-500" />
+                                    <Radio size={11} className="text-brand-500" />
                                     {b.recipientStudentId ? 'Direct Student' : 'All Students'}
                                 </span>
                             </Td>
@@ -80,7 +80,7 @@ const BroadcastsTab = ({
                             <div className="grid grid-cols-2 gap-3">
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'ALL_STUDENTS' 
-                                        ? 'border-orange-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
+                                        ? 'border-brand-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
                                         : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5]'
                                 }`}>
                                     <input 
@@ -97,7 +97,7 @@ const BroadcastsTab = ({
 
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'REGISTERED_STUDENTS' 
-                                        ? 'border-orange-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
+                                        ? 'border-brand-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
                                         : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5]'
                                 }`}>
                                     <input 

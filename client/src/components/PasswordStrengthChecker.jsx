@@ -113,8 +113,8 @@ export const getPasswordStrength = (password, userInputs = []) => {
     return {
       score: 2,
       label: 'Weak',
-      color: 'bg-orange-500',
-      textColor: 'text-orange-500 dark:text-orange-400',
+      color: 'bg-brand-500',
+      textColor: 'text-brand-500 dark:text-brand-400',
       segments: 2,
       feedback: 'Add uppercase letters, numbers, or symbols',
       isGuessable: false,

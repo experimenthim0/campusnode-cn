@@ -8,12 +8,13 @@ import {
   cancelRegistration,
 } from '../services/eventService';
 import { searchUsers } from '../services/userService';
-import { Clock, MapPin, Users, QrCode, Shield, Download, FileText, Award, X, Star, MessageSquare } from 'lucide-react';
+import { Clock, MapPin, Users, QrCode, Shield, Download, FileText, Award, X, Star, MessageSquare, Check } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
 import QRCode from 'qrcode';
 import { invalidateCache } from '../lib/cacheManager';
 import { getMyFeedbackHistory } from '../services/feedbackService';
+import { EventFeedbackModal } from '../components/EventFeedbackModal';
 
 const MyRegisteredEventCard = ({
   reg,
@@ -25,6 +26,8 @@ const MyRegisteredEventCard = ({
   onUpdateTeam,
   onDownloadCertificate,
   downloadingCert,
+  onOpenFeedback,
+  hasSubmittedFeedback,
 }) => {
   const event = reg.eventId;
   if (!event) return null;
@@ -56,11 +59,23 @@ const MyRegisteredEventCard = ({
 
   const posterImage = event.imageUrl || '/CLUBSETU.png';
   const isPaidEvent = event.paymentMethod && event.paymentMethod !== 'FREE';
-  const isTeamMember = reg.team && reg.team.leaderId !== (user?.id || user?._id);
+  const isTeam = Boolean(reg.team || reg.teamId);
+  const isTeamLeader = isTeam && (reg.team?.leaderId === (user?.id || user?._id));
+  const isTeamMember = isTeam && !isTeamLeader;
   const isPaymentSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
   const isPaymentRejected = reg.paymentStatus === 'REJECTED';
   const isPaymentPending = isPaidEvent && reg.paymentStatus === 'PENDING';
   const canShowTicket = !isPaidEvent || isTeamMember || isPaymentSuccess;
+  const isAttended = reg.status === 'ATTENDED' || reg.attended;
+
+  // Certificate download is only available if added or selected to provide, event is past, and user attended
+  const isCertificateAvailable = Boolean(
+    event.provideCertificate ||
+    (event.certificateTemplate &&
+      (typeof event.certificateTemplate === 'string'
+        ? event.certificateTemplate.length > 0
+        : (event.certificateTemplate.imageUrl || Object.keys(event.certificateTemplate).length > 0)))
+  );
 
   const clubName = event.club?.clubName || event.createdBy?.clubName;
   const clubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
@@ -70,7 +85,7 @@ const MyRegisteredEventCard = ({
       id={`reg-card-${regId}`}
       className={`border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md ${
         isHighlighted
-          ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 dark:bg-orange-950/10'
+          ? 'border-brand-500 ring-2 ring-brand-500/20 bg-brand-50/20 dark:bg-brand-950/10'
           : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
       }`}
     >
@@ -89,7 +104,7 @@ const MyRegisteredEventCard = ({
         {/* Top-Left: Timing Status Badge */}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           {isLive && (
-            <span className="inline-flex items-center gap-1.5 bg-orange-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md animate-pulse shadow-sm">
+            <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md animate-pulse shadow-sm">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
               Live
             </span>
@@ -142,17 +157,17 @@ const MyRegisteredEventCard = ({
                 }}
               />
             ) : (
-              <div className="w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center mr-1.5 text-orange-600 text-[9px] font-bold">
+              <div className="w-4 h-4 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center mr-1.5 text-brand-600 text-[9px] font-bold">
                 <i className="ri-team-line" />
               </div>
             )}
-            <span className="text-[11px] font-bold text-orange-600 truncate">{clubName}</span>
+            <span className="text-[11px] font-bold text-brand-600 truncate">{clubName}</span>
           </div>
         )}
 
         {/* Event Title */}
         <h3 className="text-base font-bold text-neutral-900 dark:text-white leading-snug line-clamp-2">
-          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-orange-600 transition-colors">
+          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-brand-600 transition-colors">
             {event.title}
           </Link>
         </h3>
@@ -162,7 +177,7 @@ const MyRegisteredEventCard = ({
           {/* Left Info Column */}
           <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
             <div className="flex items-center gap-1.5 min-w-0 font-medium text-neutral-700 dark:text-neutral-300">
-              <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
               <span className="truncate">{event.venue || 'Campus Venue'}</span>
             </div>
 
@@ -212,14 +227,14 @@ const MyRegisteredEventCard = ({
           <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800/80 rounded-xl text-xs space-y-1 text-left">
             <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
               <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200">
-                <Users className="w-3.5 h-3.5 text-orange-600" />
-                <span>Team: <span className="text-orange-600 dark:text-orange-500 font-extrabold">{reg.team.teamName}</span></span>
+                <Users className="w-3.5 h-3.5 text-brand-600" />
+                <span>Team: <span className="text-brand-600 dark:text-brand-500 font-extrabold">{reg.team.teamName}</span></span>
               </div>
               {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
                 <button
                   type="button"
                   onClick={() => onUpdateTeam(reg)}
-                  className="px-2 py-0.5 text-[10px] font-bold text-orange-600 hover:text-white hover:bg-orange-600 border border-orange-200 hover:border-orange-600 rounded-lg transition-all cursor-pointer bg-transparent"
+                  className="px-2 py-0.5 text-[10px] font-bold text-brand-600 hover:text-white hover:bg-brand-600 border border-brand-200 hover:border-brand-600 rounded-lg transition-all cursor-pointer bg-transparent"
                 >
                   Update
                 </button>
@@ -239,58 +254,107 @@ const MyRegisteredEventCard = ({
         {/* Action Buttons Footer */}
         <div className="mt-auto pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            {(!reg.team || reg.team.leaderId === (user?.id || user?._id)) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
+            {(!reg.team || isTeamLeader) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
               <button
                 type="button"
                 onClick={() => onEditPayment(reg)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 dark:text-orange-350 transition-colors shadow-2xs cursor-pointer border-0 outline-none whitespace-nowrap"
+                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-brand-100 hover:bg-brand-200 text-brand-700 dark:bg-brand-950/40 dark:hover:bg-brand-900/60 dark:text-brand-350 transition-colors shadow-2xs cursor-pointer border-0 outline-none whitespace-nowrap"
               >
                 <i className="ri-edit-2-line mr-1" /> Edit Payment Info
               </button>
             )}
 
-            {canShowTicket && (
-              <button
-                type="button"
-                onClick={() => onShowTicket(reg)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-black text-white hover:bg-orange-600 dark:bg-white dark:text-black dark:hover:bg-orange-600 dark:hover:text-white transition-all shadow-xs cursor-pointer"
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                <span>Show Ticket</span>
-              </button>
-            )}
-
-            {isPaidEvent && isPaymentPending && (
-              <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
-                <i className="ri-time-line mr-1" /> Ticket after approval
-              </span>
-            )}
-
-            {isPaidEvent && isPaymentRejected && (
-              <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap">
-                <i className="ri-close-circle-line mr-1" /> Payment rejected
-              </span>
-            )}
-
+            {/* Upcoming or Live events: show ticket and deregulation */}
             {!isPast && (
-              isPaidEvent ? (
-                <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 rounded-xl cursor-not-allowed whitespace-nowrap">
-                  <i className="ri-lock-2-line mr-1" /> Paid
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onDeregister(reg)}
-                  className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer border-0 outline-none rounded-xl whitespace-nowrap"
-                >
-                  Deregister
-                </button>
-              )
+              <>
+                {canShowTicket && (
+                  <button
+                    type="button"
+                    onClick={() => onShowTicket(reg)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-black text-white hover:bg-brand-600 dark:bg-white dark:text-black dark:hover:bg-brand-600 dark:hover:text-white transition-all shadow-xs cursor-pointer"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>Show Ticket</span>
+                  </button>
+                )}
+
+                {isPaidEvent && isPaymentPending && (
+                  <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
+                    <i className="ri-time-line mr-1" /> Ticket after approval
+                  </span>
+                )}
+
+                {isPaidEvent && isPaymentRejected && (
+                  <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap">
+                    <i className="ri-close-circle-line mr-1" /> Payment rejected
+                  </span>
+                )}
+
+                {isPaidEvent ? (
+                  <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 rounded-xl cursor-not-allowed whitespace-nowrap">
+                    <i className="ri-lock-2-line mr-1" /> Paid
+                  </span>
+                ) : isTeamMember ? (
+                  <span
+                    className="px-3 py-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl whitespace-nowrap"
+                    title="Only the team leader can cancel the team registration."
+                  >
+                    Team Member
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onDeregister(reg)}
+                    className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer border-0 outline-none rounded-xl whitespace-nowrap"
+                  >
+                    {isTeamLeader ? 'Deregister Team' : 'Deregister'}
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* Completed events (isPast): Replace Show Ticket with Submit Feedback (only if attended) */}
+            {isPast && (
+              <>
+                {isAttended ? (
+                  hasSubmittedFeedback ? (
+                    <span className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Feedback Submitted</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onOpenFeedback(event)}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-xs transition-all cursor-pointer"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      <span>Submit Feedback</span>
+                    </button>
+                  )
+                ) : (
+                  <span className="flex-1 text-center px-3 py-2 text-[11px] font-semibold rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                    Event Ended
+                  </span>
+                )}
+
+                {/* Secondary pass view button for participants */}
+                {canShowTicket && (
+                  <button
+                    type="button"
+                    onClick={() => onShowTicket(reg)}
+                    title="View Digital Pass"
+                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer"
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                )}
+              </>
             )}
           </div>
 
-          {/* Certificate Download Button */}
-          {isPast && (reg.status === 'ATTENDED' || reg.attended) && event.provideCertificate && (
+          {/* Certificate Download Button: only shown when template added or option selected, event ended, and user attended */}
+          {isPast && isAttended && isCertificateAvailable && (
             <button
               type="button"
               onClick={() => onDownloadCertificate(event.id || event._id)}
@@ -341,6 +405,7 @@ const MyEvents = () => {
   const [submittingEdit, setSubmittingEdit] = useState(false);
   const [highlightedRegId, setHighlightedRegId] = useState(null);
   const [downloadingCert, setDownloadingCert] = useState(null);
+  const [feedbackModalEvent, setFeedbackModalEvent] = useState(null);
 
   // Check if account is a dedicated ClubAccount without student identity
   const isClubAccount = authUser?.principalType === 'CLUB' || (!user?.rollNo && authRole === 'club');
@@ -351,6 +416,7 @@ const MyEvents = () => {
       const userId = authUser.id || authUser._id;
       if (userId && !isClubAccount) {
         fetchRegistrations(userId);
+        fetchFeedbackHistory();
       } else {
         setLoading(false);
       }
@@ -358,6 +424,12 @@ const MyEvents = () => {
       setLoading(false);
     }
   }, [authUser, authRole, isClubAccount]);
+
+  const submittedFeedbackEventIds = React.useMemo(() => {
+    return new Set(
+      feedbacks.map((fb) => fb.eventId || fb.event?.id || fb.event?._id).filter(Boolean)
+    );
+  }, [feedbacks]);
 
   // Deep-link highlighting
   useEffect(() => {
@@ -714,7 +786,7 @@ const MyEvents = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-10 shadow-sm max-w-lg mx-auto">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-500/10 text-brand-600 flex items-center justify-center">
             <Shield size={28} />
           </div>
           <h2 className="text-xl font-black text-neutral-900 dark:text-white mb-2">Club Management Portal</h2>
@@ -743,7 +815,7 @@ const MyEvents = () => {
         </div>
         <Link
           to="/profile"
-          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-orange-600 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-brand-600 transition-colors"
         >
           <i className="ri-arrow-left-line text-sm" /> Back to Profile
         </Link>
@@ -783,7 +855,7 @@ const MyEvents = () => {
         <div>
           {loadingFeedbacks ? (
             <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
-              <i className="ri-loader-4-line animate-spin text-3xl mb-2 text-orange-500" />
+              <i className="ri-loader-4-line animate-spin text-3xl mb-2 text-brand-500" />
               <p className="text-xs font-semibold uppercase tracking-wider">Loading your feedback history...</p>
             </div>
           ) : feedbacks.length === 0 ? (
@@ -807,7 +879,7 @@ const MyEvents = () => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         {fb.event?.club?.clubName && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200/50 dark:border-orange-900/30">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-200/50 dark:border-brand-900/30">
                             {fb.event.club.clubName}
                           </span>
                         )}
@@ -816,7 +888,7 @@ const MyEvents = () => {
                         </span>
                       </div>
                       <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-orange-600 transition-colors">
+                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-brand-600 transition-colors">
                           {fb.event?.title || 'Campus Event'}
                         </Link>
                       </h3>
@@ -895,7 +967,7 @@ const MyEvents = () => {
             </p>
             <Link
               to="/events"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
             >
               Browse Events
             </Link>
@@ -923,6 +995,8 @@ const MyEvents = () => {
                   }}
                   onDownloadCertificate={handleDownloadCertificate}
                   downloadingCert={downloadingCert}
+                  onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
+                  hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
                 />
               );
             })}
@@ -1022,7 +1096,7 @@ const MyEvents = () => {
                     text-[10px] font-bold uppercase tracking-wider
                     text-[#F97316] dark:text-[#FB923C]
                     bg-[#FFF7ED] dark:bg-[#2A1A0F]
-                    border border-orange-200/60 dark:border-orange-900/40
+                    border border-brand-200/60 dark:border-brand-900/40
                     px-2.5 py-1
                     rounded-full
                     shrink-0
@@ -1171,7 +1245,7 @@ const MyEvents = () => {
                       Participant
                     </p>
 
-                    <p className="text-xs font-extrabold text-orange-600 dark:text-orange-400 truncate mt-0.5">
+                    <p className="text-xs font-extrabold text-brand-600 dark:text-brand-400 truncate mt-0.5">
                       {attendeeName} <span className="text-neutral-900 dark:text-white">({authUser.branch}, {authUser.year})</span>
                     </p>
                   </div>
@@ -1198,7 +1272,7 @@ const MyEvents = () => {
 
             <div className="mt-3 mb-4 text-center">
               <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400 mb-1">
-                Pass ID : <span className=' text-orange-600 dark:text-orange-400'>{passId}</span>
+                Pass ID : <span className=' text-brand-600 dark:text-brand-400'>{passId}</span>
               </p>
 
               
@@ -1230,7 +1304,7 @@ const MyEvents = () => {
                 className="
                   flex-1
                   px-4 py-2.5
-                  bg-orange-600 hover:bg-orange-700
+                  bg-brand-600 hover:bg-brand-700
                   text-white
                   font-bold text-xs
                   rounded-xl
@@ -1270,9 +1344,13 @@ const MyEvents = () => {
               <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <i className="ri-alert-line text-2xl" />
               </div>
-              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] mb-1.5">Cancel Registration?</h3>
+              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                {regToDeregister?.team ? 'Cancel Team Registration?' : 'Cancel Registration?'}
+              </h3>
               <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
-                Are you sure you want to cancel your registration for this event? This action cannot be undone.
+                {regToDeregister?.team
+                  ? `Are you sure you want to cancel the registration for team "${regToDeregister.team.teamName}"? As the team leader, cancelling will deregister all team members from this event. This action cannot be undone.`
+                  : 'Are you sure you want to cancel your registration for this event? This action cannot be undone.'}
               </p>
               <div className="flex gap-3">
                 <button
@@ -1287,7 +1365,7 @@ const MyEvents = () => {
                   onClick={confirmDeregister}
                   className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer"
                 >
-                  Yes, Deregister
+                  {regToDeregister?.team ? 'Yes, Deregister Team' : 'Yes, Deregister'}
                 </button>
               </div>
             </motion.div>
@@ -1371,7 +1449,7 @@ const MyEvents = () => {
                   
                   if (currentCount >= maxLimit) {
                     return (
-                      <div className="bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/80 dark:border-orange-900/40 p-4 rounded-xl text-xs text-[#F97316] dark:text-[#FB923C] font-semibold">
+                      <div className="bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/80 dark:border-brand-900/40 p-4 rounded-xl text-xs text-[#F97316] dark:text-[#FB923C] font-semibold">
                         <i className="ri-information-fill mr-1" />
                         Your team has reached the maximum size of {maxLimit} members.
                       </div>
@@ -1411,7 +1489,7 @@ const MyEvents = () => {
                                 <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
                                 <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                               </div>
-                              <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-lg cursor-pointer">Invite</span>
+                              <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg cursor-pointer">Invite</span>
                             </div>
                           ))}
                         </div>
@@ -1550,6 +1628,17 @@ const MyEvents = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Direct Event Feedback Modal */}
+      <EventFeedbackModal
+        isOpen={Boolean(feedbackModalEvent)}
+        onClose={() => setFeedbackModalEvent(null)}
+        pendingEvents={feedbackModalEvent ? [feedbackModalEvent] : []}
+        onFeedbackSubmitted={async () => {
+          await fetchFeedbackHistory();
+          showNotification('Feedback submitted successfully! Thank you.', 'success');
+        }}
+      />
     </div>
   );
 };

@@ -202,7 +202,7 @@ const CalendarFilterBar = ({
             <button
               type="button"
               onClick={onNewBlackout}
-              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Building2 size={14} />
               <span>Venue Blackout</span>
@@ -219,7 +219,7 @@ const CalendarFilterBar = ({
             onClick={() => setVenueDropdownOpen((prev) => !prev)}
             className={`px-3 py-1.5 border rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               selectedVenues.length > 0
-                ? "bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800/60 font-bold"
+                ? "bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-800/60 font-bold"
                 : "bg-neutral-50 dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800"
             }`}
           >
@@ -239,7 +239,7 @@ const CalendarFilterBar = ({
                   <button
                     type="button"
                     onClick={handleSelectAllVenues}
-                    className="text-[10px] text-orange-600 dark:text-orange-400 font-bold hover:underline cursor-pointer"
+                    className="text-[10px] text-brand-600 dark:text-brand-400 font-bold hover:underline cursor-pointer"
                   >
                     Select All
                   </button>
@@ -266,7 +266,7 @@ const CalendarFilterBar = ({
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleVenueToggle(vName)}
-                        className="rounded border-neutral-300 dark:border-zinc-700 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                        className="rounded border-neutral-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
                       />
                       <span className="truncate">{vName}</span>
                     </label>
@@ -280,7 +280,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.clubId || "all"}
           onChange={(e) => onFilterChange("clubId", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-orange-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
         >
           <option value="all">All Clubs / Orgs</option>
           {safeClubs.map((c, idx) => {
@@ -297,7 +297,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.category || "all"}
           onChange={(e) => onFilterChange("category", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-orange-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
         >
           {CATEGORY_OPTIONS.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -309,7 +309,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.status || "all"}
           onChange={(e) => onFilterChange("status", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-orange-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
         >
           {STATUS_OPTIONS.map((st) => (
             <option key={st.id} value={st.id}>

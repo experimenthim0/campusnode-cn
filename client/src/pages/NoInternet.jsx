@@ -157,14 +157,14 @@ const getTileStyles = (val) => {
     case 256:
       return "bg-[#7C2D12] text-amber-200 dark:bg-[#602008] dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-2 ring-amber-400/60";
     case 512:
-      return "bg-gradient-to-br from-amber-500 to-orange-600 text-white text-sm sm:text-lg font-black shadow-xl ring-2 ring-amber-300";
+      return "bg-gradient-to-br from-amber-500 to-brand-600 text-white text-sm sm:text-lg font-black shadow-xl ring-2 ring-amber-300";
     case 1024:
-      return "bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 text-white text-xs sm:text-base font-black shadow-xl ring-2 ring-amber-300";
+      return "bg-gradient-to-br from-amber-400 via-brand-500 to-rose-600 text-white text-xs sm:text-base font-black shadow-xl ring-2 ring-amber-300";
     case 2048:
-      return "bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-600 text-white text-xs sm:text-base font-black shadow-2xl ring-4 ring-yellow-400 animate-pulse";
+      return "bg-gradient-to-br from-yellow-300 via-amber-500 to-brand-600 text-white text-xs sm:text-base font-black shadow-2xl ring-4 ring-yellow-400 animate-pulse";
     default:
       if (val > 2048) {
-        return "bg-gradient-to-br from-purple-600 to-orange-600 text-white text-[11px] sm:text-sm font-black shadow-2xl ring-2 ring-purple-400";
+        return "bg-gradient-to-br from-purple-600 to-brand-600 text-white text-[11px] sm:text-sm font-black shadow-2xl ring-2 ring-purple-400";
       }
       return "bg-neutral-100/80 dark:bg-neutral-900/60 text-transparent border border-neutral-200/50 dark:border-neutral-800/60";
   }
@@ -505,7 +505,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
         {/* Branding */}
         <div>
           <h2 className="font-medium text-neutral-900 dark:text-white logofont tracking-wider">
-            Campus<span className="text-orange-500">Node</span>
+            Campus<span className="text-brand-500">Node</span>
           </h2>
         </div>
       </div>

@@ -169,7 +169,7 @@ export const uploadTemplateProxy = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
     if (!["image/jpeg", "image/png", "image/webp"].includes(req.file.mimetype)) {
-      return res.status(400).json({ message: "Unsupported template image type." });
+      return res.status(400).json({ message: "Unsupported template image type. Only JPG, PNG, and WEBP are supported." });
     }
 
     const result = await uploadImage(req.file.buffer, "certificates");
@@ -179,9 +179,15 @@ export const uploadTemplateProxy = async (req, res) => {
       public_id: result.public_id,
     });
   } catch (error) {
+    console.error("Certificate template upload error:", error);
+    const isPermissionError = error?.http_code === 403 || error?.message?.includes("403");
+    const message = isPermissionError
+      ? "Cloudinary rejected the upload: The configured API Key is missing upload/create permissions. Please check Cloudinary Settings -> Access Keys and enable 'Create' permissions or use the Master Key."
+      : (error?.message || "Failed to upload to Cloudinary via server");
+    
     res.status(500).json({
-      message: "Failed to upload to Cloudinary via server",
-      error: error.message,
+      message,
+      error: error?.message || "Cloudinary upload failed",
     });
   }
 };

@@ -197,7 +197,7 @@ const ClubCard = ({ club }) => {
              <h2 className="text-lg sm:text-xl font-bold tracking-wide text-neutral-900 dark:text-white leading-tight truncate" title={club.clubName}>
               {club.clubName}
             </h2>
-            <span className="inline-flex px-2 py-0.5 text-[9px] font-bold tracking-widest bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full">
+            <span className="inline-flex px-2 py-0.5 text-[9px] font-bold tracking-widest bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full">
               {club.category || "Student Club"}
             </span>
            
@@ -206,7 +206,7 @@ const ClubCard = ({ club }) => {
 
         {/* Description */}
         <div
-          className="campusnode-markdown-preview text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed [&_*]:!text-inherit [&_*]:!bg-transparent [&>p]:!mb-0 [&>p:last-child]:!mb-0 [&>h1]:!text-sm [&>h1]:!my-0 [&>h1]:!border-none [&>h1]:!pb-0 [&>h2]:!text-sm [&>h2]:!my-0 [&>h3]:!text-sm [&>h3]:!my-0 [&>ul]:!my-0 [&>ol]:!my-0 [&>blockquote]:!my-0 [&>blockquote]:!p-0 [&>blockquote]:!border-none [&_a]:text-orange-600 [&_a]:underline"
+          className="campusnode-markdown-preview text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed [&_*]:!text-inherit [&_*]:!bg-transparent [&>p]:!mb-0 [&>p:last-child]:!mb-0 [&>h1]:!text-sm [&>h1]:!my-0 [&>h1]:!border-none [&>h1]:!pb-0 [&>h2]:!text-sm [&>h2]:!my-0 [&>h3]:!text-sm [&>h3]:!my-0 [&>ul]:!my-0 [&>ol]:!my-0 [&>blockquote]:!my-0 [&>blockquote]:!p-0 [&>blockquote]:!border-none [&_a]:text-brand-600 [&_a]:underline"
           dangerouslySetInnerHTML={{
             __html: markdownToHtml(
               club.description ||
@@ -273,7 +273,7 @@ const ClubCard = ({ club }) => {
                       href={platform === "whatsapp" ? `https://wa.me/${link.url.replace(/\s+/g, "")}` : link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-orange-600 transition-all duration-300"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-brand-600 transition-all duration-300"
                       title={link.platform}
                     >
                       {getIcon()}

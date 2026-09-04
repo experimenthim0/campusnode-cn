@@ -348,7 +348,7 @@ const CentralOrganizerDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 rounded-md">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
                 <Sparkles size={12} />
                 Central Events
               </span>
@@ -362,7 +362,7 @@ const CentralOrganizerDashboard = () => {
           </div>
           <button
             onClick={handleOpenCreateTab}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer shrink-0"
           >
             <PlusCircle size={18} />
             Create College Event
@@ -376,13 +376,13 @@ const CentralOrganizerDashboard = () => {
             onClick={() => setActiveTab("events")}
             className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === "events"
-                ? "text-orange-600 dark:text-orange-500"
+                ? "text-brand-600 dark:text-brand-500"
                 : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
             }`}
           >
             Central Events ({events.length})
             {activeTab === "events" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
             )}
           </button>
 
@@ -391,13 +391,13 @@ const CentralOrganizerDashboard = () => {
               onClick={handleOpenCreateTab}
               className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === "create"
-                  ? "text-orange-600 dark:text-orange-500"
+                  ? "text-brand-600 dark:text-brand-500"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
               }`}
             >
               {editingEventId ? "Edit Central Event" : "Create New Event"}
               {activeTab === "create" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
               )}
             </button>
           )}
@@ -410,13 +410,13 @@ const CentralOrganizerDashboard = () => {
               }}
               className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === "staff"
-                  ? "text-orange-600 dark:text-orange-500"
+                  ? "text-brand-600 dark:text-brand-500"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
               }`}
             >
               Staff
               {activeTab === "staff" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
               )}
             </button>
           )}
@@ -428,13 +428,13 @@ const CentralOrganizerDashboard = () => {
             }}
             className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === "clubs"
-                ? "text-orange-600 dark:text-orange-500"
+                ? "text-brand-600 dark:text-brand-500"
                 : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
             }`}
           >
             Clubs
             {activeTab === "clubs" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
             )}
           </button>
 
@@ -443,14 +443,14 @@ const CentralOrganizerDashboard = () => {
               onClick={() => setActiveTab("audit")}
               className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === "audit"
-                  ? "text-orange-600 dark:text-orange-500"
+                  ? "text-brand-600 dark:text-brand-500"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
               }`}
             >
               <Shield size={14} />
               Audit Logs
               {activeTab === "audit" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 dark:bg-orange-500" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
               )}
             </button>
           )}

@@ -172,9 +172,9 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
         <div
           className={`w-28 h-28 md:w-32 md:h-32 rounded-full  overflow-hidden border-[3px] transition-all duration-300 flex items-center justify-center ${
             dragActive
-              ? 'border-orange-500 shadow-lg shadow-orange-500/20 ring-4 ring-orange-100'
+              ? 'border-brand-500 shadow-lg shadow-brand-500/20 ring-4 ring-brand-100'
               : displayImage
-              ? 'border-neutral-200 group-hover:border-orange-400'
+              ? 'border-neutral-200 group-hover:border-brand-400'
               : ' border-neutral-300 '
           }`}
         >
@@ -214,7 +214,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
 
         {/* Small camera badge */}
         {!uploading && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center shadow-md border-2 border-white group-hover:bg-orange-700 transition-colors">
+          <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 bg-brand-600 rounded-full flex items-center justify-center shadow-md border-2 border-white group-hover:bg-brand-700 transition-colors">
             <i className="ri-camera-fill text-white text-sm" />
           </div>
         )}
@@ -224,7 +224,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
       {uploading && (
         <div className="w-40 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-orange-600 rounded-full transition-all duration-300 ease-out"
+            className="h-full bg-brand-600 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${uploadProgress}%` }}
           />
         </div>
@@ -242,7 +242,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
           className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
             uploading
               ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 hover:text-orange-600'
+              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 hover:text-brand-600'
           }`}
         >
           <i className="ri-upload-2-line text-sm" />

@@ -20,8 +20,8 @@ const AIVerdictStrip = ({ review, analytics }) => {
     <div className="bg-slate-900 text-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-800 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" aria-hidden="true" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400">
+          <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" aria-hidden="true" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-brand-400">
             Event Verdict & Key Highlights
           </h3>
         </div>

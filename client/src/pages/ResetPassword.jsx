@@ -43,7 +43,7 @@ const ResetPassword = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-medium tracking-wider text-black dark:text-white logofont">
-            Campus<span className="text-orange-600">Node</span>
+            Campus<span className="text-brand-600">Node</span>
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Reset your password
@@ -66,7 +66,7 @@ const ResetPassword = () => {
                 onClick={() => setRole('student')}
                 className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
                   role === 'student'
-                    ? 'bg-orange-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
                 }`}
               >
@@ -77,7 +77,7 @@ const ResetPassword = () => {
                 onClick={() => setRole('club')}
                 className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
                   role === 'club'
-                    ? 'bg-orange-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
                 }`}
               >
@@ -97,7 +97,7 @@ const ResetPassword = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
+                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
                   placeholder="Enter new password"
                 />
                 <button
@@ -121,7 +121,7 @@ const ResetPassword = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
+                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
                   placeholder="Confirm new password"
                 />
                 <button
@@ -140,7 +140,7 @@ const ResetPassword = () => {
               className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${
                 loading
                   ? 'bg-neutral-400 cursor-not-allowed'
-                  : 'bg-orange-600 hover:bg-orange-700 cursor-pointer hover:-translate-y-0.5 shadow-sm'
+                  : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5 shadow-sm'
               }`}
             >
               {loading ? 'Resetting Password...' : 'Update Password'}
@@ -150,7 +150,7 @@ const ResetPassword = () => {
           <div className="mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800 text-center">
             <Link
               to="/login"
-              className="text-sm font-semibold text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-500 transition-colors"
+              className="text-sm font-semibold text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-500 transition-colors"
             >
               ← Back to Sign In
             </Link>

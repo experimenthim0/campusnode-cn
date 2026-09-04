@@ -238,7 +238,7 @@ const EditClub = () => {
   };
 
   const inputCls =
-    "w-full p-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white font-medium text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400";
+    "w-full p-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white font-medium text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400";
 
   if (loading) return (
     <div className="text-center py-20">
@@ -313,7 +313,7 @@ const EditClub = () => {
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, studentCoordinators: roleStudentLeads.join(", ") }))}
-                    className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                     title="Auto-fill with name from active Student Lead role"
                   >
                     <i className="ri-refresh-line text-xs" /> Sync Role
@@ -330,7 +330,7 @@ const EditClub = () => {
               />
               {roleStudentLeads.length > 0 && (
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1.5 flex items-center gap-1">
-                  <i className="ri-shield-user-line text-xs text-orange-500" />
+                  <i className="ri-shield-user-line text-xs text-brand-500" />
                   <span>Active Student Lead (from Team Roles): <strong className="text-neutral-700 dark:text-neutral-300 font-semibold">{roleStudentLeads.join(", ")}</strong></span>
                 </p>
               )}
@@ -395,7 +395,7 @@ const EditClub = () => {
               Media & Visuals
             </h3>
             <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              Logo is managed via <Link to="/profile" className="text-orange-600 dark:text-orange-400 font-semibold hover:underline">Profile</Link>
+              Logo is managed via <Link to="/profile" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">Profile</Link>
             </span>
           </div>
           <div>
@@ -468,13 +468,13 @@ const EditClub = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className={`flex-1 py-3 text-white font-semibold tracking-wide transition-all rounded-xl cursor-pointer text-sm ${isSaving ? "bg-neutral-400 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700"}`}
+              className={`flex-1 py-3 text-white font-semibold tracking-wide transition-all rounded-xl cursor-pointer text-sm ${isSaving ? "bg-neutral-400 cursor-not-allowed" : "bg-brand-600 hover:bg-brand-700"}`}
             >
               {isSaving ? "Syncing..." : "Update Club"}
             </button>
           </div>
           <a
-            className="text-xs text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+            className="text-xs text-brand-500 hover:text-brand-600 hover:underline transition-colors"
             href={`/club/${clubSlug || clubId}`}
           >
             View Club Page →

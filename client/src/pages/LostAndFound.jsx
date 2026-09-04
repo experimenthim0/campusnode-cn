@@ -529,7 +529,7 @@ const LostAndFound = () => {
                       <button
                         key={t}
                         type="button"
-                        className={`flex-grow p-2.5 text-center rounded-xl text-xs font-bold transition-colors cursor-pointer border ${formData.type === t ? (t === 'Lost' ? 'bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] border-orange-200/80 dark:border-orange-900/60' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40') : 'bg-white dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]'}`}
+                        className={`flex-grow p-2.5 text-center rounded-xl text-xs font-bold transition-colors cursor-pointer border ${formData.type === t ? (t === 'Lost' ? 'bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] border-brand-200/80 dark:border-brand-900/60' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40') : 'bg-white dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]'}`}
                         onClick={() => setFormData(p => ({ ...p, type: t }))}
                       >
                         <i className={t === 'Lost' ? 'ri-question-mark' : 'ri-checkbox-circle-line'} style={{ marginRight: 6 }} />

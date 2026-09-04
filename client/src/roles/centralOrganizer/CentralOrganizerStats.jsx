@@ -46,7 +46,7 @@ const CentralOrganizerStats = ({ stats }) => {
           >
             <div className="flex items-center justify-between text-neutral-500 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider">{item.label}</span>
-              <Icon size={18} className="text-orange-600 dark:text-orange-500" />
+              <Icon size={18} className="text-brand-600 dark:text-brand-500" />
             </div>
             <p className="text-2xl font-black text-neutral-900 dark:text-neutral-50">{item.value}</p>
           </div>

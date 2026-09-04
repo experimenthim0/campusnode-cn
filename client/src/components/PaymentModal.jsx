@@ -95,7 +95,7 @@ const PaymentModal = ({
               <span className="text-xs font-medium text-[#888888] dark:text-[#808080] block mb-0.5">
                 Method
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-semibold text-xs border border-orange-200/60 dark:border-orange-900/40">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-semibold text-xs border border-brand-200/60 dark:border-brand-900/40">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
                 {paymentType === 'MANUAL_TRANSACTION' ? 'Direct UPI' : 'College Portal'}
               </span>
@@ -182,7 +182,7 @@ const PaymentModal = ({
                   <button
                     type="button"
                     onClick={() => copyToClipboard(event?.upiId)}
-                    className="px-2.5 py-1.5 text-xs font-semibold rounded-lg text-[#F97316] dark:text-[#FB923C] bg-[#FFF7ED] dark:bg-[#2A1A0F] hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 text-xs font-semibold rounded-lg text-[#F97316] dark:text-[#FB923C] bg-[#FFF7ED] dark:bg-[#2A1A0F] hover:bg-brand-100 dark:hover:bg-brand-900/30 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
                   >
                     <i className={copiedUpi ? "ri-check-line" : "ri-file-copy-line"} />
                     {copiedUpi ? 'Copied' : 'Copy'}
@@ -200,7 +200,7 @@ const PaymentModal = ({
 
               {/* Instructions */}
               {event?.paymentInstructions && (
-                <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-xl text-xs space-y-1">
+                <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl text-xs space-y-1">
                   <p className="font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
                     <i className="ri-information-line" /> Instructions
                   </p>
@@ -290,7 +290,7 @@ const PaymentModal = ({
               </div>
 
               {event?.paymentInstructions && (
-                <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-xl text-xs space-y-1">
+                <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl text-xs space-y-1">
                   <p className="font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
                     <i className="ri-information-line" /> Instructions
                   </p>

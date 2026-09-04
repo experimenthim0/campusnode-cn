@@ -33,7 +33,7 @@ const NotificationsTab = ({
                             key={n._id || n.id || idx}
                             className="p-5 rounded-2xl border border-neutral-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#0c0c0c] flex items-start gap-4 transition-all hover:border-neutral-300 dark:hover:border-zinc-700 shadow-xs"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/20">
+                            <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-500/20">
                                 <Bell size={18} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -58,7 +58,7 @@ const NotificationsTab = ({
                                             href={`/event/${n.eventId}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline"
                                         >
                                             <Calendar size={12} />
                                             <span>View Event</span>

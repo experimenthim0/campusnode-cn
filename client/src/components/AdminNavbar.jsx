@@ -20,7 +20,7 @@ const AdminNavbar = () => {
         <div className="flex items-center gap-3 sm:gap-4">
           <img src="/nitjlogo.png" alt="NITJ Logo" className="w-9 h-10" />
           <span className="font-light text-[22px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
-            Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
+            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
           </span>
           <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 text-[9px] font-bold uppercase tracking-[0.15em] rounded-md">
             Admin

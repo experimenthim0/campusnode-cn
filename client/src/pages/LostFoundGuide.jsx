@@ -165,7 +165,7 @@ const LostFoundGuide = () => {
                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800 dark:text-neutral-200 block">Appeals & Support</span>
                             <p className="text-xs text-gray-600 dark:text-neutral-400 leading-relaxed">
                                 If you believe your account was restricted falsely or you are unable to access the platform, reach out to the admin support team via email at{' '}
-                                <a href="mailto:clubsetu@nikhim.me" className="underline font-semibold hover:text-orange-600 transition-colors">
+                                <a href="mailto:clubsetu@nikhim.me" className="underline font-semibold hover:text-brand-600 transition-colors">
                                     clubsetu@nikhim.me
                                 </a>
                                 .

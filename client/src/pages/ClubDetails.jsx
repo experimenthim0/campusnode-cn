@@ -87,7 +87,7 @@ const MemberSocials = ({ student }) => {
           href={l.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           title={l.title}
         >
           {l.icon}
@@ -220,10 +220,10 @@ const ClubCalendarView = ({ events }) => {
                 }
               }}
               className={`h-12 sm:h-20 p-1 sm:p-2 rounded-xl border transition-all flex flex-col justify-between ${
-                hasEvents ? "cursor-pointer hover:border-orange-500 hover:shadow-xs" : ""
+                hasEvents ? "cursor-pointer hover:border-brand-500 hover:shadow-xs" : ""
               } ${
                 isToday
-                  ? "border-orange-500 bg-orange-500/5 dark:bg-orange-500/10 font-bold"
+                  ? "border-brand-500 bg-brand-500/5 dark:bg-brand-500/10 font-bold"
                   : hasEvents
                   ? "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
                   : "bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800/60"
@@ -233,19 +233,19 @@ const ClubCalendarView = ({ events }) => {
                 <span
                   className={`text-xs ${
                     isToday
-                      ? "text-orange-600 dark:text-orange-400 font-bold"
+                      ? "text-brand-600 dark:text-brand-400 font-bold"
                       : "text-neutral-700 dark:text-neutral-300"
                   }`}
                 >
                   {day}
                 </span>
                 {hasEvents && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600 animate-pulse" />
                 )}
               </div>
               {hasEvents && (
                 <div className="hidden sm:block truncate">
-                  <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded truncate block">
+                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-1.5 py-0.5 rounded truncate block">
                     {dayEvents[0].title}
                   </span>
                   {dayEvents.length > 1 && (
@@ -262,9 +262,9 @@ const ClubCalendarView = ({ events }) => {
 
       {/* Selected Day Event Drawer / Popup */}
       {selectedDayEvents && (
-        <div className="mt-6 p-4 rounded-xl bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20">
+        <div className="mt-6 p-4 rounded-xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
               Events on {monthNames[month]} {selectedDayNumber}, {year}
             </h4>
             <button
@@ -279,10 +279,10 @@ const ClubCalendarView = ({ events }) => {
               <Link
                 key={ev._id || ev.id}
                 to={`/events/${ev.slug || ev._id || ev.id}`}
-                className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-orange-500 transition group"
+                className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-500 transition group"
               >
                 <div>
-                  <h5 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-orange-600 transition">
+                  <h5 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-brand-600 transition">
                     {ev.title}
                   </h5>
                   <p className="text-xs text-neutral-400 mt-0.5">
@@ -293,7 +293,7 @@ const ClubCalendarView = ({ events }) => {
                     · {ev.venue}
                   </p>
                 </div>
-                <i className="ri-arrow-right-line text-neutral-400 group-hover:text-orange-600 group-hover:translate-x-0.5 transition-transform" />
+                <i className="ri-arrow-right-line text-neutral-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             ))}
           </div>
@@ -355,13 +355,13 @@ const TeamMemberCard = ({
       {/* Card Info Footer */}
       <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between text-left">
         <div>
-          <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+          <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
             {name || "Member"}
           </h4>
           <p
             className={`text-[11px] sm:text-xs font-semibold truncate mt-0.5 ${
               isLeadership
-                ? "text-orange-600 dark:text-orange-400"
+                ? "text-brand-600 dark:text-brand-400"
                 : "text-neutral-500 dark:text-neutral-400"
             }`}
           >
@@ -380,7 +380,7 @@ const TeamMemberCard = ({
             {email ? (
               <a
                 href={`mailto:${email}`}
-                className="inline-flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors truncate max-w-full"
+                className="inline-flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors truncate max-w-full"
                 title={`Email ${name}`}
               >
                 <i className="ri-mail-line text-sm shrink-0" />
@@ -797,7 +797,7 @@ const ClubDetails = () => {
               {/* Left Column: Category Badges, Club Title, Motto */}
               <div className="space-y-1.5 min-w-0 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-0.5 rounded-full">
                     {club.category || "Student Club"}
                   </span>
                   
@@ -813,7 +813,7 @@ const ClubDetails = () => {
                 </h1>
 
                 {club.motto && (
-                  <p className="text-xs sm:text-sm font-semibold text-orange-600 dark:text-orange-400 italic tracking-wide">
+                  <p className="text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-400 italic tracking-wide">
                     "{club.motto}"
                   </p>
                 )}
@@ -861,7 +861,7 @@ const ClubDetails = () => {
               <div className="flex flex-wrap items-center gap-2 mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800/80">
                 <Link
                   to="/create"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
                 >
                   <i className="ri-add-line font-light" /> Create Event
                 </Link>
@@ -906,10 +906,10 @@ const ClubDetails = () => {
 
           {/* Mission Statement Banner */}
           {club.mission && (
-            <div className="flex items-start gap-3.5 p-4 rounded-xl bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20 shadow-2xs">
+            <div className="flex items-start gap-3.5 p-4 rounded-xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20 shadow-2xs">
              
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 mb-0.5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 mb-0.5">
                   Club Mission
                 </p>
                 <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 leading-relaxed italic">
@@ -943,7 +943,7 @@ const ClubDetails = () => {
                 {isLong && (
                   <button
                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                    className="mt-3 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline focus:outline-none inline-flex items-center gap-1 cursor-pointer"
+                    className="mt-3 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline focus:outline-none inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>{isDescriptionExpanded ? "Show less" : "Read full overview"}</span>
                     <i
@@ -1019,7 +1019,7 @@ const ClubDetails = () => {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 transition-all"
+                    className="w-9 h-9 flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-all"
                     title={link.platform}
                   >
                     {getIcon()}
@@ -1031,13 +1031,13 @@ const ClubDetails = () => {
         )}
 
         {featuredEvent && (
-          <section className=" text-black rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden shadow-orange-500 border border-orange-200 ">
+          <section className=" text-black rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden shadow-brand-500 border border-brand-200 ">
             <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none transform translate-x-8 translate-y-8">
-              <i className="ri-fire-fill text-[160px] text-orange-600" />
+              <i className="ri-fire-fill text-[160px] text-brand-600" />
             </div>
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-black uppercase tracking-widest text-orange-600">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-black uppercase tracking-widest text-brand-600">
                   Featured Club Event
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
@@ -1081,7 +1081,7 @@ const ClubDetails = () => {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <i className="ri-megaphone-line text-orange-600 font-light" /> Club Announcements
+                <i className="ri-megaphone-line text-brand-600 font-light" /> Club Announcements
               </h2>
               <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600 mx-2"/>
                 
@@ -1098,7 +1098,7 @@ const ClubDetails = () => {
                       setAdminTab("announcements");
                       setAdminHubOpen(true);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60 hover:bg-orange-600 hover:text-white transition text-xs font-bold cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 hover:bg-brand-600 hover:text-white transition text-xs font-bold cursor-pointer"
                   >
                     <i className="ri-add-line" /> Post Announcement
                   </button>
@@ -1114,14 +1114,14 @@ const ClubDetails = () => {
                       key={item.id}
                       className={`p-5 rounded-2xl border transition-all ${
                         item.isPinned
-                          ? "bg-orange-500/5 dark:bg-orange-500/10 border-orange-500/30"
+                          ? "bg-brand-500/5 dark:bg-brand-500/10 border-brand-500/30"
                           : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                           {item.isPinned && (
-                            <i className="ri-pushpin-fill text-orange-600 text-xs" title="Pinned Announcement" />
+                            <i className="ri-pushpin-fill text-brand-600 text-xs" title="Pinned Announcement" />
                           )}
                           {item.title}
                         </h3>
@@ -1149,7 +1149,7 @@ const ClubDetails = () => {
                     <button
                       type="button"
                       onClick={() => setIsAnnouncementsExpanded((prev) => !prev)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-orange-500/50 shadow-2xs transition-all cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                     >
                       <span>
                         {isAnnouncementsExpanded
@@ -1170,7 +1170,7 @@ const ClubDetails = () => {
                     setAdminTab("announcements");
                     setAdminHubOpen(true);
                   }}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-orange-700 transition cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-brand-700 transition cursor-pointer"
                 >
                   <i className="ri-add-line" /> Post First Announcement
                 </button>
@@ -1261,7 +1261,7 @@ const ClubDetails = () => {
                         <button
                           type="button"
                           onClick={() => setIsUpcomingEventsExpanded((prev) => !prev)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-orange-500/50 shadow-2xs transition-all cursor-pointer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                         >
                           <span>
                             {isUpcomingEventsExpanded
@@ -1303,7 +1303,7 @@ const ClubDetails = () => {
                         <button
                           type="button"
                           onClick={() => setIsPastEventsExpanded((prev) => !prev)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-orange-500/50 shadow-2xs transition-all cursor-pointer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                         >
                           <span>
                             {isPastEventsExpanded
@@ -1468,7 +1468,7 @@ const ClubDetails = () => {
                       href={item.externalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline inline-flex items-center gap-1"
+                      className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
                     >
                       Read more <i className="ri-external-link-line text-xs" />
                     </a>
@@ -1524,7 +1524,7 @@ const ClubDetails = () => {
                   <button
                     type="button"
                     onClick={() => setIsGalleryExpanded((prev) => !prev)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-orange-500/50 shadow-2xs transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                   >
                     <span>
                       {isGalleryExpanded
@@ -1592,7 +1592,7 @@ const ClubDetails = () => {
             />
             <button
               onClick={() => setLightboxImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-orange-400 font-bold text-sm flex items-center gap-1"
+              className="absolute -top-10 right-0 text-white hover:text-brand-400 font-bold text-sm flex items-center gap-1"
             >
               <i className="ri-close-line text-xl" /> Close
             </button>
@@ -1636,7 +1636,7 @@ const ClubDetails = () => {
                   onClick={() => setAdminTab(tab.id)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
                     adminTab === tab.id
-                      ? "bg-[#FFF7ED] text-[#F97316] border border-orange-200/80 dark:bg-[#2A1A0F] dark:text-[#FB923C] dark:border-orange-900/60"
+                      ? "bg-[#FFF7ED] text-[#F97316] border border-brand-200/80 dark:bg-[#2A1A0F] dark:text-[#FB923C] dark:border-brand-900/60"
                       : "bg-transparent text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] border border-transparent"
                   }`}
                 >
@@ -1715,7 +1715,7 @@ const ClubDetails = () => {
                             onClick={() => handleTogglePinAnnouncement(a.id)}
                             className={`p-1.5 rounded-lg border text-xs cursor-pointer ${
                               a.isPinned
-                                ? "bg-[#FFF7ED] border-orange-200/80 text-[#F97316] dark:bg-[#2A1A0F] dark:border-orange-900/60 dark:text-[#FB923C]"
+                                ? "bg-[#FFF7ED] border-brand-200/80 text-[#F97316] dark:bg-[#2A1A0F] dark:border-brand-900/60 dark:text-[#FB923C]"
                                 : "border-[#E5E5E5] dark:border-[#3A3A3A] text-[#888888] dark:text-[#808080]"
                             }`}
                             title={a.isPinned ? "Unpin" : "Pin"}
@@ -1905,7 +1905,7 @@ const ClubDetails = () => {
                         key={ev._id || ev.id}
                         className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${
                           ev.isFeatured
-                            ? "bg-[#FFF7ED] border-orange-200/80 dark:bg-[#2A1A0F] dark:border-orange-900/60"
+                            ? "bg-[#FFF7ED] border-brand-200/80 dark:bg-[#2A1A0F] dark:border-brand-900/60"
                             : "bg-[#FAFAFA] dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030]"
                         }`}
                       >

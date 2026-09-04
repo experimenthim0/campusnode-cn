@@ -116,7 +116,7 @@ const CentralOrganizerTab = ({
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-zinc-800">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 rounded-md">
+                            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
                                 Institutional Account (DSW)
                             </span>
                             <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-md">
@@ -124,7 +124,7 @@ const CentralOrganizerTab = ({
                             </span>
                         </div>
                         <h2 className="text-base font-black text-black dark:text-white tracking-wide mt-1.5 flex items-center gap-2">
-                            <Building2 size={18} className="text-orange-500" />
+                            <Building2 size={18} className="text-brand-500" />
                             Dean Student Welfare & Central Events
                         </h2>
                         <p className="text-neutral-400 text-xs mt-0.5 max-w-2xl">
@@ -178,7 +178,7 @@ const CentralOrganizerTab = ({
                                         </span>
                                     )}
                                     {centralOrganizer.assignment?.canDelegateStaff && (
-                                        <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 text-[10px] font-semibold rounded">
+                                        <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-[10px] font-semibold rounded">
                                             Staff Delegation
                                         </span>
                                     )}
@@ -253,7 +253,7 @@ const CentralOrganizerTab = ({
                                         type="checkbox"
                                         checked={canManageEvents}
                                         onChange={(e) => setCanManageEvents(e.target.checked)}
-                                        className="rounded text-orange-600 focus:ring-orange-500"
+                                        className="rounded text-brand-600 focus:ring-brand-500"
                                     />
                                     Manage Events
                                 </label>
@@ -262,7 +262,7 @@ const CentralOrganizerTab = ({
                                         type="checkbox"
                                         checked={canTakeAttendance}
                                         onChange={(e) => setCanTakeAttendance(e.target.checked)}
-                                        className="rounded text-orange-600 focus:ring-orange-500"
+                                        className="rounded text-brand-600 focus:ring-brand-500"
                                     />
                                     Take Attendance
                                 </label>
@@ -271,7 +271,7 @@ const CentralOrganizerTab = ({
                                         type="checkbox"
                                         checked={canVerifyPayments}
                                         onChange={(e) => setCanVerifyPayments(e.target.checked)}
-                                        className="rounded text-orange-600 focus:ring-orange-500"
+                                        className="rounded text-brand-600 focus:ring-brand-500"
                                     />
                                     Verify Payments
                                 </label>
@@ -280,7 +280,7 @@ const CentralOrganizerTab = ({
                                         type="checkbox"
                                         checked={canDelegateStaff}
                                         onChange={(e) => setCanDelegateStaff(e.target.checked)}
-                                        className="rounded text-orange-600 focus:ring-orange-500"
+                                        className="rounded text-brand-600 focus:ring-brand-500"
                                     />
                                     Delegate Staff
                                 </label>
@@ -323,7 +323,7 @@ const CentralOrganizerTab = ({
                         placeholder="Search by student name, email, or roll no..."
                         value={studentQuery}
                         onChange={(e) => handleSearchStudents(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500 transition-colors"
+                        className="w-full pl-9 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
                     />
                 </div>
 
@@ -349,7 +349,7 @@ const CentralOrganizerTab = ({
                                     <button
                                         type="button"
                                         onClick={() => handleOpenAssignModal(st)}
-                                        className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                                        className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
                                     >
                                         Configure & Assign
                                     </button>

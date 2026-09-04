@@ -305,7 +305,7 @@ const EditProfile = () => {
                 </div>
                 <Link
                     to="/profile"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-colors shadow-2xs"
                 >
                     <ArrowLeft size={14} /> Back to Profile
                 </Link>
@@ -317,7 +317,7 @@ const EditProfile = () => {
                     type="button"
                     onClick={() => setSearchParams({ tab: 'profile' })}
                     className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === 'profile'
-                            ? 'border-orange-600 text-orange-600 dark:text-orange-500'
+                            ? 'border-brand-600 text-brand-600 dark:text-brand-500'
                             : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                         }`}
                 >
@@ -328,7 +328,7 @@ const EditProfile = () => {
                     type="button"
                     onClick={() => setSearchParams({ tab: 'security' })}
                     className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === 'security'
-                            ? 'border-orange-600 text-orange-600 dark:text-orange-500'
+                            ? 'border-brand-600 text-brand-600 dark:text-brand-500'
                             : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                         }`}
                 >
@@ -372,7 +372,7 @@ const EditProfile = () => {
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Role Designation</label>
-                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">Faculty Coordinator</p>
+                                <p className="font-semibold text-brand-600 dark:text-brand-400 text-xs truncate">Faculty Coordinator</p>
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Assigned Club</label>
@@ -399,7 +399,7 @@ const EditProfile = () => {
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Graduation</label>
-                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">
+                                <p className="font-semibold text-brand-600 dark:text-brand-400 text-xs truncate">
                                     {[user.program || user.branch, user.graduationYear || user.expectedGraduationYear].filter(Boolean).join(" • ") || 'External Participant'}
                                 </p>
                             </div>
@@ -422,7 +422,7 @@ const EditProfile = () => {
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club ID / Slug</label>
-                                <p className="font-mono font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{user.slug || user.clubId || 'N/A'}</p>
+                                <p className="font-mono font-semibold text-brand-600 dark:text-brand-400 text-xs truncate">{user.slug || user.clubId || 'N/A'}</p>
                             </div>
                         </div>
                     ) : (
@@ -443,7 +443,7 @@ const EditProfile = () => {
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Standing</label>
-                                <p className="font-semibold text-orange-600 dark:text-orange-400 text-xs truncate">{displayAcademicStanding || 'N/A'}</p>
+                                <p className="font-semibold text-brand-600 dark:text-brand-400 text-xs truncate">{displayAcademicStanding || 'N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -459,7 +459,7 @@ const EditProfile = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleProfileChange}
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -474,7 +474,7 @@ const EditProfile = () => {
                                     value={formData.motto}
                                     onChange={handleProfileChange}
                                     placeholder="e.g. Think. Express. Evolve."
-                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                                 />
                             </div>
                         )}
@@ -487,7 +487,7 @@ const EditProfile = () => {
                                 value={formData.instagramProfile}
                                 onChange={handleProfileChange}
                                 placeholder="https://instagram.com/handle"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -499,7 +499,7 @@ const EditProfile = () => {
                                 value={formData.linkedinProfile}
                                 onChange={handleProfileChange}
                                 placeholder="https://linkedin.com/company/handle"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -511,7 +511,7 @@ const EditProfile = () => {
                                 value={formData.xProfile}
                                 onChange={handleProfileChange}
                                 placeholder="https://x.com/handle"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -525,7 +525,7 @@ const EditProfile = () => {
                                 value={formData.portfolioUrl}
                                 onChange={handleProfileChange}
                                 placeholder="https://yourclub.org"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -537,7 +537,7 @@ const EditProfile = () => {
                                 value={formData.whatsappNumber}
                                 onChange={handleProfileChange}
                                 placeholder="+91 98765 43210"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
 
@@ -549,7 +549,7 @@ const EditProfile = () => {
                                 value={formData.githubProfile}
                                 onChange={handleProfileChange}
                                 placeholder="https://github.com/club-or-user"
-                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                             />
                         </div>
                     </div>
@@ -568,7 +568,7 @@ const EditProfile = () => {
                             disabled={isSavingProfile}
                             className={`py-2.5 px-7 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer ${isSavingProfile
                                     ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
-                                    : 'bg-orange-600 hover:bg-orange-700'
+                                    : 'bg-brand-600 hover:bg-brand-700'
                                 }`}
                         >
                             {isSavingProfile ? 'Saving Changes…' : 'Save Profile Details'}
@@ -583,7 +583,7 @@ const EditProfile = () => {
 
                     <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
                         <div className="flex items-center gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 text-orange-600 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0">
                                 <Lock size={20} />
                             </div>
                             <div>
@@ -604,7 +604,7 @@ const EditProfile = () => {
                                         value={passwordData.currentPassword}
                                         onChange={handlePasswordChange}
                                         placeholder="Enter your current password"
-                                        className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                        className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                                         autoComplete="current-password"
                                     />
                                     <button
@@ -629,7 +629,7 @@ const EditProfile = () => {
                                             value={passwordData.newPassword}
                                             onChange={handlePasswordChange}
                                             placeholder="At least 6 characters"
-                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                                             autoComplete="new-password"
                                         />
                                         <button
@@ -657,7 +657,7 @@ const EditProfile = () => {
                                             value={passwordData.confirmPassword}
                                             onChange={handlePasswordChange}
                                             placeholder="Re-enter new password"
-                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
                                             autoComplete="new-password"
                                         />
                                         <button
@@ -681,7 +681,7 @@ const EditProfile = () => {
                                 disabled={isSavingPassword}
                                 className={`py-2.5 px-6 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto ${isSavingPassword
                                         ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
-                                        : 'bg-orange-600 hover:bg-orange-700'
+                                        : 'bg-brand-600 hover:bg-brand-700'
                                     }`}
                             >
                                 {isSavingPassword ? 'Updating Password…' : 'Update Password'}
@@ -692,9 +692,9 @@ const EditProfile = () => {
                     {/* 2-Step Verification Card (Hidden for all student and student lead accounts) */}
                     {!isStudentAccount && (
                         <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
-                            <label className="flex items-center justify-between p-4 bg-orange-50/40 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 rounded-xl cursor-pointer group hover:border-orange-500 transition-colors">
+                            <label className="flex items-center justify-between p-4 bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-xl cursor-pointer group hover:border-brand-500 transition-colors">
                                 <div className="flex items-center gap-3.5">
-                                    <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
                                         <ShieldCheck size={20} />
                                     </div>
                                     <div>
@@ -711,7 +711,7 @@ const EditProfile = () => {
                                         className="sr-only peer"
                                         id="isTwoStepEnabledToggle"
                                     />
-                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
                                 </div>
                             </label>
                         </div>

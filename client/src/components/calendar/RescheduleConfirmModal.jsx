@@ -99,7 +99,7 @@ const RescheduleConfirmModal = ({
             </div>
 
             {/* New Proposed Schedule */}
-            <div className="p-4 rounded-xl border border-orange-200/80 dark:border-orange-900/60 bg-[#FFF7ED] dark:bg-[#2A1A0F] space-y-2">
+            <div className="p-4 rounded-xl border border-brand-200/80 dark:border-brand-900/60 bg-[#FFF7ED] dark:bg-[#2A1A0F] space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#F97316] dark:text-[#FB923C]">
                 New Schedule
               </p>
@@ -107,7 +107,7 @@ const RescheduleConfirmModal = ({
                 <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">{formatDt(newStart)}</p>
                 <p className="text-[11px] text-[#555555] dark:text-[#B5B5B5]">to {formatDt(newEnd)}</p>
               </div>
-              <p className="text-xs font-bold text-[#F97316] dark:text-[#FB923C] pt-1.5 border-t border-orange-200/60 dark:border-orange-900/40">
+              <p className="text-xs font-bold text-[#F97316] dark:text-[#FB923C] pt-1.5 border-t border-brand-200/60 dark:border-brand-900/40">
                 Venue: {newVenue}
               </p>
             </div>

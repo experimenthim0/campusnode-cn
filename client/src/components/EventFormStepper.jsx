@@ -34,7 +34,7 @@ const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
 
         {/* Progress fill */}
         <div
-          className="absolute top-5 h-px bg-orange-500 z-0 transition-all duration-500"
+          className="absolute top-5 h-px bg-brand-500 z-0 transition-all duration-500"
           style={{
             left: 'calc(12.5%)',
             width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 75}%)`
@@ -61,7 +61,7 @@ const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
                 }}
                 className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-semibold transition-all duration-200 cursor-pointer ${
                   isDone
-                    ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
+                    ? 'bg-brand-500 border-brand-500 text-white shadow-sm'
                     : isActive
                     ? 'bg-black border-black text-white shadow-md scale-105'
                     : 'bg-white border-neutral-200 text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600'

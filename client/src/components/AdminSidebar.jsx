@@ -32,14 +32,14 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
       size={18}
       strokeWidth={isActive ? 2.2 : 1.7}
       className={`shrink-0 sidebar-link-icon transition-colors ${
-        isActive ? "text-orange-600 dark:text-orange-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
+        isActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
       }`}
     />
     <span className="text-[13px] tracking-wide truncate sidebar-link-text ml-3">
       {label}
     </span>
     {isActive && (
-      <span className="ml-auto shrink-0 w-1.5 h-3.5 rounded-full bg-orange-600 dark:bg-orange-500" />
+      <span className="ml-auto shrink-0 w-1.5 h-3.5 rounded-full bg-brand-600 dark:bg-brand-500" />
     )}
 
     {/* Tooltip — collapsed mode */}
@@ -87,7 +87,7 @@ const AdminSidebarDropdown = ({
             size={18} 
             strokeWidth={isAnyChildActive ? 2.2 : 1.7} 
             className={`shrink-0 transition-colors ${
-              isAnyChildActive ? "text-orange-600 dark:text-orange-500" : "text-neutral-400 dark:text-neutral-500"
+              isAnyChildActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500"
             }`} 
           />
           {!collapsed && (
@@ -128,7 +128,7 @@ const AdminSidebarDropdown = ({
               >
                 <span className="truncate">{item.label}</span>
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0 ml-2" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0 ml-2" />
                 )}
               </Link>
             );
@@ -257,14 +257,14 @@ const AdminSidebar = () => {
     >
       <div className="flex items-center justify-between px-3.5 pt-4 pb-2 relative min-h-[48px]">
         <div className="flex items-center gap-2.5 min-w-0 sidebar-brand-container">
-          <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-500 flex items-center justify-center shrink-0 border border-orange-500/20">
+          <div className="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-500 flex items-center justify-center shrink-0 border border-brand-500/20">
             <Shield size={16} strokeWidth={2.2} />
           </div>
           <div className="min-w-0 sidebar-brand-text">
             <p className="text-[13px] font-black text-black dark:text-white truncate leading-tight tracking-tight">
               Control Panel
             </p>
-            <p className="text-[10px] text-orange-600 dark:text-orange-400 font-bold tracking-wider uppercase leading-tight mt-0.5">
+            <p className="text-[10px] text-brand-600 dark:text-brand-400 font-bold tracking-wider uppercase leading-tight mt-0.5">
               {role === "paymentAdmin" ? "Finance Desk" : "Administration"}
             </p>
           </div>

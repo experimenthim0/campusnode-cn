@@ -514,7 +514,7 @@ const Team = () => {
           <div className="flex flex-col items-center mb-20 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
               <span
-                className="text-orange-600 dark:text-orange-500 font-bold uppercase block mb-3"
+                className="text-brand-600 dark:text-brand-500 font-bold uppercase block mb-3"
                 style={{
                   fontSize: '11px',
                   letterSpacing: '0.2em',
@@ -532,7 +532,7 @@ const Team = () => {
               >
                 The Minds Behind{' '}
                 <span className="logofont font-light">
-                  Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
+                  Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
                 </span>
               </h1>
             </ScrollReveal>

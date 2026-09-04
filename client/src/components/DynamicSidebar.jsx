@@ -65,7 +65,7 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed }) => (
         ? "w-10 h-10 mx-auto justify-center p-0"
         : "w-full gap-3 px-3 py-1.5"
       } ${isActive
-        ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-semibold border-0"
+        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold border-0"
         : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
       }`}
   >
@@ -73,13 +73,13 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed }) => (
       size={17}
       strokeWidth={isActive ? 2.2 : 1.8}
       className={`w-[17px] h-[17px] min-w-[17px] min-h-[17px] shrink-0 transition-colors duration-200 ${isActive
-          ? "text-orange-600 dark:text-orange-400"
+          ? "text-brand-600 dark:text-brand-400"
           : "text-slate-600 dark:text-slate-400 group-hover:text-black dark:group-hover:text-white"
         }`}
     />
     {!isCollapsed && <span className="truncate">{label}</span>}
     {!isCollapsed && isActive && (
-      <ChevronRight size={14} className="w-3.5 h-3.5 min-w-[12px] min-h-[12px] ml-auto text-orange-600 shrink-0" />
+      <ChevronRight size={14} className="w-3.5 h-3.5 min-w-[12px] min-h-[12px] ml-auto text-brand-600 shrink-0" />
     )}
   </Link>
 );
@@ -118,7 +118,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition-all duration-200 cursor-pointer ${isAnyChildActive
-            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-semibold"
+            ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold"
             : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
           }`}
       >
@@ -127,7 +127,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
             size={19}
             strokeWidth={isAnyChildActive ? 2.2 : 1.8}
             className={`w-[19px] h-[19px] min-w-[19px] min-h-[19px] shrink-0 transition-colors duration-200 ${isAnyChildActive
-                ? "text-orange-600 dark:text-orange-400"
+                ? "text-brand-600 dark:text-brand-400"
                 : "text-slate-600 dark:text-slate-400"
               }`}
           />
@@ -135,14 +135,14 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
         </div>
         <ChevronDown
           size={14}
-          className={`w-3.5 h-3.5 min-w-[14px] min-h-[14px] shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
+          className={`w-3.5 h-3.5 min-w-[14px] min-h-[14px] shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
             }`}
         />
       </button>
 
       {/* Submenu links */}
       {isOpen && (
-        <div className="pl-4 pt-1 pb-1 space-y-1 border-l-2 border-orange-500/20 dark:border-zinc-800 ml-4 my-1">
+        <div className="pl-4 pt-1 pb-1 space-y-1 border-l-2 border-brand-500/20 dark:border-zinc-800 ml-4 my-1">
           {items.map((item, idx) => {
             const isTabAnnouncement = item.to.includes("tab=announcements");
             const isCurrentAnnouncement = location.search.includes("tab=announcements");
@@ -161,12 +161,12 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
                 key={idx}
                 to={item.to}
                 className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-150 ${isActive
-                    ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 font-bold"
+                    ? "bg-brand-500/15 text-brand-600 dark:text-brand-400 font-bold"
                     : "text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-800/60 hover:text-black dark:hover:text-white"
                   }`}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full mr-2 shrink-0 ${isActive ? "bg-orange-500" : "bg-neutral-300 dark:bg-zinc-700"
+                  className={`w-1.5 h-1.5 rounded-full mr-2 shrink-0 ${isActive ? "bg-brand-500" : "bg-neutral-300 dark:bg-zinc-700"
                     }`}
                 />
                 <span className="truncate">{item.label}</span>
@@ -197,7 +197,7 @@ const SectionLabel = ({ children, isCollapsed }) => {
 const ClubHeader = ({ name, isCollapsed }) => {
   if (isCollapsed) return null;
   return (
-    <p className="px-3 py-1.5 mb-1 text-[10px] font-bold uppercase tracking-widest text-orange-600 bg-white dark:bg-zinc-900 rounded-md">
+    <p className="px-3 py-1.5 mb-1 text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-white dark:bg-zinc-900 rounded-md">
       {name}
     </p>
   );
@@ -255,7 +255,7 @@ const DynamicSidebar = ({ user }) => {
                 <p className="text-sm font-semibold text-black dark:text-white truncate">
                   {userName}
                 </p>
-                <p className="text-[11px] text-orange-600 font-medium tracking-wide">
+                <p className="text-[11px] text-brand-600 font-medium tracking-wide">
                   {getRoleLabel(role, user)}
                 </p>
               </div>

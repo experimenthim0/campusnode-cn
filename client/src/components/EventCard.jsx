@@ -171,7 +171,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 {/* Status Badge */}
                 <div className="absolute top-1 left-1.5">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-orange-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
+                        <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
@@ -203,7 +203,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 }}
                             />
                         </div>
-                        <span className="truncate  text-orange-600  text-[12px] font-semibold">
+                        <span className="truncate  text-brand-600  text-[12px] font-semibold">
                             {event.club?.clubName || event.createdBy?.clubName}
                         </span>
                     </div>
@@ -219,15 +219,15 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 <div className="flex flex-col gap-2 w-full">
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-time-line text-orange-600 text-sm" />
+                                            <i className="ri-time-line text-brand-600 text-sm" />
                                         </div>
                                         <span className="font-medium text-neutral-500 dark:text-neutral-200 text-xs">{formattedTime}</span>
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-trophy-fill text-orange-600 text-sm" />
+                                            <i className="ri-trophy-fill text-brand-600 text-sm" />
                                         </div>
-                                        <span className="text-[11px] font-bold tracking-wider text-orange-600 uppercase">Winners</span>
+                                        <span className="text-[11px] font-bold tracking-wider text-brand-600 uppercase">Winners</span>
                                     </div>
                                     {/* Winner Rows */}
                                     {event.winners.map((winner, index) => (
@@ -235,7 +235,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
                                                         winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
-                                                            'bg-orange-100 dark:bg-orange-950/40 text-orange-855 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60'
+                                                            'bg-brand-100 dark:bg-brand-950/40 text-brand-855 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60'
                                                     }`}>
                                                     #{winner.rank}
                                                 </span>
@@ -252,19 +252,19 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 <div className="flex gap-2 py-2 flex-col text-neutral-600 dark:text-neutral-400">
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-time-line text-orange-600 text-sm" />
+                                            <i className="ri-time-line text-brand-600 text-sm" />
                                         </div>
                                         <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{formattedTime}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-map-pin-line text-orange-600 text-sm" />
+                                            <i className="ri-map-pin-line text-brand-600 text-sm" />
                                         </div>
                                         <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{venue}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-trophy-fill text-orange-600 text-sm" />
+                                            <i className="ri-trophy-fill text-brand-600 text-sm" />
                                         </div>
                                         <p className="text-sm text-neutral-400 dark:text-neutral-550 italic">Results being finalized...</p>
                                     </div>

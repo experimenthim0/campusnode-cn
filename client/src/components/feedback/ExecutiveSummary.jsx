@@ -34,7 +34,7 @@ const ExecutiveSummary = ({ summary, sentiment, keyTakeaways }) => {
       {Array.isArray(keyTakeaways) && keyTakeaways.length > 0 && (
         <div>
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+            <TrendingUp className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
             <span>Key Takeaways</span>
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -43,7 +43,7 @@ const ExecutiveSummary = ({ summary, sentiment, keyTakeaways }) => {
                 key={idx}
                 className="p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 flex items-start gap-3 shadow-2xs"
               >
-                <span className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 text-xs font-black flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
+                <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 text-xs font-black flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
                   {idx + 1}
                 </span>
                 <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">

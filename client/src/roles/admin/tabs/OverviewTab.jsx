@@ -190,7 +190,7 @@ const OverviewTab = ({
                     <div>
                         <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-neutral-100 dark:border-zinc-800/80">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-500 flex items-center justify-center">
+                                <div className="w-6 h-6 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-500 flex items-center justify-center">
                                     <BarChart3 size={14} strokeWidth={2.2} />
                                 </div>
                                 <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
@@ -238,12 +238,12 @@ const OverviewTab = ({
                                     <div className="grid grid-cols-6 gap-2 pt-2 items-end h-28">
                                         {monthlyTrends.map((m, idx) => (
                                             <div key={idx} className="flex flex-col items-center h-full justify-end group">
-                                                <span className="text-[11px] font-bold text-black dark:text-white mb-1 group-hover:text-orange-600 transition-colors">
+                                                <span className="text-[11px] font-bold text-black dark:text-white mb-1 group-hover:text-brand-600 transition-colors">
                                                     {m.count}
                                                 </span>
                                                 <div className="w-full max-w-[36px] bg-neutral-100 dark:bg-zinc-900 rounded-t-md relative overflow-hidden flex items-end h-16">
                                                     <div 
-                                                        className="w-full bg-neutral-900 dark:bg-white group-hover:bg-orange-600 dark:group-hover:bg-orange-500 transition-all rounded-t-md"
+                                                        className="w-full bg-neutral-900 dark:bg-white group-hover:bg-brand-600 dark:group-hover:bg-brand-500 transition-all rounded-t-md"
                                                         style={{ height: `${m.percent}%` }}
                                                     />
                                                 </div>
@@ -299,7 +299,7 @@ const OverviewTab = ({
                                     </span>
                                     <div className="flex-1 bg-neutral-100 dark:bg-zinc-900 h-2 rounded-full overflow-hidden">
                                         <div 
-                                            className="bg-orange-500 h-full rounded-full transition-all" 
+                                            className="bg-brand-500 h-full rounded-full transition-all" 
                                             style={{ width: `${club.percent}%` }}
                                         />
                                     </div>
@@ -351,7 +351,7 @@ const OverviewTab = ({
                                                         {item.club}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                                <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                                                     {item.title}
                                                 </p>
                                                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -381,7 +381,7 @@ const OverviewTab = ({
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center gap-2 text-[11px] text-neutral-400 dark:text-neutral-500">
-                        <Sparkles size={13} className="text-orange-500 shrink-0" />
+                        <Sparkles size={13} className="text-brand-500 shrink-0" />
                         <span className="truncate">Alerts update dynamically with registration deadlines & start times.</span>
                     </div>
                 </div>

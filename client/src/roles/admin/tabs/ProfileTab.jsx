@@ -86,7 +86,7 @@ const ProfileTab = ({
                             value={profileName} 
                             onChange={(e) => setProfileName(e.target.value)} 
                             required 
-                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
                         />
                     </div>
                     <div>
@@ -105,7 +105,7 @@ const ProfileTab = ({
                                 type="checkbox" 
                                 checked={profile2FA} 
                                 onChange={(e) => setProfile2FA(e.target.checked)} 
-                                className="w-4 h-4 rounded border-neutral-300 text-orange-600 focus:ring-orange-500" 
+                                className="w-4 h-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500" 
                             />
                             <div>
                                 <p className="text-xs font-bold text-black dark:text-white">Enable Two-Factor Authentication (2FA)</p>
@@ -118,7 +118,7 @@ const ProfileTab = ({
                         <button 
                             type="submit" 
                             disabled={isSavingProfile} 
-                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
                         >
                             {isSavingProfile ? 'Saving...' : 'Save Profile Changes'}
                         </button>
@@ -138,7 +138,7 @@ const ProfileTab = ({
                             value={profilePasswordForm.currentPassword} 
                             onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))} 
                             required 
-                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
                         />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -149,7 +149,7 @@ const ProfileTab = ({
                                 value={profilePasswordForm.newPassword} 
                                 onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, newPassword: e.target.value }))} 
                                 required 
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
                             />
                             <PasswordStrengthChecker 
                                 password={profilePasswordForm.newPassword} 
@@ -163,7 +163,7 @@ const ProfileTab = ({
                                 value={profilePasswordForm.confirmPassword} 
                                 onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))} 
                                 required 
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors" 
+                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
                             />
                         </div>
                     </div>
@@ -172,7 +172,7 @@ const ProfileTab = ({
                         <button 
                             type="submit" 
                             disabled={isSavingPassword} 
-                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
                         >
                             {isSavingPassword ? 'Updating Password...' : 'Update Password'}
                         </button>

@@ -97,7 +97,7 @@ export default function PageLoader({
               color: isDark ? '#ffffff' : '#0a0a0a',
             }}
           >
-            Campus<span className="text-orange-600 font-light">Node</span>
+            Campus<span className="text-brand-600 font-light">Node</span>
           </div>
         )}
 

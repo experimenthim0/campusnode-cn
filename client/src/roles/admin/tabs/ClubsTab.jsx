@@ -97,7 +97,7 @@ const ClubsTab = ({
                 <button
                     type="button"
                     onClick={() => setIsCreateClubModalOpen(true)}
-                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
+                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
                 >
                     <Plus size={16} />
                     <span>Add New Club</span>
@@ -173,7 +173,7 @@ const ClubsTab = ({
                         <ModalFormField label="Faculty Coordinator Email" name="facultyEmail" type="email" placeholder="Faculty Email" required />
                         <ModalFormField label="Club Email Account" name="clubEmail" type="email" placeholder="Club Email" required />
 
-                        <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-xl text-xs text-neutral-800 dark:text-neutral-200 space-y-2">
+                        <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl text-xs text-neutral-800 dark:text-neutral-200 space-y-2">
                             <p className="font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
                                 <Key size={14} className="shrink-0" /> Automated Provisioning &amp; Credentials
                             </p>
@@ -227,7 +227,7 @@ const ClubsTab = ({
                 >
                     <div className="space-y-4 pt-2">
                         {/* Club Head Account */}
-                        <div className="p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-xl space-y-2">
+                        <div className="p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl space-y-2">
                             <p className="text-xs font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
                                 <Shield size={14} className="shrink-0" /> 1. Official Club Organizer Account (Auto-Verified)
                             </p>

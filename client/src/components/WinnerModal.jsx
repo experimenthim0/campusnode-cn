@@ -169,7 +169,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
 
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-[#555555] dark:text-[#B5B5B5]">
           {/* Public Visibility Toggle */}
-          <div className="flex items-center justify-between p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-orange-200/60 dark:border-orange-900/40 rounded-xl">
+          <div className="flex items-center justify-between p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl">
             <div className="flex items-center gap-3">
               <Award className="w-5 h-5 text-[#F97316] dark:text-[#FB923C] shrink-0" />
               <div>

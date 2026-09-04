@@ -72,9 +72,9 @@ const DataPrivacy = () => {
 
                     <section>
                         <h2 className="text-lg font-black text-black mb-3">3. Data Access by Event Organizers</h2>
-                        <div className="bg-orange-50 border-2 border-orange-300 rounded-sm p-4 mb-3">
-                            <p className="text-orange-800 font-bold text-sm"><i className="ri-alert-line mr-1" /> For Club Heads</p>
-                            <p className="text-orange-700 text-xs mt-1">You may only use participant data for the purpose of managing your event. Sharing, selling, or misusing participant data is strictly prohibited and may result in account termination.</p>
+                        <div className="bg-brand-50 border-2 border-brand-300 rounded-sm p-4 mb-3">
+                            <p className="text-brand-800 font-bold text-sm"><i className="ri-alert-line mr-1" /> For Club Heads</p>
+                            <p className="text-brand-700 text-xs mt-1">You may only use participant data for the purpose of managing your event. Sharing, selling, or misusing participant data is strictly prohibited and may result in account termination.</p>
                         </div>
                         <ul className="list-disc pl-6 space-y-1.5">
                             <li>Club heads can view registrant information only for their own events.</li>
@@ -112,7 +112,7 @@ const DataPrivacy = () => {
 
                     <section>
                         <h2 className="text-lg font-black text-black mb-3">7. Contact</h2>
-                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:contact.nikhim@gmail.com" className="text-orange-600 font-bold hover:underline">contact.nikhim@gmail.com</a>.</p>
+                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:contact.nikhim@gmail.com" className="text-brand-600 font-bold hover:underline">contact.nikhim@gmail.com</a>.</p>
                     </section>
                 </div>
             </div>

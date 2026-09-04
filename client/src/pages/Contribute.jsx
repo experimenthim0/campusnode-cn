@@ -41,15 +41,15 @@ const SocialLink = ({ icon, label, username, href, hoverColor }) => (
     </div>
     <div className="min-w-0">
       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">{label}</p>
-      <p className="text-xs font-semibold text-neutral-300 group-hover:text-orange-500 truncate transition-colors">{username}</p>
+      <p className="text-xs font-semibold text-neutral-300 group-hover:text-brand-500 truncate transition-colors">{username}</p>
     </div>
-    <i className="ri-arrow-right-up-line ml-auto text-neutral-600 group-hover:text-orange-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+    <i className="ri-arrow-right-up-line ml-auto text-neutral-600 group-hover:text-brand-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
   </a>
 );
 
 const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-4 mb-8">
-    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-orange-600 dark:text-orange-500 whitespace-nowrap">{children}</span>
+    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-500 whitespace-nowrap">{children}</span>
     <span className="block h-px flex-1 bg-neutral-200 dark:bg-neutral-850" />
   </div>
 );
@@ -120,12 +120,12 @@ const Contribute = () => {
           style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px), radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px', backgroundPosition: '0 0, 12px 12px' }} 
         />
         {/* Glowing visual accent */}
-        <div className="absolute -top-1/4 -right-1/4 w-[400px] h-[400px] bg-orange-600/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute -top-1/4 -right-1/4 w-[400px] h-[400px] bg-brand-600/10 dark:bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-5xl mx-auto px-6 lg:px-10 relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/30 mb-6 animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-orange-600" />
-            <span className="code-font text-[10px] font-bold tracking-widest text-orange-700 dark:text-orange-400 uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900/30 mb-6 animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-brand-600" />
+            <span className="code-font text-[10px] font-bold tracking-widest text-brand-700 dark:text-brand-400 uppercase">
               $ cat community_guidelines.md
             </span>
           </div>
@@ -144,7 +144,7 @@ const Contribute = () => {
                   href="https://whatsapp.com/channel/0029VbAhXba7z4kgTBY3nS0Z"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600 transition-colors duration-250 cursor-pointer shadow-sm shadow-black/5"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 transition-colors duration-250 cursor-pointer shadow-sm shadow-black/5"
                 >
                   <i className="ri-whatsapp-line text-base" /> Join WhatsApp Community
                 </a>
@@ -170,14 +170,14 @@ const Contribute = () => {
                   <div className="w-12" />
                 </div>
                 <div className="p-5 code-font text-xs text-neutral-400 space-y-2.5">
-                  <p><span className="text-orange-500">{"{"}</span></p>
+                  <p><span className="text-brand-500">{"{"}</span></p>
                   <p className="pl-4"><span className="text-sky-400">"projectName"</span>: <span className="text-emerald-400">"CampusNode"</span>,</p>
                   <p className="pl-4"><span className="text-sky-400">"projectType"</span>: <span className="text-emerald-400">"Student Initiative"</span>,</p>
                   <p className="pl-4"><span className="text-sky-400">"location"</span>: <span className="text-emerald-400">"NIT Jalandhar"</span>,</p>
                   <p className="pl-4"><span className="text-sky-400">"codeAccess"</span>: <span className="text-emerald-400">"Community Only"</span>,</p>
                   <p className="pl-4"><span className="text-sky-400">"devCount"</span>: <span className="text-amber-400">12</span>,</p>
                   <p className="pl-4"><span className="text-sky-400">"acceptingDevs"</span>: <span className="text-rose-400">true</span></p>
-                  <p><span className="text-orange-500">{"}"}</span></p>
+                  <p><span className="text-brand-500">{"}"}</span></p>
                 </div>
               </div>
             </div>
@@ -197,9 +197,9 @@ const Contribute = () => {
               { label: 'Backend Server', value: 'Express 5', note: 'Node.js runtime', icon: 'ri-server-line' },
               { label: 'Database', value: 'PostgreSQL', note: 'Prisma Client ORM', icon: 'ri-database-2-line' },
             ].map((tech, i) => (
-              <div key={tech.label} className="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-850 hover:border-orange-500 dark:hover:border-orange-500/60 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center mb-4 transition-colors group-hover:bg-orange-600">
-                  <i className={`${tech.icon} text-xl text-orange-600 group-hover:text-white transition-colors duration-250`} />
+              <div key={tech.label} className="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-850 hover:border-brand-500 dark:hover:border-brand-500/60 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center mb-4 transition-colors group-hover:bg-brand-600">
+                  <i className={`${tech.icon} text-xl text-brand-600 group-hover:text-white transition-colors duration-250`} />
                 </div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">{tech.label}</p>
                 <p className="text-[14px] font-black text-neutral-800 dark:text-neutral-200 leading-snug">{tech.value}</p>
@@ -208,7 +208,7 @@ const Contribute = () => {
             ))}
           </div>
           <div className="mt-6 p-4 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-850 flex items-start gap-3">
-            <i className="ri-information-line text-orange-600 text-lg shrink-0 mt-0.5" />
+            <i className="ri-information-line text-brand-600 text-lg shrink-0 mt-0.5" />
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
               CampusNode is structured with a decoupled modular architecture. The backend manages flexible payment verifications, generates PDF dynamic tickets with QR codes, handles custom student forms, and sends real-time event updates via WebSockets.
             </p>
@@ -227,15 +227,15 @@ const Contribute = () => {
             ].map((item, i) => (
               <div key={item.step} className="relative flex gap-6 pl-8 pb-10 group">
                 {/* dot on timeline */}
-                <div className="absolute -left-[12.5px] top-1.5 w-6 h-6 bg-white dark:bg-neutral-950 rounded-full border border-neutral-200 dark:border-neutral-800 group-hover:border-orange-500 transition-colors duration-200 flex items-center justify-center shadow-sm">
-                  <div className="w-1.5 h-1.5 bg-orange-600 rounded-full" />
+                <div className="absolute -left-[12.5px] top-1.5 w-6 h-6 bg-white dark:bg-neutral-950 rounded-full border border-neutral-200 dark:border-neutral-800 group-hover:border-brand-500 transition-colors duration-200 flex items-center justify-center shadow-sm">
+                  <div className="w-1.5 h-1.5 bg-brand-600 rounded-full" />
                 </div>
 
                 {/* step content */}
                 <div className="relative flex-grow">
-                  <span className="code-font text-xs font-bold text-orange-500 mb-1 block">STEP {item.step}</span>
+                  <span className="code-font text-xs font-bold text-brand-500 mb-1 block">STEP {item.step}</span>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <i className={`${item.icon} text-orange-600 text-sm`} />
+                    <i className={`${item.icon} text-brand-600 text-sm`} />
                     <h3 className="font-bold text-neutral-800 dark:text-neutral-200 text-[15px]">{item.title}</h3>
                   </div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-lg">{item.desc}</p>
@@ -263,7 +263,7 @@ const Contribute = () => {
                     onClick={() => setActiveTab(tab)}
                     className={`px-3.5 py-1.5 rounded-md text-[10px] code-font font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       activeTab === tab 
-                        ? 'bg-neutral-950 text-orange-500' 
+                        ? 'bg-neutral-950 text-brand-500' 
                         : 'text-neutral-400 hover:text-neutral-200'
                     }`}
                   >
@@ -306,9 +306,9 @@ const Contribute = () => {
               { icon: 'ri-notification-3-line', title: 'Email & Notify System', desc: 'Harden webhooks, configure background job queues, and add push/email alerts.', tag: 'Feature' },
               { icon: 'ri-test-tube-line', title: 'Test Automation', desc: 'Add comprehensive unit, integration, and E2E browser tests using Vitest and Playwright.', tag: 'Testing' },
             ].map((area, i) => (
-              <div key={area.title} className="group flex items-start gap-4 p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-855 rounded-2xl hover:border-orange-500 dark:hover:border-orange-500/50 hover:shadow-sm transition-all duration-300">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/30 flex items-center justify-center shrink-0 group-hover:bg-orange-600 transition-colors">
-                  <i className={`${area.icon} text-lg text-orange-600 group-hover:text-white transition-colors duration-250`} />
+              <div key={area.title} className="group flex items-start gap-4 p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-855 rounded-2xl hover:border-brand-500 dark:hover:border-brand-500/50 hover:shadow-sm transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900/30 flex items-center justify-center shrink-0 group-hover:bg-brand-600 transition-colors">
+                  <i className={`${area.icon} text-lg text-brand-600 group-hover:text-white transition-colors duration-250`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -325,13 +325,13 @@ const Contribute = () => {
         <Reveal>
           <SectionLabel>Project Maintainer</SectionLabel>
           <div className="bg-neutral-900 dark:bg-neutral-955 rounded-2xl border border-neutral-800 shadow-xl overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-orange-600/10 blur-[90px] rounded-full pointer-events-none -mr-20 -mt-20" />
-            <div className="h-1 bg-orange-600 w-full" />
+            <div className="absolute top-0 right-0 w-72 h-72 bg-brand-600/10 blur-[90px] rounded-full pointer-events-none -mr-20 -mt-20" />
+            <div className="h-1 bg-brand-600 w-full" />
 
             <div className="p-8 relative">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-neutral-850 border border-neutral-800 flex items-center justify-center shrink-0 text-3xl text-orange-500 shadow-md">
+                  <div className="w-16 h-16 rounded-2xl bg-neutral-850 border border-neutral-800 flex items-center justify-center shrink-0 text-3xl text-brand-500 shadow-md">
                     <i className="ri-user-3-line" />
                   </div>
                   <div>
@@ -351,7 +351,7 @@ const Contribute = () => {
                   </button>
                   <a
                     href="mailto:contact.nikhim@gmail.com"
-                    className="inline-flex items-center justify-center w-10.5 h-10.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-base transition-colors cursor-pointer"
+                    className="inline-flex items-center justify-center w-10.5 h-10.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-base transition-colors cursor-pointer"
                     aria-label="Direct Email"
                   >
                     <i className="ri-external-link-line" />
@@ -399,7 +399,7 @@ const Contribute = () => {
         </Reveal>
 
         <div className="flex items-center justify-between pt-6 border-t border-neutral-200 dark:border-neutral-855">
-          <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors">
             <i className="ri-arrow-left-line" /> Back to Home
           </Link>
           <span className="code-font text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">CampusNode · Developer Community</span>

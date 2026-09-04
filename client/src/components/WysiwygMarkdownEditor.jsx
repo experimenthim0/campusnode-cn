@@ -722,7 +722,7 @@ const WysiwygMarkdownEditor = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setBlockFormat('p')}
                   className={`w-full text-left px-3.5 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'p' ? 'text-orange-600 font-bold bg-orange-50 dark:bg-orange-950/20' : 'text-neutral-700 dark:text-neutral-300'
+                    activeFormats.blockType === 'p' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-700 dark:text-neutral-300'
                   }`}
                 >
                   <span>Normal Paragraph</span>
@@ -733,7 +733,7 @@ const WysiwygMarkdownEditor = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setBlockFormat('h1')}
                   className={`w-full text-left px-3.5 py-2 text-sm font-black hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h1' ? 'text-orange-600 font-bold bg-orange-50 dark:bg-orange-950/20' : 'text-neutral-900 dark:text-white'
+                    activeFormats.blockType === 'h1' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-900 dark:text-white'
                   }`}
                 >
                   <span>Heading 1</span>
@@ -744,7 +744,7 @@ const WysiwygMarkdownEditor = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setBlockFormat('h2')}
                   className={`w-full text-left px-3.5 py-2 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h2' ? 'text-orange-600 font-bold bg-orange-50 dark:bg-orange-950/20' : 'text-neutral-800 dark:text-neutral-200'
+                    activeFormats.blockType === 'h2' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-800 dark:text-neutral-200'
                   }`}
                 >
                   <span>Heading 2</span>
@@ -755,7 +755,7 @@ const WysiwygMarkdownEditor = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setBlockFormat('h3')}
                   className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h3' ? 'text-orange-600 font-bold bg-orange-50 dark:bg-orange-950/20' : 'text-neutral-800 dark:text-neutral-200'
+                    activeFormats.blockType === 'h3' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-800 dark:text-neutral-200'
                   }`}
                 >
                   <span>Heading 3</span>
@@ -766,7 +766,7 @@ const WysiwygMarkdownEditor = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setBlockFormat('blockquote')}
                   className={`w-full text-left px-3.5 py-2 text-xs italic hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'blockquote' ? 'text-orange-600 font-bold bg-orange-50 dark:bg-orange-950/20' : 'text-neutral-700 dark:text-neutral-300'
+                    activeFormats.blockType === 'blockquote' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-700 dark:text-neutral-300'
                   }`}
                 >
                   <span>Important Note / Quote</span>
@@ -785,7 +785,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('bold')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm cursor-pointer transition-colors ${
               activeFormats.bold
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Bold (Ctrl+B)"
@@ -799,7 +799,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('italic')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center italic font-serif text-sm cursor-pointer transition-colors ${
               activeFormats.italic
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Italic (Ctrl+I)"
@@ -813,7 +813,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('underline')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center underline text-sm cursor-pointer transition-colors ${
               activeFormats.underline
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Underline (Ctrl+U)"
@@ -827,7 +827,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('strikeThrough')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center line-through text-sm cursor-pointer transition-colors ${
               activeFormats.strikeThrough
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Strikethrough"
@@ -844,7 +844,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('insertUnorderedList')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
               activeFormats.unorderedList
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Bullet List"
@@ -858,7 +858,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => execCommand('insertOrderedList')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
               activeFormats.orderedList
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Numbered List"
@@ -874,8 +874,8 @@ const WysiwygMarkdownEditor = ({
             onClick={openLinkPopover}
             className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               activeFormats.isLink || linkPopover.isOpen
-                ? 'bg-orange-600 text-white shadow-xs'
-                : 'hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-950/30 text-neutral-700 dark:text-neutral-300'
+                ? 'bg-brand-600 text-white shadow-xs'
+                : 'hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/30 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Insert Link (Ctrl+K)"
           >
@@ -889,8 +889,8 @@ const WysiwygMarkdownEditor = ({
             onClick={openImagePopover}
             className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               imagePopover.isOpen
-                ? 'bg-orange-600 text-white shadow-xs'
-                : 'hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-950/30 text-neutral-700 dark:text-neutral-300'
+                ? 'bg-brand-600 text-white shadow-xs'
+                : 'hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/30 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Insert Image by URL with Size & Alignment"
           >
@@ -904,7 +904,7 @@ const WysiwygMarkdownEditor = ({
             onClick={() => setBlockFormat('blockquote')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
               activeFormats.blockType === 'blockquote'
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
             }`}
             title="Important Note Callout"
@@ -979,7 +979,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h2' ? 'p' : 'h2')}
             className={`px-2 py-1 rounded-lg text-xs font-black transition-colors cursor-pointer ${
-              activeFormats.blockType === 'h2' ? 'text-orange-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.blockType === 'h2' ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Heading 2"
           >
@@ -990,7 +990,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h3' ? 'p' : 'h3')}
             className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-              activeFormats.blockType === 'h3' ? 'text-orange-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.blockType === 'h3' ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Heading 3"
           >
@@ -1004,7 +1004,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('bold')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs transition-colors cursor-pointer ${
-              activeFormats.bold ? 'text-orange-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.bold ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Bold"
           >
@@ -1016,7 +1016,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('italic')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center italic font-serif text-xs transition-colors cursor-pointer ${
-              activeFormats.italic ? 'text-orange-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.italic ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Italic"
           >
@@ -1028,7 +1028,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('underline')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center underline text-xs transition-colors cursor-pointer ${
-              activeFormats.underline ? 'text-orange-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.underline ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Underline"
           >
@@ -1040,7 +1040,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('strikeThrough')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center line-through text-xs transition-colors cursor-pointer ${
-              activeFormats.strikeThrough ? 'text-orange-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.strikeThrough ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Strikethrough"
           >
@@ -1054,7 +1054,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('insertUnorderedList')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-colors cursor-pointer ${
-              activeFormats.unorderedList ? 'text-orange-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
+              activeFormats.unorderedList ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
             }`}
             title="Bullet List"
           >
@@ -1087,7 +1087,7 @@ const WysiwygMarkdownEditor = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat('blockquote')}
             className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-colors cursor-pointer ${
-              activeFormats.blockType === 'blockquote' ? 'text-orange-600' : 'hover:bg-neutral-200  text-neutral-700 dark:text-neutral-200'
+              activeFormats.blockType === 'blockquote' ? 'text-brand-600' : 'hover:bg-neutral-200  text-neutral-700 dark:text-neutral-200'
             }`}
             title="Quote"
           >
@@ -1114,7 +1114,7 @@ const WysiwygMarkdownEditor = ({
               placeholder="Text to display..."
               value={linkText}
               onChange={(e) => setLinkText(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+              className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
             />
           )}
 
@@ -1139,7 +1139,7 @@ const WysiwygMarkdownEditor = ({
                     editorRef.current?.focus();
                   }
                 }}
-                className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
+                className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
                   linkError ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-700'
                 }`}
               />
@@ -1149,7 +1149,7 @@ const WysiwygMarkdownEditor = ({
             <button
               type="button"
               onClick={handleApplyLink}
-              className="px-3 py-1.5 bg-black hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shrink-0"
+              className="px-3 py-1.5 bg-black hover:bg-brand-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shrink-0"
               title="Apply Link (Enter)"
             >
               Apply
@@ -1196,7 +1196,7 @@ const WysiwygMarkdownEditor = ({
         >
           <div className="flex items-center justify-between pb-1.5 border-b border-neutral-100 dark:border-neutral-800">
             <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
-              <i className="ri-image-line text-orange-600 font-light" />
+              <i className="ri-image-line text-brand-600 font-light" />
               {imagePopover.isExistingImage ? 'Edit Image & Sizing' : 'Insert Image via Link'}
             </span>
 
@@ -1246,7 +1246,7 @@ const WysiwygMarkdownEditor = ({
                   editorRef.current?.focus();
                 }
               }}
-              className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
+              className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
                 imageError ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-700'
               }`}
             />
@@ -1265,7 +1265,7 @@ const WysiwygMarkdownEditor = ({
                 handleInsertOrUpdateImage();
               }
             }}
-            className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+            className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
           />
 
           {/* Width & Size Presets */}
@@ -1288,7 +1288,7 @@ const WysiwygMarkdownEditor = ({
                   onClick={() => handleSizePresetSelect(p.val)}
                   className={`py-1 text-[11px] font-semibold rounded-md border transition-colors cursor-pointer ${
                     imageWidth === p.val
-                      ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 border-orange-300 dark:border-orange-800 font-bold'
+                      ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-600 border-brand-300 dark:border-brand-800 font-bold'
                       : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -1310,7 +1310,7 @@ const WysiwygMarkdownEditor = ({
                   setImageWidth(e.target.value);
                   setSizePreset('custom');
                 }}
-                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
               />
             </div>
 
@@ -1321,7 +1321,7 @@ const WysiwygMarkdownEditor = ({
                 placeholder="auto, 280px"
                 value={imageHeight}
                 onChange={(e) => setImageHeight(e.target.value)}
-                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-orange-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
               />
             </div>
 
@@ -1339,7 +1339,7 @@ const WysiwygMarkdownEditor = ({
                     onClick={() => setImageAlign(a.align)}
                     className={`flex-1 py-1 flex items-center justify-center text-xs transition-colors cursor-pointer ${
                       imageAlign === a.align
-                        ? 'bg-orange-600 text-white'
+                        ? 'bg-brand-600 text-white'
                         : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                     }`}
                     title={`Align ${a.align}`}
@@ -1372,7 +1372,7 @@ const WysiwygMarkdownEditor = ({
             <button
               type="button"
               onClick={handleInsertOrUpdateImage}
-              className="px-3.5 py-1.5 bg-black hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+              className="px-3.5 py-1.5 bg-black hover:bg-brand-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
             >
               {imagePopover.isExistingImage ? 'Update Image' : 'Insert Image'}
             </button>

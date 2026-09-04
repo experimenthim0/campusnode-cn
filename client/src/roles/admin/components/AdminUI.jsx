@@ -24,7 +24,7 @@ export const StatCard = ({ label, value, subtext, icon: Icon, accent, className 
         
         <div className="mt-3">
             <p className={`text-2xl lg:text-3xl font-black tracking-tight leading-none ${
-                accent ? "text-orange-500 dark:text-orange-600" : "text-black dark:text-white"
+                accent ? "text-brand-500 dark:text-brand-600" : "text-black dark:text-white"
             }`}>
                 {value}
             </p>
@@ -92,7 +92,7 @@ export const FormInput = ({ name, type = "text", placeholder, required }) => (
         type={type} 
         placeholder={placeholder} 
         required={required} 
-        className="px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-zinc-800 rounded-xl text-[13px] focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors placeholder:text-neutral-400 dark:placeholder:text-neutral-600" 
+        className="px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors placeholder:text-neutral-400 dark:placeholder:text-neutral-600" 
     />
 );
 
@@ -100,7 +100,7 @@ export const FilterSelect = ({ children, value, onChange, className = "" }) => (
     <select 
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`h-9 px-3 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800 rounded-xl text-[12px] font-semibold text-neutral-700 dark:text-neutral-300 focus:border-orange-600 dark:focus:border-orange-500 outline-none transition-colors cursor-pointer ${className}`}
+        className={`h-9 px-3 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800 rounded-xl text-[12px] font-semibold text-neutral-700 dark:text-neutral-300 focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors cursor-pointer ${className}`}
     >
         {children}
     </select>

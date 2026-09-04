@@ -95,7 +95,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                     isBlackout
                       ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40"
                       : isVenueOverlap
-                      ? "bg-[#FFF7ED] dark:bg-[#2A1A0F] border-orange-200/80 dark:border-orange-900/60"
+                      ? "bg-[#FFF7ED] dark:bg-[#2A1A0F] border-brand-200/80 dark:border-brand-900/60"
                       : "bg-[#FAFAFA] dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030]"
                   }`}
                 >

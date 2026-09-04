@@ -126,7 +126,7 @@ const ClubAnnouncementsSection = ({
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
             <i className="ri-megaphone-line text-lg" />
           </div>
           <div>
@@ -153,7 +153,7 @@ const ClubAnnouncementsSection = ({
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0 ${
               isFormOpen
                 ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                : "bg-orange-600 hover:bg-orange-700 text-white"
+                : "bg-brand-600 hover:bg-brand-700 text-white"
             }`}
           >
             <i className={isFormOpen ? "ri-close-line text-sm" : "ri-add-line text-sm"} />
@@ -165,10 +165,10 @@ const ClubAnnouncementsSection = ({
       {isFormOpen && canManage && (
         <form
           onSubmit={handleCreate}
-          className="mb-6 p-4 sm:p-5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-orange-200/60 dark:border-orange-900/30 space-y-4 animate-in fade-in duration-200"
+          className="mb-6 p-4 sm:p-5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-brand-200/60 dark:border-brand-900/30 space-y-4 animate-in fade-in duration-200"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
               <i className="ri-edit-line" /> Compose New Announcement
             </h3>
             <span className="text-[11px] text-neutral-400">Visible to all students & members</span>
@@ -184,7 +184,7 @@ const ClubAnnouncementsSection = ({
                 placeholder="e.g. Registrations open for Annual Hackathon 2026!"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                 required
                 maxLength={120}
               />
@@ -199,7 +199,7 @@ const ClubAnnouncementsSection = ({
                 placeholder="Write your announcement details, instructions, links, or guidelines here..."
                 value={form.content}
                 onChange={(e) => setForm({ ...form, content: e.target.value })}
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-y"
+                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-y"
                 required
               />
             </div>
@@ -210,17 +210,17 @@ const ClubAnnouncementsSection = ({
                   type="checkbox"
                   checked={form.isPinned}
                   onChange={(e) => setForm({ ...form, isPinned: e.target.checked })}
-                  className="w-4 h-4 rounded accent-orange-600 cursor-pointer"
+                  className="w-4 h-4 rounded accent-brand-600 cursor-pointer"
                 />
                 <span className="flex items-center gap-1">
-                  <i className="ri-pushpin-line text-orange-600" /> Pin announcement to top of feed
+                  <i className="ri-pushpin-line text-brand-600" /> Pin announcement to top of feed
                 </span>
               </label>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
               >
                 {submitting ? (
                   <>
@@ -249,14 +249,14 @@ const ClubAnnouncementsSection = ({
                 key={itemId}
                 className={`p-4 sm:p-5 rounded-2xl border transition-all ${
                   item.isPinned
-                    ? "bg-orange-500/5 dark:bg-orange-500/10 border-orange-500/30 dark:border-orange-500/30"
+                    ? "bg-brand-500/5 dark:bg-brand-500/10 border-brand-500/30 dark:border-brand-500/30"
                     : "bg-neutral-50/50 dark:bg-neutral-800/30 border-neutral-200/80 dark:border-neutral-800"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
                     {item.isPinned && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 rounded-md border border-orange-200 dark:border-orange-900/50">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 rounded-md border border-brand-200 dark:border-brand-900/50">
                         <i className="ri-pushpin-fill text-[11px] font-light" /> Pinned
                       </span>
                     )}
@@ -295,7 +295,7 @@ const ClubAnnouncementsSection = ({
                         title={item.isPinned ? "Unpin announcement" : "Pin announcement"}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 border transition-colors cursor-pointer ${
                           item.isPinned
-                            ? "bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:bg-orange-100"
+                            ? "bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-400 border-brand-200 dark:border-brand-900/40 hover:bg-brand-100"
                             : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:text-black dark:hover:text-white"
                         }`}
                       >
@@ -335,7 +335,7 @@ const ClubAnnouncementsSection = ({
             <button
               type="button"
               onClick={() => setIsFormOpen(true)}
-              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-orange-700 transition cursor-pointer"
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-brand-700 transition cursor-pointer"
             >
               <i className="ri-add-line" /> Post First Announcement
             </button>

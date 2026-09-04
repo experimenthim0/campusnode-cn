@@ -43,7 +43,7 @@ const RawAttendeeResponses = ({ responses = [] }) => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-neutral-100 dark:border-neutral-800 pb-4">
         <div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-orange-500" aria-hidden="true" />
+            <MessageSquare className="w-4 h-4 text-brand-500" aria-hidden="true" />
             <span>Attendee Written Responses ({responses.length})</span>
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -86,7 +86,7 @@ const RawAttendeeResponses = ({ responses = [] }) => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') e.preventDefault();
               }}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/40 text-slate-900 dark:text-white placeholder:text-slate-400"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white placeholder:text-slate-400"
               aria-label="Search feedback responses"
             />
           </div>

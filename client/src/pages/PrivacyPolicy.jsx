@@ -21,20 +21,20 @@ const PrivacyPolicy = () => {
 
                 {/* Hero / Title Section */}
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-4">
                         <i className="ri-shield-keyhole-line text-sm" /> Legal &amp; Data Security
                     </div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                        Privacy <span className="text-orange-600">Policy</span>
+                        Privacy <span className="text-brand-600">Policy</span>
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        At Campus<span className="text-orange-600 font-semibold">Node</span>, we prioritize student data protection, transparency, and security across all features and event registrations.
+                        At Campus<span className="text-brand-600 font-semibold">Node</span>, we prioritize student data protection, transparency, and security across all features and event registrations.
                     </p>
                 </div>
 
                 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-8 shadow-sm">
                     <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-orange-600/10 dark:bg-orange-500/15 text-orange-600 flex items-center justify-center text-2xl shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-brand-600/10 dark:bg-brand-500/15 text-brand-600 flex items-center justify-center text-2xl shrink-0">
                             <i className="ri-shield-check-line" />
                         </div>
                         <div>
@@ -122,7 +122,7 @@ const PrivacyPolicy = () => {
                                 { icon: 'ri-user-star-line', text: 'Allowing club heads to manage registered participants and teams.' },
                             ].map((item, index) => (
                                 <div key={index} className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/60 dark:border-neutral-800/60 flex items-start gap-3">
-                                    <i className={`${item.icon} text-orange-600 text-lg mt-0.5 shrink-0`} />
+                                    <i className={`${item.icon} text-brand-600 text-lg mt-0.5 shrink-0`} />
                                     <span className="text-xs md:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">{item.text}</span>
                                 </div>
                             ))}
@@ -135,22 +135,22 @@ const PrivacyPolicy = () => {
                             Information Sharing &amp; Organizer Obligations
                         </h2>
                         
-                        <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/50 rounded-xl p-4 mb-4">
-                            <div className="flex items-center gap-2 text-orange-800 dark:text-orange-300 font-bold text-xs uppercase tracking-wider mb-1">
-                                <i className="ri-shield-flash-line text-orange-600" /> Organizer Data Scope
+                        <div className="bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 rounded-xl p-4 mb-4">
+                            <div className="flex items-center gap-2 text-brand-800 dark:text-brand-300 font-bold text-xs uppercase tracking-wider mb-1">
+                                <i className="ri-shield-flash-line text-brand-600" /> Organizer Data Scope
                             </div>
-                            <p className="text-xs text-orange-900/80 dark:text-orange-200/80 leading-relaxed">
+                            <p className="text-xs text-brand-900/80 dark:text-brand-200/80 leading-relaxed">
                                 When you register for an event, authorized Club Heads can view your name, roll number, contact details, and submitted form answers solely for event coordination. Club Heads are strictly bound against exporting or distributing data outside the platform.
                             </p>
                         </div>
 
                         <ul className="space-y-2.5 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
                             <li className="flex items-start gap-2">
-                                <i className="ri-checkbox-circle-fill text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-checkbox-circle-fill text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>No Third-Party Sales:</strong> We never sell, rent, or trade your personal data to commercial advertisers or data brokers.</span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <i className="ri-checkbox-circle-fill text-orange-600 mt-0.5 shrink-0" />
+                                <i className="ri-checkbox-circle-fill text-brand-600 mt-0.5 shrink-0" />
                                 <span><strong>Institutional Compliance:</strong> Information may be shared with institute administration only if explicitly mandated by campus authorities or legal inquiries.</span>
                             </li>
                         </ul>
@@ -188,7 +188,7 @@ const PrivacyPolicy = () => {
                             You maintain full control over your stored credentials and profile:
                         </p>
                         <ul className="space-y-2 text-xs md:text-sm text-neutral-600 dark:text-neutral-400 list-disc pl-5">
-                            <li>View and update your academic details, social handles, and avatar via <Link to="/profile/edit" className="text-orange-600 font-semibold hover:underline">Profile Settings</Link>.</li>
+                            <li>View and update your academic details, social handles, and avatar via <Link to="/profile/edit" className="text-brand-600 font-semibold hover:underline">Profile Settings</Link>.</li>
                             <li>Request account deactivation or data removal by contacting system admins.</li>
                         </ul>
                     </section>
@@ -196,14 +196,14 @@ const PrivacyPolicy = () => {
                     {/* Section 7: Contact */}
                     <section className="bg-neutral-900 dark:bg-neutral-950 text-white rounded-2xl p-6 md:p-8 shadow-md">
                         <h2 className="text-base font-bold mb-2 flex items-center gap-2">
-                            <i className="ri-mail-line text-orange-500 text-lg" /> Questions &amp; Support
+                            <i className="ri-mail-line text-brand-500 text-lg" /> Questions &amp; Support
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-400 leading-relaxed mb-4">
                             If you have concerns about data privacy or wish to report a security issue, reach out to our team directly:
                         </p>
                         <a 
                             href="mailto:contact.nikhim@gmail.com" 
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Contact Privacy Officer
                         </a>

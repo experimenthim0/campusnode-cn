@@ -629,7 +629,7 @@ const EditEvent = () => {
     }
 
     const inputCls =
-        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 transition-all bg-white dark:bg-[#0a0a0a] text-black dark:text-white placeholder:text-neutral-400';
+        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-white dark:bg-[#0a0a0a] text-black dark:text-white placeholder:text-neutral-400';
     const labelCls =
         'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
 
@@ -685,11 +685,11 @@ const EditEvent = () => {
                     {currentStep === 1 && (
                         <div className="space-y-6 animate-step-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-file-text-line text-orange-600 text-base" />
+                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-file-text-line text-brand-600 text-base" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 1
                                     </span>
                                     <h2 className="text-base font-bold text-black dark:text-white leading-tight">
@@ -700,7 +700,7 @@ const EditEvent = () => {
 
                             {/* Event Title */}
                             <div>
-                                <label className={labelCls}>Event Title <span className="text-orange-600">*</span></label>
+                                <label className={labelCls}>Event Title <span className="text-brand-600">*</span></label>
                                 <input type="text" name="title" className={inputCls}
                                     value={formData.title} onChange={handleChange} placeholder="Enter event title" />
                             </div>
@@ -718,7 +718,7 @@ const EditEvent = () => {
 
                             {/* Venue */}
                             <div>
-                                <label className={labelCls}>Venue <span className="text-orange-600">*</span></label>
+                                <label className={labelCls}>Venue <span className="text-brand-600">*</span></label>
                                 <select name="venue" className={inputCls} value={formData.venue} onChange={handleChange}>
                                     <option value="">Select Venue</option>
                                     {availableVenues.map((venue) => (
@@ -739,18 +739,18 @@ const EditEvent = () => {
                                 />
                                 <label
                                     htmlFor="poster-upload"
-                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center gap-2">
-                                            <i className="ri-loader-4-line text-2xl animate-spin text-orange-600" />
+                                            <i className="ri-loader-4-line text-2xl animate-spin text-brand-600" />
                                             <span>Uploading poster...</span>
                                         </div>
                                     ) : (
                                         <>
-                                            <i className="ri-image-add-line text-4xl text-neutral-300 group-hover:text-orange-500 transition-colors" />
+                                            <i className="ri-image-add-line text-4xl text-neutral-300 group-hover:text-brand-500 transition-colors" />
                                             <div className="text-center">
-                                                <span className="text-orange-600 underline">Click to upload</span> or drag and drop
+                                                <span className="text-brand-600 underline">Click to upload</span> or drag and drop
                                                 <p className="text-xs text-neutral-400 mt-1">Supports PNG, JPG, JPEG, WEBP, GIF</p>
                                             </div>
                                         </>
@@ -763,7 +763,7 @@ const EditEvent = () => {
                                         <button
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                            className="absolute top-4 right-4 bg-black hover:bg-orange-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer"
+                                            className="absolute top-4 right-4 bg-black hover:bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer"
                                             title="Remove Image"
                                         >
                                             <i className="ri-close-line text-lg" />
@@ -778,11 +778,11 @@ const EditEvent = () => {
                     {currentStep === 2 && (
                         <div className="space-y-6 animate-step-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-calendar-line text-orange-600 text-base" />
+                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-calendar-line text-brand-600 text-base" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 2
                                     </span>
                                     <h2 className="text-base font-bold text-black dark:text-white leading-tight">
@@ -794,12 +794,12 @@ const EditEvent = () => {
                             {/* Date & Time */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className={labelCls}>Start Time <span className="text-orange-600">*</span></label>
+                                    <label className={labelCls}>Start Time <span className="text-brand-600">*</span></label>
                                     <input type="datetime-local" name="startTime" className={inputCls}
                                         value={formData.startTime} onChange={handleChange} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className={labelCls}>End Time <span className="text-orange-600">*</span></label>
+                                    <label className={labelCls}>End Time <span className="text-brand-600">*</span></label>
                                     <input type="datetime-local" name="endTime" className={inputCls}
                                         value={formData.endTime} onChange={handleChange} />
                                 </div>
@@ -821,11 +821,11 @@ const EditEvent = () => {
 
                                 {/* Allowed Programs */}
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Programs <span className="text-orange-600">*</span></label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Programs <span className="text-brand-600">*</span></label>
                                     <div className="flex flex-wrap gap-5 mt-1">
                                         {PROGRAM_OPTIONS.map((prog) => (
                                             <label key={prog} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                <input type="checkbox" className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                                <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                                     checked={formData.allowedPrograms.includes(prog)}
                                                     onChange={() => handleProgramToggle(prog)} />
                                                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{PROGRAM_LABELS[prog]}</span>
@@ -841,7 +841,7 @@ const EditEvent = () => {
                                     <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Years</label>
                                     <div className="flex items-center gap-4">
                                         <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                                 checked={allYears} onChange={() => {
                                                     setAllYears(!allYears);
                                                     if (!allYears) setFormData(prev => ({ ...prev, allowedYears: [] }));
@@ -853,7 +853,7 @@ const EditEvent = () => {
                                         <div className="flex flex-wrap gap-4 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
                                             {YEARS.map(year => (
                                                 <label key={year} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-orange-600 border-neutral-300 rounded focus:ring-orange-600"
+                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
                                                         checked={formData.allowedYears.includes(year)}
                                                         onChange={() => handleYearToggle(year)} />
                                                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{year}</span>
@@ -870,7 +870,7 @@ const EditEvent = () => {
                                     <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Branches</label>
                                     <div className="flex items-center gap-4">
                                         <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                                 checked={allBranches} onChange={() => {
                                                     setAllBranches(!allBranches);
                                                     if (!allBranches) setFormData(prev => ({ ...prev, allowedBranches: [] }));
@@ -882,7 +882,7 @@ const EditEvent = () => {
                                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
                                             {BRANCHES.map(branch => (
                                                 <label key={branch} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-orange-600 border-neutral-300 rounded focus:ring-orange-600"
+                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
                                                         checked={(formData.allowedBranches || []).includes(branch)}
                                                         onChange={() => handleBranchToggle(branch)} />
                                                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{branch}</span>
@@ -901,7 +901,7 @@ const EditEvent = () => {
                                         <input
                                             type="checkbox"
                                             name="allowExternal"
-                                            className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                            className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                             checked={formData.allowExternal}
                                             onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
                                         />
@@ -923,11 +923,11 @@ const EditEvent = () => {
                     {currentStep === 3 && (
                         <div className="space-y-6 animate-step-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-ticket-line text-orange-600 text-base" />
+                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-ticket-line text-brand-600 text-base" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 3
                                     </span>
                                     <h2 className="text-base font-bold text-black dark:text-white leading-tight">
@@ -938,7 +938,7 @@ const EditEvent = () => {
 
                             {/* Registration Type */}
                             <div>
-                                <label className={labelCls}>Registration Type <span className="text-orange-600">*</span></label>
+                                <label className={labelCls}>Registration Type <span className="text-brand-600">*</span></label>
                                 <select name="registrationType" className={inputCls} value={formData.registrationType} onChange={handleChange}>
                                     <option value="individual">Individual Registration</option>
                                     <option value="team">Team Registration</option>
@@ -951,12 +951,12 @@ const EditEvent = () => {
                             {(formData.registrationType === 'team' || formData.registrationType === 'both') && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
                                     <div>
-                                        <label className={labelCls}>Minimum Team Size <span className="text-orange-600">*</span></label>
+                                        <label className={labelCls}>Minimum Team Size <span className="text-brand-600">*</span></label>
                                         <input type="number" name="minTeamSize" min="1" className={inputCls}
                                             value={formData.minTeamSize} onChange={handleChange} />
                                     </div>
                                     <div>
-                                        <label className={labelCls}>Maximum Team Size <span className="text-orange-600">*</span></label>
+                                        <label className={labelCls}>Maximum Team Size <span className="text-brand-600">*</span></label>
                                         <input type="number" name="maxTeamSize" min="1" className={inputCls}
                                             value={formData.maxTeamSize} onChange={handleChange} />
                                     </div>
@@ -966,9 +966,9 @@ const EditEvent = () => {
                             {/* Seats & Fee Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-4">
-                                    <label className={labelCls}>Seat Availability <span className="text-orange-600">*</span></label>
+                                    <label className={labelCls}>Seat Availability <span className="text-brand-600">*</span></label>
                                     <div className="flex items-center gap-3">
-                                        <input type="checkbox" id="unlimited-check" className="w-5 h-5 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                        <input type="checkbox" id="unlimited-check" className="w-5 h-5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                             checked={isUnlimited} onChange={() => {
                                                 setIsUnlimited(!isUnlimited);
                                                 if (!isUnlimited) setFormData({ ...formData, totalSeats: '' });
@@ -991,9 +991,9 @@ const EditEvent = () => {
 
                                 {/* Payment Method Option Selector */}
                                 <div>
-                                    <label className={labelCls}>Payment Method <span className="text-orange-600">*</span></label>
+                                    <label className={labelCls}>Payment Method <span className="text-brand-600">*</span></label>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -1001,14 +1001,14 @@ const EditEvent = () => {
                                                     value="FREE"
                                                     checked={formData.paymentMethod === 'FREE'}
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'FREE', registrationFee: 0 })}
-                                                    className="w-4 h-4 accent-orange-600"
+                                                    className="w-4 h-4 accent-brand-600"
                                                 />
                                                 <span className="text-sm font-bold text-black dark:text-white">Free</span>
                                             </div>
                                             <span className="text-xs text-neutral-500 mt-2">No entry fee required to join the event.</span>
                                         </label>
 
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -1016,14 +1016,14 @@ const EditEvent = () => {
                                                     value="MANUAL_TRANSACTION"
                                                     checked={formData.paymentMethod === 'MANUAL_TRANSACTION'}
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'MANUAL_TRANSACTION' })}
-                                                    className="w-4 h-4 accent-orange-600"
+                                                    className="w-4 h-4 accent-brand-600"
                                                 />
                                                 <span className="text-sm font-bold text-black dark:text-white">Manual Transaction</span>
                                             </div>
                                             <span className="text-xs text-neutral-500 mt-2">Users scan your QR code/UPI ID and submit Transaction ID.</span>
                                         </label>
 
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-orange-600 bg-orange-50/30 dark:bg-orange-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
+                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="radio"
@@ -1031,7 +1031,7 @@ const EditEvent = () => {
                                                     value="COLLEGE_PAYMENT"
                                                     checked={formData.paymentMethod === 'COLLEGE_PAYMENT'}
                                                     onChange={() => setFormData({ ...formData, paymentMethod: 'COLLEGE_PAYMENT' })}
-                                                    className="w-4 h-4 accent-orange-600 cursor-pointer"
+                                                    className="w-4 h-4 accent-brand-600 cursor-pointer"
                                                 />
                                                 <span className="text-sm font-bold text-black dark:text-white">College Portal</span>
                                             </div>
@@ -1042,7 +1042,7 @@ const EditEvent = () => {
 
                                 {formData.paymentMethod !== 'FREE' && (
                                     <div>
-                                        <label className={labelCls}>Registration Fee (₹) <span className="text-orange-600">*</span></label>
+                                        <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
                                         <input
                                             type="number"
                                             name="registrationFee"
@@ -1060,7 +1060,7 @@ const EditEvent = () => {
                                     <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label className={labelCls}>UPI ID / Phone Number <span className="text-orange-600">*</span></label>
+                                                <label className={labelCls}>UPI ID / Phone Number <span className="text-brand-600">*</span></label>
                                                 <input
                                                     type="text"
                                                     name="upiId"
@@ -1101,7 +1101,7 @@ const EditEvent = () => {
                                 {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
                                     <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
                                         <div>
-                                            <label className={labelCls}>College Payment Portal URL <span className="text-orange-600">*</span></label>
+                                            <label className={labelCls}>College Payment Portal URL <span className="text-brand-600">*</span></label>
                                             <input
                                                 type="url"
                                                 name="collegePaymentUrl"
@@ -1157,7 +1157,7 @@ const EditEvent = () => {
                                             <input type="checkbox" value={field.value}
                                                 checked={formData.requiredFields.includes(field.value)}
                                                 onChange={handleRequiredFieldsChange}
-                                                className="w-4 h-4 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600" />
+                                                className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600" />
                                             <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
                                         </label>
                                     ))}
@@ -1185,7 +1185,7 @@ const EditEvent = () => {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Label <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Label <span className="text-brand-600">*</span></label>
                                                     <input
                                                         type="text"
                                                         placeholder="e.g. Team Name, GitHub Repo..."
@@ -1214,13 +1214,13 @@ const EditEvent = () => {
                                                     type="checkbox"
                                                     checked={cf.required}
                                                     onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
-                                                    className="w-4 h-4 text-orange-600 border-neutral-300 rounded focus:ring-orange-600 cursor-pointer"
+                                                    className="w-4 h-4 text-brand-600 border-neutral-300 rounded focus:ring-brand-600 cursor-pointer"
                                                 />
                                                 <span className="text-sm text-neutral-600 dark:text-neutral-400">Required</span>
                                             </label>
 
                                             {cf.type === 'select' && (
-                                                <div className="mt-3 pl-4 border-l-2 border-orange-300">
+                                                <div className="mt-3 pl-4 border-l-2 border-brand-300">
                                                     <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-2">Dropdown Options</p>
                                                     {(cf.options || []).map((opt, optIdx) => (
                                                         <div key={optIdx} className="flex items-center gap-2 mb-2">
@@ -1229,7 +1229,7 @@ const EditEvent = () => {
                                                                 placeholder={`Option ${optIdx + 1}`}
                                                                 value={opt}
                                                                 onChange={(e) => updateCustomFieldOption(idx, optIdx, e.target.value)}
-                                                                className="flex-1 px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-[#0a0a0a] text-black dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:outline-none transition-all"
+                                                                className="flex-1 px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-[#0a0a0a] text-black dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 focus:outline-none transition-all"
                                                             />
                                                             <button
                                                                 type="button"
@@ -1243,7 +1243,7 @@ const EditEvent = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => addOptionToField(idx)}
-                                                        className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 mt-1 cursor-pointer"
+                                                        className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 mt-1 cursor-pointer"
                                                     >
                                                         <i className="ri-add-line" /> Add Option
                                                     </button>
@@ -1256,7 +1256,7 @@ const EditEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addCustomField}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Custom Field
                                 </button>
@@ -1268,11 +1268,11 @@ const EditEvent = () => {
                     {currentStep === 4 && (
                         <div className="space-y-6 animate-step-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-sparkling-line text-orange-600 text-base" />
+                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                                    <i className="ri-sparkling-line text-brand-600 text-base" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-orange-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 4
                                     </span>
                                     <h2 className="text-base font-bold text-black dark:text-white leading-tight">
@@ -1290,7 +1290,7 @@ const EditEvent = () => {
                                         name="showWinner"
                                         checked={formData.showWinner}
                                         onChange={(e) => setFormData({ ...formData, showWinner: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                     />
                                     <div>
                                         <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Display Results / Winners</span>
@@ -1305,7 +1305,7 @@ const EditEvent = () => {
                                         name="provideCertificate"
                                         checked={formData.provideCertificate}
                                         onChange={(e) => setFormData({ ...formData, provideCertificate: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-orange-600 cursor-pointer border-neutral-300 rounded focus:ring-orange-600"
+                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
                                     />
                                     <div>
                                         <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Digital Certificates</span>
@@ -1331,7 +1331,7 @@ const EditEvent = () => {
                                             </button>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Sponsor Name <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Sponsor Name <span className="text-brand-600">*</span></label>
                                                     <input
                                                         type="text"
                                                         placeholder="e.g. Acme Corp"
@@ -1344,7 +1344,7 @@ const EditEvent = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Logo URL <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Logo URL <span className="text-brand-600">*</span></label>
                                                     <input
                                                         type="url"
                                                         placeholder="https://example.com/logo.png"
@@ -1373,7 +1373,7 @@ const EditEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addSponsor}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Sponsor
                                 </button>
@@ -1396,7 +1396,7 @@ const EditEvent = () => {
                                             </button>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
                                                 <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Media URL <span className="text-orange-600">*</span></label>
+                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Media URL <span className="text-brand-600">*</span></label>
                                                     <input
                                                         type="url"
                                                         placeholder="https://example.com/media.jpg"
@@ -1427,7 +1427,7 @@ const EditEvent = () => {
                                 <button
                                     type="button"
                                     onClick={addMedia}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-orange-600 hover:text-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <i className="ri-add-circle-line text-lg" /> Add Media
                                 </button>
@@ -1436,7 +1436,7 @@ const EditEvent = () => {
                             {/* Winners Section Note */}
                             <div className="mt-6 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 p-5 rounded-xl flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 text-orange-600">
+                                    <div className="p-2.5 text-brand-600">
                                         <i className="ri-trophy-line text-xl" />
                                     </div>
                                     <div>

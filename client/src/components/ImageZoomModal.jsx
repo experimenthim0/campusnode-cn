@@ -226,7 +226,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
       >
         <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 py-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none">
           <div className="flex items-center gap-2.5 pointer-events-auto min-w-0 pr-4">
-            <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />
             <div className="min-w-0">
               <h3 className="text-white text-sm sm:text-base font-bold truncate max-w-[200px] sm:max-w-md">
                 {title || 'Event Poster'}
@@ -273,7 +273,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
         >
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none z-10">
-              <i className="ri-loader-4-line animate-spin text-3xl text-orange-500" />
+              <i className="ri-loader-4-line animate-spin text-3xl text-brand-500" />
               <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">
                 Loading poster...
               </span>

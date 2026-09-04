@@ -416,7 +416,7 @@ const ClubMembers = () => {
         <div className="mt-6 flex justify-center gap-3">
           <Link
             to={`/club-events/${clubId}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-orange-700 transition-all"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-700 transition-all"
           >
             <i className="ri-arrow-left-line" /> Back to Club Events
           </Link>
@@ -447,7 +447,7 @@ const ClubMembers = () => {
               setSelectedNewLeadId("");
               setIsTransferModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-orange-300 dark:border-orange-700/60 bg-orange-50 dark:bg-orange-950/40 px-4 py-2 text-xs font-bold text-orange-700 dark:text-orange-300 shadow-2xs hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl border border-brand-300 dark:border-brand-700/60 bg-brand-50 dark:bg-brand-950/40 px-4 py-2 text-xs font-bold text-brand-700 dark:text-brand-300 shadow-2xs hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-all cursor-pointer"
           >
             <i className="ri-swap-line text-sm" /> Transfer Leadership
           </button>
@@ -513,7 +513,7 @@ const ClubMembers = () => {
                 value={inviteEmail}
                 onChange={(e) => handleSearchStudents(e.target.value)}
                 required
-                className="h-10 w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-orange-500 focus:outline-none transition-colors"
+                className="h-10 w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none transition-colors"
               />
 
               {searchingStudents && (
@@ -533,7 +533,7 @@ const ClubMembers = () => {
                       className={`w-full text-left p-3 flex items-center justify-between gap-3 transition-colors ${
                         st.isAlreadyMember
                           ? "opacity-50 cursor-not-allowed bg-neutral-50 dark:bg-neutral-800/50"
-                          : "hover:bg-orange-50/50 dark:hover:bg-zinc-800 cursor-pointer"
+                          : "hover:bg-brand-50/50 dark:hover:bg-zinc-800 cursor-pointer"
                       }`}
                     >
                       <div>
@@ -550,7 +550,7 @@ const ClubMembers = () => {
                           Already in team
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400">
+                        <span className="text-[11px] font-bold text-brand-600 dark:text-brand-400">
                           Select
                         </span>
                       )}
@@ -563,7 +563,7 @@ const ClubMembers = () => {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-orange-500 focus:outline-none cursor-pointer"
+              className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-brand-500 focus:outline-none cursor-pointer"
             >
               <option value={ClubMemberRole.MEMBER}>Member</option>
               <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
@@ -710,8 +710,8 @@ const ClubMembers = () => {
                   return (
                     <tr
                       key={id}
-                      className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${isUpdating ? "bg-orange-50/30 dark:bg-orange-950/20" : ""
-                        } ${member.isClubAccount ? "bg-orange-500/5 dark:bg-orange-500/10" : ""}`}
+                      className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${isUpdating ? "bg-brand-50/30 dark:bg-brand-950/20" : ""
+                        } ${member.isClubAccount ? "bg-brand-500/5 dark:bg-brand-500/10" : ""}`}
                     >
                       {/* Member info */}
                       <td className="px-5 py-3.5">
@@ -733,12 +733,12 @@ const ClubMembers = () => {
                                 </span>
                               )}
                               {member.isClubAccount && (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-orange-500/15 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 text-[10px] font-bold">
+                                <span className="inline-flex items-center gap-1 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 px-1.5 py-0.5 text-[10px] font-bold">
                                   Primary Owner
                                 </span>
                               )}
                               {isUpdating && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-950/60 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400 animate-pulse">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 dark:bg-brand-950/60 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-400 animate-pulse">
                                   Updating…
                                 </span>
                               )}
@@ -753,8 +753,8 @@ const ClubMembers = () => {
                       {/* Role */}
                       <td className="px-4 py-3.5">
                         {member.isClubAccount ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60 text-xs font-bold whitespace-nowrap shadow-2xs">
-                            <i className="ri-shield-star-fill text-orange-500 text-xs" /> Official Club Account
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 text-xs font-bold whitespace-nowrap shadow-2xs">
+                            <i className="ri-shield-star-fill text-brand-500 text-xs" /> Official Club Account
                           </span>
                         ) : isSelf ? (
                           <div title="You cannot change your own role. Use 'Transfer Leadership' to assign a new lead.">
@@ -768,7 +768,7 @@ const ClubMembers = () => {
                               value={member.role}
                               onChange={(e) => changeRole(id, e.target.value)}
                               disabled={isUpdating}
-                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-orange-500 focus:outline-none ${isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-brand-500 focus:outline-none ${isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
                                 }`}
                             >
                               <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
@@ -777,7 +777,7 @@ const ClubMembers = () => {
                             </select>
                             {updatingType === "role" && (
                               <svg
-                                className="h-3.5 w-3.5 animate-spin text-orange-600 shrink-0"
+                                className="h-3.5 w-3.5 animate-spin text-brand-600 shrink-0"
                                 viewBox="0 0 24 24"
                                 fill="none"
                               >

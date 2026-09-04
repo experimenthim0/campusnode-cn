@@ -396,7 +396,7 @@ const BusTracker = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-orange-600/10 text-orange-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-brand-600/10 text-brand-600 flex items-center justify-center">
                 <Bus className="w-5 h-5" />
               </div>
               <div>
@@ -419,7 +419,7 @@ const BusTracker = () => {
               <span className="font-mono text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                 {clockStr}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-full">
                 {dayStr}
               </span>
             </div>
@@ -428,8 +428,8 @@ const BusTracker = () => {
               onClick={() => setSimMode(!simMode)}
               className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                 simMode 
-                  ? "bg-orange-600 text-white border-orange-600 shadow-sm" 
-                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-orange-500"
+                  ? "bg-brand-600 text-white border-brand-600 shadow-sm" 
+                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-brand-500"
               }`}
               title="Toggle simulator mode"
             >
@@ -444,8 +444,8 @@ const BusTracker = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {simMode && (
-          <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400">
+          <div className="bg-brand-500/5 border border-brand-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400">
               <Clock className="w-4 h-4" />
               <span>TEST TIME SIMULATOR</span>
             </div>
@@ -495,14 +495,14 @@ const BusTracker = () => {
           <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
             <button
               onClick={handleRecenter}
-              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-orange-600 dark:hover:text-orange-400 p-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer"
+              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 p-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer"
               title="Recenter Map"
             >
               <Navigation className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsExpandedMap(!isExpandedMap)}
-              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-orange-600 dark:hover:text-orange-400 px-3 py-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer text-xs font-semibold flex items-center gap-1.5"
+              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer text-xs font-semibold flex items-center gap-1.5"
             >
               {isExpandedMap ? (
                 <>
@@ -519,7 +519,7 @@ const BusTracker = () => {
           </div>
 
           <div className="absolute bottom-3 left-3 z-20 bg-white/90 dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 px-3 py-2 rounded-xl backdrop-blur-md text-[11px] font-medium text-neutral-600 dark:text-neutral-400 shadow-md flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-orange-600" />
+            <MapPin className="w-3.5 h-3.5 text-brand-600" />
             <span>Campus ↔ Bidhipur ↔ Maqsudan ↔ Patel Chowk</span>
           </div>
 
@@ -547,7 +547,7 @@ const BusTracker = () => {
               Next Departure
             </p>
             <div className="mt-2">
-              <span className="text-xl sm:text-2xl font-black text-orange-600 dark:text-orange-500">
+              <span className="text-xl sm:text-2xl font-black text-brand-600 dark:text-brand-500">
                 {nextDeparture ? (
                   (() => {
                     const diff = Math.round(nextDeparture.dep - nowM(effDate));
@@ -600,7 +600,7 @@ const BusTracker = () => {
             onClick={() => setActiveTab("live")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "live"
-                ? "bg-orange-600 text-white shadow-sm"
+                ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
             }`}
           >
@@ -612,7 +612,7 @@ const BusTracker = () => {
             onClick={() => setActiveTab("schedule")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "schedule"
-                ? "bg-orange-600 text-white shadow-sm"
+                ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
             }`}
           >
@@ -625,7 +625,7 @@ const BusTracker = () => {
           <div className="space-y-4">
             {activeBuses.length === 0 ? (
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-10 text-center shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-full bg-brand-500/10 text-brand-600 flex items-center justify-center mx-auto mb-3">
                   <Bus className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-base text-neutral-900 dark:text-white mb-1">
@@ -714,14 +714,14 @@ const BusTracker = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 px-3 py-1 rounded-full">
+                <span className="text-[11px] font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 px-3 py-1 rounded-full">
                   Campus Service
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-500 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-500 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 Saturday & Sunday — Afternoon Batch 1
               </h4>
@@ -736,7 +736,7 @@ const BusTracker = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-bold text-orange-600 dark:text-orange-400">2:00 PM – Campus</td>
+                      <td className="py-3 px-3 font-bold text-brand-600 dark:text-brand-400">2:00 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Patel Chowk</td>
                       <td className="py-3 px-3 font-medium">4:20 PM via Maqsudan, Bidhipur</td>
                     </tr>
@@ -797,7 +797,7 @@ const BusTracker = () => {
 
             <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-neutral-500 dark:text-neutral-400">
               <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-orange-600 shrink-0" />
+                <Info className="w-4 h-4 text-brand-600 shrink-0" />
                 <span>Transport Incharge Helpline:</span>
               </div>
 
@@ -813,7 +813,7 @@ const BusTracker = () => {
                   href="mailto:transportincharge@nitj.ac.in"
                   className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-3 py-1.5 rounded-lg font-semibold transition-colors"
                 >
-                  <Mail className="w-3.5 h-3.5 text-orange-500" />
+                  <Mail className="w-3.5 h-3.5 text-brand-500" />
                   transportincharge@nitj.ac.in
                 </a>
               </div>

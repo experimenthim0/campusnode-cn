@@ -85,7 +85,7 @@ const RegisterExternal = () => {
   };
 
   const inputCls =
-    'w-full px-3.5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500';
+    'w-full px-3.5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500';
   const labelCls =
     'block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5';
 
@@ -99,13 +99,13 @@ const RegisterExternal = () => {
             <div>
               <Link to="/" className="inline-flex items-center select-none group">
                 <span className="font-light text-2xl sm:text-3xl tracking-wider text-neutral-900 dark:text-neutral-100 leading-none logofont">
-                  Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
+                  Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
                 </span>
               </Link>
             </div>
 
             <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-500">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-500">
                 For Students From Other Institutions
               </p>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -119,19 +119,19 @@ const RegisterExternal = () => {
             {/* Compact Benefits List */}
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <div className="w-4 h-4 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
                 <span>Open inter-college events</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <div className="w-4 h-4 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
                 <span>Create or join teams</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                <div className="w-4 h-4 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <div className="w-4 h-4 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
                 <span>Digital passes and certificates</span>
@@ -142,10 +142,10 @@ const RegisterExternal = () => {
             <div className="pt-2">
               <Link 
                 to="/register" 
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-500 transition-colors group"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors group"
               >
                 <span>Studying at NIT Jalandhar? Register as a student</span>
-                <ArrowRight className="w-3.5 h-3.5 text-orange-600 dark:text-orange-500 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>
@@ -173,7 +173,7 @@ const RegisterExternal = () => {
 
                 <div>
                   <label className={labelCls}>
-                    Full Name <span className="text-orange-600">*</span>
+                    Full Name <span className="text-brand-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -188,7 +188,7 @@ const RegisterExternal = () => {
 
                 <div>
                   <label className={labelCls}>
-                    College Email Address <span className="text-orange-600">*</span>
+                    College Email Address <span className="text-brand-600">*</span>
                   </label>
                   <input
                     type="email"
@@ -206,7 +206,7 @@ const RegisterExternal = () => {
 
                 <div>
                   <label className={labelCls}>
-                    College / Institute Name <span className="text-orange-600">*</span>
+                    College / Institute Name <span className="text-brand-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -222,7 +222,7 @@ const RegisterExternal = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className={labelCls}>
-                      Program / Degree <span className="text-orange-600">*</span>
+                      Program / Degree <span className="text-brand-600">*</span>
                     </label>
                     <input
                       type="text"
@@ -250,7 +250,7 @@ const RegisterExternal = () => {
 
                 <div>
                   <label className={labelCls}>
-                    Expected Graduation Year <span className="text-orange-600">*</span>
+                    Expected Graduation Year <span className="text-brand-600">*</span>
                   </label>
                   <select
                     name="graduationYear"
@@ -270,7 +270,7 @@ const RegisterExternal = () => {
 
                 <div>
                   <label className={labelCls}>
-                    Password <span className="text-orange-600">*</span>
+                    Password <span className="text-brand-600">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -300,7 +300,7 @@ const RegisterExternal = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  className="w-full mt-2 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   {loading ? (
                     <>
@@ -316,7 +316,7 @@ const RegisterExternal = () => {
               <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-center">
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Already have an account?{' '}
-                  <Link to="/login" className="font-semibold text-orange-600 dark:text-orange-500 hover:underline">
+                  <Link to="/login" className="font-semibold text-brand-600 dark:text-brand-500 hover:underline">
                     Log in
                   </Link>
                 </p>

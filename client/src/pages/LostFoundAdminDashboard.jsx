@@ -195,7 +195,7 @@ const LostFoundAdminDashboard = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <StatCard label="Total Items" value={stats.total} icon="ri-list-check" color="blue" />
                     <StatCard label="Active Items" value={stats.active} icon="ri-search-eye-line" color="green" />
-                    <StatCard label="Reunited" value={stats.reunited} icon="ri-heart-fill" color="orange" />
+                    <StatCard label="Reunited" value={stats.reunited} icon="ri-heart-fill" color="brand" />
                     <StatCard label="Fraud Flagged" value={stats.fraud} icon="ri-error-warning-fill" color="red" />
                 </div>
 
@@ -209,7 +209,7 @@ const LostFoundAdminDashboard = () => {
                                 placeholder="Search title, user, or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(234,88,12,0.08)]"
+                                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-300 focus:scale-[1.01] focus:-translate-y-0.5 focus:shadow-[0_4px_20px_rgba(234,88,12,0.08)]"
                             />
                         </div>
                     </div>
@@ -273,7 +273,7 @@ const LostFoundAdminDashboard = () => {
                                             <div className="flex items-center gap-2">
                                                 <button 
                                                     onClick={() => handleToggleFraud(item.id)}
-                                                    className={`p-2 rounded-lg transition-colors ${item.isFraud ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:text-orange-500'}`}
+                                                    className={`p-2 rounded-lg transition-colors ${item.isFraud ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 hover:text-brand-500'}`}
                                                     title={item.isFraud ? "Unmark Fraud" : "Mark as Fraud"}
                                                 >
                                                     <i className="ri-error-warning-line"></i>
@@ -402,7 +402,7 @@ const StatCard = ({ label, value, icon, color }) => {
     const colors = {
         blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
         green: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-        orange: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+        brand: 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400',
         red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
     };
     return (

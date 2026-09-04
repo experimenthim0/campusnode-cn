@@ -24,7 +24,7 @@ const CalendarViewSwitch = ({ activeView, onViewChange }) => {
                 : "text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white"
             }`}
           >
-            <Icon size={14} className={isActive ? "text-orange-500" : ""} />
+            <Icon size={14} className={isActive ? "text-brand-500" : ""} />
             <span>{v.label}</span>
           </button>
         );

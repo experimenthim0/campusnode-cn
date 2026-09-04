@@ -19,7 +19,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
     <section aria-label="Notable Attendee Feedback" className="space-y-4">
       <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800 pb-2">
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-orange-500" aria-hidden="true" />
+          <MessageCircle className="w-4 h-4 text-brand-500" aria-hidden="true" />
           <span>Notable Feedback (Verbatim Quotes)</span>
         </h4>
         <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -108,7 +108,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors py-1 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-1 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
               <span>{expanded ? 'Show Less Quotes' : `View ${totalExtra} More Attendee Quotes`}</span>
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}

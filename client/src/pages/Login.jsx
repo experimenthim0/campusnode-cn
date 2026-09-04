@@ -96,7 +96,7 @@ const Login = () => {
   };
 
   const inputCls =
-    "w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400";
+    "w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400";
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
@@ -105,7 +105,7 @@ const Login = () => {
         {/* Brand */}
         <div className="text-center mb-8">
           <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
-            Campus<span className="text-orange-600 dark:text-orange-500">Node</span>
+            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
           </span>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Sign in to your account
@@ -166,7 +166,7 @@ const Login = () => {
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-xs text-orange-600 hover:text-orange-700 font-medium">
+                  <Link to="/forgot-password" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
                     Forgot password?
                   </Link>
                 </div>
@@ -195,7 +195,7 @@ const Login = () => {
                 disabled={isLoading}
                 className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all mt-1 ${isLoading
                     ? 'bg-neutral-400 cursor-not-allowed'
-                    : 'bg-orange-600 hover:bg-orange-700 cursor-pointer hover:-translate-y-0.5'
+                    : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5'
                   }`}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
@@ -232,7 +232,7 @@ const Login = () => {
                   disabled={isLoading}
                   className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${isLoading
                       ? 'bg-neutral-400 cursor-not-allowed'
-                      : 'bg-orange-600 hover:bg-orange-700 cursor-pointer'
+                      : 'bg-brand-600 hover:bg-brand-700 cursor-pointer'
                     }`}
                 >
                   {isLoading ? 'Verifying...' : 'Verify & Sign In'}
@@ -262,7 +262,7 @@ const Login = () => {
           <div className="mt-6 flex justify-center">
             <Link
               to="/register"
-              className="w-full text-center py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-semibold text-sm hover:border-orange-500 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-500 transition-all"
+              className="w-full text-center py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-semibold text-sm hover:border-brand-500 dark:hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-500 transition-all"
             >
               Register as Student
             </Link>

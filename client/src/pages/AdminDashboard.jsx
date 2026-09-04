@@ -336,7 +336,7 @@ const AdminDashboard = () => {
                     {activeTab === 'broadcasts' && (
                         <button
                             onClick={() => setBroadcastModalOpen(true)}
-                            className="px-4 py-2.5 bg-orange-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-orange-500 transition-all flex items-center gap-2 shadow-lg shadow-orange-600/20 cursor-pointer"
+                            className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                         >
                             <Plus size={16} />
                             <span>New Broadcast</span>
@@ -348,7 +348,7 @@ const AdminDashboard = () => {
                             onClick={handleMarkAllAsRead}
                             className="px-3.5 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[11px] font-bold tracking-wide rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
                         >
-                            <CheckCheck size={14} className="text-orange-500" />
+                            <CheckCheck size={14} className="text-brand-500" />
                             <span>Mark All Read</span>
                         </button>
                     )}
@@ -356,7 +356,7 @@ const AdminDashboard = () => {
                     {activeTab === 'venues' && (
                         <button
                             onClick={() => setIsAddVenueModalOpen(true)}
-                            className="px-4 py-2.5 bg-orange-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-orange-500 transition-all flex items-center gap-2 shadow-lg shadow-orange-600/20 cursor-pointer"
+                            className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                         >
                             <Plus size={16} />
                             <span>Add Venue</span>

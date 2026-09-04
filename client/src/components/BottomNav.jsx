@@ -87,9 +87,9 @@ const BottomNav = () => {
 
   const navItems = [
     { label: "Home", icon: Home, path: "/" },
-    // { label: "Clubs", icon: Users, path: "/clubs" },
+    { label: "Clubs", icon: Users, path: "/clubs" },
     { label: "Events", icon: Calendar, path: "/events" },
-    { label: "L&F", icon: LostFoundIcon, path: "/lost-found" },
+    // 
   ];
 
   if (user && (role === "admin" || role === "paymentAdmin")) {
@@ -106,6 +106,10 @@ const BottomNav = () => {
     });
   }
 
+  if (user) {
+    navItems.push({ label: "L&F", icon: LostFoundIcon, path: "/lost-found" });
+  }
+
   navItems.push(
     user
       ? { label: "Profile", icon: User, action: () => setDrawerOpen(true), isActiveCheck: drawerOpen }
@@ -115,7 +119,7 @@ const BottomNav = () => {
   return (
     <>
       <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md border-t border-gray-200 dark:border-neutral-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div className="flex justify-around items-center h-16 px-2">
+        <div className="flex justify-around items-center h-16 px-2 mysans">
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const active = item.isActiveCheck !== undefined ? item.isActiveCheck : isActive(item.path);
@@ -123,18 +127,20 @@ const BottomNav = () => {
             const content = (
               <div className="flex flex-col items-center justify-center w-full h-full space-y-1 relative pt-1">
                 {active && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-orange-600 rounded-b-md transition-all duration-300" />
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-brand-600 rounded-b-md transition-all duration-300" />
                 )}
                 <div
                   className={`p-1.5 rounded-full transition-transform duration-300 ${
-                    active ? "scale-110 text-orange-600 bg-orange-50 dark:bg-orange-950/40" : "text-neutral-500 hover:text-orange-500"
+                    active ? "scale-110 text-brand-600 bg-brand-50 dark:bg-brand-950/40" : "text-neutral-500 hover:text-brand-500"
                   }`}
                 >
                   <Icon size={24} strokeWidth={active ? 2.5 : 2} />
                 </div>
                 <span
-                  className={`text-[10px] font-medium tracking-wide transition-colors duration-300 ${
-                    active ? "text-orange-600 dark:text-orange-500" : "text-neutral-500 dark:text-neutral-400"
+                  className={`text-[10px] tracking-wide transition-all duration-300 ${
+                    active
+                      ? "font-bold"
+                      : "font-medium text-neutral-500 dark:text-neutral-400"
                   }`}
                 >
                   {item.label}
@@ -194,7 +200,7 @@ const BottomNav = () => {
               <div>
                 <p className="text-[11px] font-bold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
                 <p className="text-base font-black text-black dark:text-white">{user.name}</p>
-                <p className="text-[11px] tracking-widest text-orange-600 dark:text-orange-500 font-bold mt-0.5">
+                <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-500 font-bold mt-0.5">
                   {Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member')
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
                       ? "Student • Student Lead"
@@ -236,7 +242,7 @@ const BottomNav = () => {
               )}
               {role === "lostFoundAdmin" && (
                 <Link to="/admin/lost-found" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
-                   <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-orange-600">
+                   <div className="w-8 h-8 rounded-full bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600">
                      <LostFoundIcon size={18} />
                    </div>
                    Moderation Panel
@@ -247,9 +253,9 @@ const BottomNav = () => {
                 <Link
                   to="/central-organizer"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                  <div className="w-8 h-8 rounded-full bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 dark:text-brand-400">
                     <Shield size={18} />
                   </div>
                   Central Organizer Portal
@@ -282,7 +288,7 @@ const BottomNav = () => {
                   onClick={() => setDrawerOpen(false)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-orange-600">
+                  <div className="w-8 h-8 rounded-full bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600">
                     <ShieldCheck size={18} />
                   </div>
                   Admin Dashboard
@@ -383,18 +389,18 @@ const BottomNav = () => {
                                   className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-bold transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <div className="w-2 h-2 rounded-full bg-orange-600 shrink-0" />
+                                    <div className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
                                     <span className="truncate text-neutral-900 dark:text-neutral-100 font-bold text-xs">
                                       {m.clubName || "Club"}
                                     </span>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-semibold shrink-0">
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold shrink-0">
                                       {isLead ? "Lead" : isCoord ? "Coord" : "Member"}
                                     </span>
                                   </div>
                                   <ChevronDown
                                     size={14}
                                     className={`text-neutral-400 transition-transform duration-200 shrink-0 ${
-                                      isOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
+                                      isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
                                     }`}
                                   />
                                 </button>
@@ -466,7 +472,7 @@ const BottomNav = () => {
 
                     return (
                       <div key={m.clubId} className="mb-2 last:mb-0">
-                        <p className="px-4 py-1.5 text-[11px] font-bold tracking-widest text-orange-600 mb-2">
+                        <p className="px-4 py-1.5 text-[11px] font-bold tracking-widest text-brand-600 mb-2">
                           {m.clubName || "Club"}
                         </p>
 
@@ -516,7 +522,7 @@ const BottomNav = () => {
 
                   {role === "facultyCoordinator" && user.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
                     <div className="mb-4">
-                      <p className="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-orange-600 bg-orange-50/50 dark:bg-orange-950/20 mb-2">
+                      <p className="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-brand-600 bg-brand-50/50 dark:bg-brand-950/20 mb-2">
                         Faculty Review
                       </p>
                       <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
@@ -598,7 +604,7 @@ const BottomNav = () => {
                 Logout
               </button>
               <span className="text-center text-[10px] text-neutral-500 font-medium mt-2 block select-none">
-                <span className="logofont tracking-wider font-light text-[18px] text-black dark:text-neutral-200">Campus<span className="text-orange-600 dark:text-orange-500">Node</span></span>
+                <span className="logofont tracking-wider font-light text-[18px] text-black dark:text-neutral-200">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span>
                 <span className="block mt-0.5 text-[9px] text-neutral-400">Developed By Team Xplore</span>
               </span>
             </div>

@@ -11,7 +11,7 @@ const CoreMetrics = ({ totalResponses, totalAttendees, responseRate, overallScor
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Total Responses
           </span>
-          <MessageSquare className="w-4 h-4 text-orange-500" aria-hidden="true" />
+          <MessageSquare className="w-4 h-4 text-brand-500" aria-hidden="true" />
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -48,7 +48,7 @@ const CoreMetrics = ({ totalResponses, totalAttendees, responseRate, overallScor
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Overall Score
           </span>
-          <Award className="w-4 h-4 text-orange-500" aria-hidden="true" />
+          <Award className="w-4 h-4 text-brand-500" aria-hidden="true" />
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">

@@ -50,7 +50,7 @@ const CentralEventList = ({
         </p>
         <button
           onClick={onCreateClick}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
         >
           <PlusCircle size={15} />
           Create College Event
@@ -69,7 +69,7 @@ const CentralEventList = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search events by title or venue..."
-            className="w-full pl-9 pr-3.5 py-2 text-xs rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:ring-2 focus:ring-orange-500 focus:bg-white dark:focus:bg-neutral-800 outline-none transition-all"
+            className="w-full pl-9 pr-3.5 py-2 text-xs rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-neutral-800 outline-none transition-all"
           />
         </div>
 
@@ -81,7 +81,7 @@ const CentralEventList = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs font-bold rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-orange-500"
+            className="px-3 py-2 text-xs font-bold rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
           >
             <option value="ALL">All ({events.length})</option>
             <option value="PUBLISHED">Live ({events.filter((e) => e.reviewStatus === "PUBLISHED").length})</option>

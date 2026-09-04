@@ -36,7 +36,7 @@ const AIReviewModule = ({
     <section aria-label="AI Feedback Review & Intelligence" className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-3xl p-6 md:p-8 shadow-xs overflow-hidden relative space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-neutral-100 dark:border-neutral-800/80">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-amber-500 text-white flex items-center justify-center shadow-md shadow-brand-500/20 shrink-0">
             <Sparkles className="w-5 h-5" aria-hidden="true" />
           </div>
           <div>
@@ -44,7 +44,7 @@ const AIReviewModule = ({
               <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight">
                 AI Feedback Review
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300 border border-orange-200 dark:border-orange-800/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300 border border-brand-200 dark:border-brand-800/40">
                 OpenRouter AI
               </span>
             </div>
@@ -58,10 +58,10 @@ const AIReviewModule = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/60 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center gap-2">
-            <Brain className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+            <Brain className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
             <span>
               Reviews used:{' '}
-              <strong className="text-orange-600 dark:text-orange-400">
+              <strong className="text-brand-600 dark:text-brand-400">
                 {completedCount} / 2
               </strong>
             </span>
@@ -100,7 +100,7 @@ const AIReviewModule = ({
       {/* State: 0 Reviews Generated Yet (and window is unlocked) */}
       {!isWindowLocked && reviews.length === 0 && (
         <div className="py-10 text-center space-y-4 max-w-md mx-auto">
-          <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-950/30 text-orange-500 flex items-center justify-center mx-auto shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/30 text-brand-500 flex items-center justify-center mx-auto shadow-inner">
             <Sparkles className="w-7 h-7" aria-hidden="true" />
           </div>
           <div>
@@ -116,7 +116,7 @@ const AIReviewModule = ({
               type="button"
               onClick={onGenerateReview}
               disabled={generating || totalResponses === 0 || completedCount >= 2}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white text-xs font-bold uppercase tracking-wider rounded-2xl shadow-md shadow-orange-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white text-xs font-bold uppercase tracking-wider rounded-2xl shadow-md shadow-brand-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
             >
               {generating ? (
                 <>
@@ -153,19 +153,19 @@ const AIReviewModule = ({
                     role="tab"
                     aria-selected={isSelected}
                     onClick={() => setAiState((prev) => ({ ...prev, selectedReviewIndex: idx }))}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none ${
                       isSelected
-                        ? 'bg-orange-600 text-white shadow-xs'
+                        ? 'bg-brand-600 text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-neutral-700'
                     }`}
                   >
                     <span>AI Review #{rev.reviewNumber}</span>
-                    <span className={`text-[10px] font-semibold opacity-90 ${isSelected ? 'text-orange-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                    <span className={`text-[10px] font-semibold opacity-90 ${isSelected ? 'text-brand-100' : 'text-slate-500 dark:text-slate-400'}`}>
                       ({rev.responseCount} responses)
                     </span>
                     {isLatest && (
                       <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-black uppercase tracking-wider ${
-                        isSelected ? 'bg-white text-orange-600' : 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
+                        isSelected ? 'bg-white text-brand-600' : 'bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300'
                       }`}>
                         Latest
                       </span>
@@ -209,7 +209,7 @@ const AIReviewModule = ({
                 type="button"
                 onClick={() => onDownloadPDF(currentReview.reviewNumber)}
                 disabled={downloadingPdf}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-800 dark:hover:bg-neutral-100 transition-all cursor-pointer shadow-xs disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-800 dark:hover:bg-neutral-100 transition-all cursor-pointer shadow-xs disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
                 aria-label={`Download AI Report PDF for Review #${currentReview.reviewNumber}`}
               >
                 <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -219,7 +219,7 @@ const AIReviewModule = ({
               <button
                 type="button"
                 onClick={() => onDownloadJSON(currentReview.reviewNumber)}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-neutral-700 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-neutral-700 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
                 aria-label={`Export JSON for Review #${currentReview.reviewNumber}`}
               >
                 <FileJson className="w-3.5 h-3.5" aria-hidden="true" />
@@ -233,7 +233,7 @@ const AIReviewModule = ({
                   type="button"
                   onClick={onGenerateReview}
                   disabled={generating || completedCount >= 2}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-900/40 text-xs font-bold rounded-xl hover:bg-orange-100 dark:hover:bg-orange-950/60 transition-all cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-900/40 text-xs font-bold rounded-xl hover:bg-brand-100 dark:hover:bg-brand-950/60 transition-all cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} aria-hidden="true" />
                   <span>{generating ? 'Generating Review...' : `Regenerate Review (${remainingReviews} remaining)`}</span>

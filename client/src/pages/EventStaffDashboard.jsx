@@ -83,7 +83,7 @@ const EventStaffDashboard = () => {
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
           <div className="flex items-center gap-2.5">
-            <Shield className="text-orange-600 dark:text-orange-500" size={24} />
+            <Shield className="text-brand-600 dark:text-brand-500" size={24} />
             <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-50">
               My Event Staff Portal
             </h1>
@@ -142,7 +142,7 @@ const EventStaffDashboard = () => {
 
                       <div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
                         <p className="flex items-center gap-2">
-                          <MapPin size={13} className="text-orange-500 shrink-0" />
+                          <MapPin size={13} className="text-brand-500 shrink-0" />
                           <span>{inv.event?.venue}</span>
                         </p>
                         <p className="flex items-center gap-2">
@@ -229,7 +229,7 @@ const EventStaffDashboard = () => {
 
                           <div className="mt-3 space-y-1.5 text-xs text-neutral-500 dark:text-neutral-400">
                             <p className="flex items-center gap-2">
-                              <MapPin size={13} className="text-orange-500 shrink-0" />
+                              <MapPin size={13} className="text-brand-500 shrink-0" />
                               <span>{staff.event?.venue}</span>
                             </p>
                             <p className="flex items-center gap-2">
@@ -266,7 +266,7 @@ const EventStaffDashboard = () => {
                           {hasAttendance && (
                             <Link
                               to={`/event-staff/${staff.event?.id}/attendance`}
-                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
                             >
                               <QrCode size={14} />
                               Open Attendance Scanner

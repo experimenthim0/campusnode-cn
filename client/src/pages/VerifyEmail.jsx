@@ -32,7 +32,7 @@ const VerifyEmail = () => {
             <div className="w-full max-w-[420px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-xs text-center">
                 {status === 'loading' && (
                     <div className="flex flex-col items-center py-2">
-                        <div className="w-12 h-12 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-500 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-500 flex items-center justify-center mb-4">
                             <Loader2 className="w-6 h-6 animate-spin stroke-[2.2]" />
                         </div>
                         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -46,7 +46,7 @@ const VerifyEmail = () => {
 
                 {status === 'success' && (
                     <div className="flex flex-col items-center py-2">
-                        <div className="w-12 h-12 rounded-full bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-500 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-500 flex items-center justify-center mb-4">
                             <CheckCircle className="w-6 h-6 stroke-[2.2]" />
                         </div>
                         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -58,7 +58,7 @@ const VerifyEmail = () => {
                        
                         <Link
                             to="/login"
-                            className="w-full mt-6 py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                            className="w-full mt-6 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                         >
                             Continue to Login
                         </Link>
@@ -80,7 +80,7 @@ const VerifyEmail = () => {
                         <div className="w-full mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                             <Link
                                 to="/login"
-                                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-orange-600 dark:text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 transition-colors group"
+                                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors group"
                             >
                                 <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                                 <span>Back to Login</span>

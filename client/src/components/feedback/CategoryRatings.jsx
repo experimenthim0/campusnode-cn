@@ -34,7 +34,7 @@ const CategoryRatings = ({ averageRatings = {} }) => {
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-5">
       <div className="border-b border-neutral-100 dark:border-neutral-800 pb-3 flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-orange-500" aria-hidden="true" />
+          <BarChart3 className="w-4 h-4 text-brand-500" aria-hidden="true" />
           <span>Category Ratings Breakdown</span>
         </h3>
         <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
@@ -57,7 +57,7 @@ const CategoryRatings = ({ averageRatings = {} }) => {
               </div>
               <div className="w-full bg-slate-100 dark:bg-neutral-800 h-2.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-amber-500 to-brand-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${pct}%` }}
                   role="progressbar"
                   aria-valuenow={cat.score}

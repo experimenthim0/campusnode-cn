@@ -139,7 +139,7 @@ const EventDataTable = ({
                                 placeholder="Search by event or club..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-9 pl-9 pr-8 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200/90 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-orange-500 transition-colors placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+                                className="w-full h-9 pl-9 pr-8 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200/90 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-brand-500 transition-colors placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer">
@@ -259,11 +259,11 @@ const EventDataTable = ({
                                         href={eventUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-bold text-black dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
+                                        className="font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
                                         title={eventTitle}
                                     >
                                         <span className="truncate group-hover:underline">{eventTitle}</span>
-                                        <ExternalLink size={12} className="text-neutral-300 dark:text-neutral-600 group-hover:text-orange-600 dark:group-hover:text-orange-400 shrink-0 transition-colors opacity-0 group-hover:opacity-100" />
+                                        <ExternalLink size={12} className="text-neutral-300 dark:text-neutral-600 group-hover:text-brand-600 dark:group-hover:text-brand-400 shrink-0 transition-colors opacity-0 group-hover:opacity-100" />
                                     </a>
                                 </Td>
                                 <Td>
@@ -281,7 +281,7 @@ const EventDataTable = ({
                                 <Td>
                                     <span 
                                         className={`font-semibold text-xs ${
-                                            isCentral ? "text-orange-600 dark:text-orange-400 font-bold" : "text-neutral-800 dark:text-neutral-200"
+                                            isCentral ? "text-brand-600 dark:text-brand-400 font-bold" : "text-neutral-800 dark:text-neutral-200"
                                         }`}
                                         title={isCentral ? 'Office of DSW (Central)' : clubName}
                                     >
@@ -313,7 +313,7 @@ const EventDataTable = ({
                                     {isAnyFilterActive && (
                                         <button
                                             onClick={handleResetFilters}
-                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                                         >
                                             <RotateCcw size={11} />
                                             Reset all filters

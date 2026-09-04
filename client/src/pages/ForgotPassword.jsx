@@ -30,7 +30,7 @@ const ForgotPassword = () => {
         {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black tracking-tight text-black dark:text-white">
-            Campus<span className="text-orange-600">Node</span>
+            Campus<span className="text-brand-600">Node</span>
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Reset your account password
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all placeholder:text-neutral-400"
+                className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
                 placeholder="you@nitj.ac.in or club@domain.com"
               />
             </div>
@@ -66,7 +66,7 @@ const ForgotPassword = () => {
               className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${
                 loading
                   ? 'bg-neutral-400 cursor-not-allowed'
-                  : 'bg-orange-600 hover:bg-orange-700 cursor-pointer hover:-translate-y-0.5'
+                  : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5'
               }`}
             >
               {loading ? 'Sending Link...' : 'Send Reset Link'}
@@ -75,7 +75,7 @@ const ForgotPassword = () => {
 
           {/* Message */}
           {message && (
-            <div className="mt-5 p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 text-orange-700 dark:text-orange-400 text-sm font-medium text-center rounded-xl">
+            <div className="mt-5 p-3 bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 text-brand-700 dark:text-brand-400 text-sm font-medium text-center rounded-xl">
               {message}
             </div>
           )}
@@ -83,7 +83,7 @@ const ForgotPassword = () => {
           <div className="mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800 text-center">
             <Link
               to="/login"
-              className="text-sm font-semibold text-neutral-500 hover:text-orange-600 dark:text-neutral-400 dark:hover:text-orange-500 transition-colors"
+              className="text-sm font-semibold text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-500 transition-colors"
             >
               ← Back to Login
             </Link>

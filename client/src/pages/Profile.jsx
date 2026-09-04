@@ -84,7 +84,7 @@ const ClubDescription = ({ description }) => {
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
+          className="mt-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
         >
           <span>{isExpanded ? 'Show less' : 'Expand description'}</span>
           <i
@@ -414,7 +414,7 @@ const Profile = () => {
 
                   {/* Badges */}
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 my-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-brand-200 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/20 rounded-full">
                       Faculty Coordinator
                     </span>
 
@@ -465,7 +465,7 @@ const Profile = () => {
                 {(clubData?.slug || clubData?.id || user.clubId) && (
                   <Link
                     to={`/club/${clubData?.slug || clubData?.id || user.clubId}`}
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:text-orange-600 dark:hover:text-orange-400 font-semibold text-xs transition-colors w-full"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 font-semibold text-xs transition-colors w-full"
                   >
                     <i className="ri-external-link-line text-sm" /> Public Page
                   </Link>
@@ -515,7 +515,7 @@ const Profile = () => {
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
               <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2.5">
-                  <i className="ri-information-line text-lg text-orange-600" />
+                  <i className="ri-information-line text-lg text-brand-600" />
                   <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                     Assigned Club Information
                   </h2>
@@ -570,14 +570,14 @@ const Profile = () => {
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <i className="ri-user-star-line text-lg text-orange-600" />
+                <i className="ri-user-star-line text-lg text-brand-600" />
                 <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                   Club Leadership
                 </h2>
               </div>
               <Link
                 to={`/club/${clubData?.id || user.clubId || user.memberships?.[0]?.clubId || ''}/team`}
-                className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
               >
                 Manage Team <i className="ri-arrow-right-line" />
               </Link>
@@ -586,7 +586,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {/* Faculty In-Charge (Self) */}
               <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/40">
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/40 rounded-md">
                   Faculty Coordinator
                 </span>
                 <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
@@ -629,7 +629,7 @@ const Profile = () => {
 
               {studentLeads.length === 0 && clubCoordinators.length === 0 && (
                 <div className="col-span-full text-center py-4 text-xs text-neutral-500 dark:text-neutral-400">
-                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
+                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId}/team`} className="text-brand-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
                 </div>
               )}
             </div>
@@ -640,14 +640,14 @@ const Profile = () => {
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
               <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2.5">
-                  <i className="ri-history-line text-lg text-orange-600" />
+                  <i className="ri-history-line text-lg text-brand-600" />
                   <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                     Recent Activity
                   </h2>
                 </div>
                 <Link
                   to={`/club-events/${clubData?.id || user.clubId || user.memberships?.[0]?.clubId || ''}`}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
                 >
                   View All Events <i className="ri-arrow-right-line" />
                 </Link>
@@ -657,13 +657,13 @@ const Profile = () => {
                 {clubEvents.slice(0, 4).map((event, idx) => (
                   <div key={event.id || idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/30 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
                         <i className="ri-calendar-check-line text-sm" />
                       </div>
                       <div className="min-w-0">
                         <Link
                           to={`/event/${event.slug || event.id}`}
-                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate block"
+                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate block"
                         >
                           {event.title}
                         </Link>
@@ -689,7 +689,7 @@ const Profile = () => {
           {/* Security & Access */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center gap-2.5 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
-              <i className="ri-shield-keyhole-line text-lg text-orange-600" />
+              <i className="ri-shield-keyhole-line text-lg text-brand-600" />
               <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                 Security & Access
               </h2>
@@ -713,7 +713,7 @@ const Profile = () => {
                 </div>
                 <Link
                   to="/profile/edit?tab=security"
-                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-brand-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
                 >
                   {user.isTwoStepEnabled ? 'Manage' : 'Enable'}
                 </Link>
@@ -733,7 +733,7 @@ const Profile = () => {
                 </div>
                 <Link
                   to="/profile/edit?tab=security"
-                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-brand-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
                 >
                   Change Password
                 </Link>
@@ -802,7 +802,7 @@ const Profile = () => {
 
                   {/* Badges */}
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 my-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-brand-200 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/20 rounded-full">
                       Club Account
                     </span>
 
@@ -890,7 +890,7 @@ const Profile = () => {
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <i className="ri-information-line text-lg text-orange-600" />
+                <i className="ri-information-line text-lg text-brand-600" />
                 <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                   Club Information
                 </h2>
@@ -936,7 +936,7 @@ const Profile = () => {
               {websiteUrl && (
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Website</p>
-                  <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-orange-600 hover:underline inline-flex items-center gap-1">
+                  <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand-600 hover:underline inline-flex items-center gap-1">
                     {websiteUrl.replace(/^https?:\/\//i, '')} <i className="ri-external-link-line text-xs" />
                   </a>
                 </div>
@@ -954,14 +954,14 @@ const Profile = () => {
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <i className="ri-user-star-line text-lg text-orange-600" />
+                <i className="ri-user-star-line text-lg text-brand-600" />
                 <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                   Club Leadership
                 </h2>
               </div>
               <Link
                 to={`/club/${clubData?.id || user.clubId || user.id}/team`}
-                className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
               >
                 Manage Team <i className="ri-arrow-right-line" />
               </Link>
@@ -988,7 +988,7 @@ const Profile = () => {
               {studentLeads.length > 0 ? (
                 studentLeads.map((head, idx) => (
                   <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/40 rounded-md">
                       Student Lead
                     </span>
                     <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
@@ -1002,7 +1002,7 @@ const Profile = () => {
               ) : savedCoordinators.length > 0 && clubCoordinators.length === 0 ? (
                 savedCoordinators.map((name, idx) => (
                   <div key={idx} className="p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/40">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 rounded-md">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/40 rounded-md">
                       Student Coordinator
                     </span>
                     <p className="font-bold text-sm text-neutral-900 dark:text-white mt-2.5 truncate">
@@ -1029,7 +1029,7 @@ const Profile = () => {
 
               {!facultyCoordinator && studentLeads.length === 0 && clubCoordinators.length === 0 && savedCoordinators.length === 0 && (
                 <div className="col-span-full text-center py-4 text-xs text-neutral-500 dark:text-neutral-400">
-                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId || user.id}/team`} className="text-orange-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
+                  No leadership roles assigned yet. Use <Link to={`/club/${clubData?.id || user.clubId || user.id}/team`} className="text-brand-600 font-bold hover:underline">Manage Team</Link> to assign Student Leads and Coordinators.
                 </div>
               )}
             </div>
@@ -1037,7 +1037,7 @@ const Profile = () => {
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center gap-2.5 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
-              <i className="ri-shield-keyhole-line text-lg text-orange-600" />
+              <i className="ri-shield-keyhole-line text-lg text-brand-600" />
               <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                 Security & Access
               </h2>
@@ -1061,7 +1061,7 @@ const Profile = () => {
                 </div>
                 <Link
                   to="/profile/edit?tab=security"
-                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-brand-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
                 >
                   {user.isTwoStepEnabled ? 'Manage' : 'Enable'}
                 </Link>
@@ -1081,7 +1081,7 @@ const Profile = () => {
                 </div>
                 <Link
                   to="/profile/edit?tab=security"
-                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-orange-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-brand-500 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-lg transition-colors shrink-0 shadow-2xs"
                 >
                   Change Password
                 </Link>
@@ -1093,14 +1093,14 @@ const Profile = () => {
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
             <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <i className="ri-links-line text-lg text-orange-600" />
+                <i className="ri-links-line text-lg text-brand-600" />
                 <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                   Connected Accounts & Socials
                 </h2>
               </div>
               <Link
                 to={`/club/edit/${clubData?.id || user.clubId || user.id}`}
-                className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
               >
                 Update Links <i className="ri-edit-line" />
               </Link>
@@ -1200,7 +1200,7 @@ const Profile = () => {
               {/* Official Website */}
               <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <i className="ri-global-line text-xl text-orange-600" />
+                  <i className="ri-global-line text-xl text-brand-600" />
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Official Website</p>
                     <p className="text-[11px] text-neutral-400 truncate">
@@ -1209,7 +1209,7 @@ const Profile = () => {
                   </div>
                 </div>
                 {websiteUrl && (
-                  <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-orange-600 transition-colors">
+                  <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-brand-600 transition-colors">
                     <i className="ri-external-link-line text-sm" />
                   </a>
                 )}
@@ -1221,14 +1221,14 @@ const Profile = () => {
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-7 shadow-xs">
               <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2.5">
-                  <i className="ri-history-line text-lg text-orange-600" />
+                  <i className="ri-history-line text-lg text-brand-600" />
                   <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                     Recent Activity
                   </h2>
                 </div>
                 <Link
                   to={`/club-events/${clubData?.id || user.clubId || user.id}`}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
                 >
                   View All Events <i className="ri-arrow-right-line" />
                 </Link>
@@ -1238,13 +1238,13 @@ const Profile = () => {
                 {clubEvents.slice(0, 4).map((event, idx) => (
                   <div key={event.id || idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/30 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
                         <i className="ri-calendar-check-line text-sm" />
                       </div>
                       <div className="min-w-0">
                         <Link
                           to={`/event/${event.slug || event.id}`}
-                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate block"
+                          className="text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate block"
                         >
                           {event.title}
                         </Link>
@@ -1287,7 +1287,7 @@ const Profile = () => {
                     <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 rounded-full">
+                    <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider border border-brand-200 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/20 rounded-full">
                       {isExternalAccount ? 'External Participant' : user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Club Lead' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
                     </span>
                   </div>
@@ -1303,14 +1303,14 @@ const Profile = () => {
                     {!user?.rollNo && !isExternalAccount && (role === 'club' || authRole === 'club') ? (
                       <Link
                         to={`/club-events/${user.clubId || user.id || user._id || ''}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-brand-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
                       >
                         <i className="ri-calendar-event-line text-sm" /> View Club Events
                       </Link>
                     ) : (
                       <Link
                         to="/my-events"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-orange-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-brand-600 rounded-full transition-colors font-semibold text-xs shadow-xs cursor-pointer border-0"
                       >
                         <i className="ri-calendar-event-line text-sm" /> View My Events
                       </Link>
@@ -1378,7 +1378,7 @@ const Profile = () => {
               <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">Social Profiles</h3>
               <div className="flex flex-wrap gap-2.5">
                 {user.githubProfile && (
-                  <a href={user.githubProfile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-orange-500/50 transition-colors shadow-2xs">
+                  <a href={user.githubProfile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-brand-500/50 transition-colors shadow-2xs">
                     <i className="ri-github-fill text-lg" /> GitHub
                   </a>
                 )}
@@ -1403,7 +1403,7 @@ const Profile = () => {
                   </a>
                 )}
                 {user.portfolioUrl && (
-                  <a href={user.portfolioUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-medium text-orange-600 dark:text-orange-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-orange-500/50 transition-colors shadow-2xs">
+                  <a href={user.portfolioUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-medium text-brand-600 dark:text-brand-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-brand-500/50 transition-colors shadow-2xs">
                     <i className="ri-global-line text-lg" /> Portfolio
                   </a>
                 )}
@@ -1416,10 +1416,10 @@ const Profile = () => {
 
           {/* Club Management & Leadership Hub for Student Leads & Coordinators */}
           {user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR") && (
-            <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border-2 border-orange-500/20 dark:border-orange-500/30 rounded-2xl shadow-sm relative overflow-hidden">
+            <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border-2 border-brand-500/20 dark:border-brand-500/30 rounded-2xl shadow-sm relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 flex items-center justify-center">
                     <i className="ri-shield-star-line text-xl" />
                   </div>
                   <div>
@@ -1461,7 +1461,7 @@ const Profile = () => {
                               </h3>
                               <span className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-full border ${isHead
                                 ? "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800"
-                                : "bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-400 border-orange-300 dark:border-orange-800"
+                                : "bg-brand-100 dark:bg-brand-950/50 text-brand-800 dark:text-brand-400 border-brand-300 dark:border-brand-800"
                                 }`}>
                                 {isHead ? "★ Student Lead" : "Coordinator"}
                               </span>
@@ -1478,7 +1478,7 @@ const Profile = () => {
                         <div className="flex flex-wrap items-center gap-2 shrink-0">
                           <Link
                             to={`/club-events/${m.clubId}`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
                           >
                             <i className="ri-dashboard-line text-sm font-light" /> Club Dashboard
                           </Link>
@@ -1498,7 +1498,7 @@ const Profile = () => {
                           </Link>
                           <Link
                             to={`/club/${m.slug || m.clubId}`}
-                            className="inline-flex items-center gap-1 px-3 py-2 text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 text-xs font-medium transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-2 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-medium transition-colors"
                           >
                             Public Page <i className="ri-external-link-line text-xs font-light" />
                           </Link>
@@ -1529,7 +1529,7 @@ const Profile = () => {
                     m.role === "CLUB_HEAD"
                       ? "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 font-bold"
                       : m.role === "COORDINATOR"
-                        ? "border-orange-300 bg-orange-50 text-orange-800 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800 font-bold"
+                        ? "border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800 font-bold"
                         : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 font-medium";
 
                   const resolvedLogo =
@@ -1543,7 +1543,7 @@ const Profile = () => {
                     <Link
                       key={index}
                       to={`/club/${m.slug || m.clubId}`}
-                      className="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-orange-500 rounded-2xl p-5 flex flex-col items-center text-center transition-all duration-300 hover:shadow-md"
+                      className="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-500 rounded-2xl p-5 flex flex-col items-center text-center transition-all duration-300 hover:shadow-md"
                     >
                       <div className="w-14 h-14 rounded-full border border-neutral-200 dark:border-neutral-700 overflow-hidden flex items-center justify-center bg-white dark:bg-neutral-800 mb-3 shadow-2xs">
                         <ClubLogoImage
@@ -1552,7 +1552,7 @@ const Profile = () => {
                         />
                       </div>
 
-                      <h3 className="font-bold text-neutral-900 dark:text-white text-sm leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors">
+                      <h3 className="font-bold text-neutral-900 dark:text-white text-sm leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors">
                         {m.clubName || "Club Details"}
                       </h3>
 
@@ -1570,7 +1570,7 @@ const Profile = () => {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 mb-4">Discover campus clubs, join events, and get involved!</p>
                 <Link
                   to="/clubs"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg transition-all shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-all shadow-xs"
                 >
                   <i className="ri-compass-3-line text-sm" /> Explore Clubs
                 </Link>
@@ -1594,7 +1594,7 @@ const Profile = () => {
                       <p className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider leading-none mb-1">
                         {w.rank === 1 ? '🥇 1st Place / Winner' : w.rank === 2 ? '🥈 2nd Place / Runner Up' : w.rank === 3 ? '🥉 3rd Place' : `#${w.rank} Position`}
                       </p>
-                      <Link to={`/event/${w.eventSlug}`} className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-orange-600 hover:underline truncate block">
+                      <Link to={`/event/${w.eventSlug}`} className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-brand-600 hover:underline truncate block">
                         {w.eventTitle}
                       </Link>
                       {w.clubName && (

@@ -77,7 +77,7 @@ const RecommendedActions = ({ recommendations = [] }) => {
 
               {typeof rec.evidenceCount === 'number' && (
                 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-orange-500" aria-hidden="true" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
                   <span>Based on {rec.evidenceCount} {rec.evidenceCount === 1 ? 'attendee mention' : 'attendee mentions'}</span>
                 </div>
               )}

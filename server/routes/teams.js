@@ -8,6 +8,7 @@ import { signTicket } from "../services/qrSigningService.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import { validateCustomFields } from "../utils/customFields.js";
 
 const router = express.Router();
 async function notifyTeamMember(io, recipientId, title, message, senderStudentId = null) {
@@ -100,6 +101,13 @@ router.post(
       if (event.registrationType !== "team" && event.registrationType !== "both") {
         return res.status(400).json({ message: "This event does not support team registration." });
       }
+
+      // Validate required and typed custom fields
+      const customFieldCheck = validateCustomFields(event.customFields, formResponses);
+      if (!customFieldCheck.valid) {
+        return res.status(400).json({ message: customFieldCheck.message });
+      }
+      const validatedResponses = customFieldCheck.sanitizedResponses;
 
       const teamSize = allMembers.length;
       const minSize = event.minTeamSize || 1;
@@ -239,7 +247,7 @@ router.post(
               const { qrPayload, qrVersion, qrKeyId } = signTicket(eventId, ticketId);
               return { qrCode: ticketId, qrPayload, qrVersion, qrKeyId };
             })(),
-            formResponses: formResponses || {},
+            formResponses: validatedResponses || {},
           },
         });
 
@@ -301,7 +309,7 @@ router.post(
               qrPayload: mPayload,
               qrVersion: mVer,
               qrKeyId: mKey,
-              formResponses: formResponses || {},
+              formResponses: validatedResponses || {},
             },
           });
         }

@@ -218,7 +218,7 @@ const StaffAttendanceView = () => {
             Back to Staff Portal
           </Link>
 
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300">
             <Shield size={12} /> Attendance Operator
           </span>
         </div>
@@ -226,14 +226,14 @@ const StaffAttendanceView = () => {
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-500">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-500">
                 Staff Check-In Gate
               </span>
               <h1 className="text-xl font-black text-neutral-900 dark:text-neutral-50 mt-0.5">
                 {eventData?.title}
               </h1>
               <p className="text-xs text-neutral-500 flex items-center gap-2 mt-1">
-                <MapPin size={13} className="text-orange-500" /> {eventData?.venue}
+                <MapPin size={13} className="text-brand-500" /> {eventData?.venue}
               </p>
             </div>
 
@@ -250,7 +250,7 @@ const StaffAttendanceView = () => {
               <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-700" />
               <div className="text-center px-2">
                 <p className="text-[10px] uppercase font-bold text-neutral-400">Turnout</p>
-                <p className="text-2xl font-black text-orange-600 dark:text-orange-400">{attendancePercent}%</p>
+                <p className="text-2xl font-black text-brand-600 dark:text-brand-400">{attendancePercent}%</p>
               </div>
             </div>
           </div>
@@ -262,7 +262,7 @@ const StaffAttendanceView = () => {
             onClick={() => setActiveTab("scan")}
             className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === "scan"
-                ? "bg-white dark:bg-neutral-900 text-orange-600 dark:text-orange-400 shadow-xs"
+                ? "bg-white dark:bg-neutral-900 text-brand-600 dark:text-brand-400 shadow-xs"
                 : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
             }`}
           >
@@ -273,7 +273,7 @@ const StaffAttendanceView = () => {
             onClick={() => setActiveTab("manual")}
             className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === "manual"
-                ? "bg-white dark:bg-neutral-900 text-orange-600 dark:text-orange-400 shadow-xs"
+                ? "bg-white dark:bg-neutral-900 text-brand-600 dark:text-brand-400 shadow-xs"
                 : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
             }`}
           >
@@ -284,7 +284,7 @@ const StaffAttendanceView = () => {
             onClick={() => setActiveTab("log")}
             className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === "log"
-                ? "bg-white dark:bg-neutral-900 text-orange-600 dark:text-orange-400 shadow-xs"
+                ? "bg-white dark:bg-neutral-900 text-brand-600 dark:text-brand-400 shadow-xs"
                 : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
             }`}
           >
@@ -384,14 +384,14 @@ const StaffAttendanceView = () => {
                   placeholder="Paste QR payload or Ticket ID..."
                   value={manualInput}
                   onChange={(e) => setManualInput(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-orange-500 outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-brand-500 outline-none font-mono"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={manualLoading || !manualInput.trim()}
-                className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 {manualLoading ? "Verifying..." : "Verify & Mark Present"}
               </button>

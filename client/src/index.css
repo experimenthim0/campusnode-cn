@@ -20,7 +20,7 @@
   --color-cn-primary: var(--cn-primary);
   --color-cn-primary-hover: var(--cn-primary-hover);
 
-  /* Vibrant Orange Accent */
+  /* Vibrant Orange Accent (mapped to brand-* scale) */
   --color-primary: oklch(60% 0.18 45);
   --color-secondary: #1f2937;
 
@@ -34,6 +34,46 @@
   --color-success: #22c55e;
   --color-warning: #f97316;
   --color-danger: #ef4444;
+
+  /* ── Brand Color Scale (currently orange — change hex values here to re-skin) ── */
+ /* ============================================
+   CampusNode Brand System
+   Primary: Professional Royal Blue
+   ============================================ */
+
+  --color-brand-50:  #fff7ed;
+
+  --color-brand-100: #ffedd5;
+
+  --color-brand-200: #fed7aa;
+
+  --color-brand-300: #fdba74;
+
+  --color-brand-350: #fcad5c;
+
+  --color-brand-400: #fb923c;
+
+  --color-brand-450: #fa8926;
+
+  --color-brand-500: #f97316;
+
+  --color-brand-600: #ea580c;
+
+  --color-brand-650: #dd4f09;
+
+  --color-brand-655: #db4d08;
+
+  --color-brand-700: #c2410c;
+
+  --color-brand-800: #9a3412;
+
+  --color-brand-850: #842d10;
+
+  --color-brand-855: #81280e;
+
+  --color-brand-900: #7c2d12;
+
+ --color-brand-950: #431407;
 }
 
 @layer utilities {
@@ -171,13 +211,15 @@
   src: url('./assets/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
-/* @font-face {
-  font-family: 'myfont';
+@font-face {
+  font-family: 'mysans';
   src: url('/fonts/mysans.ttf') format('truetype');
-  font-weight: normal;
+  font-weight: 100 900;
   font-style: normal;
-} */
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'DancingScript';
@@ -224,6 +266,9 @@ body {
 
 .logofont {
   font-family: 'logofont', serif;
+}
+.mysans{
+  font-family: 'mysans', sans-serif;
 }
 
 @theme inline {
@@ -507,8 +552,8 @@ body {
 .dark .bg-neutral-50\/30 { background-color: rgba(17,17,17,0.30) !important; }
 
 /* Tinted backgrounds (keep hue, darken base) */
-.dark .bg-orange-50      { background-color: rgba(249,115,22,0.10) !important; }
-.dark .bg-orange-100     { background-color: rgba(249,115,22,0.15) !important; }
+.dark .bg-brand-50      { background-color: rgba(249,115,22,0.10) !important; }
+.dark .bg-brand-100     { background-color: rgba(249,115,22,0.15) !important; }
 .dark .bg-red-50         { background-color: rgba(239,68,68,0.08) !important; }
 .dark .bg-red-100        { background-color: rgba(239,68,68,0.12) !important; }
 .dark .bg-blue-50        { background-color: rgba(59,130,246,0.08) !important; }
@@ -522,8 +567,8 @@ body {
 
 /* Specific hex backgrounds used in Profile pages */
 .dark .bg-\[\#fefce8\]\/30 { background-color: rgba(15,15,15,0.3) !important; }
-.dark .bg-orange-50\/40  { background-color: rgba(249,115,22,0.08) !important; }
-.dark .bg-orange-50\/50  { background-color: rgba(249,115,22,0.10) !important; }
+.dark .bg-brand-50\/40  { background-color: rgba(249,115,22,0.08) !important; }
+.dark .bg-brand-50\/50  { background-color: rgba(249,115,22,0.10) !important; }
 .dark .bg-\[\#0f1419\]   { background-color: #e5e5e5 !important; }
 
 /* ── Text inversions (High Readability Hierarchy) ───────────────────────── */
@@ -583,15 +628,15 @@ body {
 .dark .hover\:bg-gray-200:hover     { background-color: #262626 !important; }
 .dark .hover\:bg-gray-300:hover     { background-color: #333333 !important; }
 .dark .hover\:bg-gray-400:hover     { background-color: #404040 !important; }
-.dark .hover\:bg-orange-50:hover    { background-color: rgba(234,88,12,0.1) !important; }
+.dark .hover\:bg-brand-50:hover    { background-color: rgba(234,88,12,0.1) !important; }
 .dark .hover\:bg-red-50:hover       { background-color: rgba(239,68,68,0.1) !important; }
 .dark .hover\:bg-red-100:hover      { background-color: rgba(239,68,68,0.15) !important; }
 .dark .hover\:bg-black\/10:hover    { background-color: rgba(255,255,255,0.06) !important; }
 .dark .hover\:bg-\[\#0f1419\]\/90:hover { background-color: #d4d4d4 !important; }
 
 /* Critical: hover bg colors that override base !important bg-black / bg-white */
-.dark .hover\:bg-orange-600:hover   { background-color: #ea580c !important; }
-.dark .hover\:bg-orange-700:hover   { background-color: #c2410c !important; }
+.dark .hover\:bg-brand-600:hover   { background-color: #ea580c !important; }
+.dark .hover\:bg-brand-700:hover   { background-color: #c2410c !important; }
 .dark .hover\:bg-red-600:hover      { background-color: #dc2626 !important; }
 .dark .hover\:bg-red-700:hover      { background-color: #b91c1c !important; }
 .dark .hover\:bg-green-700:hover    { background-color: #15803d !important; }
@@ -604,18 +649,18 @@ body {
 /* Text hover */
 .dark .hover\:text-black:hover      { color: #f5f5f5 !important; }
 .dark .hover\:text-white:hover      { color: #0a0a0a !important; }
-.dark .hover\:text-orange-600:hover { color: #ea580c !important; }
-.dark .hover\:text-orange-700:hover { color: #c2410c !important; }
+.dark .hover\:text-brand-600:hover { color: #ea580c !important; }
+.dark .hover\:text-brand-700:hover { color: #c2410c !important; }
 
 /* Border hover */
-.dark .hover\:border-orange-600:hover { border-color: #ea580c !important; }
+.dark .hover\:border-brand-600:hover { border-color: #ea580c !important; }
 .dark .hover\:border-black:hover      { border-color: #d4d4d4 !important; }
 .dark .hover\:border-white:hover      { border-color: #404040 !important; }
 
 /* ── Focus state overrides ──────────────────────────────────────────────── */
 .dark .focus\:border-black:focus   { border-color: #e5e5e5 !important; }
 .dark .focus\:bg-white:focus       { background-color: #171717 !important; }
-.dark .focus\:border-orange-600:focus { border-color: #ea580c !important; }
+.dark .focus\:border-brand-600:focus { border-color: #ea580c !important; }
 
 /* ── Shadow adjustments ────────────────────────────────────────────────── */
 .dark .shadow-sm  { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4) !important; }
@@ -658,7 +703,7 @@ body {
 }
 
 /* Keep buttons with explicit bg colors as they are */
-.dark .bg-orange-600  { background-color: #ea580c !important; }
+.dark .bg-brand-600  { background-color: #ea580c !important; }
 .dark .bg-red-600     { background-color: #dc2626 !important; }
 .dark .bg-green-600   { background-color: #16a34a !important; }
 .dark .bg-blue-600    { background-color: #2563eb !important; }
@@ -1216,7 +1261,7 @@ html.dark-transition *::after {
   border-color: rgba(59, 130, 246, 0.2) !important;
 }
 
-.dark .search-result-badge.bg-orange-50 {
+.dark .search-result-badge.bg-brand-50 {
   background: rgba(234, 88, 12, 0.12) !important;
   color: #fb923c !important;
   border-color: rgba(234, 88, 12, 0.2) !important;
@@ -1602,4 +1647,4 @@ html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 html.dark input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.8) !important;
   cursor: pointer;
-}
+}

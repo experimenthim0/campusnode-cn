@@ -81,11 +81,11 @@ const PaymentTracking = () => {
         
         {/* Title Section */}
         <div className="mb-10 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 dark:border-orange-900/30 rounded-full mb-3 text-orange-600 dark:text-orange-500">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 dark:bg-brand-950/20 border border-brand-200/50 dark:border-brand-900/30 rounded-full mb-3 text-brand-600 dark:text-brand-500">
             <span className="font-semibold text-xs uppercase tracking-wider">{user.name}</span>
           </div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">
-            Payment <span className="text-orange-600 dark:text-orange-500">Tracking</span>
+            Payment <span className="text-brand-600 dark:text-brand-500">Tracking</span>
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 font-medium max-w-xl">
             Track entry fees collected from participants, verify transaction receipts, and monitor paid event registrations.
@@ -99,7 +99,7 @@ const PaymentTracking = () => {
               <i className="ri-copper-coin-line text-4xl text-neutral-900 dark:text-white" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Total Revenue Collected</p>
-            <p className="text-3xl font-bold text-orange-600 dark:text-orange-500">₹{totalRevenue}</p>
+            <p className="text-3xl font-bold text-brand-600 dark:text-brand-500">₹{totalRevenue}</p>
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
@@ -115,7 +115,7 @@ const PaymentTracking = () => {
               <i className="ri-calendar-event-line text-4xl text-neutral-900 dark:text-white" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Total Paid Events</p>
-            <p className="text-3xl font-bold text-orange-600 dark:text-orange-500">
+            <p className="text-3xl font-bold text-brand-600 dark:text-brand-500">
               {totalPaidEventsCount}
             </p>
           </div>
@@ -147,14 +147,14 @@ const PaymentTracking = () => {
                       const stats = paymentStats[event.id || event._id] || {};
                       const isSelected = selectedEvent === (event.id || event._id);
                       return (
-                        <tr key={event.id || event._id} className={`hover:bg-neutral-50/50 dark:hover:bg-neutral-850/20 transition-colors ${isSelected ? 'bg-orange-50/5 dark:bg-orange-950/5' : ''}`}>
+                        <tr key={event.id || event._id} className={`hover:bg-neutral-50/50 dark:hover:bg-neutral-850/20 transition-colors ${isSelected ? 'bg-brand-50/5 dark:bg-brand-950/5' : ''}`}>
                           <td className="px-6 py-4 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                             {event.title}
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-350">
                             ₹{event.registrationFee || event.entryFee}
                           </td>
-                          <td className="px-6 py-4 text-base font-bold text-orange-650 dark:text-orange-500">
+                          <td className="px-6 py-4 text-base font-bold text-brand-650 dark:text-brand-500">
                             ₹{stats.totalCollected || 0}
                           </td>
                           <td className="px-6 py-4 text-sm font-medium text-neutral-600 dark:text-neutral-300">
@@ -230,7 +230,7 @@ const PaymentTracking = () => {
                             <td className="px-6 py-3.5 text-xs font-mono text-neutral-500 dark:text-neutral-405 select-all font-bold">
                               {reg.paymentId || 'N/A'}
                             </td>
-                            <td className="px-6 py-3.5 text-sm font-bold text-orange-655 dark:text-orange-500">
+                            <td className="px-6 py-3.5 text-sm font-bold text-brand-655 dark:text-brand-500">
                               ₹{reg.amountPaid || 0}
                             </td>
                             <td className="px-6 py-3.5">

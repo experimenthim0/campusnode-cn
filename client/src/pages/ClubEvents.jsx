@@ -184,7 +184,7 @@ const ClubEvents = () => {
         <div>
           <Link
             to="/profile"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 hover:text-orange-600 transition-colors mb-2"
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 hover:text-brand-600 transition-colors mb-2"
           >
             <i className="ri-arrow-left-line text-sm" /> Back to Profile
           </Link>
@@ -199,7 +199,7 @@ const ClubEvents = () => {
               <select 
                 value={exportFilters.month}
                 onChange={(e) => setExportFilters({ ...exportFilters, month: e.target.value })}
-                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
+                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
               >
                 <option value="all">Month</option>
                 {[...Array(12)].map((_, i) => (
@@ -209,7 +209,7 @@ const ClubEvents = () => {
               <select 
                 value={exportFilters.year}
                 onChange={(e) => setExportFilters({ ...exportFilters, year: e.target.value })}
-                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
+                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
               >
                 <option value="all">Year</option>
                 {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
@@ -244,7 +244,7 @@ const ClubEvents = () => {
           <p className="text-neutral-500 mb-2 font-medium">No events match your selected filters.</p>
           <button 
             onClick={clearFilters}
-            className="text-xs font-semibold text-orange-600 hover:underline cursor-pointer"
+            className="text-xs font-semibold text-brand-600 hover:underline cursor-pointer"
           >
             Clear Filters
           </button>
@@ -282,7 +282,7 @@ const ClubEvents = () => {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 md:px-6 pt-5 pb-3 border-b border-neutral-100 bg-neutral-50/30 gap-3">
                 <h3 className="text-lg font-bold text-neutral-900 leading-tight">
-                    <Link to={`/event/${event.slug || eventIdStr}`} className="hover:text-orange-600 transition-colors">
+                    <Link to={`/event/${event.slug || eventIdStr}`} className="hover:text-brand-600 transition-colors">
                         {event.title}
                     </Link>
                 </h3>
@@ -307,7 +307,7 @@ const ClubEvents = () => {
                     {event.venue}
                   </span>
                   <span className="flex items-center gap-1.5 font-medium text-xs uppercase tracking-wider text-neutral-500">
-                    <Clock className="w-4 h-4 shrink-0 text-orange-600" />
+                    <Clock className="w-4 h-4 shrink-0 text-brand-600" />
                     {new Date(event.startTime).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                   </span>
                   <span className="flex items-center gap-1.5 font-medium text-neutral-700">
@@ -321,10 +321,10 @@ const ClubEvents = () => {
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => setPreviewEvent(event)}
-                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
                         title="Preview all event and payment details before approving"
                       >
-                        <Eye className="w-3.5 h-3.5 text-orange-400 dark:text-orange-600" />
+                        <Eye className="w-3.5 h-3.5 text-brand-400 dark:text-brand-600" />
                         Preview &amp; Review
                       </button>
                       <button
@@ -347,9 +347,9 @@ const ClubEvents = () => {
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => setPreviewEvent(event)}
-                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
                       >
-                        <Eye className="w-3.5 h-3.5 text-orange-400 dark:text-orange-600" />
+                        <Eye className="w-3.5 h-3.5 text-brand-400 dark:text-brand-600" />
                         Inspect
                       </button>
                       <button
@@ -440,7 +440,7 @@ const ClubEvents = () => {
                                 <Link
                                   to={`/event/${eventIdStr}/check-in`}
                                   onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-medium transition"
+                                  className="flex items-center gap-2 px-3.5 py-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 font-medium transition"
                                 >
                                   <QrCode className="w-3.5 h-3.5" /> Scan Attendance
                                 </Link>
