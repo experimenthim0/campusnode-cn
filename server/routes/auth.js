@@ -2,7 +2,7 @@ import express from "express";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { generateToken, verifyToken } from "../middleware/auth.js";
-import sendEmail from "../utils/sendEmail.js";
+import { sendEmail, extractSecurityMetadata } from "../emails/index.js";
 import { getClientUrl } from "../utils/corsConfig.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { checkPasswordRateLimit } from "../utils/checkPasswordRateLimit.js";
@@ -183,32 +183,17 @@ router.post("/register/student", async (req, res) => {
 
     if (!isDevMode) {
       const verifyUrl = `${clientUrl}/verify-email/${verificationToken}`;
-      const message = `
-        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto;">
-          <h1 style="color: #FF4400; text-align: center;">Welcome to <span style="color:#000;">Campus</span>Node!</h1>
-          <p style="font-size: 16px; text-align: center;">
-            Hi <b>${name}</b>,<br><br>
-            Thank you for signing up. To complete your registration, please verify your email address.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verifyUrl}" style="background-color: #FF4400; color: white; padding: 12px 24px;
-               text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
-              Verify My Account
-            </a>
-          </div>
-          <p style="font-size: 14px; text-align: center; color: #777;">This link will expire in 24 hours.</p>
-          <p style="font-size: 14px; text-align: center; color: #777;">
-            If the button doesn't work, copy and paste this link:<br>
-            <a href="${verifyUrl}" style="color: #FF7518;">${verifyUrl}</a>
-          </p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="font-size: 12px; text-align: center; color: #999;">
-            If you didn't create an account on CampusNode, you can safely ignore this email.
-          </p>
-        </div>`;
 
       try {
-        await sendEmail({ email: newUser.email, subject: "Account Verification", message });
+        await sendEmail({
+          to: newUser.email,
+          template: "auth:verify-account",
+          data: {
+            name,
+            verifyUrl,
+            expiryHours: 24,
+          },
+        });
         return res.status(201).json({
           message: "Registration successful. Please check your email to verify your account.",
         });
@@ -402,18 +387,17 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: student.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
+        const securityMeta = extractSecurityMetadata(req);
         await sendEmail({
-          email: student.email,
-          subject: "CampusNode Login Verification Code",
-          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
-            <h2>Your Verification Code</h2>
-            <p>A login was requested for your student account (<strong>${student.email}</strong>).</p>
-            <div style="margin:30px 0">
-              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-            </div>
-            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-          </div>`,
+          to: student.email,
+          template: "auth:login-otp",
+          data: {
+            otp,
+            email: student.email,
+            contextLabel: "Student",
+            expiryMinutes: 5,
+            ...securityMeta,
+          },
         });
         return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
       }
@@ -467,18 +451,17 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: admin.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
+        const securityMeta = extractSecurityMetadata(req);
         await sendEmail({
-          email: admin.email,
-          subject: "CampusNode Login Verification Code",
-          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node — Admin</h1>
-            <h2>Your Verification Code</h2>
-            <p>A login was requested for your account (<strong>${admin.email}</strong>).</p>
-            <div style="margin:30px 0">
-              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-            </div>
-            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-          </div>`,
+          to: admin.email,
+          template: "auth:login-otp",
+          data: {
+            otp,
+            email: admin.email,
+            contextLabel: "Admin",
+            expiryMinutes: 5,
+            ...securityMeta,
+          },
         });
         return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent to your email." });
       }
@@ -548,18 +531,17 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: externalUser.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
+        const securityMeta = extractSecurityMetadata(req);
         await sendEmail({
-          email: externalUser.email,
-          subject: "CampusNode Login Verification Code",
-          message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-            <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node</h1>
-            <h2>Your Verification Code</h2>
-            <p>A login was requested for your account (<strong>${externalUser.email}</strong>).</p>
-            <div style="margin:30px 0">
-              <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-            </div>
-            <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-          </div>`,
+          to: externalUser.email,
+          template: "auth:login-otp",
+          data: {
+            otp,
+            email: externalUser.email,
+            contextLabel: "External",
+            expiryMinutes: 5,
+            ...securityMeta,
+          },
         });
         return res.json({ needs2FA: true, email: externalUser.email, userType: "external", message: "Verification code sent to your email." });
       }
@@ -646,18 +628,17 @@ router.post("/login/admin", async (req, res) => {
       const otpExpire = new Date(Date.now() + 5 * 60 * 1000);
       await prisma.adminRole.update({ where: { id: admin.id }, data: { otp, otpExpire } });
 
+      const securityMeta = extractSecurityMetadata(req);
       await sendEmail({
-        email: admin.email,
-        subject: "Admin Login Verification Code",
-        message: `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6;max-width:600px;margin:auto;text-align:center">
-          <h1 style="color:#FF4400;"><span style="color:#000">Campus</span>Node — Admin</h1>
-          <h2>Your Verification Code</h2>
-          <p>A login was requested for the <strong>${admin.role}</strong> account.</p>
-          <div style="margin:30px 0">
-            <span style="font-size:28px;letter-spacing:6px;font-weight:bold;background:#f4f4f4;padding:10px 20px;border-radius:8px;display:inline-block">${otp}</span>
-          </div>
-          <p style="color:#777">Expires in <strong>5 minutes</strong>. Do not share this code.</p>
-        </div>`,
+        to: admin.email,
+        template: "auth:login-otp",
+        data: {
+          otp,
+          email: admin.email,
+          contextLabel: admin.role || "Admin",
+          expiryMinutes: 5,
+          ...securityMeta,
+        },
       });
 
       return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent to your email." });
@@ -1022,29 +1003,18 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
-    const message = `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto;">
-      <h1 style="color: #FF4400; text-align: center;"><span style="color:#000;">Campus</span>Node</h1>
-      <h2 style="text-align: center;">Reset Your Password</h2>
-      <p style="font-size: 16px; text-align: center;">
-        We received a request to reset your CampusNode account password.
-      </p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #FF4400; color: white; padding: 12px 24px;
-           text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
-          Reset Password
-        </a>
-      </div>
-      <p style="font-size: 14px; text-align: center; color: #777;">This link will expire in 30 minutes.</p>
-      <p style="font-size: 14px; text-align: center; color: #777;">
-        If the button doesn't work:<br>
-        <a href="${resetUrl}" style="color: #FF7518;">${resetUrl}</a>
-      </p>
-      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-      <p style="font-size: 12px; text-align: center; color: #999;">© 2026 CampusNode. All rights reserved.</p>
-    </div>`;
+    const securityMeta = extractSecurityMetadata(req);
 
     try {
-      await sendEmail({ email: user.email, subject: "Password Reset Request", message });
+      await sendEmail({
+        to: user.email,
+        template: "auth:reset-password",
+        data: {
+          resetUrl,
+          expiryMinutes: 30,
+          ...securityMeta,
+        },
+      });
       res.json({ message: "If an account exists, a reset link has been sent." });
     } catch {
       if (instAcc) {

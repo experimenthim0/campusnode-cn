@@ -24,6 +24,7 @@ import centralOrganizerRoutes from "./routes/centralOrganizer.js";
 import eventStaffRoutes from "./routes/eventStaff.js";
 import feedbackRoutes from "./routes/feedback.js";
 import featuredEventRoutes from "./routes/featuredEvents.js";
+import previewRouter from "./emails/preview/previewRouter.js";
 import { getPublicKeyInfo } from "./services/qrSigningService.js";
 import prisma from "./lib/prisma.js";
 import compression from "compression";
@@ -164,6 +165,9 @@ app.use("/api/central-organizer", centralOrganizerRoutes);
 app.use("/api/event-staff", eventStaffRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/featured-events", featuredEventRoutes);
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api/emails/preview", previewRouter);
+}
 
 app.get(["/api/keys", "/api/keys/public"], (req, res) => {
   try {

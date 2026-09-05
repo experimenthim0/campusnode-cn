@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const { default: sendEmail } = await import("../utils/sendEmail.js");
+const { sendEmail } = await import("../emails/emailService.js");
 
 const testEmail = async () => {
   const recipientEmail = "contact.nikhim@gmail.com"; // Replace with your email for testing
@@ -16,16 +16,21 @@ const testEmail = async () => {
   );
 
   try {
-    await sendEmail({
-      email: recipientEmail,
-      subject: "Test Email from CampusNode (Resend)",
-      message: `
-        <h1>It Works!</h1>
-        <p>This is a test email sent using Resend integration.</p>
-        <p>Time: ${new Date().toLocaleString()}</p>
-      `,
+    const result = await sendEmail({
+      to: recipientEmail,
+      template: "auth:login-otp",
+      data: {
+        otp: "123456",
+        email: recipientEmail,
+        contextLabel: "Developer Test",
+        expiryMinutes: 10,
+        device: "Chrome macOS",
+        location: "San Francisco, US",
+        ipAddress: "192.168.1.42",
+        time: "Feb 9, 10:34 AM",
+      },
     });
-    console.log("✅ Test email sent successfully!");
+    console.log("✅ Test email sent successfully! Result:", result);
   } catch (error) {
     console.error("❌ Failed to send test email.");
     console.error(error);
@@ -33,4 +38,5 @@ const testEmail = async () => {
 };
 
 testEmail();
+
 
