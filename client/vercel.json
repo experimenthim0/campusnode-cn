@@ -48,12 +48,23 @@
   ],
   "rewrites": [
     {
+      "source": "/events/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i)(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl)"
+        }
+      ],
+      "destination": "/api/preview?slug=:slug"
+    },
+    {
       "source": "/event/:slug",
       "has": [
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i)(facebookexternalhit|twitterbot|whatsapp|telegrambot|slackbot|discordbot|googlebot|pinterest|outbrain|copypaste)"
+          "value": "(?i)(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl)"
         }
       ],
       "destination": "/api/preview?slug=:slug"

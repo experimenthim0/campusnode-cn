@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const { sendEmail } = await import("../emails/emailService.js");
+const { extractSecurityMetadata } = await import("../emails/utils/requestMetadata.js");
 
 const testEmail = async () => {
   const recipientEmail = "contact.nikhim@gmail.com"; // Replace with your email for testing
@@ -16,6 +17,7 @@ const testEmail = async () => {
   );
 
   try {
+    const securityMeta = await extractSecurityMetadata();
     const result = await sendEmail({
       to: recipientEmail,
       template: "auth:login-otp",
@@ -24,10 +26,7 @@ const testEmail = async () => {
         email: recipientEmail,
         contextLabel: "Developer Test",
         expiryMinutes: 10,
-        device: "Chrome macOS",
-        location: "San Francisco, US",
-        ipAddress: "192.168.1.42",
-        time: "Feb 9, 10:34 AM",
+        ...securityMeta,
       },
     });
     console.log("✅ Test email sent successfully! Result:", result);

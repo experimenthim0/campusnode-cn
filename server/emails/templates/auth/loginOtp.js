@@ -1,6 +1,7 @@
 import { OtpBadge } from "../../components/OtpBadge.js";
 import { SecurityMetadataCard } from "../../components/SecurityMetadataCard.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
+import { formatRequestTime } from "../../utils/requestMetadata.js";
 
 export const loginOtpTemplate = {
   id: "auth:login-otp",
@@ -26,6 +27,7 @@ export const loginOtpTemplate = {
     const { otp, email, contextLabel, expiryMinutes = 5, device, location, ipAddress, time } = data;
     const safeEmail = escapeHtml(email);
     const safeContext = contextLabel ? escapeHtml(contextLabel) : "";
+    const resolvedTime = time || (device || location || ipAddress ? formatRequestTime(new Date()) : null);
 
     let recipientPrompt;
     if (contextLabel && contextLabel !== "Student" && contextLabel !== "External") {
@@ -44,7 +46,7 @@ export const loginOtpTemplate = {
         ${recipientPrompt}
       </p>
 
-      ${SecurityMetadataCard({ device, location, ipAddress, time })}
+      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
 
       ${OtpBadge({ code: otp })}
 

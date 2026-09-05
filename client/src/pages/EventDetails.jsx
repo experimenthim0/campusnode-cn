@@ -173,7 +173,10 @@ const EventDetails = () => {
 
   useEffect(() => {
     if (event) {
-      document.title = `${event.title} - CampusNode`;
+      const cleanTitle = event.title?.trim() || "Event Details";
+      const formattedTitle = /campusnode/i.test(cleanTitle) ? cleanTitle : `${cleanTitle} | CampusNode`;
+      document.title = formattedTitle;
+
       const setMetaTag = (selector, propertyAttr, propertyVal, content) => {
         let element = document.querySelector(selector);
         if (!element) {
@@ -183,15 +186,22 @@ const EventDetails = () => {
         }
         element.setAttribute('content', content);
       };
-      setMetaTag("meta[property='og:title']", 'property', 'og:title', `${event.title} | CampusNode`);
-      setMetaTag("meta[property='og:description']", 'property', 'og:description', event.description || "Join this amazing event on CampusNode!");
-      setMetaTag("meta[property='og:image']", 'property', 'og:image', event.imageUrl || DEFAULT_IMAGE);
+
+      const cleanDesc =
+        (event.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() ||
+        `Join ${cleanTitle} on CampusNode. View schedule, details, and register online.`;
+
+      const socialImage = event.imageUrl || `${window.location.origin}/campusnode-og-fallback.png`;
+
+      setMetaTag("meta[property='og:title']", 'property', 'og:title', formattedTitle);
+      setMetaTag("meta[property='og:description']", 'property', 'og:description', cleanDesc);
+      setMetaTag("meta[property='og:image']", 'property', 'og:image', socialImage);
       setMetaTag("meta[property='og:url']", 'property', 'og:url', window.location.href);
       setMetaTag("meta[property='og:type']", 'property', 'og:type', "website");
       setMetaTag("meta[name='twitter:card']", 'name', 'twitter:card', "summary_large_image");
-      setMetaTag("meta[name='twitter:title']", 'name', 'twitter:title', `${event.title} | CampusNode`);
-      setMetaTag("meta[name='twitter:description']", 'name', 'twitter:description', event.description || "Join this amazing event on CampusNode!");
-      setMetaTag("meta[name='twitter:image']", 'name', 'twitter:image', event.imageUrl || DEFAULT_IMAGE);
+      setMetaTag("meta[name='twitter:title']", 'name', 'twitter:title', formattedTitle);
+      setMetaTag("meta[name='twitter:description']", 'name', 'twitter:description', cleanDesc);
+      setMetaTag("meta[name='twitter:image']", 'name', 'twitter:image', socialImage);
     }
   }, [event]);
 

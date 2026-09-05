@@ -1,12 +1,17 @@
 /**
- * Vercel Serverless Function: Dynamic Event Social Preview Handler
+ * CampusNode Event Social & Open Graph Metadata Generator
  *
- * Intercepts crawler requests for /events/:slug and /event/:slug and generates
- * instantaneous, crawler-friendly HTML with Open Graph & Twitter Card tags
- * before falling back to the client-side SPA.
+ * Produces crawler-friendly HTML responses with authoritative Open Graph
+ * and Twitter Card metadata for social link previews (WhatsApp, Facebook,
+ * LinkedIn, Twitter/X, Telegram, Discord, Slack, iMessage, etc.).
  */
 
-function escapeHtmlAttr(str = "") {
+/**
+ * Escapes characters for safe inclusion in HTML attributes and content.
+ * @param {string} [str=""]
+ * @returns {string}
+ */
+export function escapeHtmlAttr(str = "") {
   if (!str) return "";
   return String(str)
     .replace(/&/g, "&amp;")
@@ -16,7 +21,15 @@ function escapeHtmlAttr(str = "") {
     .replace(/'/g, "&#39;");
 }
 
-function formatEventTitle(title) {
+/**
+ * Formats the page title according to brand guidelines:
+ * "<Event Title> | CampusNode"
+ * Does NOT append "| CampusNode" if the title already includes "CampusNode".
+ *
+ * @param {string} [title]
+ * @returns {string}
+ */
+export function formatEventTitle(title) {
   if (!title || typeof title !== "string") {
     return "CampusNode - Event Management";
   }
@@ -27,31 +40,39 @@ function formatEventTitle(title) {
   return `${clean} | CampusNode`;
 }
 
-function cleanEventDescription(description, event = {}) {
+/**
+ * Cleans event descriptions by stripping Markdown formatting and HTML tags,
+ * generating a rich context-aware fallback if missing/empty, and truncating cleanly.
+ *
+ * @param {string} [description]
+ * @param {object} [event={}]
+ * @returns {string}
+ */
+export function cleanEventDescription(description, event = {}) {
   let text = String(description || "").trim();
 
-  // Strip Markdown
+  // 1. Strip Markdown elements
   text = text
-    .replace(/^#+\s+/gm, "")
-    .replace(/!\[.*?\]\(.*?\)/g, "")
-    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
-    .replace(/(\*\*|__)(.*?)\1/g, "$2")
-    .replace(/(\*|_)(.*?)\1/g, "$2")
-    .replace(/`{1,3}(.*?)`{1,3}/gs, "$1")
-    .replace(/^>\s+/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "");
+    .replace(/^#+\s+/gm, "") // Headers
+    .replace(/!\[.*?\]\(.*?\)/g, "") // Images
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Links -> anchor text
+    .replace(/(\*\*|__)(.*?)\1/g, "$2") // Bold
+    .replace(/(\*|_)(.*?)\1/g, "$2") // Italics
+    .replace(/`{1,3}(.*?)`{1,3}/gs, "$1") // Inline code / code blocks
+    .replace(/^>\s+/gm, "") // Blockquotes
+    .replace(/^[-*+]\s+/gm, "") // Unordered lists
+    .replace(/^\d+\.\s+/gm, ""); // Ordered lists
 
-  // Strip HTML
+  // 2. Strip HTML tags
   text = text.replace(/<[^>]*>/g, " ");
 
-  // Normalize punctuation and whitespace
+  // 3. Normalize punctuation spacing and whitespace
   text = text
     .replace(/\s+([.,!?;:])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Rich fallback if empty or too brief (< 15 chars)
+  // 4. Fallback generation if empty or too brief (< 15 characters, e.g. "<p></p>")
   if (text.length < 15) {
     const title = event.title ? event.title.trim() : "this event";
     const club =
@@ -61,7 +82,7 @@ function cleanEventDescription(description, event = {}) {
     text = `Join ${title} organized by ${club}${venue}. View event details, schedule, and register online on CampusNode.`;
   }
 
-  // Truncate cleanly
+  // 5. Truncate cleanly on word boundary (max ~175 characters)
   const maxLength = 175;
   if (text.length > maxLength) {
     const truncated = text.slice(0, maxLength);
@@ -72,7 +93,14 @@ function cleanEventDescription(description, event = {}) {
   return text;
 }
 
-function resolveSocialImage(event, baseUrl) {
+/**
+ * Resolves an absolute public HTTPS URL for the social image.
+ *
+ * @param {object} [event]
+ * @param {string} [baseUrl="https://clubsetu.nikhim.me"]
+ * @returns {string}
+ */
+export function resolveSocialImage(event, baseUrl = "https://clubsetu.nikhim.me") {
   const normalizedBase = String(baseUrl).replace(/\/+$/, "");
   const fallbackUrl = `${normalizedBase}/campusnode-og-fallback.png`;
 
@@ -85,20 +113,37 @@ function resolveSocialImage(event, baseUrl) {
     return fallbackUrl;
   }
 
+  // Already an absolute public URL (Cloudinary, S3, external HTTPS)
   if (/^https?:\/\//i.test(rawUrl)) {
     return rawUrl;
   }
 
+  // Relative path on this host
   return `${normalizedBase}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
 }
 
-function generatePreviewHtml(event, { host, slug }) {
-  const canonicalDomain = host ? `https://${host}` : "https://clubsetu.nikhim.me";
-  const canonicalUrl = `${canonicalDomain}/events/${slug}`;
+/**
+ * Generates crawler-ready HTML with Open Graph & Twitter Card tags for an event.
+ *
+ * @param {object} event - The published Event record
+ * @param {object} options
+ * @param {string} [options.host] - Request host header
+ * @param {string} [options.canonicalDomain] - Preferred canonical domain (e.g. "https://campusnode.in")
+ * @param {string} [options.slug] - Event slug
+ * @returns {string} Full HTML document
+ */
+export function generateEventSocialHtml(event, options = {}) {
+  const domain =
+    options.canonicalDomain ||
+    (options.host ? `https://${options.host}` : "https://clubsetu.nikhim.me");
+  const normalizedDomain = domain.replace(/\/+$/, "");
+
+  const slug = event.slug || options.slug || event.id;
+  const canonicalUrl = `${normalizedDomain}/events/${slug}`;
 
   const rawTitle = formatEventTitle(event.title);
   const rawDescription = cleanEventDescription(event.description, event);
-  const imageUrl = resolveSocialImage(event, canonicalDomain);
+  const imageUrl = resolveSocialImage(event, normalizedDomain);
 
   const titleEscaped = escapeHtmlAttr(rawTitle);
   const descEscaped = escapeHtmlAttr(rawDescription);
@@ -114,7 +159,7 @@ function generatePreviewHtml(event, { host, slug }) {
   <meta name="description" content="${descEscaped}">
   <link rel="canonical" href="${urlEscaped}">
 
-  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CampusNode">
   <meta property="og:title" content="${titleEscaped}">
@@ -134,10 +179,11 @@ function generatePreviewHtml(event, { host, slug }) {
   <meta name="twitter:image" content="${imageEscaped}">
   <meta name="twitter:image:alt" content="${titleEscaped}">
 
-  <link rel="icon" type="image/png" href="${canonicalDomain}/lightthemelogo2.png">
+  <!-- Favicon / Theme -->
+  <link rel="icon" type="image/png" href="${normalizedDomain}/lightthemelogo2.png">
   <meta name="theme-color" content="#ea580c">
 
-  <!-- Fallback redirect for human browser users -->
+  <!-- Fallback client redirect for human browser clicks landing on preview route -->
   <meta http-equiv="refresh" content="0;url=${urlEscaped}">
 </head>
 <body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
@@ -154,18 +200,33 @@ function generatePreviewHtml(event, { host, slug }) {
 </html>`;
 }
 
-function generateDefaultHtml(host) {
-  const domain = host ? `https://${host}` : "https://clubsetu.nikhim.me";
-  const fallbackUrl = `${domain}/campusnode-og-fallback.png`;
-  const eventsUrl = `${domain}/events`;
+/**
+ * Generates default CampusNode social HTML for 404s or private/unpublished events.
+ * Prevents exposing draft or unapproved event details to public crawlers.
+ *
+ * @param {object} options
+ * @param {string} [options.host]
+ * @param {string} [options.canonicalDomain]
+ * @param {string} [options.message]
+ * @returns {string}
+ */
+export function generateDefaultSocialHtml(options = {}) {
+  const domain =
+    options.canonicalDomain ||
+    (options.host ? `https://${options.host}` : "https://clubsetu.nikhim.me");
+  const normalizedDomain = domain.replace(/\/+$/, "");
+  const fallbackUrl = `${normalizedDomain}/campusnode-og-fallback.png`;
+  const homeUrl = `${normalizedDomain}/events`;
 
   const title = "CampusNode - NIT Jalandhar Clubs & Events";
-  const desc = "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
+  const description =
+    options.message ||
+    "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
 
   const titleEscaped = escapeHtmlAttr(title);
-  const descEscaped = escapeHtmlAttr(desc);
+  const descEscaped = escapeHtmlAttr(description);
   const imageEscaped = escapeHtmlAttr(fallbackUrl);
-  const urlEscaped = escapeHtmlAttr(eventsUrl);
+  const urlEscaped = escapeHtmlAttr(homeUrl);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -191,7 +252,7 @@ function generateDefaultHtml(host) {
   <meta name="twitter:description" content="${descEscaped}">
   <meta name="twitter:image" content="${imageEscaped}">
 
-  <link rel="icon" type="image/png" href="${domain}/lightthemelogo2.png">
+  <link rel="icon" type="image/png" href="${normalizedDomain}/lightthemelogo2.png">
   <meta name="theme-color" content="#ea580c">
   <meta http-equiv="refresh" content="0;url=${urlEscaped}">
 </head>
@@ -207,60 +268,4 @@ function generateDefaultHtml(host) {
   </script>
 </body>
 </html>`;
-}
-
-export default async function handler(req, res) {
-  const { slug } = req.query;
-  const host = req.headers.host || "clubsetu.nikhim.me";
-
-  // Production backend URL priority
-  const apiUrl =
-    process.env.API_URL ||
-    process.env.VITE_API_URL ||
-    process.env.BACKEND_URL ||
-    "https://campusnode-server.onrender.com";
-
-  if (!slug) {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultHtml(host));
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const eventRes = await fetch(`${apiUrl}/api/events/${encodeURIComponent(slug)}`, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    clearTimeout(timeoutId);
-
-    if (!eventRes.ok) {
-      throw new Error(`Event lookup failed: ${eventRes.status}`);
-    }
-
-    const event = await eventRes.json();
-
-    // Check if event is published (prevents leaking private/draft details)
-    if (event.reviewStatus && event.reviewStatus !== "PUBLISHED") {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-      return res.status(200).send(generateDefaultHtml(host));
-    }
-
-    const html = generatePreviewHtml(event, { host, slug });
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    // Cache at Vercel Edge for 10 minutes, serve stale while revalidating
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
-    return res.status(200).send(html);
-  } catch (error) {
-    console.error(`[Social Preview] Error generating preview for slug "${slug}":`, error.message);
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultHtml(host));
-  }
 }

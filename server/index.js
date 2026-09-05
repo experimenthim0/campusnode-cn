@@ -28,6 +28,8 @@ import previewRouter from "./emails/preview/previewRouter.js";
 import { getPublicKeyInfo } from "./services/qrSigningService.js";
 import prisma from "./lib/prisma.js";
 import compression from "compression";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { corsOptions } from "./utils/corsConfig.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -67,6 +69,7 @@ io.on("connection", (socket) => {
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
+app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "public")));
 
 app.use(requestMetrics);
 app.use(overloadProtection);

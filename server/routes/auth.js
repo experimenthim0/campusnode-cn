@@ -387,7 +387,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: student.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
-        const securityMeta = extractSecurityMetadata(req);
+        const securityMeta = await extractSecurityMetadata(req);
         await sendEmail({
           to: student.email,
           template: "auth:login-otp",
@@ -451,7 +451,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: admin.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
-        const securityMeta = extractSecurityMetadata(req);
+        const securityMeta = await extractSecurityMetadata(req);
         await sendEmail({
           to: admin.email,
           template: "auth:login-otp",
@@ -531,7 +531,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
           where: { id: externalUser.id },
           data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
         });
-        const securityMeta = extractSecurityMetadata(req);
+        const securityMeta = await extractSecurityMetadata(req);
         await sendEmail({
           to: externalUser.email,
           template: "auth:login-otp",
@@ -628,7 +628,7 @@ router.post("/login/admin", async (req, res) => {
       const otpExpire = new Date(Date.now() + 5 * 60 * 1000);
       await prisma.adminRole.update({ where: { id: admin.id }, data: { otp, otpExpire } });
 
-      const securityMeta = extractSecurityMetadata(req);
+      const securityMeta = await extractSecurityMetadata(req);
       await sendEmail({
         to: admin.email,
         template: "auth:login-otp",
@@ -1003,7 +1003,7 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
-    const securityMeta = extractSecurityMetadata(req);
+    const securityMeta = await extractSecurityMetadata(req);
 
     try {
       await sendEmail({

@@ -1,6 +1,7 @@
 import { Button } from "../../components/Button.js";
 import { SecurityMetadataCard } from "../../components/SecurityMetadataCard.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
+import { formatRequestTime } from "../../utils/requestMetadata.js";
 
 export const resetPasswordTemplate = {
   id: "auth:reset-password",
@@ -19,6 +20,7 @@ export const resetPasswordTemplate = {
   render(data) {
     const { resetUrl, expiryMinutes = 30, device, location, ipAddress, time } = data;
     const safeUrl = escapeHtml(resetUrl);
+    const resolvedTime = time || (device || location || ipAddress ? formatRequestTime(new Date()) : null);
 
     return `
       <h2 style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 16px 0; color: #0f172a; text-align: center;">
@@ -28,7 +30,7 @@ export const resetPasswordTemplate = {
         We received a request to reset your CampusNode account password. Click the button below to choose a new password.
       </p>
 
-      ${SecurityMetadataCard({ device, location, ipAddress, time })}
+      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
 
       ${Button({ label: "Reset Password", url: resetUrl, variant: "primary" })}
 

@@ -16,6 +16,7 @@ import { validateBooking, checkEventConflict } from "../services/conflictService
 import { signTicket } from "../services/qrSigningService.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { validateCustomFields } from "../utils/customFields.js";
+import { generateEventSocialHtml, generateDefaultSocialHtml } from "../utils/eventSocialMetadata.js";
 
 const router = express.Router();
 
@@ -1085,6 +1086,45 @@ router.put(
   },
 );
 
+
+// ── GET /api/events/:id/preview — dynamic Open Graph & social crawler preview ──
+router.get("/:id/preview", async (req, res) => {
+  try {
+    const host = req.headers.host;
+    const clientOrigin = process.env.CLIENT_URL || "https://campusnode.in";
+    const event = await getEventByIdOrSlug(req.params.id);
+
+    if (!event || event.reviewStatus !== "PUBLISHED") {
+      // For 404 or unapproved/draft events, return clean fallback metadata to prevent data leaks
+      const fallbackHtml = generateDefaultSocialHtml({
+        host,
+        canonicalDomain: clientOrigin,
+        message: event ? "This event is currently under review." : undefined,
+      });
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
+      return res.status(200).send(fallbackHtml);
+    }
+
+    const html = generateEventSocialHtml(event, {
+      host,
+      canonicalDomain: clientOrigin,
+      slug: req.params.id,
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+    return res.status(200).send(html);
+  } catch (err) {
+    console.error("Preview generation error:", err);
+    const fallbackHtml = generateDefaultSocialHtml({
+      host: req.headers.host,
+      canonicalDomain: process.env.CLIENT_URL || "https://campusnode.in",
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.status(200).send(fallbackHtml);
+  }
+});
 
 router.get("/:id", async (req, res) => {
   try {

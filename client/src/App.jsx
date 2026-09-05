@@ -103,6 +103,7 @@ function App() {
                   <Route path="/events" element={<EventFeed />} />
                   <Route path="/featured-events" element={<FeaturedEventsPage />} />
                   <Route path="/event/:slug" element={<EventDetails />} />
+                  <Route path="/events/:slug" element={<EventDetails />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<RegisterStudent />} />
                   <Route path="/admin-secret-login" element={<AdminLogin />} />

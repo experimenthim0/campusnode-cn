@@ -66,7 +66,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("verify-email/test-token-123");
       expect(rendered.html).toContain("Verify My Account");
       expect(rendered.html).toContain("https://clubsetu.nikhim.me/cn_logo.png");
-      expect(rendered.html).toContain("fonts.googleapis.com/css2?family=Inter");
+      expect(rendered.html).toContain("fonts.googleapis.com/css2?family=Google+Sans");
     });
 
     it("auth:login-otp - should render correctly across Student, Admin, and External user contexts with Inter typography", () => {
@@ -283,30 +283,51 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(cleanIp("10.0.0.5")).toBe("10.0.0.5");
     });
 
-    it("formatRequestTime - should format timestamp matching 'Feb 9, 10:34 AM' pattern", () => {
-      const fixedDate = new Date("2026-02-09T10:34:00Z");
-      const formatted = formatRequestTime(fixedDate, "UTC");
-      expect(formatted).toBe("Feb 9, 10:34 AM");
+    it("formatRequestTime - should format timestamp in Indian Standard Time (IST)", () => {
+      // 05:04 UTC corresponds to 10:34 AM in Indian Standard Time (UTC+5:30)
+      const fixedDate = new Date("2026-02-09T05:04:00Z");
+      const formatted = formatRequestTime(fixedDate);
+      expect(formatted).toBe("Feb 9, 10:34 AM IST");
+
+      // Custom timezone without suffix
+      const utcFormatted = formatRequestTime(fixedDate, "UTC", false);
+      expect(utcFormatted).toBe("Feb 9, 5:04 AM");
     });
 
-    it("extractSecurityMetadata - should extract IP, location, device from request headers", () => {
-      const mockReq = {
+    it("extractSecurityMetadata - should extract IP, exact City, State, and device from request headers", async () => {
+      const mockVercelReq = {
         headers: {
           "cf-connecting-ip": "192.168.1.42",
           "x-vercel-ip-city": "San%20Francisco",
+          "x-vercel-ip-country-region": "CA",
           "x-vercel-ip-country": "US",
           "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
         },
       };
 
-      const meta = extractSecurityMetadata(mockReq, {
-        time: "Feb 9, 10:34 AM",
+      const meta = await extractSecurityMetadata(mockVercelReq, {
+        time: "Feb 9, 10:34 AM IST",
       });
 
       expect(meta.device).toBe("Chrome macOS");
       expect(meta.ipAddress).toBe("192.168.1.42");
-      expect(meta.location).toBe("San Francisco, US");
-      expect(meta.time).toBe("Feb 9, 10:34 AM");
+      expect(meta.location).toBe("San Francisco, CA, US");
+      expect(meta.time).toBe("Feb 9, 10:34 AM IST");
+
+      // Cloudflare City and State
+      const mockCfReq = {
+        headers: {
+          "cf-connecting-ip": "103.21.244.2",
+          "cf-ipcity": "Jalandhar",
+          "cf-region": "Punjab",
+          "cf-ipcountry": "IN",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+        },
+      };
+
+      const cfMeta = await extractSecurityMetadata(mockCfReq);
+      expect(cfMeta.location).toBe("Jalandhar, Punjab, IN");
+      expect(cfMeta.device).toBe("Chrome Windows");
     });
   });
 });
