@@ -75,6 +75,7 @@ export const PERMISSIONS = {
   AUDIT_VIEW: "audit.view",
   AUDIT_EXPORT: "audit.export",
   EVENT_STAFF_MANAGE: "event_staff.manage",
+  FEATURED_EVENTS_MANAGE: "featured_events.manage",
 };
 
 export function normalizePermission(permission) {
@@ -134,6 +135,7 @@ export const INSTITUTIONAL_LEAD_PERMISSIONS = [
   PERMISSIONS.TEAM_CREATE,
   PERMISSIONS.TEAM_MANAGE,
   PERMISSIONS.AUDIT_EXPORT,
+  PERMISSIONS.FEATURED_EVENTS_MANAGE,
 ];
 
 export const CLUB_ACCOUNT_PERMISSIONS = [
@@ -258,6 +260,8 @@ export const STUDENT_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.EVENT_ATTENDANCE,
   PERMISSIONS.EVENT_CERTIFICATE,
   PERMISSIONS.CLUB_VIEW,
+  PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
+  PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
   PERMISSIONS.REGISTRATION_VIEW,
   PERMISSIONS.REGISTRATION_CREATE,
   PERMISSIONS.REGISTRATION_CANCEL,
@@ -585,6 +589,38 @@ export function hasPermission(user, permission, resource = null) {
       if ((perm === PERMISSIONS.EVENT_UPDATE || permission === PERMISSIONS.EVENT_UPDATE) && (membership.canEditEvents || membership.permissions?.canEditEvents)) {
         return true;
       }
+    }
+  }
+
+  // Unscoped evaluation for student management roles (e.g. uploading certificate template, general event capability)
+  if (!targetClubId && user.memberships && user.memberships.length > 0) {
+    const hasUnscopedRolePerm = user.memberships.some((m) => {
+      if (m.status === "INACTIVE") return false;
+      if (m.role === "CLUB_HEAD") {
+        return STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission);
+      }
+      if (m.role === "COORDINATOR") {
+        if (
+          perm === PERMISSIONS.CLUB_MANAGE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_INVITE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_REMOVE_MEMBERS ||
+          perm === PERMISSIONS.CLUB_ASSIGN_ROLES ||
+          perm === PERMISSIONS.CLUB_TRANSFER_LEADERSHIP ||
+          perm === PERMISSIONS.EVENT_APPROVE ||
+          perm === PERMISSIONS.EVENT_DELETE_APPROVE
+        ) {
+          return false;
+        }
+        return STUDENT_COORDINATOR_PERMISSIONS.includes(perm) || STUDENT_COORDINATOR_PERMISSIONS.includes(permission);
+      }
+      const customPerms = m.customPermissions || [];
+      if (customPerms.includes(perm) || customPerms.includes(permission)) return true;
+      if ((perm === PERMISSIONS.ATTENDANCE_TAKE || permission === PERMISSIONS.EVENT_ATTENDANCE) && (m.canTakeAttendance || m.permissions?.canTakeAttendance)) return true;
+      if ((perm === PERMISSIONS.EVENT_UPDATE || permission === PERMISSIONS.EVENT_UPDATE) && (m.canEditEvents || m.permissions?.canEditEvents)) return true;
+      return false;
+    });
+    if (hasUnscopedRolePerm) {
+      return true;
     }
   }
 

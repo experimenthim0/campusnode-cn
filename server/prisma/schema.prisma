@@ -828,3 +828,27 @@ model ExternalUser {
   @@index([email])
 }
 
+enum FeaturedOrderingMode {
+  CUSTOM
+  AUTOMATIC
+}
+
+model FeaturedEvent {
+  id           String   @id @db.VarChar(24)
+  eventId      String   @unique @db.VarChar(24)
+  sponsorName  String?
+  sponsorLogo  String?
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@index([eventId])
+}
+
+model FeaturedEventSetting {
+  id           String               @id @default("default") @db.VarChar(24)
+  orderingMode FeaturedOrderingMode @default(CUSTOM)
+  updatedAt    DateTime             @updatedAt
+}

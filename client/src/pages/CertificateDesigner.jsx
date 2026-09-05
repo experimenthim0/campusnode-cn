@@ -4,6 +4,7 @@ import { getEventById } from "../services/eventService";
 import { uploadCertificateTemplate, saveCertificateTemplate } from "../services/certificateService";
 import { useNotification } from "../context/NotificationContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { Monitor, Laptop, Award, ArrowLeft, Copy, Check, AlertCircle } from "lucide-react";
 
 const FONTS = [
   {
@@ -56,6 +57,19 @@ const CertificateDesigner = () => {
   const [align, setAlign] = useState("center");
   const [fontMenuOpen, setFontMenuOpen] = useState(false);
   const [previewName, setPreviewName] = useState("Himanshu Yadav");
+  const [allowMobileView, setAllowMobileView] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      showNotification("Page link copied! Open it on your laptop or desktop.", "success");
+      setTimeout(() => setCopiedLink(false), 3000);
+    } catch {
+      showNotification("Could not copy link to clipboard.", "error");
+    }
+  };
 
   useEffect(() => {
     fetchEvent();
@@ -291,71 +305,172 @@ const CertificateDesigner = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-4 md:px-0">
-      {/* Top bar */}
-      <div className="bg-white border-b border-neutral-200 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/my-events")}
-              className="text-neutral-400 hover:text-neutral-700 transition-colors p-1 -ml-1"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+    <>
+      {/* Small Screen / Mobile Fallback Notice */}
+      {!allowMobileView && (
+        <div className="lg:hidden min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            {/* Soft decorative glow */}
+            <div className="absolute -top-16 -right-16 w-36 h-36 bg-amber-500/10 dark:bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-brand-500/10 dark:bg-brand-500/15 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Icon */}
+            <div className="relative mx-auto w-20 h-20 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-5 shadow-xs">
+              <Monitor className="w-9 h-9 stroke-[1.75]" />
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm">
+                <Award className="w-4 h-4" />
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-100/70 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 mb-3">
+              <Laptop className="w-3.5 h-3.5" /> Desktop or Laptop Required
+            </span>
+
+            <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-snug mb-3">
+              Please Open on a Larger Screen
+            </h2>
+
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
+              The <strong>Certificate Designer</strong> requires a wide display and precision mouse/cursor controls to accurately place, resize, and align name boxes on high-resolution templates.
+            </p>
+
+            {/* Key capability points */}
+            <div className="bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 text-left space-y-2.5 mb-6 text-xs text-neutral-700 dark:text-neutral-300">
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center shrink-0 text-brand-600 dark:text-brand-400">
+                  <Check className="w-3 h-3" />
+                </div>
+                <span className="font-medium">Full resolution canvas workspace</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center shrink-0 text-brand-600 dark:text-brand-400">
+                  <Check className="w-3 h-3" />
+                </div>
+                <span className="font-medium">Pixel-perfect click & drag name positioning</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center shrink-0 text-brand-600 dark:text-brand-400">
+                  <Check className="w-3 h-3" />
+                </div>
+                <span className="font-medium">Live calligraphy font and scaling previews</span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-2.5">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-100 font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
               >
-                <path d="M19 12H5M12 5l-7 7 7 7" />
-              </svg>
-            </button>
-            <div className="w-px h-5 bg-neutral-200" />
-            <div>
-              <span className="text-sm font-semibold text-neutral-800">
-                Certificate designer
-              </span>
-              {event?.title && (
-                <span className="text-xs text-neutral-400 ml-2">
-                  {event.title}
-                </span>
-              )}
+                {copiedLink ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+                    Link Copied to Clipboard
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy Link for Laptop
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-semibold text-xs transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Go Back
+              </button>
+            </div>
+
+            {/* Manual bypass for tablet or testing */}
+            <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setAllowMobileView(true)}
+                className="text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                I understand, let me try on this screen anyway →
+              </button>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="flex items-center gap-2">
+      {/* Main Designer Workspace */}
+      <div className={`${allowMobileView ? "block" : "hidden lg:block"} min-h-screen bg-neutral-50 dark:bg-neutral-950 px-4 md:px-0 transition-colors`}>
+        {allowMobileView && (
+          <div className="lg:hidden bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+            <span className="flex items-center gap-1.5 font-medium">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+              Mobile preview mode — dragging canvas requires touch controls
+            </span>
             <button
-              onClick={() => navigate("/my-events")}
-              className="px-3 py-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-all"
+              onClick={() => setAllowMobileView(false)}
+              className="text-amber-900 dark:text-amber-200 font-bold underline cursor-pointer ml-2 shrink-0"
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave || saving}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                canSave && !saving
-                  ? "bg-neutral-900 text-white hover:bg-neutral-700"
-                  : "bg-neutral-100 text-neutral-300 cursor-not-allowed"
-              }`}
-            >
-              {saving ? "Saving…" : "Save template"}
+              Exit
             </button>
           </div>
-        </div>
-      </div>
+        )}
 
-      <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="flex gap-5 items-start">
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-64 flex-shrink-0 space-y-4"
-          >
+        {/* Top bar */}
+        <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30 transition-colors">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => navigate("/my-events")}
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors p-1 -ml-1 cursor-pointer"
+                title="Back to events"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-800" />
+              <div className="min-w-0 flex items-center">
+                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 whitespace-nowrap">
+                  Certificate designer
+                </span>
+                {event?.title && (
+                  <span className="text-xs text-neutral-400 ml-2 truncate max-w-[140px] sm:max-w-xs md:max-w-md inline-block align-bottom">
+                    {event.title}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => navigate("/my-events")}
+                className="px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!canSave || saving}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  canSave && !saving
+                    ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200"
+                    : "bg-neutral-100 dark:bg-neutral-800 text-neutral-300 dark:text-neutral-600 cursor-not-allowed"
+                }`}
+              >
+                {saving ? "Saving…" : "Save template"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex flex-col lg:flex-row gap-5 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-full lg:w-72 flex-shrink-0 space-y-4"
+            >
             {/* Upload */}
             <div className="bg-white border border-neutral-200 rounded-xl p-4">
               <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">
@@ -741,6 +856,7 @@ const CertificateDesigner = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

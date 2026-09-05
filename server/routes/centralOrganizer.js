@@ -257,6 +257,7 @@ router.delete("/events/:eventId", async (req, res) => {
       return res.status(ownership.error).json({ message: ownership.message });
     }
 
+    await prisma.featuredEvent.deleteMany({ where: { eventId: req.params.eventId } });
     await prisma.event.delete({ where: { id: req.params.eventId } });
 
     await createAuditLog({

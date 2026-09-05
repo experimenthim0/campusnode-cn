@@ -5,6 +5,7 @@ import { getColorSync } from 'colorthief';
 import { useImageBlob } from '../hooks/useImageBlob';
 import { useTheme } from '../context/ThemeContext';
 import { prefetchEventDetail } from '../lib/prefetchManager';
+import { Handshake } from 'lucide-react';
 
 const EventCard = ({ event, onRegister, isRegistered }) => {
     const { title, description, venue, startTime, totalSeats, registeredCount, status, _id, entryFee, registrationDeadline, slug, showWinner } = event;
@@ -154,7 +155,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         >
 
             {/* Image */}
-            <div className="relative w-full aspect-[21/9] overflow-hidden bg-slate-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800/80">
+            <div className="relative w-full aspect-[21/11] overflow-hidden bg-slate-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800/80">
                 <img
                     ref={imgRef}
                     src={displayUrl}
@@ -190,24 +191,49 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             </div>
 
             <div className="px-4 pt-2 flex flex-auto flex-col">
-                {(event.club?.clubName || event.createdBy?.clubName) && (
-                    <div className="flex items-center min-w-0">
-                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700">
-                            <img
-                                src={clubLogoSrc}
-                                alt={event.club?.clubName || event.createdBy?.clubName || 'Club Logo'}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = fallbackLogo;
-                                }}
-                            />
+                <div className="flex items-center justify-between gap-2 min-w-0 mb-1">
+                    {(event.club?.clubName || event.createdBy?.clubName) ? (
+                        <div className="flex items-center min-w-0">
+                            <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700 shrink-0">
+                                <img
+                                    src={clubLogoSrc}
+                                    alt={event.club?.clubName || event.createdBy?.clubName || 'Club Logo'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = fallbackLogo;
+                                    }}
+                                />
+                            </div>
+                            <span className="truncate text-brand-600 text-[12px] font-semibold">
+                                {event.club?.clubName || event.createdBy?.clubName}
+                            </span>
                         </div>
-                        <span className="truncate  text-brand-600  text-[12px] font-semibold">
-                            {event.club?.clubName || event.createdBy?.clubName}
-                        </span>
-                    </div>
-                )}
+                    ) : <div />}
+
+                    {/* Sponsors (max 2) in blank space of club name row */}
+                    {event.sponsors && event.sponsors.length > 0 && (
+                        <div className="flex items-center gap-1.5 shrink-0 ml-auto pl-2">
+                            <span title="Sponsored by" className="inline-flex items-center text-brand-500 dark:text-brand-500">
+                                <Handshake size={17} className="shrink-0" />
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                                {event.sponsors.slice(0, 2).map((s, idx) => (
+                                    <span key={s.id || idx} className="inline-flex items-center">
+                                        {/* {s.name?.trim()} */}
+                                        {s.logoUrl ? (
+                                            <img
+                                                src={s.logoUrl}
+                                                alt={s.name || "Sponsor"}
+                                                className="h-5 w-auto max-w-[65px] object-contain rounded-xs"
+                                            />
+                                        ) : null}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-wide mb-2 line-clamp-2">{title}</h3>
 
                 {/* Info row */}

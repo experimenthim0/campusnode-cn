@@ -270,8 +270,8 @@ const ClubEvents = () => {
             const canManageWinners = canEdit || canCheckReg || isClubHeadOrAdmin;
             const canEditEvent = canEdit || isClubHeadOrAdmin;
             const canDeleteEvent = canEdit || isClubHeadOrAdmin;
-            const canCert = (canEdit || isClubHeadOrAdmin) && event.provideCertificate;
-            const hasAnyMenuActions = canViewReg || canScanAttendance || (canManageWinners && (event.showWinner || isPast)) || canCert || canEditEvent || canDeleteEvent;
+            const canCert = canEdit || isClubHeadOrAdmin;
+            const hasAnyMenuActions = canViewReg || canScanAttendance || canManageWinners || canCert || canEditEvent || canDeleteEvent;
 
             return (
             <div
@@ -446,7 +446,7 @@ const ClubEvents = () => {
                                 </Link>
                               )}
 
-                              {canManageWinners && (event.showWinner || isPast) && (
+                              {canManageWinners && (
                                 <button
                                   type="button"
                                   onClick={() => {

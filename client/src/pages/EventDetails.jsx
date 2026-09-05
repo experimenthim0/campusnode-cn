@@ -588,9 +588,9 @@ const EventDetails = () => {
   const winners = (event.winners || []).filter(w => w.name);
   const showWinners = isEnded && event.showWinner && winners.length > 0;
   const medalConfig = {
-    1: { badgeBg: 'bg-yellow-400 text-black', icon: 'ri-trophy-fill', label: '1st' },
-    2: { badgeBg: 'bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
-    3: { badgeBg: 'bg-amber-600 text-white', icon: 'ri-award-fill', label: '3rd' },
+    1: { badgeBg: 'bg-[#FFD700]/80 text-black', icon: 'ri-trophy-fill', label: '1st' },
+    2: { badgeBg: 'bg-[#C0C0C0] text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
+    3: { badgeBg: 'bg-[#CD7F32] text-white', icon: 'ri-award-fill', label: '3rd' },
   };
 
   const isCentralEvent = event.organizerType === 'CENTRAL' || !!event.centralOrganizerId || (!event.club && !event.clubId && (!!event.centralOrganizer || !!event.participatingClubs));
@@ -948,7 +948,7 @@ const EventDetails = () => {
                 )}
               </div>
             </div>
-  <h1 className="font-black text-3xl md:text-4xl text-black dark:text-white leading-tight tracking-tight mb-4">
+  <h1 className="font-black text-2xl md:text-3xl text-black dark:text-white leading-tight tracking-tight mb-4">
               {title}
             </h1>
             {/* <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -1021,6 +1021,83 @@ const EventDetails = () => {
                 {views || 0} Views
               </span>
             </div>
+
+{/* /////// Winners Section //////*/}
+
+{showWinners && (
+              <div id="winners-section" className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 bg-white border border-black/10 rounded-lg flex items-center justify-center text-brand-500 text-lg">
+                    <i className="ri-trophy-fill" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
+                    <p className="text-[15px] font-black text-black dark:text-white">
+                      {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2.5">
+                  {[...winners].sort((a, b) => a.rank - b.rank).map((winner, i) => {
+                    const medal = medalConfig[winner.rank];
+                    const memberList = winner.members || winner.teamMembers || winner.students || [];
+                    const isTeamWinner = event.registrationType === 'team' || (memberList && memberList.length > 0);
+
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3.5 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl transition-all shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700"
+                      >
+                        {/* Medal Rank Badge */}
+                        <div
+                          className={`w-9 h-9 shrink-0 rounded-lg ${
+                            medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+                          } flex items-center justify-center font-black text-sm`}
+                        >
+                        
+                            <span>#{winner.rank}</span>
+                         
+                        </div>
+
+                        {/* Winner / Team Name & Members */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-black dark:text-white truncate">
+                              {winner.name}
+                            </p>
+                            {isTeamWinner && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                                <i className="ri-team-line text-[10px]" /> Team
+                              </span>
+                            )}
+                          </div>
+
+                          {memberList && memberList.length > 0 && (() => {
+                            const namesArr = Array.isArray(memberList)
+                              ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
+                              : [typeof memberList === 'string' ? memberList : memberList?.name].filter(Boolean);
+                            const uniqueNames = Array.from(new Set(namesArr));
+                            if (uniqueNames.length === 0) return null;
+                            return (
+                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
+                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
+                                {uniqueNames.join(', ')}
+                              </p>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Rank Label */}
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                          {medal ? `${medal.label} Place` : `#${winner.rank}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )} 
+
 
             {description && (
               <div className="mb-8">
@@ -1096,81 +1173,7 @@ const EventDetails = () => {
               </div>
             )}
 
-            {showWinners && (
-              <div id="winners-section" className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 bg-yellow-400 border border-black/10 rounded-lg flex items-center justify-center text-black text-lg">
-                    <i className="ri-trophy-fill" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
-                    <p className="text-[15px] font-black text-black dark:text-white">
-                      {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2.5">
-                  {[...winners].sort((a, b) => a.rank - b.rank).map((winner, i) => {
-                    const medal = medalConfig[winner.rank];
-                    const memberList = winner.members || winner.teamMembers || winner.students || [];
-                    const isTeamWinner = event.registrationType === 'team' || (memberList && memberList.length > 0);
-
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3.5 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl transition-all shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700"
-                      >
-                        {/* Medal Rank Badge */}
-                        <div
-                          className={`w-9 h-9 shrink-0 rounded-lg ${
-                            medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
-                          } flex items-center justify-center font-black text-sm`}
-                        >
-                          {medal ? (
-                            <i className={`${medal.icon} text-base`} />
-                          ) : (
-                            <span>#{winner.rank}</span>
-                          )}
-                        </div>
-
-                        {/* Winner / Team Name & Members */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-bold text-black dark:text-white truncate">
-                              {winner.name}
-                            </p>
-                            {isTeamWinner && (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
-                                <i className="ri-team-line text-[10px]" /> Team
-                              </span>
-                            )}
-                          </div>
-
-                          {memberList && memberList.length > 0 && (() => {
-                            const namesArr = Array.isArray(memberList)
-                              ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
-                              : [typeof memberList === 'string' ? memberList : memberList?.name].filter(Boolean);
-                            const uniqueNames = Array.from(new Set(namesArr));
-                            if (uniqueNames.length === 0) return null;
-                            return (
-                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
-                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
-                                {uniqueNames.join(', ')}
-                              </p>
-                            );
-                          })()}
-                        </div>
-
-                        {/* Rank Label */}
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
-                          {medal ? `${medal.label} Place` : `#${winner.rank}`}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            
 
             <div className="mb-8">
               <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">

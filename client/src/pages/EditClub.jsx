@@ -36,6 +36,7 @@ const EditClub = () => {
     clubX: "",
     clubWebsite: "",
     clubWhatsapp: "",
+    clubGithub: "",
     clubEmail: "",
     motto: "",
     mission: "",
@@ -67,11 +68,13 @@ const EditClub = () => {
           club.socialLinks?.find((l) => l.platform === "instagram")?.url || "",
         clubLinkedin:
           club.socialLinks?.find((l) => l.platform === "linkedin")?.url || "",
-        clubX: club.socialLinks?.find((l) => l.platform === "x")?.url || "",
+        clubX: club.socialLinks?.find((l) => l.platform === "x" || l.platform === "twitter")?.url || "",
         clubWebsite:
           club.socialLinks?.find((l) => l.platform === "website")?.url || "",
         clubWhatsapp:
           club.socialLinks?.find((l) => l.platform === "whatsapp")?.url || "",
+        clubGithub:
+          club.socialLinks?.find((l) => l.platform === "github")?.url || "",
         clubEmail: club.clubEmail || "",
         motto: club.motto || "",
         mission: club.mission || "",
@@ -187,6 +190,7 @@ const EditClub = () => {
         { platform: "x", url: formData.clubX },
         { platform: "website", url: formData.clubWebsite },
         { platform: "whatsapp", url: formData.clubWhatsapp },
+        { platform: "github", url: formData.clubGithub },
       ].filter((link) => link.url && link.url.trim() !== "");
 
       const processedData = {
@@ -212,6 +216,7 @@ const EditClub = () => {
       delete processedData.clubX;
       delete processedData.clubWebsite;
       delete processedData.clubWhatsapp;
+      delete processedData.clubGithub;
       delete processedData.clubLogo;
       const res = await updateClub(clubId, processedData);
 
@@ -438,6 +443,7 @@ const EditClub = () => {
               { name: "clubX", label: "X / Twitter URL", placeholder: "https://x.com/club" },
               { name: "clubWebsite", label: "Website URL", placeholder: "https://club.com" },
               { name: "clubWhatsapp", label: "WhatsApp Group/No.", placeholder: "Contact number or group link" },
+              { name: "clubGithub", label: "GitHub URL", placeholder: "https://github.com/club" },
             ].map((field) => (
               <div key={field.name}>
                 <label className="block text-[11px] font-semibold tracking-wide text-neutral-500 dark:text-neutral-400 mb-2 uppercase">

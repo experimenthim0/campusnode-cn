@@ -937,6 +937,7 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
         await tx.teamMember.deleteMany({ where: { team: { eventId: { in: eventIds } } } });
         await tx.team.deleteMany({ where: { eventId: { in: eventIds } } });
         await tx.eventClub.deleteMany({ where: { eventId: { in: eventIds } } });
+        await tx.featuredEvent.deleteMany({ where: { eventId: { in: eventIds } } });
         await tx.event.deleteMany({ where: { id: { in: eventIds } } });
       }
 

@@ -487,9 +487,10 @@ const ClubDetails = () => {
               (m) => m.studentId === authUser.id || m.student?.id === authUser.id
             );
             const isClubHeadRole = membership?.role === ClubMemberRole.CLUB_HEAD;
+            const isCoordinatorRole = membership?.role === ClubMemberRole.COORDINATOR;
 
             setIsHead(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole);
-            setCanEdit(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole || (membership?.canEditEvents ?? false));
+            setCanEdit(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole || isCoordinatorRole || (membership?.canEditEvents ?? false));
           }
         } catch {
           // fetch members failed

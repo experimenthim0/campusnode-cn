@@ -4,6 +4,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { uploadImage } from "../utils/cloudinary.js";
 import prisma from "../lib/prisma.js";
+import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -127,12 +128,8 @@ export const saveTemplate = async (req, res) => {
     const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const isCreator = event.createdById === req.user.userId;
-    const isAdmin = req.user.role === "admin";
-    const isAssignedFaculty =
-      req.user.role === "facultyCoordinator" && event.clubId === req.user.clubId;
-
-    if (!isCreator && !isAdmin && !isAssignedFaculty) {
+    const isAuthorized = hasPermission(req.user, PERMISSIONS.EVENT_CERTIFICATE, event);
+    if (!isAuthorized) {
       return res.status(403).json({
         message: "Unauthorized to update this event's template.",
       });
@@ -141,6 +138,7 @@ export const saveTemplate = async (req, res) => {
     await prisma.event.update({
       where: { id: eventId },
       data: {
+        provideCertificate: true,
         certificateTemplate: {
           imageUrl: config.imageUrl,
           nameX: parseInt(config.nameX),

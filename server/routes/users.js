@@ -281,68 +281,33 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
         return res.status(404).json({ message: "Club not found for this account." });
       }
 
+      // Explicit rejection: Club identity and social links must ONLY be updated via Club Settings (PUT /api/clubs/:id)
+      const forbiddenClubFields = [
+        "clubName", "name", "motto", "slogan",
+        "clubInstagram", "clubLinkedin", "clubX", "clubWebsite", "clubWhatsapp", "clubGithub",
+        "instagramProfile", "linkedinProfile", "xProfile", "portfolioUrl", "whatsappNumber", "githubProfile",
+        "socialLinks"
+      ];
+      const passedForbiddenField = forbiddenClubFields.find((f) => req.body[f] !== undefined);
+      if (passedForbiddenField) {
+        return res.status(400).json({
+          message: "Club identity and social links (such as Club Name, Motto / Slogan, and Social Links) cannot be updated via the user profile endpoint. Please update club details through Club Settings (/api/clubs/:id).",
+          field: passedForbiddenField,
+        });
+      }
+
       const clubDataUpdates = {};
-      if (req.body.name) clubDataUpdates.clubName = String(req.body.name).trim();
-      if (req.body.clubName) clubDataUpdates.clubName = String(req.body.clubName).trim();
-      if (req.body.motto !== undefined) clubDataUpdates.motto = req.body.motto ? String(req.body.motto).trim() : null;
       if (req.body.mission !== undefined) clubDataUpdates.mission = req.body.mission ? String(req.body.mission).trim() : null;
       if (req.body.category !== undefined) clubDataUpdates.category = req.body.category ? String(req.body.category).trim() : null;
       if (req.body.description !== undefined) clubDataUpdates.description = req.body.description ? String(req.body.description).trim() : null;
       if (req.body.establishedYear !== undefined) clubDataUpdates.establishedYear = req.body.establishedYear ? String(req.body.establishedYear).trim() : null;
 
-      const socialLinksList = [];
-      const addLink = (platform, url) => {
-        if (url && typeof url === "string" && url.trim()) {
-          socialLinksList.push({ platform, url: url.trim() });
-        }
-      };
-
-      if (req.body.instagramProfile !== undefined || req.body.clubInstagram !== undefined) {
-        addLink("instagram", req.body.instagramProfile || req.body.clubInstagram);
+      if (Object.keys(clubDataUpdates).length > 0) {
+        await prisma.club.update({
+          where: { id: effectiveClubId },
+          data: clubDataUpdates,
+        });
       }
-      if (req.body.linkedinProfile !== undefined || req.body.clubLinkedin !== undefined) {
-        addLink("linkedin", req.body.linkedinProfile || req.body.clubLinkedin);
-      }
-      if (req.body.xProfile !== undefined || req.body.clubX !== undefined) {
-        addLink("twitter", req.body.xProfile || req.body.clubX);
-      }
-      if (req.body.portfolioUrl !== undefined || req.body.clubWebsite !== undefined) {
-        addLink("website", req.body.portfolioUrl || req.body.clubWebsite);
-      }
-      if (req.body.whatsappNumber !== undefined || req.body.clubWhatsapp !== undefined) {
-        addLink("whatsapp", req.body.whatsappNumber || req.body.clubWhatsapp);
-      }
-      if (req.body.githubProfile !== undefined || req.body.clubGithub !== undefined) {
-        addLink("github", req.body.githubProfile || req.body.clubGithub);
-      }
-
-      await prisma.$transaction(async (tx) => {
-        if (Object.keys(clubDataUpdates).length > 0) {
-          await tx.club.update({
-            where: { id: effectiveClubId },
-            data: clubDataUpdates,
-          });
-        }
-
-        const linkFields = [
-          "instagramProfile", "linkedinProfile", "xProfile", "portfolioUrl", "whatsappNumber", "githubProfile",
-          "clubInstagram", "clubLinkedin", "clubX", "clubWebsite", "clubWhatsapp", "clubGithub", "socialLinks"
-        ];
-        const hasLinkInBody = linkFields.some((f) => req.body[f] !== undefined);
-        if (hasLinkInBody) {
-          await tx.clubSocialLink.deleteMany({ where: { clubId: effectiveClubId } });
-          for (const item of socialLinksList) {
-            await tx.clubSocialLink.create({
-              data: {
-                id: crypto.randomBytes(12).toString("hex"),
-                clubId: effectiveClubId,
-                platform: item.platform,
-                url: item.url,
-              },
-            });
-          }
-        }
-      });
 
       const updatedClub = await prisma.club.findUnique({
         where: { id: effectiveClubId },

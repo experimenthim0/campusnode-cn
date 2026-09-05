@@ -283,11 +283,29 @@ export const requirePermission = (permission, resourceExtractor = null) => {
     if (!req.user) {
       return res.status(401).json({ message: "Authentication required." });
     }
-    const resource = resourceExtractor
-      ? await resourceExtractor(req)
-      : req.params.clubId
-      ? { clubId: req.params.clubId }
-      : null;
+    let resource = null;
+    if (resourceExtractor) {
+      resource = await resourceExtractor(req);
+    } else if (req.params.clubId) {
+      resource = { clubId: req.params.clubId };
+    } else if (req.body && req.body.clubId) {
+      resource = { clubId: req.body.clubId };
+    } else if (req.baseUrl && req.baseUrl.includes("/clubs") && req.params.id) {
+      resource = { clubId: req.params.id };
+    } else if (req.params.eventId || (req.baseUrl && req.baseUrl.includes("/events") && req.params.id)) {
+      const targetEventId = req.params.eventId || req.params.id;
+      if (typeof targetEventId === "string" && targetEventId.length >= 10) {
+        try {
+          const ev = await prisma.event.findUnique({
+            where: { id: targetEventId },
+            select: { id: true, clubId: true, organizerType: true, institutionalAccountId: true, createdById: true },
+          });
+          if (ev) resource = ev;
+        } catch {
+          // Fallback to null
+        }
+      }
+    }
 
     const allowed = hasPermission(req.user, permission, resource);
     if (!allowed) {

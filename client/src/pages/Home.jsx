@@ -6,6 +6,7 @@ import { getUserEvents } from '../services/eventService';
 
 import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search } from 'lucide-react';
 import EventFeed from './EventFeed';
+import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import Clubspage from './Clubspage';
 import ClubLeaderboard from '../components/ClubLeaderboard';
 import HomeFooter from '../components/HomeFooter';
@@ -431,10 +432,12 @@ const Home = () => {
       
       const unacknowledgedWin = registrations.find(p => {
         const ev = p.eventId || p.event;
-        if (ev && ev.showWinner && ev.winners && !acknowledged.includes(ev.id || ev._id)) {
+        if (ev && ev.winners && Array.isArray(ev.winners) && !acknowledged.includes(ev.id || ev._id)) {
           const winInfo = ev.winners.find(w => 
-            (w.rollNo && w.rollNo.trim() === user.rollNo?.trim()) ||
-            (w.name && w.name.toLowerCase().includes(user.name.toLowerCase()))
+            (w.studentId && String(w.studentId) === String(user.id || user._id)) ||
+            (w.rollNo && user.rollNo && String(w.rollNo).trim().toLowerCase() === user.rollNo.trim().toLowerCase()) ||
+            (w.email && user.email && String(w.email).trim().toLowerCase() === user.email.trim().toLowerCase()) ||
+            (w.name && user.name && String(w.name).toLowerCase().includes(user.name.toLowerCase()))
           );
           if (winInfo) {
             p._winnerRank = winInfo.rank;
@@ -908,6 +911,9 @@ const Home = () => {
         </>
       )}
 
+      {/* NEW Featured Events Section */}
+      <FeaturedEventsSection />
+
       <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <Section>
           <ScrollReveal direction="up">
@@ -1095,8 +1101,8 @@ const Home = () => {
                   <div>
                     <SectionLabel>OUR VISION</SectionLabel>
                     <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                      One Campus.<br />
-                      <span className="text-brand-600 dark:text-brand-500">Better Connected.</span>
+                      Find More.<br />
+                      <span className="text-brand-600 dark:text-brand-500">Connect More.</span>
                     </h2>
                     <div className="space-y-4 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
                       <p>

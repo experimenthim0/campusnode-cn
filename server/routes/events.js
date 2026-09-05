@@ -1,7 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { verifyToken, allowRoles, requirePermission } from "../middleware/auth.js";
-import { PERMISSIONS } from "../utils/rbac.js";
+import { PERMISSIONS, hasPermission } from "../utils/rbac.js";
 import { slugifyUnique } from "../utils/slugifyUnique.js";
 import prisma from "../lib/prisma.js";
 import { serializeEvent, serializeParticipation } from "../utils/postgresEventSerializer.js";
@@ -302,6 +302,13 @@ const publicEventSelect = {
       clubLogo: true,
       slug: true,
       category: true,
+    },
+  },
+  sponsors: {
+    select: {
+      id: true,
+      name: true,
+      logoUrl: true,
     },
   },
 };
@@ -842,6 +849,65 @@ router.get(
         },
         orderBy: { createdAt: "desc" },
       });
+
+      if (!isExternal) {
+        const registeredEventIds = new Set(participations.map((p) => p.eventId));
+        const studentInfo = await prisma.studentUser.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            rollNo: true,
+            profileImage: true,
+            branch: true,
+            program: true,
+            expectedGraduationYear: true,
+            academicStatus: true,
+          },
+        });
+        if (studentInfo) {
+          const eventsWithWinners = await prisma.event.findMany({
+            where: {
+              winners: { not: null },
+              id: { notIn: Array.from(registeredEventIds) },
+            },
+            select: {
+              ...publicEventSelect,
+              customFields: true,
+              postRegistrationMessage: true,
+              paymentInstructions: true,
+              collegePaymentUrl: true,
+              upiId: true,
+              accountHolderName: true,
+              certificateTemplate: true,
+            },
+          });
+          for (const ev of eventsWithWinners) {
+            if (Array.isArray(ev.winners) && ev.winners.length > 0) {
+              const isWinner = ev.winners.some((w) =>
+                (w.studentId && String(w.studentId) === String(studentInfo.id)) ||
+                (w.rollNo && studentInfo.rollNo && String(w.rollNo).trim().toLowerCase() === studentInfo.rollNo.trim().toLowerCase()) ||
+                (w.email && studentInfo.email && String(w.email).trim().toLowerCase() === studentInfo.email.trim().toLowerCase()) ||
+                (w.name && studentInfo.name && String(w.name).toLowerCase().includes(studentInfo.name.toLowerCase()))
+              );
+              if (isWinner) {
+                participations.push({
+                  id: `win_${ev.id}_${studentInfo.id}`,
+                  eventId: ev.id,
+                  studentId: studentInfo.id,
+                  status: "ATTENDED",
+                  paymentStatus: "SUCCESS",
+                  createdAt: ev.createdAt,
+                  updatedAt: ev.updatedAt,
+                  event: ev,
+                  student: studentInfo,
+                });
+              }
+            }
+          }
+        }
+      }
 
       const hydratedParticipations = await Promise.all(
         participations.map((participation) => ensureParticipationTicket(participation)),
@@ -1532,12 +1598,8 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     const event = await prisma.event.findUnique({ where: { id: req.params.id } });
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const isCreator = event.createdById === req.user.userId;
-    const isCentralOrg = event.organizerType === "CENTRAL" && (req.user.role === "central_organizer" || event.centralOrganizerId === req.user.userId);
-    const isClubOwner = (req.user.clubId && String(event.clubId) === String(req.user.clubId)) || (req.user.userId && String(event.clubId) === String(req.user.userId));
-    const isAdminOrFaculty = req.user.role === "admin" || req.user.role === "facultyCoordinator";
-
-    if (!isCreator && !isCentralOrg && !isClubOwner && !isAdminOrFaculty) {
+    const isAuthorized = hasPermission(req.user, PERMISSIONS.EVENT_UPDATE, event);
+    if (!isAuthorized) {
       return res.status(403).json({ message: "Unauthorized to update this event." });
     }
 
@@ -1670,6 +1732,7 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
         return res.status(403).json({ message: "You can only delete events for your assigned club." });
       }
 
+      await prisma.featuredEvent.deleteMany({ where: { eventId: req.params.id } });
       await prisma.event.delete({ where: { id: req.params.id } });
       return res.json({ message: "Event deleted successfully." });
     }

@@ -19,6 +19,7 @@ import {
   CentralStaffDelegation,
   CentralParticipatingClubs,
   CentralAuditLogs,
+  CentralFeaturedEvents,
 } from "../roles/centralOrganizer";
 
 const initialFormData = {
@@ -454,6 +455,21 @@ const CentralOrganizerDashboard = () => {
               )}
             </button>
           )}
+
+          <button
+            onClick={() => setActiveTab("featured")}
+            className={`pb-3 relative transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "featured"
+                ? "text-brand-600 dark:text-brand-500"
+                : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+            }`}
+          >
+            <Sparkles size={14} />
+            Featured Events
+            {activeTab === "featured" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-500" />
+            )}
+          </button>
         </div>
 
 
@@ -521,6 +537,10 @@ const CentralOrganizerDashboard = () => {
 
         {activeTab === "audit" && (
           <CentralAuditLogs events={events} />
+        )}
+
+        {activeTab === "featured" && (
+          <CentralFeaturedEvents />
         )}
       </div>
     </div>

@@ -130,6 +130,26 @@ describe("3-Principal RBAC Permission Matrix & Scope Isolation", () => {
       expect(hasPermission(studentCoord, PERMISSIONS.PAYMENT_REVIEW, { clubId: clubAId })).toBe(true);
     });
 
+    it("Grants certificate design, announcements, achievements, and club updates on Club A", () => {
+      expect(hasPermission(studentCoord, PERMISSIONS.EVENT_CERTIFICATE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(studentCoord, PERMISSIONS.CERTIFICATE_MANAGE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_UPDATE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE, { clubId: clubAId })).toBe(true);
+    });
+
+    it("Grants unscoped certificate management capability (e.g. uploading template image)", () => {
+      expect(hasPermission(studentCoord, PERMISSIONS.EVENT_CERTIFICATE)).toBe(true);
+      expect(hasPermission(studentCoord, PERMISSIONS.CERTIFICATE_MANAGE)).toBe(true);
+    });
+
+    it("Denies certificate design and club page management on other clubs (Club B)", () => {
+      expect(hasPermission(studentCoord, PERMISSIONS.EVENT_CERTIFICATE, { clubId: clubBId })).toBe(false);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_UPDATE, { clubId: clubBId })).toBe(false);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE, { clubId: clubBId })).toBe(false);
+      expect(hasPermission(studentCoord, PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE, { clubId: clubBId })).toBe(false);
+    });
+
     it("STRICTLY DENIES Team Management (manage_members, invite, remove, assign_roles, transfer)", () => {
       expect(hasPermission(studentCoord, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(false);
       expect(hasPermission(studentCoord, PERMISSIONS.CLUB_INVITE_MEMBERS, { clubId: clubAId })).toBe(false);

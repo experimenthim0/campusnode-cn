@@ -62,6 +62,7 @@ const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
 const FeedbackSurveyPreview = lazy(() => import('./pages/FeedbackSurveyPreview'));
 const LeaderboardGuide = lazy(() => import('./pages/LeaderboardGuide'));
 const RegisterExternal = lazy(() => import('./pages/RegisterExternal'));
+const FeaturedEventsPage = lazy(() => import('./pages/FeaturedEventsPage'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
 import { FeedbackPromptProvider } from './context/FeedbackPromptContext';
@@ -100,6 +101,7 @@ function App() {
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password/:token" element={<ResetPassword />} />
                   <Route path="/events" element={<EventFeed />} />
+                  <Route path="/featured-events" element={<FeaturedEventsPage />} />
                   <Route path="/event/:slug" element={<EventDetails />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<RegisterStudent />} />

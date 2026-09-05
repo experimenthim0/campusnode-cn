@@ -9,6 +9,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
 import Section from '../components/layout/Section';
+import FeaturedEventsSection from '../components/FeaturedEventsSection';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -317,6 +318,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           </h1>
         </div>
       )}
+
+      {!hideHeader && <FeaturedEventsSection inline={true} />}
 
       {(!hideHeader || showFilters) && (
         <div className="mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">

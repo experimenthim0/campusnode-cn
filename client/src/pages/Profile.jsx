@@ -214,13 +214,14 @@ const Profile = () => {
         getUserEvents(authUser.id || authUser._id)
           .then(res => {
             const participations = res.data || [];
-            const winningsList = [];
             participations.forEach(p => {
               const ev = p.eventId || p.event;
-              if (ev && ev.showWinner && ev.winners) {
+              if (ev && ev.winners && Array.isArray(ev.winners)) {
                 const match = ev.winners.find(w =>
-                  (w.rollNo && w.rollNo.trim() === authUser.rollNo?.trim()) ||
-                  (w.name && w.name.toLowerCase().includes(authUser.name?.toLowerCase() || ''))
+                  (w.studentId && String(w.studentId) === String(authUser.id || authUser._id)) ||
+                  (w.rollNo && authUser.rollNo && String(w.rollNo).trim().toLowerCase() === authUser.rollNo.trim().toLowerCase()) ||
+                  (w.email && authUser.email && String(w.email).trim().toLowerCase() === authUser.email.trim().toLowerCase()) ||
+                  (w.name && authUser.name && String(w.name).toLowerCase().includes(authUser.name.toLowerCase()))
                 );
                 if (match) {
                   winningsList.push({
