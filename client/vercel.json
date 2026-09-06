@@ -1,4 +1,6 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -46,27 +48,14 @@
       ]
     }
   ],
+
   "rewrites": [
     {
-      "source": "/events/:slug",
-      "has": [
-        {
-          "type": "header",
-          "key": "User-Agent",
-          "value": "(?i)(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl)"
-        }
-      ],
+      "source": "/event/:slug",
       "destination": "/api/preview?slug=:slug"
     },
     {
-      "source": "/event/:slug",
-      "has": [
-        {
-          "type": "header",
-          "key": "User-Agent",
-          "value": "(?i)(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl)"
-        }
-      ],
+      "source": "/events/:slug",
       "destination": "/api/preview?slug=:slug"
     },
     {

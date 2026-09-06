@@ -1,13 +1,41 @@
 /**
  * Vercel Serverless Function: Dynamic Event Social Preview Handler
  *
- * Intercepts crawler requests for /events/:slug and /event/:slug and generates
- * instantaneous, crawler-friendly HTML with Open Graph & Twitter Card tags
- * before falling back to the client-side SPA.
+ * Handles /event/:slug and /events/:slug requests by:
+ * 1. Fetching the published event from the backend.
+ * 2. Fetching the normal Vite index.html.
+ * 3. Injecting event-specific SEO / Open Graph / Twitter metadata.
+ * 4. Returning the normal SPA HTML without redirecting.
+ *
+ * This allows:
+ * - WhatsApp
+ * - Facebook
+ * - Instagram/Facebook crawlers
+ * - LinkedIn
+ * - Discord
+ * - Telegram
+ * - X/Twitter
+ * - Google
+ * - Normal browsers
+ *
+ * to receive the same URL while crawlers see dynamic event metadata.
  */
 
+const SITE_URL = (
+  process.env.SITE_URL || "https://clubsetu.nikhim.me"
+).replace(/\/+$/, "");
+
+const DEFAULT_TITLE = "CampusNode - NIT Jalandhar Clubs & Events";
+
+const DEFAULT_DESCRIPTION =
+  "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
+
+const DEFAULT_IMAGE = `${SITE_URL}/campusnode-og-fallback.png`;
+
+/**
+ * Escape a value before inserting it into an HTML attribute.
+ */
 function escapeHtmlAttr(str = "") {
-  if (!str) return "";
   return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -16,17 +44,40 @@ function escapeHtmlAttr(str = "") {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Escape text used inside <title>.
+ */
+function escapeHtmlText(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * Format the event title used by browsers and social platforms.
+ */
 function formatEventTitle(title) {
   if (!title || typeof title !== "string") {
-    return "CampusNode - Event Management";
+    return DEFAULT_TITLE;
   }
+
   const clean = title.trim();
+
+  if (!clean) {
+    return DEFAULT_TITLE;
+  }
+
   if (/campusnode/i.test(clean)) {
     return clean;
   }
+
   return `${clean} | CampusNode`;
 }
 
+/**
+ * Convert an event description into clean social-preview text.
+ */
 function cleanEventDescription(description, event = {}) {
   let text = String(description || "").trim();
 
@@ -45,222 +96,486 @@ function cleanEventDescription(description, event = {}) {
   // Strip HTML
   text = text.replace(/<[^>]*>/g, " ");
 
-  // Normalize punctuation and whitespace
+  // Normalize whitespace
   text = text
     .replace(/\s+([.,!?;:])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Rich fallback if empty or too brief (< 15 chars)
+  // Generate useful fallback
   if (text.length < 15) {
-    const title = event.title ? event.title.trim() : "this event";
+    const title = event.title
+      ? event.title.trim()
+      : "this event";
+
     const club =
       event.club?.clubName ||
-      (event.organizerType === "CENTRAL" ? "Central Student Body" : "CampusNode");
-    const venue = event.venue ? ` at ${event.venue.trim()}` : " at NIT Jalandhar";
-    text = `Join ${title} organized by ${club}${venue}. View event details, schedule, and register online on CampusNode.`;
+      (event.organizerType === "CENTRAL"
+        ? "Central Student Body"
+        : "CampusNode");
+
+    const venue = event.venue
+      ? ` at ${event.venue.trim()}`
+      : " at NIT Jalandhar";
+
+    text =
+      `Join ${title} organized by ${club}${venue}. ` +
+      `View event details, schedule, and register online on CampusNode.`;
   }
 
-  // Truncate cleanly
+  // Keep social description reasonably compact.
   const maxLength = 175;
+
   if (text.length > maxLength) {
     const truncated = text.slice(0, maxLength);
     const lastSpace = truncated.lastIndexOf(" ");
-    text = (lastSpace > 120 ? truncated.slice(0, lastSpace) : truncated) + "...";
+
+    text =
+      (lastSpace > 120
+        ? truncated.slice(0, lastSpace)
+        : truncated) + "...";
   }
 
   return text;
 }
 
-function resolveSocialImage(event, baseUrl) {
-  const normalizedBase = String(baseUrl).replace(/\/+$/, "");
-  const fallbackUrl = `${normalizedBase}/campusnode-og-fallback.png`;
-
+/**
+ * Resolve the event image into an absolute HTTPS URL.
+ */
+function resolveSocialImage(event) {
   if (!event || !event.imageUrl) {
-    return fallbackUrl;
+    return DEFAULT_IMAGE;
   }
 
   const rawUrl = String(event.imageUrl).trim();
+
   if (!rawUrl) {
-    return fallbackUrl;
+    return DEFAULT_IMAGE;
   }
 
+  // Already absolute.
   if (/^https?:\/\//i.test(rawUrl)) {
     return rawUrl;
   }
 
-  return `${normalizedBase}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
+  // Relative image URL.
+  return `${SITE_URL}${
+    rawUrl.startsWith("/") ? "" : "/"
+  }${rawUrl}`;
 }
 
-function generatePreviewHtml(event, { host, slug }) {
-  const canonicalDomain = host ? `https://${host}` : "https://clubsetu.nikhim.me";
-  const canonicalUrl = `${canonicalDomain}/events/${slug}`;
+/**
+ * Remove metadata that may already exist in Vite's index.html.
+ *
+ * This prevents duplicate:
+ * - <title>
+ * - description
+ * - canonical
+ * - Open Graph
+ * - Twitter
+ * tags.
+ */
+function removeExistingSocialMetadata(html) {
+  return html
+    // Title
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, "")
 
-  const rawTitle = formatEventTitle(event.title);
-  const rawDescription = cleanEventDescription(event.description, event);
-  const imageUrl = resolveSocialImage(event, canonicalDomain);
+    // Description
+    .replace(
+      /<meta\b[^>]*\bname=["']description["'][^>]*>\s*/gi,
+      ""
+    )
 
-  const titleEscaped = escapeHtmlAttr(rawTitle);
-  const descEscaped = escapeHtmlAttr(rawDescription);
-  const imageEscaped = escapeHtmlAttr(imageUrl);
-  const urlEscaped = escapeHtmlAttr(canonicalUrl);
+    // Canonical
+    .replace(
+      /<link\b[^>]*\brel=["']canonical["'][^>]*>\s*/gi,
+      ""
+    )
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${titleEscaped}</title>
-  <meta name="description" content="${descEscaped}">
-  <link rel="canonical" href="${urlEscaped}">
+    // Open Graph
+    .replace(
+      /<meta\b[^>]*\bproperty=["']og:[^"']+["'][^>]*>\s*/gi,
+      ""
+    )
 
-  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
-  <meta property="og:title" content="${titleEscaped}">
-  <meta property="og:description" content="${descEscaped}">
-  <meta property="og:url" content="${urlEscaped}">
-  <meta property="og:image" content="${imageEscaped}">
-  <meta property="og:image:secure_url" content="${imageEscaped}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${titleEscaped}">
+    // Twitter
+    .replace(
+      /<meta\b[^>]*\bname=["']twitter:[^"']+["'][^>]*>\s*/gi,
+      ""
+    );
+}
+
+/**
+ * Generate event-specific metadata.
+ */
+function generateSocialMetadata(event, slug) {
+  const canonicalUrl =
+    `${SITE_URL}/event/${encodeURIComponent(slug)}`;
+
+  const title = formatEventTitle(event?.title);
+
+  const description = cleanEventDescription(
+    event?.description,
+    event
+  );
+
+  const imageUrl = resolveSocialImage(event);
+
+  const titleAttr = escapeHtmlAttr(title);
+  const descriptionAttr = escapeHtmlAttr(description);
+  const imageAttr = escapeHtmlAttr(imageUrl);
+  const canonicalAttr = escapeHtmlAttr(canonicalUrl);
+
+  const titleText = escapeHtmlText(title);
+
+  return `
+  <title>${titleText}</title>
+
+  <meta
+    name="description"
+    content="${descriptionAttr}"
+  />
+
+  <link
+    rel="canonical"
+    href="${canonicalAttr}"
+  />
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn / Discord -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CampusNode" />
+  <meta property="og:title" content="${titleAttr}" />
+  <meta property="og:description" content="${descriptionAttr}" />
+  <meta property="og:url" content="${canonicalAttr}" />
+  <meta property="og:image" content="${imageAttr}" />
+  <meta property="og:image:secure_url" content="${imageAttr}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${titleAttr}" />
 
   <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@campusnode">
-  <meta name="twitter:title" content="${titleEscaped}">
-  <meta name="twitter:description" content="${descEscaped}">
-  <meta name="twitter:image" content="${imageEscaped}">
-  <meta name="twitter:image:alt" content="${titleEscaped}">
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@campusnode" />
+  <meta name="twitter:title" content="${titleAttr}" />
+  <meta name="twitter:description" content="${descriptionAttr}" />
+  <meta name="twitter:image" content="${imageAttr}" />
+  <meta name="twitter:image:alt" content="${titleAttr}" />
 
-  <link rel="icon" type="image/png" href="${canonicalDomain}/lightthemelogo2.png">
-  <meta name="theme-color" content="#ea580c">
+  <!-- CampusNode -->
+  <link
+    rel="icon"
+    type="image/png"
+    href="${SITE_URL}/lightthemelogo2.png"
+  />
 
-  <!-- Fallback redirect for human browser users -->
-  <meta http-equiv="refresh" content="0;url=${urlEscaped}">
-</head>
-<body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
-  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Opening event...</p>
-  <a href="${urlEscaped}" style="color:#ea580c;text-decoration:none;font-weight:600;font-size:16px;">Click here if you are not redirected automatically</a>
-  <script>
-    try {
-      window.location.replace("${urlEscaped}");
-    } catch(e) {
-      window.location.href = "${urlEscaped}";
-    }
-  </script>
-</body>
-</html>`;
+  <meta name="theme-color" content="#facc15" />
+  `;
 }
 
-function generateDefaultHtml(host) {
-  const domain = host ? `https://${host}` : "https://clubsetu.nikhim.me";
-  const fallbackUrl = `${domain}/campusnode-og-fallback.png`;
-  const eventsUrl = `${domain}/events`;
+/**
+ * Inject event metadata into the normal Vite HTML.
+ */
+function injectMetadataIntoHtml(baseHtml, event, slug) {
+  const cleanedHtml = removeExistingSocialMetadata(baseHtml);
 
-  const title = "CampusNode - NIT Jalandhar Clubs & Events";
-  const desc = "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
+  const metadata = generateSocialMetadata(event, slug);
 
-  const titleEscaped = escapeHtmlAttr(title);
-  const descEscaped = escapeHtmlAttr(desc);
-  const imageEscaped = escapeHtmlAttr(fallbackUrl);
-  const urlEscaped = escapeHtmlAttr(eventsUrl);
+  if (!/<head\b[^>]*>/i.test(cleanedHtml)) {
+    throw new Error("Vite index.html does not contain a <head> element");
+  }
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${titleEscaped}</title>
-  <meta name="description" content="${descEscaped}">
-  <link rel="canonical" href="${urlEscaped}">
-
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
-  <meta property="og:title" content="${titleEscaped}">
-  <meta property="og:description" content="${descEscaped}">
-  <meta property="og:url" content="${urlEscaped}">
-  <meta property="og:image" content="${imageEscaped}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@campusnode">
-  <meta name="twitter:title" content="${titleEscaped}">
-  <meta name="twitter:description" content="${descEscaped}">
-  <meta name="twitter:image" content="${imageEscaped}">
-
-  <link rel="icon" type="image/png" href="${domain}/lightthemelogo2.png">
-  <meta name="theme-color" content="#ea580c">
-  <meta http-equiv="refresh" content="0;url=${urlEscaped}">
-</head>
-<body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
-  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Redirecting to CampusNode Events...</p>
-  <a href="${urlEscaped}" style="color:#ea580c;text-decoration:none;font-weight:600;font-size:16px;">Click here if you are not redirected automatically</a>
-  <script>
-    try {
-      window.location.replace("${urlEscaped}");
-    } catch(e) {
-      window.location.href = "${urlEscaped}";
-    }
-  </script>
-</body>
-</html>`;
+  return cleanedHtml.replace(
+    /(<head\b[^>]*>)/i,
+    `$1\n${metadata}`
+  );
 }
 
+/**
+ * Generate generic metadata for:
+ * - missing event
+ * - unpublished event
+ * - backend failure
+ */
+function generateDefaultMetadata() {
+  const titleAttr = escapeHtmlAttr(DEFAULT_TITLE);
+  const descriptionAttr = escapeHtmlAttr(DEFAULT_DESCRIPTION);
+  const imageAttr = escapeHtmlAttr(DEFAULT_IMAGE);
+
+  return `
+  <title>${escapeHtmlText(DEFAULT_TITLE)}</title>
+
+  <meta
+    name="description"
+    content="${descriptionAttr}"
+  />
+
+  <link
+    rel="canonical"
+    href="${SITE_URL}/events"
+  />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CampusNode" />
+  <meta property="og:title" content="${titleAttr}" />
+  <meta property="og:description" content="${descriptionAttr}" />
+  <meta property="og:url" content="${SITE_URL}/events" />
+  <meta property="og:image" content="${imageAttr}" />
+  <meta property="og:image:secure_url" content="${imageAttr}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${titleAttr}" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${titleAttr}" />
+  <meta name="twitter:description" content="${descriptionAttr}" />
+  <meta name="twitter:image" content="${imageAttr}" />
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="${SITE_URL}/lightthemelogo2.png"
+  />
+
+  <meta name="theme-color" content="#facc15" />
+  `;
+}
+
+/**
+ * Inject generic metadata into the normal SPA HTML.
+ */
+function injectDefaultMetadata(baseHtml) {
+  const cleanedHtml = removeExistingSocialMetadata(baseHtml);
+
+  const metadata = generateDefaultMetadata();
+
+  return cleanedHtml.replace(
+    /(<head\b[^>]*>)/i,
+    `$1\n${metadata}`
+  );
+}
+
+/**
+ * Fetch with a timeout.
+ */
+async function fetchWithTimeout(
+  url,
+  options = {},
+  timeoutMs = 5000
+) {
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Get the deployed Vite index.html.
+ *
+ * VERCEL_URL points to the current deployment and avoids
+ * accidentally requesting /event/:slug again.
+ */
+async function getBaseIndexHtml() {
+  const deploymentOrigin = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : SITE_URL;
+
+  const indexUrl = `${deploymentOrigin}/index.html`;
+
+  const response = await fetchWithTimeout(
+    indexUrl,
+    {
+      headers: {
+        Accept: "text/html",
+      },
+    },
+    5000
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch Vite index.html: ${response.status}`
+    );
+  }
+
+  return response.text();
+}
+
+/**
+ * Main Vercel serverless handler.
+ */
 export default async function handler(req, res) {
-  const { slug } = req.query;
-  const host = req.headers.host || "clubsetu.nikhim.me";
+  const slug =
+    typeof req.query?.slug === "string"
+      ? req.query.slug.trim()
+      : "";
 
-  // Production backend URL priority
-  const apiUrl =
+  const apiUrl = (
     process.env.API_URL ||
     process.env.VITE_API_URL ||
     process.env.BACKEND_URL ||
-    "https://campusnode-server.onrender.com";
-
-  if (!slug) {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultHtml(host));
-  }
+    "https://campusnode-server.onrender.com"
+  ).replace(/\/+$/, "");
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    // Always load the real SPA HTML first.
+    const baseHtml = await getBaseIndexHtml();
 
-    const eventRes = await fetch(`${apiUrl}/api/events/${encodeURIComponent(slug)}`, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json",
+    // No slug → return normal SPA with generic metadata.
+    if (!slug) {
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
+    }
+
+    /**
+     * Fetch event information from backend.
+     */
+    const eventRes = await fetchWithTimeout(
+      `${apiUrl}/api/event/${encodeURIComponent(slug)}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
-    clearTimeout(timeoutId);
+      5000
+    );
 
     if (!eventRes.ok) {
-      throw new Error(`Event lookup failed: ${eventRes.status}`);
+      throw new Error(
+        `Event lookup failed: ${eventRes.status}`
+      );
     }
 
     const event = await eventRes.json();
 
-    // Check if event is published (prevents leaking private/draft details)
-    if (event.reviewStatus && event.reviewStatus !== "PUBLISHED") {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-      return res.status(200).send(generateDefaultHtml(host));
+    /**
+     * Never expose unpublished/private event information
+     * through social metadata.
+     */
+    if (
+      event?.reviewStatus &&
+      event.reviewStatus !== "PUBLISHED"
+    ) {
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
     }
 
-    const html = generatePreviewHtml(event, { host, slug });
+    /**
+     * Inject event-specific metadata into the normal SPA.
+     */
+    const html = injectMetadataIntoHtml(
+      baseHtml,
+      event,
+      slug
+    );
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    // Cache at Vercel Edge for 10 minutes, serve stale while revalidating
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+    res.setHeader(
+      "Content-Type",
+      "text/html; charset=utf-8"
+    );
+
+    /**
+     * Cache dynamic event metadata at Vercel.
+     *
+     * Browser:
+     * 60 seconds
+     *
+     * Vercel:
+     * 10 minutes
+     *
+     * Stale:
+     * 24 hours while revalidating
+     */
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=60, s-maxage=600, stale-while-revalidate=86400"
+    );
+
     return res.status(200).send(html);
   } catch (error) {
-    console.error(`[Social Preview] Error generating preview for slug "${slug}":`, error.message);
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultHtml(host));
+    console.error(
+      `[Social Preview] Error for slug "${slug}":`,
+      error?.message || error
+    );
+
+    /**
+     * Even if backend/index fetching fails, return the
+     * normal SPA instead of returning a redirect page.
+     */
+    try {
+      const baseHtml = await getBaseIndexHtml();
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
+    } catch (fallbackError) {
+      console.error(
+        "[Social Preview] Fallback HTML generation failed:",
+        fallbackError?.message || fallbackError
+      );
+
+      return res
+        .status(200)
+        .setHeader(
+          "Content-Type",
+          "text/html; charset=utf-8"
+        )
+        .send(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <title>${escapeHtmlText(DEFAULT_TITLE)}</title>
+              <meta
+                name="description"
+                content="${escapeHtmlAttr(DEFAULT_DESCRIPTION)}"
+              >
+            </head>
+            <body>
+              <div id="root"></div>
+            </body>
+          </html>
+        `);
+    }
   }
 }
