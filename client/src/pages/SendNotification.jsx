@@ -145,7 +145,10 @@ const SendNotification = () => {
         title,
         message,
         targetType,
-        eventId: targetType === "EVENT_PARTICIPANTS" ? selectedEventId : undefined,
+        eventId:
+          targetType === "REGISTERED_STUDENTS" || targetType === "EVENT_PARTICIPANTS"
+            ? selectedEventId
+            : undefined,
       });
 
       setSuccessMsg("Notification broadcast dispatched successfully!");

@@ -463,6 +463,8 @@ router.post("/events/:eventId/staff", async (req, res) => {
           senderStudentId: studentInviter?.id || null,
           senderInstitutionalAccountId: isInst ? req.user.userId : null,
           recipientStudentId: student.id,
+          recipientUserId: student.id,
+          targetScope: "USER",
           eventId: req.params.eventId,
           type: "EVENT_STAFF_INVITATION",
           title: "Event Staff Invitation",

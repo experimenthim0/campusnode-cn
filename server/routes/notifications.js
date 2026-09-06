@@ -70,6 +70,146 @@ function formatSender(notification) {
   return null;
 }
 
+export async function getNotificationRecipientFilter(user) {
+  const { userId, userType, principalType, role, clubId } = user;
+  const isSuperAdmin = role === "admin";
+  const isPaymentAdmin = role === "paymentAdmin";
+  const isLostFoundAdmin = role === "lostFoundAdmin";
+  const isFaculty = role === "facultyCoordinator" || principalType === "FACULTY";
+  const isInstitutional =
+    principalType === "INSTITUTIONAL" || userType === "institutional" || role === "central_organizer";
+  const isClub = principalType === "CLUB" || userType === "club";
+  const isExternal = principalType === "EXTERNAL" || userType === "external" || role === "external";
+
+  if (isFaculty) {
+    const facultyClubs = await prisma.club.findMany({
+      where: { facultyCoordinatorId: userId },
+      select: { id: true },
+    });
+    const facultyClubIds = facultyClubs.map((c) => c.id);
+    if (clubId && !facultyClubIds.includes(clubId)) {
+      facultyClubIds.push(clubId);
+    }
+
+    return {
+      OR: [
+        { recipientUserId: userId },
+        ...(facultyClubIds.length > 0
+          ? [{ targetScope: "FACULTY_COORDINATOR", clubId: { in: facultyClubIds } }]
+          : []),
+        { targetScope: "GLOBAL" },
+      ],
+    };
+  }
+
+  if (isSuperAdmin || isPaymentAdmin || isLostFoundAdmin) {
+    return {
+      OR: [
+        { recipientUserId: userId },
+        { targetScope: "ADMIN" },
+        { targetScope: "GLOBAL" },
+      ],
+    };
+  }
+
+  if (isInstitutional) {
+    const managedEvents = await prisma.event.findMany({
+      where: {
+        OR: [{ institutionalAccountId: userId }, { centralOrganizerId: userId }],
+      },
+      select: { id: true },
+    });
+    const eventIds = managedEvents.map((e) => e.id);
+
+    return {
+      OR: [
+        { recipientUserId: userId },
+        { targetScope: "ODSW" },
+        ...(eventIds.length > 0
+          ? [{ targetScope: "EVENT_STAFF", eventId: { in: eventIds } }]
+          : []),
+        { targetScope: "GLOBAL" },
+      ],
+    };
+  }
+
+  if (isClub) {
+    let effectiveClubId = clubId;
+    if (!effectiveClubId) {
+      const clubAcc = await prisma.clubAccount.findUnique({
+        where: { id: userId },
+        select: { clubId: true },
+      });
+      effectiveClubId = clubAcc?.clubId;
+    }
+
+    return {
+      OR: [
+        { recipientUserId: userId },
+        ...(effectiveClubId
+          ? [{ targetScope: "CLUB_MEMBERS", clubId: effectiveClubId }]
+          : []),
+        { targetScope: "GLOBAL" },
+      ],
+    };
+  }
+
+  if (isExternal) {
+    const participations = await prisma.participation.findMany({
+      where: { externalUserId: userId, status: { in: ["REGISTERED", "ATTENDED"] } },
+      select: { eventId: true },
+    });
+    const regEventIds = participations.map((p) => p.eventId);
+
+    return {
+      OR: [
+        { recipientUserId: userId },
+        ...(regEventIds.length > 0
+          ? [{ targetScope: "EVENT_PARTICIPANTS", eventId: { in: regEventIds } }]
+          : []),
+        { targetScope: "GLOBAL" },
+      ],
+    };
+  }
+
+  // Student user
+  const [participations, staffAssignments, memberships] = await Promise.all([
+    prisma.participation.findMany({
+      where: { studentId: userId, status: { in: ["REGISTERED", "ATTENDED"] } },
+      select: { eventId: true },
+    }),
+    prisma.eventStaff.findMany({
+      where: { userId, status: "ACTIVE" },
+      select: { eventId: true },
+    }),
+    prisma.clubMembership.findMany({
+      where: { studentId: userId, status: "ACTIVE" },
+      select: { clubId: true },
+    }),
+  ]);
+
+  const regEventIds = participations.map((p) => p.eventId);
+  const staffEventIds = staffAssignments.map((s) => s.eventId);
+  const memberClubIds = memberships.map((m) => m.clubId);
+
+  return {
+    OR: [
+      { recipientStudentId: userId },
+      { recipientUserId: userId },
+      { targetScope: "GLOBAL" },
+      ...(regEventIds.length > 0
+        ? [{ targetScope: "EVENT_PARTICIPANTS", eventId: { in: regEventIds } }]
+        : []),
+      ...(staffEventIds.length > 0
+        ? [{ targetScope: "EVENT_STAFF", eventId: { in: staffEventIds } }]
+        : []),
+      ...(memberClubIds.length > 0
+        ? [{ targetScope: "CLUB_MEMBERS", clubId: { in: memberClubIds } }]
+        : []),
+    ],
+  };
+}
+
 router.post(
   "/",
   notificationLimiter,
@@ -85,6 +225,8 @@ router.post(
       }
 
       let recipients = [];
+      let targetScope = "GLOBAL";
+      let targetClubId = null;
 
       if (targetType === "REGISTERED_STUDENTS") {
         if (!eventId) {
@@ -93,6 +235,8 @@ router.post(
 
         const event = await prisma.event.findUnique({ where: { id: eventId } });
         if (!event) return res.status(404).json({ message: "Event not found." });
+        targetClubId = event.clubId || null;
+        targetScope = "EVENT_PARTICIPANTS";
 
         const isCentralAuth = req.user.role === "central_organizer" || req.user.principalType === "INSTITUTIONAL";
         if (!isCentralAuth) {
@@ -120,6 +264,7 @@ router.post(
         });
         recipients = participations.map((p) => p.studentId).filter(Boolean);
       } else if (targetType === "ALL_STUDENTS") {
+        targetScope = "GLOBAL";
         const isAllowedAll =
           req.user.role === "admin" ||
           req.user.role === "club" ||
@@ -144,6 +289,9 @@ router.post(
           senderAdminId: (!isInst && !isClubAcc && userType === "admin") ? sender : null,
           senderInstitutionalAccountId: isInst ? sender : null,
           senderClubAccountId: isClubAcc ? sender : null,
+          targetScope,
+          eventId: targetScope === "EVENT_PARTICIPANTS" ? eventId : null,
+          clubId: targetClubId,
           title,
           message,
         },
@@ -178,74 +326,26 @@ router.get(
   requirePermission(PERMISSIONS.NOTIFICATION_VIEW),
   async (req, res) => {
     try {
-      const { userId, userType, principalType, role } = req.user;
-      const isAdminUser = userType === "admin" || principalType === "ADMIN" || role === "admin" || role === "paymentAdmin";
+      const recipientFilter = await getNotificationRecipientFilter(req.user);
 
-      let notifications;
-
-      if (isAdminUser) {
-        notifications = await prisma.notification.findMany({
-          where: {
-            OR: [
-              { senderAdminId: null },
-              { senderAdminId: { not: userId } },
-            ],
-          },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-          take: 100,
-        });
-      } else if (principalType === "INSTITUTIONAL" || userType === "institutional") {
-        notifications = await prisma.notification.findMany({
-          where: {
-            OR: [
-              { senderInstitutionalAccountId: null },
-              { senderInstitutionalAccountId: { not: userId } },
-            ],
-          },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-          take: 100,
-        });
-      } else if (principalType === "CLUB" || userType === "club") {
-        notifications = await prisma.notification.findMany({
-          where: {
-            OR: [
-              { recipientStudentId: null, senderClubAccountId: { not: userId } },
-              { recipientStudentId: userId },
-            ],
-          },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-          take: 100,
-        });
-      } else {
+      let userCreatedAt = new Date(0);
+      if (req.user.userType === "student") {
         const student = await prisma.studentUser.findUnique({
-          where: { id: userId },
+          where: { id: req.user.userId },
           select: { createdAt: true },
         });
-        const userCreatedAt = student?.createdAt ?? new Date(0);
-
-        notifications = await prisma.notification.findMany({
-          where: {
-            createdAt: { gte: userCreatedAt },
-            OR: [
-              { recipientStudentId: userId },
-              {
-                recipientStudentId: null,
-                OR: [
-                  { senderStudentId: { not: null } },
-                  { senderAdminId: { not: null } },
-                  { senderInstitutionalAccountId: { not: null } },
-                  { senderClubAccountId: { not: null } },
-                ],
-              },
-            ],
-          },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-        });
+        if (student?.createdAt) userCreatedAt = student.createdAt;
       }
+
+      const notifications = await prisma.notification.findMany({
+        where: {
+          createdAt: { gte: userCreatedAt },
+          ...recipientFilter,
+        },
+        include: senderInclude,
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      });
 
       res.json(
         notifications.map((n) => ({
@@ -263,10 +363,11 @@ router.get(
 router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW), async (req, res) => {
   try {
     const { userId, userType, principalType, role } = req.user;
+    const isFaculty = role === "facultyCoordinator" || principalType === "FACULTY";
     const isAdminUser = userType === "admin" || principalType === "ADMIN" || role === "admin" || role === "paymentAdmin";
 
     const where =
-      isAdminUser
+      isFaculty || isAdminUser
         ? { senderAdminId: userId }
         : (principalType === "INSTITUTIONAL" || userType === "institutional")
           ? { senderInstitutionalAccountId: userId }
@@ -292,7 +393,7 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
   }
 });
 
-// IMPORTANT: /read-all must come BEFORE /:id/read to avoid Express
+// IMPORTANT: /read-all must come BEFORE /:id/read to avoid Express routing collision
 
 router.put(
   "/read-all",
@@ -301,32 +402,34 @@ router.put(
   async (req, res) => {
     try {
       const { userId, userType } = req.user;
+      const recipientFilter = await getNotificationRecipientFilter(req.user);
 
-      let userCreatedAt;
+      let userCreatedAt = new Date(0);
       if (userType === "admin") {
         const admin = await prisma.adminRole.findUnique({
           where: { id: userId },
           select: { createdAt: true },
         });
-        userCreatedAt = admin?.createdAt ?? new Date(0);
-      } else {
+        if (admin?.createdAt) userCreatedAt = admin.createdAt;
+      } else if (userType === "student") {
         const student = await prisma.studentUser.findUnique({
           where: { id: userId },
           select: { createdAt: true },
         });
-        userCreatedAt = student?.createdAt ?? new Date(0);
+        if (student?.createdAt) userCreatedAt = student.createdAt;
       }
 
       const unreadNotifications = await prisma.notification.findMany({
         where: {
           createdAt: { gte: userCreatedAt },
+          ...recipientFilter,
           NOT: {
             readBy: {
-              has: userId
-            }
-          }
+              has: userId,
+            },
+          },
         },
-        select: { id: true }
+        select: { id: true },
       });
 
       if (unreadNotifications.length > 0) {
@@ -335,9 +438,9 @@ router.put(
             where: { id: n.id },
             data: {
               readBy: {
-                push: userId
-              }
-            }
+                push: userId,
+              },
+            },
           });
         }
       }
@@ -356,13 +459,26 @@ router.put(
   async (req, res) => {
     try {
       const { userId } = req.user;
+      const recipientFilter = await getNotificationRecipientFilter(req.user);
+
+      const notif = await prisma.notification.findFirst({
+        where: {
+          id: req.params.id,
+          ...recipientFilter,
+        },
+      });
+
+      if (!notif) {
+        return res.status(404).json({ message: "Notification not found or access denied." });
+      }
+
       const updated = await prisma.notification.update({
         where: { id: req.params.id },
         data: {
           readBy: {
-            push: userId
-          }
-        }
+            push: userId,
+          },
+        },
       });
 
       res.json({ ...updated, _id: updated.id });

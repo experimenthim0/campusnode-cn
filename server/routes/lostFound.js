@@ -275,6 +275,9 @@ router.post("/:id/report", verifyToken, async (req, res) => {
         id: createObjectId(),
         senderStudentId: req.user.userId,
         recipientStudentId: result.ownerId, // targeted only to the post owner
+        recipientUserId: result.ownerId,
+        targetScope: "USER",
+        type: "LOST_FOUND_REPORT",
         lostFoundItemId: req.params.id,     // links to the item for cascade delete
         title: "⚠️ Your L&F post was reported",
         message: `${reporter?.name || 'Someone'} reported your post "${result.itemTitle}" — Reason: ${reason.trim()}`
@@ -286,6 +289,9 @@ router.post("/:id/report", verifyToken, async (req, res) => {
         id: createObjectId(),
         senderStudentId: req.user.userId,
         recipientStudentId: req.user.userId, // targeted only to the reporter
+        recipientUserId: req.user.userId,
+        targetScope: "USER",
+        type: "LOST_FOUND_REPORT",
         lostFoundItemId: req.params.id,      // links to the item for cascade delete
         title: "Report Submitted Successfully",
         message: `You successfully reported the post "${result.itemTitle}" — Reason: ${reason.trim()}`

@@ -107,6 +107,7 @@ model Club {
   participatingEvents  EventClub[]
   announcements        ClubAnnouncement[]
   achievements         ClubAchievement[]
+  notifications        Notification[]
 }
 
 model ClubAccount {
@@ -350,6 +351,9 @@ model Notification {
   senderInstitutionalAccountId  String?               @db.VarChar(24)
   senderClubAccountId           String?               @db.VarChar(24)
   recipientStudentId            String?               @db.VarChar(24)
+  recipientUserId               String?               @db.VarChar(24)
+  targetScope                   String                @default("USER") @db.VarChar(32)
+  clubId                        String?               @db.VarChar(24)
   lostFoundItemId               String?               @db.VarChar(24)
   eventId                       String?               @db.VarChar(24)
   teamId                        String?               @db.VarChar(24)
@@ -364,9 +368,13 @@ model Notification {
   senderClubAccount             ClubAccount?          @relation("NotificationSenderClubAccount", fields: [senderClubAccountId], references: [id])
   recipientStudent              StudentUser?          @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
   lostFoundItem                 LostFoundItem?        @relation(fields: [lostFoundItemId], references: [id], onDelete: Cascade)
+  club                          Club?                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([recipientStudentId, createdAt])
+  @@index([recipientUserId, createdAt])
+  @@index([targetScope, createdAt])
+  @@index([clubId, createdAt])
   @@index([eventId, createdAt])
   @@index([teamId, createdAt])
 }

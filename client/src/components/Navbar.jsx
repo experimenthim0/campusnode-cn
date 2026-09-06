@@ -88,15 +88,52 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleNotificationClick = async () => {
-    setNotifDropdownOpen(!notifDropdownOpen);
-    if (!notifDropdownOpen && unreadCount > 0) {
+  const handleNotificationClick = () => {
+    setNotifDropdownOpen((prev) => !prev);
+  };
+
+  const handleMarkAllNotificationsRead = async (e) => {
+    if (e) e.stopPropagation();
+    if (unreadCount <= 0) return;
+    try {
+      await api.put("/api/notifications/read-all");
+      if (setUnreadCount) setUnreadCount(0);
+      const userId = user?._id || user?.id;
+      if (setNotifications && userId) {
+        setNotifications((prev) =>
+          (prev || []).map((n) => ({
+            ...n,
+            readBy: [...(n.readBy || []), userId],
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to mark all as read:", err);
+    }
+  };
+
+  const handleNotificationItemClick = async (notif) => {
+    setNotifDropdownOpen(false);
+    setMobileOpen?.(false);
+    const userId = user?._id || user?.id;
+    const notifId = notif.id || notif._id;
+    if (userId && notifId && !notif.readBy?.includes(userId)) {
       try {
-        await api.put("/api/notifications/read-all");
-        setUnreadCount(0);
-        setNotifications((prev) => prev.map(n => ({ ...n, readBy: [...(n.readBy || []), user._id || user.id] })));
+        await api.put(`/api/notifications/${notifId}/read`);
+        if (setNotifications) {
+          setNotifications((prev) =>
+            (prev || []).map((n) =>
+              n.id === notifId || n._id === notifId
+                ? { ...n, readBy: [...(n.readBy || []), userId] }
+                : n
+            )
+          );
+        }
+        if (setUnreadCount) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to mark notification as read:", err);
       }
     }
   };
@@ -279,7 +316,7 @@ const Navbar = () => {
 
             {user ? (
               <>
-                {(role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student") && (
+                {(role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || role === "external" || role === "lostFoundAdmin" || role === "paymentAdmin") && (
                   <div className="relative" ref={notifDropdownRef}>
                     <button
                       onClick={handleNotificationClick}
@@ -297,22 +334,33 @@ const Navbar = () => {
                       <div className="absolute top-[calc(100%+12px)] right-0 w-80 max-h-96 overflow-y-auto bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl z-50 shadow-2xl overflow-hidden animate-in fade-in duration-200">
                         <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10">
                           <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">Notifications</h3>
-                          <Link
-                            to="/notifications"
-                            onClick={() => setNotifDropdownOpen(false)}
-                            className="flex items-center gap-1 text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors text-xs font-bold uppercase tracking-wider group"
-                          >
-                            See All
-                            <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform duration-200" />
-                          </Link>
+                          <div className="flex items-center gap-3">
+                            {unreadCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={handleMarkAllNotificationsRead}
+                                className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                              >
+                                Mark all read
+                              </button>
+                            )}
+                            <Link
+                              to="/notifications"
+                              onClick={() => setNotifDropdownOpen(false)}
+                              className="flex items-center gap-1 text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors text-xs font-bold uppercase tracking-wider group"
+                            >
+                              See All
+                              <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform duration-200" />
+                            </Link>
+                          </div>
                         </div>
                         <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
                           {notifications?.length > 0 ? (
                             notifications.slice(0, 4).map((notif, idx) => (
                               <Link
-                                key={idx}
+                                key={notif.id || notif._id || idx}
                                 to={notif.type === 'TEAM_INVITATION' ? '/notifications' : notif.url || '/notifications'}
-                                onClick={() => setNotifDropdownOpen(false)}
+                                onClick={() => handleNotificationItemClick(notif)}
                                 className={`block p-3.5 transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-transparent'}`}
                               >
                                 <div className="flex justify-between items-start mb-1">
@@ -486,7 +534,7 @@ const Navbar = () => {
             </button>
 
             {user ? (
-              (role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student") && (
+              (role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || role === "external" || role === "lostFoundAdmin" || role === "paymentAdmin") && (
                 <div className="relative" ref={notifMobileDropdownRef}>
                   <button
                     onClick={() => {
@@ -507,30 +555,46 @@ const Navbar = () => {
                     <div className="fixed top-16 left-5 right-5 max-h-96 overflow-y-auto bg-white dark:bg-neutral-900 border-2 border-gray-200 dark:border-neutral-800 rounded-t-4xl rounded-sm z-50 shadow-lg">
                       <div className="px-4 py-3 border-b-2 border-gray-200 dark:border-neutral-800 flex justify-between items-center bg-neutral-100 dark:bg-neutral-950 sticky top-0 z-10">
                         <h3 className="text-[14px] font-black tracking-widest text-black dark:text-neutral-200">Notifications</h3>
-                        <Link
-                          to="/notifications"
-                          onClick={() => {
-                            setNotifDropdownOpen(false);
-                            setMobileOpen(false);
-                          }}
-                          className="text-xs font-medium tracking-widest text-brand-600 dark:text-brand-500 
-                        hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
-                        >
-                          See all
-                          <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 transition-transform duration-200" />
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleMarkAllNotificationsRead}
+                              className="text-xs font-medium tracking-widest text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                            >
+                              Mark read
+                            </button>
+                          )}
+                          <Link
+                            to="/notifications"
+                            onClick={() => {
+                              setNotifDropdownOpen(false);
+                              setMobileOpen(false);
+                            }}
+                            className="text-xs font-medium tracking-widest text-brand-600 dark:text-brand-500 
+                          hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                          >
+                            See all
+                            <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 transition-transform duration-200" />
+                          </Link>
+                        </div>
                       </div>
                       <div className="divide-y divide-neutral-100 dark:divide-neutral-850">
                         {notifications?.length > 0 ? (
                           notifications.slice(0, 4).map((notif, idx) => (
-                            <div key={idx} className={`p-4 transition-colors ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50 dark:bg-brand-500/10' : 'bg-transparent'}`}>
+                            <Link
+                              key={notif.id || notif._id || idx}
+                              to={notif.type === 'TEAM_INVITATION' ? '/notifications' : notif.url || '/notifications'}
+                              onClick={() => handleNotificationItemClick(notif)}
+                              className={`block p-4 transition-colors ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50 dark:bg-brand-500/10' : 'bg-transparent'}`}
+                            >
                               <div className="flex justify-between items-start mb-1">
                                 <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 tracking-widest">{notif.sender?.clubName || "CampusNode"}</span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(notif.createdAt)} </span>
                               </div>
                               <h4 className="text-[13px] font-bold text-black dark:text-neutral-100 mb-1">{notif.title}</h4>
                               <p className="text-[12px] text-neutral-600 dark:text-neutral-400">{notif.message}</p>
-                            </div>
+                            </Link>
                           ))
                         ) : (
                           <div className="p-6 text-center text-neutral-500 dark:text-neutral-450 text-[12px] font-bold tracking-widest">

@@ -636,7 +636,10 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
           data: {
             id: createObjectId(),
             recipientStudentId: event.createdById,
+            recipientUserId: event.createdById,
             senderAdminId: req.user.role === "admin" ? req.user.userId : null,
+            targetScope: "USER",
+            type: "EVENT_RESCHEDULED",
             eventId: event.id,
             title: notifTitle,
             message: notifMsg
@@ -1039,6 +1042,39 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
 
     invalidatePublicResponses(["events:public:*"]);
 
+    // Notify supervised Faculty Coordinator of incoming event review request
+    if (savedEvent.clubId) {
+      try {
+        const club = await prisma.club.findUnique({
+          where: { id: savedEvent.clubId },
+          select: { facultyCoordinatorId: true, clubName: true },
+        });
+        if (club?.facultyCoordinatorId) {
+          const notif = await prisma.notification.create({
+            data: {
+              id: createObjectId(),
+              targetScope: "FACULTY_COORDINATOR",
+              clubId: savedEvent.clubId,
+              recipientUserId: club.facultyCoordinatorId,
+              eventId: savedEvent.id,
+              type: "EVENT_REVIEW_REQUEST",
+              title: `New Event Pending Approval: ${savedEvent.title}`,
+              message: `${club.clubName || "A club"} has submitted "${savedEvent.title}" for faculty review and approval.`,
+            },
+          });
+          if (req.io) {
+            req.io.to(club.facultyCoordinatorId).emit("new-notification", {
+              ...notif,
+              _id: notif.id,
+              sender: { name: club.clubName || "Club" },
+            });
+          }
+        }
+      } catch (fErr) {
+        console.error("Failed to notify faculty coordinator of new event:", fErr.message);
+      }
+    }
+
     res.status(201).json(serializeEvent(savedEvent));
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -1075,6 +1111,36 @@ router.put(
         },
         include: eventInclude,
       });
+
+      if (updated.createdById) {
+        try {
+          const notif = await prisma.notification.create({
+            data: {
+              id: createObjectId(),
+              targetScope: "USER",
+              recipientStudentId: updated.createdById,
+              recipientUserId: updated.createdById,
+              senderAdminId: req.user.userId,
+              eventId: updated.id,
+              clubId: updated.clubId,
+              type: "EVENT_REVIEW_RESULT",
+              title: `Event ${status === "PUBLISHED" ? "Approved" : "Rejected"}: ${updated.title}`,
+              message: status === "PUBLISHED"
+                ? `Your event "${updated.title}" has been reviewed and published!`
+                : `Your event "${updated.title}" was not approved.${comment ? ` Reason: ${comment}` : ""}`,
+            },
+          });
+          if (req.io) {
+            req.io.to(updated.createdById).emit("new-notification", {
+              ...notif,
+              _id: notif.id,
+              sender: { name: req.user.name || "Faculty Coordinator" },
+            });
+          }
+        } catch (revNotifErr) {
+          console.error("Failed to notify event creator of review result:", revNotifErr.message);
+        }
+      }
 
       res.json({
         message: `Event ${status.toLowerCase()} successfully`,
@@ -1782,6 +1848,37 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
       where: { id: req.params.id },
       data: { reviewStatus: "DELETION_REQUESTED" }
     });
+
+    const eventToDel = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      select: { title: true, clubId: true, club: { select: { facultyCoordinatorId: true, clubName: true } } }
+    });
+    if (eventToDel?.club?.facultyCoordinatorId) {
+      try {
+        const notif = await prisma.notification.create({
+          data: {
+            id: createObjectId(),
+            targetScope: "FACULTY_COORDINATOR",
+            clubId: eventToDel.clubId,
+            recipientUserId: eventToDel.club.facultyCoordinatorId,
+            eventId: req.params.id,
+            type: "EVENT_DELETION_REQUEST",
+            title: `Deletion Requested: ${eventToDel.title}`,
+            message: `${eventToDel.club?.clubName || "A club"} has requested approval to delete "${eventToDel.title}".`,
+          }
+        });
+        if (req.io) {
+          req.io.to(eventToDel.club.facultyCoordinatorId).emit("new-notification", {
+            ...notif,
+            _id: notif.id,
+            sender: { name: eventToDel.club?.clubName || "Club" }
+          });
+        }
+      } catch (delErr) {
+        console.error("Failed to notify faculty of deletion request:", delErr.message);
+      }
+    }
+
     return res.json({ message: "Deletion request submitted for faculty approval." });
   } catch (err) {
     res.status(550).json({ message: err.message });
@@ -1794,6 +1891,9 @@ async function notifyMemberDeregistered(io, recipientId, title, message) {
       data: {
         id: createObjectId(),
         recipientStudentId: recipientId,
+        recipientUserId: recipientId,
+        targetScope: "USER",
+        type: "REGISTRATION_CANCELLED",
         title,
         message,
       },

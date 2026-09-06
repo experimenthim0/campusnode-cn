@@ -95,9 +95,12 @@ router.put(
           data: {
             id: createObjectId(),
             recipientStudentId: participation.studentId,
+            recipientUserId: participation.studentId || participation.externalUserId,
+            targetScope: "USER",
             title: notificationTitle,
             message: notificationMessage,
             eventId: participation.eventId,
+            clubId: participation.event?.clubId || null,
             type: "PAYMENT_REVIEW",
           },
         });

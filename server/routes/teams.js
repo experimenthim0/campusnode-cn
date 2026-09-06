@@ -18,6 +18,9 @@ async function notifyTeamMember(io, recipientId, title, message, senderStudentId
         id: createObjectId(),
         senderStudentId,
         recipientStudentId: recipientId,
+        recipientUserId: recipientId,
+        targetScope: "USER",
+        type: "TEAM_RESPONSE",
         title,
         message,
       },
@@ -43,6 +46,8 @@ async function notifyInvitation(io, recipientId, eventId, teamId, teamName, even
         id: createObjectId(),
         senderStudentId,
         recipientStudentId: recipientId,
+        recipientUserId: recipientId,
+        targetScope: "USER",
         title: "Team Invitation",
         message: `${leaderName} invited you to join team "${teamName}" for the event "${eventTitle}".`,
         eventId,
@@ -359,7 +364,7 @@ router.post(
         where: { id: notificationId }
       });
 
-      if (!notif || notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
+      if (!notif || (notif.recipientStudentId !== userId && notif.recipientUserId !== userId) || notif.type !== "TEAM_INVITATION") {
         return res.status(404).json({ message: "Invitation not found." });
       }
 
@@ -481,7 +486,7 @@ router.post(
         where: { id: notificationId }
       });
 
-      if (!notif || notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
+      if (!notif || (notif.recipientStudentId !== userId && notif.recipientUserId !== userId) || notif.type !== "TEAM_INVITATION") {
         return res.status(404).json({ message: "Invitation not found." });
       }
 
