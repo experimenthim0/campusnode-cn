@@ -1,4 +1,4 @@
-# 🎓 ClubSetu (CampusNode) — Campus Event Management Platform 🚀
+# 🎓 CampusNode — Campus Event Management Platform 🚀
 
 A full-stack, enterprise-ready campus event management ecosystem designed to streamline event discovery, registration, attendance tracking, team management, lost & found board, and certificate issuance for educational institutions, student clubs, and administrators.
 
@@ -222,6 +222,10 @@ RESEND_API_KEY="re_123456789"
 ```env
 VITE_API_BASE_URL="http://localhost:5000/api"
 ```
+
+<!-- > [!TIP]
+> - For environment isolation architecture & staging setup, read [ENVIRONMENT_SETUP.md](docs/development/ENVIRONMENT_SETUP.md).
+> - For cryptographic key rotation procedures & user blast radius impacts, see [KEY_ROTATION.md](KEY_ROTATION.md). -->
 
 ---
 

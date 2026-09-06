@@ -42,6 +42,9 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
+    "db:verify": "node scripts/db-safety-guard.js",
+    "secrets:staging": "node scripts/generate-staging-secrets.js",
+    "rotate:key": "node scripts/rotate-key.js",
     "db:create:postgres": "docker compose -f docker-compose.postgres.yml up -d"
   },
   "keywords": [],

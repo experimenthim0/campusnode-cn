@@ -1,13 +1,24 @@
 /**
  * Vercel Serverless Function: Dynamic Event Social Preview Handler
  *
- * Handles crawler requests for /event/:slug and /events/:slug by:
- * 1. Fetching the published event from the backend API.
- * 2. Formatting event metadata (title, poster, dates in IST, venue).
- * 3. Returning self-contained HTML containing all Open Graph and Twitter Card tags.
+ * Handles /event/:slug and /events/:slug requests by:
+ * 1. Fetching the published event from the backend.
+ * 2. Fetching the normal Vite index.html.
+ * 3. Injecting event-specific SEO / Open Graph / Twitter metadata.
+ * 4. Returning the normal SPA HTML without redirecting.
  *
- * Normal browsers never hit this endpoint on page refresh because vercel.json
- * only rewrites known social crawlers here, serving index.html directly from Vercel CDN.
+ * This allows:
+ * - WhatsApp
+ * - Facebook
+ * - Instagram/Facebook crawlers
+ * - LinkedIn
+ * - Discord
+ * - Telegram
+ * - X/Twitter
+ * - Google
+ * - Normal browsers
+ *
+ * to receive the same URL while crawlers see dynamic event metadata.
  */
 
 const SITE_URL = (
@@ -24,8 +35,8 @@ const DEFAULT_IMAGE = `${SITE_URL}/campusnode-og-fallback.png`;
 /**
  * Escape a value before inserting it into an HTML attribute.
  */
-export function escapeHtmlAttr(str = "") {
-  return String(str || "")
+function escapeHtmlAttr(str = "") {
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -36,8 +47,8 @@ export function escapeHtmlAttr(str = "") {
 /**
  * Escape text used inside <title>.
  */
-export function escapeHtmlText(str = "") {
-  return String(str || "")
+function escapeHtmlText(str = "") {
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
@@ -46,7 +57,7 @@ export function escapeHtmlText(str = "") {
 /**
  * Format the event title used by browsers and social platforms.
  */
-export function formatEventTitle(title) {
+function formatEventTitle(title) {
   if (!title || typeof title !== "string") {
     return DEFAULT_TITLE;
   }
@@ -155,7 +166,7 @@ export function formatEventDetails(event = {}) {
 /**
  * Resolve the event image into an absolute HTTPS URL.
  */
-export function resolveSocialImage(event) {
+function resolveSocialImage(event) {
   if (!event || !event.imageUrl) {
     return DEFAULT_IMAGE;
   }
@@ -178,18 +189,64 @@ export function resolveSocialImage(event) {
 }
 
 /**
- * Generate event-specific metadata tags.
+ * Remove metadata that may already exist in Vite's index.html.
+ *
+ * This prevents duplicate:
+ * - <title>
+ * - description
+ * - canonical
+ * - Open Graph
+ * - Twitter
+ * tags.
+ */
+function removeExistingSocialMetadata(html) {
+  return html
+    // Title
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, "")
+
+    // Description
+    .replace(
+      /<meta\b[^>]*\bname=["']description["'][^>]*>\s*/gi,
+      ""
+    )
+
+    // Canonical
+    .replace(
+      /<link\b[^>]*\brel=["']canonical["'][^>]*>\s*/gi,
+      ""
+    )
+
+    // Open Graph
+    .replace(
+      /<meta\b[^>]*\bproperty=["']og:[^"']+["'][^>]*>\s*/gi,
+      ""
+    )
+
+    // Twitter
+    .replace(
+      /<meta\b[^>]*\bname=["']twitter:[^"']+["'][^>]*>\s*/gi,
+      ""
+    );
+}
+
+/**
+ * Generate event-specific metadata.
  */
 export function generateSocialMetadata(event, slug) {
-  const canonicalUrl = `${SITE_URL}/event/${encodeURIComponent(slug)}`;
+  const canonicalUrl =
+    `${SITE_URL}/event/${encodeURIComponent(slug)}`;
+
   const title = formatEventTitle(event?.title);
+
   const description = formatEventDetails(event);
+
   const imageUrl = resolveSocialImage(event);
 
   const titleAttr = escapeHtmlAttr(title);
   const descriptionAttr = escapeHtmlAttr(description);
   const imageAttr = escapeHtmlAttr(imageUrl);
   const canonicalAttr = escapeHtmlAttr(canonicalUrl);
+
   const titleText = escapeHtmlText(title);
 
   return `
@@ -237,129 +294,85 @@ export function generateSocialMetadata(event, slug) {
 }
 
 /**
- * Generate full self-contained HTML document for social crawlers.
+ * Inject event metadata into the normal Vite HTML.
  */
-export function generateSocialHtml(event, slug) {
-  const canonicalUrl = `${SITE_URL}/event/${encodeURIComponent(slug)}`;
-  const title = formatEventTitle(event?.title);
-  const description = formatEventDetails(event);
-  const imageUrl = resolveSocialImage(event);
+function injectMetadataIntoHtml(baseHtml, event, slug) {
+  const cleanedHtml = removeExistingSocialMetadata(baseHtml);
 
-  const titleAttr = escapeHtmlAttr(title);
-  const descriptionAttr = escapeHtmlAttr(description);
-  const imageAttr = escapeHtmlAttr(imageUrl);
-  const canonicalAttr = escapeHtmlAttr(canonicalUrl);
-  const titleText = escapeHtmlText(title);
+  const metadata = generateSocialMetadata(event, slug);
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${titleText}</title>
-  <meta name="description" content="${descriptionAttr}">
-  <link rel="canonical" href="${canonicalAttr}">
+  if (!/<head\b[^>]*>/i.test(cleanedHtml)) {
+    throw new Error("Vite index.html does not contain a <head> element");
+  }
 
-  <!-- Open Graph / WhatsApp / Facebook / LinkedIn / Discord -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
-  <meta property="og:title" content="${titleAttr}">
-  <meta property="og:description" content="${descriptionAttr}">
-  <meta property="og:url" content="${canonicalAttr}">
-  <meta property="og:image" content="${imageAttr}">
-  <meta property="og:image:secure_url" content="${imageAttr}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${titleAttr}">
-
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@campusnode">
-  <meta name="twitter:title" content="${titleAttr}">
-  <meta name="twitter:description" content="${descriptionAttr}">
-  <meta name="twitter:image" content="${imageAttr}">
-  <meta name="twitter:image:alt" content="${titleAttr}">
-
-  <!-- CampusNode Favicon & Theme -->
-  <link rel="icon" type="image/png" href="${SITE_URL}/lightthemelogo2.png">
-  <meta name="theme-color" content="#facc15">
-
-  <!-- Client fallback redirect for human clicks landing on preview route -->
-  <meta http-equiv="refresh" content="0;url=${canonicalAttr}">
-</head>
-<body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
-  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Opening event...</p>
-  <a href="${canonicalAttr}" style="color:#ea580c;text-decoration:none;font-weight:600;font-size:16px;">Click here if you are not redirected automatically</a>
-  <script>
-    try {
-      window.location.replace("${canonicalAttr}");
-    } catch(e) {
-      window.location.href = "${canonicalAttr}";
-    }
-  </script>
-</body>
-</html>`;
+  return cleanedHtml.replace(
+    /(<head\b[^>]*>)/i,
+    `$1\n${metadata}`
+  );
 }
 
 /**
- * Generate default CampusNode social HTML for 404s, backend failures,
- * or unpublished/draft events. Prevents exposing draft or unapproved event details.
+ * Generate generic metadata for:
+ * - missing event
+ * - unpublished event
+ * - backend failure
  */
-export function generateDefaultSocialHtml(options = {}) {
-  const homeUrl = `${SITE_URL}/events`;
-  const fallbackUrl = DEFAULT_IMAGE;
-  const title = DEFAULT_TITLE;
-  const description = options.message || DEFAULT_DESCRIPTION;
+function generateDefaultMetadata() {
+  const titleAttr = escapeHtmlAttr(DEFAULT_TITLE);
+  const descriptionAttr = escapeHtmlAttr(DEFAULT_DESCRIPTION);
+  const imageAttr = escapeHtmlAttr(DEFAULT_IMAGE);
 
-  const titleAttr = escapeHtmlAttr(title);
-  const descriptionAttr = escapeHtmlAttr(description);
-  const imageAttr = escapeHtmlAttr(fallbackUrl);
-  const urlAttr = escapeHtmlAttr(homeUrl);
-  const titleText = escapeHtmlText(title);
+  return `
+  <title>${escapeHtmlText(DEFAULT_TITLE)}</title>
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${titleText}</title>
-  <meta name="description" content="${descriptionAttr}">
-  <link rel="canonical" href="${urlAttr}">
+  <meta
+    name="description"
+    content="${descriptionAttr}"
+  />
 
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
-  <meta property="og:title" content="${titleAttr}">
-  <meta property="og:description" content="${descriptionAttr}">
-  <meta property="og:url" content="${urlAttr}">
-  <meta property="og:image" content="${imageAttr}">
-  <meta property="og:image:secure_url" content="${imageAttr}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${titleAttr}">
+  <link
+    rel="canonical"
+    href="${SITE_URL}/events"
+  />
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@campusnode">
-  <meta name="twitter:title" content="${titleAttr}">
-  <meta name="twitter:description" content="${descriptionAttr}">
-  <meta name="twitter:image" content="${imageAttr}">
-  <meta name="twitter:image:alt" content="${titleAttr}">
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CampusNode" />
+  <meta property="og:title" content="${titleAttr}" />
+  <meta property="og:description" content="${descriptionAttr}" />
+  <meta property="og:url" content="${SITE_URL}/events" />
+  <meta property="og:image" content="${imageAttr}" />
+  <meta property="og:image:secure_url" content="${imageAttr}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${titleAttr}" />
 
-  <link rel="icon" type="image/png" href="${SITE_URL}/lightthemelogo2.png">
-  <meta name="theme-color" content="#facc15">
-  <meta http-equiv="refresh" content="0;url=${urlAttr}">
-</head>
-<body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
-  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Redirecting to CampusNode Events...</p>
-  <a href="${urlAttr}" style="color:#ea580c;text-decoration:none;font-weight:600;font-size:16px;">Click here if you are not redirected automatically</a>
-  <script>
-    try {
-      window.location.replace("${urlAttr}");
-    } catch(e) {
-      window.location.href = "${urlAttr}";
-    }
-  </script>
-</body>
-</html>`;
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${titleAttr}" />
+  <meta name="twitter:description" content="${descriptionAttr}" />
+  <meta name="twitter:image" content="${imageAttr}" />
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="${SITE_URL}/lightthemelogo2.png"
+  />
+
+  <meta name="theme-color" content="#facc15" />
+  `;
+}
+
+/**
+ * Inject generic metadata into the normal SPA HTML.
+ */
+function injectDefaultMetadata(baseHtml) {
+  const cleanedHtml = removeExistingSocialMetadata(baseHtml);
+
+  const metadata = generateDefaultMetadata();
+
+  return cleanedHtml.replace(
+    /(<head\b[^>]*>)/i,
+    `$1\n${metadata}`
+  );
 }
 
 /**
@@ -387,6 +400,38 @@ async function fetchWithTimeout(
 }
 
 /**
+ * Get the deployed Vite index.html.
+ *
+ * VERCEL_URL points to the current deployment and avoids
+ * accidentally requesting /event/:slug again.
+ */
+async function getBaseIndexHtml() {
+  const deploymentOrigin = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : SITE_URL;
+
+  const indexUrl = `${deploymentOrigin}/index.html`;
+
+  const response = await fetchWithTimeout(
+    indexUrl,
+    {
+      headers: {
+        Accept: "text/html",
+      },
+    },
+    5000
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch Vite index.html: ${response.status}`
+    );
+  }
+
+  return response.text();
+}
+
+/**
  * Main Vercel serverless handler.
  */
 export default async function handler(req, res) {
@@ -395,21 +440,49 @@ export default async function handler(req, res) {
       ? req.query.slug.trim()
       : "";
 
+  const isVercelPreview = process.env.VERCEL_ENV === "preview";
+  const defaultApiUrl = isVercelPreview ? "" : "https://campusnode-server.onrender.com";
+
   const apiUrl = (
     process.env.API_URL ||
     process.env.VITE_API_URL ||
     process.env.BACKEND_URL ||
-    "https://campusnode-server.onrender.com"
+    defaultApiUrl
   ).replace(/\/+$/, "");
 
-  // If no slug provided, return safe default metadata
-  if (!slug) {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultSocialHtml());
-  }
-
   try {
+    // Always load the real SPA HTML first.
+    const baseHtml = await getBaseIndexHtml();
+
+    // In preview without API configured, serve default metadata safely without contacting production
+    if (!apiUrl) {
+      console.warn("[Social Preview] API_URL / VITE_API_URL not configured for Vercel preview. Serving default metadata.");
+      const html = injectDefaultMetadata(baseHtml);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
+      return res.status(200).send(html);
+    }
+
+    // No slug → return normal SPA with generic metadata.
+    if (!slug) {
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
+    }
+
+    /**
+     * Fetch event information from backend.
+     */
     const eventRes = await fetchWithTimeout(
       `${apiUrl}/api/events/${encodeURIComponent(slug)}`,
       {
@@ -433,25 +506,49 @@ export default async function handler(req, res) {
      * through social metadata.
      */
     if (
-      !event ||
-      (event.reviewStatus && event.reviewStatus !== "PUBLISHED")
+      event?.reviewStatus &&
+      event.reviewStatus !== "PUBLISHED"
     ) {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-      return res.status(200).send(generateDefaultSocialHtml());
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
     }
 
     /**
-     * Generate crawler-ready HTML containing dynamic event metadata.
+     * Inject event-specific metadata into the normal SPA.
      */
-    const html = generateSocialHtml(event, slug);
+    const html = injectMetadataIntoHtml(
+      baseHtml,
+      event,
+      slug
+    );
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader(
+      "Content-Type",
+      "text/html; charset=utf-8"
+    );
+
     /**
-     * Cache dynamic event metadata at Vercel Edge.
-     * Browser: 60 seconds
-     * Vercel: 10 minutes
-     * Stale: 24 hours while revalidating
+     * Cache dynamic event metadata at Vercel.
+     *
+     * Browser:
+     * 60 seconds
+     *
+     * Vercel:
+     * 10 minutes
+     *
+     * Stale:
+     * 24 hours while revalidating
      */
     res.setHeader(
       "Cache-Control",
@@ -465,8 +562,53 @@ export default async function handler(req, res) {
       error?.message || error
     );
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
-    return res.status(200).send(generateDefaultSocialHtml());
+    /**
+     * Even if backend/index fetching fails, return the
+     * normal SPA instead of returning a redirect page.
+     */
+    try {
+      const baseHtml = await getBaseIndexHtml();
+      const html = injectDefaultMetadata(baseHtml);
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120"
+      );
+
+      return res.status(200).send(html);
+    } catch (fallbackError) {
+      console.error(
+        "[Social Preview] Fallback HTML generation failed:",
+        fallbackError?.message || fallbackError
+      );
+
+      return res
+        .status(200)
+        .setHeader(
+          "Content-Type",
+          "text/html; charset=utf-8"
+        )
+        .send(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <title>${escapeHtmlText(DEFAULT_TITLE)}</title>
+              <meta
+                name="description"
+                content="${escapeHtmlAttr(DEFAULT_DESCRIPTION)}"
+              >
+            </head>
+            <body>
+              <div id="root"></div>
+            </body>
+          </html>
+        `);
+    }
   }
 }

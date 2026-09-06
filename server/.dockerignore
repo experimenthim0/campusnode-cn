@@ -1,5 +1,8 @@
 node_modules
 npm-debug.log
 .env
+.env*
+*.pem
 .DS_Store
 scratch
+

@@ -1,18 +1,19 @@
+node_modules
 **/.env
+**/.env.*
+.env
+.env.*
+.env.local
+.env.production
+!.env.example
+!**/.env.example
 .txt
 **/*.pem
 whatextend.txt
 whatnext.md
 CLUB_HEAD_PITCH.md
-node_modules
-.env
-.env.local
-.env.production
-.env.development
-.env.test
-.env.example
 README_MONETIZATION.md
-UI_DESIGN_GUIDE.txt
+
 new.md
 FEATURES.md
 
@@ -23,7 +24,9 @@ dist/
 _tests_/
 
 POSTGRESQL_MIGRATION_PLAN.md
-docs/
+docs/*
+!docs/development/
+!docs/development/**
 map/
 timer/
 EventTimerContext.jsx
@@ -40,6 +43,7 @@ scanner-app/
 server/load-tests/
 server/routes/__tests__/
 
-k6_script.js
+KEY_ROTATION.md
+STRUCTURE.md
 central_event_role.md
 central_org.md

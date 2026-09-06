@@ -20,14 +20,17 @@ export const generateSignature = (params) => {
  */
 export const uploadImage = (fileBuffer, folder = 'certificates', options = {}) => {
   return new Promise((resolve, reject) => {
+    const prefix = process.env.CLOUDINARY_FOLDER_PREFIX ? process.env.CLOUDINARY_FOLDER_PREFIX.replace(/^\/+|\/+$/g, "") : null;
+    const targetFolder = prefix ? `${prefix}/${folder.replace(/^\/+|\/+$/g, "")}` : folder;
+
     const uploadOptions = {
-      folder,
+      folder: targetFolder,
       unique_filename: options.unique_filename !== undefined ? options.unique_filename : (options.public_id ? false : true),
       overwrite: options.overwrite !== undefined ? options.overwrite : (options.public_id ? true : false),
       ...options,
     };
 
-    uploadOptions.folder = folder;
+    uploadOptions.folder = targetFolder;
 
     const uploadStream = cloudinary.uploader.upload_stream(
       uploadOptions,
