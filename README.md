@@ -1,4 +1,4 @@
-# 🎓 ClubSetu (CampusNode) — Campus Event Management Platform 🚀
+# 🎓 CampusNode — Campus Event Management Platform 🚀
 
 A full-stack, enterprise-ready campus event management ecosystem designed to streamline event discovery, registration, attendance tracking, team management, lost & found board, and certificate issuance for educational institutions, student clubs, and administrators.
 
