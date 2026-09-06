@@ -451,7 +451,7 @@ export default async function handler(req, res) {
      * Fetch event information from backend.
      */
     const eventRes = await fetchWithTimeout(
-      `${apiUrl}/api/event/${encodeURIComponent(slug)}`,
+      `${apiUrl}/api/events/${encodeURIComponent(slug)}`,
       {
         headers: {
           Accept: "application/json",
