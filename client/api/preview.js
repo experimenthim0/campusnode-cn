@@ -76,67 +76,91 @@ function formatEventTitle(title) {
 }
 
 /**
- * Convert an event description into clean social-preview text.
+ * Timezone used for event date and time formatting.
  */
-function cleanEventDescription(description, event = {}) {
-  let text = String(description || "").trim();
+const EVENT_TIMEZONE = "Asia/Kolkata";
 
-  // Strip Markdown
-  text = text
-    .replace(/^#+\s+/gm, "")
-    .replace(/!\[.*?\]\(.*?\)/g, "")
-    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
-    .replace(/(\*\*|__)(.*?)\1/g, "$2")
-    .replace(/(\*|_)(.*?)\1/g, "$2")
-    .replace(/`{1,3}(.*?)`{1,3}/gs, "$1")
-    .replace(/^>\s+/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "");
+/**
+ * Safely parse a date value into a valid Date object.
+ * Returns null if the value is missing or represents an Invalid Date.
+ */
+function parseValidDate(value) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 
-  // Strip HTML
-  text = text.replace(/<[^>]*>/g, " ");
+/**
+ * Format a date in Asia/Kolkata timezone: "6 September 2026".
+ */
+function formatEventDate(date) {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: EVENT_TIMEZONE,
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  return formatter.format(date);
+}
 
-  // Normalize whitespace
-  text = text
-    .replace(/\s+([.,!?;:])/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
+/**
+ * Format a time in Asia/Kolkata timezone: "8:00 PM".
+ */
+function formatEventTime(date) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: EVENT_TIMEZONE,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return formatter.format(date).replace(/\s+/g, " ").trim();
+}
 
-  // Generate useful fallback
-  if (text.length < 15) {
-    const title = event.title
-      ? event.title.trim()
-      : "this event";
+/**
+ * Format event details for social preview description.
+ *
+ * Uses ONLY:
+ * - event.startTime
+ * - event.endTime
+ * - event.venue
+ *
+ * Formats:
+ * - Date, time range, and venue: 📅 6 September 2026 · 8:00 PM–10:00 PM | 📍 CSH
+ * - Venue missing:               📅 6 September 2026 · 8:00 PM–10:00 PM
+ * - EndTime missing:             📅 6 September 2026 · 8:00 PM | 📍 CSH
+ * - Only venue exists:           📍 CSH
+ * - Neither exists:              Discover this event on CampusNode.
+ */
+export function formatEventDetails(event = {}) {
+  const startDate = parseValidDate(event?.startTime);
+  const endDate = parseValidDate(event?.endTime);
+  const venue =
+    typeof event?.venue === "string" ? event.venue.trim() : "";
 
-    const club =
-      event.club?.clubName ||
-      (event.organizerType === "CENTRAL"
-        ? "Central Student Body"
-        : "CampusNode");
+  let dateTimeStr = "";
 
-    const venue = event.venue
-      ? ` at ${event.venue.trim()}`
-      : " at NIT Jalandhar";
+  if (startDate) {
+    const dateStr = formatEventDate(startDate);
+    const startTimeStr = formatEventTime(startDate);
 
-    text =
-      `Join ${title} organized by ${club}${venue}. ` +
-      `View event details, schedule, and register online on CampusNode.`;
+    if (endDate) {
+      const endTimeStr = formatEventTime(endDate);
+      dateTimeStr = `📅 ${dateStr} · ${startTimeStr}–${endTimeStr}`;
+    } else {
+      dateTimeStr = `📅 ${dateStr} · ${startTimeStr}`;
+    }
   }
 
-  // Keep social description reasonably compact.
-  const maxLength = 175;
-
-  if (text.length > maxLength) {
-    const truncated = text.slice(0, maxLength);
-    const lastSpace = truncated.lastIndexOf(" ");
-
-    text =
-      (lastSpace > 120
-        ? truncated.slice(0, lastSpace)
-        : truncated) + "...";
+  if (dateTimeStr && venue) {
+    return `${dateTimeStr} | 📍 ${venue}`;
   }
-
-  return text;
+  if (dateTimeStr) {
+    return dateTimeStr;
+  }
+  if (venue) {
+    return `📍 ${venue}`;
+  }
+  return "Discover this event on CampusNode.";
 }
 
 /**
@@ -208,16 +232,13 @@ function removeExistingSocialMetadata(html) {
 /**
  * Generate event-specific metadata.
  */
-function generateSocialMetadata(event, slug) {
+export function generateSocialMetadata(event, slug) {
   const canonicalUrl =
     `${SITE_URL}/event/${encodeURIComponent(slug)}`;
 
   const title = formatEventTitle(event?.title);
 
-  const description = cleanEventDescription(
-    event?.description,
-    event
-  );
+  const description = formatEventDetails(event);
 
   const imageUrl = resolveSocialImage(event);
 

@@ -45,8 +45,10 @@ export const requestMetrics = (req, res, next) => {
   res.setHeader("X-Request-Id", req.headers["x-request-id"] || randomUUID());
   const originalEnd = res.end.bind(res);
   res.end = (chunk, encoding, callback) => {
-    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
-    res.setHeader("X-Response-Time", `${durationMs.toFixed(1)}ms`);
+    if (!res.headersSent) {
+      const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+      res.setHeader("X-Response-Time", `${durationMs.toFixed(1)}ms`);
+    }
     return originalEnd(chunk, encoding, callback);
   };
 

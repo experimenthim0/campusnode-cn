@@ -214,6 +214,7 @@ const Profile = () => {
         getUserEvents(authUser.id || authUser._id)
           .then(res => {
             const participations = res.data || [];
+            const winningsList = [];
             participations.forEach(p => {
               const ev = p.eventId || p.event;
               if (ev && ev.winners && Array.isArray(ev.winners)) {

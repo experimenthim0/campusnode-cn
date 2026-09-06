@@ -2,7 +2,7 @@ import api from './api';
 
 /**
  * Certificate Service
- * Certificate design and download API calls.
+ * Certificate design, download, verification, and revocation API calls.
  */
 
 export const saveCertificateTemplate = (eventId, data) =>
@@ -19,3 +19,12 @@ export const downloadCertificate = (eventId) =>
   api.get(`/api/certificates/${eventId}/download`, {
     responseType: 'blob',
   });
+
+export const verifyCertificate = (token) =>
+  api.get(`/api/certificates/verify/${token}`);
+
+export const revokeCertificate = (certificateId, reason) =>
+  api.patch(`/api/certificates/${certificateId}/revoke`, { reason });
+
+export const getIssuedCertificates = (eventId) =>
+  api.get(`/api/certificates/${eventId}/issued`);

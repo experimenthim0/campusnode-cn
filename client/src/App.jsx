@@ -14,6 +14,7 @@ import { Analytics } from "@vercel/analytics/react"
 const EventFeed = lazy(() => import('./pages/EventFeed'));
 const RegisterStudent = lazy(() => import('./pages/RegisterStudent'));
 const Team = lazy(() => import('./pages/Team'));
+const TeamDesignsPreview = lazy(() => import('./pages/TeamDesignsPreview'));
 const Login = lazy(() => import('./pages/Login'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const CreateEvent = lazy(() => import('./pages/CreateEvent'));
@@ -48,6 +49,7 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 
 const CertificateDesigner = lazy(() => import('./pages/CertificateDesigner'));
+const VerifyCertificate = lazy(() => import('./pages/VerifyCertificate'));
 const LostAndFound = lazy(() => import('./pages/LostAndFound'));
 const LostFoundAdminDashboard = lazy(() => import('./pages/LostFoundAdminDashboard'));
 const ExportCenter = lazy(() => import('./pages/ExportCenter'));
@@ -116,10 +118,14 @@ function App() {
                   <Route path="/verify-email/:token" element={<VerifyEmail />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/team" element={<Team />} />
+                  <Route path="/team/preview" element={<TeamDesignsPreview />} />
+                  <Route path="/team-preview" element={<TeamDesignsPreview />} />
                   <Route path="/lost-found" element={<LostAndFound />} />
                   <Route path="/lost-found/guide" element={<LostFoundGuide />} />
                   <Route path="/ranking-guide" element={<LeaderboardGuide />} />
   <Route path="/register/external" element={<RegisterExternal />} />
+                  <Route path="/verify/certificate/:token" element={<VerifyCertificate />} />
+                  <Route path="/verify/certificate" element={<VerifyCertificate />} />
                   {/* Protected routes (require login) */}
                   <Route path="/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

@@ -76,6 +76,7 @@ model StudentUser {
   eventStaffInvitations   EventStaff[]     @relation("EventStaffInviter")
   institutionalAssignments InstitutionalAccountAssignment[]
   feedbacks               EventFeedback[]
+  certificates            Certificate[]
 }
 
 model Club {
@@ -217,6 +218,7 @@ model Event {
   participatingClubs   EventClub[]
   feedbacks            EventFeedback[]
   aiReviews            EventAIReview[]
+  certificates         Certificate[]
 
   @@index([clubId, startTime])
   @@index([reviewStatus, startTime])
@@ -300,6 +302,7 @@ model Participation {
   teamId           String?             @db.VarChar(24)
   team             Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   attendanceRecords AttendanceRecord[]
+  certificate      Certificate?
 
   @@index([eventId])
   @@index([studentId, createdAt])
@@ -824,6 +827,7 @@ model ExternalUser {
   participations      Participation[]
   ledTeams            Team[]          @relation("ExternalTeamLeader")
   teamMemberships     TeamMember[]
+  certificates        Certificate[]
 
   @@index([email])
 }
@@ -852,3 +856,41 @@ model FeaturedEventSetting {
   orderingMode FeaturedOrderingMode @default(CUSTOM)
   updatedAt    DateTime             @updatedAt
 }
+
+enum CertificateStatus {
+  ISSUED
+  REVOKED
+}
+
+model Certificate {
+  id                String            @id @db.VarChar(24)
+  eventId           String            @db.VarChar(24)
+  participationId   String            @unique @db.VarChar(24)
+  studentId         String?           @db.VarChar(24)
+  externalUserId    String?           @db.VarChar(24)
+
+  recipientName     String
+  recipientRollNo   String?
+  recipientEmail    String?
+  awardPosition     String            @default("Participant") // "Participant" | "Winner" | "Runner-Up"
+  certificateNumber String            @unique // Human readable reference, e.g. "CN-2026-X8K9M2"
+  verificationToken String            @unique // Cryptographically secure 256-bit slug
+
+  status            CertificateStatus @default(ISSUED)
+  issuedAt          DateTime          @default(now())
+  revokedAt         DateTime?
+  revocationReason  String?
+
+  metadata          Json?             // Snapshot of event & template at time of issuance
+
+  event             Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participation     Participation     @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  student           StudentUser?      @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  externalUser      ExternalUser?     @relation(fields: [externalUserId], references: [id], onDelete: SetNull)
+
+  @@index([verificationToken])
+  @@index([eventId, status])
+  @@index([studentId])
+  @@index([externalUserId])
+}
+

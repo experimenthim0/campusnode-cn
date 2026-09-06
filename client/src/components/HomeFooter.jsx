@@ -51,12 +51,12 @@ const HomeFooter = () => {
               <br/>
               <button 
                 onClick={() => setIsContactOpen(true)} 
-                className="text-brand-500 hover:underline font-medium cursor-pointer"
+                className="text-brand-600 hover:underline font-medium cursor-pointer"
               >
                 Send us a suggestion
               </button>
               {' '}or email at{' '}
-              <a href="mailto:clubsetu@nikhim.me" className="text-brand-500 hover:underline font-medium">
+              <a href="mailto:clubsetu@nikhim.me" className="text-brand-600 hover:underline font-medium">
                 clubsetu@nikhim.me
               </a>
             </p>
