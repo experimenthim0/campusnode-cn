@@ -146,7 +146,8 @@ const StaffAttendanceView = () => {
       // Use the standard scanner check-in endpoint with server-enforced event-staff validation
       const res = await api.post('/api/scanner/attendance/check-in', {
         eventId,
-        rollNo: qrPayload,
+        rollNo: manualEntry ? qrPayload : undefined,
+        qrPayload: !manualEntry ? qrPayload : undefined,
         mode: manualEntry ? "MANUAL_STAFF" : "QR_STAFF",
       });
 

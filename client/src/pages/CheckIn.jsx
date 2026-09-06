@@ -5,7 +5,7 @@ import { getEventById } from '../services/eventService';
 import api from '../services/api';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
-import { CheckCircle, XCircle, AlertTriangle, Users, BadgeCheck, Clock, ArrowLeft, Wifi, ScanLine } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Users, BadgeCheck, Clock, ArrowLeft, Wifi, ScanLine, Search, Hash, Loader2, UserCheck, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ShimmerText from '../components/ShimmerText';
 
@@ -30,9 +30,12 @@ const CheckIn = () => {
 
   // Tab state: 'scan' or 'manual'
   const [activeTab, setActiveTab] = useState('scan');
-  // Manual entry
+  // Manual / Roll Number entry
   const [manualId, setManualId] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [markingId, setMarkingId] = useState(null);
 
   // Session attendance history (successful check-ins only)
   const [attendanceLog, setAttendanceLog] = useState([]);
@@ -151,6 +154,32 @@ const CheckIn = () => {
     }
   }, [activeTab]);
 
+  // Debounced search for registered students by roll number
+  useEffect(() => {
+    if (activeTab !== 'manual' || !manualId.trim()) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    const query = manualId.trim();
+    setSearchLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.get(`/api/participation/event/${id}/search-participants?q=${encodeURIComponent(query)}`);
+        setSearchResults(res.data?.participants || []);
+      } catch (err) {
+        console.error('Failed to search registered participants:', err);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [manualId, activeTab, id]);
+
   const addToHistory = (name, identifier) => {
     setAttendanceLog(prev => [{
       id: Date.now() + Math.random(),
@@ -176,6 +205,8 @@ const CheckIn = () => {
         '/api/participation/verify',
         {
           qrCode,
+          rollNo: qrCode,
+          identifier: qrCode,
           eventId: id,
         }
       );
@@ -184,6 +215,19 @@ const CheckIn = () => {
       setScanResult(data);
       setScanState('success');
       setAttendedCount(prev => prev + 1);
+
+      // Optimistically update local search results matching this student
+      setSearchResults(prev =>
+        prev.map(item => {
+          const isRollMatch = data.rollNo && item.student?.rollNo?.toLowerCase() === data.rollNo?.toLowerCase();
+          const isNameMatch = data.participantName && item.student?.name?.toLowerCase() === data.participantName?.toLowerCase();
+          if (isRollMatch || isNameMatch) {
+            return { ...item, status: 'ATTENDED', attendedAt: new Date() };
+          }
+          return item;
+        })
+      );
+
       // Only successful check-in records are added to session log
       addToHistory(
         data.participantName,
@@ -242,7 +286,26 @@ const CheckIn = () => {
     setManualLoading(true);
     await processVerification(trimmed, true);
     setManualLoading(false);
-    setManualId('');
+  };
+
+  const handleMarkStudent = async (studentItem) => {
+    const rollNo = studentItem.student?.rollNo || studentItem.ticketId;
+    if (!rollNo || markingId) return;
+
+    setMarkingId(studentItem.participationId);
+    setManualLoading(true);
+    await processVerification(rollNo, true);
+    setManualLoading(false);
+    setMarkingId(null);
+
+    // Update in-place in search results
+    setSearchResults(prev =>
+      prev.map(item =>
+        item.participationId === studentItem.participationId
+          ? { ...item, status: 'ATTENDED', attendedAt: new Date() }
+          : item
+      )
+    );
   };
 
   if (loading) {
@@ -444,8 +507,8 @@ const CheckIn = () => {
                       : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
                   }`}
                 >
-                  <i className="ri-keyboard-line text-sm" />
-                  Manual Entry
+                  <Hash size={13} />
+                  Roll Number
                 </button>
               </div>
 
@@ -468,33 +531,142 @@ const CheckIn = () => {
                   </p>
                 </>
               ) : (
-                /* Manual Entry Tab */
+                /* Roll Number Check-in Tab */
                 <div className="p-6">
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-4 leading-relaxed">
-                    Enter the student's registration ID to manually mark their attendance.
-                  </p>
-                  <form onSubmit={handleManualSubmit} className="flex flex-col gap-4">
-                    <input
-                      type="text"
-                      value={manualId}
-                      onChange={(e) => setManualId(e.target.value)}
-                      placeholder="e.g. registration ID..."
-                      className="w-full px-4 py-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-850 rounded-xl text-sm font-medium outline-none text-black dark:text-white focus:border-neutral-400 transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700"
-                      disabled={manualLoading}
-                      autoFocus
-                    />
+                  <div className="mb-4">
+                    <p className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">
+                      Roll Number Check-in
+                    </p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 leading-relaxed m-0">
+                      Enter student roll number to find registered attendees and mark attendance.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleManualSubmit} className="flex flex-col gap-3">
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3.5 text-neutral-400 pointer-events-none">
+                        <Hash size={15} />
+                      </div>
+                      <input
+                        type="text"
+                        value={manualId}
+                        onChange={(e) => setManualId(e.target.value)}
+                        placeholder="e.g. 21BCS001 or roll number..."
+                        className="w-full pl-9 pr-9 py-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-850 rounded-xl text-sm font-medium outline-none text-black dark:text-white focus:border-neutral-400 transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700"
+                        disabled={manualLoading}
+                        autoFocus
+                      />
+                      {manualId && (
+                        <button
+                          type="button"
+                          onClick={() => { setManualId(''); setSearchResults([]); }}
+                          className="absolute right-3 p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
                     <button
                       type="submit"
                       disabled={manualLoading || !manualId.trim()}
-                      className={`w-full py-3 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all ${
+                      className={`w-full py-3 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
                         manualLoading || !manualId.trim()
                           ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
                           : 'bg-neutral-900 dark:bg-neutral-700 hover:bg-black dark:hover:bg-neutral-600 cursor-pointer shadow-sm'
                       }`}
                     >
-                      {manualLoading ? 'Marking...' : 'Mark Attendance'}
+                      {manualLoading && !markingId ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Marking Attendance...
+                        </>
+                      ) : (
+                        'Mark Attendance'
+                      )}
                     </button>
                   </form>
+
+                  {/* Registered Students Result List */}
+                  {manualId.trim() && (
+                    <div className="mt-5 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                          Registered Students {searchLoading ? '...' : `(${searchResults.length})`}
+                        </span>
+                        {searchLoading && <Loader2 size={12} className="animate-spin text-neutral-400" />}
+                      </div>
+
+                      {searchLoading && searchResults.length === 0 ? (
+                        <div className="p-5 text-center bg-neutral-50 dark:bg-neutral-950/40 border border-neutral-200/60 dark:border-neutral-800 rounded-xl">
+                          <p className="text-xs text-neutral-400 m-0">Searching registered attendees...</p>
+                        </div>
+                      ) : searchResults.length > 0 ? (
+                        <div className="max-h-[260px] overflow-y-auto space-y-2 pr-0.5">
+                          {searchResults.map((item) => {
+                            const isAttended = item.status === 'ATTENDED';
+                            const isItemLoading = markingId === item.participationId;
+
+                            return (
+                              <div
+                                key={item.participationId}
+                                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                                  isAttended
+                                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-900/40'
+                                    : 'bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="m-0 text-sm font-bold text-neutral-900 dark:text-white truncate">
+                                      {item.student?.name || 'Registered Student'}
+                                    </p>
+                                    {item.student?.rollNo && (
+                                      <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded">
+                                        {item.student.rollNo}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="m-0 text-[11px] text-neutral-400 dark:text-neutral-500 truncate">
+                                    {item.student?.branch || item.student?.program || 'Student'}
+                                    {item.student?.expectedGraduationYear ? ` • Class of ${item.student.expectedGraduationYear}` : ''}
+                                  </p>
+                                </div>
+
+                                <div className="flex-shrink-0">
+                                  {isAttended ? (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
+                                      <CheckCircle size={13} />
+                                      <span>Checked In</span>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMarkStudent(item)}
+                                      disabled={manualLoading || isItemLoading}
+                                      className="px-3 py-1.5 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                    >
+                                      {isItemLoading ? <Loader2 size={12} className="animate-spin" /> : <UserCheck size={13} />}
+                                      <span>Check In</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="p-5 text-center bg-neutral-50 dark:bg-neutral-950/40 border border-neutral-200/60 dark:border-neutral-800 rounded-xl">
+                          <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+                            No registered students found
+                          </p>
+                          <p className="text-[11px] text-neutral-400 dark:text-neutral-500 m-0">
+                            Only students registered for this event appear here. Unregistered students cannot be checked in.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Manual Feedback */}
                   <AnimatePresence>

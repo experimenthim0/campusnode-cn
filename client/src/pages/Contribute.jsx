@@ -492,14 +492,14 @@ const Contribute = () => {
                   <div className="h-full p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative group">
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-black tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-full">
+                        <span className="text-xs font-bold tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-full">
                           STEP {step.step}
                         </span>
                         <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300">
                           <StepIcon className="w-4 h-4" />
                         </div>
                       </div>
-                      <h3 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight mb-2">
+                      <h3 className="text-base font-semibold text-zinc-900 dark:text-white tracking-tight mb-2">
                         {step.title}
                       </h3>
                       <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-normal">

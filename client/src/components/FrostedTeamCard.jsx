@@ -66,71 +66,71 @@ export const TEAM_MEMBERS = [
       github: 'https://github.com',
     },
   },
-  {
-    id: 'ananya-patel',
-    name: '-',
-    role: 'Security & Auth Lead',
-    department: 'core',
-    batch: "ECE '27",
-    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-    socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
-    },
-  },
-  {
-    id: 'meera-nair',
-    name: '-',
-    role: 'Co-Founder & UX Lead',
-    department: 'design',
-    batch: "CSE '28",
-    imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
-    socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
-    },
-  },
-  {
-    id: 'kabir-mehta',
-    name: '-',
-    role: 'DevOps & SRE Specialist',
-    department: 'ops',
-    batch: "IT '27",
-    imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=800&q=80',
-    socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
-    },
-  },
-  {
-    id: 'riya-sen',
-    name: '-',
-    role: 'Mobile App Developer',
-    department: 'frontend',
-    batch: "IT '28",
-    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
-    socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
-    },
-  },
-  {
-    id: 'rohan-gupta',
-    name: '-',
-    role: 'Infrastructure Engineer',
-    department: 'core',
-    batch: "ECE '28",
-    imageUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80',
-    socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
-    },
-  },
+  // {
+  //   id: 'ananya-patel',
+  //   name: '-',
+  //   role: 'Security & Auth Lead',
+  //   department: 'core',
+  //   batch: "ECE '27",
+  //   imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com',
+  //     instagram: 'https://instagram.com',
+  //     github: 'https://github.com',
+  //   },
+  // },
+  // {
+  //   id: 'meera-nair',
+  //   name: '-',
+  //   role: 'Co-Founder & UX Lead',
+  //   department: 'design',
+  //   batch: "CSE '28",
+  //   imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com',
+  //     instagram: 'https://instagram.com',
+  //     github: 'https://github.com',
+  //   },
+  // },
+  // {
+  //   id: 'kabir-mehta',
+  //   name: '-',
+  //   role: 'DevOps & SRE Specialist',
+  //   department: 'ops',
+  //   batch: "IT '27",
+  //   imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=800&q=80',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com',
+  //     instagram: 'https://instagram.com',
+  //     github: 'https://github.com',
+  //   },
+  // },
+  // {
+  //   id: 'riya-sen',
+  //   name: '-',
+  //   role: 'Mobile App Developer',
+  //   department: 'frontend',
+  //   batch: "IT '28",
+  //   imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com',
+  //     instagram: 'https://instagram.com',
+  //     github: 'https://github.com',
+  //   },
+  // },
+  // {
+  //   id: 'rohan-gupta',
+  //   name: '-',
+  //   role: 'Infrastructure Engineer',
+  //   department: 'core',
+  //   batch: "ECE '28",
+  //   imageUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com',
+  //     instagram: 'https://instagram.com',
+  //     github: 'https://github.com',
+  //   },
+  // },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ export const TEAM_MEMBERS = [
 // ══════════════════════════════════════════════════════════════════════════════
 export const FrostedTeamCard = ({ member }) => {
   return (
-    <div className="w-full max-w-[290px] xs:max-w-[310px] sm:max-w-[325px] mx-auto aspect-[1/1.52] sm:aspect-[1/1.55] rounded-[28px] sm:rounded-[28px] overflow-hidden relative shadow-[0_10px_35px_rgba(0,0,0,0.07)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55)] border border-white/80 dark:border-white/10 transition-all duration-300 sm:hover:-translate-y-2 sm:hover:shadow-[0_22px_50px_rgba(0,0,0,0.16)] active:scale-[0.98] flex flex-col justify-end group select-none">
+    <div className="w-full max-w-[300px] xs:max-w-[310px] sm:max-w-[325px] mx-auto aspect-[1/1.52] sm:aspect-[1/1.55] rounded-[24px] sm:rounded-[28px] overflow-hidden relative shadow-[0_10px_35px_rgba(0,0,0,0.07)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55)] border border-white/80 dark:border-white/10 transition-all duration-300 sm:hover:-translate-y-2 sm:hover:shadow-[0_22px_50px_rgba(0,0,0,0.16)] active:scale-[0.98] flex flex-col justify-end group select-none">
       {/* Full Bleed Image */}
       <img
         src={member.imageUrl}
