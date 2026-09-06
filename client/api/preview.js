@@ -440,16 +440,28 @@ export default async function handler(req, res) {
       ? req.query.slug.trim()
       : "";
 
+  const isVercelPreview = process.env.VERCEL_ENV === "preview";
+  const defaultApiUrl = isVercelPreview ? "" : "https://campusnode-server.onrender.com";
+
   const apiUrl = (
     process.env.API_URL ||
     process.env.VITE_API_URL ||
     process.env.BACKEND_URL ||
-    "https://campusnode-server.onrender.com"
+    defaultApiUrl
   ).replace(/\/+$/, "");
 
   try {
     // Always load the real SPA HTML first.
     const baseHtml = await getBaseIndexHtml();
+
+    // In preview without API configured, serve default metadata safely without contacting production
+    if (!apiUrl) {
+      console.warn("[Social Preview] API_URL / VITE_API_URL not configured for Vercel preview. Serving default metadata.");
+      const html = injectDefaultMetadata(baseHtml);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
+      return res.status(200).send(html);
+    }
 
     // No slug → return normal SPA with generic metadata.
     if (!slug) {

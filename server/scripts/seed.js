@@ -21,15 +21,19 @@ const clubsData = [
 
 async function seed() {
   try {
+    const adminEmail = process.env.ADMIN_EMAIL || "clubsetuadmin@nitj.ac.in";
+    const adminPassword = process.env.ADMIN_PASS || "nikhil@him0148";
+    const commonPassword = process.env.COMMON_PASSWORD || "nikhil@him0148";
+
     console.log("Seeding Admin...");
-    const adminPasswordHash = await bcrypt.hash("nikhil@him0148", 10);
+    const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
     await prisma.adminRole.upsert({
-      where: { email: "clubsetuadmin@nitj.ac.in" },
+      where: { email: adminEmail },
       update: { password: adminPasswordHash },
       create: {
         id: createObjectId(),
         name: "Admin",
-        email: "clubsetuadmin@nitj.ac.in",
+        email: adminEmail,
         password: adminPasswordHash,
         role: "admin",
         isTwoStepEnabled: false,
@@ -72,11 +76,9 @@ async function seed() {
     });
 
     console.log("Seeding Clubs...");
+    const clubPasswordHash = await bcrypt.hash(commonPassword, 10);
     for (const [clubName, facultyName, facultyEmail, clubEmail] of clubsData) {
       const slug = slugify(clubName);
-      const prefix = clubEmail.split("@")[0];
-      const clubPassword = `${prefix}@him0148`;
-      const clubPasswordHash = await bcrypt.hash(clubPassword, 10);
 
       await prisma.$transaction(async (tx) => {
         let club = await tx.club.findUnique({ where: { slug } });
