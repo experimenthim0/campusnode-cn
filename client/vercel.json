@@ -52,10 +52,24 @@
   "rewrites": [
     {
       "source": "/event/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl).*"
+        }
+      ],
       "destination": "/api/preview?slug=:slug"
     },
     {
       "source": "/events/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|linkedinbot|twitterbot|telegrambot|slackbot|discordbot|applebot|skypeuripreview|redditbot|googlebot|pinterest|outbrain|vkshare|viber|snapchat|meta-externalagent|curl).*"
+        }
+      ],
       "destination": "/api/preview?slug=:slug"
     },
     {

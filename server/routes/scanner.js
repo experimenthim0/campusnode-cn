@@ -563,18 +563,25 @@ router.post("/sessions/:sessionId/end", verifyToken, async (req, res) => {
 });
 
 const checkInSchema = z.object({
-  body: z.object({
-    eventId: z.string().min(1),
-    qrPayload: z.string().min(1),
-    scannerSessionId: z.string().optional(),
-  }),
+  body: z
+    .object({
+      eventId: z.string().min(1),
+      qrPayload: z.string().optional(),
+      rollNo: z.string().optional(),
+      ticketId: z.string().optional(),
+      scannerSessionId: z.string().optional(),
+      mode: z.string().optional(),
+    })
+    .refine((data) => Boolean(data.qrPayload || data.rollNo || data.ticketId), {
+      message: "Either qrPayload, rollNo, or ticketId must be provided.",
+    }),
   params: z.any().optional(),
   query: z.any().optional(),
 });
 
 router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async (req, res) => {
   try {
-    const { eventId, qrPayload, scannerSessionId } = req.body;
+    const { eventId, qrPayload, rollNo, ticketId, scannerSessionId } = req.body;
     const { userId } = req.user;
 
     const event = await prisma.event.findUnique({
@@ -595,40 +602,69 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       }
     }
 
-    // 1. Verify QR signature
-    const verification = verifyTicket(qrPayload);
-    if (!verification.valid) {
-      return res.status(400).json({
-        status: verification.error || "INVALID_SIGNATURE",
-        message: "Invalid QR code.",
+    let participation = null;
+
+    if (rollNo) {
+      const cleanRollNo = rollNo.trim();
+      participation = await prisma.participation.findFirst({
+        where: {
+          eventId,
+          student: {
+            rollNo: { equals: cleanRollNo, mode: "insensitive" },
+          },
+        },
+        include: {
+          student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
+          externalUser: { select: { name: true, collegeName: true, email: true } },
+        },
+      });
+    } else if (ticketId) {
+      participation = await prisma.participation.findFirst({
+        where: {
+          eventId,
+          OR: [{ qrCode: ticketId }, { id: ticketId }],
+        },
+        include: {
+          student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
+          externalUser: { select: { name: true, collegeName: true, email: true } },
+        },
+      });
+    } else if (qrPayload) {
+      // 1. Verify QR signature
+      const verification = verifyTicket(qrPayload);
+      if (!verification.valid) {
+        return res.status(400).json({
+          status: verification.error || "INVALID_SIGNATURE",
+          message: "Invalid QR code.",
+        });
+      }
+
+      if (verification.eventId !== eventId) {
+        return res.status(400).json({
+          status: "WRONG_EVENT",
+          message: "This pass is not valid for this event.",
+        });
+      }
+
+      participation = await prisma.participation.findFirst({
+        where: {
+          eventId,
+          OR: [
+            { qrCode: verification.ticketId },
+            { qrPayload },
+          ],
+        },
+        include: {
+          student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
+          externalUser: { select: { name: true, collegeName: true, email: true } },
+        },
       });
     }
-
-    if (verification.eventId !== eventId) {
-      return res.status(400).json({
-        status: "WRONG_EVENT",
-        message: "This pass is not valid for this event.",
-      });
-    }
-
-    const participation = await prisma.participation.findFirst({
-      where: {
-        eventId,
-        OR: [
-          { qrCode: verification.ticketId },
-          { qrPayload },
-        ],
-      },
-      include: {
-        student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, academicStatus: true, program: true } },
-        externalUser: { select: { name: true, collegeName: true, email: true } },
-      },
-    });
 
     if (!participation) {
       return res.status(404).json({
         status: "UNKNOWN_TICKET",
-        message: "Ticket not found.",
+        message: rollNo ? "No registered student found for this event with the provided roll number." : "Ticket not found.",
       });
     }
 
@@ -918,6 +954,73 @@ router.get("/events/:eventId/sync-state", verifyToken, async (req, res) => {
       attendedCount,
       attendedParticipations: attendedIds,
       syncedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/events/:eventId/search-participants", verifyToken, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const query = (req.query.q || req.query.rollNo || "").trim();
+
+    if (!query) {
+      return res.json({ participants: [] });
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, clubId: true, organizerType: true, centralOrganizerId: true },
+    });
+    if (!event) return res.status(404).json({ message: "Event not found." });
+
+    const isAuthorized = await verifyAttendancePermission(req.user.userId, eventId, event, req.user);
+    if (!isAuthorized) {
+      return res.status(403).json({ message: "Unauthorized to view attendance for this event." });
+    }
+
+    const participants = await prisma.participation.findMany({
+      where: {
+        eventId,
+        status: { in: ["REGISTERED", "ATTENDED"] },
+        studentId: { not: null },
+        OR: [
+          { student: { rollNo: { contains: query, mode: "insensitive" } } },
+          { student: { name: { contains: query, mode: "insensitive" } } },
+        ],
+      },
+      select: {
+        id: true,
+        status: true,
+        attendedAt: true,
+        qrCode: true,
+        student: {
+          select: {
+            id: true,
+            name: true,
+            rollNo: true,
+            branch: true,
+            program: true,
+            expectedGraduationYear: true,
+          },
+        },
+      },
+      take: 15,
+      orderBy: [
+        { status: "asc" },
+        { student: { rollNo: "asc" } },
+      ],
+    });
+
+    return res.json({
+      participants: participants.map((p) => ({
+        participationId: p.id,
+        status: p.status,
+        attendedAt: p.attendedAt,
+        ticketId: p.qrCode,
+        student: p.student,
+      })),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
