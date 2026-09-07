@@ -9,14 +9,15 @@ import { sendWebPushNotification } from "../utils/sendPush.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 import { validateCustomFields } from "../utils/customFields.js";
+import { MAX_WAITLIST_CAPACITY } from "../services/waitlistService.js";
 
 const router = express.Router();
-async function notifyTeamMember(io, recipientId, title, message, senderStudentId = null) {
+async function notifyTeamMember(io, recipientId, title, message) {
   try {
     const notification = await prisma.notification.create({
       data: {
         id: createObjectId(),
-        senderStudentId,
+        senderStudentId: null,
         recipientStudentId: recipientId,
         recipientUserId: recipientId,
         targetScope: "USER",
@@ -28,7 +29,7 @@ async function notifyTeamMember(io, recipientId, title, message, senderStudentId
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: "System" },
+      sender: { name: "CampusNode", clubName: "CampusNode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);
@@ -39,12 +40,12 @@ async function notifyTeamMember(io, recipientId, title, message, senderStudentId
   }
 }
 
-async function notifyInvitation(io, recipientId, eventId, teamId, teamName, eventTitle, leaderName, senderStudentId) {
+async function notifyInvitation(io, recipientId, eventId, teamId, teamName, eventTitle, leaderName) {
   try {
     const notification = await prisma.notification.create({
       data: {
         id: createObjectId(),
-        senderStudentId,
+        senderStudentId: null,
         recipientStudentId: recipientId,
         recipientUserId: recipientId,
         targetScope: "USER",
@@ -58,7 +59,7 @@ async function notifyInvitation(io, recipientId, eventId, teamId, teamName, even
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: leaderName },
+      sender: { name: "CampusNode", clubName: "CampusNode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);
@@ -105,6 +106,14 @@ router.post(
 
       if (event.registrationType !== "team" && event.registrationType !== "both") {
         return res.status(400).json({ message: "This event does not support team registration." });
+      }
+
+      if (event.totalSeats > 0 && event.registeredCount >= event.totalSeats && event.allowWaitlist === false) {
+        return res.status(400).json({
+          message: "Registration closed. This event is full.",
+          isFull: true,
+          waitlistAllowed: false,
+        });
       }
 
       // Validate required and typed custom fields
@@ -201,10 +210,27 @@ router.post(
         const latestEvent = events[0];
         if (!latestEvent) throw new Error("Event not found");
 
-        leaderRegStatus =
-          latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats
-            ? "WAITLISTED"
-            : "REGISTERED";
+        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+        if (isFull) {
+          if (latestEvent.allowWaitlist === false) {
+            const err = new Error("Registration closed. This event is full.");
+            err.statusCode = 400;
+            err.isFull = true;
+            err.waitlistAllowed = false;
+            throw err;
+          }
+          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+            const err = new Error(`Registration closed. The waitlist for this event is full (maximum ${MAX_WAITLIST_CAPACITY} participants allowed).`);
+            err.statusCode = 400;
+            err.waitlistFull = true;
+            err.waitlistAllowed = true;
+            throw err;
+          }
+          leaderRegStatus = "WAITLISTED";
+        } else {
+          leaderRegStatus = "REGISTERED";
+        }
 
         await tx.team.create({
           data: {
@@ -330,8 +356,7 @@ router.post(
           teamId,
           teamName,
           event.title,
-          leaderName,
-          leaderId
+          leaderName
         );
       }
 
@@ -347,6 +372,14 @@ router.post(
       });
     } catch (err) {
       console.error("Team registration error:", err);
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({
+          message: err.message,
+          waitlistFull: err.waitlistFull,
+          waitlistAllowed: err.waitlistAllowed,
+          isFull: err.isFull,
+        });
+      }
       res.status(500).json({ message: err.message });
     }
   }
@@ -423,10 +456,19 @@ router.post(
         `;
         const latestEvent = events[0];
 
-        newStatus =
-          latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats
-            ? "WAITLISTED"
-            : "REGISTERED";
+        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+        if (isFull) {
+          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+            const err = new Error("Cannot accept invitation. The event and its waitlist are completely full.");
+            err.statusCode = 400;
+            err.waitlistFull = true;
+            throw err;
+          }
+          newStatus = "WAITLISTED";
+        } else {
+          newStatus = "REGISTERED";
+        }
 
         await tx.participation.update({
           where: { id: participation.id },
@@ -460,8 +502,7 @@ router.post(
         req.io,
         participation.team.leaderId,
         "Invitation Accepted",
-        `${student?.name || "A member"} accepted your invitation to join team "${participation.team.teamName}" for "${event.title}".`,
-        userId
+        `${student?.name || "A member"} accepted your invitation to join team "${participation.team.teamName}" for "${event.title}".`
       );
 
       invalidatePublicResponses(["events:public:*"]);
@@ -469,6 +510,9 @@ router.post(
       res.json({ success: true, status: newStatus, message: "Invitation accepted successfully." });
     } catch (err) {
       console.error("Accept invitation error:", err);
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message, waitlistFull: err.waitlistFull });
+      }
       res.status(500).json({ message: err.message });
     }
   }
@@ -534,8 +578,7 @@ router.post(
         req.io,
         participation.team.leaderId,
         "Invitation Declined",
-        `${student?.name || "A member"} declined your invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
-        userId
+        `${student?.name || "A member"} declined your invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`
       );
 
       res.json({ success: true, message: "Invitation declined successfully." });
@@ -701,8 +744,7 @@ router.post(
         teamId,
         team.teamName,
         event.title,
-        leaderName,
-        leaderId
+        leaderName
       );
 
       res.json({

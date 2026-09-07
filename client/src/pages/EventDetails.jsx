@@ -37,18 +37,34 @@ const getCategoryEmoji = (category) => {
 };
 
 const FAQItem = ({ question, answer, isOpen, onToggle }) => (
-  <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all duration-200">
+  <div
+    className={`rounded-2xl transition-all duration-200 border overflow-hidden backdrop-blur-md ${
+      isOpen
+        ? 'bg-white/95 dark:bg-zinc-900/90 border-brand-500/30 dark:border-brand-500/30 shadow-md'
+        : 'bg-white/70 dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700'
+    }`}
+  >
     <button
+      type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer select-none"
+      aria-expanded={isOpen}
     >
-      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4">{question}</span>
-      <i className={`ri-arrow-down-s-line text-lg text-neutral-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
+      <div
+        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+          isOpen
+            ? 'rotate-180 bg-brand-500/10 text-brand-600 dark:text-brand-400'
+            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+        }`}
+      >
+        <i className="ri-arrow-down-s-line text-lg" />
+      </div>
     </button>
     <div
       className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
     >
-      <div className="px-5 pb-4 text-[13px] text-neutral-600 dark:text-neutral-500 leading-relaxed">
+      <div className="px-5 pb-4 pt-2 border-t border-neutral-100 dark:border-neutral-800/60 text-[13px] text-neutral-600 dark:text-neutral-300 leading-relaxed">
         {answer}
       </div>
     </div>
@@ -579,7 +595,7 @@ const EventDetails = () => {
           </div>
           <h2 className="font-black text-xl text-black dark:text-white mb-2">Oops!</h2>
           <p className="text-neutral-500 text-[14px] mb-6">{error || 'Event not found'}</p>
-          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors cursor-pointer border-2 border-black">
+          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg border border-black dark:border-white">
             <i className="ri-arrow-left-line" /> Back to Events
           </button>
         </div>
@@ -618,22 +634,29 @@ const EventDetails = () => {
     currentUser?.principalType === 'EXTERNAL'
   );
   const isExternalRestricted = isExternalUser && event.allowExternal === false;
+  const allowWaitlist = event.allowWaitlist !== false;
+  const waitlistCount = (event.waitingListIds || event.waitingList || []).length;
+  const isWaitlistFull = isFull && allowWaitlist && waitlistCount >= 5;
 
   const btnConfig = isOpenEvent
-    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default', disabled: true }
+    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default shadow-md shadow-emerald-600/20', disabled: true }
     : isEnded
-    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
+    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-200/80 dark:border-neutral-700 backdrop-blur-md shadow-xs hover:shadow-md cursor-pointer' : 'bg-neutral-200/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-500 border-neutral-200 dark:border-neutral-800 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
-    ? { label: 'Event is Live', cls: 'bg-brand-600 text-white border-brand-600 cursor-not-allowed', disabled: true }
+    ? { label: 'Event is Live', cls: 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-600/20 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
     ? { label: 'Deadline Passed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isExternalRestricted
     ? { label: ' NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : alreadyRegistered
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    : isFull && !allowWaitlist
+    ? { label: 'Event Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-xs', disabled: true }
+    : isWaitlistFull
+    ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-xs', disabled: true }
     : isFull
-    ? { label: 'Join Waitlist', cls: 'bg-yellow-400 text-black border-black hover:bg-yellow-300 cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-brand-600 hover:border-brand-600 hover:text-white cursor-pointer', disabled: false };
+    ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 cursor-pointer', disabled: false }
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-brand-600 hover:border-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:border-brand-600 dark:hover:text-white shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -771,18 +794,36 @@ const EventDetails = () => {
               </strong>.{' '}
             </>
           ) : isFull ? (
-            <>
-              All{' '}
-              <strong className="font-bold text-black dark:text-white">
-                {totalSeats} seats
-              </strong>{' '}
-              are filled. However, you can register to join the waitlist.{' '}
-            </>
+            !allowWaitlist ? (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                are filled. Registration is currently closed.{' '}
+              </>
+            ) : isWaitlistFull ? (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                and all 5 waitlist spots are filled. Registration is currently closed.{' '}
+              </>
+            ) : (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                are filled. However, you can register to join the waitlist ({5 - waitlistCount} spots left).{' '}
+              </>
+            )
           ) : (
             <>
               There are{' '}
               <strong className="font-bold text-black dark:text-white">
-                {totalSeats - registeredCount} spots remaining
+                {Math.max(0, totalSeats - registeredCount)} spots remaining
               </strong>{' '}
               out of {totalSeats} total seats.{' '}
             </>
@@ -859,7 +900,7 @@ const EventDetails = () => {
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-brand-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
@@ -931,7 +972,7 @@ const EventDetails = () => {
                     e.stopPropagation();
                     handleShare();
                   }}
-                  className="inline-flex items-center justify-center bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/20 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
                   title="Share Event"
                   aria-label="Share Event"
                 >
@@ -1189,7 +1230,7 @@ const EventDetails = () => {
               <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {faqItems.map((item, i) => (
                   <FAQItem
                     key={i}
@@ -1245,10 +1286,16 @@ const EventDetails = () => {
                     />
                   </div>
                   <p className="text-[11px] text-neutral-500 mt-1.5">
-                    {registeredCount} / {totalSeats} seats filled
+                    {Math.min(registeredCount, totalSeats)} / {totalSeats} seats filled
                   </p>
                   {isFull && (
-                    <p className="text-[11px] text-brand-600 font-semibold mt-1">All seats filled — registering adds you to the waitlist.</p>
+                    !allowWaitlist ? (
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats are filled. Registration closed.</p>
+                    ) : isWaitlistFull ? (
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats and waitlist spots are filled (5/5). Registration closed.</p>
+                    ) : (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">All regular seats filled — join the waitlist ({5 - waitlistCount} spots left).</p>
+                    )
                   )}
                 </div>
               )}
@@ -1309,7 +1356,7 @@ const EventDetails = () => {
                         : handleRegister)
                       : undefined}
                     disabled={btnConfig.disabled || isRegistering}
-                    className={`flex-1 py-3 px-6 text-[13px] font-black uppercase tracking-[0.15em] border-2 rounded-full transition-all flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`flex-1 py-3 px-6 text-[13px] font-black uppercase tracking-[0.15em] border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
                   >
                     {isRegistering ? (
                       <><i className="ri-loader-4-line animate-spin text-base" /> Processing…</>
@@ -1319,7 +1366,7 @@ const EventDetails = () => {
                   {status === 'UPCOMING' && (
                     <CalendarDropdown
                       event={event}
-                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-600 dark text-neutral-500 cursor-pointer shadow-sm transition-colors shrink-0"
+                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200/80 dark:border-neutral-800 rounded-full bg-white/70 dark:bg-neutral-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 cursor-pointer shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0"
                     />
                   )}
                 </div>
@@ -1478,7 +1525,7 @@ const EventDetails = () => {
           <button
             onClick={!btnConfig.disabled && !isRegistering ? handleRegister : undefined}
             disabled={btnConfig.disabled || isRegistering}
-            className={`pointer-events-auto px-5 py-2 text-[13px] font-black  tracking-[0.12em] border-2 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`pointer-events-auto px-6 py-2.5 text-[13px] font-black tracking-[0.12em] border rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
           >
             {isRegistering ? (
               <><i className="ri-loader-4-line animate-spin text-sm" /> Processing…</>
@@ -1514,7 +1561,7 @@ const EventDetails = () => {
               <button
                 type="button"
                 onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
@@ -1541,10 +1588,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1570,7 +1617,7 @@ const EventDetails = () => {
               <button
                 type="button"
                 onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
@@ -1623,10 +1670,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
+              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs">
+              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
                 {isRegistering ? 'Processing...' : (event.paymentMethod && event.paymentMethod !== 'FREE' ? 'Pay & Register' : 'Register')}
               </button>
             </div>
@@ -1652,7 +1699,7 @@ const EventDetails = () => {
               <button
                 type="button"
                 onClick={() => setConfirmModalOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
@@ -1679,23 +1726,23 @@ const EventDetails = () => {
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
-              {isFull && (
+              {isFull && allowWaitlist && (
                 <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                  Note: All regular seats are filled. Confirming will place you on the waitlist.
+                  Note: All regular seats are filled. Confirming will place you on the waitlist ({5 - waitlistCount} spots left).
                 </p>
               )}
             </div>
             <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1773,7 +1820,7 @@ const EventDetails = () => {
                 <div className="my-3 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-2 flex items-center gap-1.5">
                     <i className="ri-information-line text-[#F97316] dark:text-[#FB923C] text-xs" />
-                    Next Steps from Club
+                    Message from Club
                   </p>
                   <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed break-words whitespace-pre-wrap">
                     {renderWithLinks(postRegMessage)}
@@ -1785,14 +1832,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setShowSuccessModal(false); navigate('/my-events'); }}
-                  className="w-full bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-xs border-0 outline-none text-xs cursor-pointer"
+                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
                 >
                   Go to My Events
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="w-full text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                  className="w-full text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 py-2.5 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border border-transparent hover:border-neutral-200/60 dark:hover:border-neutral-800 bg-transparent outline-none cursor-pointer"
                 >
                   Stay on this page
                 </button>
@@ -1814,21 +1861,21 @@ const EventDetails = () => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 Register as Individual
               </button>
               <button
                 type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-4 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
+                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg"
               >
                 Register as Team
               </button>
               <button
                 type="button"
                 onClick={() => setTeamChoiceModalOpen(false)}
-                className="w-full px-4 py-2 text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                className="w-full px-4 py-2 text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border-0 bg-transparent outline-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -1855,7 +1902,7 @@ const EventDetails = () => {
               <button
                 type="button"
                 onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
@@ -1942,7 +1989,7 @@ const EventDetails = () => {
                       <button
                         type="button"
                         onClick={() => setTeammates(teammates.filter(t => t.id !== member.id))}
-                        className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-transparent border-0 outline-none cursor-pointer"
+                        className="px-3 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
                       >
                         Remove
                       </button>
@@ -1989,14 +2036,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

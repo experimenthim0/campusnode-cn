@@ -277,7 +277,7 @@ const Navbar = () => {
                 setDropdownOpen(false);
                 setNotifDropdownOpen(false);
               }}
-              className="flex items-center gap-2 p-2 xl:px-3 xl:py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 group"
+              className="flex items-center gap-2 p-2 xl:px-3 xl:py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs group"
               aria-label="Search"
               title="Search (Ctrl+K)"
             >
@@ -292,7 +292,7 @@ const Navbar = () => {
                 toggleTheme();
                 setTimeout(() => document.documentElement.classList.remove('dark-transition'), 400);
               }}
-              className="p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:rotate-12"
+              className="p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs hover:rotate-12"
               aria-label="Toggle dark mode"
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
@@ -320,7 +320,7 @@ const Navbar = () => {
                   <div className="relative" ref={notifDropdownRef}>
                     <button
                       onClick={handleNotificationClick}
-                      className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 group"
+                      className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs group"
                       aria-label="Notifications"
                     >
                       <BellIcon size={19} className="shrink-0 group-hover:scale-105 transition-transform duration-200" />
@@ -339,7 +339,7 @@ const Navbar = () => {
                               <button
                                 type="button"
                                 onClick={handleMarkAllNotificationsRead}
-                                className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                                className="text-[11px] font-bold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                               >
                                 Mark all read
                               </button>
@@ -347,7 +347,7 @@ const Navbar = () => {
                             <Link
                               to="/notifications"
                               onClick={() => setNotifDropdownOpen(false)}
-                              className="flex items-center gap-1 text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors text-xs font-bold uppercase tracking-wider group"
+                              className="inline-flex items-center gap-1 text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-xs font-bold uppercase tracking-wider group"
                             >
                               See All
                               <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -359,12 +359,16 @@ const Navbar = () => {
                             notifications.slice(0, 4).map((notif, idx) => (
                               <Link
                                 key={notif.id || notif._id || idx}
-                                to={notif.type === 'TEAM_INVITATION' ? '/notifications' : notif.url || '/notifications'}
+                                to={notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId) ? '/notifications' : notif.url || '/notifications'}
                                 onClick={() => handleNotificationItemClick(notif)}
                                 className={`block p-3.5 transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-transparent'}`}
                               >
                                 <div className="flex justify-between items-start mb-1">
-                                  <span className="text-[10px] font-bold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">{notif.sender?.clubName || notif.sender?.name || "CampusNode"}</span>
+                                  <span className="text-[10px] font-bold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
+                                    {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
+                                      ? 'CampusNode'
+                                      : (notif.sender?.clubName || notif.sender?.name || 'CampusNode')}
+                                  </span>
                                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap ml-2">{formatDate(notif.createdAt)}</span>
                                 </div>
                                 <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100 mb-0.5 line-clamp-1">{notif.title}</h4>
@@ -387,7 +391,7 @@ const Navbar = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen((o) => !o)}
-                    className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-300 hover:border-brand-500/50 hover:bg-brand-50/30 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-white transition-all duration-200 cursor-pointer shadow-2xs group active:scale-95"
+                    className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-300 hover:border-brand-500/50 hover:bg-brand-50/30 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-white transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs group active:scale-95 hover:-translate-y-0.5 touch-manipulation"
                     aria-haspopup="true"
                     aria-expanded={dropdownOpen}
                   >
@@ -445,7 +449,7 @@ const Navbar = () => {
                           <Link
                             to="/admin-dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 group"
+                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                             role="menuitem"
                           >
                             <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -460,7 +464,7 @@ const Navbar = () => {
                                   : "/profile"
                               }
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 group"
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                               role="menuitem"
                             >
                               <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -471,7 +475,7 @@ const Navbar = () => {
                               <Link
                                 to="/central-organizer"
                                 onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-all duration-150"
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                                 role="menuitem"
                               >
                                 <Shield size={16} />
@@ -486,7 +490,7 @@ const Navbar = () => {
                       <div className="mt-1 pt-1 border-t border-neutral-100 dark:border-neutral-800">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group"
+                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                           role="menuitem"
                         >
                           <LogoutIcon size={16} className="text-red-500 group-hover:translate-x-0.5 transition-transform duration-150">
@@ -503,13 +507,13 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-3.5 py-1.5 text-xs sm:text-[13px] font-bold tracking-wider text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-all duration-200 cursor-pointer"
+                  className="px-4 py-2 text-xs sm:text-[13px] font-bold tracking-wider text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 rounded-full hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold tracking-widest rounded-full hover:bg-brand-600 hover:border-brand-600 dark:hover:bg-brand-500 dark:hover:border-brand-500 dark:hover:text-white transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold tracking-widest rounded-full hover:bg-brand-600 hover:border-brand-600 dark:hover:bg-brand-500 dark:hover:border-brand-500 dark:hover:text-white transition-all duration-200 shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 >
                   <ArrowRightIcon size={18}>
                     <p className="font-semibold">
@@ -527,7 +531,7 @@ const Navbar = () => {
                 setSearchOpen((prev) => !prev);
                 setNotifDropdownOpen(false);
               }}
-              className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95"
+              className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs"
               aria-label="Search"
             >
               <i className={`${searchOpen ? 'ri-close-line text-brand-600' : 'ri-search-line'} text-[19px]`} />
@@ -541,7 +545,7 @@ const Navbar = () => {
                       handleNotificationClick();
                       setSearchOpen(false);
                     }}
-                    className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 group"
+                    className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs group"
                     aria-label="Notifications"
                   >
                     <BellIcon size={19} className="shrink-0 group-hover:scale-105 transition-transform duration-200" />
@@ -560,7 +564,7 @@ const Navbar = () => {
                             <button
                               type="button"
                               onClick={handleMarkAllNotificationsRead}
-                              className="text-xs font-medium tracking-widest text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                              className="text-xs font-medium tracking-widest text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                             >
                               Mark read
                             </button>
@@ -572,7 +576,7 @@ const Navbar = () => {
                               setMobileOpen(false);
                             }}
                             className="text-xs font-medium tracking-widest text-brand-600 dark:text-brand-500 
-                          hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                          hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                           >
                             See all
                             <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 transition-transform duration-200" />
@@ -584,12 +588,16 @@ const Navbar = () => {
                           notifications.slice(0, 4).map((notif, idx) => (
                             <Link
                               key={notif.id || notif._id || idx}
-                              to={notif.type === 'TEAM_INVITATION' ? '/notifications' : notif.url || '/notifications'}
+                              to={notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId) ? '/notifications' : notif.url || '/notifications'}
                               onClick={() => handleNotificationItemClick(notif)}
                               className={`block p-4 transition-colors ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50 dark:bg-brand-500/10' : 'bg-transparent'}`}
                             >
                               <div className="flex justify-between items-start mb-1">
-                                <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 tracking-widest">{notif.sender?.clubName || "CampusNode"}</span>
+                                <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 tracking-widest">
+                                  {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
+                                    ? 'CampusNode'
+                                    : (notif.sender?.clubName || notif.sender?.name || 'CampusNode')}
+                                </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(notif.createdAt)} </span>
                               </div>
                               <h4 className="text-[13px] font-bold text-black dark:text-neutral-100 mb-1">{notif.title}</h4>
@@ -614,7 +622,7 @@ const Navbar = () => {
                   toggleTheme();
                   setTimeout(() => document.documentElement.classList.remove('dark-transition'), 400);
                 }}
-                className="p-2 rounded-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors duration-150 cursor-pointer shrink-0"
+                className="p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs shrink-0"
                 aria-label="Toggle dark mode"
                 title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               >

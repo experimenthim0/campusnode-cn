@@ -160,7 +160,7 @@ router.get(
             },
           }),
           prisma.participation.findMany({
-            where: { status: { not: "CANCELLED" } },
+            where: { status: { in: ["REGISTERED", "ATTENDED"] } },
             select: { eventId: true, amountPaid: true, paymentStatus: true },
           }),
           prisma.studentUser.count({
@@ -332,7 +332,7 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
     const participations = await prisma.participation.findMany({
       where: {
         eventId: { in: events.length ? events.map((e) => e.id) : ["__none__"] },
-        status: { not: "CANCELLED" },
+        status: { in: ["REGISTERED", "ATTENDED"] },
       },
       select: { eventId: true, amountPaid: true, paymentStatus: true },
     });

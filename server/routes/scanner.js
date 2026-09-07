@@ -675,6 +675,13 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       });
     }
 
+    if (participation.status === "WAITLISTED") {
+      return res.status(400).json({
+        status: "WAITLISTED",
+        message: "This ticket is currently on the waitlist and has not been confirmed for entry.",
+      });
+    }
+
     const existingAttendance = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId, participationId: participation.id } },
     });
@@ -854,6 +861,15 @@ router.post("/attendance/sync", verifyToken, validate(syncSchema), async (req, r
             localAttendanceId: record.localAttendanceId,
             status: "REJECTED",
             message: "Ticket cancelled.",
+          });
+          continue;
+        }
+
+        if (participation.status === "WAITLISTED") {
+          results.push({
+            localAttendanceId: record.localAttendanceId,
+            status: "REJECTED",
+            message: "Ticket waitlisted (not confirmed).",
           });
           continue;
         }

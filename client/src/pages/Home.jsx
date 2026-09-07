@@ -138,7 +138,7 @@ const SectionLabel = ({ children, light = false }) => (
 const BtnPrimary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold uppercase tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all hover:-translate-y-px shadow-sm"
+    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold uppercase tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg"
   >
     {children}
   </Link>
@@ -147,7 +147,7 @@ const BtnPrimary = ({ to, children }) => (
 const BtnSecondary = ({ to, children }) => (
   <Link
     to={to}
-    className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 ease-in-out font-semibold leading-5 text-sm px-5 py-2.5 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
+    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-brand-500/50"
   >
     {children}
   </Link>
@@ -320,7 +320,7 @@ const Home = () => {
                           <button
                             type="button"
                             onClick={openFeedbackModal}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all cursor-pointer shadow-xs group"
+                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md group"
                           >
                             <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                             <span>FEEDBACK • {pendingCount} {pendingCount === 1 ? 'event needs' : 'events need'} your feedback</span>
@@ -344,10 +344,10 @@ const Home = () => {
                       <Link
                         key={idx}
                         to={action.to}
-                        className={`flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold tracking-wider transition-all hover:-translate-y-0.5 cursor-pointer shadow-sm min-w-0 ${
+                        className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 ${
                           action.primary 
-                            ? "bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black border border-black dark:border-white" 
-                            : "bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800"
+                            ? "bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black border border-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg" 
+                            : "bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-md hover:border-brand-500/40"
                         }`}
                       >
                         <IconComponent className={action.primary ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-white dark:text-black shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500 shrink-0"} />
@@ -372,7 +372,7 @@ const Home = () => {
                 {isStudent && (
                   <Link
                     to="/my-events"
-                    className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400 hover:underline transition-all"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-brand-200 dark:border-brand-900/60 bg-brand-50/60 dark:bg-brand-950/40 text-xs font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md"
                   >
                     Manage Tickets & QR Codes <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 shrink-0" />
                   </Link>
@@ -395,7 +395,7 @@ const Home = () => {
                     </p>
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center px-6 py-3 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-bold text-xs uppercase tracking-widest rounded-full transition-all shadow-sm"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-bold text-xs uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg"
                     >
                       Find Events to Join
                     </Link>
@@ -445,12 +445,12 @@ const Home = () => {
                             <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col items-start gap-1">
                               <button
                                 onClick={() => setOpenMapEventId(openMapEventId === event._id ? null : event._id)}
-                                className="flex items-center gap-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-850/60 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
                               >
                                 <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
                                 <span>Venue: <strong className="text-neutral-900 dark:text-white">{event.venue}</strong></span>
                                 {event.venue !== 'Online' && (
-                                  <span className="text-[10px] text-brand-600 hover:underline">
+                                  <span className="text-[10px] text-brand-600 dark:text-brand-400 font-bold hover:underline">
                                     ({openMapEventId === event._id ? 'Close Map' : 'Locate on Map'})
                                   </span>
                                 )}
@@ -481,7 +481,7 @@ const Home = () => {
                 <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {isClub && (
                     <>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
@@ -491,11 +491,11 @@ const Home = () => {
                             Organize campus fests, hackathons, and technical talks. Use the check-in scanner to verify QR code tickets and record live attendance.
                           </p>
                         </div>
-                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           Manage Club Events <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Wallet className="w-6 h-6" />
@@ -505,7 +505,7 @@ const Home = () => {
                             Track event registration fees, view verified receipts, and monitor participant payment records.
                           </p>
                         </div>
-                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           Track Financials & Payments <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
@@ -513,7 +513,7 @@ const Home = () => {
                   )}
                   {isFaculty && (
                     <>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
@@ -523,11 +523,11 @@ const Home = () => {
                             Review detailed proposals for upcoming club events. Approve them for public release or send them back with coordinator comments.
                           </p>
                         </div>
-                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           Review Proposals <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Users className="w-6 h-6" />
@@ -537,7 +537,7 @@ const Home = () => {
                             Oversee active student memberships, coordinate schedules, and send urgent notifications or alerts to students.
                           </p>
                         </div>
-                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           View Club Directory <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
@@ -545,7 +545,7 @@ const Home = () => {
                   )}
                   {isAdmin && (
                     <>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <LayoutDashboard className="w-6 h-6" />
@@ -555,11 +555,11 @@ const Home = () => {
                             Access system statistics, manage registered clubs, review transaction logs, and maintain core platform configurations.
                           </p>
                         </div>
-                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           Open Admin Control Panel <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
-                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
                           <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                             <Bell className="w-6 h-6" />
@@ -569,7 +569,7 @@ const Home = () => {
                             Send direct push notifications and official announcements to all registered student accounts.
                           </p>
                         </div>
-                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors mt-auto group">
+                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
                           Create System Broadcast <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
@@ -606,21 +606,21 @@ const Home = () => {
                       <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
                         <Link
                           to="/events"
-                          className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                          className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                           <i className="ri-calendar-event-line text-lg mr-2 font-light" /> Browse Events
                         </Link>
 
                         <Link
                           to="/clubs"
-                          className="text-neutral-900 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:-translate-y-px"
+                          className="text-neutral-800 dark:text-neutral-200 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-xs hover:shadow-md hover:border-brand-500/50 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                           <i className="ri-group-line text-lg mr-2 text-brand-500 font-light" /> Explore Clubs
                         </Link>
 
                         <Link
                           to="/register"
-                          className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-5 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                          className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                            Get Involved Now! <ArrowRightIcon className="w-4 h-4 ml-1"/>
                         </Link>
@@ -726,7 +726,7 @@ const Home = () => {
                 </p>
                 <Link
                   to="/leaderboard/how-it-works"
-                  className="inline-flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors uppercase tracking-wider group mb-8"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-200 dark:border-brand-900/60 bg-brand-50/50 dark:bg-brand-950/30 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation uppercase tracking-wider group mb-8 shadow-xs hover:shadow-md"
                 >
                   <span>How Points Are Calculated</span>
                   <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -774,11 +774,11 @@ const Home = () => {
                     </div>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
-                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full shadow-sm">
+                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
                         Join now
                         <i className="ri-arrow-right-line text-sm" />
                       </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-brand-500 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full">
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-brand-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
                         Browse Events
                       </Link>
                     </div>
@@ -818,7 +818,7 @@ const Home = () => {
                   </div>
                   <Link
                     to="/clubs"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors group self-start md:self-auto"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-200 dark:border-brand-900/60 bg-brand-50/50 dark:bg-brand-950/30 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
                   >
                     <span>Explore All Societies</span>
                     <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -829,7 +829,7 @@ const Home = () => {
                   {clubFeatures.map((f, i) => (
                     <div
                       key={i}
-                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-brand-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs"
+                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-brand-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs hover:shadow-md hover:-translate-y-1"
                     >
                       <div className="w-10 h-10 bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors text-lg">
                         {f.icon}
@@ -925,7 +925,7 @@ const Home = () => {
           <ScrollReveal direction="up" delay={0.25} className="mt-12 sm:mt-16 text-center">
             <Link
               to="/team"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-semibold shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
             >
               <span>Explore Team Page & Join Us</span>
               <ArrowRightIcon className="w-4 h-4" />
@@ -964,7 +964,7 @@ const Home = () => {
               <ScrollReveal direction="up" delay={0.35}>
                 <Link
                   to="/register"
-                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold leading-5 text-sm px-6 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:-translate-y-px"
+                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-7 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                 >
                   Be Part of It <ArrowRightIcon className="w-4 h-4 ml-1.5" />
                 </Link>
@@ -1001,7 +1001,7 @@ const Home = () => {
             
             <button
               onClick={acknowledgeWin}
-              className="mt-6 w-full py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-xl transition-colors shadow-xs text-xs cursor-pointer"
+              className="mt-6 w-full py-3 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 text-xs cursor-pointer"
             >
               Claim Victory 🏆
             </button>

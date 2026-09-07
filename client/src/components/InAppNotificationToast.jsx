@@ -72,7 +72,9 @@ const InAppNotificationToast = ({ toast, onClose }) => {
               <i className="ri-notification-3-line" />
             </div>
             <span className="text-[11px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-              {toast.sender?.clubName || toast.sender?.name || 'CampusNode'}
+              {toast.type === 'TEAM_INVITATION' || toast.type === 'TEAM_RESPONSE' || Boolean(toast.teamId) || toast.title?.toLowerCase().includes('team') || toast.title?.toLowerCase().includes('invitation')
+                ? 'CampusNode'
+                : (toast.sender?.clubName || toast.sender?.name || 'CampusNode')}
             </span>
           </div>
 

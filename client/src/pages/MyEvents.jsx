@@ -65,7 +65,8 @@ const MyRegisteredEventCard = ({
   const isPaymentSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
   const isPaymentRejected = reg.paymentStatus === 'REJECTED';
   const isPaymentPending = isPaidEvent && reg.paymentStatus === 'PENDING';
-  const canShowTicket = !isPaidEvent || isTeamMember || isPaymentSuccess;
+  const isWaitlisted = reg.status === 'WAITLISTED';
+  const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted;
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
 
   // Certificate download is only available if added or selected to provide, event is past, and user attended
@@ -276,6 +277,12 @@ const MyRegisteredEventCard = ({
                     <QrCode className="w-3.5 h-3.5" />
                     <span>Show Ticket</span>
                   </button>
+                )}
+
+                {isWaitlisted && (
+                  <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
+                    <i className="ri-hourglass-line mr-1" /> On Waitlist — Ticket available when cleared
+                  </span>
                 )}
 
                 {isPaidEvent && isPaymentPending && (

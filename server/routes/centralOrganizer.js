@@ -67,7 +67,11 @@ router.get("/events", async (req, res) => {
         },
         _count: {
           select: {
-            participations: true,
+            participations: {
+              where: {
+                status: { in: ["REGISTERED", "ATTENDED"] },
+              },
+            },
             eventStaff: true,
             attendanceRecords: true,
           },
@@ -100,6 +104,7 @@ const createEventSchema = z.object({
     minTeamSize: z.number().int().min(1).nullable().optional(),
     maxTeamSize: z.number().int().min(1).nullable().optional(),
     provideCertificate: z.boolean().nullable().optional(),
+    allowWaitlist: z.boolean().nullable().optional(),
     paymentMethod: z.string().nullable().optional(),
     registrationFee: z.number().min(0).nullable().optional(),
     paymentInstructions: z.string().nullable().optional(),
@@ -121,7 +126,7 @@ router.post("/events", async (req, res) => {
       title, description, venue, startTime, endTime, totalSeats,
       imageUrl, allowedPrograms, allowedYears, allowedBranches,
       registrationDeadline, registrationType, reviewStatus, minTeamSize, maxTeamSize,
-      provideCertificate, paymentMethod, registrationFee, paymentInstructions,
+      provideCertificate, allowWaitlist, paymentMethod, registrationFee, paymentInstructions,
       requiredFields, customFields,
     } = req.body;
 
@@ -163,6 +168,7 @@ router.post("/events", async (req, res) => {
         minTeamSize: minTeamSize || 1,
         maxTeamSize: maxTeamSize || 1,
         provideCertificate: provideCertificate || false,
+        allowWaitlist: allowWaitlist !== undefined ? Boolean(allowWaitlist) : true,
         paymentMethod: effectiveRegType === "none" ? "FREE" : (paymentMethod || "FREE"),
         registrationFee: effectiveRegType === "none" ? 0 : (registrationFee || 0),
         paymentInstructions: paymentInstructions || null,
@@ -197,7 +203,7 @@ router.put("/events/:eventId", async (req, res) => {
       title, description, venue, startTime, endTime, totalSeats,
       imageUrl, allowedPrograms, allowedYears, allowedBranches,
       registrationDeadline, registrationType, minTeamSize, maxTeamSize,
-      provideCertificate, paymentMethod, registrationFee, paymentInstructions,
+      provideCertificate, allowWaitlist, paymentMethod, registrationFee, paymentInstructions,
       requiredFields, customFields, showWinner, winners, reviewStatus,
     } = req.body;
 
@@ -222,6 +228,7 @@ router.put("/events/:eventId", async (req, res) => {
     if (minTeamSize !== undefined) updateData.minTeamSize = minTeamSize;
     if (maxTeamSize !== undefined) updateData.maxTeamSize = maxTeamSize;
     if (provideCertificate !== undefined) updateData.provideCertificate = provideCertificate;
+    if (allowWaitlist !== undefined) updateData.allowWaitlist = Boolean(allowWaitlist);
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
     if (registrationFee !== undefined) updateData.registrationFee = registrationFee;
     if (paymentInstructions !== undefined) updateData.paymentInstructions = paymentInstructions;

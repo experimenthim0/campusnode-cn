@@ -47,12 +47,27 @@ const senderInclude = {
 };
 
 function formatSender(notification) {
+  // Team invitations and responses always originate from CampusNode
+  if (
+    notification.type === "TEAM_INVITATION" ||
+    notification.type === "TEAM_RESPONSE" ||
+    Boolean(notification.teamId) ||
+    notification.title?.toLowerCase().includes("invitation") ||
+    notification.title?.toLowerCase().includes("team")
+  ) {
+    return { name: "CampusNode", clubName: "CampusNode" };
+  }
+
   if (notification.senderStudent) {
     const s = notification.senderStudent;
+    // Only map to clubName if the notification is explicitly sent in a club context
+    const clubName = (notification.clubId && s.memberships?.[0]?.club?.clubName)
+      ? s.memberships[0].club.clubName
+      : s.name;
     return {
       ...s,
       _id: s.id,
-      clubName: s.memberships?.[0]?.club?.clubName || s.name,
+      clubName,
     };
   }
   if (notification.senderAdmin) {
@@ -67,7 +82,7 @@ function formatSender(notification) {
     const ca = notification.senderClubAccount;
     return { ...ca, _id: ca.id, clubName: ca.club?.clubName || "Club" };
   }
-  return null;
+  return { name: "CampusNode", clubName: "CampusNode" };
 }
 
 export async function getNotificationRecipientFilter(user) {

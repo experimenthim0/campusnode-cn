@@ -17,6 +17,7 @@ import { signTicket } from "../services/qrSigningService.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { validateCustomFields } from "../utils/customFields.js";
 import { generateEventSocialHtml, generateDefaultSocialHtml } from "../utils/eventSocialMetadata.js";
+import { MAX_WAITLIST_CAPACITY, promoteWaitlistCandidates, notifyWaitlistCleared } from "../services/waitlistService.js";
 
 const router = express.Router();
 
@@ -182,6 +183,7 @@ const eventSchema = z.object({
     showWinner: z.boolean().optional(),
     provideCertificate: z.boolean().optional(),
     feedbackEnabled: z.boolean().optional().default(true),
+    allowWaitlist: z.boolean().optional().default(true),
     certificateTemplate: z.any().optional(),
     paymentMethod: z.enum(['FREE', 'COLLEGE_PAYMENT', 'MANUAL_TRANSACTION']).optional().default('FREE'),
     registrationFee: z.coerce.number().optional().default(0),
@@ -233,7 +235,7 @@ const eventInclude = {
     select: {
       participations: {
         where: {
-          status: { not: "CANCELLED" },
+          status: { in: ["REGISTERED", "ATTENDED"] },
         },
       },
     },
@@ -282,7 +284,7 @@ const publicEventSelect = {
     select: {
       participations: {
         where: {
-          status: { not: "CANCELLED" },
+          status: { in: ["REGISTERED", "ATTENDED"] },
         },
       },
     },
@@ -725,7 +727,7 @@ router.get(
       });
 
       const exportData = events.map((e) => {
-        const regCount = e.participations ? e.participations.length : 0;
+        const regCount = e.participations ? e.participations.filter(p => p.status === 'REGISTERED' || p.status === 'ATTENDED').length : 0;
         const totalAmt = e.isPaid ? regCount * (e.ticketPrice || 0) : 0;
         return {
           eventName: e.title || e.eventName || "",
@@ -961,6 +963,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       showWinner,
       provideCertificate,
       feedbackEnabled,
+      allowWaitlist,
       paymentMethod,
       registrationFee,
       paymentInstructions,
@@ -1025,6 +1028,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         showWinner: showWinner || false,
         provideCertificate: provideCertificate || false,
         feedbackEnabled: feedbackEnabled !== undefined ? Boolean(feedbackEnabled) : true,
+        allowWaitlist: allowWaitlist !== undefined ? Boolean(allowWaitlist) : true,
         paymentMethod: paymentMethod || "FREE",
         registrationFee: Number(registrationFee || 0),
         paymentInstructions: paymentInstructions || null,
@@ -1395,6 +1399,24 @@ router.post(
         if (existing) return res.status(400).json({ message: "Already registered for this event." });
       }
 
+      if (event.totalSeats > 0 && event.registeredCount >= event.totalSeats) {
+        if (event.allowWaitlist === false) {
+          return res.status(400).json({
+            message: "Registration closed. This event is full.",
+            isFull: true,
+            waitlistAllowed: false,
+          });
+        }
+        const waitlistCount = (event.waitingListIds || []).length;
+        if (waitlistCount >= MAX_WAITLIST_CAPACITY) {
+          return res.status(400).json({
+            message: `Registration closed. The waitlist for this event is full (maximum ${MAX_WAITLIST_CAPACITY} participants allowed).`,
+            waitlistFull: true,
+            waitlistAllowed: true,
+          });
+        }
+      }
+
       const status =
         event.totalSeats > 0 && event.registeredCount >= event.totalSeats
           ? "WAITLISTED"
@@ -1450,10 +1472,26 @@ router.post(
         const latestEvent = events[0];
         if (!latestEvent) throw new Error("Event not found");
 
-        const latestStatus =
-          latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats
-            ? "WAITLISTED"
-            : "REGISTERED";
+        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+        if (isFull) {
+          if (latestEvent.allowWaitlist === false) {
+            const err = new Error("Registration closed. This event is full.");
+            err.statusCode = 400;
+            err.isFull = true;
+            err.waitlistAllowed = false;
+            throw err;
+          }
+          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+            const err = new Error(`Registration closed. The waitlist for this event is full (maximum ${MAX_WAITLIST_CAPACITY} participants allowed).`);
+            err.statusCode = 400;
+            err.waitlistFull = true;
+            err.waitlistAllowed = true;
+            throw err;
+          }
+        }
+
+        const latestStatus = isFull ? "WAITLISTED" : "REGISTERED";
 
         const created = await tx.participation.create({
           data: { ...participationData, status: latestStatus },
@@ -1484,6 +1522,14 @@ router.post(
         postRegistrationMessage: event.postRegistrationMessage || null
       });
     } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({
+          message: err.message,
+          waitlistFull: err.waitlistFull,
+          waitlistAllowed: err.waitlistAllowed,
+          isFull: err.isFull,
+        });
+      }
       res.status(500).json({ message: err.message });
     }
   },
@@ -1734,6 +1780,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       "showWinner",
       "provideCertificate",
       "feedbackEnabled",
+      "allowWaitlist",
       "certificateTemplate",
       "postRegistrationMessage",
     ];
@@ -1754,6 +1801,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (updates.startTime) updates.startTime = new Date(updates.startTime);
     if (updates.endTime) updates.endTime = new Date(updates.endTime);
     if (updates.allowExternal !== undefined) updates.allowExternal = Boolean(updates.allowExternal);
+    if (updates.allowWaitlist !== undefined) updates.allowWaitlist = Boolean(updates.allowWaitlist);
     if (updates.registrationDeadline !== undefined) updates.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : null;
 
     // Validate booking conflict if venue or times changed
@@ -1790,6 +1838,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       updates.registeredCount = 0;
     }
 
+    let promotedCandidates = [];
     const updatedEvent = await prisma.$transaction(async (tx) => {
       if (sponsors !== undefined) {
         await tx.sponsor.deleteMany({ where: { eventId: req.params.id } });
@@ -1805,12 +1854,37 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
         });
       }
 
-      return tx.event.update({
+      const updated = await tx.event.update({
         where: { id: req.params.id },
         data: updates,
         include: eventInclude,
       });
+
+      // Auto-clear waitlist if tickets/totalSeats increased
+      if (updates.totalSeats !== undefined && updates.totalSeats > 0) {
+        const availableSeats = Math.max(0, updates.totalSeats - updated.registeredCount);
+        if (availableSeats > 0) {
+          const promotionResult = await promoteWaitlistCandidates(tx, req.params.id, availableSeats);
+          promotedCandidates = promotionResult.promotedCandidates;
+        }
+      }
+
+      // Re-fetch event if promotions updated registeredCount / waitingListIds
+      if (promotedCandidates.length > 0) {
+        return tx.event.findUnique({
+          where: { id: req.params.id },
+          include: eventInclude,
+        });
+      }
+
+      return updated;
     });
+
+    if (promotedCandidates.length > 0) {
+      notifyWaitlistCleared(req.io, promotedCandidates, updatedEvent).catch((err) => {
+        console.error("Waitlist cleared notification error on seat increase:", err);
+      });
+    }
 
     res.json(serializeEvent(updatedEvent));
   } catch (err) {
@@ -1954,6 +2028,7 @@ router.delete(
             const teamParticipations = await prisma.participation.findMany({
               where: { teamId: p.teamId },
             });
+            let promotedCandidates = [];
             await prisma.$transaction(async (tx) => {
               await tx.participation.deleteMany({ where: { teamId: p.teamId } });
               await tx.teamMember.deleteMany({ where: { teamId: p.teamId } });
@@ -1964,13 +2039,19 @@ router.delete(
                   where: { id: eventId },
                   data: { registeredCount: { decrement: registeredMembersCount } },
                 });
+                const promo = await promoteWaitlistCandidates(tx, eventId, registeredMembersCount);
+                promotedCandidates = promo.promotedCandidates;
               }
             });
             invalidatePublicResponses(["events:public:*"]);
+            if (promotedCandidates.length > 0) {
+              notifyWaitlistCleared(req.io, promotedCandidates, p.event || { id: eventId }).catch(console.error);
+            }
             return res.json({ message: "Team and all member registrations cancelled successfully." });
           }
         }
 
+        let promotedCandidates = [];
         await prisma.$transaction(async (tx) => {
           await tx.participation.delete({ where: { id: p.id } });
           if (p.status === "REGISTERED") {
@@ -1978,10 +2059,25 @@ router.delete(
               where: { id: eventId },
               data: { registeredCount: { decrement: 1 } },
             });
+            const promo = await promoteWaitlistCandidates(tx, eventId, 1);
+            promotedCandidates = promo.promotedCandidates;
+          } else {
+            const latestEvent = await tx.event.findUnique({ where: { id: eventId } });
+            await tx.event.update({
+              where: { id: eventId },
+              data: {
+                waitingListIds: (latestEvent?.waitingListIds || []).filter(
+                  (id) => id !== p.id,
+                ),
+              },
+            });
           }
         });
 
         invalidatePublicResponses(["events:public:*"]);
+        if (promotedCandidates.length > 0) {
+          notifyWaitlistCleared(req.io, promotedCandidates, p.event || { id: eventId }).catch(console.error);
+        }
 
         return res.json({ message: "Deregistered successfully." });
       }
@@ -2014,7 +2110,9 @@ router.delete(
             include: { student: true }
           });
 
+          let promotedCandidates = [];
           await prisma.$transaction(async (tx) => {
+            let freedCount = 0;
             for (const tp of teamParticipations) {
               await tx.participation.delete({ where: { id: tp.id } });
 
@@ -2023,6 +2121,7 @@ router.delete(
                   where: { id: eventId },
                   data: { registeredCount: { decrement: 1 } },
                 });
+                freedCount += 1;
               } else {
                 const latestEvent = await tx.event.findUnique({ where: { id: eventId } });
                 await tx.event.update({
@@ -2038,9 +2137,18 @@ router.delete(
 
             await tx.teamMember.deleteMany({ where: { teamId: participation.teamId } });
             await tx.team.delete({ where: { id: participation.teamId } });
+
+            if (freedCount > 0) {
+              const promo = await promoteWaitlistCandidates(tx, eventId, freedCount);
+              promotedCandidates = promo.promotedCandidates;
+            }
           });
 
           invalidatePublicResponses(["events:public:*"]);
+
+          if (promotedCandidates.length > 0) {
+            notifyWaitlistCleared(req.io, promotedCandidates, event).catch(console.error);
+          }
 
           // Send notifications to all team members (except the leader)
           for (const tp of teamParticipations) {
@@ -2059,6 +2167,7 @@ router.delete(
       }
 
       // Individual registration
+      let promotedCandidates = [];
       await prisma.$transaction(async (tx) => {
         await tx.participation.delete({ where: { id: participation.id } });
 
@@ -2067,6 +2176,8 @@ router.delete(
             where: { id: eventId },
             data: { registeredCount: { decrement: 1 } },
           });
+          const promo = await promoteWaitlistCandidates(tx, eventId, 1);
+          promotedCandidates = promo.promotedCandidates;
         } else {
           const latestEvent = await tx.event.findUnique({ where: { id: eventId } });
           await tx.event.update({
@@ -2081,6 +2192,10 @@ router.delete(
       });
 
       invalidatePublicResponses(["events:public:*"]);
+
+      if (promotedCandidates.length > 0) {
+        notifyWaitlistCleared(req.io, promotedCandidates, event).catch(console.error);
+      }
 
       res.json({ message: "Deregistered successfully." });
     } catch (err) {

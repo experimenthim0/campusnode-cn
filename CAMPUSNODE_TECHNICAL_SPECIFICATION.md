@@ -1,4 +1,4 @@
-# 📄 CampusNode (ClubSetu) — Comprehensive Technical Specification & System Architecture
+# 📄 CampusNode — Comprehensive Technical Specification & System Architecture
 
 > **Document Type:** Technical System Architecture & Developer Manual  
 > **Target Audience:** Engineering Leads, System Architects, Technical Evaluators, Departmental IT Administration  

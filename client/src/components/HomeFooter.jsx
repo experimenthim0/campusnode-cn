@@ -21,12 +21,13 @@ const HomeFooter = () => {
     { label: 'Event Guide', to: '/event-guide' },
     { label: 'L&F Guide', to: '/lost-found/guide' },
     { label: 'FAQ', to: '/faq' },
+    { label: 'Verify Certificate', to: '/verify/certificate'},
   ];
 
   const otherLinks = [
-    // { label: 'NITJ Website', href: 'https://nitj.ac.in' },
     { label: 'Contact', onClick: () => setIsContactOpen(true) },
     { label: 'Team', to: '/team' },
+    { label: 'NITJ Website', href: 'https://nitj.ac.in' },
     { label: 'Privacy Policy', to: '/privacy' },
     { label: 'Terms of Service', to: '/terms' },
     { label: 'Payment Policy', to: '/payment-policy' },

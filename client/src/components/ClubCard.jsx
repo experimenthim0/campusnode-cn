@@ -128,7 +128,8 @@ const ClubCard = ({ club }) => {
     ? {
       color: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
       borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`,
-      backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.05)`,
+      backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.08)`,
+      boxShadow: `0 4px 14px 0 rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.2)`,
     }
     : {};
 
@@ -288,7 +289,7 @@ const ClubCard = ({ club }) => {
             <Link
               to={`/club/${club.slug || club._id}`}
               style={buttonStyle}
-              className="flex items-center justify-center gap-1 w-full py-2.5 border border-neutral-200 dark:border-neutral-800 rounded-xl text-[11px] font-bold tracking-wider text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-300 shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 border border-neutral-200 dark:border-neutral-800 rounded-full text-xs font-semibold tracking-wider text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md"
             >
               <ArrowUpRightIcon size={16}>
                 View Page

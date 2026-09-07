@@ -229,7 +229,7 @@ const syncRegisteredCounts = async () => {
           select: {
             participations: {
               where: {
-                status: { not: "CANCELLED" },
+                status: { in: ["REGISTERED", "ATTENDED"] },
               },
             },
           },

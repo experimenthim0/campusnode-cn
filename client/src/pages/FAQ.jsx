@@ -17,257 +17,565 @@ import {
 import ScrollReveal from '../components/ScrollReveal';
 
 // ── Verified FAQ Dataset (Aligned with Real CampusNode Features) ───────────────
+
 const FAQS = [
-  // ── Events & Registrations ──
+  // ─────────────────────────────────────────────
+  // Events & Registration
+  // ─────────────────────────────────────────────
+  {
+    id: 'how-to-find-events',
+    category: 'events',
+    question: 'How can I find events on CampusNode?',
+    answer:
+      'Open the Event Feed to explore upcoming events from campus clubs, societies, departments, and organizers. You can search and filter events to find opportunities based on your interests and requirements.',
+  },
   {
     id: 'how-to-register',
     category: 'events',
-    question: 'How do I register for an event, workshop, or competition?',
+    question: 'How do I register for an event?',
     answer:
-      'Browse upcoming events on the Event Feed or Club pages. Click any event to review its dates, venue, rules, and eligibility criteria. Click "Register Now" to confirm an individual registration, or "Create Team" if the event supports team participation.',
+      'Open the event you want to attend and review its date, venue, eligibility, registration requirements, and participation rules. If you are eligible and registration is open, click "Register Now" and complete the required registration steps.',
   },
   {
-    id: 'team-registration-flow',
+    id: 'registration-status',
     category: 'events',
-    question: 'How does team creation and registration work on CampusNode?',
+    question: 'How can I check my event registration status?',
     answer:
-      'For team events, the team leader clicks "Create Team", enters a unique Team Name, and searches for teammates by their official Email or College Roll Number. Once the leader adds the required number of members (within the event\'s min and max team size) and submits, teammates receive an automated Team Invitation in their Notifications center.',
-  },
-  {
-    id: 'team-invitation-accept',
-    category: 'events',
-    question: 'Where do I find and accept team invitations sent by my teammates?',
-    answer:
-      'When a teammate adds you to their team roster, you receive an in-app and web push notification. Open your Notifications center (the bell icon in the top bar) to view the invitation card. Click "Accept" to confirm your participation and generate your event ticket, or "Reject" if you are unable to join.',
-  },
-  {
-    id: 'team-payment-who-pays',
-    category: 'events',
-    question: 'For paid team events, does every member pay individually or does the leader pay?',
-    answer:
-      'For paid team events, the team leader completes the single combined registration payment during team creation by scanning the club UPI QR code and submitting the 12-digit UTR number. Teammates do not need to pay separately; they simply accept the team invitation from their notifications.',
+      'Open "My Events" from your account to view the events you have registered for and check the current status of each registration.',
   },
   {
     id: 'cancel-registration',
     category: 'events',
-    question: 'Can I cancel or deregister from an event?',
+    question: 'Can I cancel my event registration?',
     answer:
-      'Yes. Go to "My Events" from the navigation bar and click "Deregister" on the event card. For team events, only the Team Leader has permission to deregister; cancelling by the leader deregisters the entire team and frees up the reserved slot for other students.',
+      'If the event allows deregistration, you can cancel your registration from "My Events". Team-event cancellation may be restricted to the team leader because it can affect the registration status of the entire team.',
   },
   {
-    id: 'qr-ticket-access',
+    id: 'event-eligibility',
     category: 'events',
-    question: 'Where can I find my QR ticket for venue check-in on event day?',
+    question: 'Why am I not eligible to register for an event?',
     answer:
-      'Once registered (or once you accept a team invitation), your cryptographically signed QR ticket is available under "My Events" and on your Profile. Click "View Ticket" on your event card to open your dynamic QR code for gate coordinators to scan.',
+      'Some events have eligibility requirements such as academic program, year, branch, or other conditions configured by the organizer. CampusNode checks your profile against the eligibility rules before allowing registration.',
   },
   {
-    id: 'qr-ticket-offline',
+    id: 'registration-closed',
     category: 'events',
-    question: 'What if I have poor internet connectivity or my phone battery dies at the venue gate?',
+    question: 'Why can I not register for an event?',
     answer:
-      'You can take a screenshot of your QR ticket in advance from "My Events". If your phone dies, gate coordinators can manually check you in using the search feature on the gate scanner tool by looking up your official College Roll Number or registered email.',
+      'Registration may be unavailable because the registration period has ended, the event has reached its capacity, you are not eligible, or registration has been disabled by the organizer. Check the event details for the current registration status.',
   },
   {
-    id: 'external-student-participation',
+    id: 'event-details',
     category: 'events',
-    question: 'Can students from other colleges participate in fests and hackathons?',
+    question: 'What information can I find on an event page?',
     answer:
-      'Yes, for events that allow external participants. Internal department club workshops are restricted to NIT Jalandhar students, but major campus fests (like Utkansh) and open hackathons welcome outside college students via the External Registration portal.',
+      'An event page can contain the event description, organizer information, date and time, venue, eligibility requirements, registration details, participation rules, team requirements, payment information, sponsors, media, and other information provided by the organizer.',
   },
   {
-    id: 'eligibility-restrictions',
+    id: 'external-participants',
     category: 'events',
-    question: 'Why does the platform say I am ineligible to register for an event?',
+    question: 'Can students from other colleges participate in CampusNode events?',
     answer:
-      'Event organizers can configure eligibility restrictions based on Academic Program (e.g., B.Tech, M.Tech, MBA, PhD), Academic Year (e.g., 1st Year Freshers only), or Department Branch. CampusNode verifies your student profile against these rules automatically.',
+      'Yes, if the organizer has enabled external participation for the event. Events can be configured for NIT Jalandhar students only or opened to participants from other institutions.',
   },
   {
-    id: 'waiting-list-capacity',
+    id: 'waitlist',
     category: 'events',
-    question: 'What does "Waitlisted" status mean when registering?',
+    question: 'What does it mean if an event is full or I am waitlisted?',
     answer:
-      'When an event with limited capacity reaches its maximum seat limit, subsequent registrations are automatically placed on the waitlist. If any confirmed participant cancels their registration, waitlisted students are automatically promoted in chronological order.',
+      'An event may have a participant capacity configured by its organizer. When capacity is reached, registration may become unavailable or follow the event\'s configured waitlist process. The event status shown on CampusNode is the latest indication of whether you can register.',
   },
 
-  // ── Payments & Verification ──
+  // ─────────────────────────────────────────────
+  // Teams
+  // ─────────────────────────────────────────────
   {
-    id: 'payment-methods-supported',
-    category: 'payments',
-    question: 'What payment method is used for paid events on CampusNode?',
+    id: 'team-registration',
+    category: 'events',
+    question: 'How does team registration work?',
     answer:
-      'Paid events utilize direct UPI payment via a dynamic QR code provided by the organizing club. You can scan and pay using any UPI app (Google Pay, PhonePe, Paytm, BHIM), then enter your 12-digit UPI Reference / UTR Number into the confirmation modal to complete your submission.',
+      'For an event that supports teams, a student can create a team and add eligible members according to the event\'s minimum and maximum team size. Team members may need to accept their invitations before the team becomes fully confirmed.',
   },
   {
-    id: 'payment-verification-pending',
-    category: 'payments',
-    question: 'Why does my payment show "Pending Verification"?',
+    id: 'create-team',
+    category: 'events',
+    question: 'How do I create a team for an event?',
     answer:
-      'CampusNode uses manual reconciliation for student club transactions. Student club treasurers and faculty coordinators cross-verify submitted UTR numbers against the society bank account. Verification typically completes within a few hours, and you will receive an alert once approved.',
+      'Open a team-based event and select "Create Team". Enter the required team information and add eligible members using the available student search options. Complete any additional registration or payment requirements shown by the event.',
   },
   {
-    id: 'payment-deducted-failed',
-    category: 'payments',
-    question: 'My bank debited the UPI payment, but my registration still shows pending. What should I do?',
+    id: 'team-invitation',
+    category: 'events',
+    question: 'How do team members receive a team invitation?',
     answer:
-      'Bank UPI settlements can occasionally take a short time to reflect on statements. Keep your 12-digit UTR number from your banking receipt handy. If verification is still pending after several hours, contact the event coordinator listed on the event page or email clubsetu@nikhim.me with your transaction screenshot.',
+      'When a team leader adds a student to a team, CampusNode creates a private team invitation for that student. The invited student can access the invitation through their notifications and take the available action.',
   },
   {
-    id: 'incorrect-utr-submission',
-    category: 'payments',
-    question: 'What should I do if I entered an incorrect UTR / Transaction ID?',
+    id: 'accept-team-invitation',
+    category: 'events',
+    question: 'Where can I accept or reject a team invitation?',
     answer:
-      'If you made a typo while submitting your UTR number, reach out to the organizing club coordinator listed on the event details page or email clubsetu@nikhim.me with your registered email, event name, and payment receipt screenshot for manual approval.',
+      'Open the Notifications section from your CampusNode account and find the team invitation. From the invitation, you can accept or reject it when those actions are available.',
   },
   {
-    id: 'convenience-fee',
-    category: 'payments',
-    question: 'Are there any hidden platform charges or convenience fees on CampusNode?',
+    id: 'team-invitation-not-visible',
+    category: 'events',
+    question: 'Why can I not see my team invitation?',
     answer:
-      'No. CampusNode charges 0% convenience fees. 100% of your registration fee goes directly to the organizing student club or departmental society account for kits, refreshments, and prize pools.',
-  },
-
-  // ── Certificates & Attendance ──
-  {
-    id: 'how-to-get-certificate',
-    category: 'certificates',
-    question: 'When and where can I download my participation or winner certificate?',
-    answer:
-      'Certificates are generated once an event concludes and coordinators lock the verified attendance roster. Visit your Profile → Certificates tab to view, share, or download your high-resolution printable PDF certificate.',
+      'Make sure you are signed into the account that was invited and check your Notifications section. If the invitation is still missing, the team may have been changed or the invitation may no longer be active.',
   },
   {
-    id: 'attendance-marking-procedure',
-    category: 'certificates',
-    question: 'How is attendance recorded during an event?',
+    id: 'team-leader',
+    category: 'events',
+    question: 'Who can manage a team?',
     answer:
-      'Present your dynamic QR ticket on your phone at the entrance or registration desk. Authorized club staff scan your QR code using the built-in CampusNode scanner to instantly stamp your attendance in the database.',
+      'The team leader manages the team according to the event\'s configured rules. Team members can accept or reject invitations, while actions affecting the entire team may be restricted to the team leader.',
   },
   {
-    id: 'attendance-missed-gate',
-    category: 'certificates',
-    question: 'What if I attended the event but forgot to scan my QR ticket at the gate?',
+    id: 'team-member-changes',
+    category: 'events',
+    question: 'Can team members be changed after creating a team?',
     answer:
-      'Coordinators maintain backup check-in logs during events. If you missed scanning at the gate, contact the student coordinator within 24 hours of event completion with valid proof of participation so they can reconcile your attendance before certificates are locked.',
-  },
-  {
-    id: 'certificate-authenticity-verification',
-    category: 'certificates',
-    question: 'How can recruiters or external organizations verify my certificate?',
-    answer:
-      'Every issued certificate features a secure cryptographic slug and scannable QR code. When scanned, it leads to CampusNode\'s public verification engine, confirming the student\'s name, roll number, event title, date, and awarded standing (Participant, Winner, Runner-Up).',
-  },
-  {
-    id: 'certificate-name-correction',
-    category: 'certificates',
-    question: 'My name or college roll number is misspelled on my certificate. Can it be updated?',
-    answer:
-      'Ensure your profile name and roll number are updated correctly in Profile → Edit Profile. Then navigate to your certificate view and click "Regenerate". If the certificate batch has already been locked by faculty advisors, email clubsetu@nikhim.me for manual reissue.',
+      'Team-member changes depend on the event and the current registration state. If the event permits changes, the team leader can manage the team through the available team-management options.',
   },
 
-  // ── Account & Security ──
+  // ─────────────────────────────────────────────
+  // Payments
+  // ─────────────────────────────────────────────
   {
-    id: 'nitj-email-requirement',
-    category: 'account',
-    question: 'Do I need an @nitj.ac.in email address to register?',
+    id: 'paid-events',
+    category: 'payments',
+    question: 'How do I register for a paid event?',
     answer:
-      'Yes, NIT Jalandhar students must register with their official college G-Suite email (@nitj.ac.in). This automatically links your academic branch, roll number, and event eligibility. External participants attending open fests register via the dedicated External flow.',
+      'For a paid event, follow the payment instructions displayed on the event or registration page. After making the payment, submit the requested transaction or UTR details so the organizer can verify the payment.',
   },
   {
-    id: 'did-not-receive-verification-email',
-    category: 'account',
-    question: 'I didn\'t receive the email verification link. What should I do?',
+    id: 'payment-method',
+    category: 'payments',
+    question: 'What payment method is supported for paid events?',
     answer:
-      'Check your Spam and Junk folders, as campus mail filters can occasionally classify automated emails as spam. If it hasn\'t arrived after a few minutes, click "Resend Verification" on the login screen.',
+      'The payment method depends on the event configuration. When an organizer requires UPI payment, the event provides the payment details or QR code needed to complete the transaction.',
   },
   {
-    id: 'cannot-login-role-selection',
-    category: 'account',
-    question: 'I cannot log in to my account. What should I check?',
+    id: 'utr-number',
+    category: 'payments',
+    question: 'What is a UTR or transaction reference number?',
     answer:
-      '1) Verify your email via the confirmation link sent during sign-up. 2) Ensure you selected the correct role toggle on the login page (Student vs Club Coordinator / Admin). 3) If you forgot your password, use the "Forgot Password" link to request a reset.',
+      'A UTR or transaction reference number is the identifier provided by your payment service for a transaction. When an event uses transaction-based payment verification, you must enter the correct reference number so the organizer can match your payment.',
   },
   {
-    id: 'forgot-password-reset',
-    category: 'account',
-    question: 'How do I reset my password if I forgot it?',
+    id: 'payment-verification',
+    category: 'payments',
+    question: 'Why is my payment showing as pending verification?',
     answer:
-      'Click "Forgot Password?" on the login screen, enter your registered campus email, and submit. You will receive a secure password reset link valid for 15 minutes. Follow the link to choose a new password.',
+      'A submitted payment may remain pending while the event organizer or authorized coordinator verifies the transaction details. Your registration status will be updated after the payment is reviewed.',
   },
   {
-    id: 'privacy-data-visible',
-    category: 'account',
-    question: 'What personal information is visible to other students and club organizers?',
+    id: 'payment-rejected',
+    category: 'payments',
+    question: 'Why was my payment verification rejected?',
     answer:
-      'Your public student profile displays only your name, branch, avatar, bio, and social handles (if added). Your phone number and roll number remain private and are only accessible by authorized coordinators of events you explicitly register for, purely for gate attendance.',
-  },
-
-  // ── Club Organizers ──
-  {
-    id: 'club-onboarding-procedure',
-    category: 'organizers',
-    question: 'How can our club or department society get onboarded onto CampusNode?',
-    answer:
-      'Club presidents or faculty coordinators can request a Club Portal by contacting the CampusNode team or Student Affairs. Approved clubs receive an administrative dashboard to post events, review payments, scan QR tickets, and design certificates.',
+      'Payment verification can be rejected if the submitted transaction details cannot be matched, the information is incorrect, or the organizer cannot confirm the payment. Check the registration details and contact the event organizer if you believe the rejection is incorrect.',
   },
   {
-    id: 'how-to-create-event',
-    category: 'organizers',
-    question: 'How do club coordinators create and publish a new event?',
+    id: 'wrong-utr',
+    category: 'payments',
+    question: 'What should I do if I submitted the wrong UTR or transaction ID?',
     answer:
-      'Log into your Club Coordinator dashboard, click "+ Create Event", and enter your title, description, category, venue, dates, solo vs team limits, eligible branches/years, custom form fields, and optional UPI registration fee. You can save it as a draft or publish it directly to the campus feed.',
+      'Contact the event organizer or authorized coordinator as soon as possible and provide the correct transaction details along with any requested proof of payment. Do not submit another payment unless the organizer specifically instructs you to do so.',
   },
   {
-    id: 'gate-scanner-tool',
-    category: 'organizers',
-    question: 'How do volunteer teams scan QR tickets at the door without dedicated hardware?',
+    id: 'registration-fee-refund',
+    category: 'payments',
+    question: 'How can I request a refund for an event registration?',
     answer:
-      'No hardware scanners are required. Organizers and appointed event volunteers simply open the built-in "Check-In / Gate Scanner" tool on any smartphone browser. It activates the device camera to verify tickets and mark attendance in less than 1 second per attendee.',
-  },
-  {
-    id: 'export-attendee-data',
-    category: 'organizers',
-    question: 'Can club organizers export registration rosters and attendance data to Excel?',
-    answer:
-      'Yes! From the event dashboard, click "Export Center" to instantly download real-time participant lists, team compositions, UTR payment verification logs, and attendance check-in timestamps as structured CSV or Excel files.',
-  },
-  {
-    id: 'custom-certificate-templates',
-    category: 'organizers',
-    question: 'Can clubs upload their own custom certificate designs and faculty signatures?',
-    answer:
-      'Yes. CampusNode features an interactive in-browser Certificate Designer. Club heads can upload custom high-res vector/PNG backgrounds, position dynamic placeholder text (names, roll numbers, positions), and embed faculty advisor e-signatures.',
+      'Refunds depend on the event\'s refund policy and the organizer. Check the event information or contact the organizing club or coordinator to determine whether your registration is eligible for a refund.',
   },
 
-  // ── Campus & Lost/Found ──
+  // ─────────────────────────────────────────────
+  // QR Tickets & Attendance
+  // ─────────────────────────────────────────────
   {
-    id: 'lost-and-found-portal',
+    id: 'event-ticket',
+    category: 'events',
+    question: 'Where can I find my event ticket or QR code?',
+    answer:
+      'After your registration reaches the required confirmed status, your event ticket or QR code can be accessed from the relevant event section of your account, such as "My Events", when provided for that event.',
+  },
+  {
+    id: 'qr-checkin',
+    category: 'events',
+    question: 'How does QR check-in work at an event?',
+    answer:
+      'At the event venue, authorized event staff can scan your CampusNode QR ticket using the event check-in system. A successful scan records your attendance for the event.',
+  },
+  {
+    id: 'qr-ticket-problem',
+    category: 'events',
+    question: 'What should I do if my QR ticket is not working?',
+    answer:
+      'First, make sure you are using the ticket for the correct event and that your registration is confirmed. If the problem continues at the venue, contact the authorized event staff or registration desk for assistance.',
+  },
+  {
+    id: 'attendance',
+    category: 'events',
+    question: 'How is my attendance recorded?',
+    answer:
+      'Attendance can be recorded by authorized event staff using the CampusNode check-in system. The exact check-in method depends on how the organizer has configured the event.',
+  },
+  {
+    id: 'missed-checkin',
+    category: 'events',
+    question: 'What if I attended an event but my attendance was not recorded?',
+    answer:
+      'Contact the event organizer or authorized event staff as soon as possible. They can review the available attendance information and determine whether your attendance can be corrected.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Certificates
+  // ─────────────────────────────────────────────
+  {
+    id: 'event-certificates',
+    category: 'certificates',
+    question: 'Does CampusNode provide event certificates?',
+    answer:
+      'Certificates can be issued through CampusNode when the event organizer uses the certificate system. Eligibility and certificate issuance depend on the event\'s attendance and certificate rules.',
+  },
+  {
+    id: 'certificate-download',
+    category: 'certificates',
+    question: 'Where can I find my certificate?',
+    answer:
+      'If a certificate has been issued to you, open the Certificates section of your CampusNode profile to view and access it.',
+  },
+  {
+    id: 'certificate-not-received',
+    category: 'certificates',
+    question: 'Why have I not received my event certificate yet?',
+    answer:
+      'Certificate issuance depends on the organizer completing attendance verification and the certificate process for the event. If certificates have been announced but yours is missing, contact the event organizer.',
+  },
+  {
+    id: 'certificate-verification',
+    category: 'certificates',
+    question: 'How can someone verify a CampusNode certificate?',
+    answer:
+      'CampusNode certificates can include verification information such as a unique verification identifier or QR code. A verifier can use the provided verification mechanism to check whether the certificate is valid.',
+  },
+  {
+    id: 'certificate-details',
+    category: 'certificates',
+    question: 'What information can appear on a CampusNode certificate?',
+    answer:
+      'Certificate information depends on the template and event. It can include the participant\'s name, roll number, event name, event date, organization, and achievement or participation status.',
+  },
+  {
+    id: 'certificate-correction',
+    category: 'certificates',
+    question: 'What should I do if my certificate contains incorrect information?',
+    answer:
+      'First check that your profile information is correct. If the certificate still contains incorrect information, contact the event organizer so they can review the certificate and determine whether it can be corrected or reissued.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Account & Profile
+  // ─────────────────────────────────────────────
+  {
+    id: 'create-account',
+    category: 'account',
+    question: 'How do I create a CampusNode account?',
+    answer:
+      'Use the CampusNode registration flow and provide the information requested for your account type. Complete any required verification steps before using features that require an authenticated account.',
+  },
+  {
+    id: 'student-account',
+    category: 'account',
+    question: 'Who can create a student account?',
+    answer:
+      'Student accounts are intended for eligible students supported by CampusNode. The registration process may require institutional information such as your college email, roll number, branch, program, or academic year.',
+  },
+  {
+    id: 'email-verification',
+    category: 'account',
+    question: 'Why do I need to verify my email?',
+    answer:
+      'Email verification helps CampusNode confirm ownership of the email address associated with your account and protects account-related features.',
+  },
+  {
+    id: 'verification-email-not-received',
+    category: 'account',
+    question: 'I did not receive my verification email. What should I do?',
+    answer:
+      'Check your Spam or Junk folder and confirm that the email address you entered is correct. If the verification option is available, request another verification email.',
+  },
+  {
+    id: 'forgot-password',
+    category: 'account',
+    question: 'How do I reset my password?',
+    answer:
+      'Select "Forgot Password" on the login page and follow the password-reset instructions sent to your registered email address.',
+  },
+  {
+    id: 'cannot-login',
+    category: 'account',
+    question: 'Why can I not log in to CampusNode?',
+    answer:
+      'Check that you are using the correct email and password and that your account has completed any required verification. If you use a role-specific login flow, make sure you are using the appropriate account type.',
+  },
+  {
+    id: 'edit-profile',
+    category: 'account',
+    question: 'How can I update my profile information?',
+    answer:
+      'Open your Profile and use the available profile-editing options to update information that CampusNode allows you to change.',
+  },
+  {
+    id: 'privacy',
+    category: 'account',
+    question: 'What personal information is visible to other users?',
+    answer:
+      'CampusNode only exposes profile information that is intended to be public or required for a specific platform function. Sensitive account information should not be treated as publicly visible. Access to additional information is controlled by the relevant permissions and event workflows.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Notifications
+  // ─────────────────────────────────────────────
+  {
+    id: 'notifications',
+    category: 'account',
+    question: 'Where can I see my CampusNode notifications?',
+    answer:
+      'Open the Notifications section from your CampusNode account. Notifications are used to keep you informed about actions and updates relevant to your account, events, teams, clubs, and other CampusNode activities.',
+  },
+  {
+    id: 'notification-types',
+    category: 'account',
+    question: 'What kind of notifications can I receive?',
+    answer:
+      'Depending on your account and activity, notifications can include team invitations, event updates, registration updates, approvals, payment updates, attendance-related updates, and other messages relevant to you.',
+  },
+  {
+    id: 'private-notifications',
+    category: 'account',
+    question: 'Can other users see my private notifications?',
+    answer:
+      'No. Private notifications are intended only for their specified recipient or authorized audience. A notification should not become visible to another user simply because that user has a different role or administrative access.',
+  },
+  {
+    id: 'notification-read',
+    category: 'account',
+    question: 'How do I mark a notification as read?',
+    answer:
+      'Open the notification from your Notifications section. CampusNode can mark notifications as read when you view them, and supported notification controls may also allow you to manage unread notifications.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Clubs & Organizers
+  // ─────────────────────────────────────────────
+  {
+    id: 'club-onboarding',
+    category: 'organizers',
+    question: 'How can a club or society join CampusNode?',
+    answer:
+      'Clubs and societies can follow the CampusNode onboarding or approval process available to organizations. Access to organizer features is provided after the required authorization and approval steps are completed.',
+  },
+  {
+    id: 'create-event',
+    category: 'organizers',
+    question: 'How can a club create an event?',
+    answer:
+      'Authorized club organizers can use their organizer dashboard to create an event and provide information such as the title, description, schedule, venue, eligibility, registration settings, team requirements, payment details, and other event-specific information.',
+  },
+  {
+    id: 'event-draft',
+    category: 'organizers',
+    question: 'Can an organizer save an event before publishing it?',
+    answer:
+      'Yes, if draft functionality is enabled for the organizer account. An event can be prepared and reviewed before it is made available to participants.',
+  },
+  {
+    id: 'event-approval',
+    category: 'organizers',
+    question: 'Does every event require approval before publishing?',
+    answer:
+      'Event publishing can follow the approval workflow configured for the organizer and institution. Where approval is required, the event must pass the relevant review process before it becomes publicly available.',
+  },
+  {
+    id: 'manage-registrations',
+    category: 'organizers',
+    question: 'Can organizers manage event registrations on CampusNode?',
+    answer:
+      'Authorized organizers can manage registrations for their events according to their permissions. Depending on the event, this can include reviewing participants, teams, payment status, and registration information.',
+  },
+  {
+    id: 'export-event-data',
+    category: 'organizers',
+    question: 'Can organizers export event registration data?',
+    answer:
+      'Authorized organizers can use the available event data export tools to download registration information and other permitted event data. The available fields depend on the organizer\'s permissions and the event data.',
+  },
+  {
+    id: 'certificate-designer',
+    category: 'organizers',
+    question: 'Can organizers design certificates on CampusNode?',
+    answer:
+      'CampusNode provides a certificate-design workflow for authorized organizers. Organizers can configure certificate layouts and dynamic participant information according to the available designer features.',
+  },
+  {
+    id: 'qr-scanner',
+    category: 'organizers',
+    question: 'Can event organizers scan participant QR tickets?',
+    answer:
+      'Authorized event staff can use the CampusNode check-in or scanner tools to scan participant tickets and record attendance for the relevant event.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Faculty Coordinator
+  // ─────────────────────────────────────────────
+  {
+    id: 'faculty-coordinator',
+    category: 'organizers',
+    question: 'What is the role of a Faculty Coordinator on CampusNode?',
+    answer:
+      'A Faculty Coordinator can oversee and support the activities assigned to them, including relevant club or event workflows that require faculty involvement. Their available actions depend on the permissions assigned to their account.',
+  },
+  {
+    id: 'faculty-approvals',
+    category: 'organizers',
+    question: 'What can a Faculty Coordinator approve?',
+    answer:
+      'Faculty approval capabilities depend on the workflow and permissions assigned to the account. Where faculty approval is required, the coordinator can review the relevant request and take the permitted approval or rejection action.',
+  },
+  {
+    id: 'faculty-notifications',
+    category: 'organizers',
+    question: 'What notifications should a Faculty Coordinator receive?',
+    answer:
+      'Faculty Coordinators should receive notifications relevant to their assigned responsibilities, such as incoming requests or updates from relevant clubs, organizers, or administrative workflows. Private notifications belonging to individual students or unrelated users are not part of their notification inbox.',
+  },
+
+  // ─────────────────────────────────────────────
+  // ODSW / Central Organizer / Event Staff
+  // ─────────────────────────────────────────────
+  {
+    id: 'odsw-role',
+    category: 'organizers',
+    question: 'What is the ODSW or Central Organizer role?',
+    answer:
+      'The ODSW or Central Organizer role is intended for authorized users who manage or coordinate institution-level events and activities. The exact capabilities depend on the permissions assigned to the account.',
+  },
+  {
+    id: 'central-event-management',
+    category: 'organizers',
+    question: 'Can the Central Organizer manage college-level events?',
+    answer:
+      'Authorized Central Organizers can manage institution-level event workflows supported by CampusNode, including the event-management functions available to their account.',
+  },
+  {
+    id: 'event-staff',
+    category: 'organizers',
+    question: 'What is an Event Staff account?',
+    answer:
+      'Event Staff are authorized users assigned to support a particular event. Their access should be limited to the event-related functions and information required for their assigned responsibilities.',
+  },
+  {
+    id: 'event-staff-access',
+    category: 'organizers',
+    question: 'Can Event Staff access every event on CampusNode?',
+    answer:
+      'No. Event Staff access is intended to be scoped to the events and functions they are authorized to handle. Staff assigned to one event should not automatically gain access to unrelated event operations.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Search & Discovery
+  // ─────────────────────────────────────────────
+  {
+    id: 'search-campusnode',
     category: 'campus',
-    question: 'How does the campus Lost & Found system work?',
+    question: 'How can I search for events, clubs, or other content?',
     answer:
-      'If you lost or found an item (keys, ID cards, electronics, bags) anywhere on campus, post a report under the Lost & Found section with pictures, item category, and location info. The portal helps students and security desks connect to return misplaced belongings safely.',
+      'Use the CampusNode search feature to find relevant events, clubs, and supported campus content. Search results can be refined using the available filters and categories.',
   },
   {
-    id: 'lost-and-found-claim',
+    id: 'club-pages',
     category: 'campus',
-    question: 'What proof is required to claim a found item from the finder or security desk?',
+    question: 'Where can I find information about campus clubs?',
     answer:
-      'To prevent wrongful claims, the claimant must verify key identifying details not visible in public photos (such as device passcode unlock, engraving details, or key chain markings) before the item handover is completed.',
+      'Open the Clubs section or a club profile to explore the organization\'s information, events, activities, and other details made available by the club.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Lost & Found
+  // ─────────────────────────────────────────────
+  {
+    id: 'lost-found',
+    category: 'campus',
+    question: 'How does CampusNode Lost & Found work?',
+    answer:
+      'The Lost & Found section allows campus users to report lost or found items and provide relevant information such as the item category, description, images, and location. The system helps connect people who may be able to return or identify an item.',
   },
   {
-    id: 'developer-contributions',
+    id: 'report-lost-item',
     category: 'campus',
-    question: 'Can students contribute code or design improvements to CampusNode?',
+    question: 'How do I report a lost item?',
     answer:
-      'Absolutely! CampusNode is an open, student-built initiative. Visit our Contribute page (/contribute) to explore our tech stack, view open tasks, and join our WhatsApp developer channel to collaborate on features.',
+      'Open the Lost & Found section and create a lost-item report. Provide accurate information about the item and where or when it was last seen so that others can identify it.',
   },
   {
-    id: 'report-bug-feature',
+    id: 'report-found-item',
     category: 'campus',
-    question: 'How do I report a technical glitch or suggest a new feature for CampusNode?',
+    question: 'How do I report an item that I found?',
     answer:
-      'You can submit bug reports and feature ideas via GitHub Issues on our repository or message our developer community directly on WhatsApp. We roll out student-driven fixes and improvements on a weekly cycle.',
+      'Create a found-item report in the Lost & Found section and provide useful identifying information without unnecessarily exposing sensitive details. Follow the platform\'s instructions for safely returning the item.',
+  },
+  {
+    id: 'claim-found-item',
+    category: 'campus',
+    question: 'How is ownership verified for a found item?',
+    answer:
+      'A claimant may be asked to provide identifying information or proof that demonstrates ownership. Do not publicly reveal private identifying details that could allow someone else to make a false claim.',
+  },
+
+  // ─────────────────────────────────────────────
+  // Security & Support
+  // ─────────────────────────────────────────────
+  {
+    id: 'account-security',
+    category: 'account',
+    question: 'How does CampusNode protect my account?',
+    answer:
+      'CampusNode uses account authentication, role and permission controls, and protected application workflows to restrict access to platform features and data. Keep your password and verification information private and never share them with another person.',
+  },
+  {
+    id: 'two-factor-authentication',
+    category: 'account',
+    question: 'Does CampusNode support two-factor authentication?',
+    answer:
+      'Two-factor authentication can be enabled for supported account types and security workflows. If 2FA is available for your account, follow the security settings or verification flow provided by CampusNode.',
+  },
+  {
+    id: 'report-problem',
+    category: 'campus',
+    question: 'How do I report a problem or technical issue?',
+    answer:
+      'If you encounter a technical problem, provide the relevant details such as the page or feature, what you were trying to do, and what happened. Use the support or issue-reporting channel provided by CampusNode.',
+  },
+  {
+    id: 'feature-request',
+    category: 'campus',
+    question: 'How can I suggest a new CampusNode feature?',
+    answer:
+      'You can submit feature suggestions through the available CampusNode feedback or contribution channels. Include a clear explanation of the problem and how the proposed feature would help students, clubs, organizers, or administrators.',
+  },
+  {
+    id: 'student-contribution',
+    category: 'campus',
+    question: 'Can students contribute to CampusNode?',
+    answer:
+      'Yes. Students can contribute ideas, feedback, design improvements, development work, and other useful contributions through the contribution channels provided by the CampusNode project.',
   },
 ];
+
 
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN FAQ PAGE COMPONENT

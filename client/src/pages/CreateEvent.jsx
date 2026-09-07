@@ -37,6 +37,7 @@ const CreateEvent = () => {
         showWinner: false,
         provideCertificate: false,
         feedbackEnabled: true,
+        allowWaitlist: true,
         registrationType: 'individual',
         minTeamSize: 1,
         maxTeamSize: 1,
@@ -424,6 +425,7 @@ const CreateEvent = () => {
             allowedYears: allYears ? [] : formData.allowedYears,
             allowedBranches: allBranches ? [] : formData.allowedBranches,
             allowExternal: Boolean(formData.allowExternal),
+            allowWaitlist: isUnlimited ? false : Boolean(formData.allowWaitlist),
             registrationType: formData.registrationType || 'individual',
             minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
             maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
@@ -772,8 +774,30 @@ const CreateEvent = () => {
                                     </label>
                                 </div>
                                 {!isUnlimited && (
-                                    <input type="number" name="totalSeats" min="1" className={inputCls}
-                                        value={formData.totalSeats} onChange={handleChange} placeholder="Number of seats" />
+                                    <>
+                                        <input type="number" name="totalSeats" min="1" className={inputCls}
+                                            value={formData.totalSeats} onChange={handleChange} placeholder="Number of seats" />
+
+                                        <div className="mt-3 flex flex-col gap-1.5 p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40">
+                                            <label className="inline-flex items-center cursor-pointer gap-2 select-none">
+                                                <input
+                                                    type="checkbox"
+                                                    name="allowWaitlist"
+                                                    className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
+                                                    checked={formData.allowWaitlist}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, allowWaitlist: e.target.checked }))}
+                                                />
+                                                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                                    Allow Waitlist when capacity is reached
+                                                </span>
+                                            </label>
+                                            <p className="text-xs text-neutral-500 ml-6">
+                                                {formData.allowWaitlist
+                                                    ? 'When seats are full, up to 5 participants can join a waitlist and automatically get promoted if spots open up.'
+                                                    : 'Registration closes immediately when capacity is reached. No waitlist spots will be offered.'}
+                                            </p>
+                                        </div>
+                                    </>
                                 )}
                             </div>
 

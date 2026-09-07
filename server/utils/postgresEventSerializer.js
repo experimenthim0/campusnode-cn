@@ -7,13 +7,13 @@ export function serializeEvent(event) {
   const actualRegCount = typeof event._count?.participations === 'number'
     ? event._count.participations
     : (Array.isArray(event.participations)
-        ? event.participations.filter(p => p.status !== 'CANCELLED').length
+        ? event.participations.filter(p => p.status === 'REGISTERED' || p.status === 'ATTENDED').length
         : (typeof event.registeredCount === 'number' ? event.registeredCount : 0));
 
   return {
     ...event,
     _id: event.id,
-    registeredCount: actualRegCount,
+    registeredCount: Math.max(0, actualRegCount),
     createdBy: event.createdBy
       ? { ...event.createdBy, _id: event.createdBy.id }
       : event.createdBy,
@@ -28,6 +28,9 @@ export function serializeEvent(event) {
       ? { ...event.club, _id: event.club.id }
       : event.club,
     waitingList: event.waitingListIds ?? [],
+    waitingListIds: event.waitingListIds ?? [],
+    waitlistCount: (event.waitingListIds ?? []).length,
+    allowWaitlist: event.allowWaitlist !== undefined ? Boolean(event.allowWaitlist) : true,
     status: getEventStatus(event.startTime, event.endTime),
   };
 }

@@ -201,6 +201,7 @@ model Event {
   isFeatured           Boolean         @default(false)
   allowExternal        Boolean         @default(true)
   feedbackEnabled      Boolean         @default(true)
+  allowWaitlist        Boolean         @default(true)
   registrationType     String          @default("individual")
   minTeamSize          Int             @default(1)
   maxTeamSize          Int             @default(1)

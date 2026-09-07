@@ -51,11 +51,19 @@ const getDateGroup = (dateStr) => {
 };
 
 const NotificationAvatar = ({ notif }) => {
-  const logoUrl =
-    notif.sender?.clubLogo ||
-    notif.sender?.club?.clubLogo ||
-    notif.sender?.logo ||
-    notif.clubLogo;
+  const isTeam =
+    notif.type === "TEAM_INVITATION" ||
+    notif.type === "TEAM_RESPONSE" ||
+    Boolean(notif.teamId) ||
+    notif.title?.toLowerCase().includes("team") ||
+    notif.title?.toLowerCase().includes("invitation");
+
+  const logoUrl = !isTeam
+    ? notif.sender?.clubLogo ||
+      notif.sender?.club?.clubLogo ||
+      notif.sender?.logo ||
+      notif.clubLogo
+    : null;
 
   if (logoUrl) {
     return (
@@ -72,7 +80,6 @@ const NotificationAvatar = ({ notif }) => {
     );
   }
 
-  const isTeam = notif.type === "TEAM_INVITATION" || notif.title?.toLowerCase().includes("team");
   const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
   const isEvent = Boolean(notif.eventId) || notif.type === "EVENT_UPDATE" || notif.title?.toLowerCase().includes("event");
 
@@ -243,7 +250,7 @@ const Notifications = () => {
       handleMarkAsRead(notifId);
     }
 
-    if (notif.type === "TEAM_INVITATION") {
+    if (notif.type === "TEAM_INVITATION" || notif.type === "TEAM_RESPONSE") {
       if (notif.eventId) {
         navigate(`/event/${notif.eventId}`);
       }
@@ -412,6 +419,12 @@ const Notifications = () => {
                   {groupedNotifications[groupKey].map((notif) => {
                     const notifId = notif.id || notif._id;
                     const isRead = (notif.readBy || []).includes(currentUserId);
+                    const isTeamNotif =
+                      notif.type === "TEAM_INVITATION" ||
+                      notif.type === "TEAM_RESPONSE" ||
+                      Boolean(notif.teamId) ||
+                      notif.title?.toLowerCase().includes("team") ||
+                      notif.title?.toLowerCase().includes("invitation");
                     const isTeamInvite = notif.type === "TEAM_INVITATION" && notif.title === "Team Invitation";
                     const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
                     const hasClickableDestination = Boolean(
@@ -448,7 +461,7 @@ const Notifications = () => {
                                   ? "text-brand-600 dark:text-brand-400"
                                   : "text-neutral-500 dark:text-neutral-400"
                               }`}>
-                                {notif.sender?.clubName || notif.sender?.name || "CampusNode"}
+                                {isTeamNotif ? "CampusNode" : (notif.sender?.clubName || notif.sender?.name || "CampusNode")}
                               </span>
                               {!isRead && (
                                 <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" title="Unread" />

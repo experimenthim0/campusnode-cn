@@ -115,9 +115,15 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
     const isUpcoming = !isLive && status === 'UPCOMING';
     const isUnlimited = !totalSeats || totalSeats === 0;
     const isFull = !isUnlimited && registeredCount >= totalSeats;
+    const allowWaitlist = event.allowWaitlist !== false;
+    const waitlistCount = (event.waitingListIds || event.waitingList || []).length;
+    const isWaitlistFull = isFull && allowWaitlist && waitlistCount >= 5;
+    const remainingSeats = isUnlimited ? 0 : Math.max(0, totalSeats - registeredCount);
     const seatsText = isUnlimited
-        ? ` `
-        : `${totalSeats - registeredCount} left`;
+        ? ' '
+        : isFull
+            ? (allowWaitlist && waitlistCount > 0 ? `${waitlistCount} waitlisted` : '0 left')
+            : `${remainingSeats} left`;
 
     // Construct premium card styles dynamically
     const customStyles = (isHovered && rgb)
@@ -384,30 +390,34 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     {isRegistered ? (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className="flex-1 block text-center py-2 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer shadow-sm hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-colors"
+                            className="flex-1 inline-flex items-center justify-center py-2.5 px-4 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer shadow-xs hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                             View Event
                         </Link>
                     ) : (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className={`flex-1 block text-center py-2 rounded-full text-xs font-bold tracking-wider border transition-all cursor-pointer shadow-xs ${(isEnded || isLive)
-                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                            className={`flex-1 inline-flex items-center justify-center py-2.5 px-4 rounded-full text-xs font-semibold tracking-wider border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer ${(isEnded || isLive)
+                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 shadow-xs hover:shadow-md'
                                     : event.registrationType === 'none'
-                                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
-                                        : isFull
-                                            ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600'
-                                            : 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200'
+                                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30'
+                                        : isFull && !allowWaitlist
+                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
+                                        : isWaitlistFull
+                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
+                                            : isFull
+                                                ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30'
+                                                : 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg'
                                 }`}
                         >
-                            {(isEnded || isLive) ? 'View Event' : event.registrationType === 'none' ? 'Open Event' : isFull ? 'Join Waitlist' : 'Register Now'}
+                            {(isEnded || isLive) ? 'View Event' : event.registrationType === 'none' ? 'Open Event' : isFull && !allowWaitlist ? 'Event Full' : isWaitlistFull ? 'Waitlist Full' : isFull ? 'Join Waitlist' : 'Register Now'}
                         </Link>
                     )}
 
                     {isUpcoming && (
                         <CalendarDropdown
                             event={event}
-                            btnClassName="p-2 border rounded-lg shadow-sm hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-colors duration-200 shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
+                            btnClassName="p-2 border rounded-full shadow-xs hover:shadow-md hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
                         />
                     )}
                 </div>
