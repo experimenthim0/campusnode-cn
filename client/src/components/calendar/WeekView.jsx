@@ -80,7 +80,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
   };
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+    <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 sticky top-0 z-20">
         <div className="py-3 text-center text-[10px] font-black uppercase text-neutral-400 dark:text-neutral-500 border-r border-neutral-200 dark:border-zinc-800">
           Time
@@ -130,7 +130,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
           const dayBlackouts = getBlackoutsForDay(dayObj);
 
           return (
-            <div key={colIdx} className="relative h-[900px] bg-white dark:bg-[#0a0a0a]">
+            <div key={colIdx} className="relative h-[900px] bg-cn-surface">
               {/* Background hour grid lines */}
               {HOURS.map((h, i) => (
                 <div

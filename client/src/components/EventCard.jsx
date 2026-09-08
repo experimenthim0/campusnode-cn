@@ -273,9 +273,9 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                                 </span>
                                                 <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
                                             </div>
-                                            {winner.rank === 1 && <i className="ri-medal-fill text-amber-500" />}
-                                            {winner.rank === 2 && <i className="ri-medal-fill text-neutral-400" />}
-                                            {winner.rank === 3 && <i className="ri-medal-fill text-[#CD7F32]" />}
+                                            {winner.rank === 1 && <i className="ri-medal-fill text-tier-gold" />}
+                                            {winner.rank === 2 && <i className="ri-medal-fill text-tier-silver" />}
+                                            {winner.rank === 3 && <i className="ri-medal-fill text-tier-bronze" />}
                                         </div>
                                     ))}
                                 </div>

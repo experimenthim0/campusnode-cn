@@ -115,17 +115,17 @@ const VerifyCertificate = () => {
   const isNotFound = errorStatus === "NOT_FOUND" || errorStatus === "INVALID_TOKEN";
 
   return (
-    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 sm:py-14 px-4 sm:px-6 flex flex-col justify-center items-center transition-colors">
+    <div className="mysans min-h-screen bg-cn-bg text-cn-text py-8 sm:py-14 px-4 sm:px-6 flex flex-col justify-center items-center transition-colors">
       <div className="w-full max-w-xl space-y-4 sm:space-y-5">
         {/* Navigation & Registry Header */}
         <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-cn-text-muted hover:text-cn-text transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to CampusNode
           </Link>
-          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+          <span className="text-[11px] font-medium text-cn-text-muted">
             Official Credential Registry
           </span>
         </div>
@@ -136,7 +136,7 @@ const VerifyCertificate = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4"
+            className="bg-cn-surface border border-cn-border rounded-2xl p-5 sm:p-6 shadow-xs space-y-4"
           >
             <div className="space-y-1">
               <h1 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
@@ -153,12 +153,12 @@ const VerifyCertificate = () => {
                 value={inputToken}
                 onChange={(e) => setInputToken(e.target.value)}
                 placeholder="Paste certificate code or token…"
-                className="w-full flex-1 px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-zinc-500 transition-colors"
+                className="w-full flex-1 px-3.5 py-2.5 bg-neutral-50 dark:bg-cn-surface-elevated border border-neutral-300 dark:border-cn-border rounded-xl text-xs sm:text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-cn-blue-500 transition-colors"
               />
               <button
                 type="submit"
                 disabled={!inputToken.trim()}
-                className="w-full sm:w-auto px-5 py-2.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 text-xs sm:text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 shrink-0"
+                className="w-full sm:w-auto px-5 py-2.5 bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-white text-white dark:text-neutral-900 text-xs sm:text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 shrink-0"
               >
                 <Search className="w-4 h-4" /> Verify
               </button>
@@ -168,13 +168,13 @@ const VerifyCertificate = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 sm:p-12 shadow-xs text-center space-y-3">
-            <div className="w-9 h-9 border-2 border-zinc-200 dark:border-zinc-700 border-t-zinc-900 dark:border-t-zinc-100 rounded-full animate-spin mx-auto" />
+          <div className="bg-cn-surface border border-cn-border rounded-2xl p-8 sm:p-12 shadow-xs text-center space-y-3">
+            <div className="w-9 h-9 border-2 border-neutral-200 dark:border-cn-border border-t-cn-blue-600 dark:border-t-cn-blue-400 rounded-full animate-spin mx-auto" />
             <div className="space-y-1">
-              <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-neutral-100">
                 Checking Certificate
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Verifying issued certificate against CampusNode registry…
               </p>
             </div>
@@ -187,24 +187,24 @@ const VerifyCertificate = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-5"
+            className="bg-cn-surface border border-cn-border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-5"
           >
             {/* Header: Status & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-cn-border">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-cn-teal-50 dark:bg-cn-teal-950/40 border border-cn-teal-200 dark:border-cn-teal-800/60 text-cn-teal-600 dark:text-cn-teal-400 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-cn-teal-50 dark:bg-cn-teal-950/40 border border-cn-teal-200 dark:border-cn-teal-800/60 text-cn-teal-700 dark:text-cn-teal-300">
                       Authentic
                     </span>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 break-all">
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400 break-all">
                       {cert.certificateNumber}
                     </span>
                   </div>
-                  <h1 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight mt-0.5">
+                  <h1 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight mt-0.5">
                     Certificate Verified
                   </h1>
                 </div>
@@ -215,16 +215,16 @@ const VerifyCertificate = () => {
                   type="button"
                   onClick={handleCopyLink}
                   title="Copy verification link"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-cn-border bg-neutral-50 dark:bg-cn-surface-elevated hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-cn-teal-600 dark:text-cn-teal-400" />
                       <span>Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                      <Copy className="w-3.5 h-3.5 text-neutral-500" />
                       <span>Copy Link</span>
                     </>
                   )}

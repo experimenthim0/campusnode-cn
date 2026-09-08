@@ -129,7 +129,7 @@ const CalendarFilterBar = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl p-3 space-y-3">
+    <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl p-3 space-y-3">
       {/* Top Bar: Date Controls + SubView Controls + Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ const CalendarFilterBar = ({
             <button
               type="button"
               onClick={onNewBlackout}
-              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Building2 size={14} />
               <span>Venue Blackout</span>
@@ -212,15 +212,15 @@ const CalendarFilterBar = ({
       </div>
 
       {/* Bottom Bar: Reusable Multi-Select Filters */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100 dark:border-zinc-800/80">
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100 dark:border-cn-border">
         <div className="relative" ref={venueRef}>
           <button
             type="button"
             onClick={() => setVenueDropdownOpen((prev) => !prev)}
             className={`px-3 py-1.5 border rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               selectedVenues.length > 0
-                ? "bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-800/60 font-bold"
-                : "bg-neutral-50 dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800"
+                ? "bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 border-cn-blue-200 dark:border-cn-blue-800/60 font-bold"
+                : "bg-neutral-50 dark:bg-cn-surface text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-cn-border"
             }`}
           >
             <Building2 size={14} />
@@ -230,8 +230,8 @@ const CalendarFilterBar = ({
           </button>
 
           {venueDropdownOpen && (
-            <div className="absolute left-0 mt-1 w-64 bg-white dark:bg-[#141414] border border-neutral-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-2 space-y-1">
-              <div className="flex items-center justify-between pb-1.5 border-b border-neutral-100 dark:border-zinc-800 px-1">
+            <div className="absolute left-0 mt-1 w-64 bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-2xl shadow-xl z-50 p-2 space-y-1">
+              <div className="flex items-center justify-between pb-1.5 border-b border-neutral-100 dark:border-cn-border px-1">
                 <span className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                   Venues ({venues.length})
                 </span>
@@ -239,7 +239,7 @@ const CalendarFilterBar = ({
                   <button
                     type="button"
                     onClick={handleSelectAllVenues}
-                    className="text-[10px] text-brand-600 dark:text-brand-400 font-bold hover:underline cursor-pointer"
+                    className="text-[10px] text-cn-blue-600 dark:text-cn-blue-400 font-bold hover:underline cursor-pointer"
                   >
                     Select All
                   </button>
@@ -260,13 +260,13 @@ const CalendarFilterBar = ({
                   return (
                     <label
                       key={vName}
-                      className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-zinc-800/80 cursor-pointer"
+                      className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated cursor-pointer"
                     >
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleVenueToggle(vName)}
-                        className="rounded border-neutral-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                        className="rounded border-neutral-300 dark:border-cn-border text-cn-blue-600 focus:ring-cn-blue-500 cursor-pointer"
                       />
                       <span className="truncate">{vName}</span>
                     </label>
@@ -280,7 +280,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.clubId || "all"}
           onChange={(e) => onFilterChange("clubId", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           <option value="all">All Clubs / Orgs</option>
           {safeClubs.map((c, idx) => {
@@ -297,7 +297,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.category || "all"}
           onChange={(e) => onFilterChange("category", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           {CATEGORY_OPTIONS.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -309,7 +309,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.status || "all"}
           onChange={(e) => onFilterChange("status", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-brand-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           {STATUS_OPTIONS.map((st) => (
             <option key={st.id} value={st.id}>

@@ -185,7 +185,7 @@ const LostAndFound = () => {
     ];
 
     return (
-      <div className="myfont min-h-screen bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 relative overflow-hidden flex flex-col justify-between">
+      <div className="myfont min-h-screen bg-cn-bg text-neutral-900 dark:text-neutral-100 relative overflow-hidden flex flex-col justify-between">
         
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-60 dark:opacity-45 blur-[3px] scale-[1.01] transition-all">
           <header className="bg-white/80 dark:bg-zinc-900/80 border-b border-neutral-200/90 dark:border-zinc-800/90 py-10 px-6 text-center">
@@ -214,7 +214,7 @@ const LostAndFound = () => {
         </div>
 
         {/* Soft Ambient Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/40 via-neutral-50/75 to-neutral-50/95 dark:from-[#0c0c0c]/40 dark:via-[#0c0c0c]/75 dark:to-[#0c0c0c]/95 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/40 via-neutral-50/75 to-neutral-50/95 dark:from-black/40 dark:via-black/75 dark:to-black/95 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 my-auto">
           <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-neutral-200/90 dark:border-zinc-800/90 rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-lg dark:shadow-neutral-950/60 transition-all">
@@ -267,7 +267,7 @@ const LostAndFound = () => {
   const filtered = getFilteredItems();
 
   return (
-    <div className="myfont min-h-screen bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+    <div className="myfont min-h-screen bg-cn-bg text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       <Toaster
         position="top-right"
         toastOptions={{
@@ -323,7 +323,7 @@ const LostAndFound = () => {
         </div>
       </div>
 
-      <div className="bg-neutral-50 dark:bg-[#0c0c0c] border-b border-neutral-200/90 dark:border-zinc-800/90">
+      <div className="bg-cn-bg border-b border-neutral-200/90 dark:border-zinc-800/90">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-neutral-400 dark:text-neutral-500 mr-1">Filter</span>
 
@@ -374,14 +374,14 @@ const LostAndFound = () => {
       <main className="max-w-7xl mx-auto px-6 py-10 pb-20">
 
         {/* Section label */}
-        <div className="font-mono text-[11px] font-semibold tracking-[0.1em] uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-5 flex items-center gap-3">
+        <div className="font-mono text-[11px] font-semibold tracking-[0.1em] uppercase text-cn-text-muted mb-5 flex items-center gap-3">
           {activeTab === 'browse' ? 'Community feed' : 'Your posts'}
           {!fetching && (
-            <span className="font-mono text-[11px] text-[#A8A49D] dark:text-[#5C5A55]">
+            <span className="font-mono text-[11px] text-cn-text-muted">
               {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
             </span>
           )}
-          <div className="flex-grow h-px bg-[#E5E4E0] dark:bg-[#2A2A27]" />
+          <div className="flex-grow h-px bg-cn-border" />
         </div>
 
         {/* Cards Grid */}
@@ -392,11 +392,11 @@ const LostAndFound = () => {
             </div>
           ) : filtered.length === 0 ? (
             <div className="col-span-full py-20 px-6 text-center">
-              <div className="w-20 h-20 rounded-2xl bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] flex items-center justify-center text-3xl text-[#A8A49D] dark:text-[#5C5A55] mx-auto mb-5">
+              <div className="w-20 h-20 rounded-2xl bg-cn-surface-muted border border-cn-border flex items-center justify-center text-3xl text-cn-text-muted mx-auto mb-5">
                 <i className="ri-search-2-line" />
               </div>
-              <h3 className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] mb-2">Nothing here yet</h3>
-              <p className="text-sm text-[#A8A49D] dark:text-[#5C5A55]">
+              <h3 className="font-myfont text-2xl font-normal text-cn-text mb-2">Nothing here yet</h3>
+              <p className="text-sm text-cn-text-muted">
                 {activeTab === 'browse'
                   ? 'No posts match your current filters.'
                   : "You haven't posted anything yet."}
@@ -417,16 +417,16 @@ const LostAndFound = () => {
           )}
         </div>
 
-        <div className="mt-14 p-9 bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl">
+        <div className="mt-14 p-9 bg-cn-surface border border-cn-border rounded-2xl">
           <div className="flex items-start justify-between gap-4 mb-7">
             <div className="flex flex-col">
-              <div className="font-mono text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mb-1.5">
+              <div className="font-mono text-[10px] font-semibold tracking-wider uppercase text-cn-text-muted mb-1.5">
                 <i className="ri-shield-check-line" style={{ marginRight: 4 }} />
                 Community Standards
               </div>
-              <h2 className="font-myfont text-2xl font-normal text-[#1A1917] dark:text-[#F5F4F0] leading-none">Rules &amp; Guidelines</h2>
+              <h2 className="font-myfont text-2xl font-normal text-cn-text leading-none">Rules &amp; Guidelines</h2>
             </div>
-            <Link to="/lost-found/guide" className="text-xs font-semibold text-[#E8500A] hover:translate-x-1 transition-transform inline-flex items-center gap-1 shrink-0 mt-1 cursor-pointer">
+            <Link to="/lost-found/guide" className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:translate-x-1 transition-transform inline-flex items-center gap-1 shrink-0 mt-1 cursor-pointer">
               Full guide <i className="ri-arrow-right-line" />
             </Link>
           </div>
@@ -454,12 +454,12 @@ const LostAndFound = () => {
                 body: () => <>Reunited posts stay visible in the browse feed for <strong>24 hours</strong> with reduced opacity before auto-hiding.</>
               },
             ].map((rule) => (
-              <div className="p-5 bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl hover:border-[#A8A49D] dark:hover:border-[#5C5A55] hover:shadow-sm transition-all duration-150" key={rule.title}>
-                <div className="w-9 h-9 border border-[#E5E4E0] dark:border-[#2A2A27] bg-white dark:bg-[#161614] rounded-lg flex items-center justify-center text-base text-[#6B6963] dark:text-[#9E9990] mb-3.5">
+              <div className="p-5 bg-cn-surface-muted border border-cn-border rounded-xl hover:border-cn-border-subtle hover:shadow-sm transition-all duration-150" key={rule.title}>
+                <div className="w-9 h-9 border border-cn-border bg-cn-surface rounded-lg flex items-center justify-center text-base text-cn-text-secondary mb-3.5">
                   <i className={rule.icon} />
                 </div>
-                <h4 className="text-xs font-bold text-[#1A1917] dark:text-[#F5F4F0] mb-2">{rule.title}</h4>
-                <p className="text-xs leading-relaxed text-[#6B6963] dark:text-[#9E9990]">{rule.body()}</p>
+                <h4 className="text-xs font-bold text-cn-text mb-2">{rule.title}</h4>
+                <p className="text-xs leading-relaxed text-cn-text-secondary">{rule.body()}</p>
               </div>
             ))}
           </div>
@@ -467,27 +467,27 @@ const LostAndFound = () => {
       </main>
       {showModal && (
         <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div>
-                <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Post an Item</p>
-                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Help the community find what's been lost or claimed.</p>
+                <p className="text-base sm:text-lg font-bold text-cn-text leading-tight">Post an Item</p>
+                <p className="text-xs text-cn-text-muted font-normal mt-0.5">Help the community find what's been lost or claimed.</p>
               </div>
-              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => setShowModal(false)} title="Close">
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0" onClick={() => setShowModal(false)} title="Close">
                 <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 text-cn-text-secondary">
               <form onSubmit={handleSubmit} className="space-y-4">
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Item type</label>
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">Item type</label>
                   <div className="flex gap-2">
                     {['Lost', 'Found'].map(t => (
                       <button
                         key={t}
                         type="button"
-                        className={`flex-grow p-2.5 text-center rounded-xl text-xs font-bold transition-colors cursor-pointer border ${formData.type === t ? (t === 'Lost' ? 'bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] border-brand-200/80 dark:border-brand-900/60' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40') : 'bg-white dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]'}`}
+                        className={`flex-grow p-2.5 text-center rounded-xl text-xs font-bold transition-colors cursor-pointer border ${formData.type === t ? (t === 'Lost' ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-500 border-brand-200/80 dark:border-brand-900/60' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40') : 'bg-cn-surface border border-cn-border text-cn-text-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
                         onClick={() => setFormData(p => ({ ...p, type: t }))}
                       >
                         <i className={t === 'Lost' ? 'ri-question-mark' : 'ri-checkbox-circle-line'} style={{ marginRight: 6 }} />
@@ -498,9 +498,9 @@ const LostAndFound = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Title <span className="text-[#F97316]">*</span></label>
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">Title <span className="text-brand-500">*</span></label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C]"
+                    className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted outline-none transition-colors focus:border-brand-500"
                     type="text" name="title"
                     value={formData.title} onChange={handleChange}
                     placeholder="e.g. Blue water bottle at Library"
@@ -509,9 +509,9 @@ const LostAndFound = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Description <span className="text-[#F97316]">*</span></label>
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">Description <span className="text-brand-500">*</span></label>
                   <textarea
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none h-24"
+                    className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted outline-none transition-colors focus:border-brand-500 resize-none h-24"
                     name="description"
                     value={formData.description} onChange={handleChange}
                     placeholder="Where, when, and any unique identifying marks…"
@@ -520,12 +520,12 @@ const LostAndFound = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">
                     WhatsApp number
-                    <span className="font-normal text-xs text-[#888888] dark:text-[#808080] ml-1">(optional)</span>
+                    <span className="font-normal text-xs text-cn-text-muted ml-1">(optional)</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C]"
+                    className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted outline-none transition-colors focus:border-brand-500"
                     type="text" name="whatsapp"
                     value={formData.whatsapp} onChange={handleChange}
                     placeholder="e.g. 9876543210"
@@ -533,21 +533,21 @@ const LostAndFound = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">
                     Photo
-                    <span className="font-normal text-xs text-[#888888] dark:text-[#808080] ml-1">(max 5 MB)</span>
+                    <span className="font-normal text-xs text-cn-text-muted ml-1">(max 5 MB)</span>
                   </label>
                   <input type="file" id="lf-file-input" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                   <label
                     htmlFor="lf-file-input"
-                    className="w-full border border-dashed border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors text-[#555555] dark:text-[#B5B5B5] text-xs hover:border-[#F97316] dark:hover:border-[#FB923C] hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F]"
+                    className="w-full border border-dashed border-cn-border rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors text-cn-text-secondary text-xs hover:border-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/30"
                     style={uploading ? { opacity: 0.5, pointerEvents: 'none' } : {}}
                   >
-                    <i className={`mb-1.5 text-lg ${uploading ? 'ri-loader-4-line animate-spin text-[#F97316]' : 'ri-cloud-upload-line'}`} />
+                    <i className={`mb-1.5 text-lg ${uploading ? 'ri-loader-4-line animate-spin text-brand-500' : 'ri-cloud-upload-line'}`} />
                     {uploading ? 'Uploading…' : formData.image_url ? 'Replace image' : 'Click to select an image'}
                   </label>
                   {formData.image_url && (
-                    <div className="w-full h-[140px] flex items-center justify-center bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl overflow-hidden mt-3 relative">
+                    <div className="w-full h-[140px] flex items-center justify-center bg-cn-surface-muted border border-cn-border rounded-xl overflow-hidden mt-3 relative">
                       <img className="w-full h-full object-contain" src={formData.image_url} alt="Preview" />
                       <button
                         type="button"
@@ -578,53 +578,53 @@ const LostAndFound = () => {
 
       {selectedContact?.contact_info && (
         <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && setSelectedContact(null)}>
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div>
-                <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Contact Details</p>
-                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Reach out to the post owner directly.</p>
+                <p className="text-base sm:text-lg font-bold text-cn-text leading-tight">Contact Details</p>
+                <p className="text-xs text-cn-text-muted font-normal mt-0.5">Reach out to the post owner directly.</p>
               </div>
-              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => setSelectedContact(null)} title="Close">
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0" onClick={() => setSelectedContact(null)} title="Close">
                 <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 text-cn-text-secondary">
               <div className="mb-4">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Posted by</div>
-                <div className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] break-all">{selectedContact.contact_info.name}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-0.5">Posted by</div>
+                <div className="text-sm font-bold text-cn-text break-all">{selectedContact.contact_info.name}</div>
               </div>
               <div className="mb-4">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Email</div>
-                <div className="text-sm font-semibold text-[#111111] dark:text-[#F5F5F5] break-all">{selectedContact.contact_info.email}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-0.5">Email</div>
+                <div className="text-sm font-semibold text-cn-text break-all">{selectedContact.contact_info.email}</div>
               </div>
 
               {selectedContact.contact_info.whatsapp ? (
                 <>
                   <div className="mb-4">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-0.5">Phone</div>
-                    <div className="text-sm font-semibold text-[#111111] dark:text-[#F5F5F5] font-mono break-all">+91 {selectedContact.contact_info.whatsapp}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-0.5">Phone</div>
+                    <div className="text-sm font-semibold text-cn-text font-mono break-all">+91 {selectedContact.contact_info.whatsapp}</div>
                   </div>
                   <div className="flex gap-2 mt-5">
                     <a
                       href={`https://wa.me/91${selectedContact.contact_info.whatsapp}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex-grow p-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none shadow-xs"
+                      className="flex-grow p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none shadow-xs"
                     >
                       <i className="ri-whatsapp-line" /> Message
                     </a>
-                    <a href={`tel:+91${selectedContact.contact_info.whatsapp}`} className="flex-grow p-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none text-center shadow-xs">
+                    <a href={`tel:+91${selectedContact.contact_info.whatsapp}`} className="flex-grow p-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-decoration-none border-none text-center shadow-xs">
                       <i className="ri-phone-line" /> Call
                     </a>
                   </div>
                 </>
               ) : (
-                <p className="text-xs text-[#888888] dark:text-[#808080] italic mt-3">
+                <p className="text-xs text-cn-text-muted italic mt-3">
                   No phone number provided — reach out via email.
                 </p>
               )}
 
               <button
-                className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors mt-5"
+                className="w-full px-4 py-2.5 bg-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-cn-text border border-cn-border rounded-xl text-xs font-bold cursor-pointer transition-colors mt-5"
                 onClick={() => setSelectedContact(null)}
               >
                 Close
@@ -636,31 +636,31 @@ const LostAndFound = () => {
 
       {reportModalItem && (
         <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200" onClick={(e) => e.target === e.currentTarget && (setReportModalItem(null), setReportReason(''))}>
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg shrink-0">
                   <i className="ri-flag-line" />
                 </div>
                 <div>
-                  <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Report Post</p>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">The post owner will be notified with your reason.</p>
+                  <p className="text-base sm:text-lg font-bold text-cn-text leading-tight">Report Post</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">The post owner will be notified with your reason.</p>
                 </div>
               </div>
-              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0" onClick={() => { setReportModalItem(null); setReportReason(''); }} title="Close">
+              <button className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0" onClick={() => { setReportModalItem(null); setReportReason(''); }} title="Close">
                 <i className="ri-close-line text-lg" />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 text-cn-text-secondary">
               {REPORT_REASONS.map(reason => (
-                <label key={reason} className={`flex items-center gap-2.5 p-3.5 bg-white dark:bg-[#222222] border rounded-xl text-xs cursor-pointer transition-all mb-2 select-none ${reportReason === reason ? 'bg-rose-50/60 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-900/50' : 'border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] hover:bg-[#FAFAFA] dark:hover:bg-[#252525]'}`}>
+                <label key={reason} className={`flex items-center gap-2.5 p-3.5 bg-cn-surface border rounded-xl text-xs cursor-pointer transition-all mb-2 select-none ${reportReason === reason ? 'bg-rose-50/60 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-900/50' : 'border-cn-border text-cn-text-secondary hover:bg-cn-surface-muted'}`}>
                   <input
                     type="radio"
                     name="reportReason"
                     value={reason}
                     checked={reportReason === reason}
                     onChange={(e) => setReportReason(e.target.value)}
-                    className="accent-[#F97316]"
+                    className="accent-brand-500"
                     style={{ width: 15, height: 15, flexShrink: 0 }}
                   />
                   {reason}
@@ -668,9 +668,9 @@ const LostAndFound = () => {
               ))}
 
               <div className="mb-4 mt-3">
-                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Or describe your concern</label>
+                <label className="block text-xs font-bold text-cn-text mb-1.5">Or describe your concern</label>
                 <textarea
-                  className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none transition-colors focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none h-[76px]"
+                  className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted outline-none transition-colors focus:border-brand-500 resize-none h-[76px]"
                   value={!REPORT_REASONS.includes(reportReason) ? reportReason : ''}
                   onChange={(e) => setReportReason(e.target.value)}
                   placeholder="Tell us why you're reporting this post…"
@@ -699,15 +699,12 @@ const LostAndFound = () => {
 
       {confirmModal.isOpen && (
         <div className="fixed inset-0 z-[60] bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto p-6 text-center transition-colors">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto mb-3" style={{
-              background: confirmModal.isDanger ? 'rgba(239, 68, 68, 0.1)' : 'rgba(249, 115, 22, 0.1)',
-              color: confirmModal.isDanger ? '#EF4444' : '#F97316',
-            }}>
+          <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto p-6 text-center transition-colors">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto mb-3 ${confirmModal.isDanger ? 'bg-danger-50 dark:bg-danger-950/30 text-danger-500' : 'bg-brand-50 dark:bg-brand-950/30 text-brand-500'}`}>
               <i className={confirmModal.isDanger ? 'ri-alert-line' : 'ri-checkbox-circle-line'} />
             </div>
-            <p className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">{confirmModal.title}</p>
-            <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
+            <p className="text-base sm:text-lg font-bold text-cn-text mb-1.5">{confirmModal.title}</p>
+            <p className="text-xs text-cn-text-muted mb-6 leading-relaxed">
               {confirmModal.message}
             </p>
             <div className="flex gap-3">
@@ -738,25 +735,25 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
   return (
     <article className={`bg-white dark:bg-zinc-900 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl overflow-hidden flex flex-col shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 dark:hover:border-zinc-700 cursor-default ${isReunited ? 'opacity-80 hover:opacity-100' : ''}`}>
       {/* Image */}
-      <div className="aspect-video bg-[#FAFAF9] dark:bg-[#0D0D0C] relative overflow-hidden">
+      <div className="aspect-video bg-cn-surface-muted relative overflow-hidden">
         {item.imageUrl
           ? <img className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" src={item.imageUrl} alt={item.title} loading="lazy" />
           : (
-            <div className="w-full h-full flex items-center justify-center text-[#E5E4E0] dark:text-[#2A2A27] text-4xl">
+            <div className="w-full h-full flex items-center justify-center text-cn-border text-4xl">
               <i className="ri-image-line" />
             </div>
           )
         }
 
         {/* Type badge */}
-        <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full font-mono text-[10px] font-medium tracking-[0.08em] uppercase backdrop-blur-md ${isLost ? 'bg-[#FFFBEB]/95 dark:bg-[#2A1A08]/92 text-[#92400E] dark:text-[#FCD34D] border border-[#FDE68A] dark:border-[#78350F]' : 'bg-[#ECFDF5]/95 dark:bg-[#052E1A]/92 text-[#065F46] dark:text-[#6EE7B7] border border-[#A7F3D0] dark:border-[#065F46]'}`}>
+        <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full font-mono text-[10px] font-medium tracking-[0.08em] uppercase backdrop-blur-md ${isLost ? 'bg-warning-50/95 dark:bg-warning-950/90 text-warning-800 dark:text-warning-300 border border-warning-200 dark:border-warning-900' : 'bg-success-50/95 dark:bg-success-950/90 text-success-800 dark:text-success-300 border border-success-200 dark:border-success-900'}`}>
           {isLost ? '● Lost' : '● Found'}
         </span>
 
         {/* Reunited overlay */}
         {isReunited && (
           <div className="absolute inset-0 bg-white/35 dark:bg-black/35 backdrop-blur-[3px] flex flex-col items-center justify-center gap-2 z-10">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-[#0F1F18] text-[#065F46] dark:text-[#6EE7B7] border border-[#A7F3D0] dark:border-[#065F46] rounded-full text-xs font-bold shadow-md shadow-black/5">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-cn-surface text-success-700 dark:text-success-300 border border-success-200 dark:border-success-900 rounded-full text-xs font-bold shadow-md shadow-black/5">
               <i className="ri-check-double-line" />
               Reunited
             </span>
@@ -766,21 +763,21 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
-        <h3 className="text-sm font-bold text-[#1A1917] dark:text-[#F5F4F0] line-clamp-1 mb-1.5">{item.title}</h3>
-        <p className="text-xs font-light leading-relaxed text-[#6B6963] dark:text-[#9E9990] line-clamp-2 mb-4 flex-grow">{item.description}</p>
+        <h3 className="text-sm font-bold text-cn-text line-clamp-1 mb-1.5">{item.title}</h3>
+        <p className="text-xs font-light leading-relaxed text-cn-text-secondary line-clamp-2 mb-4 flex-grow">{item.description}</p>
 
         {/* Metadata */}
-        <div className="flex items-center gap-1 text-xs text-[#A8A49D] dark:text-[#5C5A55] flex-wrap mb-3.5">
+        <div className="flex items-center gap-1 text-xs text-cn-text-muted flex-wrap mb-3.5">
           <i className="ri-calendar-line" />
           <span>{new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
-          <span className="text-[#E5E4E0] dark:text-[#2A2A27] text-sm">·</span>
+          <span className="text-cn-border text-sm">·</span>
           <i className="ri-user-line" />
           <span>{activeTab === 'browse' ? (item.user?.name || 'Anonymous') : 'You'}</span>
 
           {activeTab === 'my-items' && item.reportedBy?.length > 0 && (
             <>
-              <span className="text-[#E5E4E0] dark:text-[#2A2A27] text-sm">·</span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFFBEB] dark:bg-[#2A1A08]/60 text-[#92400E] dark:text-[#FCD34D] border border-[#FDE68A] dark:border-[#78350F] text-[11px] font-semibold">
+              <span className="text-cn-border text-sm">·</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-50 dark:bg-warning-950/60 text-warning-800 dark:text-warning-300 border border-warning-200 dark:border-warning-900 text-[11px] font-semibold">
                 <i className="ri-flag-line" />
                 {item.reportedBy.length} {item.reportedBy.length === 1 ? 'report' : 'reports'}
               </span>

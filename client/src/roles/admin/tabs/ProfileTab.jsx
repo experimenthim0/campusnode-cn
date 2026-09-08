@@ -74,7 +74,7 @@ const ProfileTab = ({
 
     return (
         <div className="max-w-2xl space-y-8">
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
+            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-cn-surface">
                 <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Admin Profile</h2>
                 <p className="text-neutral-400 text-xs mb-6">Update display name and security preferences.</p>
                 
@@ -126,7 +126,7 @@ const ProfileTab = ({
                 </form>
             </div>
 
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
+            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-cn-surface">
                 <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Change Password</h2>
                 <p className="text-neutral-400 text-xs mb-6">Ensure your administrative password is strong and secure.</p>
                 

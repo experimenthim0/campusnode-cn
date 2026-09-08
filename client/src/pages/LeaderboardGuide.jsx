@@ -4,7 +4,7 @@ import { ArrowLeft, Award, Star, CheckCircle2, ShieldCheck, Zap, Clock, Users, C
 
 const LeaderboardGuide = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0c0c0c] myfont text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg myfont text-cn-text py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto space-y-12">
         
         <div className="flex items-center justify-between">

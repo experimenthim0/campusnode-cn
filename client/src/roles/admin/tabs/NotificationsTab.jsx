@@ -31,7 +31,7 @@ const NotificationsTab = ({
                     return (
                         <div 
                             key={n._id || n.id || idx}
-                            className="p-5 rounded-2xl border border-neutral-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#0c0c0c] flex items-start gap-4 transition-all hover:border-neutral-300 dark:hover:border-zinc-700 shadow-xs"
+                            className="p-5 rounded-2xl border border-cn-border bg-cn-surface flex items-start gap-4 transition-all hover:border-neutral-300 dark:hover:border-zinc-700 shadow-xs"
                         >
                             <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-500/20">
                                 <Bell size={18} />

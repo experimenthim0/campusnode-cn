@@ -122,7 +122,7 @@ const VenueTimelineView = ({
   const venueList = safeVenues.map((v) => (typeof v === "string" ? v : v.name || v.venueName || "Unnamed Venue"));
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+    <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="p-3 px-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-xs">
@@ -208,7 +208,7 @@ const VenueTimelineView = ({
                 >
                   {/* Sticky Venue Left Label Column */}
                   <div
-                    className="w-[200px] shrink-0 p-3 bg-white dark:bg-[#0a0a0a] group-hover:bg-neutral-50 dark:group-hover:bg-zinc-900/80 border-r border-neutral-200 dark:border-zinc-800 sticky left-0 z-20 flex items-center justify-between transition-colors"
+                    className="w-[200px] shrink-0 p-3 bg-cn-surface group-hover:bg-neutral-50 dark:group-hover:bg-zinc-900/80 border-r border-neutral-200 dark:border-zinc-800 sticky left-0 z-20 flex items-center justify-between transition-colors"
                   >
                     <div className="flex items-center gap-2 truncate">
                       <Building2 size={15} className="text-neutral-400 shrink-0" />

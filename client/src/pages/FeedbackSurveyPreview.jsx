@@ -164,10 +164,10 @@ export default function FeedbackSurveyPreview() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50/40 dark:bg-[#0d0f12] text-neutral-900 dark:text-neutral-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-cn-bg text-cn-text py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-6">
         
-        <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+        <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">
@@ -225,7 +225,7 @@ export default function FeedbackSurveyPreview() {
               </button>
             </div>
 
-            <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-xs overflow-hidden">
+            <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-xs overflow-hidden">
               
               <div className="px-6 py-5 border-b border-neutral-200/70 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 flex items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -446,7 +446,7 @@ export default function FeedbackSurveyPreview() {
           <div className="space-y-4">
             
             {/* Rating Questions Breakdown */}
-            <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
+            <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                 1. Star Rating Criteria (1–5 Scale)
               </h3>
@@ -477,7 +477,7 @@ export default function FeedbackSurveyPreview() {
             </div>
 
             {/* Attendance Intent */}
-            <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
+            <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                 2. Return Attendance Intent
               </h3>
@@ -514,7 +514,7 @@ export default function FeedbackSurveyPreview() {
             </div>
 
             {/* Qualitative Prompts */}
-            <div className="bg-white dark:bg-[#13161a] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
+            <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                 3. Qualitative Text Inputs
               </h3>

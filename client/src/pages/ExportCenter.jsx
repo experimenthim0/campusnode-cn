@@ -8,7 +8,7 @@ import {
 import { useNotification } from "../context/NotificationContext";
 
 const DataTable = ({ children }) => (
-  <div className="overflow-x-auto border border-neutral-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#0a0a0a]">
+  <div className="overflow-x-auto border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface">
     <table className="w-full text-left border-collapse myfont text-xs">{children}</table>
   </div>
 );
@@ -257,7 +257,7 @@ const ExportCenter = () => {
   );
 
   return (
-    <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont text-black dark:text-white p-5 lg:p-8 space-y-6">
+    <div className="min-h-full bg-cn-bg myfont text-black dark:text-white p-5 lg:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ const ExportCenter = () => {
                   isSelected
                     ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-sm"
                     : isAuthorized
-                    ? "bg-white dark:bg-[#0a0a0a] text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:border-neutral-400 dark:hover:border-zinc-700"
+                    ? "bg-cn-surface text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:border-neutral-400 dark:hover:border-zinc-700"
                     : "opacity-40 cursor-not-allowed border-neutral-200 dark:border-zinc-900 bg-neutral-100 dark:bg-zinc-900/30"
                 }`}
               >
@@ -365,7 +365,7 @@ const ExportCenter = () => {
                 setSession(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
+              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-cn-surface text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
             >
               {ACADEMIC_SESSIONS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -386,7 +386,7 @@ const ExportCenter = () => {
                 setSemester(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
+              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-cn-surface text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
             >
               {SEMESTERS.map((sem) => (
                 <option key={sem.id} value={sem.id}>
@@ -411,7 +411,7 @@ const ExportCenter = () => {
                   setEventId("all");
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
+                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-cn-surface text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
               >
                 <option value="all">All Clubs</option>
                 {clubs.map((c) => (
@@ -438,7 +438,7 @@ const ExportCenter = () => {
                     setEventId(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors font-semibold text-brand-600 dark:text-brand-400"
+                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-cn-surface text-black dark:text-white outline-none focus:border-brand-500 transition-colors font-semibold text-brand-600 dark:text-brand-400"
                 >
                   <option value="all">All Events in Club</option>
                   {eventsList.map((e) => (
@@ -462,7 +462,7 @@ const ExportCenter = () => {
                   setDatasetFilters({ ...datasetFilters, [field.id]: e.target.value });
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-[#0a0a0a] text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
+                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-zinc-800 rounded-lg bg-cn-surface text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
               >
                 {field.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -475,7 +475,7 @@ const ExportCenter = () => {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsColumnModalOpen((prev) => !prev)}
@@ -542,7 +542,7 @@ const ExportCenter = () => {
                   key={col.id}
                   className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs cursor-pointer select-none transition-colors ${
                     isChecked
-                      ? "bg-white dark:bg-[#0a0a0a] border-neutral-400 dark:border-zinc-700 text-black dark:text-white font-semibold"
+                      ? "bg-cn-surface border-neutral-400 dark:border-zinc-700 text-black dark:text-white font-semibold"
                       : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                   }`}
                 >
@@ -591,12 +591,12 @@ const ExportCenter = () => {
         </div>
 
         {isLoadingPreview ? (
-          <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#0a0a0a]">
+          <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface">
             <i className="ri-loader-4-line text-2xl animate-spin text-brand-500" />
             <p className="text-xs text-neutral-400 mt-2 font-medium">Fetching dataset preview...</p>
           </div>
         ) : previewData.length === 0 ? (
-          <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#0a0a0a] space-y-2">
+          <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface space-y-2">
             <i className="ri-inbox-line text-3xl text-neutral-400" />
             <p className="text-xs font-bold text-neutral-400">No records found</p>
             <p className="text-[11px] text-neutral-500">

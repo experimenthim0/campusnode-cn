@@ -112,7 +112,7 @@ const CentralOrganizerTab = ({
 
     return (
         <div className="space-y-6">
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a]">
+            <div className="border border-cn-border rounded-2xl p-6 bg-cn-surface">
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-zinc-800">
                     <div>
                         <div className="flex items-center gap-2">
@@ -206,20 +206,20 @@ const CentralOrganizerTab = ({
 
             {/* Assignment Configuration Modal / Panel */}
             {selectedStudent && (
-                <div className="border border-[#E5E5E5] dark:border-[#303030] rounded-2xl p-6 bg-white dark:bg-[#181818] shadow-lg space-y-5">
-                    <div className="flex items-center justify-between pb-3 border-b border-[#F0F0F0] dark:border-[#2A2A2A]">
+                <div className="border border-cn-border rounded-2xl p-6 bg-cn-surface dark:bg-cn-surface-muted shadow-lg space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-cn-border-subtle">
                         <div>
-                            <h3 className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5]">
+                            <h3 className="text-sm font-bold text-cn-text">
                                 Configure DSW Role &amp; Capabilities
                             </h3>
-                            <p className="text-xs text-[#888888] dark:text-[#808080] mt-0.5">
-                                Assigning capabilities to <span className="font-bold text-[#111111] dark:text-[#F5F5F5]">{selectedStudent.name}</span> ({selectedStudent.email})
+                            <p className="text-xs text-cn-text-muted mt-0.5">
+                                Assigning capabilities to <span className="font-bold text-cn-text">{selectedStudent.name}</span> ({selectedStudent.email})
                             </p>
                         </div>
                         <button
                             type="button"
                             onClick={() => setSelectedStudent(null)}
-                            className="p-1.5 rounded-xl text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] hover:text-[#111111] dark:hover:text-[#F5F5F5] transition-colors cursor-pointer"
+                            className="p-1.5 rounded-xl text-cn-text-secondary hover:bg-cn-surface-muted dark:hover:bg-cn-surface-elevated hover:text-cn-text transition-colors cursor-pointer"
                         >
                             <X size={18} />
                         </button>
@@ -227,13 +227,13 @@ const CentralOrganizerTab = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] block mb-1.5">
+                            <label className="text-xs font-bold text-cn-text block mb-1.5">
                                 Institutional Role
                             </label>
                             <select
                                 value={selectedRole}
                                 onChange={(e) => handleRoleChange(e.target.value)}
-                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs font-medium text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                                className="w-full px-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs font-medium text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                             >
                                 <option value="CENTRAL_EVENT_ORGANISER">Central Event Organiser (Full Lead)</option>
                                 <option value="EVENT_COORDINATOR">Event Coordinator (Manage Events)</option>
@@ -244,11 +244,11 @@ const CentralOrganizerTab = ({
                         </div>
 
                         <div>
-                            <label className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] block mb-1.5">
+                            <label className="text-xs font-bold text-cn-text block mb-1.5">
                                 Specific Capability Toggles
                             </label>
                             <div className="grid grid-cols-2 gap-2">
-                                <label className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                                <label className="flex items-center gap-2 text-xs text-cn-text-secondary cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={canManageEvents}
@@ -257,7 +257,7 @@ const CentralOrganizerTab = ({
                                     />
                                     Manage Events
                                 </label>
-                                <label className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                                <label className="flex items-center gap-2 text-xs text-cn-text-secondary cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={canTakeAttendance}
@@ -266,7 +266,7 @@ const CentralOrganizerTab = ({
                                     />
                                     Take Attendance
                                 </label>
-                                <label className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                                <label className="flex items-center gap-2 text-xs text-cn-text-secondary cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={canVerifyPayments}
@@ -275,7 +275,7 @@ const CentralOrganizerTab = ({
                                     />
                                     Verify Payments
                                 </label>
-                                <label className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                                <label className="flex items-center gap-2 text-xs text-cn-text-secondary cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={canDelegateStaff}
@@ -288,11 +288,11 @@ const CentralOrganizerTab = ({
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                    <div className="flex justify-end gap-3 pt-3 border-t border-cn-border-subtle">
                         <button
                             type="button"
                             onClick={() => setSelectedStudent(null)}
-                            className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                            className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
                         >
                             Cancel
                         </button>
@@ -300,7 +300,7 @@ const CentralOrganizerTab = ({
                             type="button"
                             disabled={assigningCO}
                             onClick={handleConfirmAssign}
-                            className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
+                            className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
                         >
                             {assigningCO ? 'Assigning...' : 'Save & Assign'}
                         </button>
@@ -308,7 +308,7 @@ const CentralOrganizerTab = ({
                 </div>
             )}
 
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a] space-y-4">
+            <div className="border border-cn-border rounded-2xl p-6 bg-cn-surface space-y-4">
                 <h3 className="text-sm font-black text-black dark:text-white tracking-wide">
                     Assign Institutional Roles to Students
                 </h3>

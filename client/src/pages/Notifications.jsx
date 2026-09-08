@@ -301,7 +301,7 @@ const Notifications = () => {
   const totalCount = notifications?.length || 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg transition-colors duration-300">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-10">
 
         {/* Page Header */}

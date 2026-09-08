@@ -531,12 +531,17 @@ const MyEvents = () => {
     ctx.fillText('CAMPUSNODE', 0, 0);
     ctx.restore();
 
-    ctx.fillStyle = '#0a0a0a';
+    const computedTheme = getComputedStyle(document.documentElement);
+    const brandColor = computedTheme.getPropertyValue('--cn-brand').trim() || '#0078d4';
+    const brandDark = computedTheme.getPropertyValue('--color-brand-800').trim() || '#064f89';
+    const textColor = computedTheme.getPropertyValue('--cn-primary').trim() || '#0a0a0a';
+
+    ctx.fillStyle = textColor;
     ctx.fillRect(700, 0, 300, canvas.height);
 
     const accentGrad = ctx.createLinearGradient(0, 0, 15, 400);
-    accentGrad.addColorStop(0, '#ea580c');
-    accentGrad.addColorStop(1, '#9a3412');
+    accentGrad.addColorStop(0, brandColor);
+    accentGrad.addColorStop(1, brandDark);
     ctx.fillStyle = accentGrad;
     ctx.fillRect(0, 0, 15, canvas.height);
 
@@ -553,16 +558,16 @@ const MyEvents = () => {
     const brandY = 65;
     ctx.letterSpacing = "4px"; 
     ctx.font = 'bold 30px "logofont"'; 
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = textColor;
     ctx.fillText('CAMPUS', brandX, brandY);
     const clubWidth = ctx.measureText('CAMPUS').width;
-    ctx.fillStyle = '#ea580c';
+    ctx.fillStyle = brandColor;
     ctx.fillText('NODE', brandX + clubWidth, brandY);
     ctx.letterSpacing = "0px";
 
     // Event Name
     ctx.font = 'bold 44px "myfont"';
-    ctx.fillStyle = '#171717';
+    ctx.fillStyle = textColor;
     const eventName = (selectedTicket.eventId?.title || 'EVENT TICKET');
     ctx.fillText(eventName.length > 20 ? eventName.substring(0, 20) + '...' : eventName, 60, 145);
 
@@ -571,7 +576,7 @@ const MyEvents = () => {
       ctx.fillStyle = '#a3a3a3';
       ctx.fillText(label.toUpperCase(), x, y);
       ctx.font = 'bold 22px "myfont"';
-      ctx.fillStyle = '#0a0a0a';
+      ctx.fillStyle = textColor;
       ctx.fillText(value, x, y + 28);
     };
 
@@ -589,7 +594,7 @@ const MyEvents = () => {
     const qrImage = new Image();
     qrImage.crossOrigin = "anonymous";
     qrImage.onload = () => {
-      ctx.fillStyle = '#ea580c';
+      ctx.fillStyle = brandColor;
       ctx.fillRect(748, 93, 204, 204);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(750, 95, 200, 200);
@@ -600,7 +605,7 @@ const MyEvents = () => {
       ctx.fillText('SERIAL NUMBER', 850, 325);
       
       ctx.font = 'bold 15px monospace';
-      ctx.fillStyle = '#ea580c';
+      ctx.fillStyle = brandColor;
       ctx.fillText(selectedTicket.qrCode, 850, 350);
 
       const dataUrl = canvas.toDataURL('image/png');
@@ -1087,8 +1092,8 @@ const MyEvents = () => {
             }}
             className="
               relative z-10
-              bg-white dark:bg-[#181818]
-              border border-[#E5E5E5] dark:border-[#303030]
+              bg-cn-surface
+              border border-cn-border
               rounded-2xl
               max-w-sm w-full
               p-5
@@ -1101,8 +1106,8 @@ const MyEvents = () => {
                 <span
                   className="
                     text-[10px] font-bold uppercase tracking-wider
-                    text-[#F97316] dark:text-[#FB923C]
-                    bg-[#FFF7ED] dark:bg-[#2A1A0F]
+                    text-brand-500
+                    bg-brand-50 dark:bg-brand-950/40
                     border border-brand-200/60 dark:border-brand-900/40
                     px-2.5 py-1
                     rounded-full
@@ -1116,9 +1121,9 @@ const MyEvents = () => {
                   <span
                     className="
                       text-[10px] font-bold
-                      text-[#555555] dark:text-[#B5B5B5]
-                      bg-[#FAFAFA] dark:bg-[#222222]
-                      border border-[#E5E5E5] dark:border-[#303030]
+                      text-cn-text-secondary
+                      bg-cn-surface-muted
+                      border border-cn-border
                       px-2.5 py-1
                       rounded-full
                       truncate
@@ -1131,7 +1136,7 @@ const MyEvents = () => {
                 <button
                   type="button"
                   onClick={() => setTicketModalOpen(false)}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   aria-label="Close ticket modal"
                 >
                   <X size={18} />
@@ -1346,15 +1351,15 @@ const MyEvents = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center transition-colors"
+              className="relative z-10 bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center transition-colors"
             >
               <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <i className="ri-alert-line text-2xl" />
               </div>
-              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+              <h3 className="font-bold text-base sm:text-lg text-cn-text mb-1.5">
                 {regToDeregister?.team ? 'Cancel Team Registration?' : 'Cancel Registration?'}
               </h3>
-              <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
+              <p className="text-xs text-cn-text-muted mb-6 leading-relaxed">
                 {regToDeregister?.team
                   ? `Are you sure you want to cancel the registration for team "${regToDeregister.team.teamName}"? As the team leader, cancelling will deregister all team members from this event. This action cannot be undone.`
                   : 'Are you sure you want to cancel your registration for this event? This action cannot be undone.'}
@@ -1363,7 +1368,7 @@ const MyEvents = () => {
                 <button
                   type="button"
                   onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
-                  className="flex-1 px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2.5 bg-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Keep Registration
                 </button>
@@ -1396,18 +1401,18 @@ const MyEvents = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-colors"
+              className="relative z-10 bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-colors"
             >
-              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                     <Users size={18} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                       Manage Team
                     </h3>
-                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-xs mt-0.5">
+                    <p className="text-xs text-cn-text-muted font-normal truncate max-w-xs mt-0.5">
                       {teamToUpdate.team?.teamName}
                     </p>
                   </div>
@@ -1415,23 +1420,23 @@ const MyEvents = () => {
                 <button
                   type="button"
                   onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   title="Close"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4 text-left overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
+              <div className="p-6 space-y-4 text-left overflow-y-auto flex-1 text-cn-text-secondary">
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-cn-text uppercase tracking-wider mb-2">
                     Current Team Members
                   </label>
-                  <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A] text-xs">
+                  <div className="divide-y divide-cn-border-subtle text-xs">
                     <div className="py-2.5 flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{teamToUpdate.team?.leader?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(Leader)</span></p>
-                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
+                        <p className="font-bold text-cn-text">{teamToUpdate.team?.leader?.name} <span className="text-brand-500 font-bold">(Leader)</span></p>
+                        <p className="text-cn-text-muted font-mono mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
                       </div>
                     </div>
                     {(teamToUpdate.team?.members || [])
@@ -1439,10 +1444,10 @@ const MyEvents = () => {
                       .map(m => (
                         <div key={m.id || m.userId} className="py-2.5 flex justify-between items-center">
                           <div>
-                            <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">
+                            <p className="font-bold text-cn-text">
                               {m.user?.name || "Pending Invitation"}
                             </p>
-                            <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
+                            <p className="text-cn-text-muted font-mono mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
                           </div>
                         </div>
                       ))}
@@ -1456,7 +1461,7 @@ const MyEvents = () => {
                   
                   if (currentCount >= maxLimit) {
                     return (
-                      <div className="bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/80 dark:border-brand-900/40 p-4 rounded-xl text-xs text-[#F97316] dark:text-[#FB923C] font-semibold">
+                      <div className="bg-brand-50 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/40 p-4 rounded-xl text-xs text-brand-500 font-semibold">
                         <i className="ri-information-fill mr-1" />
                         Your team has reached the maximum size of {maxLimit} members.
                       </div>
@@ -1465,38 +1470,38 @@ const MyEvents = () => {
 
                   return (
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
-                        Invite Teammate <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Size: {currentCount} / max {maxLimit})</span>
+                      <label className="block text-xs font-bold text-cn-text">
+                        Invite Teammate <span className="text-xs text-cn-text-muted font-normal">(Size: {currentCount} / max {maxLimit})</span>
                       </label>
                       <div className="relative">
-                        <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
+                        <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-cn-text-muted" />
                         <input
                           type="text"
                           placeholder="Search by Email or Roll Number..."
                           value={updateTeamSearchQuery}
                           onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] transition-colors"
+                          className="w-full pl-10 pr-4 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none bg-cn-surface text-cn-text transition-colors"
                         />
                         {updateTeamSearching && (
                           <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                            <i className="ri-loader-4-line animate-spin text-[#F97316]" />
+                            <i className="ri-loader-4-line animate-spin text-brand-500" />
                           </div>
                         )}
                       </div>
 
                       {updateTeamSearchResults.length > 0 && (
-                        <div className="mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
+                        <div className="mt-1 max-h-48 overflow-y-auto bg-cn-surface border border-cn-border rounded-xl shadow-lg divide-y divide-cn-border-subtle">
                           {updateTeamSearchResults.map((s) => (
                             <div
                               key={s.id}
                               onClick={() => handleInviteTeammate(s)}
-                              className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
+                              className="p-3 text-xs hover:bg-brand-50 dark:hover:bg-brand-950/30 cursor-pointer flex justify-between items-center transition-colors"
                             >
                               <div className="text-left">
-                                <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
-                                <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                                <p className="font-bold text-cn-text">{s.name}</p>
+                                <p className="text-cn-text-muted font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                               </div>
-                              <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg cursor-pointer">Invite</span>
+                              <span className="text-brand-500 font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg cursor-pointer">Invite</span>
                             </div>
                           ))}
                         </div>
@@ -1505,11 +1510,11 @@ const MyEvents = () => {
                   );
                 })()}
               </div>
-              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] shrink-0">
+              <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface shrink-0">
                 <button
                   type="button"
                   onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                  className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
                   Close
                 </button>
@@ -1535,18 +1540,18 @@ const MyEvents = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 16 }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors"
+              className="relative z-10 bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors"
             >
-              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+              <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                     <i className="ri-edit-box-line text-lg" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                    <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                       Edit Payment Information
                     </h3>
-                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+                    <p className="text-xs text-cn-text-muted font-normal mt-0.5">
                       Update your transaction details for verification.
                     </p>
                   </div>
@@ -1554,7 +1559,7 @@ const MyEvents = () => {
                 <button
                   type="button"
                   onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   title="Close"
                 >
                   <X size={18} />
@@ -1562,42 +1567,42 @@ const MyEvents = () => {
               </div>
               
               <form onSubmit={submitPaymentEdit}>
-                <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
+                <div className="p-6 space-y-4 text-left text-cn-text-secondary">
                   <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      UTR / Transaction ID <span className="text-[#F97316]">*</span>
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                      UTR / Transaction ID <span className="text-brand-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
                       value={editTxId}
                       onChange={(e) => setEditTxId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] font-mono transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl focus:outline-none focus:border-brand-500 text-cn-text placeholder-cn-text-muted font-mono transition-colors"
                       placeholder="Enter 12-digit UPI/UTR Transaction ID"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
                       Payer Name
                     </label>
                     <input
                       type="text"
                       value={editPayerName}
                       onChange={(e) => setEditPayerName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl focus:outline-none focus:border-brand-500 text-cn-text placeholder-cn-text-muted transition-colors"
                       placeholder="Name of account owner"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
                       Payment Remarks
                     </label>
                     <textarea
                       value={editRemarks}
                       onChange={(e) => setEditRemarks(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] resize-none h-20 transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl focus:outline-none focus:border-brand-500 text-cn-text placeholder-cn-text-muted resize-none h-20 transition-colors"
                       placeholder="Add remarks or notes..."
                     />
                   </div>
@@ -1614,18 +1619,18 @@ const MyEvents = () => {
                   )}
                 </div>
                 
-                <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+                <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
                     onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-                    className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2.5 bg-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-cn-border text-cn-text font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submittingEdit}
-                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                    className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
                   >
                     {submittingEdit ? 'Submitting...' : 'Update Details'}
                   </button>

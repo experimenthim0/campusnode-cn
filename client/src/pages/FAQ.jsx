@@ -638,7 +638,7 @@ const FAQ = () => {
   }, [searchQuery]);
 
   return (
-    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <div className="mysans min-h-screen bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* Subtle Atmospheric Radial Glow */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
@@ -653,7 +653,7 @@ const FAQ = () => {
         {/* ── Page Header ── */}
         <div className="text-center max-w-2xl mx-auto">
           <ScrollReveal direction="up" delay={0.05}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-3 sm:mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full  border border-cn-blue-500/40 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-3 sm:mb-4">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Help Center & Knowledge Base</span>
             </div>
@@ -687,7 +687,7 @@ const FAQ = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search questions (e.g. ticket, payment, certificate, team, login)..."
-              className="w-full pl-11 pr-10 py-3 sm:py-3.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all shadow-xs"
+              className="w-full pl-11 pr-10 py-3 sm:py-3.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cn-blue-500/30 focus:border-cn-blue-500 transition-all shadow-xs"
             />
             {searchQuery && (
               <button
@@ -710,7 +710,7 @@ const FAQ = () => {
               <button
                 type="button"
                 onClick={expandAll}
-                className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                className="hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors cursor-pointer"
               >
                 Expand all
               </button>
@@ -718,7 +718,7 @@ const FAQ = () => {
               <button
                 type="button"
                 onClick={collapseAll}
-                className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                className="hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors cursor-pointer"
               >
                 Collapse all
               </button>
@@ -740,7 +740,7 @@ const FAQ = () => {
                     id={faq.id}
                     className={`rounded-2xl transition-all duration-200 border overflow-hidden ${
                       isOpen
-                        ? 'bg-white/95 dark:bg-zinc-900/90 border-brand-500/30 dark:border-brand-500/30 shadow-md'
+                        ? 'bg-white/95 dark:bg-zinc-900/90 border-cn-blue-500/30 dark:border-cn-blue-500/30 shadow-md'
                         : 'bg-white/70 dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700'
                     }`}
                   >
@@ -758,7 +758,7 @@ const FAQ = () => {
                       <div
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
                           isOpen
-                            ? 'rotate-180 bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                            ? 'rotate-180 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400'
                             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
                         }`}
                       >
@@ -810,7 +810,7 @@ const FAQ = () => {
                           <button
                             type="button"
                             onClick={() => copyFaqLink(faq)}
-                            className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors cursor-pointer"
                           >
                             {isCopied ? (
                               <>
@@ -882,7 +882,7 @@ const FAQ = () => {
                   href="https://whatsapp.com/channel/0029VbAhXba7z4kgTBY3nS0Z"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-whatsapp hover:bg-whatsapp-hover text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
                 >
                   <i className="ri-whatsapp-line text-sm" />
                   <span>WhatsApp Help</span>
@@ -896,7 +896,7 @@ const FAQ = () => {
         <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm font-semibold">
           <Link
             to="/"
-            className="text-zinc-600 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1"
+            className="text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors inline-flex items-center gap-1"
           >
             <span>← Back to Home</span>
           </Link>
@@ -904,13 +904,13 @@ const FAQ = () => {
           <div className="flex items-center gap-5">
             <Link
               to="/team"
-              className="text-zinc-600 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+              className="text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
             >
               The Team
             </Link>
             <Link
               to="/contribute"
-              className="text-brand-600 dark:text-brand-400 hover:text-brand-700 transition-colors inline-flex items-center gap-1"
+              className="text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 transition-colors inline-flex items-center gap-1"
             >
               <span>Contribute</span>
               <ArrowRight className="w-3.5 h-3.5" />

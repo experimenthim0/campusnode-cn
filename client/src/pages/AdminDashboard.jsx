@@ -281,7 +281,7 @@ const AdminDashboard = () => {
     };
 
     if (loading) return (
-        <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont animate-pulse">
+        <div className="min-h-full bg-cn-bg myfont animate-pulse">
             <div className="max-w-7xl mx-auto px-5 lg:px-8 py-8">
                 <div className="mb-8 space-y-2">
                     <div className="h-7 w-48 bg-neutral-100 dark:bg-zinc-900 rounded-lg" />
@@ -291,7 +291,7 @@ const AdminDashboard = () => {
                 {/* Stats Cards Skeleton */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="p-5 rounded-2xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-[#0c0c0c] space-y-3">
+                        <div key={i} className="p-5 rounded-2xl border border-cn-border bg-cn-surface space-y-3">
                             <div className="h-3 w-16 bg-neutral-200 dark:bg-zinc-800 rounded" />
                             <div className="h-8 w-24 bg-neutral-200 dark:bg-zinc-800 rounded-lg" />
                         </div>
@@ -299,7 +299,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Table Box Skeleton */}
-                <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-[#0a0a0a] space-y-4">
+                <div className="border border-cn-border rounded-2xl p-6 bg-cn-surface space-y-4">
                     <div className="h-4 w-32 bg-neutral-200 dark:bg-zinc-800 rounded" />
                     <div className="space-y-4">
                         {Array.from({ length: 5 }).map((_, i) => (
@@ -320,7 +320,7 @@ const AdminDashboard = () => {
     const currentTabInfo = tabTitles[activeTab] || tabTitles.overview;
 
     return (
-        <div className="min-h-full bg-white dark:bg-[#0a0a0a] myfont">
+        <div className="min-h-full bg-cn-bg myfont">
             <div className="max-w-7xl mx-auto px-5 lg:px-8 py-8">
 
                 <div className="mb-8 flex flex-wrap justify-between items-end gap-4">

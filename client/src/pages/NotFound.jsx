@@ -121,12 +121,12 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center px-6 py-12 transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-cn-bg text-cn-text flex items-center justify-center px-6 py-12 transition-colors duration-300 relative overflow-hidden">
 
       {/* Background dot pattern */}
       <div
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
-        style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+        style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }}
       />
 
       <div className="relative z-10 max-w-md w-full text-center">
@@ -134,16 +134,16 @@ const NotFound = () => {
         {/* Giant 404 */}
         <div className="relative mb-6">
           <h1
-            className="text-[130px] md:text-[160px] font-black leading-none tracking-tighter text-neutral-900 dark:text-white select-none transition-all duration-100"
+            className="text-[130px] md:text-[160px] font-black leading-none tracking-tighter text-cn-text select-none transition-all duration-100"
             style={{
-              textShadow: '4px 4px 0px #EA580C',
+              textShadow: '4px 4px 0px var(--cn-brand)',
             }}
           >
             404
           </h1>
         </div>
 
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 mb-6 shadow-sm">
+        <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-center gap-2 mb-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-brand-600">
               Page Not Found
@@ -177,7 +177,7 @@ const NotFound = () => {
           </button>
           <button
             onClick={() => navigate('/events')}
-            className="px-6 py-3 bg-white dark:bg-neutral-900 text-neutral-850 dark:text-neutral-200 text-xs font-bold uppercase tracking-wider border border-neutral-200 dark:border-neutral-850 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all cursor-pointer shadow-sm"
+            className="px-6 py-3 bg-cn-surface text-cn-text text-xs font-bold uppercase tracking-wider border border-cn-border rounded-xl hover:bg-cn-surface-muted transition-all cursor-pointer shadow-sm"
           >
             <i className="ri-calendar-event-line mr-2" />
             Browse Events
@@ -185,7 +185,7 @@ const NotFound = () => {
         </div>
 
         <p className="mt-10 text-[10px] text-neutral-300 dark:text-neutral-700 tracking-widest font-bold uppercase flex items-center justify-center gap-1.5 flex-wrap">
-          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span></span> • You're off the map 🗺️
+          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-brand-500 dark:text-brand-400">Node</span></span> • You're off the map 🗺️
         </p>
       </div>
     </div>

@@ -412,7 +412,7 @@ const CheckIn = () => {
 
   if (loading) {
     return (
-      <div className="mysans min-h-screen flex items-center justify-center bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+      <div className="mysans min-h-screen flex items-center justify-center bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] opacity-40 dark:opacity-20"
           style={{
@@ -439,7 +439,7 @@ const CheckIn = () => {
   const showOverlay = scanState !== 'idle';
 
   return (
-    <div className="myfont min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <div className="myfont min-h-screen bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       <style>{`
         @keyframes scan-sweep {
           0% { top: 8px; opacity: 0.8; }
@@ -468,7 +468,7 @@ const CheckIn = () => {
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Link
               to={`/club-events/${event.orgId}`}
-              className="flex items-center justify-center w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all flex-shrink-0"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all flex-shrink-0"
               title="Return to My Events"
             >
               <ArrowLeft size={17} />
@@ -693,8 +693,8 @@ const CheckIn = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="relative bg-[#0F0F10] overflow-hidden m-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-800">
-                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 rounded z-[9]" />
+                      <div className="relative bg-black/90 overflow-hidden m-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-800">
+                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-gradient-to-r from-cn-teal-500 via-emerald-400 to-cn-teal-500 rounded z-[9]" />
                         <div id="reader" className="w-full" />
 
                         {/* Result Overlay */}
@@ -739,7 +739,7 @@ const CheckIn = () => {
                                 ? 'Check-in closed'
                                 : 'e.g. 21BCS001 or roll number...'
                             }
-                            className="w-full pl-10 pr-9 py-3 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-2xl text-sm font-medium outline-none text-zinc-900 dark:text-white focus:border-brand-500 transition-all placeholder:text-zinc-400 disabled:opacity-60"
+                            className="w-full pl-10 pr-9 py-3 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-2xl text-sm font-medium outline-none text-zinc-900 dark:text-white focus:border-cn-blue-500 transition-all placeholder:text-zinc-400 disabled:opacity-60"
                             disabled={manualLoading || windowStatus !== 'OPEN'}
                             autoFocus={windowStatus === 'OPEN'}
                           />

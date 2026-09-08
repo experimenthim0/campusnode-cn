@@ -76,12 +76,12 @@ const BroadcastsTab = ({
                 >
                     <form onSubmit={handleSendBroadcast} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-2">Target Audience</label>
+                            <label className="block text-xs font-bold text-cn-text mb-2">Target Audience</label>
                             <div className="grid grid-cols-2 gap-3">
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'ALL_STUDENTS' 
-                                        ? 'border-brand-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
-                                        : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5]'
+                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold' 
+                                        : 'border-cn-border bg-cn-surface-muted text-cn-text-secondary'
                                 }`}>
                                     <input 
                                         type="radio" 
@@ -97,8 +97,8 @@ const BroadcastsTab = ({
 
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'REGISTERED_STUDENTS' 
-                                        ? 'border-brand-500 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] font-bold' 
-                                        : 'border-[#E5E5E5] dark:border-[#303030] bg-[#FAFAFA] dark:bg-[#222222] text-[#555555] dark:text-[#B5B5B5]'
+                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold' 
+                                        : 'border-cn-border bg-cn-surface-muted text-cn-text-secondary'
                                 }`}>
                                     <input 
                                         type="radio" 
@@ -116,12 +116,12 @@ const BroadcastsTab = ({
 
                         {broadcastForm.targetType === 'REGISTERED_STUDENTS' && (
                             <div>
-                                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Select Event</label>
+                                <label className="block text-xs font-bold text-cn-text mb-1.5">Select Event</label>
                                 <select
                                     value={broadcastForm.eventId}
                                     onChange={(e) => setBroadcastForm(prev => ({ ...prev, eventId: e.target.value }))}
                                     required
-                                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
+                                    className="w-full px-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
                                 >
                                     <option value="">-- Choose an Event --</option>
                                     {events.map(e => {
@@ -139,41 +139,41 @@ const BroadcastsTab = ({
                         )}
 
                         <div>
-                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Broadcast Title</label>
+                            <label className="block text-xs font-bold text-cn-text mb-1.5">Broadcast Title</label>
                             <input 
                                 type="text" 
                                 placeholder="e.g. Registration Extended for TechFest 2026"
                                 value={broadcastForm.title}
                                 onChange={(e) => setBroadcastForm(prev => ({ ...prev, title: e.target.value }))}
                                 required
-                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
+                                className="w-full px-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Message Content</label>
+                            <label className="block text-xs font-bold text-cn-text mb-1.5">Message Content</label>
                             <textarea 
                                 rows={4}
                                 placeholder="Write your broadcast message here..."
                                 value={broadcastForm.message}
                                 onChange={(e) => setBroadcastForm(prev => ({ ...prev, message: e.target.value }))}
                                 required
-                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
+                                className="w-full px-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
                             />
                         </div>
 
-                        <div className="pt-4 flex justify-end gap-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-cn-border-subtle">
                             <button
                                 type="button"
                                 onClick={() => setBroadcastModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={sendingBroadcast}
-                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                             >
                                 <Send size={14} />
                                 <span>{sendingBroadcast ? 'Dispatching...' : 'Send Broadcast'}</span>

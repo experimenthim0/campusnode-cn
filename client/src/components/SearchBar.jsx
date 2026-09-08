@@ -233,7 +233,7 @@ const HighlightMatch = ({ text = "", query = "" }) => {
         regex.test(part) ? (
           <span
             key={i}
-            className="text-brand-600 dark:text-brand-400 font-extrabold underline decoration-brand-500/40 underline-offset-2"
+            className="text-cn-blue-600 dark:text-cn-blue-400 font-extrabold underline decoration-cn-blue-500/40 underline-offset-2"
           >
             {part}
           </span>
@@ -761,12 +761,12 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
       aria-label="Global Search Command Palette"
     >
       <div
-        className="w-full max-w-2xl bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[82vh] transition-transform duration-200 animate-in zoom-in-95"
+        className="w-full max-w-2xl bg-cn-surface border border-cn-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[82vh] transition-transform duration-200 animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Search Input Box */}
-        <div className="relative flex items-center gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0c0c0c]">
-          <i className="ri-search-line text-lg text-brand-600 dark:text-brand-500 shrink-0 ml-0.5" />
+        <div className="relative flex items-center gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 border-b border-cn-border bg-cn-surface">
+          <i className="ri-search-line text-lg text-cn-blue-600 dark:text-cn-blue-400 shrink-0 ml-0.5" />
           <input
             ref={inputRef}
             type="text"
@@ -780,7 +780,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
           />
 
           {loading && (
-            <div className="w-4 h-4 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin shrink-0" />
+            <div className="w-4 h-4 rounded-full border-2 border-cn-blue-500/30 border-t-cn-blue-500 animate-spin shrink-0" />
           )}
 
           {query && (
@@ -797,7 +797,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
           )}
 
           <div className="hidden sm:flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 rounded">
+            <kbd className="px-1.5 py-0.5 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-cn-surface-elevated border border-neutral-200 dark:border-cn-border rounded">
               ESC
             </kbd>
           </div>
@@ -811,7 +811,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
         </div>
 
         {/* Category Tabs Bar */}
-        <div className="flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-neutral-50/90 dark:bg-neutral-900/70 border-b border-neutral-200/80 dark:border-neutral-800/80 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-neutral-50/90 dark:bg-cn-surface/90 border-b border-neutral-200/80 dark:border-cn-border overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((tab) => {
             const count =
               query.trim() && searchResults.counts
@@ -828,7 +828,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                 }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? "bg-brand-600 text-white shadow-xs"
+                    ? "bg-cn-blue-600 text-white shadow-xs"
                     : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200/60 dark:hover:bg-neutral-800/70"
                 }`}
               >
@@ -866,7 +866,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                     </p>
                     <button
                       onClick={clearAllRecents}
-                      className="text-[10.5px] font-semibold text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                      className="text-[10.5px] font-semibold text-neutral-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors cursor-pointer"
                     >
                       Clear all
                     </button>
@@ -876,11 +876,11 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                       <div
                         key={idx}
                         onClick={() => handleQuickSearchClick(item)}
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-neutral-50/60 dark:bg-neutral-900/40 hover:bg-brand-500/10 dark:hover:bg-brand-500/15 border border-transparent hover:border-brand-500/30 transition-all cursor-pointer group"
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-neutral-50/60 dark:bg-cn-surface/40 hover:bg-cn-blue-500/10 dark:hover:bg-cn-blue-500/15 border border-transparent hover:border-cn-blue-500/30 transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <i className="ri-history-line text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-brand-600 dark:group-hover:text-brand-400" />
-                          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 truncate">
+                          <i className="ri-history-line text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400" />
+                          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 truncate">
                             {item}
                           </span>
                         </div>
@@ -907,9 +907,9 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                     <button
                       key={idx}
                       onClick={() => handleQuickSearchClick(tag.query)}
-                      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-neutral-100/90 dark:bg-neutral-900/90 border border-neutral-200/80 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:border-brand-500/50 hover:text-brand-600 dark:hover:text-brand-400 transition-all cursor-pointer shadow-2xs group"
+                      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-neutral-100/90 dark:bg-cn-surface/90 border border-neutral-200/80 dark:border-cn-border text-neutral-800 dark:text-neutral-200 hover:border-cn-blue-500/50 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all cursor-pointer shadow-2xs group"
                     >
-                      <i className={`${tag.icon} text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-brand-500 transition-colors font-light`} />
+                      <i className={`${tag.icon} text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-cn-blue-500 transition-colors font-light`} />
                       <span>{tag.label}</span>
                     </button>
                   ))}
@@ -930,20 +930,20 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                         saveRecent(p.title);
                         onClose();
                       }}
-                      className="flex items-center justify-between px-3 py-2 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200/70 dark:border-neutral-800/80 hover:border-brand-500/40 hover:bg-brand-500/[0.04] dark:hover:bg-brand-500/[0.06] transition-all group"
+                      className="flex items-center justify-between px-3 py-2 rounded-xl bg-neutral-50 dark:bg-cn-surface/60 border border-neutral-200/70 dark:border-cn-border hover:border-cn-blue-500/40 hover:bg-cn-blue-500/[0.04] dark:hover:bg-cn-blue-500/[0.06] transition-all group"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-brand-600 dark:text-brand-400 text-xs shrink-0">
+                        <div className="w-6 h-6 rounded-lg bg-white dark:bg-cn-surface-elevated border border-neutral-200 dark:border-cn-border flex items-center justify-center text-cn-blue-600 dark:text-cn-blue-400 text-xs shrink-0">
                           <i className={p.icon} />
                         </div>
-                        <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 truncate">
+                        <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 truncate">
                           {p.title}
                         </span>
                         <span className="text-[11px] text-neutral-500 dark:text-neutral-400 hidden sm:inline truncate">
                           · {p.description}
                         </span>
                       </div>
-                      <i className="ri-arrow-right-s-line text-neutral-400 dark:text-neutral-500 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all text-sm shrink-0 ml-2" />
+                      <i className="ri-arrow-right-s-line text-neutral-400 dark:text-neutral-500 group-hover:text-cn-blue-500 group-hover:translate-x-0.5 transition-all text-sm shrink-0 ml-2" />
                     </Link>
                   ))}
                 </div>
@@ -979,8 +979,8 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                           onMouseEnter={() => setSelectedIndex(itemIndex)}
                           className={`flex items-center gap-3 px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 cursor-pointer border ${
                             isSelected
-                              ? "bg-brand-500/10 dark:bg-brand-500/15 border-brand-500/40 shadow-xs ring-1 ring-brand-500/20"
-                              : "border-transparent hover:bg-neutral-100/70 dark:hover:bg-neutral-900/70"
+                              ? "bg-cn-blue-500/10 dark:bg-cn-blue-500/15 border-cn-blue-500/40 shadow-xs ring-1 ring-cn-blue-500/20"
+                              : "border-transparent hover:bg-neutral-100/70 dark:hover:bg-cn-surface/70"
                           }`}
                         >
                           {/* Visual Asset */}
@@ -993,7 +993,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-neutral-200 dark:border-neutral-800"
                                 />
                               ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand-100 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-200 dark:border-brand-900/40">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-cn-blue-100 dark:bg-cn-blue-950/40 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center border border-cn-blue-200 dark:border-cn-blue-900/40">
                                   <i className="ri-calendar-event-line text-base" />
                                 </div>
                               )
@@ -1086,7 +1086,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                             )}
 
                             {isSelected ? (
-                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-white bg-brand-600 rounded">
+                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-white bg-cn-blue-600 rounded">
                                 ↵
                               </kbd>
                             ) : (
@@ -1103,7 +1103,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
           ) : (
             /* No Results Found */
             <div className="py-10 px-4 text-center">
-              <div className="w-11 h-11 rounded-2xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-2.5 border border-brand-100 dark:border-brand-900/30">
+              <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-cn-surface-elevated text-neutral-500 dark:text-neutral-400 flex items-center justify-center mx-auto mb-2.5 border border-neutral-200 dark:border-cn-border">
                 <i className="ri-search-2-line text-xl" />
               </div>
               <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-1">
@@ -1117,7 +1117,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
         </div>
 
         {/* Compact Footer Bar */}
-        <div className="px-3.5 py-2 sm:px-4 sm:py-2 bg-neutral-50 dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
+        <div className="px-3.5 py-2 sm:px-4 sm:py-2 bg-neutral-50 dark:bg-cn-surface border-t border-neutral-200 dark:border-cn-border flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
           <div className="hidden sm:flex items-center gap-3">
             <span className="flex items-center gap-1 font-medium">
               <kbd className="px-1.5 py-0.2 text-[10px] font-bold bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded">

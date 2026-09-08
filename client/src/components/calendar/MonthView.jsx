@@ -85,7 +85,7 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
   };
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
       {/* Day of Week Headers */}
       <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60">
         {dayNames.map((d) => (
@@ -111,7 +111,7 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
               onClick={() => onSelectDate && onSelectDate(cell.date)}
               className={`min-h-[120px] p-1.5 flex flex-col transition-colors cursor-pointer ${
                 cell.isCurrentMonth
-                  ? "bg-white dark:bg-[#0a0a0a] hover:bg-neutral-50/80 dark:hover:bg-zinc-900/40"
+                  ? "bg-cn-surface hover:bg-neutral-50/80 dark:hover:bg-zinc-900/40"
                   : "bg-neutral-50/50 dark:bg-zinc-950/40 text-neutral-400 opacity-60"
               }`}
             >

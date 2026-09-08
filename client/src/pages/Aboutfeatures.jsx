@@ -87,7 +87,7 @@ const Aboutfeatures = () => {
         <section className="relative bg-white px-8 md:px-16 pt-20 pb-24 overflow-hidden">
           {/* BG monogram */}
           <span
-            className="absolute -right-4 -bottom-10 text-[220px] font-extrabold text-[#d5d5d5] leading-none pointer-events-none select-none tracking-tighter"
+            className="absolute -right-4 -bottom-10 text-[220px] font-extrabold text-neutral-300 dark:text-neutral-700 leading-none pointer-events-none select-none tracking-tighter"
             style={{ fontFamily: "'Syne', sans-serif" }}
             aria-hidden
           >

@@ -141,42 +141,42 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto">
-      <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh] transition-colors">
+      <div className="bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh] transition-colors">
         
         {/* Clean Standard Header */}
-        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+              <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                 Announce / Manage Winners
               </h3>
-              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-md mt-0.5">
+              <p className="text-xs text-cn-text-muted font-normal truncate max-w-md mt-0.5">
                 {event.title}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-[#555555] dark:text-[#B5B5B5]">
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-cn-text-secondary">
           {/* Public Visibility Toggle */}
-          <div className="flex items-center justify-between p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl">
+          <div className="flex items-center justify-between p-4 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-xl">
             <div className="flex items-center gap-3">
-              <Award className="w-5 h-5 text-[#F97316] dark:text-[#FB923C] shrink-0" />
+              <Award className="w-5 h-5 text-brand-500 dark:text-brand-400 shrink-0" />
               <div>
-                <h4 className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5]">
+                <h4 className="text-sm font-bold text-cn-text">
                   Show Winners on Public Event Page
                 </h4>
-                <p className="text-xs text-[#555555] dark:text-[#B5B5B5]">
+                <p className="text-xs text-cn-text-secondary">
                   Feature the leaderboard banner on the main event card and details page.
                 </p>
               </div>
@@ -188,16 +188,16 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
                 onChange={e => setShowWinner(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-[#E5E5E5] dark:bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F97316]" />
+              <div className="w-11 h-6 bg-cn-border dark:bg-cn-border-subtle peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500" />
             </label>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5]">
+              <h4 className="text-sm font-bold text-cn-text">
                 Winners Leaderboard
               </h4>
-              <p className="text-xs text-[#888888] dark:text-[#808080]">
+              <p className="text-xs text-cn-text-muted">
                 {isTeamEvent
                   ? 'Enter Leader Roll No / Name to identify team'
                   : 'Enter Student Roll No to auto-fill details'}
@@ -206,7 +206,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             <button
               type="button"
               onClick={addWinner}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Add Winner
             </button>
@@ -217,12 +217,12 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             {winners.map((winner, index) => (
               <div
                 key={index}
-                className="p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl relative group transition-all"
+                className="p-4 bg-cn-surface-muted dark:bg-cn-surface-elevated border border-cn-border dark:border-cn-border-subtle rounded-xl relative group transition-all"
               >
                 <button
                   type="button"
                   onClick={() => removeWinner(index)}
-                  className="absolute top-3 right-3 p-1.5 text-[#888888] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
+                  className="absolute top-3 right-3 p-1.5 text-cn-text-muted hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-950/30 rounded-lg transition-colors cursor-pointer"
                   title="Remove winner"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -230,19 +230,19 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-[70px_1fr_1fr] gap-3 pr-8 sm:pr-0 items-start">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 block">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
                       Rank
                     </label>
                     <input
                       type="number"
                       value={winner.rank}
                       onChange={e => updateWinner(index, 'rank', Number(e.target.value))}
-                      className="w-full px-3 py-2 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl bg-white dark:bg-[#181818] text-[#111111] dark:text-[#F5F5F5] text-xs font-bold outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text text-xs font-bold outline-none focus:border-brand-500 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 block">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
                       {isTeamEvent ? 'Leader Roll No / Name' : 'Roll Number'}
                     </label>
                     <input
@@ -257,12 +257,12 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
                         }
                       }}
                       onBlur={e => handleWinnerLookup(index, e.target.value)}
-                      className="w-full px-3.5 py-2 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl bg-white dark:bg-[#181818] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] text-xs font-medium outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text placeholder-cn-text-muted text-xs font-medium outline-none focus:border-brand-500 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 block">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
                       {isTeamEvent ? 'Team Name' : 'Winner Name'}
                     </label>
                     <input
@@ -270,7 +270,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
                       placeholder={isTeamEvent ? 'Identified Team Name' : 'Identified Name'}
                       value={winner.name || ''}
                       onChange={e => updateWinner(index, 'name', e.target.value)}
-                      className="w-full px-3.5 py-2 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl bg-white dark:bg-[#181818] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] text-xs font-medium outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text placeholder-cn-text-muted text-xs font-medium outline-none focus:border-brand-500 transition-colors"
                     />
 
                     {/* Team Members Tag Display */}
@@ -281,18 +281,18 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
                       const uniqueM = Array.from(new Set(raw));
                       if (uniqueM.length === 0) return null;
                       return (
-                        <div className="mt-2 p-2 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs flex items-start gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-[#888888] dark:text-[#808080] shrink-0 mt-0.5" />
+                        <div className="mt-2 p-2 bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-xl text-xs flex items-start gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-cn-text-muted shrink-0 mt-0.5" />
                           <div>
-                            <span className="font-bold text-[#111111] dark:text-[#F5F5F5]">Members: </span>
-                            <span className="text-[#555555] dark:text-[#B5B5B5]">{uniqueM.join(', ')}</span>
+                            <span className="font-bold text-cn-text">Members: </span>
+                            <span className="text-cn-text-secondary">{uniqueM.join(', ')}</span>
                           </div>
                         </div>
                       );
                     })()}
 
                     {winner.error && (
-                      <p className="text-[11px] text-rose-500 font-semibold mt-1">
+                      <p className="text-[11px] text-danger-500 font-semibold mt-1">
                         {winner.error}
                       </p>
                     )}
@@ -302,9 +302,9 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             ))}
 
             {winners.length === 0 && (
-              <div className="text-center py-8 px-4 border border-dashed border-[#E5E5E5] dark:border-[#303030] rounded-xl">
-                <Trophy className="w-8 h-8 text-[#888888] dark:text-[#808080] mx-auto mb-2 opacity-50" />
-                <p className="text-xs text-[#888888] dark:text-[#808080] font-medium">
+              <div className="text-center py-8 px-4 border border-dashed border-cn-border dark:border-cn-border-subtle rounded-xl">
+                <Trophy className="w-8 h-8 text-cn-text-muted mx-auto mb-2 opacity-50" />
+                <p className="text-xs text-cn-text-muted font-medium">
                   No winners added yet. Click "+ Add Winner" to declare results.
                 </p>
               </div>
@@ -312,11 +312,11 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+        <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent dark:bg-cn-surface-card flex items-center justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 text-xs font-bold text-[#111111] dark:text-[#F5F5F5] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2.5 text-xs font-bold text-cn-text bg-transparent hover:bg-cn-surface-muted border border-cn-border dark:border-cn-border-subtle rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -324,7 +324,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             type="button"
             disabled={saving}
             onClick={handleSave}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>

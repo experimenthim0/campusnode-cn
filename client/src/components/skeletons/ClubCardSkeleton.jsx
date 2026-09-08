@@ -6,7 +6,7 @@ import { Skeleton } from "../ui/Skeleton";
  */
 const ClubCardSkeleton = () => {
   return (
-    <div className="bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800/80 rounded-2xl overflow-hidden flex flex-col h-full shadow-sm">
+    <div className="bg-cn-surface border border-cn-border rounded-2xl overflow-hidden flex flex-col h-full shadow-sm">
       {/* Banner Skeleton */}
       <Skeleton className="w-full h-28 sm:h-32 rounded-none shrink-0" />
 
@@ -15,7 +15,7 @@ const ClubCardSkeleton = () => {
         {/* Top: Overlapping Logo & Name in Same Row */}
         <div className="flex items-end gap-3.5 -mt-7 sm:-mt-8 mb-4 min-w-0">
           {/* Logo Skeleton */}
-          <Skeleton className="w-14 h-14 sm:w-16 sm:h-16 rounded-full shrink-0 border-3 border-white dark:border-[#0d0d0d]" />
+          <Skeleton className="w-14 h-14 sm:w-16 sm:h-16 rounded-full shrink-0 border-3 border-cn-surface" />
           
           <div className="space-y-1.5 flex-grow pb-0.5">
             {/* Category Skeleton */}
@@ -32,7 +32,7 @@ const ClubCardSkeleton = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-neutral-100 dark:border-neutral-800/80 my-4" />
+        <div className="border-t border-cn-border-subtle my-4" />
 
         <div className="space-y-3">
           <div className="space-y-1">

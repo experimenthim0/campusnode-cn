@@ -53,26 +53,26 @@ const ManualPaymentsTab = ({
             {manualPaymentsSummary && (
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard label="Total Payments" value={manualPaymentsSummary.total} />
-                    <div className="p-5 rounded-2xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800 transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Pending Approvals</p>
+                    <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Pending Approvals</p>
                         <p className="text-2xl font-black mt-1 text-amber-500">{manualPaymentsSummary.pending}</p>
                     </div>
-                    <div className="p-5 rounded-2xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800 transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Approved</p>
+                    <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Approved</p>
                         <p className="text-2xl font-black mt-1 text-emerald-500">{manualPaymentsSummary.approved}</p>
                     </div>
-                    <div className="p-5 rounded-2xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800 transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Rejected</p>
+                    <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Rejected</p>
                         <p className="text-2xl font-black mt-1 text-rose-500">{manualPaymentsSummary.rejected}</p>
                     </div>
-                    <div className="p-5 rounded-2xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800 transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Need Details</p>
+                    <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Need Details</p>
                         <p className="text-2xl font-black mt-1 text-brand-500">{manualPaymentsSummary.needMoreDetails}</p>
                     </div>
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-50/80 dark:bg-neutral-900/50 p-3.5 border border-neutral-200 dark:border-zinc-800 rounded-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-50/80 dark:bg-neutral-900/50 p-3.5 border border-cn-border rounded-2xl">
                 <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
                     <div className="relative flex-1 min-w-[220px]">
                         <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
@@ -81,7 +81,7 @@ const ManualPaymentsTab = ({
                             placeholder="Search student, team, event, roll no or UTR..."
                             value={paymentsSearch}
                             onChange={(e) => setPaymentsSearch(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2 bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
+                            className="w-full pl-9 pr-8 py-2 bg-cn-surface border border-cn-border rounded-xl text-xs font-medium text-black dark:text-white outline-none focus:border-brand-500 transition-colors"
                         />
                         {paymentsSearch && (
                             <button onClick={() => setPaymentsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white">

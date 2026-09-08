@@ -8,7 +8,7 @@ import { FrostedTeamCard, TEAM_MEMBERS } from '../components/FrostedTeamCard';
 // ══════════════════════════════════════════════════════════════════════════════
 const Team = () => {
   return (
-    <div className="w-full bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white min-h-screen relative overflow-hidden transition-colors duration-300">
+    <div className="w-full bg-cn-bg text-cn-text min-h-screen relative overflow-hidden transition-colors duration-300">
       {/* Subtle Background Radial Atmosphere */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[600px] opacity-40 dark:opacity-20"
@@ -23,23 +23,23 @@ const Team = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-10 sm:mb-16">
           <ScrollReveal direction="up" delay={0.05}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-3 sm:mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-3 sm:mb-4">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>CampusNode Builders</span>
             </div>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.1}>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-3 sm:mb-4">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-cn-text mb-3 sm:mb-4">
               The Minds Behind{' '}
               <span className="logofont font-light">
-                Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
+                Campus<span className="text-brand-500 dark:text-brand-400">Node</span>
               </span>
             </h1>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.15}>
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl px-2">
+            <p className="text-cn-text-muted text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl px-2">
               Student creators, architects, and designers crafting the next-generation digital ecosystem for NIT Jalandhar.
             </p>
           </ScrollReveal>
@@ -56,11 +56,11 @@ const Team = () => {
 
         {/* Bottom Community Banner */}
         <ScrollReveal direction="up" delay={0.2} className="mt-14 sm:mt-24 text-center">
-          <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
-            <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white mb-2 sm:mb-3">
+          <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-cn-surface border border-cn-border shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-bold text-cn-text mb-2 sm:mb-3">
               Want to build with us?
             </h3>
-            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
               CampusNode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
             </p>
             <a

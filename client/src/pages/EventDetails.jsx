@@ -40,7 +40,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
   <div
     className={`rounded-2xl transition-all duration-200 border overflow-hidden backdrop-blur-md ${
       isOpen
-        ? 'bg-white/95 dark:bg-zinc-900/90 border-brand-500/30 dark:border-brand-500/30 shadow-md'
+        ? 'bg-white/95 dark:bg-zinc-900/90 border-cn-blue-300/30 dark:border-cn-blue-300/30 shadow-md'
         : 'bg-white/70 dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700'
     }`}
   >
@@ -54,7 +54,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
       <div
         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
           isOpen
-            ? 'rotate-180 bg-brand-500/10 text-brand-600 dark:text-brand-400'
+            ? 'rotate-180 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400'
             : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
         }`}
       >
@@ -614,9 +614,9 @@ const EventDetails = () => {
   const winners = (event.winners || []).filter(w => w.name);
   const showWinners = isEnded && event.showWinner && winners.length > 0;
   const medalConfig = {
-    1: { badgeBg: 'bg-[#FFD700]/80 text-black', icon: 'ri-trophy-fill', label: '1st' },
-    2: { badgeBg: 'bg-[#C0C0C0] text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
-    3: { badgeBg: 'bg-[#CD7F32] text-white', icon: 'ri-award-fill', label: '3rd' },
+    1: { badgeBg: 'bg-tier-gold/80 text-black', icon: 'ri-trophy-fill', label: '1st' },
+    2: { badgeBg: 'bg-tier-silver text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
+    3: { badgeBg: 'bg-tier-bronze text-white', icon: 'ri-award-fill', label: '3rd' },
   };
 
   const isCentralEvent = event.organizerType === 'CENTRAL' || !!event.centralOrganizerId || (!event.club && !event.clubId && (!!event.centralOrganizer || !!event.participatingClubs));
@@ -656,7 +656,7 @@ const EventDetails = () => {
     ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
     : isFull
     ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white dark:text-neutral-950 border-amber-500 shadow-xs shadow-amber-500/20 hover:shadow-sm cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 hover:bg-brand-600 hover:border-brand-600 hover:text-white dark:hover:bg-brand-500 dark:hover:border-brand-500 dark:hover:text-neutral-950 shadow-sm shadow-neutral-900/10 dark:shadow-neutral-950/20 hover:shadow-md cursor-pointer', disabled: false };
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600 shadow-sm shadow-brand-600/25 hover:shadow-md cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -1005,16 +1005,16 @@ const EventDetails = () => {
             {/* <div className="flex items-center gap-2 flex-wrap mb-3">
               {isCentralEvent ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-bold uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
                     <i className="ri-sparkling-line" /> College-Wide Event
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                    <i className="ri-building-2-line text-brand-600" /> Office of DSW
+                    <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400" /> Office of DSW
                   </span>
                 </>
               ) : (
                 clubCategory && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-light uppercase tracking-wider text-brand-700 dark:text-brand-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-light uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
                     {clubCategory}
                   </span>
                 )
@@ -1051,7 +1051,7 @@ const EventDetails = () => {
                   <span className="truncate max-w-[140px]">Office of DSW</span>
                 </span>
               ) : clubSlugOrId ? (
-                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-brand-600 transition-colors">
+                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors">
                   <i className="ri-team-line text-brand-500" />
                   <span className="truncate max-w-[140px]">{displayName}</span>
                 </Link>
@@ -1170,10 +1170,10 @@ const EventDetails = () => {
                 {highlights.map((h, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-300 dark:hover:border-brand-700 transition-colors"
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-cn-blue-300 dark:hover:border-cn-blue-700 transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
-                      <i className={`${h.icon} text-brand-600 dark:text-brand-400 text-base`} />
+                    <div className="w-9 h-9 rounded-lg bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
+                      <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
@@ -1301,9 +1301,9 @@ const EventDetails = () => {
               )}
 
               {alreadyRegistered && (
-                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800/50 rounded-full">
-                  <i className="ri-checkbox-circle-line text-brand-600 text-lg shrink-0" />
-                  <p className="text-[13px] font-semibold text-brand-700 dark:text-brand-400">You are already registered for this event.</p>
+                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-cn-teal-50 dark:bg-cn-teal-950/30 border border-cn-teal-200 dark:border-cn-teal-800/50 rounded-full">
+                  <i className="ri-checkbox-circle-line text-cn-teal-600 dark:text-cn-teal-400 text-lg shrink-0" />
+                  <p className="text-[13px] font-semibold text-cn-teal-700 dark:text-cn-teal-400">You are already registered for this event.</p>
                 </div>
               )}
 
@@ -1326,7 +1326,7 @@ const EventDetails = () => {
 
                   <Link 
                     to="/my-events" 
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
                   >
                     View My Tickets <i className="ri-arrow-right-s-line" />
                   </Link>
@@ -1382,13 +1382,13 @@ const EventDetails = () => {
               {isCentralEvent ? (
                 <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                   <div className="px-3 flex items-center gap-3 pb-3">
-                    <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-900/50">
-                      <i className="ri-building-2-line text-brand-600 text-lg" />
+                    <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 border border-cn-blue-200 dark:border-cn-blue-900/50">
+                      <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
                       <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
-                      <p className="text-[11px] font-medium text-brand-600 dark:text-brand-400">Dean Student Welfare</p>
+                      <p className="text-[11px] font-medium text-cn-blue-600 dark:text-cn-blue-400">Dean Student Welfare</p>
                     </div>
                   </div>
 
@@ -1402,7 +1402,7 @@ const EventDetails = () => {
                           <Link
                             key={pc.id}
                             to={`/club/${pc.club?.slug || pc.club?.id}`}
-                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 rounded-lg transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-cn-blue-50 dark:hover:bg-cn-blue-950/40 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-lg transition-colors"
                           >
                             {pc.club?.clubName}
                           </Link>
@@ -1417,17 +1417,17 @@ const EventDetails = () => {
                     {clubSlugOrId ? (
                       <Link
                         to={`/club/${clubSlugOrId}`}
-                        className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 hover:bg-brand-200 dark:hover:bg-brand-900/50 transition-colors overflow-hidden"
+                        className="w-9 h-9 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 hover:bg-cn-blue-100 dark:hover:bg-cn-blue-900/50 transition-colors overflow-hidden"
                       >
                         {event.club?.clubLogo ? (
                           <img src={event.club.clubLogo} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
                         ) : (
-                          <i className="ri-team-line text-brand-600 text-sm" />
+                          <i className="ri-team-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
                         )}
                       </Link>
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
-                        <i className="ri-team-line text-brand-600 text-sm" />
+                      <div className="w-9 h-9 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
+                        <i className="ri-team-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -1435,7 +1435,7 @@ const EventDetails = () => {
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-bold text-black dark:text-white hover:text-brand-600 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-bold text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
@@ -1543,17 +1543,17 @@ const EventDetails = () => {
 
       {missingFieldsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-information-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Complete Your Profile
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">
                     Required to continue with registration.
                   </p>
                 </div>
@@ -1567,8 +1567,8 @@ const EventDetails = () => {
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
-              <p className="text-xs text-[#888888] dark:text-[#808080] mb-5 leading-relaxed">
+            <div className="p-6 text-cn-text-secondary">
+              <p className="text-xs text-cn-text-muted mb-5 leading-relaxed">
                 This event requires the following profile information. Please provide them to continue:
               </p>
               <div className="space-y-4">
@@ -1577,17 +1577,17 @@ const EventDetails = () => {
                   const placeholder = field === 'portfolioUrl' ? 'https://yourportfolio.com' : `https://${fieldLabel.toLowerCase()}.com/yourprofile`;
                   return (
                     <div key={field}>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 capitalize">
-                        {fieldLabel} <span className="text-[#F97316]">*</span>
+                      <label className="block text-xs font-bold text-cn-text mb-1.5 capitalize">
+                        {fieldLabel} <span className="text-brand-500">*</span>
                       </label>
                       <input type="url" placeholder={placeholder} value={modalInputs[field] || ''} onChange={(e) => setModalInputs({ ...modalInputs, [field]: e.target.value })}
-                        className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                        className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
@@ -1601,17 +1601,17 @@ const EventDetails = () => {
 
       {customFormModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-file-list-3-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Registration Form
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Fill in the details to complete your registration</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Fill in the details to complete your registration</p>
                 </div>
               </div>
               <button
@@ -1623,9 +1623,9 @@ const EventDetails = () => {
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 overflow-y-auto flex-1 text-cn-text-secondary">
               <div className="mb-6">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1635,32 +1635,32 @@ const EventDetails = () => {
                     { label: 'Year', value: JSON.parse(localStorage.getItem('user'))?.year },
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
-                    <div key={i} className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl px-3 py-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">{item.label}</p>
-                      <p className="text-xs sm:text-[13px] font-semibold text-[#111111] dark:text-[#F5F5F5] truncate">{item.value || '—'}</p>
+                    <div key={i} className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">{item.label}</p>
+                      <p className="text-xs sm:text-[13px] font-semibold text-cn-text truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="border-t border-[#F0F0F0] dark:border-[#2A2A2A] mb-6" />
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Additional Information</p>
+              <div className="border-t border-cn-border-subtle mb-6" />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                      {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                     </label>
                     {field.type === 'text' && (
-                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'url' && (
-                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'textarea' && (
-                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors resize-none bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'select' && (
-                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]">
+                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text">
                         <option value="">Select an option</option>
                         {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                       </select>
@@ -1669,7 +1669,7 @@ const EventDetails = () => {
                 ))}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
@@ -1683,17 +1683,17 @@ const EventDetails = () => {
 
       {confirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-question-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Confirm Registration
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Please review the event details below.</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Please review the event details below.</p>
                 </div>
               </div>
               <button
@@ -1705,24 +1705,24 @@ const EventDetails = () => {
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
-              <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] mb-3">
+            <div className="p-6 text-cn-text-secondary">
+              <p className="text-sm font-bold text-cn-text mb-3">
                 Are you sure you want to register for this event?
               </p>
-              <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl p-4 mb-4 space-y-2">
-                <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+              <div className="bg-cn-surface-muted border border-cn-border rounded-xl p-4 mb-4 space-y-2">
+                <p className="text-sm font-bold text-cn-text truncate">
                   {event.title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-calendar-event-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-calendar-event-line text-brand-500" />
                   <span>{new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-map-pin-2-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-map-pin-2-line text-brand-500" />
                   <span className="truncate">{venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-ticket-2-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-ticket-2-line text-brand-500" />
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
@@ -1732,7 +1732,7 @@ const EventDetails = () => {
                 </p>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
                 className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
@@ -1763,7 +1763,7 @@ const EventDetails = () => {
               const isWhatsApp = part.includes('chat.whatsapp.com') || part.includes('wa.me');
               return (
                 <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[#F97316] dark:text-[#FB923C] font-semibold underline underline-offset-2 hover:opacity-80 break-all"
+                  className="inline-flex items-center gap-1 text-brand-500 font-semibold underline underline-offset-2 hover:opacity-80 break-all"
                 >
                   {isWhatsApp && <i className="ri-whatsapp-line text-green-500" />}
                   {isWhatsApp ? 'Join WhatsApp Group' : 'Open Link'}
@@ -1777,37 +1777,37 @@ const EventDetails = () => {
 
         return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto ticket-backdrop-animate">
-            <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
+            <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
               <div className="relative">
                 <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-40 h-40 mx-auto animate-bounce-slow" />
               </div>
               
-              <h3 className="text-lg font-bold text-[#111111] dark:text-[#F5F5F5] mt-4">
+              <h3 className="text-lg font-bold text-cn-text mt-4">
                 {isPendingPayment ? 'Registration Received!' : 'Registration Successful!'}
               </h3>
 
               {isPendingPayment ? (
                 <>
-                  <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
+                  <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <i className="ri-time-line text-[#F97316] dark:text-[#FB923C] text-base" />
-                      <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">Payment Under Review</p>
+                      <i className="ri-time-line text-brand-500 text-base" />
+                      <p className="text-xs font-bold text-cn-text">Payment Under Review</p>
                     </div>
-                    <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
-                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-[#111111] dark:text-[#F5F5F5] font-semibold">My Events</strong> section.
+                    <p className="text-xs text-cn-text-secondary leading-relaxed">
+                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-cn-text font-semibold">My Events</strong> section.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] mt-2 leading-relaxed">
+                  <p className="text-xs text-cn-text-muted mt-2 leading-relaxed">
                     You are in! Your ticket has been confirmed. You can view your ticket in the My Events section.
                   </p>
                   
                   {registrationId && (
-                    <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1.5">Your Registration ID</p>
-                      <p className="text-base font-bold text-[#111111] dark:text-[#F5F5F5] tracking-wider font-mono select-all">
+                    <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
+                      <p className="text-base font-bold text-cn-text tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
                     </div>
@@ -1817,12 +1817,12 @@ const EventDetails = () => {
 
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
-                <div className="my-3 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-2 flex items-center gap-1.5">
-                    <i className="ri-information-line text-[#F97316] dark:text-[#FB923C] text-xs" />
+                <div className="my-3 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
+                    <i className="ri-information-line text-brand-500 text-xs" />
                     Message from Club
                   </p>
-                  <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed break-words whitespace-pre-wrap">
+                  <p className="text-xs text-cn-text-secondary leading-relaxed break-words whitespace-pre-wrap">
                     {renderWithLinks(postRegMessage)}
                   </p>
                 </div>
@@ -1851,9 +1851,9 @@ const EventDetails = () => {
 
       {teamChoiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
-            <h3 className="font-bold text-[#111111] dark:text-[#F5F5F5] text-base sm:text-lg mb-1.5">Registration Mode</h3>
-            <p className="text-[#888888] dark:text-[#808080] text-xs mb-6">Choose how you want to participate in this event.</p>
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
+            <h3 className="font-bold text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
+            <p className="text-cn-text-muted text-xs mb-6">Choose how you want to participate in this event.</p>
             <div className="flex flex-col gap-3">
               <button
                 type="button"
@@ -1886,17 +1886,17 @@ const EventDetails = () => {
 
       {teamModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-group-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Create Team
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Form a team to register for {event.title}</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Form a team to register for {event.title}</p>
                 </div>
               </div>
               <button
@@ -1909,44 +1909,44 @@ const EventDetails = () => {
               </button>
             </div>
             
-            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-[#555555] dark:text-[#B5B5B5]">
+            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-cn-text-secondary">
               {/* Team Name */}
               <div>
-                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Team Name <span className="text-[#F97316]">*</span></label>
+                <label className="block text-xs font-bold text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
                 <input
                   type="text"
                   required
                   placeholder="Enter a unique team name"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                  className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted"
                 />
               </div>
 
               {/* Members/Teammates selection */}
               <div>
-                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                  Add Teammates <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
+                <label className="block text-xs font-bold text-cn-text mb-1.5">
+                  Add Teammates <span className="text-xs text-cn-text-muted font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
-                  <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
+                  <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-cn-text-muted" />
                   <input
                     type="text"
                     placeholder="Search by Email or Roll Number..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none bg-cn-surface text-cn-text placeholder-cn-text-muted transition-colors"
                   />
                   {searching && (
                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                      <i className="ri-loader-4-line animate-spin text-[#F97316]" />
+                      <i className="ri-loader-4-line animate-spin text-brand-500" />
                     </div>
                   )}
                 </div>
 
                 {/* Autocomplete dropdown */}
                 {searchResults.length > 0 && (
-                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
+                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-cn-surface border border-cn-border rounded-xl shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-cn-border-subtle">
                     {searchResults.map((s) => (
                       <div
                         key={s.id}
@@ -1955,36 +1955,36 @@ const EventDetails = () => {
                           setSearchQuery('');
                           setSearchResults([]);
                         }}
-                        className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
+                        className="p-3 text-xs hover:bg-brand-50 dark:hover:bg-brand-950/30 cursor-pointer flex justify-between items-center transition-colors"
                       >
                         <div className="text-left">
-                          <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
-                          <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                          <p className="font-bold text-cn-text">{s.name}</p>
+                          <p className="text-cn-text-muted font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
+                        <span className="text-brand-500 font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="bg-[#FAFAFA] dark:bg-[#222222] p-4 border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] text-left">Team Roster</p>
-                <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
+              <div className="bg-cn-surface-muted p-4 border border-cn-border rounded-xl space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
+                <div className="divide-y divide-cn-border-subtle">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(You)</span></p>
-                      <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
+                      <p className="font-bold text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-bold">(You)</span></p>
+                      <p className="text-cn-text-muted font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-bold text-[#888888] dark:text-[#808080] uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-bold text-cn-text-muted uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{member.name}</p>
-                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{member.rollNo}</p>
+                        <p className="font-bold text-cn-text">{member.name}</p>
+                        <p className="text-cn-text-muted font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
@@ -1996,7 +1996,7 @@ const EventDetails = () => {
                     </div>
                   ))}
                   {teammates.length === 0 && (
-                    <div className="py-3 text-center text-xs text-[#888888] dark:text-[#808080] font-medium">
+                    <div className="py-3 text-center text-xs text-cn-text-muted font-medium">
                       No teammates added yet. Search above to add.
                     </div>
                   )}
@@ -2005,24 +2005,24 @@ const EventDetails = () => {
 
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
-                <div className="space-y-4 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 text-left">Additional Information</p>
+                <div className="space-y-4 pt-3 border-t border-cn-border-subtle">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 text-left">
-                        {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
+                      <label className="block text-xs font-bold text-cn-text mb-1.5 text-left">
+                        {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                       </label>
                       {field.type === 'text' && (
-                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'url' && (
-                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'textarea' && (
-                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors resize-none bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'select' && (
-                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]" required={field.required}>
+                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text" required={field.required}>
                           <option value="">Select an option</option>
                           {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                         </select>
@@ -2032,7 +2032,7 @@ const EventDetails = () => {
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-cn-border-subtle shrink-0">
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}

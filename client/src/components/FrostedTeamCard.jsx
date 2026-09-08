@@ -4,7 +4,7 @@ import { Linkedin, Instagram, Github } from 'lucide-react';
 // ── Verified Badge Component ──────────────────────────────────────────────────
 export const VerifiedBadge = ({ className = 'w-4 h-4' }) => (
   <svg
-    className={`${className} inline-block flex-shrink-0`}
+    className={`${className} inline-block flex-shrink-0 text-success-600`}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -12,11 +12,12 @@ export const VerifiedBadge = ({ className = 'w-4 h-4' }) => (
   >
     <path
       d="M9.707 2.293a1 1 0 011.414 0l1.414 1.414a1 1 0 00.707.293h2a1 1 0 011 1v2a1 1 0 00.293.707l1.414 1.414a1 1 0 010 1.414l-1.414 1.414a1 1 0 00-.293.707v2a1 1 0 01-1 1h-2a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-1.414 0l-1.414-1.414a1 1 0 00-.707-.293h-2a1 1 0 01-1-1v-2a1 1 0 00-.293-.707L2.293 11.12a1 1 0 010-1.414l1.414-1.414a1 1 0 00.293-.707v-2a1 1 0 011-1h2a1 1 0 00.707-.293l1.414-1.414z"
-      fill="#16A34A"
+      fill="currentColor"
     />
     <path
       d="M8.5 11.5L10.5 13.5L15 9"
-      stroke="#FFFFFF"
+      stroke="currentColor"
+      className="text-white"
       strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"

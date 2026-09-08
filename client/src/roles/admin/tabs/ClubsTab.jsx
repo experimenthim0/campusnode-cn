@@ -89,9 +89,9 @@ const ClubsTab = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-cn-surface border border-cn-border">
                 <div>
-                    <h2 className="text-base font-black text-black dark:text-white tracking-wide">Registered Clubs</h2>
+                    <h2 className="text-base font-black text-cn-text tracking-wide">Registered Clubs</h2>
                     <p className="text-xs text-neutral-400 font-medium">Manage registered student clubs, faculty coordinators, and club head accounts.</p>
                 </div>
                 <button
@@ -173,21 +173,21 @@ const ClubsTab = ({
                         <ModalFormField label="Faculty Coordinator Email" name="facultyEmail" type="email" placeholder="Faculty Email" required />
                         <ModalFormField label="Club Email Account" name="clubEmail" type="email" placeholder="Club Email" required />
 
-                        <div className="p-3.5 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl text-xs text-neutral-800 dark:text-neutral-200 space-y-2">
-                            <p className="font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
+                        <div className="p-3.5 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-xl text-xs text-neutral-800 dark:text-neutral-200 space-y-2">
+                            <p className="font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
                                 <Key size={14} className="shrink-0" /> Automated Provisioning &amp; Credentials
                             </p>
-                            <div className="space-y-1.5 text-[11px] leading-relaxed text-[#555555] dark:text-[#B5B5B5]">
+                            <div className="space-y-1.5 text-[11px] leading-relaxed text-cn-text-secondary">
                                 <div className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] shrink-0 mt-1.5" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0 mt-1.5" />
                                     <p>
-                                        <strong className="text-[#111111] dark:text-[#F5F5F5]">Club Organizer:</strong> Logs in at <span className="font-mono font-semibold text-[#F97316] dark:text-[#FB923C]">/login</span> using <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;clubEmail&gt;</code> &amp; password <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;slug&gt;@him0148</code>. Account is auto-verified.
+                                        <strong className="text-cn-text">Club Organizer:</strong> Logs in at <span className="font-mono font-semibold text-brand-600 dark:text-brand-400">/login</span> using <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;clubEmail&gt;</code> &amp; password <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;slug&gt;@him0148</code>. Account is auto-verified.
                                     </p>
                                 </div>
                                 <div className="flex items-start gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 shrink-0 mt-1.5" />
                                     <p>
-                                        <strong className="text-[#111111] dark:text-[#F5F5F5]">Faculty Coordinator:</strong> Logs in at <span className="font-mono font-semibold text-[#111111] dark:text-[#F5F5F5]">/login</span> using <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;facultyEmail&gt;</code> &amp; password <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;slug&gt;@him0148</code> (or existing password).
+                                        <strong className="text-cn-text">Faculty Coordinator:</strong> Logs in at <span className="font-mono font-semibold text-cn-text">/login</span> using <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;facultyEmail&gt;</code> &amp; password <code className="px-1 py-0.5 bg-black/5 dark:bg-white/10 rounded font-mono font-bold">&lt;slug&gt;@him0148</code> (or existing password).
                                     </p>
                                 </div>
                                 <div className="flex items-start gap-2 pt-0.5">
@@ -199,17 +199,17 @@ const ClubsTab = ({
                             </div>
                         </div>
 
-                        <div className="pt-4 flex justify-end gap-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-cn-border-subtle">
                             <button
                                 type="button"
                                 onClick={() => setIsCreateClubModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Create Club &amp; Users
                             </button>
@@ -227,14 +227,14 @@ const ClubsTab = ({
                 >
                     <div className="space-y-4 pt-2">
                         {/* Club Head Account */}
-                        <div className="p-4 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-xl space-y-2">
-                            <p className="text-xs font-bold text-[#F97316] dark:text-[#FB923C] flex items-center gap-1.5">
+                        <div className="p-4 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-xl space-y-2">
+                            <p className="text-xs font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
                                 <Shield size={14} className="shrink-0" /> 1. Official Club Organizer Account (Auto-Verified)
                             </p>
-                            <div className="text-xs space-y-1.5 text-[#555555] dark:text-[#B5B5B5]">
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Login Portal:</strong> <span className="font-mono text-[#F97316] dark:text-[#FB923C] font-bold">/login</span></p>
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Login Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-[#111111] dark:text-[#F5F5F5]">{createdClubCredentials.clubEmail}</code></p>
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Default Password:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-[#111111] dark:text-[#F5F5F5]">{createdClubCredentials.defaultPassword}</code></p>
+                            <div className="text-xs space-y-1.5 text-cn-text-secondary">
+                                <p><strong className="text-cn-text">Login Portal:</strong> <span className="font-mono text-brand-600 dark:text-brand-400 font-bold">/login</span></p>
+                                <p><strong className="text-cn-text">Login Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-cn-text">{createdClubCredentials.clubEmail}</code></p>
+                                <p><strong className="text-cn-text">Default Password:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-cn-text">{createdClubCredentials.defaultPassword}</code></p>
                                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                                     <CheckCircle2 size={12} className="shrink-0" /> Status: Pre-verified (no email verification barrier on login)
                                 </p>
@@ -242,15 +242,15 @@ const ClubsTab = ({
                         </div>
 
                         {/* Faculty Coordinator Account */}
-                        <div className="p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-2">
-                            <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] flex items-center gap-1.5">
+                        <div className="p-4 bg-cn-surface-muted border border-cn-border rounded-xl space-y-2">
+                            <p className="text-xs font-bold text-cn-text flex items-center gap-1.5">
                                 <GraduationCap size={14} className="shrink-0" /> 2. Faculty Coordinator Account
                             </p>
-                            <div className="text-xs space-y-1.5 text-[#555555] dark:text-[#B5B5B5]">
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Login Portal:</strong> <span className="font-mono text-[#111111] dark:text-[#F5F5F5] font-bold">/admin-secret-login</span></p>
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Coordinator Name:</strong> {createdClubCredentials.facultyName}</p>
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Coordinator Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-[#111111] dark:text-[#F5F5F5]">{createdClubCredentials.facultyEmail}</code></p>
-                                <p><strong className="text-[#111111] dark:text-[#F5F5F5]">Default Password:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-[#111111] dark:text-[#F5F5F5]">{createdClubCredentials.defaultPassword}</code> <span className="text-[#888888] dark:text-[#808080]">(or existing password if already registered)</span></p>
+                            <div className="text-xs space-y-1.5 text-cn-text-secondary">
+                                <p><strong className="text-cn-text">Login Portal:</strong> <span className="font-mono text-cn-text font-bold">/admin-secret-login</span></p>
+                                <p><strong className="text-cn-text">Coordinator Name:</strong> {createdClubCredentials.facultyName}</p>
+                                <p><strong className="text-cn-text">Coordinator Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-cn-text">{createdClubCredentials.facultyEmail}</code></p>
+                                <p><strong className="text-cn-text">Default Password:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono font-bold text-cn-text">{createdClubCredentials.defaultPassword}</code> <span className="text-cn-text-muted">(or existing password if already registered)</span></p>
                             </div>
                         </div>
 
@@ -264,7 +264,7 @@ const ClubsTab = ({
                         <div className="pt-2 flex justify-end">
                             <button
                                 onClick={() => setCreatedClubCredentials(null)}
-                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                                 Done
                             </button>
@@ -282,28 +282,28 @@ const ClubsTab = ({
                         <ModalFormField label="Faculty Coordinator Email" name="facultyEmail" type="email" defaultValue={editingClub.facultyEmail || editingClub.facultyCoordinator?.email} required />
                         <ModalFormField label="Club Email Account" name="clubEmail" type="email" defaultValue={editingClub.clubEmail || editingClub.memberships?.[0]?.student?.email} required />
 
-                        <div className="p-3 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs text-[#555555] dark:text-[#B5B5B5] space-y-1">
-                            <p className="font-semibold text-[#111111] dark:text-[#F5F5F5] flex items-center gap-1.5">
-                                <GraduationCap size={13} className="text-[#F97316] dark:text-[#FB923C]" /> Faculty Coordinator Note
+                        <div className="p-3 bg-cn-surface-muted border border-cn-border rounded-xl text-xs text-cn-text-secondary space-y-1">
+                            <p className="font-semibold text-cn-text flex items-center gap-1.5">
+                                <GraduationCap size={13} className="text-brand-600 dark:text-brand-400" /> Faculty Coordinator Note
                             </p>
                             <p>
                                 Changing the faculty coordinator email will automatically reassign governance permissions or provision a new coordinator account. Student accounts cannot be assigned as faculty coordinators.
                             </p>
                         </div>
 
-                        <div className="pt-4 flex justify-end gap-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                        <div className="pt-4 flex justify-end gap-3 border-t border-cn-border-subtle">
                             <button
                                 type="button"
                                 disabled={isUpdating}
                                 onClick={() => { setIsEditModalOpen(false); setEditingClub(null); }}
-                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isUpdating}
-                                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-xs font-bold rounded-xl transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 {isUpdating ? (
                                     <>
@@ -333,21 +333,21 @@ const ClubsTab = ({
                                 <span>Warning: Permanent Deletion</span>
                             </div>
                             <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                                You are about to permanently delete <strong className="text-[#111111] dark:text-[#F5F5F5]">"{clubToDelete.clubName}"</strong>.
+                                You are about to permanently delete <strong className="text-cn-text">"{clubToDelete.clubName}"</strong>.
                             </p>
-                            <ul className="text-xs text-[#555555] dark:text-[#B5B5B5] space-y-1 list-disc list-inside">
+                            <ul className="text-xs text-cn-text-secondary space-y-1 list-disc list-inside">
                                 <li>All events, registrations, and attendances under this club will be removed</li>
-                                <li>Official club login account (<code className="font-mono font-bold text-[#111111] dark:text-[#F5F5F5]">{clubToDelete.clubEmail || clubToDelete.account?.email || 'N/A'}</code>) will be deleted</li>
+                                <li>Official club login account (<code className="font-mono font-bold text-cn-text">{clubToDelete.clubEmail || clubToDelete.account?.email || 'N/A'}</code>) will be deleted</li>
                                 <li>Announcements, achievements, gallery media, and member roles will be deleted</li>
                             </ul>
                         </div>
 
-                        <div className="pt-2 flex justify-end gap-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+                        <div className="pt-2 flex justify-end gap-3 border-t border-cn-border-subtle">
                             <button
                                 type="button"
                                 disabled={isDeleting}
                                 onClick={() => { setIsDeleteModalOpen(false); setClubToDelete(null); }}
-                                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] text-[#111111] border border-[#E5E5E5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] dark:text-[#F5F5F5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>

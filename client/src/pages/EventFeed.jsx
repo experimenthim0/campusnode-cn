@@ -321,7 +321,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {!hideHeader && <FeaturedEventsSection inline={true} />}
 
       {(!hideHeader || showFilters) && (
-        <div className="mb-6 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
+        <div className="mb-6 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
 
           <div className="relative group">
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
@@ -431,7 +431,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       )}
 
       {showEmptyBanner && (
-        <div className="bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-2xl p-8 sm:p-12 text-center shadow-2xs mb-8">
+        <div className="bg-cn-surface border border-cn-border rounded-2xl p-8 sm:p-12 text-center shadow-2xs mb-8">
           <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-4 flex items-center justify-center">
             <img
               src={randomCat}

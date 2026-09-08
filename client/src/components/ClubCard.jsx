@@ -150,7 +150,7 @@ const ClubCard = ({ club }) => {
       style={cardStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800/80 rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] flex flex-col h-full group shadow-sm hover:shadow-xl"
+      className="relative bg-cn-surface border border-cn-border rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] flex flex-col h-full group shadow-sm hover:shadow-xl"
     >
       {/* Top right ambient color gradient overlay */}
       <div
@@ -178,7 +178,7 @@ const ClubCard = ({ club }) => {
         <div className="flex items-end gap-3.5 -mt-1 sm:-mt-9 mb-2 min-w-0">
           
           {/* Logo with border */}
-          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white dark:bg-[#0d0d0d] rounded-full flex items-center justify-center border-2 border-white dark:border-[#0d0d0d] shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 ">
+          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-cn-surface rounded-full flex items-center justify-center border-2 border-white dark:border-cn-surface shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 ">
             <img
               ref={imgRef}
               src={displayUrl}

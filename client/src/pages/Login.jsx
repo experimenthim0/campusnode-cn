@@ -97,10 +97,10 @@ const Login = () => {
   };
 
   const inputCls =
-    "w-full px-4 py-3 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500";
+    "w-full px-4 py-3 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white text-sm font-medium outline-none focus:border-cn-blue-500 focus:ring-2 focus:ring-cn-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500";
 
   return (
-    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300 flex flex-col items-center justify-center px-4 py-10 sm:px-6">
+    <div className="mysans min-h-[80vh] bg-cn-surface-elevated dark:bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300 flex flex-col items-center justify-center px-4 py-10 sm:px-6">
       {/* ── Background Ambient Atmosphere ── */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
@@ -118,10 +118,10 @@ const Login = () => {
           
           {/* Card Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] font-semibold uppercase tracking-wider mb-2.5">
+            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] font-semibold uppercase tracking-wider mb-2.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>CampusNode Authentication</span>
-            </div>
+            </div> */}
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
               Sign In
             </h1>
@@ -186,7 +186,7 @@ const Login = () => {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium"
+                    className="text-xs text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 hover:underline font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -198,33 +198,36 @@ const Login = () => {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Enter your password"
-                    className={`${inputCls} pr-11`}
+                    placeholder="••••••••"
+                    className={inputCls}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer focus:outline-none"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              {/* Sign In CTA */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs mt-1"
               >
                 {isLoading ? (
-                  <>
-                    <i className="ri-loader-4-line animate-spin text-base" />
-                    <span>Signing In...</span>
-                  </>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <span>Sign In</span>
+                  <>
+                    <span>Sign In</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
                 )}
               </button>
             </form>
@@ -232,7 +235,7 @@ const Login = () => {
             /* 2FA OTP Form */
             <form className="flex flex-col gap-5" onSubmit={handleVerifyOTP}>
               <div className="text-center mb-2">
-                <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-2">
+                <div className="w-10 h-10 rounded-2xl bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mx-auto mb-2">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">2-Step Verification</h3>
@@ -294,7 +297,7 @@ const Login = () => {
           <div className="mt-5 flex justify-center">
             <Link
               to="/register"
-              className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-xs hover:border-brand-500 dark:hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
+              className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-xs hover:border-cn-blue-500 dark:hover:border-cn-blue-500 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
             >
               Register as Student
             </Link>

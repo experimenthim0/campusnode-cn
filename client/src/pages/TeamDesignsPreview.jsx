@@ -28,11 +28,11 @@ const VerifiedBadge = ({ variant = 'green', className = 'w-4 h-4' }) => {
     >
       <path
         d="M9.707 2.293a1 1 0 011.414 0l1.414 1.414a1 1 0 00.707.293h2a1 1 0 011 1v2a1 1 0 00.293.707l1.414 1.414a1 1 0 010 1.414l-1.414 1.414a1 1 0 00-.293.707v2a1 1 0 01-1 1h-2a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-1.414 0l-1.414-1.414a1 1 0 00-.707-.293h-2a1 1 0 01-1-1v-2a1 1 0 00-.293-.707L2.293 11.12a1 1 0 010-1.414l1.414-1.414a1 1 0 00.293-.707v-2a1 1 0 011-1h2a1 1 0 00.707-.293l1.414-1.414z"
-        fill={isWhite ? '#FFFFFF' : '#16A34A'}
+        fill={isWhite ? 'currentColor' : 'var(--color-success-600)'}
       />
       <path
         d="M8.5 11.5L10.5 13.5L15 9"
-        stroke={isWhite ? '#09090B' : '#FFFFFF'}
+        stroke={isWhite ? 'var(--cn-bg)' : 'currentColor'}
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -418,7 +418,7 @@ const Team = () => {
   };
 
   return (
-    <div className="w-full bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white min-h-screen relative overflow-hidden transition-colors duration-300">
+    <div className="w-full bg-cn-bg text-cn-text min-h-screen relative overflow-hidden transition-colors duration-300">
       {/* Background Decorative Radial Glows */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[640px] opacity-40 dark:opacity-20"
@@ -432,24 +432,24 @@ const Team = () => {
         {/* Page Header */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <ScrollReveal direction="up" delay={0.05}>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-xs font-semibold uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-4">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Team Card Concepts</span>
             </div>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.1}>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-cn-text mb-4">
               Meet The{' '}
               <span className="logofont font-light">
-                Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
+                Campus<span className="text-brand-500 dark:text-brand-400">Node</span>
               </span>{' '}
               Team
             </h1>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.15}>
-            <p className="text-zinc-600 dark:text-zinc-400 text-base sm:text-lg leading-relaxed max-w-2xl">
+            <p className="text-cn-text-muted text-base sm:text-lg leading-relaxed max-w-2xl">
               Compare all 3 card designs generated from your visual reference with Sophie Bennett dummy data, test live interactions, or toggle your favorite aesthetic for the entire team roster.
             </p>
           </ScrollReveal>

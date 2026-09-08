@@ -229,11 +229,11 @@ const DynamicSidebar = ({ user }) => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col shrink-0 bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-slate-300 border-r border-gray-200 dark:border-zinc-800 transition-all duration-300 overflow-y-auto ${isCollapsed ? "w-16" : "w-64"}`}
+      className={`hidden md:flex flex-col shrink-0 bg-cn-surface text-cn-text border-r border-cn-border transition-all duration-300 overflow-y-auto ${isCollapsed ? "w-16" : "w-64"}`}
       style={{ height: "calc(100dvh - 4rem - env(safe-area-inset-top))" }}
       aria-label="Dashboard sidebar"
     >
-      <div className="px-3 py-4 border-b border-gray-200 dark:border-zinc-800 shrink-0">
+      <div className="px-3 py-4 border-b border-cn-border shrink-0">
         <div className={`flex items-center justify-between ${isCollapsed ? "flex-col gap-3 items-center" : "px-1"}`}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full overflow-hidden text-black dark:text-white bg-gray-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs shrink-0 select-none border border-neutral-200 dark:border-zinc-800">

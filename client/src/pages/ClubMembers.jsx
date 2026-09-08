@@ -606,21 +606,21 @@ const ClubMembers = () => {
 
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-[#E5E5E5] dark:border-[#303030] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="w-full max-w-md rounded-2xl border border-cn-border bg-cn-surface shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] shrink-0">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 shrink-0">
                   <i className="ri-swap-box-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Transfer Student Lead Role</h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Atomic transition of club leadership</p>
+                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">Transfer Student Lead Role</h3>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Atomic transition of club leadership</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsTransferModalOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
                 title="Close"
               >
                 <i className="ri-close-line text-lg" />
@@ -628,20 +628,20 @@ const ClubMembers = () => {
             </div>
 
             <form onSubmit={handleTransferLeadership}>
-              <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
-                <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
-                  Transferring leadership will atomically assign <strong className="text-[#111111] dark:text-[#F5F5F5]">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-[#111111] dark:text-[#F5F5F5]">Coordinator</strong>.
+              <div className="p-6 space-y-4 text-left text-cn-text-secondary">
+                <p className="text-xs text-cn-text-secondary leading-relaxed">
+                  Transferring leadership will atomically assign <strong className="text-cn-text">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-cn-text">Coordinator</strong>.
                 </p>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  <label className="block text-xs font-bold text-cn-text mb-1.5">
                     Select New Student Lead:
                   </label>
                   <select
                     value={selectedNewLeadId}
                     onChange={(e) => setSelectedNewLeadId(e.target.value)}
                     required
-                    className="w-full h-10 rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] px-3.5 text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors"
+                    className="w-full h-10 rounded-xl border border-cn-border bg-cn-surface px-3.5 text-xs sm:text-[13px] text-cn-text focus:border-brand-500 dark:focus:border-brand-400 focus:outline-none transition-colors"
                   >
                     <option value="">-- Choose member --</option>
                     {members
@@ -658,19 +658,19 @@ const ClubMembers = () => {
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+              <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsTransferModalOpen(false)}
                   disabled={transferring}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-cn-text border border-cn-border bg-transparent hover:bg-cn-surface-muted transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={transferring || !selectedNewLeadId}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {transferring ? "Transferring…" : "Confirm Transfer"}
                 </button>

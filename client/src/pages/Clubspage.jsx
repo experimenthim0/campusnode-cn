@@ -234,7 +234,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
     }
 
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+      <div className="min-h-screen bg-cn-bg transition-colors duration-300">
         <Section className="py-10 sm:py-12 lg:py-16">
           <div className="text-center mb-10">
             <Skeleton className="w-64 h-9 mx-auto mb-3 rounded-xl" />
@@ -262,7 +262,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       )}
 
       {(!isHome || showFilters) && (
-        <div className="mb-8 bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs overflow-hidden">
+        <div className="mb-8 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs overflow-hidden">
           <div className="relative group">
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
@@ -322,7 +322,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       )}
 
       {showEmptyBanner && (
-        <div className="text-center py-10 sm:py-12 px-4 mb-10 bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-zinc-800 rounded-2xl shadow-2xs">
+        <div className="text-center py-10 sm:py-12 px-4 mb-10 bg-cn-surface border border-cn-border rounded-2xl shadow-2xs">
           <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center mx-auto mb-4 overflow-hidden">
             <img className="w-full h-full object-contain drop-shadow-xs" src={randomCat} alt="No clubs found" />
           </div>
@@ -368,7 +368,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
   }
 
   return (
-    <div className="myfont min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div className="myfont min-h-screen bg-cn-bg transition-colors duration-300">
       <Section className="py-10 sm:py-12 lg:py-16">
         {content}
       </Section>

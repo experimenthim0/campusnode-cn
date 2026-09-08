@@ -121,8 +121,8 @@ const LostFoundAdminDashboard = () => {
     );
 
     if (loading) return (
-        <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#0a0a0a] animate-pulse">
-            <div className="bg-white text-black py-12 px-6 border-b border-neutral-200 dark:border-zinc-800">
+        <div className="min-h-screen bg-cn-bg animate-pulse">
+            <div className="bg-cn-surface text-cn-text py-12 px-6 border-b border-cn-border">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="space-y-2">
                         <div className="h-8 w-64 bg-neutral-100 dark:bg-zinc-800 rounded-lg" />
@@ -135,7 +135,7 @@ const LostFoundAdminDashboard = () => {
                 {/* Stats Grid Skeleton */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-neutral-200 dark:border-zinc-800 space-y-3">
+                        <div key={i} className="bg-cn-surface p-6 rounded-2xl border border-cn-border space-y-3">
                             <div className="w-10 h-10 bg-neutral-100 dark:bg-zinc-800 rounded-xl" />
                             <div className="h-3 w-16 bg-neutral-200 dark:bg-zinc-800 rounded" />
                             <div className="h-7 w-20 bg-neutral-200 dark:bg-zinc-800 rounded-lg" />
@@ -144,7 +144,7 @@ const LostFoundAdminDashboard = () => {
                 </div>
 
                 {/* Content Table Skeleton */}
-                <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-neutral-200 dark:border-zinc-800 overflow-hidden p-6 space-y-6">
+                <div className="bg-cn-surface rounded-2xl border border-cn-border overflow-hidden p-6 space-y-6">
                     <div className="h-6 w-32 bg-neutral-200 dark:bg-zinc-800 rounded-lg" />
                     <div className="space-y-4">
                         {Array.from({ length: 4 }).map((_, i) => (
@@ -165,7 +165,7 @@ const LostFoundAdminDashboard = () => {
     );
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#0a0a0a] pb-20">
+        <div className="min-h-screen bg-cn-bg pb-20">
             <Toaster position="top-right" />
             
             <div className="bg-white text-black py-12 px-6">
@@ -199,7 +199,7 @@ const LostFoundAdminDashboard = () => {
                     <StatCard label="Fraud Flagged" value={stats.fraud} icon="ri-error-warning-fill" color="red" />
                 </div>
 
-                <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-sm border border-neutral-200 dark:border-zinc-800 overflow-hidden">
+                <div className="bg-cn-surface rounded-2xl shadow-sm border border-neutral-200 dark:border-zinc-800 overflow-hidden">
                     <div className="p-6 border-b border-neutral-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">All Items</h2>
                         <div className="relative w-full md:w-80">
@@ -312,20 +312,20 @@ const LostFoundAdminDashboard = () => {
 
             {showPasswordModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#181818] w-full max-w-md rounded-2xl border border-[#E5E5E5] dark:border-[#303030] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-colors">
-                        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                    <div className="bg-cn-surface w-full max-w-md rounded-2xl border border-cn-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-colors">
+                        <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
                                     <i className="ri-lock-password-line text-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Change Password</h3>
-                                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Update your dashboard credentials</p>
+                                    <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">Change Password</h3>
+                                    <p className="text-xs text-cn-text-muted font-normal mt-0.5">Update your dashboard credentials</p>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => setShowPasswordModal(false)}
-                                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
                                 title="Close"
                             >
                                 <i className="ri-close-line text-lg"></i>
@@ -333,9 +333,9 @@ const LostFoundAdminDashboard = () => {
                         </div>
 
                         <form onSubmit={handlePasswordSubmit}>
-                            <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
+                            <div className="p-6 space-y-4 text-left text-cn-text-secondary">
                                 <div>
-                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Current Password</label>
+                                    <label className="block text-xs font-bold text-cn-text mb-1.5">Current Password</label>
                                     <input 
                                         type="password"
                                         name="currentPassword"
@@ -343,12 +343,12 @@ const LostFoundAdminDashboard = () => {
                                         value={passwordForm.currentPassword}
                                         onChange={handlePasswordChange}
                                         placeholder="Enter current password"
-                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                        className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors text-cn-text placeholder-cn-text-muted"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">New Password</label>
+                                    <label className="block text-xs font-bold text-cn-text mb-1.5">New Password</label>
                                     <input 
                                         type="password"
                                         name="newPassword"
@@ -356,12 +356,12 @@ const LostFoundAdminDashboard = () => {
                                         value={passwordForm.newPassword}
                                         onChange={handlePasswordChange}
                                         placeholder="Enter new password (min. 6 chars)"
-                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                        className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors text-cn-text placeholder-cn-text-muted"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Confirm New Password</label>
+                                    <label className="block text-xs font-bold text-cn-text mb-1.5">Confirm New Password</label>
                                     <input 
                                         type="password"
                                         name="confirmPassword"
@@ -369,23 +369,23 @@ const LostFoundAdminDashboard = () => {
                                         value={passwordForm.confirmPassword}
                                         onChange={handlePasswordChange}
                                         placeholder="Confirm new password"
-                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                                        className="w-full px-3.5 py-2.5 bg-cn-surface border border-cn-border rounded-xl text-xs sm:text-[13px] focus:outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors text-cn-text placeholder-cn-text-muted"
                                     />
                                 </div>
                             </div>
 
-                            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+                            <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent flex items-center justify-end gap-3 shrink-0">
                                 <button 
                                     type="button"
                                     onClick={() => setShowPasswordModal(false)}
-                                    className="px-4 py-2.5 border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] bg-transparent transition-colors cursor-pointer"
+                                    className="px-4 py-2.5 border border-cn-border rounded-xl text-xs font-bold hover:bg-cn-surface-muted text-cn-text bg-transparent transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
                                     disabled={isChangingPassword}
-                                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                    className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 >
                                     {isChangingPassword ? "Saving..." : "Update Password"}
                                 </button>
@@ -406,7 +406,7 @@ const StatCard = ({ label, value, icon, color }) => {
         red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
     };
     return (
-        <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl shadow-sm border border-neutral-200 dark:border-zinc-800">
+        <div className="bg-cn-surface p-6 rounded-2xl shadow-sm border border-neutral-200 dark:border-zinc-800">
             <div className={`w-10 h-10 ${colors[color]} rounded-xl flex items-center justify-center mb-4`}>
                 <i className={`${icon} text-xl`}></i>
             </div>

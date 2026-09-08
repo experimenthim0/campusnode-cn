@@ -75,7 +75,7 @@ const LostFoundGuide = () => {
     ];
 
     return (
-        <div className="min-h-screen myfont bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 transition-colors duration-300 pb-20">
+        <div className="min-h-screen myfont bg-cn-bg text-cn-text transition-colors duration-300 pb-20">
             <div className="bg-white/80 dark:bg-zinc-900/80 border-b border-neutral-200/90 dark:border-zinc-800/90 sticky top-0 z-50 backdrop-blur-md">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
                     <button 

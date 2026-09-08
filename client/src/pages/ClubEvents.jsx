@@ -558,45 +558,45 @@ const ClubEvents = () => {
       />
       {deleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-danger-50 dark:bg-danger-950/30 text-danger-600 dark:text-danger-400 flex items-center justify-center text-lg shrink-0">
                   <i className="ri-delete-bin-line" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Confirm Deletion</h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Event cancellation & removal</p>
+                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">Confirm Deletion</h3>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Event cancellation & removal</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setDeleteModalOpen(false); setEventToDelete(null); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
                 title="Close"
               >
                 <i className="ri-close-line text-lg" />
               </button>
             </div>
             <div className="p-6">
-              <p className="text-xs sm:text-sm text-[#555555] dark:text-[#B5B5B5] leading-relaxed font-normal text-left">
+              <p className="text-xs sm:text-sm text-cn-text-secondary leading-relaxed font-normal text-left">
                 {!canReview 
                   ? 'Are you sure you want to request deletion of this event? This will submit a deletion request to the faculty coordinator for approval. All registrations will be lost if approved.' 
                   : 'Are you sure you want to permanently delete this event? All registrations will be lost. This action cannot be undone.'}
               </p>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => { setDeleteModalOpen(false); setEventToDelete(null); }}
-                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
+                className="px-5 py-2.5 bg-danger-600 hover:bg-danger-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
               >
                 Delete
               </button>

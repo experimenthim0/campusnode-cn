@@ -128,7 +128,7 @@ const EventDataTable = ({
 
     return (
         <div className="space-y-4">
-            <div className="bg-white dark:bg-[#0c0c0c] p-3.5 sm:p-4 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl shadow-xs">
+            <div className="bg-cn-surface p-3.5 sm:p-4 border border-cn-border rounded-2xl shadow-xs">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     
                     <div className="flex flex-wrap items-center gap-2.5 flex-1">

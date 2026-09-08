@@ -595,14 +595,14 @@ const EditEvent = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+            <div className="min-h-screen bg-cn-bg flex items-center justify-center">
                 <ShimmerText text="Loading event..." className="text-[13px] font-bold uppercase tracking-widest" />
             </div>
         );
     }
 
     const inputCls =
-        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-white dark:bg-[#0a0a0a] text-black dark:text-white placeholder:text-neutral-400';
+        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-cn-surface text-black dark:text-white placeholder:text-neutral-400';
     const labelCls =
         'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
 
@@ -610,7 +610,7 @@ const EditEvent = () => {
         `${inputCls} ${fieldErrors[fieldName] ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40' : ''}`;
 
     return (
-        <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] py-8 md:py-12 px-4 sm:px-6">
+        <div className="min-h-screen bg-cn-bg py-8 md:py-12 px-4 sm:px-6">
             {/* Fixed width & margin: eliminate ~384px gutter on desktop next to sidebar */}
             <div className="w-full max-w-5xl xl:max-w-6xl mx-auto md:mx-0 md:ml-6 lg:ml-10 pr-4 md:pr-8">
                 

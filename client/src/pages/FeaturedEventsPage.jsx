@@ -37,7 +37,7 @@ const FeaturedEventsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] transition-colors duration-300 py-10 sm:py-14">
+    <div className="min-h-screen bg-cn-bg transition-colors duration-300 py-10 sm:py-14">
       <Section>
         {/* Back Link & Breadcrumb */}
         <div className="mb-6">

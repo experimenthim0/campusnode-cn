@@ -686,11 +686,11 @@ const WysiwygMarkdownEditor = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full bg-white dark:bg-[#0a0a0a] border border-neutral-300 dark:border-neutral-800 rounded-2xl shadow-xs transition-all ${className}`}
+      className={`relative w-full bg-cn-surface border border-cn-border rounded-2xl shadow-xs transition-all ${className}`}
     >
       
       {showToolbar && (
-        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-[#0c0c0c]/95 backdrop-blur-md text-neutral-700 dark:text-neutral-300 rounded-t-2xl shadow-xs">
+        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-2 border-b border-cn-border bg-cn-surface/95 backdrop-blur-md text-cn-text rounded-t-2xl shadow-xs">
           
           {/* Headings & Block Types Dropdown */}
           <div className="relative" ref={headingMenuRef}>
@@ -1101,7 +1101,7 @@ const WysiwygMarkdownEditor = ({
       {linkPopover.isOpen && (
         <div
           ref={linkPopoverRef}
-          className="absolute z-40 bg-white dark:bg-[#141414] border border-neutral-300 dark:border-neutral-700 rounded-xl shadow-2xl p-2 animate-fadeIn flex flex-col gap-2 min-w-[280px] max-w-[360px]"
+          className="absolute z-40 bg-cn-surface border border-cn-border rounded-xl shadow-2xl p-2 animate-fadeIn flex flex-col gap-2 min-w-[280px] max-w-[360px]"
           style={{
             top: `${linkPopover.top}px`,
             left: `${linkPopover.left}px`,
@@ -1187,7 +1187,7 @@ const WysiwygMarkdownEditor = ({
       {imagePopover.isOpen && (
         <div
           ref={imagePopoverRef}
-          className="absolute z-40 bg-white dark:bg-[#141414] border border-neutral-300 dark:border-neutral-700 rounded-xl shadow-2xl p-3 animate-fadeIn flex flex-col gap-2.5 min-w-[320px] max-w-[400px]"
+          className="absolute z-40 bg-cn-surface border border-cn-border rounded-xl shadow-2xl p-3 animate-fadeIn flex flex-col gap-2.5 min-w-[320px] max-w-[400px]"
           style={{
             top: `${imagePopover.top}px`,
             left: `${imagePopover.left}px`,
@@ -1380,7 +1380,7 @@ const WysiwygMarkdownEditor = ({
         </div>
       )}
 
-      <div className="relative bg-white dark:bg-[#0a0a0a] rounded-b-2xl">
+      <div className="relative bg-cn-surface rounded-b-2xl">
         <div
           ref={editorRef}
           contentEditable

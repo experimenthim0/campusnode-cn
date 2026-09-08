@@ -195,7 +195,7 @@ const EventPreview = () => {
   const isPublished = event.reviewStatus === 'PUBLISHED';
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] pb-24">
+    <div className="min-h-screen bg-cn-bg pb-24">
       {/* Top sticky organizer toolbar */}
       <div className="sticky top-16 z-30 bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-b border-neutral-200 dark:border-neutral-800 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">

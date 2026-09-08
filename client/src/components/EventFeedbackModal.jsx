@@ -226,35 +226,35 @@ export const EventFeedbackModal = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden text-[#555555] dark:text-[#B5B5B5] transition-colors"
+          className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-cn-surface border border-cn-border rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden text-cn-text-secondary transition-colors"
         >
-          <div className="relative shrink-0 px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-start justify-between gap-4">
+          <div className="relative shrink-0 px-6 py-4 border-b border-cn-border-subtle flex items-start justify-between gap-4">
             <div className="space-y-1 pr-6">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#F97316] dark:bg-[#2A1A0F] dark:text-[#FB923C] border border-brand-200/60 dark:border-brand-800/40">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-brand-50 text-brand-500 dark:bg-brand-950/40 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/40">
                   <Sparkles className="w-3 h-3" /> Event Feedback
                 </span>
                 {totalPending > 1 && (
-                  <span className="text-xs font-semibold text-[#888888] dark:text-[#808080]">
+                  <span className="text-xs font-semibold text-cn-text-muted">
                     {currentIndex + 1} of {totalPending}
                   </span>
                 )}
               </div>
               <h2
                 id="feedback-dialog-title"
-                className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-[#F5F5F5]"
+                className="text-xl sm:text-2xl font-bold tracking-tight text-cn-text"
               >
                 How was your experience?
               </h2>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#888888] dark:text-[#808080] pt-0.5">
-                <span className="font-bold text-[#111111] dark:text-[#F5F5F5] line-clamp-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-cn-text-muted pt-0.5">
+                <span className="font-bold text-cn-text line-clamp-1">
                   {currentEvent.title}
                 </span>
                 {formattedDate && (
                   <>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-[#F97316] dark:text-[#FB923C]" />
+                      <Calendar className="w-3 h-3 text-brand-500" />
                       {formattedDate}
                     </span>
                   </>
@@ -263,7 +263,7 @@ export const EventFeedbackModal = ({
                   <>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-[#F97316] dark:text-[#FB923C]" />
+                      <MapPin className="w-3 h-3 text-brand-500" />
                       {currentEvent.venue}
                     </span>
                   </>
@@ -276,7 +276,7 @@ export const EventFeedbackModal = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="w-8 h-8 flex items-center justify-center rounded-xl text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-cn-text-secondary hover:text-cn-text hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
               aria-label="Close feedback modal"
               title="Close"
             >
@@ -291,10 +291,10 @@ export const EventFeedbackModal = ({
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
                 <div className="space-y-2 max-w-sm mx-auto">
-                  <h3 className="text-2xl font-bold text-[#111111] dark:text-[#F5F5F5]">
+                  <h3 className="text-2xl font-bold text-cn-text">
                     Thank you!
                   </h3>
-                  <p className="text-sm text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
+                  <p className="text-sm text-cn-text-secondary leading-relaxed">
                     Your feedback has been submitted successfully and will help improve future campus events.
                   </p>
                 </div>
@@ -304,7 +304,7 @@ export const EventFeedbackModal = ({
                     <button
                       type="button"
                       onClick={handleNextPending}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                     >
                       Next Feedback <ChevronRight className="w-4 h-4" />
                     </button>
@@ -312,7 +312,7 @@ export const EventFeedbackModal = ({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-full sm:w-auto px-6 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Done
                   </button>
@@ -321,8 +321,8 @@ export const EventFeedbackModal = ({
             ) : (
               <form id="event-feedback-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* 72h window indicator */}
-                <div className="flex items-center gap-2 p-3 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <Clock className="w-4 h-4 shrink-0 text-[#888888]" />
+                <div className="flex items-center gap-2 p-3 bg-cn-surface-muted border border-cn-border rounded-xl text-xs text-cn-text-secondary">
+                  <Clock className="w-4 h-4 shrink-0 text-cn-text-muted" />
                   <span>
                     Feedback closes 72 hours after event completion. Quick rating takes under a minute!
                   </span>
@@ -337,11 +337,11 @@ export const EventFeedbackModal = ({
 
                 {/* 1-5 Ratings Section */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#F0F0F0] dark:border-[#2A2A2A] pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-[#F5F5F5]">
+                  <div className="flex items-center justify-between border-b border-cn-border-subtle pb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-cn-text">
                       Required Ratings (1–5)
                     </h3>
-                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
+                    <span className="text-[11px] text-cn-text-muted font-medium">
                       All 6 required
                     </span>
                   </div>
@@ -350,10 +350,10 @@ export const EventFeedbackModal = ({
                     {RATING_CRITERIA.map((criterion, idx) => (
                       <div
                         key={criterion.key}
-                        className="p-3.5 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-1.5"
+                        className="p-3.5 bg-cn-surface-muted border border-cn-border rounded-xl space-y-1.5"
                       >
-                        <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
-                          {idx + 1}. {criterion.label} <span className="text-[#F97316]">*</span>
+                        <label className="block text-xs font-bold text-cn-text">
+                          {idx + 1}. {criterion.label} <span className="text-brand-500">*</span>
                         </label>
                         <StarRatingSelector
                           name={criterion.label}
@@ -367,12 +367,12 @@ export const EventFeedbackModal = ({
                 </div>
 
                 {/* Recommendation Question */}
-                <div className="p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-2.5">
+                <div className="p-4 bg-cn-surface-muted border border-cn-border rounded-xl space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
-                      Would you attend a similar event again? <span className="text-[#F97316]">*</span>
+                    <label className="block text-xs font-bold text-cn-text">
+                      Would you attend a similar event again? <span className="text-brand-500">*</span>
                     </label>
-                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
+                    <span className="text-[11px] text-cn-text-muted font-medium">
                       Required
                     </span>
                   </div>
@@ -393,8 +393,8 @@ export const EventFeedbackModal = ({
                           }}
                           className={`py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
                             isSelected
-                              ? 'bg-[#F97316] text-white border-[#F97316] dark:bg-[#FB923C] dark:text-[#111111] dark:border-[#FB923C] shadow-xs'
-                              : 'bg-white dark:bg-[#181818] text-[#111111] dark:text-[#F5F5F5] border-[#E5E5E5] dark:border-[#3A3A3A] hover:border-neutral-300 dark:hover:border-zinc-700'
+                              ? 'bg-brand-500 text-white border-brand-500 dark:bg-brand-400 dark:text-neutral-900 dark:border-brand-400 shadow-xs'
+                              : 'bg-cn-surface text-cn-text border-cn-border hover:border-neutral-300 dark:hover:border-zinc-700'
                           }`}
                         >
                           {opt.label}
@@ -406,18 +406,18 @@ export const EventFeedbackModal = ({
 
                 {/* Optional Written Feedback */}
                 <div className="space-y-3 pt-1">
-                  <div className="flex items-center justify-between border-b border-[#F0F0F0] dark:border-[#2A2A2A] pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-[#F5F5F5]">
+                  <div className="flex items-center justify-between border-b border-cn-border-subtle pb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-cn-text">
                       Optional Written Feedback
                     </h3>
-                    <span className="text-[11px] text-[#888888] dark:text-[#808080] font-medium">
+                    <span className="text-[11px] text-cn-text-muted font-medium">
                       Optional
                     </span>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      <label className="block text-xs font-bold text-cn-text mb-1.5">
                         What did you like?
                       </label>
                       <input
@@ -426,12 +426,12 @@ export const EventFeedbackModal = ({
                         value={liked}
                         onChange={(e) => setLiked(e.target.value)}
                         maxLength={500}
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl text-cn-text placeholder-cn-text-muted focus:border-brand-500 outline-none transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      <label className="block text-xs font-bold text-cn-text mb-1.5">
                         What could be improved?
                       </label>
                       <input
@@ -440,12 +440,12 @@ export const EventFeedbackModal = ({
                         value={improvements}
                         onChange={(e) => setImprovements(e.target.value)}
                         maxLength={500}
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl text-cn-text placeholder-cn-text-muted focus:border-brand-500 outline-none transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                      <label className="block text-xs font-bold text-cn-text mb-1.5">
                         Additional comments
                       </label>
                       <textarea
@@ -454,7 +454,7 @@ export const EventFeedbackModal = ({
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
                         maxLength={1000}
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:border-[#F97316] dark:focus:border-[#FB923C] outline-none transition-colors resize-none"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-cn-surface border border-cn-border rounded-xl text-cn-text placeholder-cn-text-muted focus:border-brand-500 outline-none transition-colors resize-none"
                       />
                     </div>
                   </div>
@@ -464,12 +464,12 @@ export const EventFeedbackModal = ({
           </div>
 
           {!isSuccess && (
-            <div className="shrink-0 px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-between gap-3">
+            <div className="shrink-0 px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 text-xs font-bold text-[#111111] dark:text-[#F5F5F5] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-bold text-cn-text bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-cn-border rounded-xl transition-colors cursor-pointer"
               >
                 Remind me later
               </button>
@@ -478,7 +478,7 @@ export const EventFeedbackModal = ({
                 type="submit"
                 form="event-feedback-form"
                 disabled={submitting || !isFormValid}
-                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] font-bold text-xs rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 font-bold text-xs rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
               >
                 {submitting ? (
                   <>

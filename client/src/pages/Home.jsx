@@ -147,7 +147,7 @@ const BtnPrimary = ({ to, children }) => (
 const BtnSecondary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-brand-500/50"
+    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-cn-blue-500/50"
   >
     {children}
   </Link>
@@ -297,11 +297,11 @@ const Home = () => {
   }
 
   return (
-    <div className="myfont text-neutral-900 bg-[#fafafa] dark:text-neutral-100 dark:bg-[#0a0a0a] transition-colors duration-300 -mt-12">
+    <div className="myfont text-cn-text bg-cn-bg transition-colors duration-300 -mt-12">
 
       {user ? (
         <>
-          <section className="relative pt-24 sm:pt-28 pb-10 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800/80 text-neutral-900 dark:text-white transition-colors duration-300 overflow-hidden">
+          <section className="relative pt-24 sm:pt-28 pb-10 bg-cn-surface border-b border-cn-border text-cn-text transition-colors duration-300 overflow-hidden">
             <Section className="relative z-10 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-4">
@@ -359,7 +359,7 @@ const Home = () => {
             </Section>
           </section>
 
-          <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <Section>
               <div className="mb-10 sm:mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -482,7 +482,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Events & Attendance</h3>
@@ -490,13 +490,13 @@ const Home = () => {
                             Organize campus fests, hackathons, and technical talks. Use the check-in scanner to verify QR code tickets and record live attendance.
                           </p>
                         </div>
-                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          Manage Club Events <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to={user?.clubId || user?.id ? `/club-events/${user.clubId || user.id}` : '/events'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          Manage Club Events <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Wallet className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Finance & Payments</h3>
@@ -504,8 +504,8 @@ const Home = () => {
                             Track event registration fees, view verified receipts, and monitor participant payment records.
                           </p>
                         </div>
-                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          Track Financials & Payments <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/payments" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          Track Financials & Payments <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -514,7 +514,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Calendar className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Pending Proposals</h3>
@@ -522,13 +522,13 @@ const Home = () => {
                             Review detailed proposals for upcoming club events. Approve them for public release or send them back with coordinator comments.
                           </p>
                         </div>
-                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          Review Proposals <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to={user?.clubId ? `/club-events/${user.clubId}` : '/events/calendar'} className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          Review Proposals <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Users className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
@@ -536,8 +536,8 @@ const Home = () => {
                             Oversee active student memberships, coordinate schedules, and send urgent notifications or alerts to students.
                           </p>
                         </div>
-                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          View Club Directory <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          View Club Directory <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -546,7 +546,7 @@ const Home = () => {
                     <>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <LayoutDashboard className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
@@ -554,13 +554,13 @@ const Home = () => {
                             Access system statistics, manage registered clubs, review transaction logs, and maintain core platform configurations.
                           </p>
                         </div>
-                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          Open Admin Control Panel <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          Open Admin Control Panel <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                         <div>
-                          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Bell className="w-6 h-6" />
                           </div>
                           <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
@@ -568,8 +568,8 @@ const Home = () => {
                             Send direct push notifications and official announcements to all registered student accounts.
                           </p>
                         </div>
-                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
-                          Create System Broadcast <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+                        <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mt-auto group">
+                          Create System Broadcast <ArrowRightIcon className="w-4 h-4 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </>
@@ -581,7 +581,7 @@ const Home = () => {
         </>
       ) : (
         <>
-          <section className="relative pt-24 pb-6 sm:pt-28 sm:pb-8 lg:pt-32 lg:pb-10 bg-white dark:bg-[#0c0c0c] overflow-hidden">
+          <section className="relative pt-24 pb-6 sm:pt-28 sm:pb-8 lg:pt-32 lg:pb-10 bg-cn-surface overflow-hidden">
             <Section className="w-full">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 {/* Left: Text & CTAs */}
@@ -590,7 +590,7 @@ const Home = () => {
                     <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-neutral-900 dark:text-white ">
                       Discover What's Happening.
                       <br />
-                      <span className="text-brand-500 text-[clamp(39px,5.5vw,78px)] ">Be Part of It.</span>
+                      <span className="text-cn-blue text-[clamp(39px,5.5vw,78px)] ">Be Part of It.</span>
                     </h1>
                   </ScrollReveal>
 
@@ -605,7 +605,7 @@ const Home = () => {
                       <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
                         <Link
                           to="/events"
-                          className="text-white bg-[#0f1419] hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                          className="text-white bg-cn-primary hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                           <i className="ri-calendar-event-line text-lg mr-2 font-light" /> Browse Events
                         </Link>
@@ -619,7 +619,7 @@ const Home = () => {
 
                         <Link
                           to="/register"
-                          className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                           className="text-white bg-cn-primary hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                           Get Involved Now! <ArrowRightIcon className="w-4 h-4 ml-1" />
                         </Link>
@@ -662,7 +662,7 @@ const Home = () => {
       {/* NEW Featured Events Section */}
       <FeaturedEventsSection />
 
-      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <Section>
           <ScrollReveal direction="up">
             <div className="mb-10 sm:mb-12">
@@ -688,7 +688,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+      <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <Section>
           <ScrollReveal direction="up">
             <div className="mb-10 sm:mb-12">
@@ -712,7 +712,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
         <Section>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-4">
@@ -725,7 +725,7 @@ const Home = () => {
                 </p>
                 <Link
                   to="/leaderboard/how-it-works"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-200 dark:border-brand-900/60 bg-brand-50/50 dark:bg-brand-950/30 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation uppercase tracking-wider group mb-8 shadow-xs hover:shadow-md"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-bold text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation uppercase tracking-wider group mb-8 shadow-xs hover:shadow-md"
                 >
                   <span>How Points Are Calculated</span>
                   <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -744,13 +744,13 @@ const Home = () => {
       {!user && (
         <>
           {/* Section 1: For Students */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <Section>
               <ScrollReveal direction="up">
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-brand-600 dark:text-brand-500 mb-3">
+                    <p className="text-xs font-bold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Students
                     </p>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
@@ -761,7 +761,7 @@ const Home = () => {
                     <div className="flex flex-col gap-4">
                       {studentItems.map((item, i) => (
                         <div key={i} className="flex gap-3.5 items-start">
-                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900/40 flex items-center justify-center text-brand-600 dark:text-brand-400 text-base">
+                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-100 dark:border-cn-blue-900/40 flex items-center justify-center text-cn-blue-600 dark:text-cn-blue-400 text-base">
                             {item.icon}
                           </div>
                           <div className="pt-0.5">
@@ -777,7 +777,7 @@ const Home = () => {
                         Join now
                         <i className="ri-arrow-right-line text-sm" />
                       </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-brand-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
                         Browse Events
                       </Link>
                     </div>
@@ -792,8 +792,8 @@ const Home = () => {
                       style={{ filter: "saturate(0.9)" }}
                     />
                     <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-xl px-4 py-3 shadow-md">
-                      <p className="text-lg font-black text-[#0d1422] leading-none">1-Click</p>
-                      <p className="text-[11px] text-[#0d1422] mt-0.5 font-bold">Event Registration</p>
+                      <p className="text-lg font-black text-cn-text leading-none">1-Click</p>
+                      <p className="text-[11px] text-cn-text mt-0.5 font-bold">Event Registration</p>
                     </div>
                   </div>
                 </div>
@@ -802,12 +802,12 @@ const Home = () => {
           </section>
 
           {/* Section 2: For Clubs & Societies */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <Section>
               <ScrollReveal direction="up">
                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-brand-600 dark:text-brand-500 mb-3">
+                    <p className="text-xs font-bold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Clubs & Societies
                     </p>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
@@ -817,7 +817,7 @@ const Home = () => {
                   </div>
                   <Link
                     to="/clubs"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-200 dark:border-brand-900/60 bg-brand-50/50 dark:bg-brand-950/30 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-bold uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
                   >
                     <span>Explore All Societies</span>
                     <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -828,9 +828,9 @@ const Home = () => {
                   {clubFeatures.map((f, i) => (
                     <div
                       key={i}
-                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-brand-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs hover:shadow-md hover:-translate-y-1"
+                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-cn-blue-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs hover:shadow-md hover:-translate-y-1"
                     >
-                      <div className="w-10 h-10 bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors text-lg">
+                      <div className="w-10 h-10 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-cn-blue-600 group-hover:text-white transition-colors text-lg">
                         {f.icon}
                       </div>
                       <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
@@ -842,7 +842,7 @@ const Home = () => {
             </Section>
           </section>
 
-          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
             <Section>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 <ScrollReveal direction="left">
@@ -879,7 +879,7 @@ const Home = () => {
       )}
 
 
-      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
+      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Glow accent */}
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[600px] opacity-40 dark:opacity-20"
@@ -900,7 +900,7 @@ const Home = () => {
 
             <ScrollReveal direction="up" delay={0.2}>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                The Minds Behind <span className="logofont font-light tracking-wide">Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span></span>
+                The Minds Behind <span className="logofont font-light tracking-wide">Campus<span className="text-brand-600 dark:text-brand-400">Node</span></span>
               </h2>
             </ScrollReveal>
 
@@ -934,7 +934,7 @@ const Home = () => {
       </section>
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
-        <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0c0c0c] border-b border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors duration-300">
+        <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors duration-300">
           {/* Glow accent */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[320px] bg-brand-500/[0.04] dark:bg-brand-500/[0.07] rounded-full blur-[130px] pointer-events-none" />
 
@@ -984,23 +984,23 @@ const Home = () => {
             />
           </div>
 
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
             <div className="relative shrink-0">
               <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-bold text-[#111111] dark:text-[#F5F5F5] mt-4 leading-tight">Congratulations!</h3>
-            <p className="text-sm sm:text-base font-semibold text-[#F97316] dark:text-[#FB923C] mt-1.5 leading-tight">
+            <h3 className="text-xl sm:text-2xl font-bold text-cn-text mt-4 leading-tight">Congratulations!</h3>
+            <p className="text-sm sm:text-base font-semibold text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
               You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
             </p>
 
-            <p className="text-xs text-[#888888] dark:text-[#808080] mt-3 leading-relaxed italic px-2">
+            <p className="text-xs text-cn-text-muted mt-3 leading-relaxed italic px-2">
               "Hard work pays off! Congratulations to the winners of {celebrationEvent.title}. Keep striving for excellence and inspiring those around you."
             </p>
 
             <button
               onClick={acknowledgeWin}
-              className="mt-6 w-full py-3 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 text-xs cursor-pointer"
+              className="mt-6 w-full py-3 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-bold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 text-xs cursor-pointer"
             >
               Claim Victory 🏆
             </button>

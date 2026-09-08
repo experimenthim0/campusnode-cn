@@ -34,7 +34,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
     className={`p-4 rounded-2xl border transition-all ${
       accent
         ? "bg-brand-500/10 border-brand-500/30 text-brand-600 dark:text-brand-400"
-        : "bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-zinc-800"
+        : "bg-cn-surface border-cn-border"
     }`}
   >
     <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
           <ShimmerText text="Loading CampusNode calendar schedule..." className="text-sm font-medium" />
         </div>
       ) : activeView === "list" ? (
-        <div className="bg-white dark:bg-[#0c0c0c] border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-cn-surface border border-cn-border rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs divide-y divide-neutral-100 dark:divide-zinc-800/60">
               <thead>

@@ -34,7 +34,7 @@ import ScrollReveal from '../components/ScrollReveal';
 // ── Verified Badge ────────────────────────────────────────────────────────────
 const VerifiedBadge = ({ className = 'w-4 h-4' }) => (
   <svg
-    className={`${className} inline-block flex-shrink-0`}
+    className={`${className} inline-block flex-shrink-0 text-success-600`}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -42,11 +42,12 @@ const VerifiedBadge = ({ className = 'w-4 h-4' }) => (
   >
     <path
       d="M9.707 2.293a1 1 0 011.414 0l1.414 1.414a1 1 0 00.707.293h2a1 1 0 011 1v2a1 1 0 00.293.707l1.414 1.414a1 1 0 010 1.414l-1.414 1.414a1 1 0 00-.293.707v2a1 1 0 01-1 1h-2a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-1.414 0l-1.414-1.414a1 1 0 00-.707-.293h-2a1 1 0 01-1-1v-2a1 1 0 00-.293-.707L2.293 11.12a1 1 0 010-1.414l1.414-1.414a1 1 0 00.293-.707v-2a1 1 0 011-1h2a1 1 0 00.707-.293l1.414-1.414z"
-      fill="#16A34A"
+      fill="currentColor"
     />
     <path
       d="M8.5 11.5L10.5 13.5L15 9"
-      stroke="#FFFFFF"
+      stroke="currentColor"
+      className="text-white"
       strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -297,7 +298,7 @@ const Contribute = () => {
   ];
 
   return (
-    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <div className="mysans min-h-screen bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* ── Background Ambient Atmosphere ── */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
@@ -344,7 +345,7 @@ const Contribute = () => {
                     href="https://whatsapp.com/channel/0029VbAhXba7z4kgTBY3nS0Z"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs sm:text-sm font-semibold shadow-md shadow-[#25D366]/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-full bg-whatsapp hover:bg-whatsapp-hover text-white text-xs sm:text-sm font-semibold shadow-md shadow-whatsapp/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                   >
                     <i className="ri-whatsapp-line text-base" />
                     <span>Join WhatsApp Community</span>
@@ -526,9 +527,9 @@ const Contribute = () => {
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.15}>
-            <div className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-zinc-300/80 dark:border-zinc-800 bg-[#18181b] text-zinc-100 shadow-[0_16px_50px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)]">
+            <div className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-zinc-300/80 dark:border-zinc-800 bg-zinc-900 text-zinc-100 shadow-[0_16px_50px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)]">
               {/* Terminal Titlebar */}
-              <div className="px-4 sm:px-6 py-3.5 bg-[#121215] border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+              <div className="px-4 sm:px-6 py-3.5 bg-zinc-950 border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
                   <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
@@ -585,7 +586,7 @@ const Contribute = () => {
               </div>
 
               {/* Terminal Body */}
-              <div className="p-5 sm:p-7 overflow-x-auto font-mono text-xs sm:text-sm leading-relaxed text-zinc-200 bg-[#141417]">
+              <div className="p-5 sm:p-7 overflow-x-auto font-mono text-xs sm:text-sm leading-relaxed text-zinc-200 bg-zinc-950">
                 <pre className="whitespace-pre select-text">{codeBlocks[activeTab].commands}</pre>
               </div>
             </div>

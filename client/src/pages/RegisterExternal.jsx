@@ -134,17 +134,17 @@ const RegisterExternal = () => {
     `w-full px-3.5 py-2.5 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border ${
       fieldErrors[fieldName]
         ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40'
-        : 'border-zinc-200/80 dark:border-zinc-800 focus:border-brand-500 focus:ring-brand-500/20'
+        : 'border-zinc-200/80 dark:border-zinc-800 focus:border-cn-blue-500 focus:ring-cn-blue-500/20'
     } rounded-xl text-zinc-900 dark:text-white text-xs font-light outline-none focus:ring-2 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500`;
 
   return (
-    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mysans min-h-screen bg-cn-bg text-cn-text relative overflow-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
       {/* ── Background Ambient Atmosphere ── */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
         style={{
           background:
-            'radial-gradient(ellipse at center top, rgba(234, 88, 12, 0.14) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 70%)',
+            'radial-gradient(ellipse at center top, rgba(0, 148, 255, 0.12) 0%, rgba(249, 115, 22, 0.06) 45%, transparent 70%)',
         }}
         aria-hidden="true"
       />
@@ -154,7 +154,7 @@ const RegisterExternal = () => {
           
           {/* Left Column: Compact Introduction */}
           <div className="lg:col-span-5 flex flex-col justify-center space-y-4 text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider w-fit">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-500/10 border border-cn-blue-500/20 text-cn-blue-600 dark:text-cn-blue-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider w-fit">
               <Sparkles className="w-3.5 h-3.5" />
               <span>For Students From Other Institutions</span>
             </div>
@@ -171,17 +171,17 @@ const RegisterExternal = () => {
             {/* Compact Benefits List */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-600 dark:text-zinc-400 pt-1 font-medium">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
+                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
                 Open inter-college events
               </span>
               <span className="text-zinc-300 dark:text-zinc-700">•</span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
+                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
                 Create or join teams
               </span>
               <span className="text-zinc-300 dark:text-zinc-700">•</span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
+                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
                 Digital passes & certificates
               </span>
             </div>
@@ -190,10 +190,10 @@ const RegisterExternal = () => {
             <div className="pt-2">
               <Link
                 to="/register"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors group"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
               >
                 <span>Are you an NITJ student? Register as student</span>
-                <ArrowRight className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>
@@ -222,7 +222,7 @@ const RegisterExternal = () => {
                 {/* ── SECTION 1: Personal & College Information ── */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 pb-1 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    <Building2 className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                    <Building2 className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400" />
                     <span>Personal & College Information</span>
                   </div>
 
@@ -345,7 +345,7 @@ const RegisterExternal = () => {
                 {/* ── SECTION 2: Account Credentials ── */}
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center gap-2 pb-1 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    <Lock className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                    <Lock className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400" />
                     <span>Account Credentials</span>
                   </div>
 
@@ -438,7 +438,7 @@ const RegisterExternal = () => {
               <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-center">
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Already have an account?{' '}
-                  <Link to="/login" className="font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                  <Link to="/login" className="font-semibold text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
                     Log in
                   </Link>
                 </p>

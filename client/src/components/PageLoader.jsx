@@ -66,7 +66,7 @@ export default function PageLoader({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: isDark ? '#0a0a0a' : '#ffffff',
+        background: 'var(--cn-bg)',
         transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         opacity: fadeOut ? 0 : 1,
         pointerEvents: fadeOut ? 'none' : 'auto',
@@ -79,9 +79,7 @@ export default function PageLoader({
           width: '280px',
           height: '280px',
           borderRadius: '50%',
-          background: isDark
-            ? 'radial-gradient(circle, rgba(234, 88, 12, 0.09) 0%, rgba(234, 88, 12, 0) 70%)'
-            : 'radial-gradient(circle, rgba(234, 88, 12, 0.06) 0%, rgba(234, 88, 12, 0) 70%)',
+          background: 'radial-gradient(circle, var(--cn-brand-soft) 0%, transparent 70%)',
           filter: 'blur(50px)',
           pointerEvents: 'none',
         }}
@@ -94,10 +92,10 @@ export default function PageLoader({
             className="mb-4 text-2xl sm:text-3xl font-medium tracking-wider"
             style={{
               fontFamily: "'logofont', serif",
-              color: isDark ? '#ffffff' : '#0a0a0a',
+              color: 'var(--cn-text)',
             }}
           >
-            Campus<span className="text-brand-600 font-light">Node</span>
+            CampusNode
           </div>
         )}
 

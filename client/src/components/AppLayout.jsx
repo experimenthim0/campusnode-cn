@@ -121,7 +121,7 @@ const AppLayout = () => {
   }
 
   const layoutContent = isDashboardRoute ? (
-    <div className="cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+    <div className="cn-app-height flex min-w-0 flex-col bg-cn-bg text-cn-text transition-colors duration-300">
       {/* Navbar — always pinned at top, full width */}
       <Navbar />
 
@@ -145,16 +145,16 @@ const AppLayout = () => {
       </div>
 
       {/* BottomNav — mobile only (self-hides on md+, suppressed on auth routes) */}
-      {!isAuth && <BottomNav />}
+    <BottomNav />
     </div>
   ) : (
-    <div className={`cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 ${isAuth ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0 transition-colors duration-300`}>
+    <div className={`cn-app-height flex min-w-0 flex-col bg-cn-bg text-cn-text ${isAuth ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0 transition-colors duration-300`}>
       <Navbar />
       <div className="flex-1">
         <Outlet />
       </div>
       <Footer />
-      {!isAuth && <BottomNav />}
+      <BottomNav />
     </div>
   );
 
