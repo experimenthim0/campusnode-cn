@@ -8,7 +8,7 @@ const TermsAndConditions = () => {
         <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 py-12 px-4 transition-colors duration-300">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8 flex items-center justify-between">
-                    <button 
+                    <button
                         onClick={() => navigate(-1)}
                         className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
                     >
@@ -28,7 +28,7 @@ const TermsAndConditions = () => {
                         Terms <span className="text-brand-600">&amp;</span> Conditions
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        Please review the rules and agreements governing your use of Campus<span className="text-brand-600 font-semibold">Node</span>, event registrations, and community interactions across NIT Jalandhar.
+                        Please review the rules and agreements governing your use of Campus<span className="text-[#F97316] dark:text-[#FB923C] font-semibold">Node</span>, event registrations, and community interactions across NIT Jalandhar.
                     </p>
                 </div>
 
@@ -186,8 +186,8 @@ const TermsAndConditions = () => {
                         <p className="text-xs md:text-sm text-neutral-400 leading-relaxed mb-4">
                             For questions regarding our terms of service, governance, or institutional inquiries:
                         </p>
-                        <a 
-                            href="mailto:contact.nikhim@gmail.com" 
+                        <a
+                            href="mailto:contact.nikhim@gmail.com"
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Email CampusNode Team

@@ -13,7 +13,7 @@ const RegisterLanding = () => {
         </div>
         <h1 className="font-black text-[clamp(32px,6vw,48px)] leading-[1.05] tracking-wide text-black mb-3">
           Join<br />
-          Campus<span className="text-brand-600">Node</span>
+          Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
         </h1>
         <p className="text-[15px] text-neutral-500 leading-relaxed">
           Select your account type to get started

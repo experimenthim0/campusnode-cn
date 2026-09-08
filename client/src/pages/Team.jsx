@@ -33,7 +33,7 @@ const Team = () => {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-3 sm:mb-4">
               The Minds Behind{' '}
               <span className="logofont font-light">
-                Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+                Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
               </span>
             </h1>
           </ScrollReveal>
@@ -54,26 +54,26 @@ const Team = () => {
           ))}
         </div>
 
-          {/* Bottom Community Banner */}
-          <ScrollReveal direction="up" delay={0.2} className="mt-14 sm:mt-24 text-center">
-            <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
-              <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white mb-2 sm:mb-3">
-                Want to build with us?
-              </h3>
-              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
-                CampusNode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
-              </p>
-              <a
-                href="/contribute"
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-md shadow-brand-600/20 transition-all duration-200 active:scale-95 touch-manipulation"
-              >
-                <span>Join the Team & Contribute</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-          </ScrollReveal>
-        </div>
+        {/* Bottom Community Banner */}
+        <ScrollReveal direction="up" delay={0.2} className="mt-14 sm:mt-24 text-center">
+          <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white mb-2 sm:mb-3">
+              Want to build with us?
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
+              CampusNode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
+            </p>
+            <a
+              href="/contribute"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-md shadow-brand-600/20 transition-all duration-200 active:scale-95 touch-manipulation"
+            >
+              <span>Join the Team & Contribute</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        </ScrollReveal>
       </div>
+    </div>
   );
 };
 

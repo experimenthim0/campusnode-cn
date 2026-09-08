@@ -122,7 +122,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center px-6 py-12 transition-colors duration-300 relative overflow-hidden">
-      
+
       {/* Background dot pattern */}
       <div
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
@@ -185,7 +185,7 @@ const NotFound = () => {
         </div>
 
         <p className="mt-10 text-[10px] text-neutral-300 dark:text-neutral-700 tracking-widest font-bold uppercase flex items-center justify-center gap-1.5 flex-wrap">
-          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span> • You're off the map 🗺️
+          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span></span> • You're off the map 🗺️
         </p>
       </div>
     </div>

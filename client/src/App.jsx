@@ -22,6 +22,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const MyEvents = lazy(() => import('./pages/MyEvents'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
 const EditEvent = lazy(() => import('./pages/EditEvent'));
+const EventPreview = lazy(() => import('./pages/EventPreview'));
 const EventRegistrations = lazy(() => import('./pages/EventRegistrations'));
 const EventFeedbackAnalytics = lazy(() => import('./pages/EventFeedbackAnalytics'));
 const CheckIn = lazy(() => import('./pages/CheckIn'));
@@ -104,6 +105,8 @@ function App() {
                   <Route path="/reset-password/:token" element={<ResetPassword />} />
                   <Route path="/events" element={<EventFeed />} />
                   <Route path="/featured-events" element={<FeaturedEventsPage />} />
+                  <Route path="/events/:id/preview" element={<ProtectedRoute><EventPreview /></ProtectedRoute>} />
+                  <Route path="/event/:id/preview" element={<ProtectedRoute><EventPreview /></ProtectedRoute>} />
                   <Route path="/event/:slug" element={<EventDetails />} />
                   <Route path="/events/:slug" element={<EventDetails />} />
                   <Route path="/login" element={<Login />} />

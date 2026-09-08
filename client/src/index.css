@@ -206,6 +206,84 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* ── CampusNode Standardized Modal System ── */
+  .modal-backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  :is(.dark, .dark *) .modal-backdrop-blur,
+  .dark .modal-backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+}
+
+@keyframes ai-shimmer-sweep {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.ai-shimmer-text {
+  display: inline-block;
+  background-image: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.35) 0%,
+    rgba(15, 23, 42, 0.35) 30%,
+    rgba(15, 23, 42, 0.98) 50%,
+    rgba(15, 23, 42, 0.35) 70%,
+    rgba(15, 23, 42, 0.35) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: ai-shimmer-sweep 1.8s ease-in-out infinite;
+  user-select: none;
+}
+
+:is(.dark, .dark *) .ai-shimmer-text,
+.dark .ai-shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.32) 30%,
+    rgba(255, 255, 255, 0.98) 50%,
+    rgba(255, 255, 255, 0.32) 70%,
+    rgba(255, 255, 255, 0.32) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-shimmer-text {
+    animation: none !important;
+    background-image: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: currentColor !important;
+    color: #4b5563 !important;
+  }
+  :is(.dark, .dark *) .ai-shimmer-text,
+  .dark .ai-shimmer-text {
+    color: #9ca3af !important;
+  }
+}
+
+
+
+
 @font-face {
   font-family: 'myfont';
   src: url('./assets/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
@@ -326,12 +404,19 @@ body {
 
   --cn-border: #262626;
 
-  --cn-brand: #FB923C;
-  --cn-brand-hover: #F97316;
-  --cn-brand-soft: rgba(249, 115, 22, 0.10);
+  /* 30% Institutional Blue (Dark Mode) */
+  --cn-brand: #3B82F6;
+  --cn-brand-hover: #60A5FA;
+  --cn-brand-soft: rgba(37, 99, 235, 0.15);
 
-  --cn-primary: #F5F5F5;
-  --cn-primary-hover: #FFFFFF;
+  --cn-primary: #3B82F6;
+  --cn-primary-hover: #60A5FA;
+  --cn-primary-soft: rgba(59, 130, 246, 0.15);
+
+  /* 10% CampusNode Orange Accent (Dark Mode) */
+  --cn-accent: #FB923C;
+  --cn-accent-hover: #F97316;
+  --cn-accent-soft: rgba(249, 115, 22, 0.15);
 
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -339,31 +424,31 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: #FB923C;
+  --accent-foreground: #0A0A0A;
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
+  --ring: #3B82F6;
+  --chart-1: #3B82F6;
+  --chart-2: #60A5FA;
+  --chart-3: #FB923C;
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #3B82F6;
+  --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #3B82F6;
 }
 
 @layer base {
@@ -552,8 +637,8 @@ body {
 .dark .bg-neutral-50\/30 { background-color: rgba(17,17,17,0.30) !important; }
 
 /* Tinted backgrounds (keep hue, darken base) */
-.dark .bg-brand-50      { background-color: rgba(249,115,22,0.10) !important; }
-.dark .bg-brand-100     { background-color: rgba(249,115,22,0.15) !important; }
+.dark .bg-brand-50      { background-color: rgba(37,99,235,0.12) !important; }
+.dark .bg-brand-100     { background-color: rgba(37,99,235,0.18) !important; }
 .dark .bg-red-50         { background-color: rgba(239,68,68,0.08) !important; }
 .dark .bg-red-100        { background-color: rgba(239,68,68,0.12) !important; }
 .dark .bg-blue-50        { background-color: rgba(59,130,246,0.08) !important; }
@@ -567,8 +652,8 @@ body {
 
 /* Specific hex backgrounds used in Profile pages */
 .dark .bg-\[\#fefce8\]\/30 { background-color: rgba(15,15,15,0.3) !important; }
-.dark .bg-brand-50\/40  { background-color: rgba(249,115,22,0.08) !important; }
-.dark .bg-brand-50\/50  { background-color: rgba(249,115,22,0.10) !important; }
+.dark .bg-brand-50\/40  { background-color: rgba(37,99,235,0.08) !important; }
+.dark .bg-brand-50\/50  { background-color: rgba(37,99,235,0.10) !important; }
 .dark .bg-\[\#0f1419\]   { background-color: #e5e5e5 !important; }
 
 /* ── Text inversions (High Readability Hierarchy) ───────────────────────── */
@@ -628,15 +713,15 @@ body {
 .dark .hover\:bg-gray-200:hover     { background-color: #262626 !important; }
 .dark .hover\:bg-gray-300:hover     { background-color: #333333 !important; }
 .dark .hover\:bg-gray-400:hover     { background-color: #404040 !important; }
-.dark .hover\:bg-brand-50:hover    { background-color: rgba(234,88,12,0.1) !important; }
+.dark .hover\:bg-brand-50:hover    { background-color: rgba(37,99,235,0.12) !important; }
 .dark .hover\:bg-red-50:hover       { background-color: rgba(239,68,68,0.1) !important; }
 .dark .hover\:bg-red-100:hover      { background-color: rgba(239,68,68,0.15) !important; }
 .dark .hover\:bg-black\/10:hover    { background-color: rgba(255,255,255,0.06) !important; }
 .dark .hover\:bg-\[\#0f1419\]\/90:hover { background-color: #d4d4d4 !important; }
 
 /* Critical: hover bg colors that override base !important bg-black / bg-white */
-.dark .hover\:bg-brand-600:hover   { background-color: #ea580c !important; }
-.dark .hover\:bg-brand-700:hover   { background-color: #c2410c !important; }
+.dark .hover\:bg-brand-600:hover   { background-color: #1d4ed8 !important; }
+.dark .hover\:bg-brand-700:hover   { background-color: #1e40af !important; }
 .dark .hover\:bg-red-600:hover      { background-color: #dc2626 !important; }
 .dark .hover\:bg-red-700:hover      { background-color: #b91c1c !important; }
 .dark .hover\:bg-green-700:hover    { background-color: #15803d !important; }
@@ -649,18 +734,18 @@ body {
 /* Text hover */
 .dark .hover\:text-black:hover      { color: #f5f5f5 !important; }
 .dark .hover\:text-white:hover      { color: #0a0a0a !important; }
-.dark .hover\:text-brand-600:hover { color: #ea580c !important; }
-.dark .hover\:text-brand-700:hover { color: #c2410c !important; }
+.dark .hover\:text-brand-600:hover { color: #60a5fa !important; }
+.dark .hover\:text-brand-700:hover { color: #93c5fd !important; }
 
 /* Border hover */
-.dark .hover\:border-brand-600:hover { border-color: #ea580c !important; }
+.dark .hover\:border-brand-600:hover { border-color: #3b82f6 !important; }
 .dark .hover\:border-black:hover      { border-color: #d4d4d4 !important; }
 .dark .hover\:border-white:hover      { border-color: #404040 !important; }
 
 /* ── Focus state overrides ──────────────────────────────────────────────── */
 .dark .focus\:border-black:focus   { border-color: #e5e5e5 !important; }
 .dark .focus\:bg-white:focus       { background-color: #171717 !important; }
-.dark .focus\:border-brand-600:focus { border-color: #ea580c !important; }
+.dark .focus\:border-brand-600:focus { border-color: #3b82f6 !important; }
 
 /* ── Shadow adjustments ────────────────────────────────────────────────── */
 .dark .shadow-sm  { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4) !important; }
@@ -703,7 +788,7 @@ body {
 }
 
 /* Keep buttons with explicit bg colors as they are */
-.dark .bg-brand-600  { background-color: #ea580c !important; }
+.dark .bg-brand-600  { background-color: #2563eb !important; }
 .dark .bg-red-600     { background-color: #dc2626 !important; }
 .dark .bg-green-600   { background-color: #16a34a !important; }
 .dark .bg-blue-600    { background-color: #2563eb !important; }
@@ -799,8 +884,8 @@ html.dark-transition *::after {
 }
 
 .search-input-wrapper:focus-within {
-  border-color: #ea580c;
-  box-shadow: 0 12px 36px -4px rgba(234, 88, 12, 0.15), 0 0 0 3px rgba(234, 88, 12, 0.12);
+  border-color: #123B6D;
+  box-shadow: 0 12px 36px -4px rgba(18, 59, 109, 0.15), 0 0 0 3px rgba(18, 59, 109, 0.12);
 }
 
 .search-input-icon {
@@ -811,7 +896,7 @@ html.dark-transition *::after {
 }
 
 .search-input-wrapper:focus-within .search-input-icon {
-  color: #ea580c;
+  color: #123B6D;
 }
 
 .search-input {
@@ -1030,7 +1115,7 @@ html.dark-transition *::after {
 }
 
 .search-result-item:hover .search-result-arrow {
-  color: #ea580c;
+  color: #123B6D;
   transform: translate(2px, -2px);
 }
 
@@ -1051,7 +1136,7 @@ html.dark-transition *::after {
   width: 16px;
   height: 16px;
   border: 2px solid #e5e5e5;
-  border-top-color: #ea580c;
+  border-top-color: #123B6D;
   border-radius: 50%;
   animation: searchSpin 0.6s linear infinite;
 }
@@ -1141,8 +1226,8 @@ html.dark-transition *::after {
 }
 
 .dark .search-input-wrapper:focus-within {
-  border-color: #ea580c !important;
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
 }
 
 .dark .search-input {
@@ -1158,7 +1243,7 @@ html.dark-transition *::after {
 }
 
 .dark .search-input-wrapper:focus-within .search-input-icon {
-  color: #ea580c !important;
+  color: #2563eb !important;
 }
 
 .dark .search-clear-btn {
@@ -1217,7 +1302,7 @@ html.dark-transition *::after {
 }
 
 .dark .search-result-item:hover .search-result-arrow {
-  color: #ea580c !important;
+  color: #3b82f6 !important;
 }
 
 .dark .search-no-results-icon {
@@ -1238,7 +1323,7 @@ html.dark-transition *::after {
 
 .dark .search-loading-spinner {
   border-color: #333333 !important;
-  border-top-color: #ea580c !important;
+  border-top-color: #2563eb !important;
 }
 
 .dark .search-trigger-btn {
@@ -1262,9 +1347,9 @@ html.dark-transition *::after {
 }
 
 .dark .search-result-badge.bg-brand-50 {
-  background: rgba(234, 88, 12, 0.12) !important;
-  color: #fb923c !important;
-  border-color: rgba(234, 88, 12, 0.2) !important;
+  background: rgba(37, 99, 235, 0.12) !important;
+  color: #60a5fa !important;
+  border-color: rgba(37, 99, 235, 0.2) !important;
 }
 
 .dark .search-result-badge.bg-neutral-100 {

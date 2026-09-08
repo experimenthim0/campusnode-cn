@@ -225,11 +225,10 @@ export const TeamCardDesign1 = ({ data = DEFAULT_SOPHIE, isFollowed, onToggleFol
             type="button"
             onClick={toggle}
             aria-label={following ? `Unfollow ${data.name}` : `Follow ${data.name}`}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95 flex items-center gap-1 ${
-              following
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95 flex items-center gap-1 ${following
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-sm'
                 : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200'
-            }`}
+              }`}
           >
             {following ? (
               <>
@@ -305,11 +304,10 @@ export const TeamCardDesign2 = ({ data = DEFAULT_SOPHIE, isFollowed, onToggleFol
             type="button"
             onClick={toggle}
             aria-label={following ? `Unfollow ${data.name}` : `Follow ${data.name}`}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 flex items-center gap-1 ${
-              following
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 flex items-center gap-1 ${following
                 ? 'bg-emerald-600 text-white shadow-emerald-600/30'
                 : 'bg-white/95 hover:bg-white dark:bg-zinc-800/90 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-white/80 dark:border-zinc-700'
-            }`}
+              }`}
           >
             {following ? (
               <>
@@ -385,11 +383,10 @@ export const TeamCardDesign3 = ({ data = DEFAULT_SOPHIE, isFollowed, onToggleFol
             type="button"
             onClick={toggle}
             aria-label={following ? `Unfollow ${data.name}` : `Follow ${data.name}`}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 shadow-md flex items-center gap-1 ${
-              following
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 shadow-md flex items-center gap-1 ${following
                 ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                 : 'bg-white hover:bg-zinc-100 text-zinc-950'
-            }`}
+              }`}
           >
             {following ? (
               <>
@@ -445,7 +442,7 @@ const Team = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-4">
               Meet The{' '}
               <span className="logofont font-light">
-                Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+                Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
               </span>{' '}
               Team
             </h1>
@@ -463,11 +460,10 @@ const Team = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('compare')}
-                className={`flex-1 min-w-[140px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === 'compare'
+                className={`flex-1 min-w-[140px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${activeTab === 'compare'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                }`}
+                  }`}
               >
                 All 3 Designs
               </button>
@@ -475,11 +471,10 @@ const Team = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('style1')}
-                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === 'style1'
+                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${activeTab === 'style1'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                }`}
+                  }`}
               >
                 Style 1: Inset Solid
               </button>
@@ -487,11 +482,10 @@ const Team = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('style2')}
-                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === 'style2'
+                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${activeTab === 'style2'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                }`}
+                  }`}
               >
                 Style 2: Light Frosted
               </button>
@@ -499,11 +493,10 @@ const Team = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('style3')}
-                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === 'style3'
+                className={`flex-1 min-w-[130px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${activeTab === 'style3'
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                }`}
+                  }`}
               >
                 Style 3: Smoky Dark
               </button>

@@ -166,8 +166,8 @@ const eventSchema = z.object({
     title: z.string().min(3),
     description: z.string().optional().nullable(),
     venue: z.string().optional(),
-    startTime: z.coerce.date(),
-    endTime: z.coerce.date(),
+    startTime: z.coerce.date().optional(),
+    endTime: z.coerce.date().optional(),
     totalSeats: z.coerce.number().int().optional(),
     entryFee: z.coerce.number().optional(),
     imageUrl: z.string().url().optional().or(z.literal("")),
@@ -192,6 +192,8 @@ const eventSchema = z.object({
     upiId: z.string().optional().nullable(),
     postRegistrationMessage: z.string().optional().nullable(),
     accountHolderName: z.string().optional().nullable(),
+    reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
+    isDraft: z.boolean().optional(),
     sponsors: z.array(z.object({
       name: z.string().min(1),
       logoUrl: z.string().url(),
@@ -380,7 +382,10 @@ const clubIdParamSchema = z.object({
 router.get("/club/:clubId", validate(clubIdParamSchema), async (req, res) => {
   try {
     const events = await prisma.event.findMany({
-      where: { clubId: req.params.clubId },
+      where: {
+        clubId: req.params.clubId,
+        reviewStatus: "PUBLISHED",
+      },
       include: eventInclude,
       orderBy: { startTime: "asc" },
     });
@@ -430,8 +435,13 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
       where.clubId = clubId;
     }
 
+    const isAdminOrFC = req.user.role === "admin" || req.user.role === "facultyCoordinator";
     if (reviewStatus && reviewStatus !== "all") {
       where.reviewStatus = reviewStatus;
+    } else if (!isAdminOrFC) {
+      where.reviewStatus = "PUBLISHED";
+    } else {
+      where.reviewStatus = { not: "DRAFT" };
     }
 
     // Role scoping: if faculty coordinator, scope to assigned club if not admin
@@ -988,15 +998,28 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       return res.status(404).json({ message: "Club not found." });
     }
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const isDraft = req.body.reviewStatus === "DRAFT" || req.body.isDraft === true;
+    if (!isDraft) {
+      if (!startTime || !endTime) {
+        return res.status(400).json({ message: "Start time and end time are required." });
+      }
+      if (!venue || !venue.trim()) {
+        return res.status(400).json({ message: "Venue is required." });
+      }
+    }
 
-    const bookingValidation = await validateBooking({ venue, startTime: start, endTime: end });
-    if (bookingValidation.hasConflict) {
-      return res.status(409).json({
-        message: bookingValidation.message || "Venue is already booked.",
-        conflict: bookingValidation
-      });
+    const start = startTime ? new Date(startTime) : new Date(Date.now() + 86400000);
+    const end = endTime ? new Date(endTime) : new Date(Date.now() + 86400000 + 7200000);
+    const targetVenue = venue?.trim() || "TBD";
+
+    if (!isDraft && targetVenue !== "TBD") {
+      const bookingValidation = await validateBooking({ venue: targetVenue, startTime: start, endTime: end });
+      if (bookingValidation.hasConflict) {
+        return res.status(409).json({
+          message: bookingValidation.message || "Venue is already booked.",
+          conflict: bookingValidation
+        });
+      }
     }
 
     const isStudentCreator = req.user.principalType === "STUDENT" || req.user.userType === "student";
@@ -1006,8 +1029,8 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       data: {
         id: createObjectId(),
         title,
-        description,
-        venue,
+        description: description || "",
+        venue: targetVenue,
         startTime: start,
         endTime: end,
         totalSeats: totalSeats || 0,
@@ -1037,17 +1060,19 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         accountHolderName: accountHolderName || null,
         postRegistrationMessage: postRegistrationMessage || null,
         slug: await slugifyUnique(title, 'event', 'slug'),
-        reviewStatus: "PENDING",
+        reviewStatus: isDraft ? "DRAFT" : "PENDING",
         sponsors: { createMany: { data: (sponsors || []).map(s => ({ id: createObjectId(), ...s })) } },
         media: { createMany: { data: (media || []).map(m => ({ id: createObjectId(), ...m })) } },
       },
       include: eventInclude,
     });
 
-    invalidatePublicResponses(["events:public:*"]);
+    if (!isDraft) {
+      invalidatePublicResponses(["events:public:*"]);
+    }
 
-    // Notify supervised Faculty Coordinator of incoming event review request
-    if (savedEvent.clubId) {
+    // Notify supervised Faculty Coordinator of incoming event review request ONLY if PENDING
+    if (!isDraft && savedEvent.clubId) {
       try {
         const club = await prisma.club.findUnique({
           where: { id: savedEvent.clubId },
@@ -1156,6 +1181,155 @@ router.put(
   },
 );
 
+router.post(
+  "/:id/submit",
+  verifyToken,
+  requirePermission(PERMISSIONS.EVENT_UPDATE),
+  async (req, res) => {
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        include: { club: true },
+      });
+      if (!event) return res.status(404).json({ message: "Event not found" });
+
+      const isAuthorized = hasPermission(req.user, PERMISSIONS.EVENT_UPDATE, event);
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Unauthorized to submit this event." });
+      }
+
+      if (event.reviewStatus === "PUBLISHED") {
+        return res.status(400).json({ message: "Event is already published." });
+      }
+      if (event.reviewStatus === "PENDING") {
+        return res.status(400).json({ message: "Event is already submitted and pending review." });
+      }
+
+      // Authoritative completeness validation
+      const errors = [];
+      if (!event.title || event.title.trim().length < 3) {
+        errors.push("Event title must be at least 3 characters.");
+      }
+      if (!event.description || event.description.trim().length < 10) {
+        errors.push("Event description is required (minimum 10 characters).");
+      }
+      if (!event.venue || event.venue.trim() === "" || event.venue.trim() === "TBD") {
+        errors.push("Valid event venue is required.");
+      }
+      if (!event.startTime || isNaN(new Date(event.startTime).getTime())) {
+        errors.push("Valid start time is required.");
+      }
+      if (!event.endTime || isNaN(new Date(event.endTime).getTime())) {
+        errors.push("Valid end time is required.");
+      }
+      if (event.startTime && event.endTime && new Date(event.startTime) >= new Date(event.endTime)) {
+        errors.push("End time must be after start time.");
+      }
+      if (event.registrationDeadline && new Date(event.registrationDeadline) > new Date(event.startTime)) {
+        errors.push("Registration deadline must be before or on event start time.");
+      }
+      if (event.registrationType === "team" || event.registrationType === "both") {
+        if (event.minTeamSize > event.maxTeamSize) {
+          errors.push("Minimum team size cannot exceed maximum team size.");
+        }
+      }
+      if (event.paymentMethod && event.paymentMethod !== "FREE") {
+        if (Number(event.registrationFee || 0) <= 0) {
+          errors.push("Registration fee must be greater than 0 for paid events.");
+        }
+        if (event.paymentMethod === "MANUAL_TRANSACTION" && !event.upiId) {
+          errors.push("UPI ID is required for manual transaction payments.");
+        }
+        if (event.paymentMethod === "COLLEGE_PAYMENT" && !event.collegePaymentUrl) {
+          errors.push("College payment URL is required for college portal payments.");
+        }
+      }
+
+      if (errors.length > 0) {
+        return res.status(422).json({
+          message: "Event cannot be submitted because required fields are incomplete or invalid.",
+          errors,
+        });
+      }
+
+      // Check venue conflicts
+      const bookingValidation = await validateBooking({
+        venue: event.venue,
+        startTime: new Date(event.startTime),
+        endTime: new Date(event.endTime),
+        excludeEventId: event.id,
+      });
+
+      if (bookingValidation.hasConflict) {
+        return res.status(409).json({
+          message: bookingValidation.message || "Venue is already booked for the selected time.",
+          conflict: bookingValidation,
+        });
+      }
+
+      const canDirectPublish =
+        req.user.role === "admin" ||
+        hasPermission(req.user, PERMISSIONS.EVENT_PUBLISH, event);
+      const shouldDirectPublish = Boolean(req.body.directPublish && canDirectPublish);
+      const targetStatus = shouldDirectPublish ? "PUBLISHED" : "PENDING";
+
+      const updated = await prisma.event.update({
+        where: { id: event.id },
+        data: {
+          reviewStatus: targetStatus,
+          reviewComment: null,
+          reviewedById: shouldDirectPublish ? req.user.userId : null,
+        },
+        include: eventInclude,
+      });
+
+      if (targetStatus === "PUBLISHED") {
+        invalidatePublicResponses(["events:public:*"]);
+      } else if (targetStatus === "PENDING" && updated.clubId) {
+        try {
+          const club = await prisma.club.findUnique({
+            where: { id: updated.clubId },
+            select: { facultyCoordinatorId: true, clubName: true },
+          });
+          if (club?.facultyCoordinatorId) {
+            const notif = await prisma.notification.create({
+              data: {
+                id: createObjectId(),
+                targetScope: "FACULTY_COORDINATOR",
+                clubId: updated.clubId,
+                recipientUserId: club.facultyCoordinatorId,
+                eventId: updated.id,
+                type: "EVENT_REVIEW_REQUEST",
+                title: `New Event Pending Approval: ${updated.title}`,
+                message: `${club.clubName || "A club"} has submitted "${updated.title}" for faculty review and approval.`,
+              },
+            });
+            if (req.io) {
+              req.io.to(club.facultyCoordinatorId).emit("new-notification", {
+                ...notif,
+                _id: notif.id,
+                sender: { name: club.clubName || "Club" },
+              });
+            }
+          }
+        } catch (notifErr) {
+          console.error("Failed to notify faculty coordinator on submission:", notifErr.message);
+        }
+      }
+
+      res.json({
+        message:
+          targetStatus === "PUBLISHED"
+            ? "Event published successfully."
+            : "Event submitted for faculty approval successfully.",
+        event: serializeEvent(updated),
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
+);
+
 
 // ── GET /api/events/:id/preview — dynamic Open Graph & social crawler preview ──
 router.get("/:id/preview", async (req, res) => {
@@ -1238,13 +1412,23 @@ router.get("/:id", async (req, res) => {
               status: { not: "INACTIVE" },
             },
           });
-          if (
-            membership &&
-            (["CLUB_HEAD", "COORDINATOR", "CORE_MEMBER", "MEMBER"].includes(membership.role) ||
-              membership.canEditEvents ||
-              membership.canTakeAttendance)
-          ) {
-            isClubMemberAuthorized = true;
+          if (membership) {
+            if (event.reviewStatus === "DRAFT") {
+              if (
+                ["CLUB_HEAD", "COORDINATOR"].includes(membership.role) ||
+                membership.canEditEvents
+              ) {
+                isClubMemberAuthorized = true;
+              }
+            } else {
+              if (
+                ["CLUB_HEAD", "COORDINATOR", "CORE_MEMBER", "MEMBER"].includes(membership.role) ||
+                membership.canEditEvents ||
+                membership.canTakeAttendance
+              ) {
+                isClubMemberAuthorized = true;
+              }
+            }
           }
         } catch {
         }
@@ -1294,6 +1478,12 @@ router.post(
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
+
+      if (event.reviewStatus !== "PUBLISHED") {
+        return res.status(400).json({
+          message: "Registration is not open. This event is not yet published.",
+        });
+      }
 
       const now = new Date();
       if (now > new Date(event.endTime)) {
@@ -1755,6 +1945,18 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       return res.status(403).json({ message: "Unauthorized to update this event." });
     }
 
+    if (req.body.expectedUpdatedAt) {
+      const clientTime = new Date(req.body.expectedUpdatedAt).getTime();
+      const serverTime = new Date(event.updatedAt).getTime();
+      if (!isNaN(clientTime) && serverTime > clientTime + 3000) {
+        return res.status(409).json({
+          message: "Conflict: Event has been modified by a newer request.",
+          code: "STALE_DATA_CONFLICT",
+          serverUpdatedAt: event.updatedAt,
+        });
+      }
+    }
+
     const { sponsors, media } = req.body;
 
     const allowedFields = [
@@ -1783,6 +1985,12 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       "allowWaitlist",
       "certificateTemplate",
       "postRegistrationMessage",
+      "paymentMethod",
+      "registrationFee",
+      "paymentInstructions",
+      "collegePaymentUrl",
+      "upiId",
+      "accountHolderName",
     ];
 
     const updates = {};
@@ -1837,6 +2045,12 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (updates.registrationType === "none") {
       updates.registeredCount = 0;
     }
+    if (updates.registrationFee !== undefined) updates.registrationFee = Number(updates.registrationFee || 0);
+    if (updates.paymentMethod !== undefined) updates.paymentMethod = updates.paymentMethod || "FREE";
+    if (updates.paymentInstructions !== undefined) updates.paymentInstructions = updates.paymentInstructions || null;
+    if (updates.collegePaymentUrl !== undefined) updates.collegePaymentUrl = updates.collegePaymentUrl || null;
+    if (updates.upiId !== undefined) updates.upiId = updates.upiId || null;
+    if (updates.accountHolderName !== undefined) updates.accountHolderName = updates.accountHolderName || null;
 
     let promotedCandidates = [];
     const updatedEvent = await prisma.$transaction(async (tx) => {

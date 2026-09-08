@@ -75,27 +75,27 @@ const LostFoundGuide = () => {
     ];
 
     return (
-        <div className={`min-h-screen myfont ${isDark ? 'bg-[#0a0a0a] text-neutral-100' : 'bg-gray-50 text-gray-900'} transition-colors duration-300 pb-20`}>
-            <div className={`${isDark ? 'bg-neutral-900/80 border-neutral-800' : 'bg-white border-gray-200'} border-b  top-0 z-50 backdrop-blur-md`}>
+        <div className="min-h-screen myfont bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 transition-colors duration-300 pb-20">
+            <div className="bg-white/80 dark:bg-zinc-900/80 border-b border-neutral-200/90 dark:border-zinc-800/90 sticky top-0 z-50 backdrop-blur-md">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
                     <button 
                         onClick={() => navigate(-1)}
-                        className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'} transition-colors`}
+                        className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-zinc-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-2xs"
                         aria-label="Go Back"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <h1 className="text-lg font-bold tracking-tight uppercase">Rules & Regulations Directory</h1>
+                    <h1 className="text-lg font-bold tracking-tight uppercase text-neutral-900 dark:text-neutral-100">Rules & Regulations Directory</h1>
                 </div>
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
                 {/* Hero / Document Identity */}
                 <div className="mb-10">
-                    <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-neutral-100 mb-4">
+                    <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100 mb-4">
                         LOST & FOUND PORTAL REGULATIONS
                     </h2>
-                    <p className="text-sm text-gray-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
                         This directory constitutes the formal operating rules and community guidelines governing the Lost & Found platform. Compliance with all sections documented herein is mandatory for all members of the CampusNode community.
                     </p>
                 </div>
@@ -104,18 +104,18 @@ const LostFoundGuide = () => {
                     {sections.map((section, idx) => (
                         <div 
                             key={idx} 
-                            className={`${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-gray-200'} border rounded-xl p-6 md:p-8 shadow-sm`}
+                            className="bg-white dark:bg-zinc-900/80 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl p-6 md:p-8 shadow-2xs"
                         >
-                            <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 tracking-wide border-b border-gray-100 dark:border-neutral-800 pb-3 mb-5 uppercase">
+                            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-wide border-b border-neutral-100 dark:border-zinc-800/80 pb-3 mb-5 uppercase">
                                 Section {idx + 1}: {section.title}
                             </h3>
                             <ul className="space-y-4">
                                 {section.content.map((item, i) => (
                                     <li key={i} className="flex items-start gap-3">
-                                        <span className="text-gray-900 dark:text-neutral-300 font-bold text-sm select-none shrink-0 min-w-[28px]">
+                                        <span className="text-neutral-900 dark:text-neutral-300 font-bold text-sm select-none shrink-0 min-w-[28px]">
                                             {idx + 1}.{i + 1}
                                         </span>
-                                        <span className="text-gray-600 dark:text-neutral-400 text-sm leading-relaxed">
+                                        <span className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
                                             {item}
                                         </span>
                                     </li>
@@ -126,12 +126,12 @@ const LostFoundGuide = () => {
                 </div>
 
                 {/* Asymmetric Liability & Legal Disclaimer */}
-                <div className="mt-12 p-6 md:p-8 rounded-xl bg-white dark:bg-neutral-900/40 border border-gray-200 dark:border-neutral-800 border-l-4 border-l-slate-700 dark:border-l-neutral-500 shadow-sm">
+                <div className="mt-12 p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900/80 border border-neutral-200/90 dark:border-zinc-800/90 border-l-4 !border-l-brand-500 dark:!border-l-brand-400 shadow-2xs">
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 shrink-0">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 shrink-0">
                             <AlertTriangle className="w-5 h-5" />
                         </div>
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-neutral-100">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
                             Liability & Legal Disclaimer
                         </h4>
                     </div>

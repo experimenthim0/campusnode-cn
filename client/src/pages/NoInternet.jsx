@@ -205,7 +205,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
       const next = !prev;
       try {
         localStorage.setItem("campusnode_2048_sound", String(next));
-      } catch {}
+      } catch { }
       return next;
     });
   };
@@ -308,7 +308,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
           setBestScore(newScore);
           try {
             localStorage.setItem("campusnode_2048_best", String(newScore));
-          } catch {}
+          } catch { }
         }
 
         if (scoreToAdd > 0) {
@@ -505,7 +505,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
         {/* Branding */}
         <div>
           <h2 className="font-medium text-neutral-900 dark:text-white logofont tracking-wider">
-            Campus<span className="text-brand-500">Node</span>
+            Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
           </h2>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const STUDENT_FAILURE_MESSAGES = [
@@ -56,6 +56,7 @@ const Login = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -67,14 +68,14 @@ const Login = () => {
       const result = await login(formData.email, formData.password);
       setFailedAttempts(0);
 
-      if (result.needs2FA) {
+      if (result?.needs2FA) {
         setShowOTP(true);
         setError('');
       }
       // Navigation is handled by AuthContext
     } catch (err) {
       setFailedAttempts((prev) => prev + 1);
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -89,34 +90,49 @@ const Login = () => {
       setFailedAttempts(0);
       // Navigation is handled by AuthContext
     } catch (err) {
-      setError(err.response?.data?.message || 'OTP verification failed');
+      setError(err.response?.data?.message || 'OTP verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const inputCls =
-    "w-full px-4 py-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400";
+    "w-full px-4 py-3 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
+    <div className="mysans min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300 flex flex-col items-center justify-center px-4 py-10 sm:px-6">
+      {/* ── Background Ambient Atmosphere ── */}
+      <div
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
+        style={{
+          background:
+            'radial-gradient(ellipse at center top, rgba(234, 88, 12, 0.14) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 70%)',
+        }}
+        aria-hidden="true"
+      />
 
-      <div className="w-full max-w-md">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
-            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
-          </span>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Sign in to your account
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col ">
+      <div className="w-full max-w-md relative z-10">
+        
+        {/* Frosted Glass Login Card */}
+        <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden flex flex-col">
+          
+          {/* Card Header */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] font-semibold uppercase tracking-wider mb-2.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>CampusNode Authentication</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+              Sign In
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              Access your student, organizer, or club account
+            </p>
+          </div>
 
           {!showOTP ? (
-            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-              {/* Funny Student Message after 2 failed attempts */}
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              {/* Humorous failure message after 2 failed attempts */}
               {failedAttempts >= 2 && (
                 <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
                   <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
@@ -141,13 +157,14 @@ const Login = () => {
 
               {/* Standard error for 1st failed attempt */}
               {error && failedAttempts < 2 && (
-                <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm font-medium text-center rounded-xl">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl text-center">
                   {error}
                 </div>
               )}
 
+              {/* Email Field */}
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Email Address
                 </label>
                 <input
@@ -161,12 +178,16 @@ const Login = () => {
                 />
               </div>
 
+              {/* Password Field */}
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -183,33 +204,45 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer focus:outline-none"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer focus:outline-none"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
+              {/* Sign In CTA */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all mt-1 ${isLoading
-                    ? 'bg-neutral-400 cursor-not-allowed'
-                    : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5'
-                  }`}
+                className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs mt-1"
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? (
+                  <>
+                    <i className="ri-loader-4-line animate-spin text-base" />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <span>Sign In</span>
+                )}
               </button>
             </form>
           ) : (
+            /* 2FA OTP Form */
             <form className="flex flex-col gap-5" onSubmit={handleVerifyOTP}>
               <div className="text-center mb-2">
-                <h3 className="text-lg font-bold text-black dark:text-white">2-Step Verification</h3>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Enter the 6-digit code sent to your email.</p>
+                <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-2">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">2-Step Verification</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  Enter the 6-digit code sent to your email.
+                </p>
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm font-medium text-center rounded-xl">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl text-center">
                   {error}
                 </div>
               )}
@@ -230,17 +263,14 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${isLoading
-                      ? 'bg-neutral-400 cursor-not-allowed'
-                      : 'bg-brand-600 hover:bg-brand-700 cursor-pointer'
-                    }`}
+                  className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   {isLoading ? 'Verifying...' : 'Verify & Sign In'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowOTP(false)}
-                  className="text-sm text-neutral-500 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                  className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   Back to Login
                 </button>
@@ -251,26 +281,29 @@ const Login = () => {
           {/* Divider */}
           <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
+              <div className="w-full border-t border-zinc-200/80 dark:border-zinc-800"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white dark:bg-neutral-900 text-neutral-400 text-xs">New student?</span>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-white/90 dark:bg-zinc-900/90 text-zinc-400 dark:text-zinc-500">
+                New student?
+              </span>
             </div>
           </div>
 
           {/* Register Link */}
-          <div className="mt-6 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <Link
               to="/register"
-              className="w-full text-center py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-semibold text-sm hover:border-brand-500 dark:hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-500 transition-all"
+              className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-xs hover:border-brand-500 dark:hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
             >
               Register as Student
             </Link>
           </div>
 
+          {/* Admin Login Link */}
           <Link
             to="/admin-secret-login"
-            className="mt-6 text-sm text-center text-neutral-500 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+            className="mt-5 text-xs text-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
           >
             Login to Admin Portal
           </Link>

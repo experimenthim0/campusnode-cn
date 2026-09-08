@@ -40,6 +40,9 @@ export const deleteEvent = (id) =>
 export const reviewEvent = (id, payload) =>
   api.put(`/api/events/${id}/review`, typeof payload === 'object' ? payload : { status: payload });
 
+export const submitEventForReview = (id, data = {}) =>
+  api.post(`/api/events/${id}/submit`, data);
+
 export const registerForEvent = (eventId, payload) =>
   api.post(`/api/events/${eventId}/register`, payload);
 

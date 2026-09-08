@@ -639,24 +639,24 @@ const EventDetails = () => {
   const isWaitlistFull = isFull && allowWaitlist && waitlistCount >= 5;
 
   const btnConfig = isOpenEvent
-    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default shadow-md shadow-emerald-600/20', disabled: true }
+    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-neutral-950 border-emerald-600 dark:border-emerald-500 cursor-default shadow-xs shadow-emerald-600/20', disabled: true }
     : isEnded
-    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-200/80 dark:border-neutral-700 backdrop-blur-md shadow-xs hover:shadow-md cursor-pointer' : 'bg-neutral-200/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-500 border-neutral-200 dark:border-neutral-800 opacity-80 cursor-not-allowed', disabled: !showWinners }
+    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200/80 dark:border-neutral-700 backdrop-blur-md shadow-2xs hover:shadow-xs cursor-pointer' : 'bg-neutral-200/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-500 border-neutral-200 dark:border-neutral-800 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
-    ? { label: 'Event is Live', cls: 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-600/20 cursor-not-allowed', disabled: true }
+    ? { label: 'Event is Live', cls: 'bg-brand-600 dark:bg-brand-500 text-white dark:text-neutral-950 border-brand-600 dark:border-brand-500 shadow-xs shadow-brand-600/20 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
     ? { label: 'Deadline Passed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isExternalRestricted
-    ? { label: ' NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    ? { label: 'NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : alreadyRegistered
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isFull && !allowWaitlist
-    ? { label: 'Event Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-xs', disabled: true }
+    ? { label: 'Event Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
     : isWaitlistFull
-    ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-xs', disabled: true }
+    ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
     : isFull
-    ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-brand-600 hover:border-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:border-brand-600 dark:hover:text-white shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg cursor-pointer', disabled: false };
+    ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white dark:text-neutral-950 border-amber-500 shadow-xs shadow-amber-500/20 hover:shadow-sm cursor-pointer', disabled: false }
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 hover:bg-brand-600 hover:border-brand-600 hover:text-white dark:hover:bg-brand-500 dark:hover:border-brand-500 dark:hover:text-neutral-950 shadow-sm shadow-neutral-900/10 dark:shadow-neutral-950/20 hover:shadow-md cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -894,17 +894,17 @@ const EventDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 myfont text-neutral-900 dark:text-neutral-100">
 
       <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[15px] font-bold text-neutral-600 dark dark:text-neutral-500 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[15px] font-bold text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
@@ -1356,7 +1356,7 @@ const EventDetails = () => {
                         : handleRegister)
                       : undefined}
                     disabled={btnConfig.disabled || isRegistering}
-                    className={`flex-1 py-3 px-6 text-[13px] font-black uppercase tracking-[0.15em] border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
+                    className={`flex-1 py-3 px-6 text-[13px] font-bold mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
                   >
                     {isRegistering ? (
                       <><i className="ri-loader-4-line animate-spin text-base" /> Processing…</>
@@ -1525,7 +1525,7 @@ const EventDetails = () => {
           <button
             onClick={!btnConfig.disabled && !isRegistering ? handleRegister : undefined}
             disabled={btnConfig.disabled || isRegistering}
-            className={`pointer-events-auto px-6 py-2.5 text-[13px] font-black tracking-[0.12em] border rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
+            className={`pointer-events-auto px-6 py-2.5 text-[13px] font-bold mysans tracking-wide border rounded-full shadow-lg dark:shadow-neutral-950/60 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
           >
             {isRegistering ? (
               <><i className="ri-loader-4-line animate-spin text-sm" /> Processing…</>
@@ -1588,10 +1588,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1735,14 +1735,14 @@ const EventDetails = () => {
             <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1861,21 +1861,21 @@ const EventDetails = () => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
+                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 Register as Individual
               </button>
               <button
                 type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-brand-500/20 hover:shadow-lg"
+                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 Register as Team
               </button>
               <button
                 type="button"
                 onClick={() => setTeamChoiceModalOpen(false)}
-                className="w-full px-4 py-2 text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border-0 bg-transparent outline-none cursor-pointer"
+                className="w-full px-4 py-2 text-xs font-medium mysans text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border-0 bg-transparent outline-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -2036,14 +2036,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

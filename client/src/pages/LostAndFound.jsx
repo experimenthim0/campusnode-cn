@@ -8,51 +8,9 @@ import ShimmerText from '../components/ShimmerText';
 
 
 const GLOBAL_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
-
-  :root {
-    --accent:       #E8500A;
-    --accent-light: #FFF0E8;
-    --accent-dark:  #C23F06;
-    --surface:      #FAFAF9;
-    --surface-card: #FFFFFF;
-    --border:       #E5E4E0;
-    --text-primary: #1A1917;
-    --text-secondary: #6B6963;
-    --text-muted:   #A8A49D;
-    --lost-bg:      #FFFBEB;
-    --lost-text:    #92400E;
-    --lost-border:  #FDE68A;
-    --found-bg:     #ECFDF5;
-    --found-text:   #065F46;
-    --found-border: #A7F3D0;
-    --reunited-bg:  #F8FAFC;
-    --reunited-text:#475569;
-    --shadow-card:  0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-hover: 0 4px 12px rgba(0,0,0,0.10), 0 16px 40px rgba(0,0,0,0.07);
-    --radius-card:  16px;
-    --radius-pill:  999px;
-  }
-
-  .dark {
-    --surface:      #0D0D0C;
-    --surface-card: #161614;
-    --border:       #2A2A27;
-    --text-primary: #F5F4F0;
-    --text-secondary:#9E9990;
-    --text-muted:   #5C5A55;
-    --lost-bg:      #2A1A08;
-    --lost-text:    #FCD34D;
-    --lost-border:  rgba(232,80,10,0.2);
-    --found-bg:     #052E1A;
-    --found-text:   #6EE7B7;
-    --found-border: rgba(10,185,129,0.2);
-    --shadow-card:  0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25);
-    --shadow-hover: 0 4px 12px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.35);
-  }
   .lf-modal::-webkit-scrollbar { width: 6px; }
   .lf-modal::-webkit-scrollbar-track { background: transparent; }
-  .lf-modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .lf-modal::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 3px; }
 `;
 
 let stylesInjected = false;
@@ -227,47 +185,47 @@ const LostAndFound = () => {
     ];
 
     return (
-      <div className="myfont min-h-screen bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#1A1917] dark:text-[#F5F4F0] relative overflow-hidden flex flex-col justify-between">
+      <div className="myfont min-h-screen bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 relative overflow-hidden flex flex-col justify-between">
         
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-60 dark:opacity-45 blur-[3px] scale-[1.01] transition-all">
-          <header className="bg-white/80 dark:bg-[#161614]/80 border-b border-[#E5E4E0] dark:border-[#2A2A27] py-10 px-6 text-center">
-            <h1 className="font-myfont text-5xl font-normal text-[#1A1917] dark:text-[#F5F4F0]">
-              Lost <em className="italic text-[#E8500A]">&amp;</em> Found
+          <header className="bg-white/80 dark:bg-zinc-900/80 border-b border-neutral-200/90 dark:border-zinc-800/90 py-10 px-6 text-center">
+            <h1 className="font-myfont text-5xl font-normal text-neutral-900 dark:text-neutral-100">
+              Lost <em className="italic text-brand-600 dark:text-brand-400">&amp;</em> Found
             </h1>
           </header>
 
           <main className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {mockPreviewItems.map((item) => (
-              <div key={item.id} className="bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl p-5 flex flex-col gap-3 shadow-md">
-                <div className="aspect-video bg-[#FAFAF9] dark:bg-[#0D0D0C] rounded-xl flex items-center justify-center text-[#A8A49D] border border-[#E5E4E0]/60 dark:border-[#2A2A27]/60">
+              <div key={item.id} className="bg-white dark:bg-zinc-900 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl p-5 flex flex-col gap-3 shadow-2xs">
+                <div className="aspect-video bg-neutral-50 dark:bg-zinc-950 rounded-xl flex items-center justify-center text-neutral-400 dark:text-neutral-600 border border-neutral-200/60 dark:border-zinc-800/60">
                   <i className="ri-image-line text-2xl opacity-40" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${item.type === 'LOST' ? 'bg-[#FFFBEB] dark:bg-[#2A1A08] text-[#92400E] dark:text-[#FCD34D] border border-[#FDE68A] dark:border-[#78350F]' : 'bg-[#ECFDF5] dark:bg-[#052E1A] text-[#065F46] dark:text-[#6EE7B7] border border-[#A7F3D0] dark:border-[#065F46]'}`}>
+                  <span className={`px-2.5 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${item.type === 'LOST' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'}`}>
                     ● {item.type}
                   </span>
-                  <span className="text-xs text-[#A8A49D] dark:text-[#5C5A55] font-mono">{item.date}</span>
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">{item.date}</span>
                 </div>
-                <h3 className="font-bold text-sm text-[#1A1917] dark:text-[#F5F4F0]">{item.title}</h3>
-                <p className="text-xs text-[#6B6963] dark:text-[#9E9990]">{item.location}</p>
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">{item.title}</h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">{item.location}</p>
               </div>
             ))}
           </main>
         </div>
 
         {/* Soft Ambient Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAF9]/40 via-[#FAFAF9]/75 to-[#FAFAF9]/95 dark:from-[#0D0D0C]/40 dark:via-[#0D0D0C]/75 dark:to-[#0D0D0C]/95 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/40 via-neutral-50/75 to-neutral-50/95 dark:from-[#0c0c0c]/40 dark:via-[#0c0c0c]/75 dark:to-[#0c0c0c]/95 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 my-auto">
-          <div className="bg-white/85 dark:bg-[#161614]/85 backdrop-blur-md border border-[#E5E4E0] dark:border-[#2A2A27] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-[0_12px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] transition-all">
+          <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-neutral-200/90 dark:border-zinc-800/90 rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-lg dark:shadow-neutral-950/60 transition-all">
             
             {/* Minimal Headline */}
-            <h2 className="font-myfont text-3xl sm:text-4xl font-normal text-[#1A1917] dark:text-[#F5F4F0] mb-3 leading-tight">
-              Lost <em className="italic text-[#E8500A]">&amp;</em> Found
+            <h2 className="font-myfont text-3xl sm:text-4xl font-normal text-neutral-900 dark:text-neutral-100 mb-3 leading-tight">
+              Lost <em className="italic text-brand-600 dark:text-brand-400">&amp;</em> Found
             </h2>
 
             {/* Student Friendly Body */}
-            <p className="text-sm text-[#6B6963] dark:text-[#9E9990] mb-8 leading-relaxed">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-8 leading-relaxed">
               Log in or create an account with your NITJ credentials to report lost items, browse campus posts, and connect with fellow students.
             </p>
 
@@ -276,7 +234,7 @@ const LostAndFound = () => {
               {/* Primary CTA: Log In */}
               <button
                 onClick={() => navigate('/login')}
-                className="flex-1 py-3 px-6 bg-[#E8500A] text-white hover:bg-[#C23F06] rounded-xl text-sm font-bold cursor-pointer transition-all shadow-[0_2px_10px_rgba(232,80,10,0.25)] hover:shadow-[0_4px_18px_rgba(232,80,10,0.35)] active:translate-y-0 hover:-translate-y-0.5 font-myfont"
+                className="flex-1 py-3 px-6 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 rounded-xl text-xs font-bold mysans cursor-pointer transition-all duration-200 shadow-xs shadow-brand-500/20 hover:shadow-sm active:scale-95 hover:-translate-y-0.5"
               >
                 Log In
               </button>
@@ -284,7 +242,7 @@ const LostAndFound = () => {
               {/* Secondary CTA: Register / Sign Up */}
               <button
                 onClick={() => navigate('/register')}
-                className="flex-1 py-3 px-6 bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#1A1917] dark:text-[#F5F4F0] border border-[#E5E4E0] dark:border-[#2A2A27] hover:border-[#E8500A] dark:hover:border-[#E8500A] hover:bg-white dark:hover:bg-[#161614] rounded-xl text-sm font-bold cursor-pointer transition-all active:translate-y-0 hover:-translate-y-0.5 font-myfont"
+                className="flex-1 py-3 px-6 bg-neutral-100 dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200/90 dark:border-zinc-700 hover:border-brand-500 dark:hover:border-brand-400 rounded-xl text-xs font-bold mysans cursor-pointer transition-all duration-200 active:scale-95 hover:-translate-y-0.5 shadow-2xs"
               >
                 Register / Sign Up
               </button>
@@ -309,7 +267,7 @@ const LostAndFound = () => {
   const filtered = getFilteredItems();
 
   return (
-    <div className="myfont min-h-screen bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#1A1917] dark:text-[#F5F4F0] transition-colors duration-300">
+    <div className="myfont min-h-screen bg-neutral-50 dark:bg-[#0c0c0c] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       <Toaster
         position="top-right"
         toastOptions={{
@@ -324,76 +282,76 @@ const LostAndFound = () => {
         }}
       />
 
-      <header className="bg-white dark:bg-[#161614] border-b border-[#E5E4E0] dark:border-[#2A2A27] py-16 px-6 md:px-8 relative overflow-hidden">
+      <header className="bg-white dark:bg-zinc-900/80 border-b border-neutral-200/90 dark:border-zinc-800/90 py-16 px-6 md:px-8 relative overflow-hidden">
         {/* Glow / Pattern overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,var(--border)_1px,transparent_0)] bg-[size:28px_28px] opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(150,150,150,0.15)_1px,transparent_0)] bg-[size:28px_28px] opacity-50 pointer-events-none" />
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-[#E8500A] bg-[#FFF0E8] dark:bg-[#E8500A]/12 px-3 py-1.5 rounded-full mb-5">
+          <div className="inline-flex items-center gap-2 font-mono text-[11px] font-medium tracking-[0.12em] uppercase text-brand-600 dark:text-brand-400 bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/50 dark:border-brand-900/40 px-3 py-1.5 rounded-full mb-5">
             <i className="ri-map-pin-line" />
             CampusNode Community
           </div>
-          <h1 className="font-myfont text-[clamp(48px,8vw,88px)] font-normal leading-[0.95] tracking-[-0.02em] text-[#1A1917] dark:text-[#F5F4F0] mb-5">
-            Lost <em className="italic text-[#E8500A]">&amp;</em> Found
+          <h1 className="font-myfont text-[clamp(48px,8vw,88px)] font-normal leading-[0.95] tracking-[-0.02em] text-neutral-900 dark:text-neutral-100 mb-5">
+            Lost <em className="italic text-brand-600 dark:text-brand-400">&amp;</em> Found
           </h1>
-          <p className="text-sm md:text-base font-light leading-relaxed text-[#6B6963] dark:text-[#9E9990] max-w-lg">
+          <p className="text-sm md:text-base font-light leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-lg">
             A community space to reunite lost belongings with their owners across the CampusNode network.
           </p>
         </div>
       </header>
 
-      <div className="sticky top-0 z-40 bg-white dark:bg-[#161614] border-b border-[#E5E4E0] dark:border-[#2A2A27] backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+      <div className="sticky top-0 z-40 bg-white/95 dark:bg-zinc-900/95 border-b border-neutral-200/90 dark:border-zinc-800/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center gap-3 flex-wrap">
-          <div className="flex bg-[#FAFAF9] dark:bg-[#0D0D0C] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-xl p-1 gap-0.5">
+          <div className="flex bg-neutral-100 dark:bg-neutral-950 border border-neutral-200/80 dark:border-zinc-800 rounded-xl p-1 gap-0.5">
             <button
-              className={`px-4.5 py-1.5 text-xs font-semibold rounded-lg cursor-pointer border-none bg-transparent text-[#6B6963] dark:text-[#9E9990] hover:text-[#1A1917] dark:hover:text-[#F5F4F0] transition-all duration-150 whitespace-nowrap ${activeTab === 'browse' ? 'bg-white dark:bg-[#252522] text-[#1A1917] dark:text-[#F5F4F0] shadow-sm' : ''}`}
+              className={`px-4.5 py-1.5 text-xs font-semibold mysans rounded-lg cursor-pointer border-none bg-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all duration-150 whitespace-nowrap ${activeTab === 'browse' ? 'bg-white dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100 shadow-2xs' : ''}`}
               onClick={() => setActiveTab('browse')}
             >
               Browse All
             </button>
             <button
-              className={`px-4.5 py-1.5 text-xs font-semibold rounded-lg cursor-pointer border-none bg-transparent text-[#6B6963] dark:text-[#9E9990] hover:text-[#1A1917] dark:hover:text-[#F5F4F0] transition-all duration-150 whitespace-nowrap ${activeTab === 'my-items' ? 'bg-white dark:bg-[#252522] text-[#1A1917] dark:text-[#F5F4F0] shadow-sm' : ''}`}
+              className={`px-4.5 py-1.5 text-xs font-semibold mysans rounded-lg cursor-pointer border-none bg-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all duration-150 whitespace-nowrap ${activeTab === 'my-items' ? 'bg-white dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100 shadow-2xs' : ''}`}
               onClick={() => setActiveTab('my-items')}
             >
               My Posts
             </button>
           </div>
 
-          <button className="ml-auto inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#E8500A] text-white text-xs font-semibold rounded-full hover:bg-[#C23F06] transition-all hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(232,80,10,0.25)] hover:shadow-[0_4px_16px_rgba(232,80,10,0.35)] active:translate-y-0 whitespace-nowrap cursor-pointer" onClick={() => setShowModal(true)}>
-            <i className="ri-add-line" />
+          <button className="ml-auto inline-flex items-center gap-1.5 px-4.5 py-2 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 text-xs font-bold mysans rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-xs shadow-brand-500/20 hover:shadow-sm whitespace-nowrap cursor-pointer" onClick={() => setShowModal(true)}>
+            <i className="ri-add-line text-sm" />
             Post an Item
           </button>
         </div>
       </div>
 
-      <div className="bg-[#FAFAF9] dark:bg-[#0D0D0C] border-b border-[#E5E4E0] dark:border-[#2A2A27]">
+      <div className="bg-neutral-50 dark:bg-[#0c0c0c] border-b border-neutral-200/90 dark:border-zinc-800/90">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-[#A8A49D] dark:text-[#5C5A55] mr-1">Filter</span>
+          <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-neutral-400 dark:text-neutral-500 mr-1">Filter</span>
 
           <button
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all duration-150 cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-semibold mysans rounded-full border transition-all duration-150 cursor-pointer shadow-2xs ${
               typeFilter === 'ALL'
-                ? 'bg-[#1A1917] dark:bg-[#F5F4F0] text-white dark:text-[#161614] border-[#1A1917] dark:border-[#F5F4F0]'
-                : 'bg-white dark:bg-[#161614] text-[#6B6963] dark:text-[#9E9990] border-[#E5E4E0] dark:border-[#2A2A27] hover:border-[#A8A49D] dark:hover:border-[#5C5A55] hover:text-[#1A1917] dark:hover:text-[#F5F4F0]'
+                ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 border-neutral-900 dark:border-neutral-100'
+                : 'bg-white dark:bg-zinc-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:border-neutral-300 dark:hover:border-zinc-700 hover:text-neutral-900 dark:hover:text-neutral-100'
             }`}
             onClick={() => setTypeFilter('ALL')}
           >
             All Posts
           </button>
           <button
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all duration-150 cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-semibold mysans rounded-full border transition-all duration-150 cursor-pointer shadow-2xs ${
               typeFilter === 'LOST'
-                ? 'bg-[#FFFBEB] dark:bg-[#2A1A08]/60 text-[#92400E] dark:text-[#FCD34D] border-[#FDE68A] dark:border-[#78350F]'
-                : 'bg-white dark:bg-[#161614] text-[#6B6963] dark:text-[#9E9990] border-[#E5E4E0] dark:border-[#2A2A27] hover:border-[#A8A49D] dark:hover:border-[#5C5A55] hover:text-[#1A1917] dark:hover:text-[#F5F4F0]'
+                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                : 'bg-white dark:bg-zinc-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:border-neutral-300 dark:hover:border-zinc-700 hover:text-neutral-900 dark:hover:text-neutral-100'
             }`}
             onClick={() => setTypeFilter('LOST')}
           >
             Lost
           </button>
           <button
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all duration-150 cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-semibold mysans rounded-full border transition-all duration-150 cursor-pointer shadow-2xs ${
               typeFilter === 'FOUND'
-                ? 'bg-[#ECFDF5] dark:bg-[#052E1A]/60 text-[#065F46] dark:text-[#6EE7B7] border-[#A7F3D0] dark:border-[#065F46]'
-                : 'bg-white dark:bg-[#161614] text-[#6B6963] dark:text-[#9E9990] border-[#E5E4E0] dark:border-[#2A2A27] hover:border-[#A8A49D] dark:hover:border-[#5C5A55] hover:text-[#1A1917] dark:hover:text-[#F5F4F0]'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                : 'bg-white dark:bg-zinc-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:border-neutral-300 dark:hover:border-zinc-700 hover:text-neutral-900 dark:hover:text-neutral-100'
             }`}
             onClick={() => setTypeFilter('FOUND')}
           >
@@ -405,10 +363,10 @@ const LostAndFound = () => {
             onClick={() => setActiveOnly(v => !v)}
             style={{ cursor: 'pointer' }}
           >
-            <div className={`w-[34px] h-5 rounded-full bg-[#E5E4E0] dark:bg-[#2A2A27] relative transition-colors duration-200 shrink-0 ${activeOnly ? 'bg-[#E8500A]' : ''}`}>
+            <div className={`w-[34px] h-5 rounded-full bg-neutral-200 dark:bg-zinc-800 relative transition-colors duration-200 shrink-0 ${activeOnly ? 'bg-brand-600 dark:bg-brand-500' : ''}`}>
               <div className={`absolute top-[3px] left-[3px] w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 shadow-sm ${activeOnly ? 'translate-x-[14px]' : ''}`} />
             </div>
-            <span className="text-xs font-semibold text-[#6B6963] dark:text-[#9E9990] whitespace-nowrap">Active only</span>
+            <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 whitespace-nowrap">Active only</span>
           </label>
         </div>
       </div>
@@ -604,7 +562,7 @@ const LostAndFound = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-xl text-xs cursor-pointer transition-colors shadow-xs mt-2 disabled:opacity-50"
+                  className="w-full py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans rounded-xl text-xs cursor-pointer transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-xs shadow-brand-500/20 hover:shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   disabled={loading || uploading}
                 >
                   {loading
@@ -721,13 +679,13 @@ const LostAndFound = () => {
 
               <div className="flex gap-3">
                 <button
-                  className="flex-grow px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors text-center"
+                  className="flex-grow px-4 py-2.5 bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-neutral-900 dark:text-neutral-100 border border-neutral-200/90 dark:border-zinc-700 rounded-xl text-xs font-bold mysans cursor-pointer transition-all duration-200 active:scale-95 shadow-2xs text-center"
                   onClick={() => { setReportModalItem(null); setReportReason(''); }}
                 >
                   Cancel
                 </button>
                 <button
-                  className={`flex-grow px-5 py-2.5 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shadow-xs ${!reportReason.trim() || reportSubmitting ? 'bg-rose-400 dark:bg-rose-900/50 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
+                  className={`flex-grow px-5 py-2.5 text-white rounded-xl text-xs font-bold mysans transition-all duration-200 active:scale-95 cursor-pointer text-center shadow-xs ${!reportReason.trim() || reportSubmitting ? 'bg-rose-400 dark:bg-rose-900/50 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'}`}
                   onClick={submitReport}
                   disabled={!reportReason.trim() || reportSubmitting}
                 >
@@ -754,13 +712,13 @@ const LostAndFound = () => {
             </p>
             <div className="flex gap-3">
               <button
-                className="flex-1 px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-xs font-bold cursor-pointer transition-colors text-center"
+                className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-neutral-900 dark:text-neutral-100 border border-neutral-200/90 dark:border-zinc-700 rounded-xl text-xs font-bold mysans cursor-pointer transition-all duration-200 active:scale-95 shadow-2xs text-center"
                 onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
               >
                 {confirmModal.cancelText}
               </button>
               <button
-                className={`flex-1 px-5 py-2.5 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors text-center shadow-xs ${confirmModal.isDanger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111]'}`}
+                className={`flex-1 px-5 py-2.5 rounded-xl text-xs font-bold mysans cursor-pointer transition-all duration-200 hover:-translate-y-0.5 active:scale-95 text-center shadow-xs ${confirmModal.isDanger ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950'}`}
                 onClick={confirmModal.onConfirm}
               >
                 {confirmModal.confirmText}
@@ -778,7 +736,7 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
   const isLost     = item.type === 'LOST';
 
   return (
-    <article className={`bg-white dark:bg-[#161614] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-2xl overflow-hidden flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.06),_0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),_0_4px_16px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-1 hover:border-[#A8A49D] dark:hover:border-[#5C5A55] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1),_0_16px_40px_rgba(0,0,0,0.07)] dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.4),_0_16px_40px_rgba(0,0,0,0.35)] cursor-default ${isReunited ? 'opacity-80 hover:opacity-100' : ''}`}>
+    <article className={`bg-white dark:bg-zinc-900 border border-neutral-200/90 dark:border-zinc-800/90 rounded-2xl overflow-hidden flex flex-col shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 dark:hover:border-zinc-700 cursor-default ${isReunited ? 'opacity-80 hover:opacity-100' : ''}`}>
       {/* Image */}
       <div className="aspect-video bg-[#FAFAF9] dark:bg-[#0D0D0C] relative overflow-hidden">
         {item.imageUrl
@@ -832,7 +790,7 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
 
         <div className="flex gap-2">
           {activeTab === 'my-items' && item.status === 'ACTIVE' && (
-            <button className="flex-grow px-3 py-2 bg-[#1A1917] dark:bg-[#F5F4F0] text-white dark:text-[#161614] text-xs font-bold text-center rounded-lg hover:opacity-85 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer" onClick={() => onResolve(item.id)}>
+            <button className="flex-grow px-3 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold mysans text-center rounded-lg hover:opacity-90 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-xs cursor-pointer" onClick={() => onResolve(item.id)}>
               <i className="ri-check-line" style={{ marginRight: 5 }} />
               Mark Reunited
             </button>
@@ -840,10 +798,10 @@ const ItemCard = ({ item, activeTab, user, onResolve, onClaim, onReport }) => {
 
           {activeTab === 'browse' && user && item.userId !== user.id && item.status === 'ACTIVE' && (
             <>
-              <button className="flex-grow px-3 py-2 bg-transparent text-[#E8500A] border border-[#E8500A] text-xs font-bold text-center rounded-lg hover:bg-[#FFF0E8] dark:hover:bg-[#E8500A]/12 transition-all cursor-pointer whitespace-nowrap" onClick={() => onClaim(item)}>
+              <button className="flex-grow px-3 py-2 bg-brand-50/70 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200/80 dark:border-brand-900/60 text-xs font-bold mysans text-center rounded-lg hover:bg-brand-100/80 dark:hover:bg-brand-900/50 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-2xs cursor-pointer whitespace-nowrap" onClick={() => onClaim(item)}>
                 {isLost ? 'I found this' : "It's mine"}
               </button>
-              <button className="p-2 bg-[#FAFAF9] dark:bg-[#0D0D0C] text-[#6B6963] dark:text-[#9E9990] border border-[#E5E4E0] dark:border-[#2A2A27] rounded-lg text-sm flex items-center justify-center hover:border-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer" onClick={() => onReport(item.id)} title="Report post">
+              <button className="p-2 bg-white dark:bg-zinc-900 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-zinc-800 rounded-lg text-sm flex items-center justify-center hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-2xs cursor-pointer" onClick={() => onReport(item.id)} title="Report post">
                 <i className="ri-flag-line" />
               </button>
             </>

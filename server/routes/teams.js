@@ -91,6 +91,10 @@ router.post(
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
+      if (event.reviewStatus !== "PUBLISHED") {
+        return res.status(400).json({ message: "Team registration is not open. This event is not yet published." });
+      }
+
       const now = new Date();
       if (now > new Date(event.endTime)) {
         return res.status(400).json({ message: "This event has already ended. Team registration is closed." });

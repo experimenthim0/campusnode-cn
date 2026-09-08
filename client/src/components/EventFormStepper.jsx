@@ -1,96 +1,201 @@
 import React from 'react';
 
 const STEPS = [
-  { id: 1, label: 'Basic Details', sub: 'Name, description, category' },
-  { id: 2, label: 'Timings & Access', sub: 'Date, time, venue' },
-  { id: 3, label: 'Registration & Pay', sub: 'Slots, fees, deadline' },
-  { id: 4, label: 'Extras', sub: 'Poster, tags, links' },
+  { id: 1, label: 'Basic Details', sub: 'Title, category, poster' },
+  { id: 2, label: 'Schedule & Access', sub: 'Date, time, venue' },
+  { id: 3, label: 'Registration & Payment', sub: 'Seats, fee, team options' },
+  { id: 4, label: 'Extras', sub: 'Sponsors, media, settings' },
 ];
 
 const CheckIcon = () => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
+    className="w-3.5 h-3.5"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    aria-hidden="true"
   >
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
-const EventFormStepper = ({ currentStep = 1, onStepClick }) => {
+const AlertIcon = () => (
+  <svg
+    className="w-3.5 h-3.5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+);
+
+const EventFormStepper = ({
+  currentStep = 1,
+  onStepClick,
+  completedSteps = [],
+  stepErrors = {},
+  isEditMode = false,
+}) => {
+  const currentStepObj = STEPS.find((s) => s.id === currentStep) || STEPS[0];
+  const completedSet = new Set(Array.isArray(completedSteps) ? completedSteps : []);
+
   return (
-    <div className="w-full bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm">
-      <div className="relative flex items-start justify-between">
-        {/* Background track */}
-        <div
-          className="absolute top-5 h-px bg-neutral-200 z-0"
-          style={{ left: 'calc(12.5%)', right: 'calc(12.5%)' }}
-        />
+    <nav
+      aria-label="Event form progress"
+      className="w-full bg-white border border-neutral-200 rounded-xl p-3 md:p-4 mb-6 shadow-sm"
+    >
+      {/* Mobile view (< md) */}
+      <div className="md:hidden">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
+              Step {currentStep} of {STEPS.length}
+            </span>
+            <span className="text-sm font-semibold text-neutral-900 truncate">
+              {currentStepObj.label}
+            </span>
+          </div>
+          {stepErrors[currentStep] && (
+            <span className="flex items-center text-xs text-rose-600 font-medium">
+              <AlertIcon />
+              <span className="ml-1">Errors</span>
+            </span>
+          )}
+        </div>
 
-        {/* Progress fill */}
-        <div
-          className="absolute top-5 h-px bg-brand-500 z-0 transition-all duration-500"
-          style={{
-            left: 'calc(12.5%)',
-            width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 75}%)`
-          }}
-        />
+        {/* Compact mobile step dots */}
+        <div className="grid grid-cols-4 gap-2 pt-1">
+          {STEPS.map((step) => {
+            const isActive = step.id === currentStep;
+            const isDone = completedSet.has(step.id);
+            const hasError = Boolean(stepErrors[step.id]);
+            const isClickable = isEditMode || isDone || step.id <= currentStep;
 
-        {STEPS.map((step) => {
+            return (
+              <button
+                key={step.id}
+                type="button"
+                disabled={!isClickable}
+                onClick={() => onStepClick?.(step.id)}
+                aria-label={`Step ${step.id}: ${step.label}${hasError ? ' (has errors)' : isDone ? ' (completed)' : ''}`}
+                aria-current={isActive ? 'step' : undefined}
+                className={`flex items-center justify-center py-2 px-1 rounded-lg text-xs font-medium border transition-all ${
+                  isActive
+                    ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm'
+                    : hasError
+                    ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                    : isDone
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100'
+                } ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+              >
+                <span className="mr-1">
+                  {hasError ? '!' : isDone ? '✓' : step.id}
+                </span>
+                <span className="truncate">{step.label.split(' ')[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop view (>= md) */}
+      <div className="hidden md:flex items-center justify-between">
+        {STEPS.map((step, idx) => {
           const isActive = step.id === currentStep;
-          const isDone = step.id < currentStep;
+          const isDone = completedSet.has(step.id);
+          const hasError = Boolean(stepErrors[step.id]);
+          const isClickable = isEditMode || isDone || step.id <= currentStep;
 
           return (
-            <div
-              key={step.id}
-              className="relative z-10 flex flex-col items-center flex-1 cursor-pointer group"
-              onClick={() => onStepClick?.(step.id)}
-            >
+            <React.Fragment key={step.id}>
               <button
                 type="button"
-                aria-label={`Go to step ${step.id}: ${step.label}`}
+                disabled={!isClickable}
+                onClick={() => onStepClick?.(step.id)}
+                aria-label={`Step ${step.id}: ${step.label}${hasError ? ' (has errors)' : isDone ? ' (completed)' : ''}`}
                 aria-current={isActive ? 'step' : undefined}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStepClick?.(step.id);
-                }}
-                className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                  isDone
-                    ? 'bg-brand-500 border-brand-500 text-white shadow-sm'
-                    : isActive
-                    ? 'bg-black border-black text-white shadow-md scale-105'
-                    : 'bg-white border-neutral-200 text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600'
+                className={`flex items-center space-x-3 text-left p-2 rounded-lg transition-colors group ${
+                  isClickable ? 'cursor-pointer hover:bg-neutral-50' : 'cursor-default opacity-70'
                 }`}
               >
-                {isDone ? <CheckIcon /> : <span>{step.id}</span>}
+                {/* Step indicator circle */}
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 ${
+                    hasError
+                      ? 'bg-rose-100 border-2 border-rose-500 text-rose-700'
+                      : isActive
+                      ? 'bg-neutral-900 border-2 border-neutral-900 text-white shadow-sm ring-4 ring-neutral-100'
+                      : isDone
+                      ? 'bg-emerald-500 border-2 border-emerald-500 text-white shadow-sm'
+                      : 'bg-neutral-100 border-2 border-neutral-200 text-neutral-500 group-hover:border-neutral-300'
+                  }`}
+                >
+                  {hasError ? (
+                    <AlertIcon />
+                  ) : isDone ? (
+                    <CheckIcon />
+                  ) : (
+                    <span>{step.id}</span>
+                  )}
+                </div>
+
+                {/* Step label & subtitle */}
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-1.5">
+                    <span
+                      className={`text-xs font-semibold tracking-wide uppercase ${
+                        isActive
+                          ? 'text-neutral-900'
+                          : hasError
+                          ? 'text-rose-600'
+                          : isDone
+                          ? 'text-neutral-700'
+                          : 'text-neutral-400 group-hover:text-neutral-600'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                    {hasError && (
+                      <span className="text-[10px] font-medium text-rose-600 bg-rose-50 px-1 rounded">
+                        Error
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-neutral-400 truncate max-w-[140px] xl:max-w-[180px]">
+                    {step.sub}
+                  </p>
+                </div>
               </button>
 
-              <div className="mt-2 text-center px-1">
-                <span
-                  className={`block text-xs font-medium tracking-widest transition-colors duration-200 ${
-                    isActive ? 'text-black font-semibold' : isDone ? 'text-neutral-600 font-semibold' : 'text-neutral-400 group-hover:text-neutral-600'
+              {/* Connecting line between steps */}
+              {idx < STEPS.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 mx-2 rounded transition-colors ${
+                    completedSet.has(step.id) && (completedSet.has(step.id + 1) || currentStep === step.id + 1)
+                      ? 'bg-emerald-400'
+                      : currentStep > step.id
+                      ? 'bg-neutral-300'
+                      : 'bg-neutral-200'
                   }`}
-                >
-                  {step.label}
-                </span>
-                <span
-                  className={`block text-[10px] mt-0.5 transition-colors duration-200 hidden md:block ${
-                    isActive ? 'text-neutral-500' : 'text-neutral-400'
-                  }`}
-                >
-                  {step.sub}
-                </span>
-              </div>
-            </div>
+                  aria-hidden="true"
+                />
+              )}
+            </React.Fragment>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 

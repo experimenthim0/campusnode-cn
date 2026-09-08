@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -9,12 +9,34 @@ import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
 import { MediaType } from '../types/index';
 import EventFormStepper from '../components/EventFormStepper';
+import AutosaveStatusBadge from '../components/AutosaveStatusBadge';
+import { validateEventStep, validateAllEventSteps } from '../utils/eventValidation';
+import {
+  ArrowRight,
+  ArrowLeft,
+  Save,
+  Eye,
+  AlertCircle,
+  Plus,
+  Trash2,
+  Calendar,
+  CreditCard,
+  Sparkles,
+  FileText,
+  RotateCcw
+} from 'lucide-react';
 
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
 const BRANCHES = ALL_BRANCH_CODES;
 
 const CreateEvent = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const { showNotification } = useNotification();
+
+    const userId = user?.id || user?._id;
+    const draftStorageKey = userId ? `campusnode:event-draft:${userId}` : null;
+
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         title: '',
@@ -28,8 +50,8 @@ const CreateEvent = () => {
         requiredFields: [],
         customFields: [],
         registrationDeadline: '',
-        createdBy: JSON.parse(localStorage.getItem('user'))?._id,
-        clubId: JSON.parse(localStorage.getItem('user'))?.clubId,
+        createdBy: user?.id || user?._id,
+        clubId: user?.clubId,
         allowedPrograms: ['BTECH', 'MTECH', 'OTHER'],
         allowedYears: [],
         allowedBranches: [],
@@ -49,18 +71,100 @@ const CreateEvent = () => {
         accountHolderName: '',
         postRegistrationMessage: '',
     });
+
     const [sponsors, setSponsors] = useState([]);
     const [media, setMedia] = useState([]);
-    const [sponsorErrors, setSponsorErrors] = useState([]);
-    const [mediaErrors, setMediaErrors] = useState([]);
     const [isFree, setIsFree] = useState(true);
     const [isUnlimited, setIsUnlimited] = useState(false);
     const [allYears, setAllYears] = useState(true);
     const [allBranches, setAllBranches] = useState(true);
-    const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
+
+    // Validation state
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [stepErrors, setStepErrors] = useState({});
+    const [completedSteps, setCompletedSteps] = useState([]);
+
+    // Draft recovery state
+    const [savedDraftPrompt, setSavedDraftPrompt] = useState(null);
+    const [autosaveStatus, setAutosaveStatus] = useState('idle');
+    const [lastSavedTime, setLastSavedTime] = useState(null);
+
+    // Check for existing local draft on mount
+    useEffect(() => {
+        if (!draftStorageKey) return;
+        try {
+            const rawDraft = localStorage.getItem(draftStorageKey);
+            if (rawDraft) {
+                const parsed = JSON.parse(rawDraft);
+                if (parsed && parsed.data && (parsed.data.title || parsed.data.description)) {
+                    setSavedDraftPrompt({
+                        data: parsed.data,
+                        sponsors: parsed.sponsors || [],
+                        media: parsed.media || [],
+                        savedAt: parsed.timestamp ? new Date(parsed.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently',
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to inspect local event draft:', e);
+        }
+    }, [draftStorageKey]);
+
+    // Autosave to local storage (debounced)
+    useEffect(() => {
+        if (!draftStorageKey) return;
+        if (formData.title || formData.description || formData.venue) {
+            setAutosaveStatus('saving');
+        }
+        const timer = setTimeout(() => {
+            if (formData.title || formData.description || formData.venue) {
+                try {
+                    const draftObj = {
+                        data: formData,
+                        sponsors,
+                        media,
+                        isUnlimited,
+                        allYears,
+                        allBranches,
+                        timestamp: new Date().toISOString(),
+                    };
+                    localStorage.setItem(draftStorageKey, JSON.stringify(draftObj));
+                    setAutosaveStatus('saved');
+                    setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                } catch (e) {
+                    console.warn('Local draft autosave failed:', e);
+                    setAutosaveStatus('error');
+                }
+            } else {
+                setAutosaveStatus('idle');
+            }
+        }, 1200);
+
+        return () => clearTimeout(timer);
+    }, [formData, sponsors, media, isUnlimited, allYears, allBranches, draftStorageKey]);
+
+    const restoreDraft = () => {
+        if (!savedDraftPrompt) return;
+        setFormData(prev => ({ ...prev, ...savedDraftPrompt.data }));
+        if (savedDraftPrompt.sponsors) setSponsors(savedDraftPrompt.sponsors);
+        if (savedDraftPrompt.media) setMedia(savedDraftPrompt.media);
+        setSavedDraftPrompt(null);
+        showNotification('Local draft restored!', 'success');
+    };
+
+    const discardDraft = () => {
+        try {
+            localStorage.removeItem(draftStorageKey);
+        } catch (e) {
+            console.warn('Failed to clear draft from storage:', e);
+        }
+        setSavedDraftPrompt(null);
+        showNotification('Draft discarded.', 'info');
+    };
 
     useEffect(() => {
         const fetchOpenVenues = async () => {
@@ -68,8 +172,6 @@ const CreateEvent = () => {
                 const res = await api.get('/api/venues?openOnly=true');
                 if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                     const fetchedVenues = res.data.map(v => typeof v === 'string' ? v : v.name);
-                    // Online events do not consume a physical venue and must remain
-                    // selectable even when the venue API only returns open rooms.
                     setAvailableVenues([...new Set([...fetchedVenues, 'Online'])]);
                 }
             } catch (err) {
@@ -80,7 +182,15 @@ const CreateEvent = () => {
     }, []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            });
+        }
     };
 
     const handleBranchToggle = (branch) => {
@@ -97,11 +207,10 @@ const CreateEvent = () => {
         const file = e.target.files[0];
         if (!file) return;
         if (file.size > 5 * 1024 * 1024) {
-            setError('File size exceeds 5MB limit.');
+            showNotification('File size exceeds 5MB limit.', 'error');
             return;
         }
         setUploading(true);
-        setError('');
         const formDataUpload = new FormData();
         formDataUpload.append('image', file);
         try {
@@ -109,8 +218,9 @@ const CreateEvent = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
+            showNotification('Poster uploaded successfully!', 'success');
         } catch (err) {
-            setError(err.response?.data?.message || 'Upload failed');
+            showNotification(err.response?.data?.message || 'Upload failed', 'error');
         } finally {
             setUploading(false);
         }
@@ -120,7 +230,6 @@ const CreateEvent = () => {
         setFormData(prev => {
             const current = prev.allowedPrograms;
             if (current.includes(prog)) {
-                if (current.length <= 1) return prev; // keep at least one
                 return { ...prev, allowedPrograms: current.filter(p => p !== prog) };
             }
             return { ...prev, allowedPrograms: [...current, prog] };
@@ -135,206 +244,6 @@ const CreateEvent = () => {
             }
             return { ...prev, allowedYears: [...current, year] };
         });
-    };
-
-    const addSponsor = () => {
-        setSponsors(prev => [...prev, { name: '', logoUrl: '', websiteUrl: '' }]);
-        setSponsorErrors(prev => [...prev, {}]);
-    };
-
-    const removeSponsor = (index) => {
-        setSponsors(prev => prev.filter((_, i) => i !== index));
-        setSponsorErrors(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const updateSponsor = (index, field, value) => {
-        setSponsors(prev => {
-            const updated = [...prev];
-            updated[index] = { ...updated[index], [field]: value };
-            return updated;
-        });
-    };
-
-    const addMedia = () => {
-        setMedia(prev => [...prev, { url: '', type: MediaType.IMAGE }]);
-        setMediaErrors(prev => [...prev, {}]);
-    };
-
-    const removeMedia = (index) => {
-        setMedia(prev => prev.filter((_, i) => i !== index));
-        setMediaErrors(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const updateMedia = (index, field, value) => {
-        setMedia(prev => {
-            const updated = [...prev];
-            updated[index] = { ...updated[index], [field]: value };
-            return updated;
-        });
-    };
-
-    const URL_PATTERN = /^https?:\/\/.+/;
-
-    const validateSponsorsAndMedia = () => {
-        let valid = true;
-        const newSponsorErrors = sponsors.map(s => {
-            const errs = {};
-            if (!s.name.trim()) errs.name = 'Sponsor name is required.';
-            if (!URL_PATTERN.test(s.logoUrl)) errs.logoUrl = 'Logo URL must be a valid URL (https://...).';
-            if (Object.keys(errs).length) valid = false;
-            return errs;
-        });
-        const newMediaErrors = media.map(m => {
-            const errs = {};
-            if (!URL_PATTERN.test(m.url)) errs.url = 'Media URL must be a valid URL (https://...).';
-            if (Object.keys(errs).length) valid = false;
-            return errs;
-        });
-        setSponsorErrors(newSponsorErrors);
-        setMediaErrors(newMediaErrors);
-        return valid;
-    };
-
-    const validateStep1 = () => {
-        if (!formData.title || !formData.title.trim()) {
-            return 'Event Title is required.';
-        }
-        if (!formData.venue) {
-            return 'Please select a Venue.';
-        }
-        return null;
-    };
-
-    const validateStep2 = () => {
-        if (!formData.startTime) {
-            return 'Start Time is required.';
-        }
-        if (!formData.endTime) {
-            return 'End Time is required.';
-        }
-        const start = new Date(formData.startTime);
-        const end = new Date(formData.endTime);
-        if (start >= end) {
-            return 'End time must be after start time.';
-        }
-        if (formData.registrationDeadline && new Date(formData.registrationDeadline) > start) {
-            return 'Registration deadline cannot be after event start time.';
-        }
-        if (!formData.allowedPrograms || formData.allowedPrograms.length === 0) {
-            return 'At least one program must be allowed.';
-        }
-        if (!allYears && (!formData.allowedYears || formData.allowedYears.length === 0)) {
-            return 'Please select at least one allowed year or enable "Allow All Years".';
-        }
-        if (!allBranches && (!formData.allowedBranches || formData.allowedBranches.length === 0)) {
-            return 'Please select at least one allowed branch or enable "Allow All Branches".';
-        }
-        return null;
-    };
-
-    const validateStep3 = () => {
-        if (formData.registrationType === 'team' || formData.registrationType === 'both') {
-            const min = Number(formData.minTeamSize || 1);
-            const max = Number(formData.maxTeamSize || 1);
-            if (min < 1) {
-                return 'Minimum team size must be at least 1.';
-            }
-            if (max < min) {
-                return 'Maximum team size cannot be less than the minimum team size.';
-            }
-        }
-        if (!isUnlimited) {
-            const seats = Number(formData.totalSeats);
-            if (!formData.totalSeats || seats < 1) {
-                return 'Total seats must be specified or check "Unlimited Seats".';
-            }
-        }
-        if (formData.paymentMethod !== 'FREE') {
-            const fee = Number(formData.registrationFee || 0);
-            if (fee <= 0) {
-                return 'Registration fee must be greater than 0 for paid events.';
-            }
-            if (formData.paymentMethod === 'MANUAL_TRANSACTION' && !formData.upiId?.trim()) {
-                return 'UPI ID / Phone Number is required for Manual Transaction Verification.';
-            }
-            if (formData.paymentMethod === 'COLLEGE_PAYMENT' && (!formData.collegePaymentUrl?.trim() || !URL_PATTERN.test(formData.collegePaymentUrl.trim()))) {
-                return 'Valid College Payment Portal URL (https://...) is required.';
-            }
-        }
-        for (let i = 0; i < formData.customFields.length; i++) {
-            if (!formData.customFields[i].label?.trim()) {
-                return `Custom field #${i + 1} is missing a field label.`;
-            }
-        }
-        return null;
-    };
-
-    const validateStep4 = () => {
-        if (!validateSponsorsAndMedia()) {
-            return 'Please fix the sponsor and media errors before submitting.';
-        }
-        return null;
-    };
-
-    const validateCurrentStep = (stepNumber) => {
-        switch (stepNumber) {
-            case 1:
-                return validateStep1();
-            case 2:
-                return validateStep2();
-            case 3:
-                return validateStep3();
-            case 4:
-                return validateStep4();
-            default:
-                return null;
-        }
-    };
-
-    const handleNextStep = (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        const err = validateCurrentStep(currentStep);
-        if (err) {
-            setError(err);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-        setError('');
-        setCurrentStep(prev => Math.min(prev + 1, 4));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handlePrevStep = (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        setError('');
-        setCurrentStep(prev => Math.max(prev - 1, 1));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handleStepClick = (targetStep) => {
-        if (targetStep === currentStep) return;
-
-        if (targetStep > currentStep) {
-            for (let s = currentStep; s < targetStep; s++) {
-                const err = validateCurrentStep(s);
-                if (err) {
-                    setError(err);
-                    setCurrentStep(s);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    return;
-                }
-            }
-        }
-
-        setError('');
-        setCurrentStep(targetStep);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const addCustomField = () => {
@@ -388,39 +297,46 @@ const CreateEvent = () => {
         });
     };
 
-    const handleSubmit = async (e) => {
-        if (e) {
-            e.preventDefault();
-        }
+    const addSponsor = () => {
+        setSponsors(prev => [...prev, { name: '', logoUrl: '', websiteUrl: '' }]);
+    };
 
-        if (isSubmitting) return;
-        
-        // If user presses Enter on steps 1-3, advance step instead of submitting early
-        if (currentStep < 4) {
-            handleNextStep(e);
-            return;
-        }
+    const removeSponsor = (index) => {
+        setSponsors(prev => prev.filter((_, i) => i !== index));
+    };
 
-        // Validate all steps before final submit
-        const step1Err = validateStep1();
-        if (step1Err) { setCurrentStep(1); setError(step1Err); return; }
-        const step2Err = validateStep2();
-        if (step2Err) { setCurrentStep(2); setError(step2Err); return; }
-        const step3Err = validateStep3();
-        if (step3Err) { setCurrentStep(3); setError(step3Err); return; }
-        const step4Err = validateStep4();
-        if (step4Err) { setCurrentStep(4); setError(step4Err); return; }
+    const updateSponsor = (index, field, value) => {
+        setSponsors(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
 
-        setIsSubmitting(true);
-        setError('');
+    const addMedia = () => {
+        setMedia(prev => [...prev, { url: '', type: MediaType.IMAGE }]);
+    };
 
-        const payload = {
+    const removeMedia = (index) => {
+        setMedia(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const updateMedia = (index, field, value) => {
+        setMedia(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
+
+    const buildPayload = useCallback((isDraftStatus = false) => {
+        return {
             ...formData,
-            startTime: new Date(formData.startTime).toISOString(),
-            endTime: new Date(formData.endTime).toISOString(),
+            startTime: formData.startTime ? new Date(formData.startTime).toISOString() : null,
+            endTime: formData.endTime ? new Date(formData.endTime).toISOString() : null,
             entryFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
             registrationFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
-            totalSeats: isUnlimited ? 0 : Number(formData.totalSeats),
+            totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
             registrationDeadline: formData.registrationDeadline ? new Date(formData.registrationDeadline).toISOString() : null,
             allowedYears: allYears ? [] : formData.allowedYears,
             allowedBranches: allBranches ? [] : formData.allowedBranches,
@@ -437,15 +353,149 @@ const CreateEvent = () => {
             upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.upiId : null,
             accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.accountHolderName : null,
             postRegistrationMessage: formData.postRegistrationMessage || null,
+            reviewStatus: isDraftStatus ? 'DRAFT' : 'PENDING',
+            isDraft: isDraftStatus,
         };
+    }, [formData, sponsors, media, isUnlimited, allYears, allBranches]);
 
+    // Save as server draft
+    const handleSaveServerDraft = async () => {
+        if (!formData.title || formData.title.trim().length < 3) {
+            setFieldErrors({ title: 'Event title must be at least 3 characters to save draft.' });
+            setCurrentStep(1);
+            return;
+        }
+
+        setIsSavingDraft(true);
         try {
+            const payload = buildPayload(true);
             const res = await createEvent(payload);
-            navigate(`/event/${res.data.slug}`);
+            const created = res.data;
+            try {
+                localStorage.removeItem(draftStorageKey);
+            } catch (e) {
+                console.warn('Failed to clear draft key:', e);
+            }
+            showNotification('Draft created on server! Continuing in editor...', 'success');
+            navigate(`/events/edit/${created.id || created._id}`);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create event');
+            showNotification(err.response?.data?.message || 'Failed to save server draft.', 'error');
+        } finally {
+            setIsSavingDraft(false);
+        }
+    };
+
+    // Step validation on Continue (validates ONLY current step)
+    const handleNextStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        const result = validateEventStep(currentStep, formData, {
+            isDraft: false,
+            isUnlimited,
+            sponsors,
+            media,
+            allYears,
+            allBranches,
+        });
+
+        if (!result.isValid) {
+            setFieldErrors(result.errors);
+            setStepErrors(prev => ({ ...prev, [currentStep]: true }));
+
+            if (result.firstErrorField) {
+                setTimeout(() => {
+                    const el = document.querySelector(`[name="${result.firstErrorField}"]`) ||
+                               document.getElementById(result.firstErrorField);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.focus();
+                    }
+                }, 50);
+            }
+            return;
+        }
+
+        setFieldErrors({});
+        setStepErrors(prev => ({ ...prev, [currentStep]: false }));
+        setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
+        setCurrentStep(prev => Math.min(prev + 1, 4));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handlePrevStep = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        setFieldErrors({});
+        setCurrentStep(prev => Math.max(prev - 1, 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleStepClick = (targetStep) => {
+        if (targetStep === currentStep) return;
+        setFieldErrors({});
+        setCurrentStep(targetStep);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Final submission / go to preview
+    const handleSubmit = async (e) => {
+        if (e) {
+            e.preventDefault();
+        }
+
+        if (isSubmitting) return;
+
+        // If user presses Enter on steps 1-3, advance step instead of submitting early
+        if (currentStep < 4) {
+            handleNextStep(e);
+            return;
+        }
+
+        // Validate all steps
+        const vResult = validateAllEventSteps(formData, { sponsors, media, isUnlimited });
+        if (!vResult.isValid) {
+            setStepErrors(vResult.stepErrors);
+            const firstBadStep = vResult.invalidSteps[0];
+            if (firstBadStep) {
+                setCurrentStep(firstBadStep.stepId);
+                setFieldErrors(vResult.errorsByStep[firstBadStep.stepId]);
+                showNotification(`Please complete all required fields in Step ${firstBadStep.stepId}.`, 'error');
+            }
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            // Create server Event in DRAFT status first so organizer can review on Preview page
+            const payload = buildPayload(true);
+            const res = await createEvent(payload);
+            const created = res.data;
+            try {
+                localStorage.removeItem(draftStorageKey);
+            } catch (e) {
+                console.warn('Failed to clear draft key:', e);
+            }
+            showNotification('Event created! Opening preview...', 'success');
+            navigate(`/events/${created.id || created._id}/preview`);
+        } catch (err) {
+            showNotification(err.response?.data?.message || 'Failed to create event', 'error');
             setIsSubmitting(false);
         }
+    };
+
+    const renderFieldError = (fieldName) => {
+        if (!fieldErrors[fieldName]) return null;
+        return (
+            <p id={`${fieldName}-error`} className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{fieldErrors[fieldName]}</span>
+            </p>
+        );
     };
 
     const inputCls =
@@ -453,44 +503,97 @@ const CreateEvent = () => {
     const labelCls =
         'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
 
+    const getFieldCls = (fieldName) =>
+        `${inputCls} ${fieldErrors[fieldName] ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40' : ''}`;
+
     return (
-        <div className="min-h-screen bg-neutral-50 py-12 px-4">
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-black hover:text-brand-600 transition-colors mb-4 cursor-pointer"
-                    >
-                        <i className="ri-arrow-left-line" /> Back
-                    </button>
-                    <h1 className="text-4xl font-black text-black">Create New Event</h1>
-                    <p className="text-sm text-neutral-500 mt-1.5">Fill in the details across 4 simple steps to publish your event</p>
+        <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] py-8 md:py-12 px-4 sm:px-6">
+            {/* Fixed width & margin: eliminate ~384px gutter on desktop next to sidebar */}
+            <div className="w-full max-w-5xl xl:max-w-6xl mx-auto md:mx-0 md:ml-6 lg:ml-10 pr-4 md:pr-8">
+
+                {/* Header with Title and Autosave Status */}
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl md:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                            Create New Event
+                        </h1>
+                        <p className="text-xs md:text-sm text-neutral-500 mt-1">
+                            Fill in details step-by-step. Draft saves automatically to your browser.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <AutosaveStatusBadge status={autosaveStatus} lastSavedTime={lastSavedTime} label="Locally saved" />
+                        <button
+                            type="button"
+                            onClick={handleSaveServerDraft}
+                            disabled={isSavingDraft}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 transition-colors shadow-xs cursor-pointer"
+                        >
+                            <Save className="w-3.5 h-3.5 text-brand-600" />
+                            Save as Draft
+                        </button>
+                    </div>
                 </div>
 
-                {/* Stepper Component */}
-                <EventFormStepper currentStep={currentStep} onStepClick={handleStepClick} />
-
-                <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
-                    {error && (
-                        <div className="flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 text-[13px] font-bold px-4 py-3 rounded-lg animate-step-fadeIn">
-                            <i className="ri-error-warning-line text-lg flex-shrink-0" />
-                            <span>{error}</span>
+                {/* Restorable Draft Banner */}
+                {savedDraftPrompt && (
+                    <div className="mb-6 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900/60 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                        <div className="flex items-center space-x-3">
+                            <RotateCcw className="w-5 h-5 text-brand-600 shrink-0" />
+                            <div>
+                                <h4 className="text-xs font-bold text-brand-900 dark:text-brand-200 uppercase tracking-wider">
+                                    Unsaved Draft Found
+                                </h4>
+                                <p className="text-xs text-brand-700 dark:text-brand-300">
+                                    Found an unsaved local draft from {savedDraftPrompt.savedAt}
+                                    {savedDraftPrompt.data.title ? ` ("${savedDraftPrompt.data.title}")` : ''}.
+                                </p>
+                            </div>
                         </div>
-                    )}
+                        <div className="flex items-center space-x-2">
+                            <button
+                                type="button"
+                                onClick={restoreDraft}
+                                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                                Restore Draft
+                            </button>
+                            <button
+                                type="button"
+                                onClick={discardDraft}
+                                className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                                Discard
+                            </button>
+                        </div>
+                    </div>
+                )}
 
+                {/* Compact, Validation-Aware Stepper */}
+                <EventFormStepper
+                    currentStep={currentStep}
+                    onStepClick={handleStepClick}
+                    completedSteps={completedSteps}
+                    stepErrors={stepErrors}
+                    isEditMode={false}
+                />
+
+                {/* Main Form Container */}
+                <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+                    
                     {/* STEP 1: Basic Details */}
                     {currentStep === 1 && (
-                        <div className="space-y-6 animate-step-fadeIn">
+                        <div className="space-y-6 animate-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
                                 <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-file-text-line text-brand-600 text-base" />
+                                    <FileText className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 1
                                     </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
+                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
                                         Basic Details
                                     </h2>
                                 </div>
@@ -499,8 +602,17 @@ const CreateEvent = () => {
                             {/* Event Title */}
                             <div>
                                 <label className={labelCls}>Event Title <span className="text-brand-600">*</span></label>
-                                <input type="text" name="title" className={inputCls}
-                                    value={formData.title} onChange={handleChange} placeholder="Enter event title" />
+                                <input
+                                    type="text"
+                                    name="title"
+                                    className={getFieldCls('title')}
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    placeholder="Enter event title"
+                                    aria-invalid={Boolean(fieldErrors.title)}
+                                    aria-describedby={fieldErrors.title ? "title-error" : undefined}
+                                />
+                                {renderFieldError('title')}
                             </div>
 
                             {/* Description */}
@@ -509,9 +621,28 @@ const CreateEvent = () => {
                                 <WysiwygMarkdownEditor
                                     value={formData.description}
                                     onChange={(markdown) => setFormData(prev => ({ ...prev, description: markdown }))}
-                                    placeholder="Write a clear, attractive event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
+                                    placeholder="Write a clear, engaging event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
                                     minHeight="320px"
                                 />
+                                {renderFieldError('description')}
+                            </div>
+
+                            {/* Venue */}
+                            <div>
+                                <label className={labelCls}>Venue <span className="text-brand-600">*</span></label>
+                                <select
+                                    name="venue"
+                                    className={getFieldCls('venue')}
+                                    value={formData.venue}
+                                    onChange={handleChange}
+                                    aria-invalid={Boolean(fieldErrors.venue)}
+                                >
+                                    <option value="">Select Venue</option>
+                                    {availableVenues.map((venue) => (
+                                        <option key={venue} value={venue}>{venue}</option>
+                                    ))}
+                                </select>
+                                {renderFieldError('venue')}
                             </div>
 
                             {/* Event Poster Upload */}
@@ -526,7 +657,7 @@ const CreateEvent = () => {
                                 />
                                 <label
                                     htmlFor="poster-upload"
-                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center gap-2">
@@ -545,7 +676,7 @@ const CreateEvent = () => {
                                 </label>
 
                                 {formData.imageUrl && (
-                                    <div className="relative mt-4 border border-neutral-200 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
+                                    <div className="relative mt-4 border border-neutral-200 dark:border-neutral-800 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
                                         <img src={formData.imageUrl} alt="Poster Preview" className="max-h-64 object-contain rounded-lg" />
                                         <button
                                             type="button"
@@ -558,752 +689,754 @@ const CreateEvent = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Venue */}
-                            <div>
-                                <label className={labelCls}>Venue <span className="text-brand-600">*</span></label>
-                                <select name="venue" className={inputCls} value={formData.venue} onChange={handleChange}>
-                                    <option value="">Select Venue</option>
-                                    {availableVenues.map((venue) => (
-                                        <option key={venue} value={venue}>{venue}</option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
                     )}
 
                     {/* STEP 2: Timings & Access */}
                     {currentStep === 2 && (
-                        <div className="space-y-6 animate-step-fadeIn">
+                        <div className="space-y-6 animate-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
                                 <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-calendar-line text-brand-600 text-base" />
+                                    <Calendar className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 2
                                     </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Timings & Access
+                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        Schedule & Access
                                     </h2>
                                 </div>
                             </div>
 
-                            {/* Start / End Time */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Start & End Times */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className={labelCls}>Start Time <span className="text-brand-600">*</span></label>
-                                    <input type="datetime-local" name="startTime" className={inputCls}
-                                        value={formData.startTime} onChange={handleChange} />
+                                    <input
+                                        type="datetime-local"
+                                        name="startTime"
+                                        className={getFieldCls('startTime')}
+                                        value={formData.startTime}
+                                        onChange={handleChange}
+                                    />
+                                    {renderFieldError('startTime')}
                                 </div>
                                 <div>
                                     <label className={labelCls}>End Time <span className="text-brand-600">*</span></label>
-                                    <input type="datetime-local" name="endTime" className={inputCls}
-                                        value={formData.endTime} onChange={handleChange} />
+                                    <input
+                                        type="datetime-local"
+                                        name="endTime"
+                                        className={getFieldCls('endTime')}
+                                        value={formData.endTime}
+                                        onChange={handleChange}
+                                    />
+                                    {renderFieldError('endTime')}
                                 </div>
                             </div>
 
                             {/* Registration Deadline */}
                             <div>
-                                <label className={labelCls}>Registration Deadline</label>
-                                <input type="datetime-local" name="registrationDeadline" className={inputCls}
-                                    value={formData.registrationDeadline} onChange={handleChange} />
-                                <p className="text-xs text-neutral-500 mt-1">Optional: If left blank, registrations stay open until start time.</p>
+                                <label className={labelCls}>Registration Deadline <span className="text-neutral-400 font-normal">(optional)</span></label>
+                                <input
+                                    type="datetime-local"
+                                    name="registrationDeadline"
+                                    className={getFieldCls('registrationDeadline')}
+                                    value={formData.registrationDeadline}
+                                    onChange={handleChange}
+                                />
+                                <p className="text-[11px] text-neutral-400 mt-1">Leave empty to allow registration until event start.</p>
+                                {renderFieldError('registrationDeadline')}
                             </div>
 
-                            <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col gap-5">
-                                <div>
-                                    <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">Registration Restrictions</h3>
-                                    <p className="text-xs text-neutral-500 mt-1">Restrict event registration to specific programs, years, or branches.</p>
+                            {/* Academic Programs */}
+                            <div>
+                                <label className={labelCls}>Allowed Academic Programs <span className="text-brand-600">*</span></label>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    {PROGRAM_OPTIONS.map((prog) => {
+                                        const isSelected = formData.allowedPrograms.includes(prog);
+                                        return (
+                                            <button
+                                                key={prog}
+                                                type="button"
+                                                onClick={() => handleProgramToggle(prog)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                    isSelected
+                                                        ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
+                                                        : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                                                }`}
+                                            >
+                                                {PROGRAM_LABELS[prog] || prog}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
+                                {renderFieldError('allowedPrograms')}
+                            </div>
 
-                                {/* Allowed Programs */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Programs <span className="text-brand-600">*</span></label>
-                                    <div className="flex flex-wrap gap-5 mt-1">
-                                        {PROGRAM_OPTIONS.map((prog) => (
-                                            <label key={prog} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                    checked={formData.allowedPrograms.includes(prog)}
-                                                    onChange={() => handleProgramToggle(prog)} />
-                                                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{PROGRAM_LABELS[prog]}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allowed Years */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Years</label>
-                                    <div className="flex items-center gap-4">
-                                        <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                checked={allYears} onChange={() => {
-                                                    setAllYears(!allYears);
-                                                    if (!allYears) setFormData(prev => ({ ...prev, allowedYears: [] }));
-                                                }} />
-                                            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Allow All Years</span>
-                                        </label>
-                                    </div>
-                                    {!allYears && (
-                                        <div className="flex flex-wrap gap-4 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-                                            {YEARS.map(year => (
-                                                <label key={year} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
-                                                        checked={formData.allowedYears.includes(year)}
-                                                        onChange={() => handleYearToggle(year)} />
-                                                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{year}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allowed Branches */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Branches</label>
-                                    <div className="flex items-center gap-4">
-                                        <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                checked={allBranches} onChange={() => {
-                                                    setAllBranches(!allBranches);
-                                                    if (!allBranches) setFormData(prev => ({ ...prev, allowedBranches: [] }));
-                                                }} />
-                                            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Allow All Branches</span>
-                                        </label>
-                                    </div>
-                                    {!allBranches && (
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-                                            {BRANCHES.map(branch => (
-                                                <label key={branch} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
-                                                        checked={(formData.allowedBranches || []).includes(branch)}
-                                                        onChange={() => handleBranchToggle(branch)} />
-                                                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{branch}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allow External Participants */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">External Participant Access</label>
-                                    <label className="inline-flex items-center cursor-pointer gap-2 select-none">
+                            {/* Allowed Years */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className={labelCls}>Allowed Academic Years</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            name="allowExternal"
-                                            className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                            checked={formData.allowExternal}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
+                                            checked={allYears}
+                                            onChange={(e) => setAllYears(e.target.checked)}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                         />
-                                        <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                                            Allow External Participants (Other Colleges & Universities)
-                                        </span>
+                                        <span>Allow All Years</span>
                                     </label>
-                                    <p className="text-xs text-neutral-500">
-                                        {formData.allowExternal
-                                            ? 'Students from other colleges and institutions are eligible to register and participate in this event.'
-                                            : 'Participation is strictly restricted to internal NITJ students only. External accounts cannot register.'}
-                                    </p>
                                 </div>
+                                {!allYears && (
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                        {YEARS.map((yr) => {
+                                            const isSelected = formData.allowedYears.includes(yr);
+                                            return (
+                                                <button
+                                                    key={yr}
+                                                    type="button"
+                                                    onClick={() => handleYearToggle(yr)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
+                                                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                                                    }`}
+                                                >
+                                                    {yr}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {renderFieldError('allowedYears')}
+                            </div>
+
+                            {/* Allowed Branches */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className={labelCls}>Allowed Branches</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={allBranches}
+                                            onChange={(e) => setAllBranches(e.target.checked)}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span>Allow All Branches</span>
+                                    </label>
+                                </div>
+                                {!allBranches && (
+                                    <div className="flex flex-wrap gap-1.5 mt-1 max-h-40 overflow-y-auto p-2 border border-neutral-200 dark:border-neutral-700 rounded-lg">
+                                        {BRANCHES.map((br) => {
+                                            const isSelected = (formData.allowedBranches || []).includes(br);
+                                            return (
+                                                <button
+                                                    key={br}
+                                                    type="button"
+                                                    onClick={() => handleBranchToggle(br)}
+                                                    className={`px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-neutral-900 text-white border-neutral-900'
+                                                            : 'bg-white dark:bg-neutral-800 text-neutral-600 border-neutral-200'
+                                                    }`}
+                                                >
+                                                    {br}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {renderFieldError('allowedBranches')}
+                            </div>
+
+                            {/* External Participation Checkbox */}
+                            <div className="pt-2">
+                                <label className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="allowExternal"
+                                        checked={Boolean(formData.allowExternal)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
+                                    <span className="font-semibold">Allow External (Non-Campus) Participants</span>
+                                </label>
+                                <p className="text-xs text-neutral-400 mt-0.5 ml-6">
+                                    Enables students from other institutions to register with external credentials.
+                                </p>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 3: Registration & Payments */}
+                    {/* STEP 3: Registration & Payment */}
                     {currentStep === 3 && (
-                        <div className="space-y-6 animate-step-fadeIn">
+                        <div className="space-y-6 animate-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
                                 <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-ticket-line text-brand-600 text-base" />
+                                    <CreditCard className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 3
                                     </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Registration & Payments
+                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        Registration & Payment
                                     </h2>
                                 </div>
                             </div>
 
                             {/* Registration Type */}
                             <div>
-                                <label className={labelCls}>Registration Type <span className="text-brand-600">*</span></label>
-                                <select name="registrationType" className={inputCls} value={formData.registrationType} onChange={handleChange}>
+                                <label className={labelCls}>Registration Mode <span className="text-brand-600">*</span></label>
+                                <select
+                                    name="registrationType"
+                                    className={inputCls}
+                                    value={formData.registrationType}
+                                    onChange={handleChange}
+                                >
                                     <option value="individual">Individual Registration</option>
-                                    <option value="team">Team Registration</option>
-                                    <option value="both">Both (Individual & Team)</option>
-                                    <option value="none">No Registration (Open / Walk-in)</option>
+                                    <option value="team">Team Only</option>
+                                    <option value="both">Both Individual & Team</option>
                                 </select>
                             </div>
 
-                            {/* Team Size Configurations (conditional) */}
+                            {/* Team Size inputs */}
                             {(formData.registrationType === 'team' || formData.registrationType === 'both') && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
                                     <div>
-                                        <label className={labelCls}>Minimum Team Size <span className="text-brand-600">*</span></label>
-                                        <input type="number" name="minTeamSize" min="1" className={inputCls}
-                                            value={formData.minTeamSize} onChange={handleChange} />
+                                        <label className={labelCls}>Min Team Size</label>
+                                        <input
+                                            type="number"
+                                            name="minTeamSize"
+                                            min="1"
+                                            className={getFieldCls('minTeamSize')}
+                                            value={formData.minTeamSize}
+                                            onChange={handleChange}
+                                        />
+                                        {renderFieldError('minTeamSize')}
                                     </div>
                                     <div>
-                                        <label className={labelCls}>Maximum Team Size <span className="text-brand-600">*</span></label>
-                                        <input type="number" name="maxTeamSize" min="1" className={inputCls}
-                                            value={formData.maxTeamSize} onChange={handleChange} />
+                                        <label className={labelCls}>Max Team Size</label>
+                                        <input
+                                            type="number"
+                                            name="maxTeamSize"
+                                            min="1"
+                                            className={getFieldCls('maxTeamSize')}
+                                            value={formData.maxTeamSize}
+                                            onChange={handleChange}
+                                        />
+                                        {renderFieldError('maxTeamSize')}
                                     </div>
                                 </div>
                             )}
 
+                            {/* Total Seats & Unlimited Option */}
                             <div>
-                                <label className={labelCls}>Total Seats <span className="text-brand-600">*</span></label>
-                                <div className="flex items-center gap-4 mb-3">
-                                    <label className="inline-flex items-center cursor-pointer gap-2">
-                                        <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                            checked={isUnlimited} onChange={() => {
-                                                setIsUnlimited(!isUnlimited);
-                                                if (!isUnlimited) setFormData({ ...formData, totalSeats: '' });
-                                            }} />
-                                        <span className="text-sm font-medium text-neutral-700">Unlimited Seats</span>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className={labelCls}>Total Seats</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={isUnlimited}
+                                            onChange={(e) => {
+                                                setIsUnlimited(e.target.checked);
+                                                if (e.target.checked) setFormData(prev => ({ ...prev, totalSeats: 0 }));
+                                            }}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span>Unlimited Seats</span>
                                     </label>
                                 </div>
                                 {!isUnlimited && (
-                                    <>
-                                        <input type="number" name="totalSeats" min="1" className={inputCls}
-                                            value={formData.totalSeats} onChange={handleChange} placeholder="Number of seats" />
-
-                                        <div className="mt-3 flex flex-col gap-1.5 p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40">
-                                            <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                <input
-                                                    type="checkbox"
-                                                    name="allowWaitlist"
-                                                    className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                    checked={formData.allowWaitlist}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, allowWaitlist: e.target.checked }))}
-                                                />
-                                                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                                                    Allow Waitlist when capacity is reached
-                                                </span>
-                                            </label>
-                                            <p className="text-xs text-neutral-500 ml-6">
-                                                {formData.allowWaitlist
-                                                    ? 'When seats are full, up to 5 participants can join a waitlist and automatically get promoted if spots open up.'
-                                                    : 'Registration closes immediately when capacity is reached. No waitlist spots will be offered.'}
-                                            </p>
-                                        </div>
-                                    </>
+                                    <input
+                                        type="number"
+                                        name="totalSeats"
+                                        min="1"
+                                        className={getFieldCls('totalSeats')}
+                                        value={formData.totalSeats}
+                                        onChange={handleChange}
+                                        placeholder="e.g. 100"
+                                    />
                                 )}
+                                {renderFieldError('totalSeats')}
                             </div>
 
-                            {/* Payment Settings */}
-                            <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
+                            {/* Waitlist Toggle */}
+                            {!isUnlimited && (
                                 <div>
-                                    <h3 className="text-lg font-bold text-black dark:text-white uppercase tracking-wider">Payment Settings</h3>
-                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Choose how users pay for event registration.</p>
+                                    <label className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="allowWaitlist"
+                                            checked={Boolean(formData.allowWaitlist)}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, allowWaitlist: e.target.checked }))}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span className="font-semibold">Enable Waiting List</span>
+                                    </label>
+                                    <p className="text-xs text-neutral-400 mt-0.5 ml-6">
+                                        Attendees can join a waitlist once seats are full.
+                                    </p>
                                 </div>
+                            )}
 
-                                {/* Payment Method Option Selector */}
-                                <div>
-                                    <label className={labelCls}>Payment Method <span className="text-brand-600">*</span></label>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="FREE"
-                                                    checked={formData.paymentMethod === 'FREE'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'FREE', registrationFee: 0 })}
-                                                    className="w-4 h-4 accent-brand-600"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">Free</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">No entry fee required to join the event.</span>
-                                        </label>
-
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="MANUAL_TRANSACTION"
-                                                    checked={formData.paymentMethod === 'MANUAL_TRANSACTION'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'MANUAL_TRANSACTION' })}
-                                                    className="w-4 h-4 accent-brand-600"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">Manual Transaction</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">Users scan your QR code/UPI ID and submit Transaction ID.</span>
-                                        </label>
-
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="COLLEGE_PAYMENT"
-                                                    checked={formData.paymentMethod === 'COLLEGE_PAYMENT'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'COLLEGE_PAYMENT' })}
-                                                    className="w-4 h-4 accent-brand-600 cursor-pointer"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">College Portal</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">Direct users to official college payment portal URL.</span>
-                                        </label>
-                                    </div>
+                            {/* Payment Method Selector */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <label className={labelCls}>Payment Option <span className="text-brand-600">*</span></label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'FREE', title: 'Free Event', desc: 'No fee charged' },
+                                        { id: 'MANUAL_TRANSACTION', title: 'UPI Verification', desc: 'Manual transaction ID check' },
+                                        { id: 'COLLEGE_PAYMENT', title: 'College Portal', desc: 'Official payment gateway' },
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData(prev => ({ ...prev, paymentMethod: opt.id }));
+                                                setIsFree(opt.id === 'FREE');
+                                            }}
+                                            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                                formData.paymentMethod === opt.id
+                                                    ? 'border-brand-600 bg-brand-50/50 dark:bg-brand-950/20 ring-1 ring-brand-600'
+                                                    : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300'
+                                            }`}
+                                        >
+                                            <span className="text-xs font-bold block text-neutral-900 dark:text-white">
+                                                {opt.title}
+                                            </span>
+                                            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+                                                {opt.desc}
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
+                            </div>
 
-                                {formData.paymentMethod !== 'FREE' && (
+                            {/* Paid Event Details */}
+                            {formData.paymentMethod !== 'FREE' && (
+                                <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
                                         <input
                                             type="number"
                                             name="registrationFee"
                                             min="1"
-                                            className={inputCls}
-                                            placeholder="Enter amount in ₹"
+                                            className={getFieldCls('registrationFee')}
                                             value={formData.registrationFee}
                                             onChange={handleChange}
+                                            placeholder="e.g. 50"
                                         />
+                                        {renderFieldError('registrationFee')}
                                     </div>
-                                )}
 
-                                {/* Manual Transaction Verification Fields (Conditional) */}
-                                {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
-                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
+                                        <>
                                             <div>
                                                 <label className={labelCls}>UPI ID / Phone Number <span className="text-brand-600">*</span></label>
                                                 <input
                                                     type="text"
                                                     name="upiId"
-                                                    className={inputCls}
-                                                    placeholder="e.g. name@upi or 9876543210"
+                                                    className={getFieldCls('upiId')}
                                                     value={formData.upiId}
                                                     onChange={handleChange}
+                                                    placeholder="e.g. clubname@oksbi or 9876543210"
                                                 />
+                                                {renderFieldError('upiId')}
                                             </div>
                                             <div>
-                                                <label className={labelCls}>Account Holder Name</label>
+                                                <label className={labelCls}>Account Holder Name (Optional)</label>
                                                 <input
                                                     type="text"
                                                     name="accountHolderName"
                                                     className={inputCls}
-                                                    placeholder="e.g. Club Secretary or Club Account Name"
                                                     value={formData.accountHolderName}
                                                     onChange={handleChange}
+                                                    placeholder="e.g. John Doe (Club Treasurer)"
                                                 />
                                             </div>
-                                        </div>
+                                        </>
+                                    )}
 
-                                        <div>
-                                            <label className={labelCls}>Custom Payment Instructions</label>
-                                            <textarea
-                                                name="paymentInstructions"
-                                                rows="3"
-                                                className={`${inputCls} resize-y`}
-                                                placeholder="Add custom instructions for the user (e.g. Please scan the QR code, pay via GPay/PhonePe/Paytm, and paste the 12-digit UTR/Transaction ID below.)"
-                                                value={formData.paymentInstructions}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* College Payment Portal Fields (Conditional) */}
-                                {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
-                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
+                                    {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
                                         <div>
                                             <label className={labelCls}>College Payment Portal URL <span className="text-brand-600">*</span></label>
                                             <input
                                                 type="url"
                                                 name="collegePaymentUrl"
-                                                className={inputCls}
-                                                placeholder="https://payments.college.ac.in/event-fee"
+                                                className={getFieldCls('collegePaymentUrl')}
                                                 value={formData.collegePaymentUrl}
                                                 onChange={handleChange}
+                                                placeholder="https://payment.nitj.ac.in/..."
                                             />
+                                            {renderFieldError('collegePaymentUrl')}
                                         </div>
-                                        <div>
-                                            <label className={labelCls}>Custom Payment Instructions <span className="text-neutral-400 font-normal">(optional)</span></label>
-                                            <textarea
-                                                name="paymentInstructions"
-                                                rows="3"
-                                                className={`${inputCls} resize-y`}
-                                                placeholder="Add custom instructions for payment on the college portal."
-                                                value={formData.paymentInstructions}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
+                                    )}
+
+                                    <div>
+                                        <label className={labelCls}>Payment Instructions</label>
+                                        <textarea
+                                            name="paymentInstructions"
+                                            rows="2"
+                                            className={inputCls}
+                                            value={formData.paymentInstructions}
+                                            onChange={handleChange}
+                                            placeholder="Instructions shown to attendee during registration..."
+                                        />
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Post-Registration Message */}
-                            <div>
-                                <label className={labelCls}>
-                                    Post-Registration Message <span className="text-neutral-400 font-normal">(optional)</span>
-                                </label>
-                                <p className="text-xs text-neutral-500 mb-2">Show a WhatsApp group link, Discord invite, or any instructions after successful registration.</p>
-                                <textarea
-                                    name="postRegistrationMessage"
-                                    rows="3"
-                                    className={`${inputCls} resize-y`}
-                                    placeholder="e.g. Join our WhatsApp group: https://chat.whatsapp.com/... or Follow the next steps at..."
-                                    value={formData.postRegistrationMessage}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            {/* Required Student Information */}
-                            <div>
-                                <label className={labelCls}>Required Student Information</label>
-                                <p className="text-xs text-neutral-500 mb-3">Select which profile fields students must complete before registering</p>
-                                <div className="space-y-2">
-                                    {[
-                                        { value: 'githubProfile', label: 'GitHub Profile' },
-                                        { value: 'linkedinProfile', label: 'LinkedIn Profile' },
-                                        { value: 'xProfile', label: 'X (Twitter) Profile' },
-                                        { value: 'portfolioUrl', label: 'Portfolio URL' }
-                                    ].map(field => (
-                                        <label key={field.value} className="flex items-center gap-2 cursor-pointer">
-                                            <input type="checkbox" value={field.value}
-                                                checked={formData.requiredFields.includes(field.value)}
-                                                onChange={(e) => {
-                                                    const { checked } = e.target;
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        requiredFields: checked
-                                                            ? [...prev.requiredFields, field.value]
-                                                            : prev.requiredFields.filter(f => f !== field.value)
-                                                    }));
-                                                }}
-                                                className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600" />
-                                            <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
-                                        </label>
-                                    ))}
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Custom Registration Fields Builder */}
-                            <div>
-                                <label className={labelCls}>
-                                    Custom Registration Fields
-                                </label>
-                                <p className="text-xs text-neutral-500 mb-4">Add custom fields that students must fill during registration (like Google Forms)</p>
+                            {/* Custom Registration Form Fields */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Custom Registration Questions
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Collect additional details (e.g. GitHub profile, dietary preference, T-shirt size).
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addCustomField}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Question
+                                    </button>
+                                </div>
 
-                                <div className="space-y-4">
-                                    {formData.customFields.map((cf, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
+                                {formData.customFields.map((cf, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Question #{idx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove field"
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
                                             >
-                                                <i className="ri-delete-bin-line text-lg" />
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
                                             </button>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Label <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. Team Name, GitHub Repo..."
-                                                        value={cf.label}
-                                                        onChange={(e) => updateCustomField(idx, 'label', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Type</label>
-                                                    <select
-                                                        value={cf.type}
-                                                        onChange={(e) => updateCustomField(idx, 'type', e.target.value)}
-                                                        className={inputCls}
-                                                    >
-                                                        <option value="text">Text</option>
-                                                        <option value="url">Link / URL</option>
-                                                        <option value="textarea">Long Text</option>
-                                                        <option value="select">Dropdown</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <label className="inline-flex items-center gap-2 mt-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={cf.required}
-                                                    onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
-                                                    className="w-4 h-4 text-brand-600 border-neutral-300 rounded focus:ring-brand-600 cursor-pointer"
-                                                />
-                                                <span className="text-sm text-neutral-600 dark:text-neutral-400">Required</span>
-                                            </label>
-
-                                            {cf.type === 'select' && (
-                                                <div className="mt-3 pl-4 border-l-2 border-brand-300">
-                                                    <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-2">Dropdown Options</p>
-                                                    {(cf.options || []).map((opt, optIdx) => (
-                                                        <div key={optIdx} className="flex items-center gap-2 mb-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder={`Option ${optIdx + 1}`}
-                                                                value={opt}
-                                                                onChange={(e) => updateCustomFieldOption(idx, optIdx, e.target.value)}
-                                                                className="flex-1 px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-[#0a0a0a] text-black dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 focus:outline-none transition-all"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeOptionFromField(idx, optIdx)}
-                                                                className="text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
-                                                            >
-                                                                <i className="ri-close-line text-lg" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addOptionToField(idx)}
-                                                        className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 mt-1 cursor-pointer"
-                                                    >
-                                                        <i className="ri-add-line" /> Add Option
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
-                                    ))}
-                                </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div className="sm:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Question label (e.g. T-shirt Size)"
+                                                    className={inputCls}
+                                                    value={cf.label}
+                                                    onChange={(e) => updateCustomField(idx, 'label', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <select
+                                                    className={inputCls}
+                                                    value={cf.type}
+                                                    onChange={(e) => updateCustomField(idx, 'type', e.target.value)}
+                                                >
+                                                    <option value="text">Text Input</option>
+                                                    <option value="textarea">Long Text</option>
+                                                    <option value="select">Dropdown Options</option>
+                                                    <option value="checkbox">Checkbox (Yes/No)</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                <button
-                                    type="button"
-                                    onClick={addCustomField}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Custom Field
-                                </button>
+                                        {cf.type === 'select' && (
+                                            <div className="pl-2 border-l-2 border-brand-500 space-y-2 mt-2">
+                                                <span className="text-[11px] font-semibold text-neutral-400 block">
+                                                    Dropdown Choices:
+                                                </span>
+                                                {(cf.options || []).map((opt, oIdx) => (
+                                                    <div key={oIdx} className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={opt}
+                                                            onChange={(e) => updateCustomFieldOption(idx, oIdx, e.target.value)}
+                                                            placeholder={`Option ${oIdx + 1}`}
+                                                            className={inputCls}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeOptionFromField(idx, oIdx)}
+                                                            className="text-neutral-400 hover:text-rose-600 cursor-pointer"
+                                                        >
+                                                            <i className="ri-delete-bin-line" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addOptionToField(idx)}
+                                                    className="text-xs text-brand-600 hover:underline font-semibold cursor-pointer"
+                                                >
+                                                    + Add Choice
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <label className="flex items-center space-x-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={Boolean(cf.required)}
+                                                onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
+                                                className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                            />
+                                            <span>Required answer</span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Post Registration Message */}
+                            <div>
+                                <label className={labelCls}>Post-Registration Success Message (Optional)</label>
+                                <textarea
+                                    name="postRegistrationMessage"
+                                    rows="2"
+                                    className={inputCls}
+                                    value={formData.postRegistrationMessage}
+                                    onChange={handleChange}
+                                    placeholder="Message displayed to attendee after successfully registering (e.g. WhatsApp group link)..."
+                                />
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 4: Extras & Publishing */}
+                    {/* STEP 4: Extras */}
                     {currentStep === 4 && (
-                        <div className="space-y-6 animate-step-fadeIn">
+                        <div className="space-y-6 animate-fadeIn">
                             <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
                                 <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-sparkling-line text-brand-600 text-base" />
+                                    <Sparkles className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 4
                                     </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Extras & Publishing
+                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        Extras & Settings
                                     </h2>
                                 </div>
                             </div>
 
-                            {/* Status Toggles Grid (Display Results & Digital Certificates) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Show Winners Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
+                            {/* Additional Settings Toggles */}
+                            <div className="space-y-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                    <span className="font-semibold">Provide Certificates to Attendees</span>
                                     <input
                                         type="checkbox"
-                                        name="showWinner"
-                                        checked={formData.showWinner}
-                                        onChange={(e) => setFormData({ ...formData, showWinner: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
+                                        checked={Boolean(formData.provideCertificate)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, provideCertificate: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                     />
-                                    <div>
-                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Display Results / Winners</span>
-                                        <p className="text-xs text-neutral-500 mt-1">Show winners on the event card after completion.</p>
-                                    </div>
                                 </label>
 
-                                {/* Provide Certificate Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
+                                    <span className="font-semibold">Enable Attendee Post-Event Feedback</span>
                                     <input
                                         type="checkbox"
-                                        name="provideCertificate"
-                                        checked={formData.provideCertificate}
-                                        onChange={(e) => setFormData({ ...formData, provideCertificate: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
+                                        checked={Boolean(formData.feedbackEnabled)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, feedbackEnabled: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                     />
-                                    <div>
-                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Digital Certificates</span>
-                                        <p className="text-xs text-neutral-500 mt-1">Enable downloadable certificates for participants after the event ends.</p>
-                                    </div>
+                                </label>
+
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
+                                    <span className="font-semibold">Publicly Display Winners After Event</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(formData.showWinner)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, showWinner: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
                                 </label>
                             </div>
 
-                            {/* Sponsors */}
-                            <div>
-                                <label className={labelCls}>Sponsors</label>
-                                <p className="text-xs text-neutral-500 mb-4">Add sponsors for this event (optional)</p>
-                                <div className="space-y-4">
-                                    {sponsors.map((s, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
+                            {/* Sponsors Section */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Event Sponsors
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Add sponsor partner logos and links.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addSponsor}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Sponsor
+                                    </button>
+                                </div>
+
+                                {sponsors.map((sp, sIdx) => (
+                                    <div
+                                        key={sIdx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Sponsor #{sIdx + 1}</span>
                                             <button
                                                 type="button"
-                                                onClick={() => removeSponsor(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove sponsor"
+                                                onClick={() => removeSponsor(sIdx)}
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
                                             >
-                                                <i className="ri-delete-bin-line text-lg" />
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
                                             </button>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Sponsor Name <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. Acme Corp"
-                                                        value={s.name}
-                                                        onChange={(e) => updateSponsor(idx, 'name', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {sponsorErrors[idx]?.name && (
-                                                        <p className="text-xs text-red-600 mt-1">{sponsorErrors[idx].name}</p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Logo URL <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://example.com/logo.png"
-                                                        value={s.logoUrl}
-                                                        onChange={(e) => updateSponsor(idx, 'logoUrl', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {sponsorErrors[idx]?.logoUrl && (
-                                                        <p className="text-xs text-red-600 mt-1">{sponsorErrors[idx].logoUrl}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="mt-3 pr-10">
-                                                <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Website URL <span className="text-neutral-400 font-normal">(optional)</span></label>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Sponsor Name"
+                                                className={inputCls}
+                                                value={sp.name}
+                                                onChange={(e) => updateSponsor(sIdx, 'name', e.target.value)}
+                                            />
+                                            <input
+                                                type="url"
+                                                placeholder="Logo URL (https://...)"
+                                                className={inputCls}
+                                                value={sp.logoUrl}
+                                                onChange={(e) => updateSponsor(sIdx, 'logoUrl', e.target.value)}
+                                            />
+                                            <input
+                                                type="url"
+                                                placeholder="Website URL (optional)"
+                                                className={inputCls}
+                                                value={sp.websiteUrl}
+                                                onChange={(e) => updateSponsor(sIdx, 'websiteUrl', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Media Section */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Media Gallery
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Highlight images and videos from previous iterations.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addMedia}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Media
+                                    </button>
+                                </div>
+
+                                {media.map((m, mIdx) => (
+                                    <div
+                                        key={mIdx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Media #{mIdx + 1}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeMedia(mIdx)}
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div className="sm:col-span-2">
                                                 <input
                                                     type="url"
-                                                    placeholder="https://sponsor-website.com"
-                                                    value={s.websiteUrl}
-                                                    onChange={(e) => updateSponsor(idx, 'websiteUrl', e.target.value)}
+                                                    placeholder="Media URL (https://...)"
                                                     className={inputCls}
+                                                    value={m.url}
+                                                    onChange={(e) => updateMedia(mIdx, 'url', e.target.value)}
                                                 />
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addSponsor}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Sponsor
-                                </button>
-                            </div>
-
-                            {/* Media */}
-                            <div>
-                                <label className={labelCls}>Media</label>
-                                <p className="text-xs text-neutral-500 mb-4">Add images, videos, or sponsor logos for this event (optional)</p>
-                                <div className="space-y-4">
-                                    {media.map((m, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeMedia(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove media"
-                                            >
-                                                <i className="ri-delete-bin-line text-lg" />
-                                            </button>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Media URL <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://example.com/media.jpg"
-                                                        value={m.url}
-                                                        onChange={(e) => updateMedia(idx, 'url', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {mediaErrors[idx]?.url && (
-                                                        <p className="text-xs text-red-600 mt-1">{mediaErrors[idx].url}</p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Type</label>
-                                                    <select
-                                                        value={m.type}
-                                                        onChange={(e) => updateMedia(idx, 'type', e.target.value)}
-                                                        className={inputCls}
-                                                    >
-                                                        <option value={MediaType.IMAGE}>Image</option>
-                                                        <option value={MediaType.VIDEO}>Video</option>
-                                                        <option value={MediaType.SPONSOR_LOGO}>Sponsor Logo</option>
-                                                    </select>
-                                                </div>
+                                            <div>
+                                                <select
+                                                    className={inputCls}
+                                                    value={m.type}
+                                                    onChange={(e) => updateMedia(mIdx, 'type', e.target.value)}
+                                                >
+                                                    <option value={MediaType.IMAGE}>Image</option>
+                                                    <option value={MediaType.VIDEO}>Video</option>
+                                                    <option value={MediaType.SPONSOR_LOGO}>Sponsor Logo</option>
+                                                </select>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addMedia}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Media
-                                </button>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
 
-                    <div className="flex gap-4 pt-6 border-t-2 border-neutral-100">
-                        {currentStep === 1 ? (
-                            <button
-                                key="cancel-btn"
-                                type="button"
-                                onClick={() => navigate(-1)}
-                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2"
-                            >
-                                Cancel
-                            </button>
-                        ) : (
-                            <button
-                                key="prev-step-btn"
-                                type="button"
-                                onClick={handlePrevStep}
-                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2"
-                            >
-                                <i className="ri-arrow-left-line" /> Back
-                            </button>
-                        )}
+                    {/* Step Navigation Action Bar */}
+                    <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3">
+                        {/* Left action: Back or Profile */}
+                        <div>
+                            {currentStep > 1 ? (
+                                <button
+                                    type="button"
+                                    onClick={handlePrevStep}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5" /> Previous Step
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/profile"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </Link>
+                            )}
+                        </div>
 
-                        {currentStep < 4 ? (
+                        {/* Right actions: Save Draft & Next/Preview */}
+                        <div className="flex items-center space-x-3">
+                            <AutosaveStatusBadge status={autosaveStatus} lastSavedTime={lastSavedTime} label="Draft saved" />
                             <button
-                                key="next-step-btn"
                                 type="button"
-                                onClick={handleNextStep}
-                                className="flex-1 px-6 py-3 bg-black hover:bg-neutral-800 hover:shadow-md text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all border-0 outline-none flex items-center justify-center gap-2"
+                                disabled={isSavingDraft}
+                                onClick={handleSaveServerDraft}
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
                             >
-                                Next Step <i className="ri-arrow-right-line" />
+                                <Save className="w-3.5 h-3.5" />
+                                Save Draft
                             </button>
-                        ) : (
-                            <button
-                                key="submit-event-btn"
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`flex-1 px-6 py-3 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all border-0 outline-none ${
-                                    isSubmitting ? 'bg-neutral-400 cursor-not-allowed' : 'bg-black hover:bg-neutral-800 hover:shadow-md'
-                                }`}
-                            >
-                                {isSubmitting ? 'Creating...' : 'Create Event'}
-                            </button>
-                        )}
+
+                            {currentStep < 4 ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNextStep}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm cursor-pointer"
+                                >
+                                    Continue <ArrowRight className="w-3.5 h-3.5" />
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                                >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    {isSubmitting ? 'Creating Event...' : 'Preview Event →'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </form>
             </div>

@@ -30,7 +30,7 @@ const ForgotPassword = () => {
         {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black tracking-tight text-black dark:text-white">
-            Campus<span className="text-brand-600">Node</span>
+            Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span>
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Reset your account password
@@ -63,11 +63,10 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${
-                loading
+              className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${loading
                   ? 'bg-neutral-400 cursor-not-allowed'
                   : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5'
-              }`}
+                }`}
             >
               {loading ? 'Sending Link...' : 'Send Reset Link'}
             </button>

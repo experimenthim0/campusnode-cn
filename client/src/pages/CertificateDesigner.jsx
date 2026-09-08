@@ -899,7 +899,7 @@ const CertificateDesigner = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => navigate("/my-events")}
+                onClick={() => navigate("/club-events/")}
                 className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors p-1 -ml-1 cursor-pointer"
                 title="Back to events"
               >

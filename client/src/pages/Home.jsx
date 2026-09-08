@@ -12,7 +12,7 @@ import ClubLeaderboard from '../components/ClubLeaderboard';
 import HomeFooter from '../components/HomeFooter';
 import ScrollReveal from '../components/ScrollReveal';
 import Section from '../components/layout/Section';
-import {ArrowRightIcon} from '../components/ui/arrow-right';
+import { ArrowRightIcon } from '../components/ui/arrow-right';
 import ShimmerText from '../components/ShimmerText';
 import { InstagramIcon } from '@/components/ui/instagram';
 import { GithubIcon } from '@/components/ui/github';
@@ -84,7 +84,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const secs = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       let text = '';
       if (days > 0) {
         text = `${days}d ${hours}h ${mins}m`;
@@ -178,11 +178,11 @@ const Home = () => {
   useEffect(() => {
     if (registrations.length > 0 && user) {
       const acknowledged = JSON.parse(localStorage.getItem('acknowledged_winnings') || '[]');
-      
+
       const unacknowledgedWin = registrations.find(p => {
         const ev = p.eventId || p.event;
         if (ev && ev.winners && Array.isArray(ev.winners) && !acknowledged.includes(ev.id || ev._id)) {
-          const winInfo = ev.winners.find(w => 
+          const winInfo = ev.winners.find(w =>
             (w.studentId && String(w.studentId) === String(user.id || user._id)) ||
             (w.rollNo && user.rollNo && String(w.rollNo).trim().toLowerCase() === user.rollNo.trim().toLowerCase()) ||
             (w.email && user.email && String(w.email).trim().toLowerCase() === user.email.trim().toLowerCase()) ||
@@ -344,11 +344,10 @@ const Home = () => {
                       <Link
                         key={idx}
                         to={action.to}
-                        className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 ${
-                          action.primary 
-                            ? "bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black border border-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg" 
-                            : "bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-md hover:border-brand-500/40"
-                        }`}
+                        className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 ${action.primary
+                          ? "bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black border border-black dark:border-white shadow-sm hover:shadow-md"
+                          : "bg-white dark:bg-zinc-900/90 hover:bg-neutral-50 dark:hover:bg-zinc-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/90 dark:border-zinc-800 shadow-2xs hover:shadow-xs hover:border-brand-500/40"
+                          }`}
                       >
                         <IconComponent className={action.primary ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-white dark:text-black shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500 shrink-0"} />
                         <span className="truncate">{action.label}</span>
@@ -405,7 +404,7 @@ const Home = () => {
                     {registrations.map((reg) => {
                       const event = reg.eventId;
                       if (!event) return null;
-                      
+
                       return (
                         <div key={reg._id} className="relative group">
                           {/* Timeline Node Icon */}
@@ -422,7 +421,7 @@ const Home = () => {
                                     {event.title}
                                   </Link>
                                 </h3>
-                                
+
                                 {/* DateTime */}
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
                                   <span className="font-semibold text-brand-600 uppercase tracking-wide">
@@ -589,9 +588,9 @@ const Home = () => {
                 <div className="flex flex-col gap-6 items-center lg:items-start text-center lg:text-left">
                   <ScrollReveal delay={0.2}>
                     <h1 className="font-black text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-neutral-900 dark:text-white ">
-                     Discover What's Happening.
+                      Discover What's Happening.
                       <br />
-                     <span className="text-brand-500 text-[clamp(39px,5.5vw,78px)] ">Be Part of It.</span>
+                      <span className="text-brand-500 text-[clamp(39px,5.5vw,78px)] ">Be Part of It.</span>
                     </h1>
                   </ScrollReveal>
 
@@ -622,7 +621,7 @@ const Home = () => {
                           to="/register"
                           className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
-                           Get Involved Now! <ArrowRightIcon className="w-4 h-4 ml-1"/>
+                          Get Involved Now! <ArrowRightIcon className="w-4 h-4 ml-1" />
                         </Link>
                       </div>
 
@@ -681,7 +680,7 @@ const Home = () => {
             <div className="flex justify-center mt-10 sm:mt-12">
               <BtnSecondary to="/events">
                 <ArrowRightIcon size={20}>
-                  Browse Events 
+                  Browse Events
                 </ArrowRightIcon>
               </BtnSecondary>
             </div>
@@ -705,7 +704,7 @@ const Home = () => {
             <div className="flex justify-center mt-10 sm:mt-12">
               <BtnSecondary to="/clubs">
                 <ArrowRightIcon size={20}>
-                  Explore All 
+                  Explore All
                 </ArrowRightIcon>
               </BtnSecondary>
             </div>
@@ -879,7 +878,7 @@ const Home = () => {
         </>
       )}
 
-     
+
       <section id="team" className="py-16 sm:py-20 lg:py-24 bg-[#fafafa] dark:bg-[#0a0a0a] border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Glow accent */}
         <div
@@ -898,13 +897,13 @@ const Home = () => {
                 The Innovators
               </span>
             </ScrollReveal>
-            
+
             <ScrollReveal direction="up" delay={0.2}>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                The Minds Behind <span className="logofont font-light tracking-wide">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span>
+                The Minds Behind <span className="logofont font-light tracking-wide">Campus<span className="text-[#F97316] dark:text-[#FB923C]">Node</span></span>
               </h2>
             </ScrollReveal>
-            
+
             <ScrollReveal direction="up" delay={0.3}>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed font-light max-w-2xl px-2">
                 Student creators, architects, and designers crafting the next-generation digital ecosystem for NIT Jalandhar.
@@ -989,16 +988,16 @@ const Home = () => {
             <div className="relative shrink-0">
               <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
             </div>
-            
+
             <h3 className="text-xl sm:text-2xl font-bold text-[#111111] dark:text-[#F5F5F5] mt-4 leading-tight">Congratulations!</h3>
             <p className="text-sm sm:text-base font-semibold text-[#F97316] dark:text-[#FB923C] mt-1.5 leading-tight">
               You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
             </p>
-            
+
             <p className="text-xs text-[#888888] dark:text-[#808080] mt-3 leading-relaxed italic px-2">
               "Hard work pays off! Congratulations to the winners of {celebrationEvent.title}. Keep striving for excellence and inspiring those around you."
             </p>
-            
+
             <button
               onClick={acknowledgeWin}
               className="mt-6 w-full py-3 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 text-xs cursor-pointer"

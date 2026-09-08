@@ -100,6 +100,33 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
+    // Step 3: Check check-in window (Check-in opens 4 hours before event starts and closes when event ends)
+    const now = new Date();
+    const event = participation.event;
+    if (event?.startTime) {
+      const startTime = new Date(event.startTime).getTime();
+      const opensAt = startTime - 4 * 60 * 60 * 1000;
+      if (now.getTime() < opensAt) {
+        return res.status(403).json({
+          status: 'CHECKIN_NOT_OPEN',
+          message: 'Check-in is not open yet. It opens 4 hours before the event starts.',
+          opensAt: new Date(opensAt),
+          startTime: new Date(startTime),
+        });
+      }
+    }
+
+    if (event?.endTime) {
+      const endTime = new Date(event.endTime).getTime();
+      if (now.getTime() > endTime) {
+        return res.status(403).json({
+          status: 'CHECKIN_CLOSED',
+          message: 'Check-in has closed as the event has already ended.',
+          endTime: new Date(endTime),
+        });
+      }
+    }
+
     // Step 4: Guard against double-marking (both participation status and AttendanceRecord check)
     const existingRecord = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId: participation.eventId, participationId: participation.id } },
@@ -119,7 +146,6 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
 
     // Step 5: Mark attendance in participation and attendanceRecord
     const attendanceId = createObjectId();
-    const now = new Date();
     await prisma.$transaction([
       prisma.participation.update({
         where: { id: participation.id },

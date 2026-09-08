@@ -30,10 +30,10 @@ const Maintainance = () => {
 
         {/* Themed Message without time */}
         <p className="mt-3 text-neutral-600 dark:text-neutral-400 text-sm sm:text-base font-medium leading-relaxed max-w-lg">
-          Campus<span className="text-brand-600 dark:text-brand-500 font-bold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
+          Campus<span className="text-[#F97316] dark:text-[#FB923C] font-bold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
         </p>
 
-      
+
       </div>
     </div>
   );

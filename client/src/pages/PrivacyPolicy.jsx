@@ -8,7 +8,7 @@ const PrivacyPolicy = () => {
         <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 py-12 px-4 transition-colors duration-300">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8 flex items-center justify-between">
-                    <button 
+                    <button
                         onClick={() => navigate(-1)}
                         className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:hover:text-white uppercase tracking-widest transition-colors cursor-pointer"
                     >
@@ -28,7 +28,7 @@ const PrivacyPolicy = () => {
                         Privacy <span className="text-brand-600">Policy</span>
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        At Campus<span className="text-brand-600 font-semibold">Node</span>, we prioritize student data protection, transparency, and security across all features and event registrations.
+                        At Campus<span className="text-[#F97316] dark:text-[#FB923C] font-semibold">Node</span>, we prioritize student data protection, transparency, and security across all features and event registrations.
                     </p>
                 </div>
 
@@ -134,7 +134,7 @@ const PrivacyPolicy = () => {
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">4</span>
                             Information Sharing &amp; Organizer Obligations
                         </h2>
-                        
+
                         <div className="bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 rounded-xl p-4 mb-4">
                             <div className="flex items-center gap-2 text-brand-800 dark:text-brand-300 font-bold text-xs uppercase tracking-wider mb-1">
                                 <i className="ri-shield-flash-line text-brand-600" /> Organizer Data Scope
@@ -201,8 +201,8 @@ const PrivacyPolicy = () => {
                         <p className="text-xs md:text-sm text-neutral-400 leading-relaxed mb-4">
                             If you have concerns about data privacy or wish to report a security issue, reach out to our team directly:
                         </p>
-                        <a 
-                            href="mailto:contact.nikhim@gmail.com" 
+                        <a
+                            href="mailto:contact.nikhim@gmail.com"
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Contact Privacy Officer
