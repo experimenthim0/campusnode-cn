@@ -866,7 +866,7 @@ const Home = () => {
                 <ScrollReveal direction="right" delay={0.2}>
                   <div className="flex items-center justify-center lg:justify-end">
                     <img
-                      src="/whatcn.png"
+                      src="/what-cn.png"
                       alt="CampusNode Ecosystem"
                       className="w-full max-w-lg h-auto object-contain"
                     />

@@ -170,7 +170,7 @@ const eventSchema = z.object({
     endTime: z.coerce.date().optional(),
     totalSeats: z.coerce.number().int().optional(),
     entryFee: z.coerce.number().optional(),
-    imageUrl: z.string().url().optional().or(z.literal("")),
+    imageUrl: z.string().url().optional().nullable().or(z.literal("")),
     requiredFields: z.array(z.string()).optional(),
     allowedPrograms: z.array(z.string()).optional(),
     allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
@@ -197,7 +197,7 @@ const eventSchema = z.object({
     sponsors: z.array(z.object({
       name: z.string().min(1),
       logoUrl: z.string().url(),
-      websiteUrl: z.string().url().optional(),
+      websiteUrl: z.string().url().optional().nullable().or(z.literal("")),
     })).optional(),
     media: z.array(z.object({
       url: z.string().url(),
@@ -1439,12 +1439,11 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    // Fire-and-forget views count increment asynchronously to prevent blocking response
+    // Fire-and-forget views count increment asynchronously via raw SQL to prevent modifying event.updatedAt
     if (req.query.skipIncrement !== 'true') {
-      prisma.event.update({
-        where: { id: event.id },
-        data: { views: { increment: 1 } },
-      }).catch((err) => console.error("Async view increment error:", err.message));
+      prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${event.id}`.catch((err) =>
+        console.error("Async view increment error:", err.message)
+      );
     }
 
     res.json({
@@ -1948,7 +1947,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (req.body.expectedUpdatedAt) {
       const clientTime = new Date(req.body.expectedUpdatedAt).getTime();
       const serverTime = new Date(event.updatedAt).getTime();
-      if (!isNaN(clientTime) && serverTime > clientTime + 3000) {
+      if (!isNaN(clientTime) && serverTime > clientTime + 5000) {
         return res.status(409).json({
           message: "Conflict: Event has been modified by a newer request.",
           code: "STALE_DATA_CONFLICT",
@@ -2006,11 +2005,40 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     });
 
     if (updates.title && updates.title !== event.title) updates.slug = await slugifyUnique(updates.title, 'event', 'slug', req.params.id);
-    if (updates.startTime) updates.startTime = new Date(updates.startTime);
-    if (updates.endTime) updates.endTime = new Date(updates.endTime);
+
+    if (updates.startTime) {
+      const d = new Date(updates.startTime);
+      if (!isNaN(d.getTime())) {
+        updates.startTime = d;
+      } else {
+        delete updates.startTime;
+      }
+    } else if (updates.startTime === null) {
+      delete updates.startTime;
+    }
+
+    if (updates.endTime) {
+      const d = new Date(updates.endTime);
+      if (!isNaN(d.getTime())) {
+        updates.endTime = d;
+      } else {
+        delete updates.endTime;
+      }
+    } else if (updates.endTime === null) {
+      delete updates.endTime;
+    }
+
     if (updates.allowExternal !== undefined) updates.allowExternal = Boolean(updates.allowExternal);
     if (updates.allowWaitlist !== undefined) updates.allowWaitlist = Boolean(updates.allowWaitlist);
-    if (updates.registrationDeadline !== undefined) updates.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : null;
+
+    if (updates.registrationDeadline !== undefined) {
+      if (!updates.registrationDeadline) {
+        updates.registrationDeadline = null;
+      } else {
+        const d = new Date(updates.registrationDeadline);
+        updates.registrationDeadline = !isNaN(d.getTime()) ? d : null;
+      }
+    }
 
     // Validate booking conflict if venue or times changed
     const targetVenue = updates.venue || event.venue;
@@ -2018,26 +2046,23 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     const targetEnd = updates.endTime || new Date(event.endTime);
 
     if (updates.venue || updates.startTime || updates.endTime) {
-      const validation = await validateBooking({
-        venue: targetVenue,
-        startTime: targetStart,
-        endTime: targetEnd,
-        excludeEventId: req.params.id,
-      });
-
-      if (validation.hasConflict) {
-        return res.status(409).json({
-          message: validation.message || "Venue is already booked for the selected time.",
-          conflict: validation,
+      if (!isNaN(targetStart.getTime()) && !isNaN(targetEnd.getTime()) && targetStart < targetEnd) {
+        const validation = await validateBooking({
+          venue: targetVenue,
+          startTime: targetStart,
+          endTime: targetEnd,
+          excludeEventId: req.params.id,
         });
+
+        if (validation.hasConflict) {
+          return res.status(409).json({
+            message: validation.message || "Venue is already booked for the selected time.",
+            conflict: validation,
+          });
+        }
       }
     }
 
-    if (updates.registrationDeadline !== undefined) {
-      updates.registrationDeadline = updates.registrationDeadline
-        ? new Date(updates.registrationDeadline)
-        : null;
-    }
     if (updates.entryFee !== undefined) updates.entryFee = Number(updates.entryFee || 0);
     if (updates.totalSeats !== undefined) updates.totalSeats = Number(updates.totalSeats || 0);
     if (updates.minTeamSize !== undefined) updates.minTeamSize = Number(updates.minTeamSize || 1);
@@ -2056,16 +2081,37 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     const updatedEvent = await prisma.$transaction(async (tx) => {
       if (sponsors !== undefined) {
         await tx.sponsor.deleteMany({ where: { eventId: req.params.id } });
-        await tx.sponsor.createMany({
-          data: sponsors.map(s => ({ id: createObjectId(), eventId: req.params.id, ...s })),
-        });
+        const validSponsors = sponsors
+          .filter(s => s && s.name && s.name.trim() && s.logoUrl && s.logoUrl.trim())
+          .map(s => ({
+            id: createObjectId(),
+            eventId: req.params.id,
+            name: s.name.trim(),
+            logoUrl: s.logoUrl.trim(),
+            websiteUrl: s.websiteUrl?.trim() || null,
+          }));
+        if (validSponsors.length > 0) {
+          await tx.sponsor.createMany({
+            data: validSponsors,
+          });
+        }
       }
 
       if (media !== undefined) {
         await tx.media.deleteMany({ where: { eventId: req.params.id } });
-        await tx.media.createMany({
-          data: media.map(m => ({ id: createObjectId(), eventId: req.params.id, ...m })),
-        });
+        const validMedia = media
+          .filter(m => m && m.url && m.url.trim())
+          .map(m => ({
+            id: createObjectId(),
+            eventId: req.params.id,
+            url: m.url.trim(),
+            type: m.type,
+          }));
+        if (validMedia.length > 0) {
+          await tx.media.createMany({
+            data: validMedia,
+          });
+        }
       }
 
       const updated = await tx.event.update({

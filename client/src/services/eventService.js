@@ -11,8 +11,15 @@ export const getEvents = (params) =>
 export const getEventBySlug = (slug) =>
   api.get(`/api/events/${slug}`);
 
-export const getEventById = (id) =>
-  api.get(`/api/events/${id}`);
+export const getEventById = (id, params = {}) =>
+  api.get(`/api/events/${id}`, {
+    params,
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
+    },
+  });
 
 export const getClubEvents = (clubId) =>
   api.get(`/api/events/club/${clubId}`);

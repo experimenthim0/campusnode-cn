@@ -101,6 +101,9 @@ const EditEvent = () => {
     const saveSequenceRef = useRef(0);
     const autosaveTimerRef = useRef(null);
     const lastKnownUpdatedAtRef = useRef(null);
+    const inFlightSaveRef = useRef(false);
+    const lastSavedPayloadRef = useRef({});
+    const isDirtyRef = useRef(false);
 
     // Sync step from query param (e.g. ?step=2 from Preview)
     useEffect(() => {
@@ -154,89 +157,118 @@ const EditEvent = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
+    // Thoroughly erase any stale local draft, edit cache, or collision keys for this event across storage
+    const purgeLocalEventData = useCallback((eventId = id) => {
+        try {
+            if (!eventId) return;
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && (k.includes(eventId) || k.startsWith(`event_draft_${eventId}`) || k.startsWith(`edit_event_${eventId}`))) {
+                    keysToRemove.push(k);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+        } catch (e) {
+            console.warn('Storage cleanup notice:', e);
+        }
+    }, [id]);
+
+    // Authoritative event state applicator
+    const applyEventToState = useCallback((event) => {
+        if (!event) return;
+        lastKnownUpdatedAtRef.current = event.updatedAt;
+        const payMethod = event.paymentMethod || ((event.entryFee > 0 || event.registrationFee > 0) ? 'MANUAL_TRANSACTION' : 'FREE');
+        const feeAmt = event.registrationFee ?? event.entryFee ?? 0;
+
+        setFormData({
+            title: event.title || '',
+            description: event.description || '',
+            venue: event.venue || '',
+            startTime: toLocalISOString(event.startTime),
+            endTime: toLocalISOString(event.endTime),
+            totalSeats: event.totalSeats || '',
+            entryFee: feeAmt,
+            imageUrl: event.imageUrl || '',
+            requiredFields: event.requiredFields || [],
+            customFields: event.customFields || [],
+            registrationDeadline: toLocalISOString(event.registrationDeadline),
+            allowedPrograms: event.allowedPrograms || ['BTECH', 'MTECH', 'OTHER'],
+            allowedYears: event.allowedYears || [],
+            allowedBranches: event.allowedBranches || [],
+            allowExternal: event.allowExternal !== undefined ? event.allowExternal : true,
+            winners: event.winners || [],
+            showWinner: event.showWinner || false,
+            provideCertificate: event.provideCertificate || false,
+            feedbackEnabled: event.feedbackEnabled !== undefined ? event.feedbackEnabled : true,
+            allowWaitlist: event.allowWaitlist !== undefined ? event.allowWaitlist : true,
+            registrationType: event.registrationType || 'individual',
+            minTeamSize: event.minTeamSize || 1,
+            maxTeamSize: event.maxTeamSize || 1,
+            paymentMethod: payMethod,
+            registrationFee: feeAmt,
+            paymentInstructions: event.paymentInstructions || '',
+            collegePaymentUrl: event.collegePaymentUrl || '',
+            upiId: event.upiId || '',
+            accountHolderName: event.accountHolderName || '',
+            postRegistrationMessage: event.postRegistrationMessage || '',
+        });
+
+        if (event.sponsors && event.sponsors.length > 0) {
+            setSponsors(event.sponsors.map(s => ({
+                name: s.name,
+                logoUrl: s.logoUrl,
+                websiteUrl: s.websiteUrl || ''
+            })));
+        } else {
+            setSponsors([]);
+        }
+
+        if (event.media && event.media.length > 0) {
+            setMedia(event.media.map(m => ({
+                url: m.url,
+                type: m.type
+            })));
+        } else {
+            setMedia([]);
+        }
+
+        setIsFree(payMethod === 'FREE');
+        setIsUnlimited(!event.totalSeats || event.totalSeats === 0);
+        setAllYears(!event.allowedYears || event.allowedYears.length === 0);
+        setAllBranches(!event.allowedBranches || event.allowedBranches.length === 0);
+        setReviewInfo({
+            reviewStatus: event.reviewStatus,
+            reviewComment: event.reviewComment,
+            reviewedBy: event.reviewedBy,
+        });
+
+        // Compute step errors across all steps
+        const vResult = validateAllEventSteps(
+            {
+                ...event,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                paymentMethod: payMethod,
+                registrationFee: feeAmt,
+            },
+            {
+                sponsors: event.sponsors || [],
+                media: event.media || [],
+                isUnlimited: !event.totalSeats || event.totalSeats === 0,
+            }
+        );
+        setStepErrors(vResult.stepErrors);
+        isDirtyRef.current = false;
+    }, []);
+
+    // Initial load: Fetch fresh event from server and purge any stale local cached data
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const res = await getEventById(id);
-                const event = res.data;
-                lastKnownUpdatedAtRef.current = event.updatedAt;
-                const payMethod = event.paymentMethod || ((event.entryFee > 0 || event.registrationFee > 0) ? 'MANUAL_TRANSACTION' : 'FREE');
-                const feeAmt = event.registrationFee ?? event.entryFee ?? 0;
-
-                setFormData({
-                    title: event.title || '',
-                    description: event.description || '',
-                    venue: event.venue || '',
-                    startTime: toLocalISOString(event.startTime),
-                    endTime: toLocalISOString(event.endTime),
-                    totalSeats: event.totalSeats || '',
-                    entryFee: feeAmt,
-                    imageUrl: event.imageUrl || '',
-                    requiredFields: event.requiredFields || [],
-                    customFields: event.customFields || [],
-                    registrationDeadline: toLocalISOString(event.registrationDeadline),
-                    allowedPrograms: event.allowedPrograms || ['BTECH', 'MTECH', 'OTHER'],
-                    allowedYears: event.allowedYears || [],
-                    allowedBranches: event.allowedBranches || [],
-                    allowExternal: event.allowExternal !== undefined ? event.allowExternal : true,
-                    winners: event.winners || [],
-                    showWinner: event.showWinner || false,
-                    provideCertificate: event.provideCertificate || false,
-                    feedbackEnabled: event.feedbackEnabled !== undefined ? event.feedbackEnabled : true,
-                    allowWaitlist: event.allowWaitlist !== undefined ? event.allowWaitlist : true,
-                    registrationType: event.registrationType || 'individual',
-                    minTeamSize: event.minTeamSize || 1,
-                    maxTeamSize: event.maxTeamSize || 1,
-                    paymentMethod: payMethod,
-                    registrationFee: feeAmt,
-                    paymentInstructions: event.paymentInstructions || '',
-                    collegePaymentUrl: event.collegePaymentUrl || '',
-                    upiId: event.upiId || '',
-                    accountHolderName: event.accountHolderName || '',
-                    postRegistrationMessage: event.postRegistrationMessage || '',
-                });
-
-                if (event.sponsors && event.sponsors.length > 0) {
-                    setSponsors(event.sponsors.map(s => ({
-                        name: s.name,
-                        logoUrl: s.logoUrl,
-                        websiteUrl: s.websiteUrl || ''
-                    })));
-                }
-
-                if (event.media && event.media.length > 0) {
-                    setMedia(event.media.map(m => ({
-                        url: m.url,
-                        type: m.type
-                    })));
-                }
-
-                setIsFree(payMethod === 'FREE');
-                setIsUnlimited(!event.totalSeats || event.totalSeats === 0);
-                setAllYears(!event.allowedYears || event.allowedYears.length === 0);
-                setAllBranches(!event.allowedBranches || event.allowedBranches.length === 0);
-                setReviewInfo({
-                    reviewStatus: event.reviewStatus,
-                    reviewComment: event.reviewComment,
-                    reviewedBy: event.reviewedBy,
-                });
-
-                // Compute initial validation across steps
-                const vResult = validateAllEventSteps(
-                    {
-                        ...event,
-                        startTime: event.startTime,
-                        endTime: event.endTime,
-                        paymentMethod: payMethod,
-                        registrationFee: feeAmt,
-                    },
-                    {
-                        sponsors: event.sponsors || [],
-                        media: event.media || [],
-                        isUnlimited: !event.totalSeats || event.totalSeats === 0,
-                    }
-                );
-                setStepErrors(vResult.stepErrors);
+                purgeLocalEventData(id);
+                const res = await getEventById(id, { skipIncrement: true });
+                applyEventToState(res.data);
             } catch (err) {
                 showNotification(err.response?.data?.message || 'Failed to load event details', 'error');
                 navigate('/events');
@@ -248,10 +280,57 @@ const EditEvent = () => {
         if (id) {
             fetchEvent();
         }
-    }, [id, navigate, showNotification]);
+    }, [id, navigate, showNotification, purgeLocalEventData, applyEventToState]);
+
+    // Multi-device sync: When user switches back to this tab/window,
+    // detect if another device updated the event and sync automatically.
+    useEffect(() => {
+        const handleSyncCheck = async () => {
+            if (document.visibilityState !== 'visible' || !id || loading) return;
+            try {
+                // Erase local storage to avoid collisions
+                purgeLocalEventData(id);
+
+                const res = await getEventById(id, { skipIncrement: true });
+                const serverEvent = res.data;
+                if (!serverEvent?.updatedAt) return;
+
+                const serverUpdatedTime = new Date(serverEvent.updatedAt).getTime();
+                const localUpdatedTime = lastKnownUpdatedAtRef.current
+                    ? new Date(lastKnownUpdatedAtRef.current).getTime()
+                    : 0;
+
+                // Server has newer changes saved from another device/session
+                if (serverUpdatedTime > localUpdatedTime) {
+                    if (!isDirtyRef.current) {
+                        // User has no unsaved local typing in this tab -> auto-sync immediately
+                        applyEventToState(serverEvent);
+                        showNotification('Event data synchronized with latest changes.', 'info');
+                    } else {
+                        // User was actively typing in this tab -> notify non-intrusively
+                        showNotification(
+                            'A newer version of this event was saved on another device.',
+                            'warning'
+                        );
+                    }
+                }
+            } catch (err) {
+                console.warn('Cross-device sync check notice:', err.message);
+            }
+        };
+
+        window.addEventListener('focus', handleSyncCheck);
+        document.addEventListener('visibilitychange', handleSyncCheck);
+
+        return () => {
+            window.removeEventListener('focus', handleSyncCheck);
+            document.removeEventListener('visibilitychange', handleSyncCheck);
+        };
+    }, [id, loading, showNotification, purgeLocalEventData, applyEventToState]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        isDirtyRef.current = true;
         setFormData(prev => ({ ...prev, [name]: value }));
         // Clear field-level error when user edits
         if (fieldErrors[name]) {
@@ -394,28 +473,31 @@ const EditEvent = () => {
     };
 
     // Helper to construct normalized step-specific update payload
+    // Note: expectedUpdatedAt is intentionally omitted so updates across multiple devices/sessions
+    // are seamlessly accepted without triggering artificial 409 stale data conflicts.
     const buildStepPayload = useCallback((stepNumber = currentStep) => {
-        const base = {
-            expectedUpdatedAt: lastKnownUpdatedAtRef.current,
-        };
+        const base = {};
 
         if (stepNumber === 1) {
             return {
                 ...base,
                 title: formData.title,
                 description: formData.description,
-                category: formData.category,
-                imageUrl: formData.imageUrl,
+                imageUrl: formData.imageUrl?.trim() || '',
             };
         }
 
         if (stepNumber === 2) {
+            const sTime = formData.startTime ? new Date(formData.startTime) : null;
+            const eTime = formData.endTime ? new Date(formData.endTime) : null;
+            const dTime = formData.registrationDeadline ? new Date(formData.registrationDeadline) : null;
+
             return {
                 ...base,
-                venue: formData.venue,
-                startTime: formData.startTime ? new Date(formData.startTime).toISOString() : null,
-                endTime: formData.endTime ? new Date(formData.endTime).toISOString() : null,
-                registrationDeadline: formData.registrationDeadline ? new Date(formData.registrationDeadline).toISOString() : null,
+                venue: formData.venue || '',
+                startTime: sTime && !isNaN(sTime.getTime()) ? sTime.toISOString() : undefined,
+                endTime: eTime && !isNaN(eTime.getTime()) ? eTime.toISOString() : undefined,
+                registrationDeadline: dTime && !isNaN(dTime.getTime()) ? dTime.toISOString() : null,
                 allowedPrograms: formData.allowedPrograms,
                 allowedYears: allYears ? [] : formData.allowedYears,
                 allowedBranches: allBranches ? [] : formData.allowedBranches,
@@ -426,6 +508,8 @@ const EditEvent = () => {
         if (stepNumber === 3) {
             const isFree = formData.paymentMethod === 'FREE';
             const fee = isFree ? 0 : Number(formData.registrationFee || 0);
+            const collegeUrl = formData.paymentMethod === 'COLLEGE_PAYMENT' ? formData.collegePaymentUrl?.trim() : null;
+
             return {
                 ...base,
                 totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
@@ -436,10 +520,10 @@ const EditEvent = () => {
                 entryFee: fee,
                 registrationFee: fee,
                 paymentMethod: formData.paymentMethod,
-                paymentInstructions: isFree ? null : formData.paymentInstructions,
-                collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? formData.collegePaymentUrl : null,
-                upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.upiId : null,
-                accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.accountHolderName : null,
+                paymentInstructions: isFree ? null : (formData.paymentInstructions || null),
+                collegePaymentUrl: collegeUrl || null,
+                upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.upiId || null) : null,
+                accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.accountHolderName || null) : null,
                 requiredFields: formData.requiredFields || [],
                 customFields: formData.customFields || [],
                 postRegistrationMessage: formData.postRegistrationMessage || null,
@@ -447,10 +531,25 @@ const EditEvent = () => {
         }
 
         if (stepNumber === 4) {
+            const validSponsors = (sponsors || [])
+                .filter(s => s && s.name && s.name.trim() && s.logoUrl && s.logoUrl.trim())
+                .map(s => ({
+                    name: s.name.trim(),
+                    logoUrl: s.logoUrl.trim(),
+                    websiteUrl: s.websiteUrl?.trim() || null,
+                }));
+
+            const validMedia = (media || [])
+                .filter(m => m && m.url && m.url.trim())
+                .map(m => ({
+                    url: m.url.trim(),
+                    type: m.type,
+                }));
+
             return {
                 ...base,
-                sponsors: sponsors.map(s => ({ name: s.name, logoUrl: s.logoUrl, websiteUrl: s.websiteUrl || undefined })),
-                media: media.map(m => ({ url: m.url, type: m.type })),
+                sponsors: validSponsors,
+                media: validMedia,
                 provideCertificate: Boolean(formData.provideCertificate),
                 certificateTemplate: formData.certificateTemplate || null,
                 feedbackEnabled: formData.feedbackEnabled !== undefined ? Boolean(formData.feedbackEnabled) : true,
@@ -462,8 +561,16 @@ const EditEvent = () => {
         return base;
     }, [formData, sponsors, media, isUnlimited, allYears, allBranches, currentStep]);
 
-    // Independent step saving function
+    // Independent main step saving function
+    // Independent from autosave: can always be triggered manually by the user
     const handleSaveCurrentStep = async (stepNumber = currentStep) => {
+        // Clear any pending debounced autosave so it doesn't double-fire
+        if (autosaveTimerRef.current) {
+            clearTimeout(autosaveTimerRef.current);
+        }
+        // Invalidate in-flight autosave callbacks so their catch/finally never interfere with manual save
+        saveSequenceRef.current++;
+        inFlightSaveRef.current = false;
         setIsSaving(true);
         setAutosaveStatus('saving');
         try {
@@ -472,22 +579,75 @@ const EditEvent = () => {
             if (res.data?.updatedAt) {
                 lastKnownUpdatedAtRef.current = res.data.updatedAt;
             }
+            lastSavedPayloadRef.current[stepNumber] = JSON.stringify(payload);
+            isDirtyRef.current = false;
+
+            // Erase any local storage keys for this event to avoid collisions
+            purgeLocalEventData(id);
+
             setAutosaveStatus('saved');
             setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
             showNotification(`Step ${stepNumber} changes saved.`, 'success');
+            return true;
         } catch (err) {
+            if (err.response?.status === 409 && err.response?.data?.conflict) {
+                setFieldErrors(prev => ({
+                    ...prev,
+                    venue: err.response.data.message || 'Selected venue/time conflicts with another booking.'
+                }));
+            }
             setAutosaveStatus('error');
             showNotification(err.response?.data?.message || 'Failed to save changes.', 'error');
+            return false;
         } finally {
             setIsSaving(false);
+            inFlightSaveRef.current = false;
         }
     };
 
-    // Debounced autosave
+    // Debounced autosave (strictly non-intrusive background helper)
+    // If autosave fails, it will NEVER block manual saving or form usage
     useEffect(() => {
         if (loading) return;
         if (isInitialMount.current) {
             isInitialMount.current = false;
+            // Record initial baseline payloads for all steps
+            [1, 2, 3, 4].forEach(s => {
+                const p = buildStepPayload(s);
+                lastSavedPayloadRef.current[s] = JSON.stringify(p);
+            });
+            return;
+        }
+
+        // Basic sanity check before attempting autosave to avoid unnecessary 400s while user types
+        const isStepReadyForAutosave = () => {
+            if (currentStep === 1) {
+                if (!formData.title || formData.title.trim().length < 3) return false;
+            }
+            if (currentStep === 2) {
+                if (formData.startTime && formData.endTime) {
+                    const start = new Date(formData.startTime);
+                    const end = new Date(formData.endTime);
+                    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) return false;
+                }
+            }
+            if (currentStep === 3) {
+                if (formData.paymentMethod === 'COLLEGE_PAYMENT' && formData.collegePaymentUrl) {
+                    if (!/^https?:\/\/.+/i.test(formData.collegePaymentUrl.trim())) return false;
+                }
+            }
+            return true;
+        };
+
+        if (!isStepReadyForAutosave()) {
+            return;
+        }
+
+        const payload = buildStepPayload(currentStep);
+        const serialized = JSON.stringify(payload);
+
+        // Don't save if step payload hasn't changed since last save
+        if (lastSavedPayloadRef.current[currentStep] === serialized) {
             return;
         }
 
@@ -498,21 +658,29 @@ const EditEvent = () => {
 
         const currentSeq = ++saveSequenceRef.current;
         autosaveTimerRef.current = setTimeout(async () => {
+            if (inFlightSaveRef.current || isSaving) return;
+            inFlightSaveRef.current = true;
             try {
-                const payload = buildStepPayload(currentStep);
-                const res = await updateEvent(id, payload);
+                const savePayload = buildStepPayload(currentStep);
+                const res = await updateEvent(id, savePayload);
                 if (res.data?.updatedAt) {
                     lastKnownUpdatedAtRef.current = res.data.updatedAt;
                 }
+                lastSavedPayloadRef.current[currentStep] = JSON.stringify(savePayload);
+                isDirtyRef.current = false;
+
                 if (saveSequenceRef.current === currentSeq) {
                     setAutosaveStatus('saved');
                     setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                 }
             } catch (err) {
                 if (saveSequenceRef.current === currentSeq) {
-                    console.warn('Autosave error:', err.message);
+                    console.warn('Autosave background notice (non-blocking):', err.response?.data?.message || err.message);
+                    // Autosave failure is purely informational and NEVER blocks the main form or main save
                     setAutosaveStatus('error');
                 }
+            } finally {
+                inFlightSaveRef.current = false;
             }
         }, 1500);
 
@@ -523,8 +691,8 @@ const EditEvent = () => {
         };
     }, [formData, sponsors, media, isUnlimited, allYears, allBranches, id, loading, buildStepPayload, currentStep]);
 
-    // Step navigation: Forward validation (validates ONLY current step)
-    const handleNextStep = (e) => {
+    // Step navigation: Forward validation & smooth step commit
+    const handleNextStep = async (e) => {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -560,8 +728,33 @@ const EditEvent = () => {
         setFieldErrors({});
         setStepErrors(prev => ({ ...prev, [currentStep]: false }));
         setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
+
+        // Attempt background step commit when continuing without blocking navigation
+        handleSaveCurrentStep(currentStep).catch(() => {});
+
         setCurrentStep(prev => Math.min(prev + 1, 4));
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleGoToPreview = async () => {
+        const result = validateEventStep(4, formData, {
+            isDraft: false,
+            isUnlimited,
+            sponsors,
+            media,
+            allYears,
+            allBranches,
+        });
+
+        if (!result.isValid) {
+            setFieldErrors(result.errors);
+            setStepErrors(prev => ({ ...prev, 4: true }));
+            return;
+        }
+
+        // Commit step 4 before navigating to preview
+        await handleSaveCurrentStep(4);
+        navigate(`/events/${id}/preview`);
     };
 
     const handlePrevStep = (e) => {
@@ -1582,13 +1775,15 @@ const EditEvent = () => {
                                     Continue <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                             ) : (
-                                <Link
-                                    to={`/events/${id}/preview`}
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer"
+                                <button
+                                    type="button"
+                                    disabled={isSaving}
+                                    onClick={handleGoToPreview}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
                                     Go to Preview →
-                                </Link>
+                                </button>
                             )}
                         </div>
                     </div>
