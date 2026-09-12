@@ -113,15 +113,17 @@ export const validateStep3 = (formData, { isDraft = false, isUnlimited = false }
 
     if (formData.paymentMethod === 'MANUAL_TRANSACTION') {
       if (!formData.upiId || !formData.upiId.trim()) {
-        errors.upiId = 'UPI ID or payment phone number is required.';
+        errors.upiId = 'UPI ID is required for manual UPI payment.';
       }
-    }
-
-    if (formData.paymentMethod === 'COLLEGE_PAYMENT') {
+    } else if (formData.paymentMethod === 'COLLEGE_PAYMENT') {
       if (!formData.collegePaymentUrl || !formData.collegePaymentUrl.trim()) {
-        errors.collegePaymentUrl = 'College payment portal URL is required.';
-      } else if (!URL_REGEX.test(formData.collegePaymentUrl.trim())) {
-        errors.collegePaymentUrl = 'URL must begin with http:// or https://';
+        errors.collegePaymentUrl = 'Official College Payment Portal URL is required.';
+      } else {
+        const portalVal = formData.collegePaymentUrl.trim();
+        const isUrlLike = URL_REGEX.test(portalVal);
+        if (!isUrlLike) {
+          errors.collegePaymentUrl = 'Enter a valid URL (e.g. https://www.onlinesbi.sbi/...).';
+        }
       }
     }
   }

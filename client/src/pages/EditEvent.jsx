@@ -11,6 +11,11 @@ import EventFormStepper from '../components/EventFormStepper';
 import ShimmerText from '../components/ShimmerText';
 import AutosaveStatusBadge from '../components/AutosaveStatusBadge';
 import { validateEventStep, validateAllEventSteps } from '../utils/eventValidation';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Separator } from '../components/ui/separator';
 import {
   Eye,
   Save,
@@ -28,7 +33,10 @@ import {
   Plus,
   Trash2,
   CreditCard,
-  Sparkles
+  Sparkles,
+  Check,
+  X,
+  FileText,
 } from 'lucide-react';
 
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
@@ -178,8 +186,14 @@ const EditEvent = () => {
     const applyEventToState = useCallback((event) => {
         if (!event) return;
         lastKnownUpdatedAtRef.current = event.updatedAt;
-        const payMethod = event.paymentMethod || ((event.entryFee > 0 || event.registrationFee > 0) ? 'MANUAL_TRANSACTION' : 'FREE');
         const feeAmt = event.registrationFee ?? event.entryFee ?? 0;
+        const rawCollegeUrl = event.collegePaymentUrl?.trim() || '';
+        const isCollege = Boolean(rawCollegeUrl && (rawCollegeUrl.startsWith('http') || !rawCollegeUrl.includes('@')));
+        const payMethod = event.paymentMethod || (feeAmt > 0 ? (isCollege ? 'COLLEGE_PAYMENT' : 'MANUAL_TRANSACTION') : 'FREE');
+        const extractedUpi = payMethod === 'MANUAL_TRANSACTION'
+            ? (event.upiId || event.paymentInstructions?.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/)?.[0] || '')
+            : '';
+        const collegeUrl = payMethod === 'COLLEGE_PAYMENT' ? rawCollegeUrl : '';
 
         setFormData({
             title: event.title || '',
@@ -208,8 +222,8 @@ const EditEvent = () => {
             paymentMethod: payMethod,
             registrationFee: feeAmt,
             paymentInstructions: event.paymentInstructions || '',
-            collegePaymentUrl: event.collegePaymentUrl || '',
-            upiId: event.upiId || '',
+            collegePaymentUrl: collegeUrl,
+            upiId: extractedUpi,
             accountHolderName: event.accountHolderName || '',
             postRegistrationMessage: event.postRegistrationMessage || '',
         });
@@ -517,16 +531,19 @@ const EditEvent = () => {
                 registrationType: formData.registrationType || 'individual',
                 minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
                 maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
-                entryFee: fee,
                 registrationFee: fee,
                 paymentMethod: formData.paymentMethod,
-                paymentInstructions: isFree ? null : (formData.paymentInstructions || null),
-                collegePaymentUrl: collegeUrl || null,
-                upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.upiId || null) : null,
-                accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.accountHolderName || null) : null,
+                paymentInstructions: isFree
+                    ? null
+                    : (formData.paymentMethod === 'MANUAL_TRANSACTION' && formData.upiId?.trim() && !formData.paymentInstructions?.includes(formData.upiId.trim())
+                        ? (formData.paymentInstructions?.trim() ? `${formData.paymentInstructions.trim()}\nUPI ID: ${formData.upiId.trim()}` : `UPI ID: ${formData.upiId.trim()}`)
+                        : (formData.paymentInstructions?.trim() || null)),
+                collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? (formData.collegePaymentUrl?.trim() || null) : null,
+                accountHolderName: null,
+                upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.upiId?.trim() || null) : null,
                 requiredFields: formData.requiredFields || [],
                 customFields: formData.customFields || [],
-                postRegistrationMessage: formData.postRegistrationMessage || null,
+                postRegistrationMessage: formData.postRegistrationMessage?.trim() || null,
             };
         }
 
@@ -795,25 +812,25 @@ const EditEvent = () => {
     }
 
     const inputCls =
-        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-cn-surface text-black dark:text-white placeholder:text-neutral-400';
+        'w-full px-3.5 py-2 border border-input rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-background text-foreground text-sm placeholder:text-muted-foreground';
     const labelCls =
-        'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
+        'block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5';
 
     const getFieldCls = (fieldName) =>
-        `${inputCls} ${fieldErrors[fieldName] ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40' : ''}`;
+        `${inputCls} ${fieldErrors[fieldName] ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''}`;
 
     return (
-        <div className="min-h-screen bg-cn-bg py-8 md:py-12 px-4 sm:px-6">
+        <div className="min-h-screen bg-muted/20 py-8 md:py-10 px-4 sm:px-6">
             {/* Fixed width & margin: eliminate ~384px gutter on desktop next to sidebar */}
-            <div className="w-full max-w-5xl xl:max-w-6xl mx-auto md:mx-0 md:ml-6 lg:ml-10 pr-4 md:pr-8">
+            <div className="w-full max-w-5xl xl:max-w-6xl mx-auto md:mx-0 md:ml-6 lg:ml-10 pr-4 md:pr-8 space-y-6">
                 
                 {/* Header with Title, Autosave Status, and Quick Preview Button */}
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl md:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
                             Edit Event
                         </h1>
-                        <p className="text-xs md:text-sm text-neutral-500 mt-1">
+                        <p className="text-xs md:text-sm text-muted-foreground mt-1">
                             Modify any section directly. Changes autosave automatically.
                         </p>
                     </div>
@@ -824,43 +841,47 @@ const EditEvent = () => {
                             lastSavedTime={lastSavedTime}
                             onRetry={() => handleSaveCurrentStep(currentStep)}
                         />
-                        <Link
-                            to={`/events/${id}/preview`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 transition-colors shadow-xs cursor-pointer"
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="gap-1.5"
                         >
-                            <Eye className="w-3.5 h-3.5 text-brand-600" />
-                            Preview Event
-                        </Link>
+                            <Link to={`/events/${id}/preview`}>
+                                <Eye className="w-3.5 h-3.5 text-primary" />
+                                Preview Event
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 
                 {/* Rejection / Review Feedback Notice Banner */}
                 {reviewInfo?.reviewStatus === 'REJECTED' && (
-                    <div className="mb-6 bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900/60 rounded-xl p-5 shadow-xs flex items-start gap-4">
-                        <div className="p-2.5 bg-rose-100 dark:bg-rose-900/40 rounded-lg text-rose-600 shrink-0 mt-0.5">
-                            <AlertTriangle className="w-6 h-6" />
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-5 shadow-xs flex items-start gap-4">
+                        <div className="p-2 bg-destructive/20 rounded-lg text-destructive shrink-0 mt-0.5">
+                            <AlertTriangle className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                                <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/60 px-2.5 py-0.5 rounded-full">
+                                <Badge variant="outline" className="text-xs font-semibold bg-destructive/15 text-destructive border-destructive/30">
                                     Proposal Needs Revision
-                                </span>
+                                </Badge>
                                 {reviewInfo.reviewedBy?.name && (
-                                    <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                                    <span className="text-xs font-medium text-destructive">
                                         Reviewed by: <strong>{reviewInfo.reviewedBy.name}</strong>
                                     </span>
                                 )}
                             </div>
-                            <h4 className="text-sm font-bold text-rose-900 dark:text-rose-100 mt-1">
+                            <h4 className="text-sm font-semibold text-foreground mt-1">
                                 Reviewer Feedback:
                             </h4>
-                            <p className="text-sm text-rose-800 dark:text-rose-200 mt-1 bg-white/80 dark:bg-neutral-900/60 p-3 rounded-lg border border-rose-200 dark:border-rose-800/80">
+                            <p className="text-sm text-muted-foreground mt-1 bg-card/80 p-3 rounded-lg border border-destructive/20">
                                 {reviewInfo.reviewComment || "Please update the event details as requested and resubmit for approval."}
                             </p>
                             <div className="mt-3 flex items-center gap-3">
                                 <Link
                                     to={`/events/${id}/preview`}
-                                    className="inline-flex items-center text-xs font-semibold text-rose-700 dark:text-rose-300 underline hover:text-rose-900 cursor-pointer"
+                                    className="inline-flex items-center text-xs font-semibold text-destructive underline hover:text-destructive/80 cursor-pointer"
                                 >
                                     View in Preview & Resubmit →
                                 </Link>
@@ -879,34 +900,37 @@ const EditEvent = () => {
                 />
 
                 {/* Main Form Container */}
-                <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+                <Card className="border-border shadow-xs bg-card">
+                    <CardContent className="p-5 md:p-6 space-y-5">
                     
                     {/* STEP 1: Basic Details */}
                     {currentStep === 1 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div className="flex items-center justify-between pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                        <i className="ri-file-text-line text-brand-600 text-base" />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <FileText className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 1
                                         </span>
-                                        <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
                                             Basic Details
                                         </h2>
                                     </div>
                                 </div>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => handleSaveCurrentStep(1)}
                                     disabled={isSaving}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    className="gap-1.5 h-8 text-xs font-semibold"
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     Save Step 1
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Event Title */}
@@ -1005,29 +1029,31 @@ const EditEvent = () => {
                     {/* STEP 2: Timings & Access */}
                     {currentStep === 2 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div className="flex items-center justify-between pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                        <Calendar className="w-4 h-4 text-brand-600" />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <Calendar className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 2
                                         </span>
-                                        <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
                                             Schedule & Access
                                         </h2>
                                     </div>
                                 </div>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => handleSaveCurrentStep(2)}
                                     disabled={isSaving}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    className="gap-1.5 h-8 text-xs font-semibold"
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     Save Step 2
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Start & End Times */}
@@ -1193,29 +1219,31 @@ const EditEvent = () => {
                     {/* STEP 3: Registration & Payment */}
                     {currentStep === 3 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div className="flex items-center justify-between pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                        <CreditCard className="w-4 h-4 text-brand-600" />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <CreditCard className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 3
                                         </span>
-                                        <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
                                             Registration & Payment
                                         </h2>
                                     </div>
                                 </div>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => handleSaveCurrentStep(3)}
                                     disabled={isSaving}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    className="gap-1.5 h-8 text-xs font-semibold"
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     Save Step 3
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Registration Type */}
@@ -1313,20 +1341,26 @@ const EditEvent = () => {
                                 </div>
                             )}
 
-                            {/* Payment Method Selector */}
+                            {/* Payment Option Selector */}
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <label className={labelCls}>Payment Option <span className="text-brand-600">*</span></label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {[
-                                        { id: 'FREE', title: 'Free Event', desc: 'No fee charged' },
-                                        { id: 'MANUAL_TRANSACTION', title: 'UPI Verification', desc: 'Manual transaction ID check' },
-                                        { id: 'COLLEGE_PAYMENT', title: 'College Portal', desc: 'Official payment gateway' },
+                                        { id: 'FREE', title: 'Free Event', desc: 'No registration fee charged' },
+                                        { id: 'MANUAL_TRANSACTION', title: 'Manual UPI Payment', desc: 'Direct UPI ID with QR code generation & UPI apps' },
+                                        { id: 'COLLEGE_PAYMENT', title: 'College Payment Portal', desc: 'Official SBI Collect or College ERP payment URL' },
                                     ].map((opt) => (
                                         <button
                                             key={opt.id}
                                             type="button"
                                             onClick={() => {
-                                                setFormData(prev => ({ ...prev, paymentMethod: opt.id }));
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    paymentMethod: opt.id,
+                                                    upiId: opt.id === 'MANUAL_TRANSACTION' ? prev.upiId : '',
+                                                    collegePaymentUrl: opt.id === 'COLLEGE_PAYMENT' ? prev.collegePaymentUrl : '',
+                                                    registrationFee: opt.id === 'FREE' ? 0 : (prev.registrationFee || 50),
+                                                }));
                                                 setIsFree(opt.id === 'FREE');
                                             }}
                                             className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
@@ -1346,8 +1380,8 @@ const EditEvent = () => {
                                 </div>
                             </div>
 
-                            {/* Paid Event Details */}
-                            {formData.paymentMethod !== 'FREE' && (
+                            {/* Paid Event Details: Manual UPI Payment */}
+                            {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
                                 <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
@@ -1358,67 +1392,85 @@ const EditEvent = () => {
                                             className={getFieldCls('registrationFee')}
                                             value={formData.registrationFee}
                                             onChange={handleChange}
-                                            placeholder="e.g. 50"
+                                            placeholder="e.g. 100"
                                         />
                                         {renderFieldError('registrationFee')}
                                     </div>
 
-                                    {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
-                                        <>
-                                            <div>
-                                                <label className={labelCls}>UPI ID / Phone Number <span className="text-brand-600">*</span></label>
-                                                <input
-                                                    type="text"
-                                                    name="upiId"
-                                                    className={getFieldCls('upiId')}
-                                                    value={formData.upiId}
-                                                    onChange={handleChange}
-                                                    placeholder="e.g. clubname@oksbi or 9876543210"
-                                                />
-                                                {renderFieldError('upiId')}
-                                            </div>
-                                            <div>
-                                                <label className={labelCls}>Account Holder Name (Optional)</label>
-                                                <input
-                                                    type="text"
-                                                    name="accountHolderName"
-                                                    className={inputCls}
-                                                    value={formData.accountHolderName}
-                                                    onChange={handleChange}
-                                                    placeholder="e.g. John Doe (Club Treasurer)"
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
-                                        <div>
-                                            <label className={labelCls}>College Payment Portal URL <span className="text-brand-600">*</span></label>
-                                            <input
-                                                type="url"
-                                                name="collegePaymentUrl"
-                                                className={getFieldCls('collegePaymentUrl')}
-                                                value={formData.collegePaymentUrl}
-                                                onChange={handleChange}
-                                                placeholder="https://payment.nitj.ac.in/..."
-                                            />
-                                            {renderFieldError('collegePaymentUrl')}
-                                        </div>
-                                    )}
+                                    <div>
+                                        <label className={labelCls}>Beneficiary UPI ID <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="upiId"
+                                            className={getFieldCls('upiId')}
+                                            value={formData.upiId}
+                                            onChange={handleChange}
+                                            placeholder="e.g. clubname@oksbi or 9876543210@paytm"
+                                        />
+                                        {renderFieldError('upiId')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Used to generate dynamic QR codes and mobile UPI app links (GPay, PhonePe, Paytm, BHIM).</p>
+                                    </div>
 
                                     <div>
-                                        <label className={labelCls}>Payment Instructions</label>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
                                         <textarea
                                             name="paymentInstructions"
                                             rows="2"
                                             className={inputCls}
                                             value={formData.paymentInstructions}
                                             onChange={handleChange}
-                                            placeholder="Instructions shown to attendee during registration..."
+                                            placeholder="Additional guidelines shown to attendees during payment (e.g. category selection, transfer steps)..."
                                         />
                                     </div>
                                 </div>
                             )}
+
+                            {/* Paid Event Details: College Payment Portal */}
+                            {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
+                                <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                                    <div>
+                                        <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="number"
+                                            name="registrationFee"
+                                            min="1"
+                                            className={getFieldCls('registrationFee')}
+                                            value={formData.registrationFee}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 100"
+                                        />
+                                        {renderFieldError('registrationFee')}
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Official College Payment Portal URL <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="collegePaymentUrl"
+                                            className={getFieldCls('collegePaymentUrl')}
+                                            value={formData.collegePaymentUrl}
+                                            onChange={handleChange}
+                                            placeholder="https://www.onlinesbi.sbi/sbicollect/..."
+                                        />
+                                        {renderFieldError('collegePaymentUrl')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Attendees will see a direct button that opens this official portal in a new tab without closing their registration.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
+                                        <textarea
+                                            name="paymentInstructions"
+                                            rows="2"
+                                            className={inputCls}
+                                            value={formData.paymentInstructions}
+                                            onChange={handleChange}
+                                            placeholder="Guidelines for portal payment (e.g. select category, department name, fee head)..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                           
 
                             {/* Custom Registration Form Fields */}
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
@@ -1524,18 +1576,20 @@ const EditEvent = () => {
                                     </div>
                                 ))}
                             </div>
-
-                            {/* Post Registration Message */}
-                            <div>
-                                <label className={labelCls}>Post-Registration Success Message (Optional)</label>
+                             {/* Post-Registration Message / Links */}
+                            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-1.5">
+                                <label className={labelCls}>Post-Registration Message & Links (Optional)</label>
                                 <textarea
                                     name="postRegistrationMessage"
                                     rows="2"
                                     className={inputCls}
                                     value={formData.postRegistrationMessage}
                                     onChange={handleChange}
-                                    placeholder="Message displayed to attendee after successfully registering (e.g. WhatsApp group link)..."
+                                    placeholder="e.g. Join the official participants WhatsApp group: https://chat.whatsapp.com/... for schedule and announcements."
                                 />
+                                <p className="text-[11px] text-neutral-400">
+                                    Shown to participants immediately after successful registration (supports clickable WhatsApp/Discord links).
+                                </p>
                             </div>
                         </div>
                     )}
@@ -1543,29 +1597,31 @@ const EditEvent = () => {
                     {/* STEP 4: Extras */}
                     {currentStep === 4 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <div className="flex items-center justify-between pb-5 border-b border-neutral-100 dark:border-neutral-800">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                        <Sparkles className="w-4 h-4 text-brand-600" />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 4
                                         </span>
-                                        <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
                                             Extras & Event Settings
                                         </h2>
                                     </div>
                                 </div>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => handleSaveCurrentStep(4)}
                                     disabled={isSaving}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 transition-colors cursor-pointer"
+                                    className="gap-1.5 h-8 text-xs font-semibold"
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     Save Step 4
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Additional Settings Toggles */}
@@ -1727,24 +1783,30 @@ const EditEvent = () => {
                     )}
 
                     {/* Independent Step Action Bar */}
-                    <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3">
+                    <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
                         {/* Left action: Back or Profile */}
                         <div>
                             {currentStep > 1 ? (
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={handlePrevStep}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="gap-1.5 h-9 text-xs font-semibold"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" /> Previous Step
-                                </button>
+                                </Button>
                             ) : (
-                                <Link
-                                    to="/profile"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    asChild
+                                    className="gap-1.5 h-9 text-xs font-semibold"
                                 >
-                                    Cancel & Return
-                                </Link>
+                                    <Link to="/profile">
+                                        Cancel & Return
+                                    </Link>
+                                </Button>
                             )}
                         </div>
 
@@ -1756,38 +1818,43 @@ const EditEvent = () => {
                                 onRetry={() => handleSaveCurrentStep(currentStep)}
                             />
                             {/* Explicit independent save for the current step */}
-                            <button
+                            <Button
                                 type="button"
+                                variant="outline"
+                                size="sm"
                                 disabled={isSaving}
                                 onClick={() => handleSaveCurrentStep(currentStep)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
+                                className="gap-1.5 h-9 text-xs font-semibold"
                             >
                                 <Save className="w-3.5 h-3.5" />
                                 Save Changes
-                            </button>
+                            </Button>
 
                             {currentStep < 4 ? (
-                                <button
+                                <Button
                                     type="button"
+                                    size="sm"
                                     onClick={handleNextStep}
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm cursor-pointer"
+                                    className="gap-1.5 h-9 text-xs font-semibold shadow-xs"
                                 >
                                     Continue <ArrowRight className="w-3.5 h-3.5" />
-                                </button>
+                                </Button>
                             ) : (
-                                <button
+                                <Button
                                     type="button"
+                                    size="sm"
                                     disabled={isSaving}
                                     onClick={handleGoToPreview}
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                                    className="gap-1.5 h-9 text-xs font-semibold shadow-xs"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
                                     Go to Preview →
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -258,10 +258,6 @@ const Navbar = () => {
               Events
               <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${isActive("/events") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100 group-hover:opacity-75"}`} />
             </Link>
-            <Link to="/lost-found" className={navLinkCls("/lost-found")}>
-              L&F
-              <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${isActive("/lost-found") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100 group-hover:opacity-75"}`} />
-            </Link>
             {/* <Link to="/team" className={navLinkCls("/team")}>
               Team
               <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-brand-600 transform transition-all duration-200 origin-center ${isActive("/team") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
@@ -445,13 +441,8 @@ const Navbar = () => {
                             Admin Dashboard
                           </Link>
                         ) : (
-                          <>
                             <Link
-                              to={
-                                role === "lostFoundAdmin"
-                                  ? "/admin/lost-found"
-                                  : "/profile"
-                              }
+                              to="/profile"
                               onClick={() => setDropdownOpen(false)}
                               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                               role="menuitem"
@@ -459,19 +450,6 @@ const Navbar = () => {
                               <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
                               Profile / Dashboard
                             </Link>
-
-                            {(user?.accessLevel === "central_organizer" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL") && (
-                              <Link
-                                to="/central-organizer"
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
-                                role="menuitem"
-                              >
-                                <Shield size={16} />
-                                Central Organizer
-                              </Link>
-                            )}
-                          </>
                         )}
                       </div>
 
@@ -504,11 +482,8 @@ const Navbar = () => {
                   to="/register"
                   className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-bold tracking-widest rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 >
-                  <ArrowRightIcon size={18}>
-                    <p className="font-semibold">
-                      Register
-                    </p>
-                  </ArrowRightIcon>
+                  <span>Register</span>
+                  <i className="ri-arrow-right-line text-xs" />
                 </Link>
               </>
             )}

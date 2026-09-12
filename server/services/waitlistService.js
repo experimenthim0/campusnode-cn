@@ -69,7 +69,7 @@ export async function promoteWaitlistCandidates(tx, eventId, seatsToFill = 1) {
     include: {
       student: { select: { id: true, name: true, email: true } },
       externalUser: { select: { id: true, name: true, email: true } },
-      event: { select: { id: true, title: true, clubId: true } },
+      event: { select: { id: true, title: true, organizers: { select: { clubId: true } } } },
     },
   });
 
@@ -97,7 +97,7 @@ export async function promoteWaitlistCandidates(tx, eventId, seatsToFill = 1) {
       include: {
         student: { select: { id: true, name: true, email: true } },
         externalUser: { select: { id: true, name: true, email: true } },
-        event: { select: { id: true, title: true, clubId: true } },
+        event: { select: { id: true, title: true, organizers: { select: { clubId: true } } } },
       },
     });
 
@@ -144,34 +144,32 @@ export async function notifyWaitlistCleared(io, promotedCandidates, eventDetails
     const message = `A seat opened up for "${eventTitle}". Your waitlist registration has been cleared and your seat is now confirmed! Check your dashboard for your ticket.`;
 
     try {
-      const notification = await prisma.notification.create({
-        data: {
-          id: createObjectId(),
-          recipientStudentId: candidate.studentId ? candidate.studentId : null,
-          recipientUserId: recipientId,
-          targetScope: "USER",
-          type: "WAITLIST_CLEARED",
-          title,
-          message,
-          eventId: eventId || null,
-          clubId: clubId || null,
-        },
-      });
+      if (candidate.studentId) {
+        const notification = await prisma.notification.create({
+          data: {
+            id: createObjectId(),
+            recipientStudentId: candidate.studentId,
+            type: "WAITLIST_CLEARED",
+            title,
+            message,
+            eventId: eventId || null,
+          },
+        });
 
-      const payload = {
-        ...notification,
-        _id: notification.id,
-        sender: { name: "CampusNode" },
-      };
+        const payload = {
+          ...notification,
+          _id: notification.id,
+          sender: { name: "CampusNode" },
+        };
 
-      if (io) {
-        io.to(recipientId).emit("new-notification", payload);
+        if (io) {
+          io.to(recipientId).emit("new-notification", payload);
+        }
+
+        sendWebPushNotification(recipientId, payload).catch((err) => {
+          console.error("WebPush error for waitlist cleared:", err?.message || err);
+        });
       }
-
-      // Send WebPush
-      sendWebPushNotification(recipientId, payload).catch((err) => {
-        console.error("WebPush error for waitlist cleared:", err?.message || err);
-      });
     } catch (err) {
       console.error("Failed to create waitlist cleared notification for user:", recipientId, err);
     }

@@ -292,10 +292,9 @@ Unified registration record and digital admission ticket for an event.
 ```prisma
 id                   String              @id @db.VarChar(24)
 eventId              String              @db.VarChar(24)
+userId               String              @db.VarChar(24) // Unified 24-character participant index
 studentId            String?             @db.VarChar(24) // Null if external participant
 externalUserId       String?             @db.VarChar(24) // Null if internal student
-externalEmail        String?
-externalName         String?
 teamId               String?             @db.VarChar(24) // References Team if team event
 status               ParticipationStatus @default(REGISTERED) // "REGISTERED" | "ATTENDED" | "WAITLISTED" | "CANCELLED" | "INVITED"
 qrCode               String?             @unique // Unique Ticket ID (e.g. 12-char base64url)

@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <div className="flex sm:flex-row items-center justify-between gap-4">
           <p className="text-[12px] text-cn-text-muted tracking-wide">
-            © {new Date().getFullYear()} <span className="font-light text-cn-text logofont tracking-wider select-none">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span>
+            © {new Date().getFullYear()} <span className="font-light text-cn-text logofont tracking-wider select-none">CampusNode</span>
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">

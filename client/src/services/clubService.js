@@ -25,6 +25,22 @@ export const uploadClubBanner = (clubId, formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+export const deleteClubBanner = (clubId) =>
+  api.delete(`/api/clubs/${clubId}/banner`);
+
+export const uploadClubLogo = (clubId, formData) =>
+  api.post(`/api/clubs/${clubId}/logo`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+export const deleteClubLogo = (clubId) =>
+  api.delete(`/api/clubs/${clubId}/logo`);
+
+export const uploadClubImage = (clubId, formData, folder = "club-gallery") =>
+  api.post(`/api/clubs/${clubId}/upload-image?folder=${encodeURIComponent(folder)}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 export const deleteClub = (id) =>
   api.delete(`/api/clubs/${id}`);
 

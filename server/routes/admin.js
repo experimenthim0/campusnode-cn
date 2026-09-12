@@ -18,80 +18,11 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     const cleanEmail = String(email || "").trim().toLowerCase();
-    let admin = await prisma.adminRole.findFirst({
+    const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (!admin) {
-      const inst = await prisma.institutionalAccount.findFirst({
-        where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
-      });
-      if (inst && inst.password) {
-        const isMatch = await bcrypt.compare(password, inst.password);
-        if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-        const token = generateToken(inst, "central_organizer", "institutional", null, "INSTITUTIONAL");
-        const userObj = {
-          id: inst.id,
-          institutionalAccountId: inst.id,
-          email: inst.email,
-          name: inst.name,
-          type: inst.type,
-          role: "central_organizer",
-          userType: "institutional",
-          principalType: "INSTITUTIONAL",
-        };
-
-        const isProduction = process.env.NODE_ENV === "production";
-        res.cookie("token", token, {
-          httpOnly: true,
-          secure: isProduction,
-          sameSite: isProduction ? "none" : "lax",
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
-        return res.json({
-          success: true,
-          message: "Login successful",
-          admin: userObj,
-          role: "central_organizer",
-          user: userObj,
-          token,
-        });
-      }
-
-      const student = await prisma.studentUser.findFirst({
-        where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      });
-      if (student) {
-        const isCO = student.accessLevel === "central_organizer"
-          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }));
-        if (isCO) {
-          const isMatch = await bcrypt.compare(password, student.password);
-          if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-          const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
-          const token = generateToken(student, role, "student", clubId, "STUDENT");
-          const userObj = { ...sanitizeUser(student), principalType: "STUDENT", clubId, memberships, institutionalAssignments };
-
-          const isProduction = process.env.NODE_ENV === "production";
-          res.cookie("token", token, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-          });
-
-          return res.json({
-            success: true,
-            message: "Login successful",
-            admin: userObj,
-            role,
-            user: userObj,
-            token,
-          });
-        }
-      }
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
@@ -130,16 +61,8 @@ router.get(
   requirePermission(PERMISSIONS.AUDIT_VIEW),
   async (req, res) => {
     try {
-      const [instAccounts, clubAccounts, adminRoles] = await Promise.all([
-        prisma.institutionalAccount.findMany({ select: { email: true } }),
-        prisma.clubAccount.findMany({ select: { email: true } }),
-        prisma.adminRole.findMany({ select: { email: true } }),
-      ]);
-      const excludedEmails = [
-        ...instAccounts.map((a) => a.email.toLowerCase()),
-        ...clubAccounts.map((c) => c.email.toLowerCase()),
-        ...adminRoles.map((r) => r.email.toLowerCase()),
-      ];
+      const adminRoles = await prisma.adminRole.findMany({ select: { email: true } });
+      const excludedEmails = adminRoles.map((r) => r.email.toLowerCase());
 
       const [events, participations, totalStudents, totalClubs, totalEventsActive, totalEventsAll] =
         await Promise.all([
@@ -147,21 +70,22 @@ router.get(
             select: {
               id: true,
               title: true,
-              entryFee: true,
+              registrationFee: true,
               registeredCount: true,
               registrationType: true,
               registrationDeadline: true,
               startTime: true,
-              organizerType: true,
-              centralOrganizerId: true,
-              clubId: true,
-              club: { select: { clubName: true } },
+              organizers: {
+                include: {
+                  club: { select: { clubName: true } },
+                },
+              },
               createdBy: { select: { id: true } },
             },
           }),
           prisma.participation.findMany({
             where: { status: { in: ["REGISTERED", "ATTENDED"] } },
-            select: { eventId: true, amountPaid: true, paymentStatus: true },
+            select: { eventId: true, paymentStatus: true },
           }),
           prisma.studentUser.count({
             where: excludedEmails.length > 0 ? {
@@ -184,24 +108,21 @@ router.get(
 
       const eventStats = events.map((event) => {
         const eventParts = participationsByEvent.get(event.id) ?? [];
-        const isCentral = event.organizerType === "CENTRAL" || !!event.centralOrganizerId || (!event.club && !event.clubId);
-        const collected = eventParts
-          .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
-          .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+        const clubName = event.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "CampusNode";
+        const successfulCount = eventParts.filter((p) => p.paymentStatus === "SUCCESS").length;
+        const collected = successfulCount * (event.registrationFee || 0);
 
         return {
           eventId: event.id,
           title: event.title,
-          clubName: event.club?.clubName || "ODSW",
-          organizerType: event.organizerType,
-          isCentral,
+          clubName,
           creatorId: event.createdBy?.id || null,
           clubHeadId: event.createdBy?.id || null,
           registrationType: event.registrationType || "individual",
           registeredCount: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
           totalCollected: collected,
           regCount: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
-          entryFee: event.entryFee,
+          entryFee: event.registrationFee,
           registrationDeadline: event.registrationDeadline,
           startTime: event.startTime,
         };
@@ -213,9 +134,11 @@ router.get(
         return acc;
       }, new Map());
 
-      const totalRevenue = participations
-        .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
-        .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+      const totalRevenue = events.reduce((sum, ev) => {
+        const parts = participationsByEvent.get(ev.id) ?? [];
+        const successCount = parts.filter((p) => p.paymentStatus === "SUCCESS").length;
+        return sum + successCount * (ev.registrationFee || 0);
+      }, 0);
 
       res.json({
         totalRevenue,
@@ -270,9 +193,24 @@ router.get("/clubs-list", verifyToken, requirePermission(PERMISSIONS.CLUB_VIEW),
         facultyCoordinator: { select: { id: true, name: true, email: true } },
         memberships: {
           where: { role: "CLUB_HEAD" },
-          select: { student: { select: { id: true, name: true, email: true } } },
-          take: 1
-        }
+          select: {
+            id: true,
+            role: true,
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                rollNo: true,
+                branch: true,
+                program: true,
+                expectedGraduationYear: true,
+                profileImage: true,
+              },
+            },
+          },
+          take: 1,
+        },
       },
       orderBy: { clubName: "asc" },
     });
@@ -297,15 +235,7 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
     const where = {};
 
     if (clubId && clubId !== "all") {
-      if (clubId === "ODSW" || clubId === "CENTRAL" || clubId === "central") {
-        where.OR = [
-          { organizerType: "CENTRAL" },
-          { centralOrganizerId: { not: null } },
-          { clubId: null },
-        ];
-      } else {
-        where.clubId = clubId;
-      }
+      where.organizers = { some: { clubId } };
     }
     if (year && year !== "all") {
       const y = Number.parseInt(year, 10);
@@ -318,7 +248,7 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
     let events = await prisma.event.findMany({
       where,
       include: {
-        club: { select: { id: true, clubName: true } },
+        organizers: { include: { club: { select: { id: true, clubName: true } } } },
         createdBy: { select: { id: true, name: true } },
       },
       orderBy: { startTime: "desc" },
@@ -334,7 +264,7 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
         eventId: { in: events.length ? events.map((e) => e.id) : ["__none__"] },
         status: { in: ["REGISTERED", "ATTENDED"] },
       },
-      select: { eventId: true, amountPaid: true, paymentStatus: true },
+      select: { eventId: true, paymentStatus: true },
     });
 
     const participationsByEvent = participations.reduce((acc, p) => {
@@ -347,23 +277,21 @@ router.get("/event-data-export", verifyToken, requirePermission(PERMISSIONS.AUDI
     res.json({
       events: events.map((event) => {
         const eventParts = participationsByEvent.get(event.id) ?? [];
-        const isCentral = event.organizerType === "CENTRAL" || !!event.centralOrganizerId || (!event.club && !event.clubId);
         const collected = eventParts
-          .filter((p) => p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED")
-          .reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+          .filter((p) => p.paymentStatus === "SUCCESS")
+          .length * (event.registrationFee || 0);
+        const clubName = event.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "CampusNode";
 
         return {
           id: event.id,
           eventId: event.id,
           slug: event.slug,
           eventName: event.title,
-          clubName: event.club?.clubName || "ODSW",
-          organizerType: event.organizerType,
+          clubName,
           registrationType: event.registrationType || "individual",
-          isCentral,
           totalRegistrations: event.registrationType === "none" ? 0 : (event.registeredCount || eventParts.length),
-          eventType: event.entryFee > 0 ? "Paid" : "Free",
-          entryFee: event.entryFee || 0,
+          eventType: event.registrationFee > 0 ? "Paid" : "Free",
+          entryFee: event.registrationFee || 0,
           eventDate: event.startTime,
           totalAmountReceived: collected,
         };
@@ -411,11 +339,6 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
       return res.status(400).json({ message: `An admin or faculty account with email "${trimmedClubEmail}" already exists.` });
     }
 
-    const existingClubAccount = await prisma.clubAccount.findUnique({ where: { email: trimmedClubEmail } });
-    if (existingClubAccount) {
-      return res.status(400).json({ message: `A club account with email "${trimmedClubEmail}" already exists.` });
-    }
-
     const slug = await slugifyUnique(trimmedClubName, 'club', 'slug');
     const defaultPassword = `${slug}@him0148`;
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
@@ -458,37 +381,12 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
         },
       });
 
-      await tx.clubAccount.create({
-        data: {
-          id: createObjectId(),
-          clubId: club.id,
-          email: trimmedClubEmail,
-          password: passwordHash,
-          isActive: true,
-        },
-      });
-
       return club;
     });
 
     invalidatePublicResponses(["clubs*", "events*"]);
 
     const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
-
-    try {
-      await sendEmail({
-        to: trimmedClubEmail,
-        template: "clubs:credentials",
-        data: {
-          clubName: trimmedClubName,
-          clubEmail: trimmedClubEmail,
-          defaultPassword,
-          loginUrl: `${clientUrl}/login`,
-        },
-      });
-    } catch (emailErr) {
-      console.error("Failed to send club credentials email:", emailErr?.message || emailErr);
-    }
 
     try {
       await sendEmail({
@@ -507,7 +405,7 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
     }
 
     res.status(201).json({
-      message: "Club and associated users created successfully. Notification emails sent.",
+      message: "Club and faculty coordinator created/assigned successfully.",
       club: { ...result, _id: result.id },
     });
   } catch (error) {
@@ -745,7 +643,7 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
       }
     }
 
-    // Handle Club Email Change & ClubAccount sync
+    // Handle Club Email Change
     if (clubEmail !== undefined) {
       const trimmedClubEmail = clubEmail.toLowerCase().trim();
       if (trimmedClubEmail && trimmedClubEmail !== existingClub.clubEmail) {
@@ -757,43 +655,16 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
         if (adminConflict) {
           return res.status(400).json({ message: `An admin or faculty account with email "${trimmedClubEmail}" already exists.` });
         }
-        const clubAccConflict = await prisma.clubAccount.findFirst({
-          where: { email: trimmedClubEmail, clubId: { not: targetClubId } }
-        });
-        if (clubAccConflict) {
-          return res.status(400).json({ message: `A club account with email "${trimmedClubEmail}" already exists.` });
-        }
         updates.clubEmail = trimmedClubEmail;
       }
     }
 
-    const updatedClub = await prisma.$transaction(async (tx) => {
-      const club = await tx.club.update({
-        where: { id: targetClubId },
-        data: updates,
-        include: {
-          facultyCoordinator: { select: { id: true, name: true, email: true } },
-          account: true,
-        }
-      });
-
-      if (updates.clubEmail) {
-        await tx.clubAccount.upsert({
-          where: { clubId: targetClubId },
-          create: {
-            id: createObjectId(),
-            clubId: targetClubId,
-            email: updates.clubEmail,
-            password: await bcrypt.hash(`${club.slug || 'club'}@him0148`, 10),
-            isActive: true,
-          },
-          update: {
-            email: updates.clubEmail,
-          }
-        });
+    const updatedClub = await prisma.club.update({
+      where: { id: targetClubId },
+      data: updates,
+      include: {
+        facultyCoordinator: { select: { id: true, name: true, email: true } },
       }
-
-      return club;
     });
 
     invalidatePublicResponses(["clubs*", "events*"]);
@@ -816,8 +687,7 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       include: {
-        events: { select: { id: true } },
-        account: { select: { id: true } },
+        organizedEvents: { select: { eventId: true } },
       }
     });
 
@@ -825,16 +695,10 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
       return res.status(404).json({ message: "Club not found" });
     }
 
-    const eventIds = club.events.map((e) => e.id);
-    const clubAccountId = club.account?.id;
+    const eventIds = club.organizedEvents.map((oe) => oe.eventId);
 
     await prisma.$transaction(async (tx) => {
-      // 1. Delete notifications related to club account or club events
-      if (clubAccountId) {
-        await tx.notification.deleteMany({
-          where: { senderClubAccountId: clubAccountId }
-        });
-      }
+      // 1. Delete notifications related to club events
       if (eventIds.length > 0) {
         await tx.notification.deleteMany({
           where: { eventId: { in: eventIds } }
@@ -860,28 +724,31 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
         }
       });
 
-      // 3. Delete scanner sessions, attendance records, feedbacks, event staff for club events
+      // 3. Remove event organizer relations
+      await tx.eventOrganizer.deleteMany({ where: { clubId } });
+
+      // Clean up orphaned events (events with no remaining organizers)
       if (eventIds.length > 0) {
-        await tx.attendanceRecord.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.scannerSession.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.eventFeedback.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.eventAIReview.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.eventStaff.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.participation.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.teamMember.deleteMany({ where: { team: { eventId: { in: eventIds } } } });
-        await tx.team.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.eventClub.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.featuredEvent.deleteMany({ where: { eventId: { in: eventIds } } });
-        await tx.event.deleteMany({ where: { id: { in: eventIds } } });
+        for (const eventId of eventIds) {
+          const remaining = await tx.eventOrganizer.count({ where: { eventId } });
+          if (remaining === 0) {
+            await tx.attendanceRecord.deleteMany({ where: { eventId } });
+            await tx.eventFeedback.deleteMany({ where: { eventId } });
+            await tx.participation.deleteMany({ where: { eventId } });
+            await tx.teamMember.deleteMany({ where: { team: { eventId } } });
+            await tx.team.deleteMany({ where: { eventId } });
+            await tx.featuredEvent.deleteMany({ where: { eventId } });
+            await tx.certificate.deleteMany({ where: { eventId } });
+            await tx.event.delete({ where: { id: eventId } });
+          }
+        }
       }
 
       // 4. Delete club specific relations
-      await tx.eventClub.deleteMany({ where: { clubId } });
       await tx.clubSocialLink.deleteMany({ where: { clubId } });
       await tx.clubAnnouncement.deleteMany({ where: { clubId } });
       await tx.clubAchievement.deleteMany({ where: { clubId } });
       await tx.clubMembership.deleteMany({ where: { clubId } });
-      await tx.clubAccount.deleteMany({ where: { clubId } });
 
       // 5. Delete the club record
       await tx.club.delete({
@@ -903,23 +770,23 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
     const participations = await prisma.participation.findMany({
       where: {
         event: {
-          paymentMethod: { not: "FREE" },
+          registrationFee: { gt: 0 },
         },
       },
       include: {
         event: {
           select: {
             title: true,
-            organizerType: true,
-            centralOrganizerId: true,
-            clubId: true,
-            club: { select: { clubName: true } },
             registrationFee: true,
-            entryFee: true,
             registrationType: true,
             minTeamSize: true,
             maxTeamSize: true,
-            paymentMethod: true,
+            collegePaymentUrl: true,
+            organizers: {
+              include: {
+                club: { select: { clubName: true } },
+              },
+            },
           },
         },
         student: {
@@ -929,12 +796,18 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
             rollNo: true,
           },
         },
+        externalUser: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
         team: {
           include: {
-            leader: { select: { id: true, name: true, email: true, rollNo: true } },
+            leaderStudent: { select: { id: true, name: true, email: true, rollNo: true } },
             members: {
               include: {
-                user: { select: { id: true, name: true, email: true, rollNo: true } },
+                student: { select: { id: true, name: true, email: true, rollNo: true } },
               },
             },
           },
@@ -947,6 +820,9 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
     const resultList = [];
 
     for (const p of participations) {
+      const clubName = p.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "CampusNode";
+      const fee = p.event?.registrationFee || 0;
+
       if (p.teamId) {
         if (!processedMap.has(p.teamId)) {
           processedMap.set(p.teamId, [p]);
@@ -954,31 +830,28 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
           processedMap.get(p.teamId).push(p);
         }
       } else {
-        const isCentral = p.event?.organizerType === "CENTRAL" || !!p.event?.centralOrganizerId || (!p.event?.club && !p.event?.clubId);
         resultList.push({
           id: p.id,
           eventId: p.eventId,
-          eventName: p.event.title,
-          clubName: p.event?.club?.clubName || "ODSW",
-          organizerType: p.event?.organizerType,
-          isCentral,
+          eventName: p.event?.title || "Event",
+          clubName,
           eventRegistrationType: p.event?.registrationType || "individual",
           eventMinTeamSize: p.event?.minTeamSize || 1,
           eventMaxTeamSize: p.event?.maxTeamSize || 1,
-          eventPaymentMethod: p.event?.paymentMethod || "MANUAL_TRANSACTION",
+          eventPaymentMethod: p.event?.collegePaymentUrl ? "COLLEGE_LINK" : "MANUAL",
           isTeam: (p.event?.registrationType === "team" || p.event?.registrationType === "both"),
           teamId: null,
           teamName: p.formResponses?.teamName || p.formResponses?.['Team Name'] || null,
           teamMemberCount: 1,
           teamMembers: [],
-          studentName: p.student?.name || p.externalName || "Unknown",
-          studentEmail: p.student?.email || p.externalEmail || "N/A",
+          studentName: p.student?.name || p.externalUser?.name || "Unknown",
+          studentEmail: p.student?.email || p.externalUser?.email || "N/A",
           studentRollNo: p.student?.rollNo || "N/A",
           transactionId: p.transactionId || null,
           payerName: p.payerName || null,
           paymentRemarks: p.paymentRemarks || null,
           paymentStatus: p.paymentStatus,
-          amountPaid: p.amountPaid || p.event.registrationFee || p.event.entryFee || 0,
+          amountPaid: fee,
           createdAt: p.createdAt,
         });
       }
@@ -986,44 +859,43 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
 
     for (const [teamId, teamParts] of processedMap.entries()) {
       const primaryP = teamParts.find(tp => tp.transactionId) || 
-                       teamParts.find(tp => tp.studentId && tp.studentId === tp.team?.leaderId) || 
+                       teamParts.find(tp => tp.studentId && tp.studentId === tp.team?.leaderStudentId) || 
                        teamParts[0];
 
       const team = primaryP.team;
-      const isCentral = primaryP.event?.organizerType === "CENTRAL" || !!primaryP.event?.centralOrganizerId || (!primaryP.event?.club && !primaryP.event?.clubId);
+      const clubName = primaryP.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "CampusNode";
+      const fee = primaryP.event?.registrationFee || 0;
       
       const teamMembers = (team?.members || []).map(m => ({
-        name: m.user?.name || "Unknown",
-        email: m.user?.email || "N/A",
-        rollNo: m.user?.rollNo || "N/A",
+        name: m.student?.name || "Unknown",
+        email: m.student?.email || "N/A",
+        rollNo: m.student?.rollNo || "N/A",
         role: m.role || "member"
       }));
 
       resultList.push({
         id: primaryP.id,
         eventId: primaryP.eventId,
-        eventName: primaryP.event.title,
-        clubName: primaryP.event?.club?.clubName || "ODSW",
-        organizerType: primaryP.event?.organizerType,
-        isCentral,
+        eventName: primaryP.event?.title || "Event",
+        clubName,
         eventRegistrationType: primaryP.event?.registrationType || "team",
         eventMinTeamSize: primaryP.event?.minTeamSize || 2,
         eventMaxTeamSize: primaryP.event?.maxTeamSize || 4,
-        eventPaymentMethod: primaryP.event?.paymentMethod || "MANUAL_TRANSACTION",
+        eventPaymentMethod: primaryP.event?.collegePaymentUrl ? "COLLEGE_LINK" : "MANUAL",
         isTeam: true,
         teamId: teamId,
         teamName: team?.teamName || primaryP.formResponses?.teamName || "Team",
         teamMemberCount: teamMembers.length || teamParts.length,
         teamMembers,
-        leaderName: team?.leader?.name || primaryP.student?.name || "Team Leader",
-        studentName: team?.leader?.name || primaryP.student?.name || primaryP.externalName || "Team Leader",
-        studentEmail: team?.leader?.email || primaryP.student?.email || primaryP.externalEmail || "N/A",
-        studentRollNo: team?.leader?.rollNo || primaryP.student?.rollNo || "N/A",
+        leaderName: team?.leaderStudent?.name || primaryP.student?.name || "Team Leader",
+        studentName: team?.leaderStudent?.name || primaryP.student?.name || "Team Leader",
+        studentEmail: team?.leaderStudent?.email || primaryP.student?.email || "N/A",
+        studentRollNo: team?.leaderStudent?.rollNo || primaryP.student?.rollNo || "N/A",
         transactionId: primaryP.transactionId || null,
         payerName: primaryP.payerName || null,
         paymentRemarks: primaryP.paymentRemarks || null,
         paymentStatus: primaryP.paymentStatus,
-        amountPaid: primaryP.amountPaid || primaryP.event.registrationFee || primaryP.event.entryFee || 0,
+        amountPaid: fee,
         createdAt: primaryP.createdAt,
       });
     }
@@ -1033,9 +905,8 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
     const summary = {
       total: resultList.length,
       pending: resultList.filter((p) => p.paymentStatus === "PENDING").length,
-      approved: resultList.filter((p) => ["APPROVED", "SUCCESS"].includes(p.paymentStatus)).length,
-      rejected: resultList.filter((p) => p.paymentStatus === "REJECTED").length,
-      needMoreDetails: resultList.filter((p) => p.paymentStatus === "NEED_MORE_DETAILS").length,
+      approved: resultList.filter((p) => p.paymentStatus === "SUCCESS").length,
+      rejected: resultList.filter((p) => p.paymentStatus === "FAILED").length,
     };
 
     res.json({
@@ -1049,234 +920,175 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
 
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 
-router.get("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
+// ==========================================
+// CLUB HEAD ASSIGNMENT (Admin routes)
+// ==========================================
+
+router.get("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
   try {
-    let dsw = await prisma.institutionalAccount.findFirst({
-      where: { type: "DSW" },
+    const headMembership = await prisma.clubMembership.findFirst({
+      where: { clubId: req.params.id, role: "CLUB_HEAD" },
       include: {
-        assignments: {
-          where: { status: "ACTIVE" },
-          include: {
-            student: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                profileImage: true,
-                branch: true,
-                expectedGraduationYear: true,
-                academicStatus: true,
-                program: true,
-                rollNo: true,
-              },
-            },
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            rollNo: true,
+            branch: true,
+            expectedGraduationYear: true,
+            program: true,
+            profileImage: true,
           },
         },
       },
     });
+    res.json({ clubHead: headMembership?.student || null, membership: headMembership || null });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
-    if (!dsw) {
-      dsw = await prisma.institutionalAccount.create({
-        data: {
-          id: createObjectId(),
-          name: "Dean Student Welfare (DSW)",
-          type: "DSW",
-          email: "odsw@nitj.ac.in",
-          isActive: true,
-        },
-        include: { assignments: { include: { student: true } } },
+router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+  try {
+    const { studentId, studentEmail } = req.body;
+    const clubId = req.params.id;
+
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (!club) return res.status(404).json({ message: "Club not found." });
+
+    const studentSelect = {
+      id: true,
+      name: true,
+      email: true,
+      rollNo: true,
+      branch: true,
+      expectedGraduationYear: true,
+      program: true,
+      profileImage: true,
+    };
+
+    let student = null;
+    if (studentId) {
+      student = await prisma.studentUser.findUnique({ where: { id: studentId }, select: studentSelect });
+    } else if (studentEmail) {
+      student = await prisma.studentUser.findUnique({ where: { email: studentEmail.trim().toLowerCase() }, select: studentSelect });
+    }
+
+    if (!student) return res.status(404).json({ message: "Student not found." });
+
+    // Enforce invariant: A student can be CLUB_HEAD of at most ONE club
+    const existingOtherHead = await prisma.clubMembership.findFirst({
+      where: {
+        studentId: student.id,
+        role: "CLUB_HEAD",
+        clubId: { not: clubId },
+      },
+      include: { club: { select: { id: true, clubName: true } } },
+    });
+
+    if (existingOtherHead) {
+      return res.status(409).json({
+        message: `${student.name} is already the Club Head of "${existingOtherHead.club.clubName}". A student can be the Head of only one club at a time. They can still be a Coordinator of other clubs.`,
       });
     }
 
-    const activeAssignments = (dsw?.assignments || []).map((a) => ({
-      id: a.id,
-      studentId: a.studentId,
-      student: a.student,
-      role: a.role,
-      status: a.status,
-      canManageEvents: a.canManageEvents,
-      canTakeAttendance: a.canTakeAttendance,
-      canVerifyPayments: a.canVerifyPayments,
-      canDelegateStaff: a.canDelegateStaff,
-      customPermissions: a.customPermissions,
-    }));
+    const membership = await prisma.$transaction(async (tx) => {
+      await tx.clubMembership.updateMany({
+        where: { clubId, role: "CLUB_HEAD" },
+        data: { role: "MEMBER" },
+      });
 
-    const primaryCO = activeAssignments.find((a) => a.role === "CENTRAL_EVENT_ORGANISER") || activeAssignments[0] || null;
+      const existingMember = await tx.clubMembership.findUnique({
+        where: {
+          clubId_studentId: {
+            clubId,
+            studentId: student.id,
+          },
+        },
+      });
+
+      if (existingMember) {
+        return await tx.clubMembership.update({
+          where: { id: existingMember.id },
+          data: {
+            role: "CLUB_HEAD",
+            canTakeAttendance: true,
+            canEditEvents: true,
+          },
+        });
+      } else {
+        return await tx.clubMembership.create({
+          data: {
+            id: createObjectId(),
+            clubId,
+            studentId: student.id,
+            role: "CLUB_HEAD",
+            canTakeAttendance: true,
+            canEditEvents: true,
+          },
+        });
+      }
+    });
+
+    invalidatePublicResponses(["clubs*"]);
+
+    const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
+    try {
+      await sendEmail({
+        to: student.email,
+        template: "clubs:student-head-assigned",
+        data: {
+          studentName: student.name,
+          studentEmail: student.email,
+          rollNo: student.rollNo,
+          clubName: club.clubName,
+          dashboardUrl: `${clientUrl}/clubs/${club.slug || club.id}`,
+        },
+      });
+    } catch (emailErr) {
+      console.error("Failed to send student club head assignment email:", emailErr?.message || emailErr);
+    }
 
     res.json({
-      institutionalAccount: dsw,
-      assignments: activeAssignments,
-      centralOrganizer: primaryCO ? { ...primaryCO.student, assignment: primaryCO } : null,
+      message: `Assigned ${student.name} as Club Head for ${club.clubName}`,
+      clubHead: student,
+      membership,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.post("/central-organizer", verifyToken, allowRoles("admin"), async (req, res) => {
+router.delete("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
   try {
-    const {
-      studentId,
-      role = "CENTRAL_EVENT_ORGANISER",
-      canManageEvents = true,
-      canTakeAttendance = true,
-      canVerifyPayments = false,
-      canDelegateStaff = false,
-      customPermissions = [],
-    } = req.body;
-
-    if (!studentId) return res.status(400).json({ message: "studentId is required." });
-
-    const student = await prisma.studentUser.findUnique({
-      where: { id: studentId },
-      select: { id: true, name: true, email: true, isBlocked: true, accessLevel: true },
+    const clubId = req.params.id;
+    await prisma.clubMembership.updateMany({
+      where: { clubId, role: "CLUB_HEAD" },
+      data: { role: "MEMBER" },
     });
 
-    if (!student) return res.status(404).json({ message: "Student not found." });
-    if (student.isBlocked) return res.status(403).json({ message: "Cannot assign role to a blocked student." });
-
-    let dsw = await prisma.institutionalAccount.findFirst({ where: { type: "DSW" } });
-    if (!dsw) {
-      dsw = await prisma.institutionalAccount.create({
-        data: {
-          id: createObjectId(),
-          name: "Dean Student Welfare (DSW)",
-          type: "DSW",
-          email: "odsw@nitj.ac.in",
-          isActive: true,
-        },
-      });
-    }
-
-    const assignment = await prisma.institutionalAccountAssignment.upsert({
-      where: {
-        institutionalAccountId_studentId: {
-          institutionalAccountId: dsw.id,
-          studentId: student.id,
-        },
-      },
-      update: {
-        role,
-        status: "ACTIVE",
-        canManageEvents: Boolean(canManageEvents),
-        canTakeAttendance: Boolean(canTakeAttendance),
-        canVerifyPayments: Boolean(canVerifyPayments),
-        canDelegateStaff: Boolean(canDelegateStaff),
-        customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
-      },
-      create: {
-        id: createObjectId(),
-        institutionalAccountId: dsw.id,
-        studentId: student.id,
-        role,
-        status: "ACTIVE",
-        canManageEvents: Boolean(canManageEvents),
-        canTakeAttendance: Boolean(canTakeAttendance),
-        canVerifyPayments: Boolean(canVerifyPayments),
-        canDelegateStaff: Boolean(canDelegateStaff),
-        customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
-      },
-    });
-
-    if (role === "CENTRAL_EVENT_ORGANISER") {
-      await prisma.studentUser.update({
-        where: { id: studentId },
-        data: { accessLevel: "central_organizer" },
-      });
-    }
-
-    await prisma.event.updateMany({
-      where: { organizerType: "CENTRAL" },
-      data: { institutionalAccountId: dsw.id },
-    });
-
-    await createAuditLog({
-      action: AUDIT_ACTIONS.CENTRAL_ORGANIZER_ASSIGNED,
-      actorId: req.user.userId,
-      actorEmail: req.user.email,
-      targetId: studentId,
-      metadata: {
-        studentEmail: student.email,
-        studentName: student.name,
-        role,
-        capabilities: { canManageEvents, canTakeAttendance, canVerifyPayments, canDelegateStaff },
-      },
-    });
-
-    res.status(201).json({
-      message: "Institutional role assigned successfully.",
-      assignment,
-      centralOrganizer: { id: student.id, name: student.name, email: student.email },
-    });
+    invalidatePublicResponses(["clubs*"]);
+    res.json({ message: "Club Head revoked successfully." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.delete("/central-organizer/:id", verifyToken, allowRoles("admin"), async (req, res) => {
+router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
   try {
-    const student = await prisma.studentUser.findUnique({
-      where: { id: req.params.id },
-      select: { id: true, name: true, email: true, accessLevel: true },
-    });
-
-    if (!student) return res.status(404).json({ message: "Student not found." });
-
-    const dsw = await prisma.institutionalAccount.findFirst({ where: { type: "DSW" } });
-
-    if (dsw) {
-      await prisma.institutionalAccountAssignment.deleteMany({
-        where: {
-          institutionalAccountId: dsw.id,
-          studentId: req.params.id,
-        },
-      });
-    }
-
-    await prisma.studentUser.update({
-      where: { id: req.params.id },
-      data: { accessLevel: "normal" },
-    });
-
-    await createAuditLog({
-      action: AUDIT_ACTIONS.CENTRAL_ORGANIZER_REVOKED,
-      actorId: req.user.userId,
-      actorEmail: req.user.email,
-      targetId: req.params.id,
-      metadata: { studentEmail: student.email },
-    });
-
-    res.json({ message: "Institutional role revoked successfully." });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.get("/students/search", verifyToken, allowRoles("admin"), async (req, res) => {
-  try {
-    const { q } = req.query;
-    if (!q || q.trim().length < 2) {
+    const rawQuery = req.query.q || req.query.query;
+    if (!rawQuery || String(rawQuery).trim().length < 1) {
       return res.json({ students: [] });
     }
 
-    const query = q.trim();
+    const query = String(rawQuery).trim();
 
-    // Fetch all non-student account emails (clubs, admins, faculty, institutional) to strictly exclude them
-    const [clubAccounts, admins, instAccounts] = await Promise.all([
-      prisma.clubAccount.findMany({ select: { email: true } }),
-      prisma.adminRole.findMany({ select: { email: true } }),
-      prisma.institutionalAccount.findMany({ select: { email: true } }),
-    ]);
-
-    const excludedEmails = [
-      ...clubAccounts.map((c) => (c.email ? c.email.toLowerCase() : "")),
-      ...admins.map((a) => (a.email ? a.email.toLowerCase() : "")),
-      ...instAccounts.map((i) => (i.email ? i.email.toLowerCase() : "")),
-    ].filter(Boolean);
+    const admins = await prisma.adminRole.findMany({ select: { email: true } });
+    const excludedEmails = admins.map((a) => (a.email ? a.email.toLowerCase() : "")).filter(Boolean);
 
     const students = await prisma.studentUser.findMany({
       where: {
-        isBlocked: false,
         email: { notIn: excludedEmails },
         OR: [
           { email: { contains: query, mode: "insensitive" } },
@@ -1291,24 +1103,29 @@ router.get("/students/search", verifyToken, allowRoles("admin"), async (req, res
         rollNo: true,
         branch: true,
         expectedGraduationYear: true,
-        academicStatus: true,
         program: true,
-        accessLevel: true,
       },
       take: 10,
     });
 
-    const enriched = students.map((s) => {
-      const progress = calculateAcademicProgress(s);
-      return {
-        ...s,
-        year: progress.academicYearLabel,
-        academicYear: progress.academicYear,
-        academicYearLabel: progress.academicYearLabel,
-        semester: progress.semester,
-        semesterLabel: progress.semesterLabel,
-      };
-    });
+    const enriched = await Promise.all(
+      students.map(async (s) => {
+        const progress = calculateAcademicProgress(s);
+        const headship = await prisma.clubMembership.findFirst({
+          where: { studentId: s.id, role: "CLUB_HEAD" },
+          include: { club: { select: { id: true, clubName: true } } },
+        });
+        return {
+          ...s,
+          year: progress.academicYearLabel,
+          academicYear: progress.academicYear,
+          academicYearLabel: progress.academicYearLabel,
+          semester: progress.semester,
+          semesterLabel: progress.semesterLabel,
+          currentHeadClub: headship ? headship.club : null,
+        };
+      })
+    );
 
     res.json({ students: enriched });
   } catch (err) {

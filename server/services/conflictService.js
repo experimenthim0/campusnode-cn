@@ -24,7 +24,11 @@ export async function checkEventConflict({ venue, startTime, endTime, excludeEve
   return prisma.event.findFirst({
     where,
     include: {
-      club: { select: { id: true, clubName: true, slug: true } }
+      organizers: {
+        include: {
+          club: { select: { id: true, clubName: true, slug: true } }
+        }
+      }
     }
   });
 }
@@ -89,7 +93,7 @@ export async function validateBooking({ venue, startTime, endTime, excludeEventI
     return {
       hasConflict: true,
       type: "EVENT_OVERLAP",
-      message: `Venue "${venue}" is already booked for "${eventConflict.title}" (${eventConflict.club?.clubName || "Club"}).`,
+      message: `Venue "${venue}" is already booked for "${eventConflict.title}" (${eventConflict.organizers?.[0]?.club?.clubName || "Club"}).`,
       conflictDetails: eventConflict
     };
   }

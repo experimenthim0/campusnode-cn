@@ -6,423 +6,19 @@ datasource db {
   provider = "postgresql"
 }
 
-model AdminRole {
-  id                String         @id @db.VarChar(24)
-  name              String
-  email             String         @unique
-  password          String
-  role              AdminRoleType  @default(admin)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  otp               String?
-  otpExpire         DateTime?
-  isTwoStepEnabled  Boolean        @default(false)
-  resetPasswordExpire DateTime?
-  resetPasswordToken  String?
-  passwordChangeCount Int          @default(0)
-  lastPasswordChangeDate DateTime?
-  profileImage      String?
-  coordinatedClubs  Club[]         @relation("ClubFacultyCoordinator")
-  reviewedEvents    Event[]        @relation("EventReviewedBy")
-  sentNotifications Notification[] @relation("NotificationSenderAdmin")
-}
-
-model StudentUser {
-  id                      String           @id @db.VarChar(24)
-  rollNo                  String?          @unique
-  name                    String
-  email                   String           @unique
-  password                String
-  branch                  String?
-  program                 String?
-  expectedGraduationYear  Int?
-  academicStatus          String           @default("ACTIVE")
-  githubProfile           String?
-  linkedinProfile         String?
-  xProfile                String?
-  instagramProfile        String?
-  whatsappNumber          String?
-  portfolioUrl            String?
-  profileImage            String?
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  isTwoStepEnabled        Boolean          @default(false)
-  isVerified              Boolean          @default(false)
-  otp                     String?
-  otpExpire               DateTime?
-  resetPasswordExpire     DateTime?
-  resetPasswordToken      String?
-  verificationToken       String?
-  verificationTokenExpire DateTime?
-  passwordChangeCount     Int              @default(0)
-  lastPasswordChangeDate  DateTime?
-  isBlocked               Boolean          @default(false)
-  accessLevel             String           @default("normal")
-  shopBlockedUntil        DateTime?
-  lostFoundPostCount      Int              @default(0)
-  lastLostFoundPostDate   DateTime?
-  memberships             ClubMembership[]
-  createdEvents           Event[]          @relation("EventCreatedBy")
-  centralOrganizerEvents  Event[]          @relation("CentralOrganizerEvents")
-  sentNotifications       Notification[]   @relation("NotificationSenderStudent")
-  receivedNotifications   Notification[]   @relation("NotificationRecipientStudent")
-  participations          Participation[]
-  lostFoundItems          LostFoundItem[]
-  lostFoundReports        LostFoundReport[] @relation("ReportReporter")
-  lostFoundReportsAgainst LostFoundReport[] @relation("ReportLiar")
-  ledTeams                Team[]            @relation("TeamLeader")
-  teamMemberships         TeamMember[]
-  eventStaffAssignments   EventStaff[]     @relation("EventStaffUser")
-  eventStaffInvitations   EventStaff[]     @relation("EventStaffInviter")
-  institutionalAssignments InstitutionalAccountAssignment[]
-  feedbacks               EventFeedback[]
-  certificates            Certificate[]
-}
-
-model Club {
-  id                   String           @id @db.VarChar(24)
-  clubName             String           @unique
-  slug                 String           @unique
-  description          String?
-  category             String?
-  clubLogo             String?
-  bannerImage          String?
-  facultyCoordinatorId String?          @db.VarChar(24)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  clubEmail            String?
-  facultyEmail         String?
-  facultyName          String?
-  studentCoordinators  String[]         @default([]) @map("studentcoordinators")
-  motto                String?
-  mission              String?
-  establishedYear      String?
-  account              ClubAccount?
-  facultyCoordinator   AdminRole?       @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
-  memberships          ClubMembership[]
-  socialLinks          ClubSocialLink[]
-  events               Event[]
-  media                Media[]
-  sponsors             Sponsor[]
-  participatingEvents  EventClub[]
-  announcements        ClubAnnouncement[]
-  achievements         ClubAchievement[]
-  notifications        Notification[]
-}
-
-model ClubAccount {
-  id                  String         @id @db.VarChar(24)
-  clubId              String         @unique @db.VarChar(24)
-  email               String         @unique
-  password            String
-  isActive            Boolean        @default(true)
-  resetPasswordToken  String?
-  resetPasswordExpire DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-
-  club              Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  notificationsSent Notification[] @relation("NotificationSenderClubAccount")
-
-  @@index([email])
-}
-
-model ClubSocialLink {
-  id       String @id @db.VarChar(24)
-  clubId   String @db.VarChar(24)
-  platform String
-  url      String
-  club     Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-
-  @@index([clubId])
-}
-
-model ClubMembership {
-  id                String         @id @db.VarChar(24)
-  studentId         String         @db.VarChar(24)
-  clubId            String         @db.VarChar(24)
-  role              ClubMemberRole @default(MEMBER)
-  academicSessionId String?        @db.VarChar(24)
-  status            String         @default("ACTIVE")
-  customPermissions String[]       @default([])
-  canEditEvents     Boolean        @default(false)
-  canTakeAttendance Boolean        @default(true)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @default(now()) @updatedAt
-  club              Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  student           StudentUser    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([clubId, studentId])
-  @@index([studentId])
-  @@index([clubId, role])
-}
-
-model Event {
-  id                   String          @id @db.VarChar(24)
-  title                String
-  slug                 String?         @unique
-  description          String?
-  venue                String
-  startTime            DateTime
-  endTime              DateTime
-  totalSeats           Int             @default(0)
-  entryFee             Float           @default(0)
-  allowedPrograms      String[]        @default(["BTECH", "MTECH", "OTHER"])
-  allowedYears         String[]        @default([])
-  allowedBranches      String[]        @default([])
-  imageUrl             String?
-  registeredCount      Int             @default(0)
-  views                Int             @default(0)
-  waitingListIds       String[]        @default([])
-  requiredFields       String[]        @default([])
-  customFields         Json?
-  createdById          String?         @db.VarChar(24)
-  clubId               String?         @db.VarChar(24)
-  organizerType        EventOrganizerType @default(CLUB)
-  centralOrganizerId   String?         @db.VarChar(24)
-  institutionalAccountId String?       @db.VarChar(24)
-  registrationDeadline DateTime?
-  reviewStatus         ReviewStatus    @default(PENDING)
-  reviewComment        String?
-  reviewedById         String?         @db.VarChar(24)
-  winners              Json?
-  showWinner           Boolean         @default(false)
-  provideCertificate   Boolean         @default(false)
-  certificateTemplate  Json?
-  paymentMethod        String          @default("FREE")
-  registrationFee      Float           @default(0)
-  paymentInstructions  String?
-  collegePaymentUrl    String?
-  upiId                String?
-  accountHolderName    String?
-  postRegistrationMessage String?
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @default(now()) @updatedAt
-  isFeatured           Boolean         @default(false)
-  allowExternal        Boolean         @default(true)
-  feedbackEnabled      Boolean         @default(true)
-  allowWaitlist        Boolean         @default(true)
-  registrationType     String          @default("individual")
-  minTeamSize          Int             @default(1)
-  maxTeamSize          Int             @default(1)
-  club                 Club?           @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  centralOrganizer     StudentUser?    @relation("CentralOrganizerEvents", fields: [centralOrganizerId], references: [id])
-  institutionalAccount InstitutionalAccount? @relation("InstitutionalEvents", fields: [institutionalAccountId], references: [id])
-  createdBy            StudentUser?    @relation("EventCreatedBy", fields: [createdById], references: [id])
-  reviewedBy           AdminRole?      @relation("EventReviewedBy", fields: [reviewedById], references: [id])
-  media                Media[]
-  participations       Participation[]
-  sponsors             Sponsor[]
-  teams                Team[]
-  scannerSessions      ScannerSession[]
-  attendanceRecords    AttendanceRecord[]
-  eventStaff           EventStaff[]
-  participatingClubs   EventClub[]
-  feedbacks            EventFeedback[]
-  aiReviews            EventAIReview[]
-  certificates         Certificate[]
-
-  @@index([clubId, startTime])
-  @@index([reviewStatus, startTime])
-  @@index([createdById, startTime])
-  @@index([centralOrganizerId])
-  @@index([institutionalAccountId])
-  @@index([organizerType])
-}
-
-model ScannerSession {
-  id        String    @id @db.VarChar(24)
-  eventId   String    @db.VarChar(24)
-  clubId    String?   @db.VarChar(24)
-  userId    String    @db.VarChar(24)
-  deviceId  String
-  mode      String    // "ONLINE" | "OFFLINE"
-  startedAt DateTime  @default(now())
-  endedAt   DateTime?
-  status    String    @default("ACTIVE") // "ACTIVE" | "ENDED"
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, deviceId, mode])
-  @@index([eventId, status])
-  @@index([userId])
-}
-
-model AttendanceRecord {
-  id                String        @id @db.VarChar(24)
-  eventId           String        @db.VarChar(24)
-  participationId   String        @db.VarChar(24)
-  scannerSessionId  String?       @db.VarChar(24)
-  scannedAt         DateTime
-  verificationMode  String        // "ONLINE" | "OFFLINE"
-  syncedAt          DateTime?
-  localAttendanceId String?       @unique // Client-generated UUID for idempotency
-  createdAt         DateTime      @default(now())
-
-  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  participation Participation @relation(fields: [participationId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, participationId]) // DB-level duplicate prevention
-  @@index([eventId, scannedAt])
-  @@index([scannerSessionId])
-}
-
-
-model Participation {
-  id               String              @id @db.VarChar(24)
-  eventId          String              @db.VarChar(24)
-  studentId        String?             @db.VarChar(24)
-  externalEmail    String?
-  externalName     String?
-  status           ParticipationStatus @default(REGISTERED)
-  qrCode           String?             @unique
-  qrVersion        Int?                // 1 = signed v1, null = legacy unsigned
-  qrPayload        String?             // Full signed base64url payload for QR
-  qrKeyId          String?             // Key ID used for signing (for rotation)
-  attendedAt       DateTime?
-  markedByMemberId String?             @db.VarChar(24)
-  paymentStatus        PaymentStatus       @default(SUCCESS)
-  amountPaid           Float               @default(0)
-  paymentId            String?
-  orderId              String?
-  paymentTimestamp     DateTime?
-  transactionId        String?
-  payerName            String?
-  paymentRemarks       String?
-  paymentReviewedBy    String?
-  paymentReviewedAt    DateTime?
-  paymentReviewMessage String?
-  formResponses        Json?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @default(now()) @updatedAt
-  event            Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  student          StudentUser?        @relation(fields: [studentId], references: [id])
-  externalUserId   String?             @db.VarChar(24)
-  externalUser     ExternalUser?       @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
-  teamId           String?             @db.VarChar(24)
-  team             Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  attendanceRecords AttendanceRecord[]
-  certificate      Certificate?
-
-  @@index([eventId])
-  @@index([studentId, createdAt])
-  @@index([studentId, eventId])
-  @@index([externalUserId])
-  @@index([externalEmail])
-  @@index([eventId, paymentStatus])
-  @@index([eventId, status])
-}
-
-
-model Sponsor {
-  id         String  @id @db.VarChar(24)
-  name       String
-  logoUrl    String
-  websiteUrl String?
-  clubId     String? @db.VarChar(24)
-  eventId    String? @db.VarChar(24)
-  club       Club?   @relation(fields: [clubId], references: [id])
-  event      Event?  @relation(fields: [eventId], references: [id])
-
-  @@index([clubId])
-  @@index([eventId])
-}
-
-model Media {
-  id         String    @id @db.VarChar(24)
-  url        String
-  type       MediaType @default(IMAGE)
-  caption    String?
-  albumTitle String?   @default("General")
-  clubId     String?   @db.VarChar(24)
-  eventId    String?   @db.VarChar(24)
-  club       Club?     @relation(fields: [clubId], references: [id])
-  event      Event?    @relation(fields: [eventId], references: [id])
-
-  @@index([clubId])
-  @@index([eventId])
-}
-
-model Notification {
-  id                            String                @id @db.VarChar(24)
-  senderStudentId               String?               @db.VarChar(24)
-  senderAdminId                 String?               @db.VarChar(24)
-  senderInstitutionalAccountId  String?               @db.VarChar(24)
-  senderClubAccountId           String?               @db.VarChar(24)
-  recipientStudentId            String?               @db.VarChar(24)
-  recipientUserId               String?               @db.VarChar(24)
-  targetScope                   String                @default("USER") @db.VarChar(32)
-  clubId                        String?               @db.VarChar(24)
-  lostFoundItemId               String?               @db.VarChar(24)
-  eventId                       String?               @db.VarChar(24)
-  teamId                        String?               @db.VarChar(24)
-  type                          String?
-  title                         String
-  message                       String
-  createdAt                     DateTime              @default(now())
-  readBy                        String[]              @default([])
-  senderAdmin                   AdminRole?            @relation("NotificationSenderAdmin", fields: [senderAdminId], references: [id])
-  senderStudent                 StudentUser?          @relation("NotificationSenderStudent", fields: [senderStudentId], references: [id])
-  senderInstitutionalAccount    InstitutionalAccount? @relation("NotificationSenderInstitutionalAccount", fields: [senderInstitutionalAccountId], references: [id])
-  senderClubAccount             ClubAccount?          @relation("NotificationSenderClubAccount", fields: [senderClubAccountId], references: [id])
-  recipientStudent              StudentUser?          @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
-  lostFoundItem                 LostFoundItem?        @relation(fields: [lostFoundItemId], references: [id], onDelete: Cascade)
-  club                          Club?                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
-
-  @@index([createdAt])
-  @@index([recipientStudentId, createdAt])
-  @@index([recipientUserId, createdAt])
-  @@index([targetScope, createdAt])
-  @@index([clubId, createdAt])
-  @@index([eventId, createdAt])
-  @@index([teamId, createdAt])
-}
-
-model PushSubscription {
-  id         String   @id @db.VarChar(24)
-  userId     String   @db.VarChar(24)
-  endpoint   String   @unique
-  p256dh     String
-  auth       String
-  userAgent  String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  lastUsedAt DateTime @default(now())
-
-  @@index([userId])
-}
+// ==========================================
+// ENUMS
+// ==========================================
 
 enum AdminRoleType {
   admin
   facultyCoordinator
-  paymentAdmin
-  lostFoundAdmin
-}
-
-enum EventOrganizerType {
-  CLUB
-  CENTRAL
-}
-
-enum EventStaffStatus {
-  PENDING
-  ACTIVE
-  REJECTED
-  REVOKED
-  EXPIRED
 }
 
 enum ClubMemberRole {
   CLUB_HEAD
   COORDINATOR
   MEMBER
-}
-
-enum EventMode {
-  online
-  offline
 }
 
 enum ParticipationStatus {
@@ -437,9 +33,6 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
-  APPROVED
-  REJECTED
-  NEED_MORE_DETAILS
 }
 
 enum ReviewStatus {
@@ -456,175 +49,239 @@ enum MediaType {
   SPONSOR_LOGO
 }
 
-model LostFoundItem {
-  id             String            @id @db.VarChar(24)
-  title          String
-  description    String
-  type           LostFoundType     @default(LOST)
-  imageUrl       String?
-  imagePublicId  String?
-  whatsapp       String?
-  status         LostFoundStatus   @default(ACTIVE)
-  isFraud        Boolean           @default(false)
-  reportedBy     String[]          @default([])
-  userId         String            @db.VarChar(24)
-  user           StudentUser       @relation(fields: [userId], references: [id])
-  reports        LostFoundReport[]
-  notifications  Notification[]
-  reunitedAt     DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-
-  @@index([userId, createdAt])
-  @@index([status, createdAt])
-  @@index([isFraud, createdAt])
+enum AttendSimilar {
+  YES
+  MAYBE
+  NO
 }
 
-model LostFoundReport {
-  id         String        @id @db.VarChar(24)
-  itemId     String        @db.VarChar(24)
-  item       LostFoundItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  reporterId String        @db.VarChar(24)
-  reporter   StudentUser   @relation("ReportReporter", fields: [reporterId], references: [id])
-  liarId     String        @db.VarChar(24)
-  liar       StudentUser   @relation("ReportLiar", fields: [liarId], references: [id])
-  reason     String?
-  createdAt  DateTime      @default(now())
-
-  @@index([itemId, createdAt])
-  @@index([reporterId])
-  @@index([liarId])
+enum FeaturedOrderingMode {
+  CUSTOM
+  AUTOMATIC
 }
 
-enum LostFoundType {
-  LOST
-  FOUND
+enum CertificateStatus {
+  ISSUED
+  REVOKED
 }
 
-enum LostFoundStatus {
-  ACTIVE
-  REUNITED
+enum SocialPlatform {
+  GITHUB
+  LINKEDIN
+  X
+  INSTAGRAM
+  WHATSAPP
+  PORTFOLIO
 }
 
-model Team {
+// ==========================================
+// CORE ENTITIES
+// ==========================================
+
+model AdminRole {
   id               String          @id @db.VarChar(24)
-  eventId          String          @db.VarChar(24)
-  teamName         String
-  leaderId         String          @db.VarChar(24)
-  leaderStudentId  String?         @db.VarChar(24)
-  leaderExternalId String?         @db.VarChar(24)
-  status           String          @default("active")
+  name             String          @db.VarChar
+  email            String          @unique @db.VarChar
+  password         String          @db.VarChar
+  role             AdminRoleType   @default(admin)
+  profileImage     String?         @db.VarChar
+  isTwoStepEnabled Boolean         @default(false)
   createdAt        DateTime        @default(now())
-  event            Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  leader           StudentUser?    @relation("TeamLeader", fields: [leaderStudentId], references: [id], onDelete: Cascade)
-  leaderExternal   ExternalUser?   @relation("ExternalTeamLeader", fields: [leaderExternalId], references: [id], onDelete: Cascade)
-  members          TeamMember[]
-  participations   Participation[]
+  updatedAt        DateTime        @updatedAt
 
-  @@index([eventId])
-  @@index([leaderId])
-  @@index([leaderStudentId])
-  @@index([leaderExternalId])
+  coordinatedClubs Club[]          @relation("ClubFacultyCoordinator")
+  reviewedEvents   Event[]         @relation("EventReviewedBy")
+  notifications    Notification[]  @relation("NotificationSenderAdmin")
 }
 
-model TeamMember {
-  id             String        @id @db.VarChar(24)
-  teamId         String        @db.VarChar(24)
-  userId         String        @db.VarChar(24)
-  studentId      String?       @db.VarChar(24)
-  externalUserId String?       @db.VarChar(24)
-  role           String        @default("member")
-  joinedAt       DateTime      @default(now())
-  team           Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user           StudentUser?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  externalUser   ExternalUser? @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
+model StudentUser {
+  id                     String              @id @db.VarChar(24)
+  rollNo                 String              @unique @db.VarChar
+  name                   String              @db.VarChar
+  email                  String              @unique @db.VarChar
+  password               String              @db.VarChar
+  branch                 String              @db.VarChar
+  program                String              @db.VarChar
+  expectedGraduationYear Int
+  profileImage           String?             @db.VarChar
+  isVerified             Boolean             @default(false)
+  isTwoStepEnabled       Boolean             @default(false)
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
 
-  @@unique([teamId, userId])
-  @@index([userId])
+  socialLinks            StudentSocialLink[]
+  memberships            ClubMembership[]
+  createdEvents          Event[]             @relation("EventCreatedBy")
+  participations         Participation[]
+  sentNotifications      Notification[]      @relation("NotificationSenderStudent")
+  receivedNotifications  Notification[]      @relation("NotificationRecipientStudent")
+  ledTeams               Team[]              @relation("TeamLeaderStudent")
+  teamMemberships        TeamMember[]
+  feedbacks              EventFeedback[]
+  certificates           Certificate[]
+}
+
+model StudentSocialLink {
+  id        String         @id @db.VarChar(24)
+  studentId String         @db.VarChar(24)
+  platform  SocialPlatform
+  url       String         @db.VarChar
+
+  student   StudentUser    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, platform])
   @@index([studentId])
-  @@index([externalUserId])
 }
 
-model Permission {
-  id          String           @id
-  name        String           @unique
-  description String?
-  resource    String
-  action      String
-  createdAt   DateTime         @default(now())
-  roles       RolePermission[]
+model ExternalUser {
+  id               String          @id @db.VarChar(24)
+  name             String          @db.VarChar
+  email            String          @unique @db.VarChar
+  password         String          @db.VarChar
+  collegeName      String          @db.VarChar
+  phone            String?         @db.VarChar
+  program          String?         @db.VarChar
+  graduationYear   Int?
+  profileImage     String?         @db.VarChar
+  portfolioUrl     String?         @db.VarChar
+  isVerified       Boolean         @default(false)
+  isTwoStepEnabled Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  participations   Participation[]
+  certificates     Certificate[]
+
+  @@index([email])
 }
 
-model RolePermission {
-  id           String     @id
-  role         String
-  permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+// ==========================================
+// CLUB DOMAIN
+// ==========================================
 
-  @@unique([role, permissionId])
-  @@index([role])
+model Club {
+  id                   String             @id @db.VarChar(24)
+  clubName             String             @unique @db.VarChar
+  slug                 String             @unique @db.VarChar
+  description          String?            @db.VarChar
+  category             String?            @db.VarChar
+  clubLogo             String?            @db.VarChar
+  bannerImage          String?            @db.VarChar
+  facultyCoordinatorId String?            @db.VarChar(24)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  clubEmail            String?            @db.VarChar
+  facultyEmail         String?            @db.VarChar
+  facultyName          String?            @db.VarChar
+  studentcoordinators  String[]           @default([]) @db.VarChar
+  motto                String?            @db.VarChar
+  mission              String?            @db.VarChar
+  establishedYear      String?            @db.VarChar
+
+  facultyCoordinator   AdminRole?         @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
+  socialLinks          ClubSocialLink[]
+  memberships          ClubMembership[]
+  organizedEvents      EventOrganizer[]
+  media                Media[]
+  sponsors             Sponsor[]
+  announcements        ClubAnnouncement[]
+  achievements         ClubAchievement[]
+  notifications        Notification[]
 }
 
-model ExportLog {
-  id          String   @id @db.VarChar(24)
-  dataset     String
-  recordCount Int      @default(0)
-  actorId     String   @db.VarChar(24)
-  actorEmail  String
-  actorRole   String
-  filters     Json?
-  columns     String[] @default([])
-  createdAt   DateTime @default(now())
+model ClubSocialLink {
+  id       String @id @db.VarChar(24)
+  clubId   String @db.VarChar(24)
+  platform String @db.VarChar
+  url      String @db.VarChar
 
-  @@index([actorId, createdAt])
-  @@index([dataset, createdAt])
+  club     Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
 }
 
-model Venue {
-  id        String   @id @db.VarChar(24)
-  name      String   @unique
-  isOpen    Boolean  @default(true)
-  createdAt DateTime @default(now()) @updatedAt
-  updatedAt DateTime @default(now()) @updatedAt
+model ClubMembership {
+  id                String         @id @db.VarChar(24)
+  studentId         String         @db.VarChar(24)
+  clubId            String         @db.VarChar(24)
+  role              ClubMemberRole @default(MEMBER)
+  customPermissions String[]       @default([]) @db.VarChar
+  canEditEvents     Boolean        @default(false)
+  canTakeAttendance Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+
+  student           StudentUser    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  club              Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, studentId])
+  @@index([studentId])
+  @@index([clubId, role])
 }
 
-model VenueBlackout {
-  id          String   @id @db.VarChar(24)
-  venue       String
-  title       String
-  reason      String?
-  startTime   DateTime
-  endTime     DateTime
-  createdById String?  @db.VarChar(24)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+// ==========================================
+// EVENT DOMAIN
+// ==========================================
 
-  @@index([venue, startTime])
-  @@index([startTime, endTime])
+model Event {
+  id                      String          @id @db.VarChar(24)
+  title                   String          @db.VarChar
+  slug                    String          @unique @db.VarChar
+  description             String          @db.VarChar
+  venue                   String          @db.VarChar
+  startTime               DateTime
+  endTime                 DateTime
+  totalSeats              Int             @default(0)
+  allowedPrograms         String[]        @default(["BTECH", "MTECH", "OTHER"]) @db.VarChar
+  allowedYears            String[]        @default([]) @db.VarChar
+  allowedBranches         String[]        @default([]) @db.VarChar
+  imageUrl                String?         @db.VarChar
+  registeredCount         Int             @default(0)
+  views                   Int             @default(0)
+  waitingListIds          String[]        @default([]) @db.VarChar
+  requiredFields          String[]        @default([]) @db.VarChar
+  customFields            Json?
+  createdById             String?         @db.VarChar(24)
+  registrationDeadline    DateTime?
+  reviewStatus            ReviewStatus    @default(PENDING)
+  reviewComment           String?         @db.VarChar
+  reviewedById            String?         @db.VarChar(24)
+  winners                 Json?
+  showWinner              Boolean         @default(false)
+  provideCertificate      Boolean         @default(false)
+  certificateTemplate     Json?
+  registrationFee         Float           @default(0)
+  paymentInstructions     String?         @db.VarChar
+  collegePaymentUrl       String?         @db.VarChar
+  accountHolderName       String?         @db.VarChar
+  postRegistrationMessage String?         @db.VarChar
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  isFeatured              Boolean         @default(false)
+  allowExternal           Boolean         @default(true)
+  allowWaitlist           Boolean         @default(true)
+  feedbackEnabled         Boolean         @default(true)
+  registrationType        String          @default("individual") @db.VarChar
+  minTeamSize             Int             @default(1)
+  maxTeamSize             Int             @default(1)
+
+  createdBy               StudentUser?    @relation("EventCreatedBy", fields: [createdById], references: [id])
+  reviewedBy              AdminRole?      @relation("EventReviewedBy", fields: [reviewedById], references: [id])
+
+  organizers              EventOrganizer[]
+  participations          Participation[]
+  attendanceRecords       AttendanceRecord[]
+  sponsors                Sponsor[]
+  media                   Media[]
+  teams                   Team[]
+  feedbacks               EventFeedback[]
+  featuredEvent           FeaturedEvent?
+  certificates            Certificate[]
+
+  @@index([reviewStatus, startTime])
+  @@index([createdById, startTime])
 }
 
-model EventStaff {
-  id          String           @id @db.VarChar(24)
-  eventId     String           @db.VarChar(24)
-  userId      String           @db.VarChar(24)
-  invitedById String?          @db.VarChar(24)
-  permissions String[]         @default([])
-  status      EventStaffStatus @default(PENDING)
-  expiresAt   DateTime?
-  revokedAt   DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user        StudentUser      @relation("EventStaffUser", fields: [userId], references: [id])
-  invitedBy   StudentUser?     @relation("EventStaffInviter", fields: [invitedById], references: [id])
-
-  @@unique([eventId, userId])
-  @@index([userId, status])
-  @@index([eventId, status])
-}
-
-model EventClub {
+model EventOrganizer {
   id      String @id @db.VarChar(24)
   eventId String @db.VarChar(24)
   clubId  String @db.VarChar(24)
@@ -637,17 +294,200 @@ model EventClub {
   @@index([clubId])
 }
 
+model Participation {
+  id                   String              @id @db.VarChar(24)
+  eventId              String              @db.VarChar(24)
+  userId               String              @db.VarChar(24)
+  studentId            String?             @db.VarChar(24)
+  externalUserId       String?             @db.VarChar(24)
+  status               ParticipationStatus @default(REGISTERED)
+  qrCode               String?             @unique @db.VarChar
+  qrVersion            Int?
+  qrPayload            String?             @db.VarChar
+  qrKeyId              String?             @db.VarChar
+  attendedAt           DateTime?
+  markedByMemberId     String?             @db.VarChar(24)
+  paymentStatus        PaymentStatus       @default(SUCCESS)
+  paymentTimestamp      DateTime?
+  transactionId        String?             @db.VarChar
+  payerName            String?             @db.VarChar
+  paymentRemarks       String?             @db.VarChar
+  paymentReviewedBy    String?             @db.VarChar
+  paymentReviewedAt    DateTime?
+  paymentReviewMessage String?             @db.VarChar
+  formResponses        Json?
+  createdAt            DateTime            @default(now())
+  teamId               String?             @db.VarChar(24)
+
+  event                Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  student              StudentUser?        @relation(fields: [studentId], references: [id])
+  externalUser         ExternalUser?       @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
+  team                 Team?               @relation(fields: [teamId], references: [id])
+  attendanceRecords    AttendanceRecord[]
+  certificate          Certificate?
+
+  @@index([eventId])
+  @@index([userId, createdAt])
+  @@index([userId, eventId])
+  @@index([studentId, eventId])
+  @@index([externalUserId])
+  @@index([eventId, paymentStatus])
+  @@index([eventId, status])
+}
+
+model AttendanceRecord {
+  id                String        @id @db.VarChar(24)
+  eventId           String        @db.VarChar(24)
+  participationId   String        @db.VarChar(24)
+  scannedAt         DateTime
+  verificationMode  String        @db.VarChar
+  syncedAt          DateTime?
+  localAttendanceId String        @unique @db.VarChar
+  createdAt         DateTime      @default(now())
+
+  event             Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participation     Participation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, participationId])
+  @@index([eventId, scannedAt])
+}
+
+// ==========================================
+// TEAMS & NOTIFICATIONS
+// ==========================================
+
+model Team {
+  id              String          @id @db.VarChar(24)
+  eventId         String          @db.VarChar(24)
+  teamName        String          @db.VarChar
+  leaderId        String          @db.VarChar(24)
+  leaderStudentId String          @db.VarChar(24)
+  status          String          @default("active") @db.VarChar
+  createdAt       DateTime        @default(now())
+
+  event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  leaderStudent   StudentUser     @relation("TeamLeaderStudent", fields: [leaderStudentId], references: [id])
+  members         TeamMember[]
+  participations  Participation[]
+
+  @@index([eventId])
+  @@index([leaderId])
+  @@index([leaderStudentId])
+}
+
+model TeamMember {
+  id        String      @id @db.VarChar(24)
+  teamId    String      @db.VarChar(24)
+  userId    String      @db.VarChar(24)
+  studentId String      @db.VarChar(24)
+  role      String      @default("member") @db.VarChar
+  joinedAt  DateTime    @default(now())
+
+  team      Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  student   StudentUser @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@index([studentId])
+}
+
+model Notification {
+  id                 String       @id @db.VarChar(24)
+  senderStudentId    String?      @db.VarChar(24)
+  senderAdminId      String?      @db.VarChar(24)
+  recipientStudentId String?      @db.VarChar(24)
+  clubId             String?      @db.VarChar(24)
+  eventId            String?      @db.VarChar(24)
+  teamId             String?      @db.VarChar(24)
+  type               String?      @db.VarChar
+  title              String       @db.VarChar
+  message            String       @db.VarChar
+  createdAt          DateTime     @default(now())
+  readBy             String[]     @default([]) @db.VarChar
+
+  senderStudent      StudentUser? @relation("NotificationSenderStudent", fields: [senderStudentId], references: [id])
+  senderAdmin        AdminRole?   @relation("NotificationSenderAdmin", fields: [senderAdminId], references: [id])
+  recipientStudent   StudentUser? @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
+  club               Club?        @relation(fields: [clubId], references: [id])
+
+  @@index([createdAt])
+  @@index([recipientStudentId, createdAt])
+  @@index([clubId, createdAt])
+  @@index([eventId, createdAt])
+  @@index([teamId, createdAt])
+}
+
+// ==========================================
+// MEDIA & PERMISSIONS
+// ==========================================
+
+model Media {
+  id         String    @id @db.VarChar(24)
+  url        String    @db.VarChar
+  type       MediaType @default(IMAGE)
+  caption    String?   @db.VarChar
+  albumTitle String?   @default("General") @db.VarChar
+  clubId     String?   @db.VarChar(24)
+  eventId    String?   @db.VarChar(24)
+
+  club       Club?     @relation(fields: [clubId], references: [id])
+  event      Event?    @relation(fields: [eventId], references: [id])
+
+  @@index([clubId])
+  @@index([eventId])
+}
+
+model Sponsor {
+  id         String  @id @db.VarChar(24)
+  name       String  @db.VarChar
+  logoUrl    String  @db.VarChar
+  websiteUrl String? @db.VarChar
+  clubId     String? @db.VarChar(24)
+  eventId    String? @db.VarChar(24)
+
+  club       Club?   @relation(fields: [clubId], references: [id])
+  event      Event?  @relation(fields: [eventId], references: [id])
+
+  @@index([clubId])
+  @@index([eventId])
+}
+
+model Permission {
+  id          String           @id @db.VarChar
+  name        String           @unique @db.VarChar
+  description String?          @db.VarChar
+  resource    String           @db.VarChar
+  action      String           @db.VarChar
+  createdAt   DateTime         @default(now())
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @db.VarChar
+  role         String     @db.VarChar
+  permissionId String     @db.VarChar
+
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([role])
+}
+
+// ==========================================
+// AUDIT & LOGGING
+// ==========================================
+
 model AuditLog {
   id         String   @id @db.VarChar(24)
-  action     String
-  actorType  String?
+  action     String   @db.VarChar
+  actorType  String?  @db.VarChar
   actorId    String   @db.VarChar(24)
-  actorEmail String
+  actorEmail String   @db.VarChar
   targetId   String?  @db.VarChar(24)
   clubId     String?  @db.VarChar(24)
   eventId    String?  @db.VarChar(24)
   metadata   Json?
-  source     String?
+  source     String?  @db.VarChar
   createdAt  DateTime @default(now())
 
   @@index([actorId, createdAt])
@@ -656,14 +496,59 @@ model AuditLog {
   @@index([action, createdAt])
 }
 
+model ExportLog {
+  id          String   @id @db.VarChar(24)
+  dataset     String   @db.VarChar
+  recordCount Int      @default(0)
+  actorId     String   @db.VarChar(24)
+  actorEmail  String   @db.VarChar
+  actorRole   String   @db.VarChar
+  filters     Json?
+  columns     String[] @default([]) @db.VarChar
+  createdAt   DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([dataset, createdAt])
+}
+
+// ==========================================
+// VENUES
+// ==========================================
+
+model Venue {
+  id        String   @id @db.VarChar(24)
+  name      String   @unique @db.VarChar
+  isOpen    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VenueBlackout {
+  id          String   @id @db.VarChar(24)
+  venue       String   @db.VarChar
+  title       String   @db.VarChar
+  reason      String?  @db.VarChar
+  startTime   DateTime
+  endTime     DateTime
+  createdById String?  @db.VarChar(24)
+  createdAt   DateTime @default(now())
+
+  @@index([venue, startTime])
+  @@index([startTime, endTime])
+}
+
+// ==========================================
+// ANNOUNCEMENTS & ACHIEVEMENTS
+// ==========================================
+
 model ClubAnnouncement {
   id          String   @id @db.VarChar(24)
   clubId      String   @db.VarChar(24)
-  title       String
-  content     String
+  title       String   @db.VarChar
+  content     String   @db.VarChar
   isPinned    Boolean  @default(false)
   isPublished Boolean  @default(true)
-  authorName  String?
+  authorName  String?  @db.VarChar
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -676,11 +561,11 @@ model ClubAnnouncement {
 model ClubAchievement {
   id          String   @id @db.VarChar(24)
   clubId      String   @db.VarChar(24)
-  title       String
-  description String?
-  date        String?
-  imageUrl    String?
-  externalUrl String?
+  title       String   @db.VarChar
+  description String?  @db.VarChar
+  date        String?  @db.VarChar
+  imageUrl    String?  @db.VarChar
+  externalUrl String?  @db.VarChar
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -689,172 +574,47 @@ model ClubAchievement {
   @@index([clubId, createdAt])
 }
 
-enum InstitutionalAccountType {
-  DSW
-}
-
-enum InstitutionalRole {
-  CENTRAL_EVENT_ORGANISER
-  EVENT_COORDINATOR
-  ATTENDANCE_COORDINATOR
-  PAYMENT_COORDINATOR
-  MEMBER
-}
-
-model InstitutionalAccount {
-  id                  String                           @id @db.VarChar(24)
-  name                String
-  type                InstitutionalAccountType         @default(DSW)
-  email               String?                          @unique
-  password            String?
-  resetPasswordToken  String?
-  resetPasswordExpire DateTime?
-  isActive            Boolean                          @default(true)
-  createdAt           DateTime                         @default(now())
-  updatedAt           DateTime                         @updatedAt
-
-  assignments       InstitutionalAccountAssignment[]
-  events            Event[]                          @relation("InstitutionalEvents")
-  notificationsSent Notification[]                   @relation("NotificationSenderInstitutionalAccount")
-
-  @@index([type, isActive])
-}
-
-model InstitutionalAccountAssignment {
-  id                     String               @id @db.VarChar(24)
-  institutionalAccountId String               @db.VarChar(24)
-  studentId              String               @db.VarChar(24)
-  role                   InstitutionalRole    @default(CENTRAL_EVENT_ORGANISER)
-  academicSessionId      String?              @db.VarChar(24)
-  status                 String               @default("ACTIVE")
-  customPermissions      String[]             @default([])
-  canManageEvents        Boolean              @default(true)
-  canTakeAttendance      Boolean              @default(true)
-  canVerifyPayments      Boolean              @default(false)
-  canDelegateStaff       Boolean              @default(false)
-  createdAt              DateTime             @default(now())
-  updatedAt              DateTime             @updatedAt
-
-  institutionalAccount   InstitutionalAccount @relation(fields: [institutionalAccountId], references: [id], onDelete: Cascade)
-  student                StudentUser          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([institutionalAccountId, studentId])
-  @@index([studentId, status])
-  @@index([institutionalAccountId, status])
-  @@index([institutionalAccountId, role])
-}
-
-enum AttendSimilar {
-  YES
-  MAYBE
-  NO
-}
+// ==========================================
+// FEEDBACK & FEATURES
+// ==========================================
 
 model EventFeedback {
-  id                  String        @id @db.VarChar(24)
-  eventId             String        @db.VarChar(24)
-  userId              String        @db.VarChar(24)
+  id                 String        @id @db.VarChar(24)
+  eventId            String        @db.VarChar(24)
+  userId             String        @db.VarChar(24)
+  overallRating      Int
+  organizationRating Int
+  usefulnessRating   Int
+  speakerRating      Int
+  venueRating        Int
+  timingRating       Int
+  attendSimilar      AttendSimilar
+  liked              String?       @db.VarChar
+  improvements       String?       @db.VarChar
+  comments           String?       @db.VarChar
+  submittedAt        DateTime      @default(now())
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  overallRating       Int
-  organizationRating  Int
-  usefulnessRating    Int
-  speakerRating       Int
-  venueRating         Int
-  timingRating        Int
-
-  attendSimilar       AttendSimilar
-
-  liked               String?
-  improvements        String?
-  comments            String?
-
-  submittedAt         DateTime      @default(now())
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-
-  event               Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user                StudentUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event              Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user               StudentUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
   @@index([eventId, submittedAt])
   @@index([userId, submittedAt])
 }
 
-model EventAIReview {
-  id                     String        @id @db.VarChar(24)
-  eventId                String        @db.VarChar(24)
-  reviewNumber           Int           // 1 or 2
-  status                 String        // "COMPLETED" | "FAILED" | "IN_PROGRESS"
-  responseCount          Int
-  attendeeCount          Int
-  overallSentiment       String        // "very_positive" | "positive" | "mixed" | "negative" | "very_negative" | "insufficient_data"
-  overallSummary         String        @db.Text
-  whatStudentsLiked      Json          // Array<{ theme: string, summary: string, evidenceCount?: number }>
-  improvementAreas       Json          // Array<{ theme: string, summary: string, evidenceCount?: number, priority: "high" | "medium" | "low" }>
-  keyTakeaways           Json          // string[] (3-5 takeaways)
-  recommendations        Json          // Array<{ title: string, description: string, priority: string, evidenceCount?: number }>
-  positiveHighlights     Json          // Array<{ quote: string, reason: string }>
-  constructiveHighlights Json          // Array<{ quote: string, reason: string }>
-  attendAgainSummary     Json?         // { yesPercentage: number, maybePercentage: number, noPercentage: number }
-  model                  String
-  generatedById          String?       @db.VarChar(24)
-  generatedAt            DateTime      @default(now())
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-
-  event                  Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, reviewNumber])
-  @@index([eventId, status])
-  @@index([eventId, generatedAt])
-}
-
-model ExternalUser {
-  id                  String          @id @db.VarChar(24)
-  name                String
-  email               String          @unique
-  password            String
-  collegeName         String
-  phone               String?
-  program             String?
-  graduationYear      Int?
-  profileImage        String?
-  githubProfile       String?
-  linkedinProfile     String?
-  xProfile            String?
-  instagramProfile    String?
-  whatsappNumber      String?
-  portfolioUrl        String?
-  isVerified          Boolean         @default(true)
-  isTwoStepEnabled    Boolean         @default(false)
-  otp                 String?
-  otpExpire           DateTime?
-  resetPasswordExpire DateTime?
-  resetPasswordToken  String?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  participations      Participation[]
-  ledTeams            Team[]          @relation("ExternalTeamLeader")
-  teamMemberships     TeamMember[]
-  certificates        Certificate[]
-
-  @@index([email])
-}
-
-enum FeaturedOrderingMode {
-  CUSTOM
-  AUTOMATIC
-}
-
 model FeaturedEvent {
   id           String   @id @db.VarChar(24)
   eventId      String   @unique @db.VarChar(24)
-  sponsorName  String?
-  sponsorLogo  String?
+  sponsorName  String?  @db.VarChar
+  sponsorLogo  String?  @db.VarChar
   isActive     Boolean  @default(true)
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([isActive, displayOrder])
   @@index([eventId])
@@ -866,31 +626,24 @@ model FeaturedEventSetting {
   updatedAt    DateTime             @updatedAt
 }
 
-enum CertificateStatus {
-  ISSUED
-  REVOKED
-}
-
 model Certificate {
   id                String            @id @db.VarChar(24)
   eventId           String            @db.VarChar(24)
   participationId   String            @unique @db.VarChar(24)
+  userId            String            @db.VarChar(24)
   studentId         String?           @db.VarChar(24)
   externalUserId    String?           @db.VarChar(24)
-
-  recipientName     String
-  recipientRollNo   String?
-  recipientEmail    String?
-  awardPosition     String            @default("Participant") // "Participant" | "Winner" | "Runner-Up"
-  certificateNumber String            @unique // Human readable reference, e.g. "CN-2026-X8K9M2"
-  verificationToken String            @unique // Cryptographically secure 256-bit slug
-
+  recipientName     String            @db.VarChar
+  recipientRollNo   String?           @db.VarChar
+  recipientEmail    String            @db.VarChar
+  awardPosition     String            @default("Participant") @db.VarChar
+  certificateNumber String            @unique @db.VarChar
+  verificationToken String            @unique @db.VarChar
   status            CertificateStatus @default(ISSUED)
   issuedAt          DateTime          @default(now())
   revokedAt         DateTime?
-  revocationReason  String?
-
-  metadata          Json?             // Snapshot of event & template at time of issuance
+  revocationReason  String?           @db.VarChar
+  metadata          Json
 
   event             Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   participation     Participation     @relation(fields: [participationId], references: [id], onDelete: Cascade)
@@ -899,7 +652,7 @@ model Certificate {
 
   @@index([verificationToken])
   @@index([eventId, status])
+  @@index([userId])
   @@index([studentId])
   @@index([externalUserId])
 }
-

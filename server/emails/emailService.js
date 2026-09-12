@@ -3,6 +3,7 @@ import { templateRegistry } from "./templateRegistry.js";
 import { renderEmail } from "./renderer/emailRenderer.js";
 import { resendTransport } from "./transports/resendTransport.js";
 import { mockTransport } from "./transports/mockTransport.js";
+import { enqueueEmail } from "./emailQueue.js";
 
 /**
  * Determine the active transport based on environment configuration.
@@ -29,16 +30,13 @@ export const getActiveTransport = () => {
 };
 
 /**
- * High-level transactional email sender.
- *
- * Supports both:
- * 1. Modern signature: sendEmail({ to, template, data, subjectOverride })
- * 2. Legacy compatibility signature: sendEmail({ email, subject, message })
+ * Direct transactional email sender.
+ * Executes the render and network/mock transport directly.
  *
  * @param {object} options
  * @returns {Promise<{ id: string }>}
  */
-export const sendEmail = async (options = {}) => {
+export const sendEmailDirect = async (options = {}) => {
   const transport = getActiveTransport();
   const from = emailConfig.getFromHeader();
 
@@ -89,6 +87,22 @@ export const sendEmail = async (options = {}) => {
 };
 
 /**
+ * High-level transactional email sender.
+ *
+ * Automatically delegates to the BullMQ background queue (or asynchronous
+ * fallback in dev) so route handlers return instantly in sub-5ms.
+ *
+ * Pass `sync: true` or run in test environment (`NODE_ENV=test`) to bypass
+ * the queue and send synchronously.
+ *
+ * @param {object} options
+ * @returns {Promise<{ id: string, queued?: boolean }>}
+ */
+export const sendEmail = async (options = {}) => {
+  return await enqueueEmail(options);
+};
+
+/**
  * Render a template without dispatching (useful for tests and preview).
  *
  * @param {object} options
@@ -96,12 +110,12 @@ export const sendEmail = async (options = {}) => {
  * @param {object} [options.data] - Template data
  * @returns {{ subject: string, html: string }}
  */
-export const renderPreview = ({ template, data = {} }) => {
+export const renderPreview = ({ template, data = {}, theme = null }) => {
   const tpl = templateRegistry.get(template);
   if (typeof tpl.validate === "function") {
     tpl.validate(data);
   }
-  return renderEmail(tpl, data);
+  return renderEmail(tpl, data, { theme });
 };
 
 export default sendEmail;

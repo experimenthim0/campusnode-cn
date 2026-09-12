@@ -6,26 +6,19 @@ import {
   SEMESTERS,
 } from "../config/exportDatasets";
 import { useNotification } from "../context/NotificationContext";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, History, Filter, Columns3, Loader2 } from "lucide-react";
 
-const DataTable = ({ children }) => (
-  <div className="overflow-x-auto border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface">
-    <table className="w-full text-left border-collapse myfont text-xs">{children}</table>
-  </div>
-);
-
-const Th = ({ children, align = "left" }) => (
-  <th
-    className={`px-4 py-3 bg-neutral-50 dark:bg-zinc-900/60 font-bold uppercase tracking-wider text-[10px] text-neutral-400 dark:text-neutral-500 border-b border-neutral-200 dark:border-zinc-800 text-${align}`}
-  >
-    {children}
-  </th>
-);
-
-const Td = ({ children, align = "left", className = "" }) => (
-  <td className={`px-4 py-3 text-neutral-700 dark:text-neutral-300 text-${align} ${className}`}>
-    {children}
-  </td>
-);
 
 const ExportCenter = () => {
   const { showNotification } = useNotification();
@@ -481,7 +474,7 @@ const ExportCenter = () => {
             onClick={() => setIsColumnModalOpen((prev) => !prev)}
             className="flex items-center gap-2 px-3 py-2 border border-neutral-200 dark:border-zinc-800 rounded-lg text-xs font-semibold hover:border-black dark:hover:border-white transition-all cursor-pointer"
           >
-            <i className="ri-layout-column-line text-neutral-400" />
+            <Columns3 className="size-3.5 text-neutral-400" />
             <span>Columns ({selectedColumns.length}/{activeDataset.allColumns.length})</span>
             <i className={`ri-chevron-${isColumnModalOpen ? "up" : "down"}-line text-xs opacity-60`} />
           </button>
@@ -494,16 +487,16 @@ const ExportCenter = () => {
         <button
           onClick={handleExportCSV}
           disabled={isExporting || totalCount === 0}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           {isExporting ? (
             <>
-              <i className="ri-loader-4-line animate-spin text-sm" />
+              <Loader2 className="size-4 animate-spin" />
               Generating CSV...
             </>
           ) : (
             <>
-              <i className="ri-download-2-line text-sm" />
+              <Download className="size-4" />
               Export CSV ({totalCount} records)
             </>
           )}
@@ -592,47 +585,53 @@ const ExportCenter = () => {
 
         {isLoadingPreview ? (
           <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface">
-            <i className="ri-loader-4-line text-2xl animate-spin text-brand-500" />
+            <Loader2 className="size-6 animate-spin text-brand-500 mx-auto" />
             <p className="text-xs text-neutral-400 mt-2 font-medium">Fetching dataset preview...</p>
           </div>
         ) : previewData.length === 0 ? (
           <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface space-y-2">
             <i className="ri-inbox-line text-3xl text-neutral-400" />
-            <p className="text-xs font-bold text-neutral-400">No records found</p>
-            <p className="text-[11px] text-neutral-500">
-              Try adjusting your session, semester, event, or dataset filters.
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              No records found
+            </p>
+            <p className="text-[11px] text-neutral-400">
+              Try adjusting the scope or academic filters above to inspect data.
             </p>
           </div>
         ) : (
-          <DataTable>
-            <thead>
-              <tr>
-                <Th>#</Th>
-                {selectedColumns.map((colId) => (
-                  <Th key={colId}>{columnLabelMap.get(colId) || colId}</Th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {previewData.map((row, idx) => (
-                <tr
-                  key={row.id || row.transactionId || idx}
-                  className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50 dark:hover:bg-zinc-900/40 transition-colors"
-                >
-                  <Td className="text-neutral-400 font-mono">
-                    {(page - 1) * 50 + idx + 1}
-                  </Td>
+          <div className="rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface overflow-hidden">
+            <Table className="text-xs">
+              <TableHeader>
+                <TableRow className="bg-neutral-50 dark:bg-zinc-900/60 hover:bg-neutral-50 dark:hover:bg-zinc-900/60">
+                  <TableHead className="w-12 text-[10px] font-bold uppercase tracking-wider text-neutral-400">#</TableHead>
                   {selectedColumns.map((colId) => (
-                    <Td key={colId}>
-                      {row[colId] !== undefined && row[colId] !== null
-                        ? String(row[colId])
-                        : "—"}
-                    </Td>
+                    <TableHead key={colId} className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                      {columnLabelMap.get(colId) || colId}
+                    </TableHead>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </DataTable>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {previewData.map((row, idx) => (
+                  <TableRow
+                    key={row.id || row.transactionId || idx}
+                    className="hover:bg-neutral-50 dark:hover:bg-zinc-900/40 transition-colors"
+                  >
+                    <TableCell className="text-neutral-400 font-mono">
+                      {(page - 1) * 50 + idx + 1}
+                    </TableCell>
+                    {selectedColumns.map((colId) => (
+                      <TableCell key={colId} className="text-neutral-700 dark:text-neutral-300">
+                        {row[colId] !== undefined && row[colId] !== null
+                          ? String(row[colId])
+                          : "—"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </div>
 
@@ -656,39 +655,41 @@ const ExportCenter = () => {
           ) : exportHistory.length === 0 ? (
             <p className="text-xs text-neutral-400">No exports logged in history yet.</p>
           ) : (
-            <DataTable>
-              <thead>
-                <tr>
-                  <Th>Dataset</Th>
-                  <Th>Records</Th>
-                  <Th>Exported By</Th>
-                  <Th>Role</Th>
-                  <Th align="right">Date & Time</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {exportHistory.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-neutral-100 dark:border-zinc-800/50"
-                  >
-                    <Td className="font-bold text-black dark:text-white uppercase">
-                      {item.dataset}
-                    </Td>
-                    <Td className="font-mono font-bold text-brand-600 dark:text-brand-400">
-                      {item.recordCount}
-                    </Td>
-                    <Td>{item.actorEmail || item.actorId}</Td>
-                    <Td className="text-[10px] font-bold uppercase text-neutral-400">
-                      {item.actorRole}
-                    </Td>
-                    <Td align="right" className="font-mono text-[11px] text-neutral-400">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </DataTable>
+            <div className="rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface overflow-hidden">
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow className="bg-neutral-50 dark:bg-zinc-900/60 hover:bg-neutral-50 dark:hover:bg-zinc-900/60">
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Dataset</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Records</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Exported By</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Role</TableHead>
+                    <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">Date & Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {exportHistory.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="hover:bg-neutral-50 dark:hover:bg-zinc-900/40 transition-colors"
+                    >
+                      <TableCell className="font-bold text-black dark:text-white uppercase">
+                        {item.dataset}
+                      </TableCell>
+                      <TableCell className="font-mono font-bold text-brand-600 dark:text-brand-400">
+                        {item.recordCount}
+                      </TableCell>
+                      <TableCell>{item.actorEmail || item.actorId}</TableCell>
+                      <TableCell className="text-[10px] font-bold uppercase text-neutral-400">
+                        {item.actorRole}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-[11px] text-neutral-400">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </div>
       )}

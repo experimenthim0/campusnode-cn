@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
 import AdminLayout from './components/AdminLayout';
 import RouteLoader from './components/RouteLoader';
@@ -14,7 +14,7 @@ import { Analytics } from "@vercel/analytics/react"
 const EventFeed = lazy(() => import('./pages/EventFeed'));
 const RegisterStudent = lazy(() => import('./pages/RegisterStudent'));
 const Team = lazy(() => import('./pages/Team'));
-const TeamDesignsPreview = lazy(() => import('./pages/TeamDesignsPreview'));
+
 const Login = lazy(() => import('./pages/Login'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const CreateEvent = lazy(() => import('./pages/CreateEvent'));
@@ -51,16 +51,11 @@ const FAQ = lazy(() => import('./pages/FAQ'));
 
 const CertificateDesigner = lazy(() => import('./pages/CertificateDesigner'));
 const VerifyCertificate = lazy(() => import('./pages/VerifyCertificate'));
-const LostAndFound = lazy(() => import('./pages/LostAndFound'));
-const LostFoundAdminDashboard = lazy(() => import('./pages/LostFoundAdminDashboard'));
+
 const ExportCenter = lazy(() => import('./pages/ExportCenter'));
-const LostFoundGuide = lazy(() => import('./pages/LostFoundGuide'));
+
 const SendNotification = lazy(() => import('./pages/SendNotification'));
 const Notifications = lazy(() => import('./pages/Notifications'));
-const CentralOrganizerDashboard = lazy(() => import('./pages/CentralOrganizerDashboard'));
-const CentralOrganizerGuide = lazy(() => import('./pages/CentralOrganizerGuide'));
-const EventStaffDashboard = lazy(() => import('./pages/EventStaffDashboard'));
-const StaffAttendanceView = lazy(() => import('./pages/StaffAttendanceView'));
 const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
 const FeedbackSurveyPreview = lazy(() => import('./pages/FeedbackSurveyPreview'));
 const LeaderboardGuide = lazy(() => import('./pages/LeaderboardGuide'));
@@ -69,6 +64,7 @@ const FeaturedEventsPage = lazy(() => import('./pages/FeaturedEventsPage'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
 import { FeedbackPromptProvider } from './context/FeedbackPromptContext';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
 
@@ -78,6 +74,15 @@ function App() {
   }
   return (
     <NotificationProvider>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            zIndex: 99999,
+          },
+        }}
+      />
       <SocketProvider>
         <FeedbackPromptProvider>
           <NetworkGuard>
@@ -88,13 +93,13 @@ function App() {
                   <Route path="/maintenance" element={<Maintenance />} />
 
                   <Route element={
-                    <ProtectedRoute roles={['admin', 'paymentAdmin', 'lostFoundAdmin']}>
+                    <ProtectedRoute roles={['admin', 'paymentAdmin']}>
                       <AdminLayout />
                     </ProtectedRoute>
                   }>
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
                     <Route path="/admin/export-center" element={<ExportCenter />} />
-                    <Route path="/admin/lost-found" element={<LostFoundAdminDashboard />} />
+
                   </Route>
 
                   <Route element={<AppLayout />}>
@@ -121,10 +126,8 @@ function App() {
                     <Route path="/verify-email/:token" element={<VerifyEmail />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/team" element={<Team />} />
-                    <Route path="/team/preview" element={<TeamDesignsPreview />} />
-                    <Route path="/team-preview" element={<TeamDesignsPreview />} />
-                    <Route path="/lost-found" element={<LostAndFound />} />
-                    <Route path="/lost-found/guide" element={<LostFoundGuide />} />
+                   
+                   
                     <Route path="/ranking-guide" element={<LeaderboardGuide />} />
                     <Route path="/register/external" element={<RegisterExternal />} />
                     <Route path="/verify/certificate/:token" element={<VerifyCertificate />} />
@@ -145,11 +148,7 @@ function App() {
                     <Route path="/event/:id/design-certificate" element={<ProtectedRoute><CertificateDesigner /></ProtectedRoute>} />
                     <Route path="/payments" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                    <Route path="/central-organizer" element={<ProtectedRoute><CentralOrganizerDashboard /></ProtectedRoute>} />
-                    <Route path="/central-organizer/guide" element={<ProtectedRoute><CentralOrganizerGuide /></ProtectedRoute>} />
-                    <Route path="/central-organizer-guide" element={<ProtectedRoute><CentralOrganizerGuide /></ProtectedRoute>} />
-                    <Route path="/event-staff" element={<ProtectedRoute><EventStaffDashboard /></ProtectedRoute>} />
-                    <Route path="/event-staff/:eventId/attendance" element={<ProtectedRoute><StaffAttendanceView /></ProtectedRoute>} />
+ 
                     <Route path="/event-calendar" element={<ProtectedRoute><EventCalendarPage readOnly /></ProtectedRoute>} />
                     <Route path="/feedback-questions" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />
                     <Route path="/feedback-survey-preview" element={<ProtectedRoute><FeedbackSurveyPreview /></ProtectedRoute>} />

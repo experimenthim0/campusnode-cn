@@ -25,10 +25,9 @@ const upload = multer({
 
 function resolveHostName(event) {
   if (!event) return "College Event";
+  const clubNames = (event.organizers || []).map((o) => o.club?.clubName).filter(Boolean);
+  if (clubNames.length > 0) return clubNames.join(", ");
   if (event.club?.clubName) return event.club.clubName;
-  if (event.organizerType === "CENTRAL" || event.centralOrganizerId || event.institutionalAccountId) {
-    return "Office of DSW (Central Event)";
-  }
   return "College Community";
 }
 
@@ -42,7 +41,6 @@ function shuffleArray(array) {
 }
 
 function formatFeaturedEvent(fe, event) {
-  // Take sponsor name directly from the event itself if present, else fallback to fe.sponsorName
   let sponsorName = null;
   let sponsorLogo = null;
   let primarySponsor = null;
@@ -88,6 +86,8 @@ function formatFeaturedEvent(fe, event) {
     sponsorsList = [sponsorObj];
   }
 
+  const primaryClub = event?.organizers?.[0]?.club || event?.club || null;
+
   return {
     id: fe.id,
     eventId: fe.eventId,
@@ -102,9 +102,9 @@ function formatFeaturedEvent(fe, event) {
     startTime: event?.startTime,
     endTime: event?.endTime,
     venue: event?.venue,
-    organizerType: event?.organizerType,
+    organizerType: "CLUB",
     hostName: resolveHostName(event),
-    club: event?.club || null,
+    club: primaryClub,
     eventStatus: event ? getEventStatus(event.startTime, event.endTime) : "UNKNOWN",
   };
 }
@@ -159,16 +159,17 @@ router.get("/", async (req, res) => {
         startTime: true,
         endTime: true,
         venue: true,
-        organizerType: true,
-        centralOrganizerId: true,
-        institutionalAccountId: true,
         reviewStatus: true,
-        club: {
-          select: {
-            id: true,
-            clubName: true,
-            clubLogo: true,
-            slug: true,
+        organizers: {
+          include: {
+            club: {
+              select: {
+                id: true,
+                clubName: true,
+                clubLogo: true,
+                slug: true,
+              },
+            },
           },
         },
         sponsors: {
@@ -183,35 +184,33 @@ router.get("/", async (req, res) => {
 
     const eventMap = new Map(events.map((e) => [e.id, e]));
 
-    // Match each active featured row with its published event
-    const validFeatured = featuredRows
-      .map((fe) => ({ fe, event: eventMap.get(fe.eventId) }))
-      .filter(({ event }) => Boolean(event));
+    // Filter to only events that actually qualify (published & upcoming)
+    let validFeatured = featuredRows
+      .filter((fe) => eventMap.has(fe.eventId))
+      .map((fe) => formatFeaturedEvent(fe, eventMap.get(fe.eventId)));
 
-    let selectedList = validFeatured;
-    if (orderingMode === "AUTOMATIC") {
-      selectedList = shuffleArray(validFeatured);
+    if (orderingMode === "RANDOM") {
+      validFeatured = shuffleArray(validFeatured);
     }
 
-    const isAll = req.query.all === "true" || req.query.limit === "all";
-    const returnedItems = isAll ? selectedList : selectedList.slice(0, 3);
-    const formattedEvents = returnedItems.map(({ fe, event }) => formatFeaturedEvent(fe, event));
+    // Return max 3 for top banners, or all if requested with ?all=true
+    const result = req.query.all === "true" ? validFeatured : validFeatured.slice(0, 3);
 
     res.json({
-      events: formattedEvents,
+      events: result,
       orderingMode,
       totalActive: validFeatured.length,
     });
   } catch (err) {
     console.error("Error fetching public featured events:", err);
-    res.status(500).json({ message: "Failed to fetch featured events." });
+    res.status(500).json({ message: "Failed to load featured events." });
   }
 });
 
 // ─────────────────────────────────────────────────────────────
-// 2. PUBLIC: GET /api/featured-events/all (All Active Featured Events)
+// 2. PUBLIC: GET /api/featured-events/active (Direct list of active for homepage)
 // ─────────────────────────────────────────────────────────────
-router.get("/all", async (req, res) => {
+router.get("/active", async (req, res) => {
   try {
     const setting = await getFeaturedEventSetting();
     const orderingMode = setting.orderingMode || "CUSTOM";
@@ -223,7 +222,7 @@ router.get("/all", async (req, res) => {
     });
 
     if (featuredRows.length === 0) {
-      return res.json({ events: [], orderingMode, totalActive: 0 });
+      return res.json({ events: [], orderingMode, count: 0 });
     }
 
     const eventIds = featuredRows.map((fe) => fe.eventId);
@@ -240,16 +239,17 @@ router.get("/all", async (req, res) => {
         startTime: true,
         endTime: true,
         venue: true,
-        organizerType: true,
-        centralOrganizerId: true,
-        institutionalAccountId: true,
         reviewStatus: true,
-        club: {
-          select: {
-            id: true,
-            clubName: true,
-            clubLogo: true,
-            slug: true,
+        organizers: {
+          include: {
+            club: {
+              select: {
+                id: true,
+                clubName: true,
+                clubLogo: true,
+                slug: true,
+              },
+            },
           },
         },
         sponsors: {
@@ -264,30 +264,27 @@ router.get("/all", async (req, res) => {
 
     const eventMap = new Map(events.map((e) => [e.id, e]));
 
-    const validFeatured = featuredRows
-      .map((fe) => ({ fe, event: eventMap.get(fe.eventId) }))
-      .filter(({ event }) => Boolean(event));
+    let valid = featuredRows
+      .filter((fe) => eventMap.has(fe.eventId))
+      .map((fe) => formatFeaturedEvent(fe, eventMap.get(fe.eventId)));
 
-    let selectedList = validFeatured;
-    if (orderingMode === "AUTOMATIC") {
-      selectedList = shuffleArray(validFeatured);
+    if (orderingMode === "RANDOM") {
+      valid = shuffleArray(valid);
     }
 
-    const allEvents = selectedList.map(({ fe, event }) => formatFeaturedEvent(fe, event));
-
     res.json({
-      events: allEvents,
+      events: valid,
       orderingMode,
-      totalActive: allEvents.length,
+      count: valid.length,
     });
   } catch (err) {
-    console.error("Error fetching all featured events:", err);
-    res.status(500).json({ message: "Failed to fetch all featured events." });
+    console.error("Error fetching active featured events:", err);
+    res.status(500).json({ message: "Failed to load active featured events." });
   }
 });
 
 // ─────────────────────────────────────────────────────────────
-// 3. PROTECTED: GET /api/featured-events/manage
+// 3. PROTECTED: GET /api/featured-events/manage (Admin console view)
 // ─────────────────────────────────────────────────────────────
 router.get("/manage", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANAGE), async (req, res) => {
   try {
@@ -307,16 +304,17 @@ router.get("/manage", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS
         startTime: true,
         endTime: true,
         venue: true,
-        organizerType: true,
-        centralOrganizerId: true,
-        institutionalAccountId: true,
         reviewStatus: true,
-        club: {
-          select: {
-            id: true,
-            clubName: true,
-            clubLogo: true,
-            slug: true,
+        organizers: {
+          include: {
+            club: {
+              select: {
+                id: true,
+                clubName: true,
+                clubLogo: true,
+                slug: true,
+              },
+            },
           },
         },
         sponsors: {
@@ -378,7 +376,7 @@ router.get("/candidates", verifyToken, requirePermission(PERMISSIONS.FEATURED_EV
         {
           OR: [
             { title: { contains: q, mode: "insensitive" } },
-            { club: { clubName: { contains: q, mode: "insensitive" } } },
+            { organizers: { some: { club: { clubName: { contains: q, mode: "insensitive" } } } } },
           ],
         },
       ];
@@ -394,15 +392,16 @@ router.get("/candidates", verifyToken, requirePermission(PERMISSIONS.FEATURED_EV
           startTime: true,
           endTime: true,
           venue: true,
-          organizerType: true,
-          centralOrganizerId: true,
-          institutionalAccountId: true,
           reviewStatus: true,
-          club: {
-            select: {
-              id: true,
-              clubName: true,
-              clubLogo: true,
+          organizers: {
+            include: {
+              club: {
+                select: {
+                  id: true,
+                  clubName: true,
+                  clubLogo: true,
+                },
+              },
             },
           },
           sponsors: {
@@ -487,10 +486,11 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANA
         startTime: true,
         endTime: true,
         venue: true,
-        organizerType: true,
-        centralOrganizerId: true,
-        institutionalAccountId: true,
-        club: { select: { id: true, clubName: true, clubLogo: true } },
+        organizers: {
+          include: {
+            club: { select: { id: true, clubName: true, clubLogo: true } },
+          },
+        },
         sponsors: { select: { id: true, name: true, logoUrl: true } },
       },
     });
@@ -508,40 +508,40 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANA
       where: { eventId },
     });
     if (existing) {
-      return res.status(409).json({ message: "This event is already added as a featured event." });
+      return res.status(409).json({ message: "This event is already in the featured list." });
     }
 
-    // 4. Compute next displayOrder
-    const maxOrder = await prisma.featuredEvent.aggregate({
+    // 4. Calculate next displayOrder (last)
+    const maxOrderAgg = await prisma.featuredEvent.aggregate({
       _max: { displayOrder: true },
     });
-    const nextOrder = (maxOrder._max.displayOrder ?? 0) + 1;
+    const nextOrder = (maxOrderAgg._max.displayOrder || 0) + 1;
 
-    // Auto-detect sponsor name from event if not explicitly provided
-    let finalSponsorName = sponsorName ? sponsorName.trim() : null;
-    if (!finalSponsorName && event.sponsors && event.sponsors.length > 0) {
-      finalSponsorName = event.sponsors.map((s) => s.name?.trim()).filter(Boolean).join(", ") || null;
-    }
-
-    // 5. Create record in separate FeaturedEvent table
-    const created = await prisma.featuredEvent.create({
+    // 5. Create new featuredEvent
+    const newFeatured = await prisma.featuredEvent.create({
       data: {
         id: createObjectId(),
         eventId,
-        sponsorName: finalSponsorName,
-        sponsorLogo: sponsorLogo ? sponsorLogo.trim() : null,
-        isActive: true,
+        sponsorName: sponsorName || null,
+        sponsorLogo: sponsorLogo || null,
         displayOrder: nextOrder,
+        isActive: true,
       },
     });
 
+    // 6. Update Event.isFeatured to true
+    await prisma.event.update({
+      where: { id: eventId },
+      data: { isFeatured: true },
+    });
+
     res.status(201).json({
-      message: "Event added to Featured Events successfully.",
-      featuredEvent: formatFeaturedEvent(created, event),
+      message: "Event added to featured list successfully.",
+      featuredEvent: formatFeaturedEvent(newFeatured, event),
     });
   } catch (err) {
-    console.error("Error creating featured event:", err);
-    res.status(500).json({ message: "Failed to add featured event." });
+    console.error("Error adding featured event:", err);
+    res.status(500).json({ message: "Failed to add event to featured list." });
   }
 });
 
@@ -549,19 +549,19 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANA
 // 6. PROTECTED: PATCH /api/featured-events/reorder
 // ─────────────────────────────────────────────────────────────
 const reorderSchema = z.object({
-  orderedIds: z.array(z.string().min(1)).min(1, "At least one ID required"),
+  orderedIds: z.array(z.string()).min(1, "At least one ID must be provided."),
 });
 
 router.patch("/reorder", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANAGE), async (req, res) => {
   try {
     const parsed = reorderSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid payload", errors: parsed.error.issues });
+      return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
     }
 
     const { orderedIds } = parsed.data;
 
-    // Update display orders in a transaction
+    // Run order updates sequentially or in a transaction
     await prisma.$transaction(
       orderedIds.map((id, index) =>
         prisma.featuredEvent.update({
@@ -582,30 +582,28 @@ router.patch("/reorder", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVE
 // 7. PROTECTED: PATCH /api/featured-events/settings
 // ─────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
-  orderingMode: z.enum(["CUSTOM", "AUTOMATIC"]),
+  orderingMode: z.enum(["CUSTOM", "RANDOM"]),
 });
 
 router.patch("/settings", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANAGE), async (req, res) => {
   try {
     const parsed = settingsSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid ordering mode", errors: parsed.error.issues });
+      return res.status(400).json({ message: "Invalid ordering mode. Must be 'CUSTOM' or 'RANDOM'." });
     }
 
-    const { orderingMode } = parsed.data;
-
-    const setting = await prisma.featuredEventSetting.upsert({
+    const updatedSetting = await prisma.featuredEventSetting.upsert({
       where: { id: "default" },
-      create: { id: "default", orderingMode },
-      update: { orderingMode },
+      update: { orderingMode: parsed.data.orderingMode },
+      create: { id: "default", orderingMode: parsed.data.orderingMode },
     });
 
     res.json({
-      message: "Featured event settings updated successfully.",
-      setting,
+      message: `Featured events ordering mode set to ${updatedSetting.orderingMode}.`,
+      setting: updatedSetting,
     });
   } catch (err) {
-    console.error("Error updating featured settings:", err);
+    console.error("Error updating featured events settings:", err);
     res.status(500).json({ message: "Failed to update settings." });
   }
 });
@@ -613,18 +611,19 @@ router.patch("/settings", verifyToken, requirePermission(PERMISSIONS.FEATURED_EV
 // ─────────────────────────────────────────────────────────────
 // 8. PROTECTED: PATCH /api/featured-events/:id
 // ─────────────────────────────────────────────────────────────
-const updateFeaturedEventSchema = z.object({
+const updateFeaturedSchema = z.object({
   isActive: z.boolean().optional(),
   sponsorName: z.string().trim().max(100).optional().nullable(),
   sponsorLogo: z.string().optional().nullable(),
+  displayOrder: z.number().int().min(1).optional(),
 });
 
 router.patch("/:id", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANAGE), async (req, res) => {
   try {
     const { id } = req.params;
-    const parsed = updateFeaturedEventSchema.safeParse(req.body);
+    const parsed = updateFeaturedSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid update payload", errors: parsed.error.issues });
+      return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
     }
 
     const existing = await prisma.featuredEvent.findUnique({
@@ -634,18 +633,9 @@ router.patch("/:id", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_
       return res.status(404).json({ message: "Featured event not found." });
     }
 
-    const data = {};
-    if (parsed.data.isActive !== undefined) data.isActive = parsed.data.isActive;
-    if (parsed.data.sponsorName !== undefined) {
-      data.sponsorName = parsed.data.sponsorName ? parsed.data.sponsorName.trim() : null;
-    }
-    if (parsed.data.sponsorLogo !== undefined) {
-      data.sponsorLogo = parsed.data.sponsorLogo ? parsed.data.sponsorLogo.trim() : null;
-    }
-
     const updated = await prisma.featuredEvent.update({
       where: { id },
-      data,
+      data: parsed.data,
     });
 
     const event = await prisma.event.findUnique({
@@ -657,10 +647,11 @@ router.patch("/:id", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_
         startTime: true,
         endTime: true,
         venue: true,
-        organizerType: true,
-        centralOrganizerId: true,
-        institutionalAccountId: true,
-        club: { select: { id: true, clubName: true, clubLogo: true } },
+        organizers: {
+          include: {
+            club: { select: { id: true, clubName: true, clubLogo: true } },
+          },
+        },
         sponsors: { select: { id: true, name: true, logoUrl: true } },
       },
     });

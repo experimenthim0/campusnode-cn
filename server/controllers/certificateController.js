@@ -32,8 +32,8 @@ export function determineAwardPosition(event, participation, studentUser) {
 
   const rollNo = (studentUser?.rollNo || participation?.student?.rollNo || "").trim().toLowerCase();
   const studentId = String(studentUser?.id || participation?.studentId || "");
-  const email = (studentUser?.email || participation?.externalEmail || "").trim().toLowerCase();
-  const name = (studentUser?.name || participation?.externalName || "").trim().toLowerCase();
+  const email = (studentUser?.email || participation?.student?.email || participation?.externalUser?.email || "").trim().toLowerCase();
+  const name = (studentUser?.name || participation?.student?.name || participation?.externalUser?.name || "").trim().toLowerCase();
   const teamId = participation?.teamId ? String(participation.teamId) : "";
 
   for (const w of event.winners) {
@@ -96,7 +96,9 @@ export const downloadCertificate = async (req, res) => {
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
-        club: { select: { clubName: true, clubLogo: true } },
+        organizers: {
+          include: { club: { select: { clubName: true, clubLogo: true } } },
+        },
       },
     });
     if (!event) return res.status(404).json({ message: "Event not found" });
@@ -120,9 +122,9 @@ export const downloadCertificate = async (req, res) => {
         OR: [
           { studentId },
           { externalUserId: studentId },
-          { externalEmail: req.user.email },
+          { userId: studentId },
         ],
-        paymentStatus: { in: ["SUCCESS", "APPROVED"] },
+        paymentStatus: "SUCCESS",
       },
       include: {
         student: {
@@ -160,8 +162,7 @@ export const downloadCertificate = async (req, res) => {
 
     const userName =
       participation.student?.name ||
-      participation.externalUser?.name ||
-      participation.externalName;
+      participation.externalUser?.name;
     if (!userName) {
       return res.status(422).json({ message: "Participant name is missing." });
     }
@@ -186,7 +187,6 @@ export const downloadCertificate = async (req, res) => {
       const recipientEmail =
         participation.student?.email ||
         participation.externalUser?.email ||
-        participation.externalEmail ||
         null;
 
       certificate = await prisma.certificate.create({
@@ -194,6 +194,7 @@ export const downloadCertificate = async (req, res) => {
           id: createObjectId(),
           eventId: event.id,
           participationId: participation.id,
+          userId: participation.userId || participation.studentId || participation.externalUserId,
           studentId: participation.studentId || null,
           externalUserId: participation.externalUserId || null,
           recipientName: userName,
@@ -207,7 +208,7 @@ export const downloadCertificate = async (req, res) => {
             eventTitle: event.title,
             eventDate: event.startTime,
             venue: event.venue,
-            clubName: event.club?.clubName || "CampusNode Organization",
+            clubName: event.organizers?.map((o) => o.club.clubName).join(", ") || "CampusNode Organization",
             issuedAt: new Date().toISOString(),
           },
         },
@@ -489,7 +490,9 @@ export const verifyCertificateByToken = async (req, res) => {
             startTime: true,
             endTime: true,
             venue: true,
-            club: { select: { clubName: true, clubLogo: true } },
+            organizers: {
+              include: { club: { select: { clubName: true, clubLogo: true } } },
+            },
           },
         },
       },
@@ -515,8 +518,8 @@ export const verifyCertificateByToken = async (req, res) => {
         eventTitle: cert.event?.title || cert.metadata?.eventTitle || "CampusNode Event",
         eventDate: cert.event?.startTime || cert.metadata?.eventDate,
         awardPosition: cert.awardPosition,
-        issuingClub: cert.event?.club?.clubName || cert.metadata?.clubName || "CampusNode Organization",
-        issuingClubLogo: cert.event?.club?.clubLogo || null,
+        issuingClub: cert.event?.organizers?.map((o) => o.club.clubName).join(", ") || cert.metadata?.clubName || "CampusNode Organization",
+        issuingClubLogo: cert.event?.organizers?.[0]?.club?.clubLogo || null,
         issuedAt: cert.issuedAt,
         revokedAt: cert.revokedAt,
         revocationReason: cert.revocationReason,

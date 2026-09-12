@@ -1,19 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getClubMembers } from '../services/clubService';
+import { getClubMembers, getClubById } from '../services/clubService';
 import { CLUB_EVENT_EXPORT_COLUMNS, downloadClubEventExport } from '../utils/clubEventExport';
 import { getClubManagedEvents, reviewEvent, deleteEvent } from '../services/eventService';
 import { useNotification } from '../context/NotificationContext';
-import { Clock, MapPin, Users, QrCode, MoreVertical, Trophy, FileText, Edit, Trash2, Award, Star, Eye } from 'lucide-react';
-import { DownloadIcon } from '@/components/ui/download';
+import {
+  Clock,
+  MapPin,
+  Users,
+  QrCode,
+  MoreVertical,
+  Trophy,
+  Edit,
+  Trash2,
+  Award,
+  Star,
+  Eye,
+  Handshake,
+  ArrowLeft,
+  Plus,
+  Check,
+  X,
+  RotateCcw,
+  Calendar,
+  AlertTriangle,
+  ShieldCheck,
+  FilterX,
+  Download,
+} from 'lucide-react';
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
 import ColumnExportModal from '../components/ColumnExportModal';
-import EventApprovalPreviewModal from '../components/EventApprovalPreviewModal';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import ShimmerText from '../components/ShimmerText';
 
 const ClubEvents = () => {
   const { clubId } = useParams();
+  const navigate = useNavigate();
   const { showNotification } = useNotification();
   const { user: authUser, role: authRole } = useAuth();
   const [user, setUser] = useState(authUser);
@@ -21,6 +47,7 @@ const ClubEvents = () => {
   const [createdEvents, setCreatedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exportFilters, setExportFilters] = useState({ month: 'all', year: 'all' });
+  const [statusTab, setStatusTab] = useState('ALL');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
   const [clubName, setClubName] = useState("");
@@ -31,7 +58,7 @@ const ClubEvents = () => {
   const [openMenuEventId, setOpenMenuEventId] = useState(null);
   const [menuPlacement, setMenuPlacement] = useState({ openUpward: false, alignRight: true });
   const [winnerModalEvent, setWinnerModalEvent] = useState(null);
-  const [previewEvent, setPreviewEvent] = useState(null);
+
   const [eventExportModalOpen, setEventExportModalOpen] = useState(false);
   const [selectedEventExportColumns, setSelectedEventExportColumns] = useState(CLUB_EVENT_EXPORT_COLUMNS.map(column => column.key));
   const [eventExporting, setEventExporting] = useState(false);
@@ -53,25 +80,66 @@ const ClubEvents = () => {
       setRole(authRole);
       fetchClubEvents(clubId);
 
-      setCanReview(authRole === 'facultyCoordinator');
+      const isFac = Boolean(
+        authRole === 'facultyCoordinator' ||
+        authUser?.role === 'facultyCoordinator' ||
+        authUser?.principalType === 'FACULTY' ||
+        authUser?.memberships?.some(
+          (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
+        )
+      );
+
+      setCanReview(isFac || authRole === 'admin' || authRole === 'SUPER_ADMIN');
       if (authRole === 'club' || authRole === 'admin' || authRole === 'SUPER_ADMIN') {
         setCanEdit(true);
         setCanScan(true);
         setCanCheckReg(true);
       }
 
+      // Check immediate membership in authUser
+      const myAuthMem = authUser.memberships?.find(
+        (m) => String(m.clubId || m.club?.id) === String(clubId)
+      );
+      if (myAuthMem) {
+        if (myAuthMem.club?.clubName || myAuthMem.clubName) {
+          setClubName(myAuthMem.club?.clubName || myAuthMem.clubName);
+        }
+        const r = myAuthMem.role;
+        const isHead = r === 'CLUB_HEAD' || r === ClubMemberRole.CLUB_HEAD;
+        const isCoordinator = r === 'COORDINATOR' || r === ClubMemberRole.COORDINATOR;
+        if (isHead || isCoordinator || myAuthMem.canEditEvents) {
+          setCanEdit(true);
+          setCanCheckReg(true);
+        }
+        if (isHead || isCoordinator || myAuthMem.canTakeAttendance) {
+          setCanScan(true);
+        }
+      }
+
+      // Fetch official club details
+      getClubById(clubId)
+        .then((res) => {
+          if (res.data?.clubName) {
+            setClubName(res.data.clubName);
+          }
+        })
+        .catch(() => {});
+
       getClubMembers(clubId)
-        .then(res => {
+        .then((res) => {
           const members = Array.isArray(res.data) ? res.data : (res.data?.members || []);
+          if (members.length > 0 && members[0]?.clubName) {
+            setClubName((prev) => prev || members[0].clubName);
+          }
           const userId = String(authUser.id || authUser._id);
-          const myMembership = members.find(m =>
+          const myMembership = members.find((m) =>
             String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId
           );
           if (myMembership) {
-            setClubName(myMembership.clubName || "");
+            if (myMembership.clubName) setClubName(myMembership.clubName);
             const r = myMembership.role;
-            const isHead = r === ClubMemberRole.CLUB_HEAD;
-            const isCoordinator = r === ClubMemberRole.COORDINATOR;
+            const isHead = r === 'CLUB_HEAD' || r === ClubMemberRole.CLUB_HEAD;
+            const isCoordinator = r === 'COORDINATOR' || r === ClubMemberRole.COORDINATOR;
             setCanEdit(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
             setCanScan(isHead || isCoordinator || Boolean(myMembership.canTakeAttendance ?? myMembership.permissions?.canTakeAttendance));
             setCanCheckReg(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
@@ -86,7 +154,12 @@ const ClubEvents = () => {
   const fetchClubEvents = async (id) => {
     try {
       const res = await getClubManagedEvents(id);
-      setCreatedEvents(res.data);
+      const events = Array.isArray(res.data) ? res.data : [];
+      setCreatedEvents(events);
+      if (events.length > 0) {
+        const firstEventClub = events[0].club?.clubName || events[0].organizers?.[0]?.club?.clubName;
+        if (firstEventClub) setClubName((prev) => prev || firstEventClub);
+      }
       setLoading(false);
     } catch (err) {
       console.error('Failed to fetch events', err);
@@ -97,11 +170,11 @@ const ClubEvents = () => {
 
   const handleReview = async (eventId, status, comment = '') => {
     try {
-        await reviewEvent(eventId, { status, comment });
-        showNotification(`Event ${status === 'PUBLISHED' ? 'Approved' : 'Rejected'} successfully`, 'success');
-        fetchClubEvents(clubId);
+      await reviewEvent(eventId, { status, comment });
+      showNotification(`Event ${status === 'PUBLISHED' ? 'Approved' : 'Rejected'} successfully`, 'success');
+      fetchClubEvents(clubId);
     } catch (err) {
-        showNotification(err.response?.data?.message || 'Review failed', 'error');
+      showNotification(err.response?.data?.message || 'Review failed', 'error');
     }
   };
 
@@ -168,38 +241,70 @@ const ClubEvents = () => {
     }
   };
 
+  const isFacultyCoordinator = Boolean(
+    authRole === 'facultyCoordinator' ||
+    role === 'facultyCoordinator' ||
+    authUser?.role === 'facultyCoordinator' ||
+    user?.role === 'facultyCoordinator' ||
+    authUser?.principalType === 'FACULTY' ||
+    user?.principalType === 'FACULTY' ||
+    authUser?.memberships?.some(
+      (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
+    ) ||
+    user?.memberships?.some(
+      (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
+    )
+  );
+
+  const canCreateEvent = canEdit && !isFacultyCoordinator;
+  const pendingCount = createdEvents.filter(e => e.reviewStatus === 'PENDING' || e.reviewStatus === 'DELETION_REQUESTED').length;
+
   const filteredEvents = createdEvents.filter(event => {
     const eventDate = new Date(event.startTime);
     const mMatch = exportFilters.month === 'all' || (eventDate.getMonth() + 1).toString() === exportFilters.month.toString();
     const yMatch = exportFilters.year === 'all' || eventDate.getFullYear().toString() === exportFilters.year.toString();
-    return mMatch && yMatch;
+    const sMatch = statusTab === 'ALL'
+      ? true
+      : statusTab === 'PENDING'
+      ? (event.reviewStatus === 'PENDING' || event.reviewStatus === 'DELETION_REQUESTED')
+      : statusTab === 'PUBLISHED'
+      ? event.reviewStatus === 'PUBLISHED'
+      : true;
+    return mMatch && yMatch && sMatch;
   });
 
-  if (!user) return <div className="text-center mt-12 text-neutral-600 font-medium">Please login to view events.</div>;
-  if (loading) return <div className="text-center mt-12 text-neutral-600 font-medium">Loading events...</div>;
+  if (!user) return <div className="text-center mt-12 text-muted-foreground font-medium">Please login to view events.</div>;
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <ShimmerText text="Loading club events..." className="text-sm font-semibold tracking-wide" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <Link
             to="/profile"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400 hover:text-brand-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
           >
-            <i className="ri-arrow-left-line text-sm" /> Back to Profile
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Profile
           </Link>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-neutral-900 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
             {clubName} Events
           </h2>
         </div>
 
-        {createdEvents.length > 0 && (
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {createdEvents.length > 0 && (
             <div className="flex items-center gap-2">
               <select 
                 value={exportFilters.month}
                 onChange={(e) => setExportFilters({ ...exportFilters, month: e.target.value })}
-                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
+                className="h-8 px-2.5 border border-input rounded-lg text-xs font-medium text-foreground bg-background focus:border-brand-500 outline-none hover:bg-muted/40 transition-colors cursor-pointer"
               >
                 <option value="all">Month</option>
                 {[...Array(12)].map((_, i) => (
@@ -209,338 +314,483 @@ const ClubEvents = () => {
               <select 
                 value={exportFilters.year}
                 onChange={(e) => setExportFilters({ ...exportFilters, year: e.target.value })}
-                className="px-3 py-1.5 border border-neutral-200 rounded-lg text-xs font-medium text-neutral-700 bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none hover:cursor-pointer hover:bg-gray-50 transition-all"
+                className="h-8 px-2.5 border border-input rounded-lg text-xs font-medium text-foreground bg-background focus:border-brand-500 outline-none hover:bg-muted/40 transition-colors cursor-pointer"
               >
                 <option value="all">Year</option>
                 {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
               </select>
               {(exportFilters.month !== 'all' || exportFilters.year !== 'all') && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearFilters}
-                  className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors px-2 cursor-pointer"
+                  className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 px-2 cursor-pointer"
                 >
                   Clear
-                </button>
+                </Button>
               )}
-              <button
+              {/* Semantic Green Data Export Button */}
+              <Button
+                size="sm"
                 onClick={handleExportClubData}
-                className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-emerald-600 text-white font-semibold text-xs rounded-lg hover:bg-emerald-700 transition-all active:translate-y-0.5 hover:shadow-sm hover:cursor-pointer"
+                className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg shadow-xs cursor-pointer"
               >
-                <i className="ri-download-2-line text-sm" /> Export
-              </button>
+                <Download className="w-3.5 h-3.5" /> Export
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+
+          {canCreateEvent && (
+            <Button
+              asChild
+              size="sm"
+              className="h-8 gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-lg shadow-xs cursor-pointer"
+            >
+              <Link to={`/create?clubId=${clubId}`}>
+                <Plus className="w-3.5 h-3.5" /> Create Event
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {createdEvents.length === 0 ? (
-        <div className="bg-white border border-neutral-200 rounded-xl p-12 text-center shadow-sm">
-          <i className="ri-calendar-event-line text-5xl text-neutral-300 mb-4 inline-block" />
-          <p className="text-neutral-500 mb-4 font-medium">No events found for this club.</p>
-        </div>
-      ) : filteredEvents.length === 0 ? (
-        <div className="bg-white border border-dashed border-neutral-300 rounded-xl p-12 text-center shadow-sm">
-          <i className="ri-filter-off-line text-5xl text-neutral-300 mb-4 inline-block" />
-          <p className="text-neutral-500 mb-2 font-medium">No events match your selected filters.</p>
-          <button 
-            onClick={clearFilters}
-            className="text-xs font-semibold text-brand-600 hover:underline cursor-pointer"
+      {/* Filter Tabs */}
+      {createdEvents.length > 0 && (
+        <div className="flex items-center gap-1.5 pb-4 border-b border-border mb-6 overflow-x-auto">
+          <Button
+            size="sm"
+            variant={statusTab === 'ALL' ? 'default' : 'ghost'}
+            onClick={() => setStatusTab('ALL')}
+            className={`h-8 text-xs font-medium rounded-lg ${
+              statusTab === 'ALL' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            Clear Filters
-          </button>
+            All Events ({createdEvents.length})
+          </Button>
+          <Button
+            size="sm"
+            variant={statusTab === 'PENDING' ? 'default' : 'ghost'}
+            onClick={() => setStatusTab('PENDING')}
+            className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${
+              statusTab === 'PENDING'
+                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Pending Review
+            {pendingCount > 0 && (
+              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-bold">
+                {pendingCount}
+              </Badge>
+            )}
+          </Button>
+          <Button
+            size="sm"
+            variant={statusTab === 'PUBLISHED' ? 'default' : 'ghost'}
+            onClick={() => setStatusTab('PUBLISHED')}
+            className={`h-8 text-xs font-medium rounded-lg ${
+              statusTab === 'PUBLISHED'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Approved / Live
+          </Button>
         </div>
+      )}
+
+      {/* Events List */}
+      {createdEvents.length === 0 ? (
+        <Card className="border-dashed border-border bg-card">
+          <CardContent className="p-12 text-center">
+            <Calendar className="w-12 h-12 text-muted-foreground/40 mb-4 mx-auto" />
+            <p className="text-muted-foreground mb-4 text-sm max-w-md mx-auto">
+              {isFacultyCoordinator 
+                ? 'No events have been submitted for this club yet. Once student coordinators create events, they will appear here for your review and approval.' 
+                : 'No events found for this club.'}
+            </p>
+            {canCreateEvent && (
+              <Button
+                asChild
+                size="sm"
+                className="bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-lg gap-1.5"
+              >
+                <Link to={`/create?clubId=${clubId}`}>
+                  <Plus className="w-3.5 h-3.5" /> Create Event
+                </Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : filteredEvents.length === 0 ? (
+        <Card className="border-dashed border-border bg-card">
+          <CardContent className="p-12 text-center">
+            <FilterX className="w-12 h-12 text-muted-foreground/40 mb-3 mx-auto" />
+            <p className="text-muted-foreground mb-3 text-sm">No events match your selected filters.</p>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs"
+            >
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="grid gap-5">
+        <div className="grid gap-4">
           {filteredEvents.map(event => {
             const now = new Date();
             const isPast = new Date(event.endTime) < now;
             const isLive = new Date(event.startTime) <= now && new Date(event.endTime) > now;
-            const statusColors = {
-                'PENDING': 'bg-amber-50 text-amber-700 border-amber-200',
-                'PUBLISHED': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                'REJECTED': 'bg-rose-50 text-rose-700 border-rose-200',
-                'DRAFT': 'bg-neutral-100 text-neutral-600 border-neutral-200'
-            };
-
+            
             const eventIdStr = String(event.id || event._id);
             const userRole = (user?.role || localStorage.getItem('role') || '').toLowerCase();
-            const isClubHeadOrAdmin = userRole === 'club' || userRole === 'admin' || canEdit || event.createdById === user?.id || event.createdById === user?._id;
+            const isClubLead = Boolean(user?.memberships?.some(m => String(m.clubId || m.club?.id) === String(clubId) && (m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')));
+            const isClubHeadOrAdmin = userRole === 'club' || userRole === 'admin' || canEdit || isClubLead || event.createdById === user?.id || event.createdById === user?._id;
             const canViewReg = canCheckReg || isClubHeadOrAdmin;
             const canScanAttendance = (canScan || isClubHeadOrAdmin) && !isPast;
-            const canManageWinners = canEdit || canCheckReg || isClubHeadOrAdmin;
-            const canEditEvent = canEdit || isClubHeadOrAdmin;
-            const canDeleteEvent = canEdit || isClubHeadOrAdmin;
-            const canCert = canEdit || isClubHeadOrAdmin;
-            const hasAnyMenuActions = canViewReg || canScanAttendance || canManageWinners || canCert || canEditEvent || canDeleteEvent;
+            const canEditEvent = !isFacultyCoordinator && (canEdit || isClubHeadOrAdmin);
+            const canDeleteEvent = !isFacultyCoordinator && (canEdit || isClubHeadOrAdmin);
+
+            const isFeedbackAllowed = event.feedbackEnabled !== false;
+            const canViewFeedback = canViewReg && isFeedbackAllowed;
+
+            const isWinnerAllowed = Boolean(event.showWinner) || (Array.isArray(event.winners) && event.winners.length > 0);
+            const canAnnounceWinners = (canEdit || canCheckReg || isClubHeadOrAdmin) && isWinnerAllowed;
+
+            const isCertAllowed = Boolean(event.provideCertificate) || Boolean(event.certificateTemplate);
+            const canDesignCert = (canEdit || isClubHeadOrAdmin) && isCertAllowed;
+
+            const hasAnyMenuActions = canViewReg || canScanAttendance || canAnnounceWinners || canDesignCert || canViewFeedback || canEditEvent || canDeleteEvent;
+            const isPendingReview = canReview && (event.reviewStatus === 'PENDING' || event.reviewStatus === 'DELETION_REQUESTED');
 
             return (
-            <div
-              key={eventIdStr}
-              className={`bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 relative ${
-                openMenuEventId === eventIdStr ? 'z-30' : 'z-0'
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 md:px-6 pt-5 pb-3 border-b border-neutral-100 bg-neutral-50/30 gap-3">
-                <h3 className="text-lg font-bold text-neutral-900 leading-tight">
+              <Card
+                key={eventIdStr}
+                className={`overflow-visible transition-all duration-200 border-border bg-card ${
+                  isPendingReview ? 'border-amber-300 dark:border-amber-700/80 ring-1 ring-amber-500/20' : ''
+                } ${openMenuEventId === eventIdStr ? 'z-30' : 'z-0'}`}
+              >
+                {/* Event Card Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 md:px-6 pt-4 pb-3 border-b border-border bg-muted/20 gap-3">
+                  <h3 className="text-base font-semibold text-foreground leading-tight">
                     <Link to={`/event/${event.slug || eventIdStr}`} className="hover:text-brand-600 transition-colors">
-                        {event.title}
+                      {event.title}
                     </Link>
-                </h3>
-                <div className="flex gap-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColors[event.reviewStatus] || 'bg-white border-neutral-200'}`}>
-                        {event.reviewStatus}
-                    </span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                      isPast ? 'bg-neutral-50 text-neutral-500 border-neutral-200' :
-                      isLive ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse-slow' :
-                      'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    }`}>
-                        {isPast ? 'Past' : isLive ? 'Live Now' : 'Upcoming'}
-                    </span>
+                  </h3>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Badge
+                      variant="outline"
+                      className={`text-[11px] font-medium ${
+                        event.reviewStatus === 'PUBLISHED'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                          : event.reviewStatus === 'PENDING'
+                          ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60'
+                          : event.reviewStatus === 'REJECTED' || event.reviewStatus === 'DELETION_REQUESTED'
+                          ? 'bg-destructive/10 text-destructive border-destructive/30'
+                          : 'bg-muted text-muted-foreground border-border'
+                      }`}
+                    >
+                      {event.reviewStatus}
+                    </Badge>
+
+                    <Badge
+                      variant="outline"
+                      className={`text-[11px] font-medium ${
+                        isPast
+                          ? 'bg-muted text-muted-foreground border-border'
+                          : isLive
+                          ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 animate-pulse'
+                          : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                      }`}
+                    >
+                      {isPast ? 'Past' : isLive ? 'Live Now' : 'Upcoming'}
+                    </Badge>
+
+                    {(event.organizers || []).length > 1 && (
+                      <Badge variant="outline" className="gap-1 text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60">
+                        <Handshake className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Joint Event
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col md:flex-row md:items-center justify-between px-5 md:px-6 py-4 gap-4">
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-neutral-600">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <MapPin className="w-4 h-4 shrink-0 text-neutral-400" />
-                    {event.venue}
-                  </span>
-                  <span className="flex items-center gap-1.5 font-medium text-xs uppercase tracking-wider text-neutral-500">
-                    <Clock className="w-4 h-4 shrink-0 text-brand-600" />
-                    {new Date(event.startTime).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-                  </span>
-                  <span className="flex items-center gap-1.5 font-medium text-neutral-700">
-                    <Users className="w-4 h-4 shrink-0 text-neutral-400" />
-                    {event.registeredCount} / {event.totalSeats || '∞'} registered
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {canReview && event.reviewStatus?.toUpperCase() === 'PENDING' ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => setPreviewEvent(event)}
-                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
-                        title="Preview all event and payment details before approving"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-brand-400 dark:text-brand-600" />
-                        Preview &amp; Review
-                      </button>
-                      <button
-                        onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                        className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => {
-                          const reason = prompt('Enter rejection reason:');
-                          if (reason) handleReview(eventIdStr, 'REJECTED', reason);
-                        }}
-                        className="px-3.5 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  ) : canReview && event.reviewStatus?.toUpperCase() === 'DELETION_REQUESTED' ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        onClick={() => setPreviewEvent(event)}
-                        className="px-3.5 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition font-bold text-xs cursor-pointer shadow-sm flex items-center gap-1.5"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-brand-400 dark:text-brand-600" />
-                        Inspect
-                      </button>
-                      <button
-                        onClick={() => handleDelete(eventIdStr)}
-                        className="px-3.5 py-1.5 bg-rose-650 text-white rounded-lg hover:bg-rose-700 transition font-bold text-xs cursor-pointer shadow-sm"
-                      >
-                        Approve Deletion
-                      </button>
-                      <button
-                        onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                        className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-bold text-xs cursor-pointer shadow-sm"
-                      >
-                        Restore Event
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {canViewReg && (
-                        <Link
-                          to={`/event/${eventIdStr}/registrations`}
-                          className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs cursor-pointer shadow-sm whitespace-nowrap"
-                        >
-                          Registrations
-                        </Link>
-                      )}
-
-                      {hasAnyMenuActions && (
-                        <div className={`relative event-action-menu ${openMenuEventId === eventIdStr ? 'z-50' : 'z-10'}`}>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (openMenuEventId === eventIdStr) {
-                                setOpenMenuEventId(null);
-                              } else {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const spaceBelow = window.innerHeight - rect.bottom;
-                                const spaceAbove = rect.top;
-                                const openUpward = spaceBelow < 250 && spaceAbove > spaceBelow;
-                                const alignRight = rect.right > 200;
-                                setMenuPlacement({ openUpward, alignRight });
-                                setOpenMenuEventId(eventIdStr);
-                              }
-                            }}
-                            className="p-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition cursor-pointer"
-                            title="More options"
+                {/* Co-organizers */}
+                {(event.organizers || []).length > 1 && (
+                  <div className="flex items-center gap-2 px-5 md:px-6 py-2 border-b border-border bg-muted/10">
+                    <span className="text-[11px] text-muted-foreground font-medium">With:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {event.organizers
+                        .filter(o => String(o.clubId) !== String(clubId))
+                        .map((o, i) => (
+                          <Link
+                            key={o.club?.id || i}
+                            to={`/club/${o.club?.slug || o.clubId}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-600 hover:text-brand-700 transition-colors"
                           >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
+                            {o.club?.clubLogo && (
+                              <img src={o.club.clubLogo} alt="" className="w-4 h-4 rounded-full object-cover border border-border" />
+                            )}
+                            {o.club?.clubName || 'Partner Club'}
+                          </Link>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
-                          {openMenuEventId === eventIdStr && (
-                            <div 
-                              className={`absolute ${menuPlacement.alignRight ? 'right-0' : 'left-0'} ${
-                                menuPlacement.openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-                              } w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl z-50 py-1.5 text-xs animate-in fade-in zoom-in-95 duration-100 max-h-[calc(100dvh-60px)] overflow-y-auto`}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => {
+                {/* Card Main Body */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between px-5 md:px-6 py-4 gap-4">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      {event.venue}
+                    </span>
+                    <span className="flex items-center gap-1.5 font-medium uppercase tracking-wider">
+                      <Clock className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                      {new Date(event.startTime).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                    </span>
+                    <span className="flex items-center gap-1.5 font-medium text-foreground">
+                      <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      {event.registeredCount} / {event.totalSeats || '∞'} registered
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {canReview && event.reviewStatus?.toUpperCase() === 'PENDING' ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/event/${event.slug || eventIdStr}/preview`, '_blank', 'noopener,noreferrer')}
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer"
+                          title="Preview all event and payment details before approving"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-brand-600" /> Preview &amp; Review
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
+                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Approve
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            const reason = prompt('Enter rejection reason:');
+                            if (reason) handleReview(eventIdStr, 'REJECTED', reason);
+                          }}
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs"
+                        >
+                          <X className="w-3.5 h-3.5" /> Reject
+                        </Button>
+                      </div>
+                    ) : canReview && event.reviewStatus?.toUpperCase() === 'DELETION_REQUESTED' ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/event/${event.slug || eventIdStr}/preview`, '_blank', 'noopener,noreferrer')}
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-brand-600" /> Inspect
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(eventIdStr)}
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Approve Deletion
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
+                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" /> Restore Event
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {canViewReg && (
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs font-medium"
+                          >
+                            <Link to={`/event/${eventIdStr}/registrations`}>
+                              Registrations
+                            </Link>
+                          </Button>
+                        )}
+
+                        {hasAnyMenuActions && (
+                          <div className={`relative event-action-menu ${openMenuEventId === eventIdStr ? 'z-50' : 'z-10'}`}>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (openMenuEventId === eventIdStr) {
                                   setOpenMenuEventId(null);
-                                  setPreviewEvent(event);
-                                }}
-                                className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium transition cursor-pointer"
+                                } else {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const spaceBelow = window.innerHeight - rect.bottom;
+                                  const spaceAbove = rect.top;
+                                  const openUpward = spaceBelow < 250 && spaceAbove > spaceBelow;
+                                  const alignRight = rect.right > 200;
+                                  setMenuPlacement({ openUpward, alignRight });
+                                  setOpenMenuEventId(eventIdStr);
+                                }
+                              }}
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                              title="More options"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+
+                            {openMenuEventId === eventIdStr && (
+                              <div 
+                                className={`absolute ${menuPlacement.alignRight ? 'right-0' : 'left-0'} ${
+                                  menuPlacement.openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                } w-52 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl z-50 py-1 text-xs`}
                               >
-                                <Eye className="w-3.5 h-3.5 text-neutral-400" /> Full Preview &amp; Details
-                              </button>
-                              {canViewReg && (
-                                <Link
-                                  to={`/event/${eventIdStr}/registrations`}
-                                  onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium transition"
-                                >
-                                  <FileText className="w-3.5 h-3.5 text-neutral-400" /> View Registrations
-                                </Link>
-                              )}
-
-                              {canViewReg && (
-                                <Link
-                                  to={`/event/${eventIdStr}/feedback`}
-                                  onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium transition"
-                                >
-                                  <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" /> Event Feedback
-                                </Link>
-                              )}
-
-                              {canScanAttendance && (
-                                <Link
-                                  to={`/event/${eventIdStr}/check-in`}
-                                  onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 font-medium transition"
-                                >
-                                  <QrCode className="w-3.5 h-3.5" /> Scan Attendance
-                                </Link>
-                              )}
-
-                              {canManageWinners && (
                                 <button
                                   type="button"
                                   onClick={() => {
                                     setOpenMenuEventId(null);
-                                    setWinnerModalEvent(event);
+                                    window.open(`/event/${event.slug || eventIdStr}/preview`, '_blank', 'noopener,noreferrer');
                                   }}
-                                  className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium transition cursor-pointer"
+                                  className="w-full text-left flex items-center gap-2 px-3.5 py-2 hover:bg-muted font-medium transition-colors cursor-pointer"
                                 >
-                                  <Trophy className="w-3.5 h-3.5" /> Announce Winners
+                                  <Eye className="w-3.5 h-3.5 text-brand-600" /> Full Preview &amp; Details
                                 </button>
-                              )}
+                                {canEditEvent && (
+                                  <Link
+                                    to={`/events/edit/${eventIdStr}`}
+                                    onClick={() => setOpenMenuEventId(null)}
+                                    className="flex items-center gap-2 px-3.5 py-2 hover:bg-muted font-medium transition-colors"
+                                  >
+                                    <Edit className="w-3.5 h-3.5 text-muted-foreground" /> Edit Event
+                                  </Link>
+                                )}
+                                {canScanAttendance && (
+                                  <Link
+                                    to={`/event/${eventIdStr}/check-in`}
+                                    onClick={() => setOpenMenuEventId(null)}
+                                    className="flex items-center gap-2 px-3.5 py-2 hover:bg-muted font-medium transition-colors"
+                                  >
+                                    <QrCode className="w-3.5 h-3.5 text-muted-foreground" /> Scan Attendance
+                                  </Link>
+                                )}
 
-                              {canCert && (
-                                <Link
-                                  to={`/event/${eventIdStr}/design-certificate`}
-                                  onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium transition"
-                                >
-                                  <Award className="w-3.5 h-3.5" /> Design Certificate
-                                </Link>
-                              )}
+                                {canViewFeedback && (
+                                  <Link
+                                    to={`/event/${eventIdStr}/feedback`}
+                                    onClick={() => setOpenMenuEventId(null)}
+                                    className="flex items-center gap-2 px-3.5 py-2 hover:bg-muted text-amber-600 dark:text-amber-400 font-medium transition-colors"
+                                  >
+                                    <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" /> Event Feedback
+                                  </Link>
+                                )}
 
-                              {canEditEvent && (
-                                <Link
-                                  to={`/events/edit/${eventIdStr}`}
-                                  onClick={() => setOpenMenuEventId(null)}
-                                  className="flex items-center gap-2 px-3.5 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium transition"
-                                >
-                                  <Edit className="w-3.5 h-3.5 text-neutral-400" /> Edit Event
-                                </Link>
-                              )}
-
-                              {canDeleteEvent && (
-                                <>
-                                  <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
+                                {canAnnounceWinners && (
                                   <button
                                     type="button"
                                     onClick={() => {
                                       setOpenMenuEventId(null);
-                                      handleDelete(eventIdStr);
+                                      setWinnerModalEvent(event);
                                     }}
-                                    className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-semibold transition cursor-pointer"
+                                    className="w-full text-left flex items-center gap-2 px-3.5 py-2 hover:bg-muted text-foreground font-medium transition-colors cursor-pointer"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5" /> Delete Event
+                                    <Trophy className="w-3.5 h-3.5 text-amber-500" /> Announce Winners
                                   </button>
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* Context Block for special states */}
-              {(event.reviewStatus === 'REJECTED' || 
-                event.reviewStatus === 'DELETION_REQUESTED' ||
-                (canReview && event.reviewStatus === 'PENDING')) && (
-                  <div className="px-5 pb-5 border-t border-neutral-100 pt-4 bg-neutral-50/20">
-                      {event.reviewStatus === 'REJECTED' && (
-                          <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl flex gap-3 items-start">
-                              <i className="ri-error-warning-fill text-rose-600 text-xl animate-bounce-slow" />
-                              <div className="text-left">
-                                  <p className="text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-1">Rejection Reason</p>
-                                  <p className="text-sm text-rose-600 font-semibold">{event.reviewComment || 'No feedback provided. Please contact the faculty coordinator.'}</p>
+                                )}
+
+                                {canDesignCert && (
+                                  <Link
+                                    to={`/event/${eventIdStr}/design-certificate`}
+                                    onClick={() => setOpenMenuEventId(null)}
+                                    className="flex items-center gap-2 px-3.5 py-2 hover:bg-muted text-brand-600 dark:text-brand-400 font-medium transition-colors"
+                                  >
+                                    <Award className="w-3.5 h-3.5" /> Design Certificate
+                                  </Link>
+                                )}
+
+                                {canDeleteEvent && (
+                                  <>
+                                    <div className="my-1 border-t border-border" />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuEventId(null);
+                                        handleDelete(eventIdStr);
+                                      }}
+                                      className="w-full text-left flex items-center gap-2 px-3.5 py-2 hover:bg-destructive/10 text-destructive font-medium transition-colors cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" /> Delete Event
+                                    </button>
+                                  </>
+                                )}
                               </div>
+                            )}
                           </div>
-                      )}
-                      {event.reviewStatus === 'DELETION_REQUESTED' && (
-                          <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl flex gap-3 items-start">
-                              <i className="ri-delete-bin-fill text-rose-600 text-xl" />
-                              <div className="text-left">
-                                  <p className="text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-1">Deletion Pending Approval</p>
-                                  <p className="text-sm text-rose-600 font-semibold">
-                                      {canReview 
-                                        ? 'The club has requested to delete this event. Click Approve Deletion to execute, or Restore Event to reject deletion.'
-                                        : 'This event is pending deletion approval by the faculty coordinator.'}
-                                  </p>
-                              </div>
-                          </div>
-                      )}
-                      {canReview && event.reviewStatus === 'PENDING' && (
-                          <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3 items-start">
-                              <i className="ri-information-fill text-amber-600 text-xl" />
-                              <div className="text-left">
-                                  <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Review Required</p>
-                                  <p className="text-sm text-amber-600 font-semibold">This event is waiting for your approval before it becomes visible to students.</p>
-                              </div>
-                          </div>
-                      )}
+                        )}
+                      </div>
+                    )}
                   </div>
-              )}
-            </div>
+                </div>
+
+                {/* Context Block for special states */}
+                {(event.reviewStatus === 'REJECTED' || 
+                  event.reviewStatus === 'DELETION_REQUESTED' ||
+                  (canReview && event.reviewStatus === 'PENDING')) && (
+                  <div className="px-5 pb-4 pt-3 border-t border-border bg-muted/10">
+                    {event.reviewStatus === 'REJECTED' && (
+                      <div className="bg-destructive/10 border border-destructive/20 p-3.5 rounded-xl flex gap-3 items-start">
+                        <div className="w-7 h-7 rounded-lg bg-destructive/20 flex items-center justify-center shrink-0 text-destructive">
+                          <AlertTriangle className="w-4 h-4" />
+                        </div>
+                        <div className="text-left min-w-0">
+                          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-0.5">Rejection Reason</p>
+                          <p className="text-xs text-destructive font-medium">{event.reviewComment || 'No feedback provided. Please contact the faculty coordinator.'}</p>
+                        </div>
+                      </div>
+                    )}
+                    {event.reviewStatus === 'DELETION_REQUESTED' && (
+                      <div className="bg-destructive/10 border border-destructive/20 p-3.5 rounded-xl flex gap-3 items-start">
+                        <div className="w-7 h-7 rounded-lg bg-destructive/20 flex items-center justify-center shrink-0 text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </div>
+                        <div className="text-left min-w-0">
+                          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-0.5">Deletion Pending Approval</p>
+                          <p className="text-xs text-destructive font-medium leading-relaxed">
+                            {canReview 
+                              ? 'The club has requested to delete this event. Click Approve Deletion to execute, or Restore Event to reject deletion.'
+                              : 'This event is pending deletion approval by the faculty coordinator.'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {canReview && event.reviewStatus === 'PENDING' && (
+                      <div className="bg-amber-500/10 border border-amber-500/20 p-3.5 rounded-xl flex gap-3 items-start">
+                        <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 text-amber-700 dark:text-amber-400">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <div className="text-left min-w-0">
+                          <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-0.5">Review Required</p>
+                          <p className="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">This event is waiting for your approval. Click "Preview & Review" to inspect details, or Approve / Reject directly.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
             );
           })}
         </div>
@@ -556,54 +806,66 @@ const ClubEvents = () => {
         isExporting={eventExporting}
         error={eventExportError}
       />
+
+      {/* Semantic Red Destructive Delete Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <Card className="max-w-md w-full shadow-2xl overflow-hidden border-border bg-card">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-danger-50 dark:bg-danger-950/30 text-danger-600 dark:text-danger-400 flex items-center justify-center text-lg shrink-0">
-                  <i className="ri-delete-bin-line" />
+                <div className="w-9 h-9 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">Confirm Deletion</h3>
-                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Event cancellation & removal</p>
+                  <h3 className="text-base font-semibold text-foreground leading-tight">
+                    {!canReview ? 'Request Deletion' : 'Confirm Deletion'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {!canReview ? 'Submit deletion request to faculty coordinator' : 'Permanent event removal'}
+                  </p>
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => { setDeleteModalOpen(false); setEventToDelete(null); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                 title="Close"
               >
-                <i className="ri-close-line text-lg" />
-              </button>
+                <X className="w-4 h-4" />
+              </Button>
             </div>
             <div className="p-6">
-              <p className="text-xs sm:text-sm text-cn-text-secondary leading-relaxed font-normal text-left">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {!canReview 
                   ? 'Are you sure you want to request deletion of this event? This will submit a deletion request to the faculty coordinator for approval. All registrations will be lost if approved.' 
                   : 'Are you sure you want to permanently delete this event? All registrations will be lost. This action cannot be undone.'}
               </p>
             </div>
-            <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent flex items-center justify-end gap-3 shrink-0">
-              <button
+            <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-end gap-3 shrink-0">
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => { setDeleteModalOpen(false); setEventToDelete(null); }}
-                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="font-medium text-xs rounded-xl"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="destructive"
+                size="sm"
                 onClick={confirmDelete}
-                className="px-5 py-2.5 bg-danger-600 hover:bg-danger-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
+                className="font-medium text-xs rounded-xl shadow-xs"
               >
-                Delete
-              </button>
+                {!canReview ? 'Request Deletion' : 'Delete'}
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
+
       <WinnerModal
         isOpen={!!winnerModalEvent}
         onClose={() => setWinnerModalEvent(null)}
@@ -615,16 +877,6 @@ const ClubEvents = () => {
             )
           );
         }}
-      />
-      <EventApprovalPreviewModal
-        event={previewEvent}
-        isOpen={Boolean(previewEvent)}
-        onClose={() => setPreviewEvent(null)}
-        onApprove={handleReview}
-        onReject={(id, reason) => handleReview(id, 'REJECTED', reason)}
-        onDeleteApprove={handleDelete}
-        onRestore={(id) => handleReview(id, 'PUBLISHED')}
-        userRole={authRole}
       />
     </div>
   );

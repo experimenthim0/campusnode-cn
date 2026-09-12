@@ -87,8 +87,6 @@ const EventDetails = () => {
   const [customFormModalOpen, setCustomFormModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [customFormResponses, setCustomFormResponses] = useState({});
-  const [externalEmail, setExternalEmail] = useState('');
-  const [externalName, setExternalName] = useState('');
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -250,8 +248,6 @@ const EventDetails = () => {
         // Individual registration
         const registerBody = {
           studentId: paymentPayload.studentId || null,
-          externalEmail: paymentPayload.externalEmail || null,
-          externalName: paymentPayload.externalName || null,
           formResponses: paymentPayload.formResponses || {},
           transactionId: txId,
           payerName: pName,
@@ -302,9 +298,9 @@ const EventDetails = () => {
     setConfirmModalOpen(false);
 
     try {
-      const registerBody = user
-        ? { studentId: user.id || user._id }
-        : { externalEmail, externalName };
+      const registerBody = {
+        studentId: user?.id || user?._id,
+      };
 
       const res = await registerForEvent(event.id || event._id, registerBody);
       await invalidateCache([

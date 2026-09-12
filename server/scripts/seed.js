@@ -21,142 +21,69 @@ const clubsData = [
 
 async function seed() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || "clubsetuadmin@nitj.ac.in";
-    const adminPassword = process.env.ADMIN_PASS || "nikhil@him0148";
+    const adminEmail = process.env.ADMIN_EMAIL || "testing_admin@nitj.ac.in";
+    const adminPassword = process.env.ADMIN_PASS || "testing_admin";
     const commonPassword = process.env.COMMON_PASSWORD || "nikhil@him0148";
 
-    console.log("Seeding Admin...");
+    console.log("Seeding Admin User...");
     const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
     await prisma.adminRole.upsert({
       where: { email: adminEmail },
-      update: { password: adminPasswordHash },
+      update: { password: adminPasswordHash, role: "admin" },
       create: {
         id: createObjectId(),
-        name: "Admin",
+        name: "CampusNode Admin",
         email: adminEmail,
         password: adminPasswordHash,
         role: "admin",
         isTwoStepEnabled: false,
       },
     });
+    console.log(`Seeded Admin: ${adminEmail}`);
 
-    console.log("Seeding Lost & Found Admin...");
-    await prisma.adminRole.upsert({
-      where: { email: "lostfoundadmin@nitj.ac.in" },
-      update: { password: adminPasswordHash },
-      create: {
-        id: createObjectId(),
-        name: "L&F Admin",
-        email: "lostfoundadmin@nitj.ac.in",
-        password: adminPasswordHash,
-        role: "lostFoundAdmin",
-        isTwoStepEnabled: false,
-      },
-    });
+    console.log("Seeding Clubs and Faculty Coordinators...");
+    const coordPasswordHash = await bcrypt.hash(commonPassword, 10);
 
-    console.log("Seeding Central Event Organiser (ODSW)...");
-    await prisma.studentUser.upsert({
-      where: { email: "odsw@nitj.ac.in" },
-      update: {
-        name: "Office of Dean Student Welfare (ODSW)",
-        password: adminPasswordHash,
-        accessLevel: "central_organizer",
-        isVerified: true,
-        isBlocked: false,
-      },
-      create: {
-        id: createObjectId(),
-        name: "Office of Dean Student Welfare (ODSW)",
-        email: "odsw@nitj.ac.in",
-        password: adminPasswordHash,
-        accessLevel: "central_organizer",
-        isVerified: true,
-        isBlocked: false,
-      },
-    });
-
-    console.log("Seeding Clubs...");
-    const clubPasswordHash = await bcrypt.hash(commonPassword, 10);
     for (const [clubName, facultyName, facultyEmail, clubEmail] of clubsData) {
       const slug = slugify(clubName);
 
-      await prisma.$transaction(async (tx) => {
-        let club = await tx.club.findUnique({ where: { slug } });
-        const clubId = club?.id || createObjectId();
-
-        if (!club) {
-          club = await tx.club.create({
-            data: {
-              id: clubId,
-              clubName,
-              slug,
-              facultyName,
-              facultyEmail,
-              clubEmail,
-            },
-          });
-        }
-
-        const facultyUser = await tx.adminRole.upsert({
-          where: { email: facultyEmail },
-          update: { password: clubPasswordHash },
-          create: {
-            id: createObjectId(),
-            name: facultyName,
-            email: facultyEmail,
-            password: clubPasswordHash,
-            role: "facultyCoordinator",
-            isTwoStepEnabled: false,
-          },
-        });
-
-        await tx.clubAccount.upsert({
-          where: { clubId: club.id },
-          update: {
-            email: clubEmail,
-            password: clubPasswordHash,
-            isActive: true,
-          },
-          create: {
-            id: createObjectId(),
-            clubId: club.id,
-            email: clubEmail,
-            password: clubPasswordHash,
-            isActive: true,
-          },
-        });
-
-        await tx.club.update({
-          where: { id: club.id },
-          data: {
-            facultyCoordinatorId: facultyUser.id,
-          },
-        });
+      const facultyUser = await prisma.adminRole.upsert({
+        where: { email: facultyEmail },
+        update: { name: facultyName, password: coordPasswordHash, role: "facultyCoordinator" },
+        create: {
+          id: createObjectId(),
+          name: facultyName,
+          email: facultyEmail,
+          password: coordPasswordHash,
+          role: "facultyCoordinator",
+          isTwoStepEnabled: false,
+        },
       });
-      console.log(`Seeded: ${clubName}`);
+
+      await prisma.club.upsert({
+        where: { slug },
+        update: {
+          clubName,
+          facultyName,
+          facultyEmail,
+          clubEmail,
+          facultyCoordinatorId: facultyUser.id,
+        },
+        create: {
+          id: createObjectId(),
+          clubName,
+          slug,
+          facultyName,
+          facultyEmail,
+          clubEmail,
+          facultyCoordinatorId: facultyUser.id,
+        },
+      });
+
+      console.log(`Seeded Club: ${clubName} -> Coordinator: ${facultyName} (${facultyEmail})`);
     }
 
-    console.log("Seeding DSW Institutional Account...");
-    const dswAccount = await prisma.institutionalAccount.upsert({
-      where: { email: "odsw@nitj.ac.in" },
-      update: {
-        name: "Dean Student Welfare (DSW)",
-        type: "DSW",
-        password: adminPasswordHash,
-        isActive: true,
-      },
-      create: {
-        id: createObjectId(),
-        name: "Dean Student Welfare (DSW)",
-        email: "odsw@nitj.ac.in",
-        type: "DSW",
-        password: adminPasswordHash,
-        isActive: true,
-      },
-    });
-    console.log("Seeded DSW Institutional Account (Central Event Organiser).");
-
-    console.log("Seeding completed successfully!");
+    console.log("Seeding completed: Only Admin, Faculty Coordinators, and Clubs seeded.");
   } catch (error) {
     console.error("Seeding failed:", error);
   } finally {

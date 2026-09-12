@@ -140,7 +140,11 @@ const EventFeedbackAnalytics = () => {
 
       setEventData(eventRes.data);
       setAnalytics(analyticsRes.data);
-      setError('');
+      if (eventRes.data?.feedbackEnabled === false) {
+        setError('Post-event feedback is not enabled for this event. You can enable it in Edit Event (Step 4).');
+      } else {
+        setError('');
+      }
     } catch (err) {
       console.error('Failed to load feedback analytics:', err);
       setError(err.response?.data?.message || 'Failed to load feedback analytics.');

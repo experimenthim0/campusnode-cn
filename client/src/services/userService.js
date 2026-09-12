@@ -12,7 +12,7 @@ export const updateProfile = (role, userId, data) =>
   api.put(`/api/users/${role}/${userId}`, data);
 
 export const searchUsers = (query) =>
-  api.get(`/api/users/search?query=${query}`);
+  api.get(`/api/users/search?query=${encodeURIComponent(query || "")}`);
 
 export const uploadProfilePhoto = (formData, config = {}) =>
   api.post('/api/users/profile-photo', formData, {

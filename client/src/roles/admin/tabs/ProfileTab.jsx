@@ -4,6 +4,10 @@ import { useAuth } from '../../../context/AuthContext';
 import { updateProfile } from '../../../services/userService';
 import { changePassword } from '../../../services/authService';
 import PasswordStrengthChecker from '../../../components/PasswordStrengthChecker';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ShieldCheck, KeyRound, Loader2, User } from 'lucide-react';
 
 const ProfileTab = ({
     profileName,
@@ -73,112 +77,150 @@ const ProfileTab = ({
     };
 
     return (
-        <div className="max-w-2xl space-y-8">
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-cn-surface">
-                <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Admin Profile</h2>
-                <p className="text-neutral-400 text-xs mb-6">Update display name and security preferences.</p>
+        <div className="max-w-2xl space-y-6">
+            <Card className="border-border bg-card shadow-xs">
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <User className="size-4 text-primary" />
+                        <CardTitle className="text-base font-bold">Admin Profile</CardTitle>
+                    </div>
+                    <CardDescription className="text-xs text-muted-foreground">
+                        Update your administrator identity and security preferences.
+                    </CardDescription>
+                </CardHeader>
                 
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">Display Name</label>
-                        <input 
-                            type="text" 
-                            value={profileName} 
-                            onChange={(e) => setProfileName(e.target.value)} 
-                            required 
-                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">Email Address</label>
-                        <input 
-                            type="email" 
-                            value={profileEmail} 
-                            disabled 
-                            className="w-full px-3 py-2.5 bg-neutral-100 dark:bg-zinc-800/50 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] text-neutral-400 cursor-not-allowed" 
-                        />
-                    </div>
-
-                    <div className="pt-2">
-                        <label className="flex items-center gap-3 cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                checked={profile2FA} 
-                                onChange={(e) => setProfile2FA(e.target.checked)} 
-                                className="w-4 h-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500" 
+                <form onSubmit={handleUpdateProfile}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="block text-xs font-semibold text-foreground">
+                                Display Name
+                            </label>
+                            <Input 
+                                type="text" 
+                                value={profileName} 
+                                onChange={(e) => setProfileName(e.target.value)} 
+                                required 
+                                className="h-9 text-sm"
                             />
-                            <div>
-                                <p className="text-xs font-bold text-black dark:text-white">Enable Two-Factor Authentication (2FA)</p>
-                                <p className="text-[11px] text-neutral-400">Require an email OTP code whenever logging into admin tools.</p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="block text-xs font-semibold text-foreground">
+                                Email Address
+                            </label>
+                            <Input 
+                                type="email" 
+                                value={profileEmail} 
+                                disabled 
+                                className="h-9 text-sm bg-muted/50 cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div className="pt-2 rounded-lg border border-border p-3.5 bg-muted/20">
+                            <label className="flex items-start gap-3 cursor-pointer select-none">
+                                <input 
+                                    type="checkbox" 
+                                    checked={profile2FA} 
+                                    onChange={(e) => setProfile2FA(e.target.checked)} 
+                                    className="mt-0.5 size-4 rounded accent-primary cursor-pointer" 
+                                />
+                                <div className="space-y-0.5">
+                                    <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                        <ShieldCheck className="size-3.5 text-primary" />
+                                        Enable Two-Factor Authentication (2FA)
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground leading-normal">
+                                        Require a secure one-time verification code when accessing administrative panels.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="pt-2 flex justify-end border-t border-border mt-4">
+                        <Button 
+                            type="submit" 
+                            disabled={isSavingProfile}
+                            className="gap-2 cursor-pointer font-semibold shadow-xs"
+                        >
+                            {isSavingProfile && <Loader2 className="size-3.5 animate-spin" />}
+                            {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+
+            <Card className="border-border bg-card shadow-xs">
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <KeyRound className="size-4 text-primary" />
+                        <CardTitle className="text-base font-bold">Change Password</CardTitle>
+                    </div>
+                    <CardDescription className="text-xs text-muted-foreground">
+                        Ensure your administrative password is unique, strong, and stored securely.
+                    </CardDescription>
+                </CardHeader>
+                
+                <form onSubmit={handleChangePassword}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="block text-xs font-semibold text-foreground">
+                                Current Password
+                            </label>
+                            <Input 
+                                type="password" 
+                                value={profilePasswordForm.currentPassword} 
+                                onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))} 
+                                required 
+                                className="h-9 text-sm"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-semibold text-foreground">
+                                    New Password
+                                </label>
+                                <Input 
+                                    type="password" 
+                                    value={profilePasswordForm.newPassword} 
+                                    onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, newPassword: e.target.value }))} 
+                                    required 
+                                    className="h-9 text-sm"
+                                />
+                                <PasswordStrengthChecker 
+                                    password={profilePasswordForm.newPassword} 
+                                    userInputs={[profileName, profileEmail]} 
+                                />
                             </div>
-                        </label>
-                    </div>
 
-                    <div className="pt-4 flex justify-end">
-                        <button 
-                            type="submit" 
-                            disabled={isSavingProfile} 
-                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                            {isSavingProfile ? 'Saving...' : 'Save Profile Changes'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div className="border border-neutral-200 dark:border-zinc-800 rounded-2xl p-6 bg-cn-surface">
-                <h2 className="text-base font-black text-black dark:text-white tracking-wide mb-1">Change Password</h2>
-                <p className="text-neutral-400 text-xs mb-6">Ensure your administrative password is strong and secure.</p>
-                
-                <form onSubmit={handleChangePassword} className="space-y-4">
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">Current Password</label>
-                        <input 
-                            type="password" 
-                            value={profilePasswordForm.currentPassword} 
-                            onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))} 
-                            required 
-                            className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
-                        />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">New Password</label>
-                            <input 
-                                type="password" 
-                                value={profilePasswordForm.newPassword} 
-                                onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, newPassword: e.target.value }))} 
-                                required 
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
-                            />
-                            <PasswordStrengthChecker 
-                                password={profilePasswordForm.newPassword} 
-                                userInputs={[profileName, profileEmail]} 
-                            />
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-semibold text-foreground">
+                                    Confirm New Password
+                                </label>
+                                <Input 
+                                    type="password" 
+                                    value={profilePasswordForm.confirmPassword} 
+                                    onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))} 
+                                    required 
+                                    className="h-9 text-sm"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">Confirm New Password</label>
-                            <input 
-                                type="password" 
-                                value={profilePasswordForm.confirmPassword} 
-                                onChange={(e) => setProfilePasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))} 
-                                required 
-                                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-zinc-800 rounded-xl text-[13px] focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors" 
-                            />
-                        </div>
-                    </div>
+                    </CardContent>
 
-                    <div className="pt-4 flex justify-end">
-                        <button 
+                    <CardFooter className="pt-2 flex justify-end border-t border-border mt-4">
+                        <Button 
                             type="submit" 
-                            disabled={isSavingPassword} 
-                            className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                            disabled={isSavingPassword}
+                            className="gap-2 cursor-pointer font-semibold shadow-xs"
                         >
+                            {isSavingPassword && <Loader2 className="size-3.5 animate-spin" />}
                             {isSavingPassword ? 'Updating Password...' : 'Update Password'}
-                        </button>
-                    </div>
+                        </Button>
+                    </CardFooter>
                 </form>
-            </div>
+            </Card>
         </div>
     );
 };

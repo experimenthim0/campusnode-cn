@@ -11,7 +11,7 @@ import { LogoutIcon } from "./ui/logout";
 import { CalendarCogIcon } from "./ui/calendar-cog";
 import { LayoutGridIcon } from "./ui/layout-grid";
 import LogInIcon from "./ui/login";
-import { hasPermission, PERMISSIONS } from "../utils/rbac";
+import { hasPermission, PERMISSIONS, isStudentLeadRole, isClubManagementRole } from "../utils/rbac";
 
 const LostFoundIcon = ({ size = 24, ...props }) => (
   <svg 
@@ -98,16 +98,6 @@ const BottomNav = () => {
       icon: ShieldCheck,
       path: "/admin-dashboard",
     });
-  } else if (user && role === "lostFoundAdmin") {
-    navItems.push({
-      label: "Admin",
-      icon: ShieldCheck,
-      path: "/admin/lost-found",
-    });
-  }
-
-  if (user) {
-    navItems.push({ label: "L&F", icon: LostFoundIcon, path: "/lost-found" });
   }
 
   navItems.push(
@@ -240,38 +230,8 @@ const BottomNav = () => {
                    My Events
                 </Link>
               )}
-              {role === "lostFoundAdmin" && (
-                <Link to="/admin/lost-found" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
-                   <div className="w-7 h-7 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 shrink-0">
-                     <LostFoundIcon size={16} />
-                   </div>
-                   Moderation Panel
-                </Link>
-              )}
 
-              {(user?.accessLevel === "central_organizer" || role === "central_organizer") && (
-                <Link
-                  to="/central-organizer"
-                  onClick={() => setDrawerOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 dark:text-brand-400 shrink-0">
-                    <Shield size={16} />
-                  </div>
-                  Central Organizer Portal
-                </Link>
-              )}
 
-              <Link
-                to="/event-staff"
-                onClick={() => setDrawerOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-              >
-                <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
-                  <ShieldCheck size={16} />
-                </div>
-                Event Staff Portal
-              </Link>
 
               {!user?.rollNo && role === "club" && (
                 <Link to="/event-calendar" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
@@ -334,14 +294,14 @@ const BottomNav = () => {
                         Payments
                       </Link>
                       <Link
-                        to="/send-notification"
+                        to={user.clubId || user.id ? `/send-notification?clubId=${user.clubId || user.id}` : "/send-notification"}
                         onClick={() => setDrawerOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                           <ConciergeBellIcon size={16} />
                         </div>
-                        Notifications & Broadcasts
+                        Broadcasts
                       </Link>
                       <Link
                         to={`/club/edit/${user.clubId || user.id}`}
@@ -416,7 +376,7 @@ const BottomNav = () => {
                                       Club Events
                                     </Link>
 
-                                    {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId }) && (
+                                    {(isStudentLeadRole(m.role) || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId })) && (
                                       <Link
                                         to={`/club/${m.clubId}/team`}
                                         onClick={() => setDrawerOpen(false)}
@@ -438,7 +398,7 @@ const BottomNav = () => {
                                           Payments
                                         </Link>
                                         <Link
-                                          to="/send-notification"
+                                          to={`/send-notification?clubId=${m.clubId}`}
                                           onClick={() => setDrawerOpen(false)}
                                           className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                         >
@@ -466,9 +426,8 @@ const BottomNav = () => {
 
                     // Exactly 1 club: render flatly without dropdown
                     const m = eligibleMemberships[0];
-                    const isLead = m.role === "CLUB_HEAD";
-                    const isCoord = m.role === "COORDINATOR";
-                    const canManageClub = isLead || isCoord;
+                    const isLead = isStudentLeadRole(m.role);
+                    const canManageClub = isClubManagementRole(m.role);
 
                     return (
                       <div key={m.clubId} className="space-y-0.5 mb-1.5 last:mb-0">
@@ -483,8 +442,8 @@ const BottomNav = () => {
                           Club Events
                         </Link>
 
-                        {/* Team Management - Only for users with club.manage_members permission */}
-                        {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId }) && (
+                        {/* Team Management - For student lead or with club.manage_members permission */}
+                        {(isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId })) && (
                           <Link to={`/club/${m.clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                             <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                               <User size={16} />
@@ -502,11 +461,11 @@ const BottomNav = () => {
                               </div>
                               Payments
                             </Link>
-                            <Link to="/send-notification" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/send-notification?clubId=${m.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <ConciergeBellIcon size={16} />
                               </div>
-                              Notifications
+                              Broadcasts
                             </Link>
                             <Link to={`/club/edit/${m.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">

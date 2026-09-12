@@ -19,7 +19,6 @@ const HomeFooter = () => {
     // { label: 'Event Timer', to: '/event-timer' },
     // { label: 'Bus Tracker', to: '/bus-tracker'},
     { label: 'Event Guide', to: '/event-guide' },
-    { label: 'L&F Guide', to: '/lost-found/guide' },
     { label: 'FAQ', to: '/faq' },
     { label: 'Verify Certificate', to: '/verify/certificate'},
   ];
@@ -43,7 +42,7 @@ const HomeFooter = () => {
             <div className="flex items-center gap-2 mb-4">
               <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12"/>
               <span className="font-light text-[24px] tracking-wider text-cn-text leading-none select-none logofont">
-                Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+                CampusNode
               </span>
             </div>
             <div className=''>

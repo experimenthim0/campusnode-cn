@@ -103,59 +103,50 @@ async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
 
   if (userRole === "admin" || userRole === "SUPER_ADMIN" || principalType === "ADMIN") return true;
 
-  // If passed an event object or eventId
   let event = null;
-  let clubId = null;
+  let clubIds = [];
 
   if (typeof eventOrClubId === "object" && eventOrClubId !== null) {
     event = eventOrClubId;
-    clubId = event.clubId;
+    if (event.organizers) {
+      clubIds = event.organizers.map(o => o.clubId);
+    } else if (event.id) {
+      const orgs = await prisma.eventOrganizer.findMany({ where: { eventId: event.id }, select: { clubId: true } });
+      clubIds = orgs.map(o => o.clubId);
+    }
   } else if (typeof eventOrClubId === "string") {
-    // Check if it's an event or a club
     event = await prisma.event.findUnique({
       where: { id: eventOrClubId },
-      select: { id: true, clubId: true, createdById: true, organizerType: true, centralOrganizerId: true, institutionalAccountId: true }
+      select: { id: true, createdById: true, organizers: { select: { clubId: true } } }
     });
-    clubId = event ? event.clubId : eventOrClubId;
+    if (event) {
+      clubIds = event.organizers.map(o => o.clubId);
+    } else {
+      clubIds = [eventOrClubId];
+    }
   }
 
   if (event?.createdById && userId && String(event.createdById) === String(userId)) return true;
 
-  if (event && (event.organizerType === "CENTRAL" || event.institutionalAccountId || event.centralOrganizerId)) {
-    if (userRole === "central_organizer" || principalType === "INSTITUTIONAL") return true;
-    if (userId && String(event.centralOrganizerId) === String(userId)) return true;
-    const instAssignment = (user.institutionalAssignments || []).find(
-      (a) => a.status === "ACTIVE" || a.status === undefined
-    );
-    if (instAssignment) return true;
-  }
-
-  if (clubId) {
-    if ((userRole === "facultyCoordinator" || userRole === "faculty") && String(user.clubId) === String(clubId)) return true;
-    if ((userRole === "club" || principalType === "CLUB") && String(user.clubId) === String(clubId)) return true;
+  if (clubIds.length > 0) {
+    if ((userRole === "facultyCoordinator" || userRole === "faculty") && clubIds.some(cid => String(user.clubId) === String(cid))) {
+      return true;
+    }
 
     if (userId) {
-      const membership = await prisma.clubMembership.findFirst({
+      const memberships = await prisma.clubMembership.findMany({
         where: {
-          clubId: clubId,
+          clubId: { in: clubIds },
           studentId: userId,
           status: { not: "INACTIVE" }
         }
       });
-      if (membership) {
+      for (const membership of memberships) {
         if (membership.role === "CLUB_HEAD" || membership.role === "COORDINATOR") return true;
         if (requiredPermission && membership[requiredPermission]) return true;
         if (membership.canTakeAttendance || membership.canEditEvents) return true;
-        return true;
       }
     }
-  }
-
-  if (event?.id && userId) {
-    const staff = await prisma.eventStaff.findFirst({
-      where: { eventId: event.id, userId, status: "ACTIVE" }
-    });
-    if (staff) return true;
   }
 
   return false;
@@ -185,15 +176,15 @@ const eventSchema = z.object({
     feedbackEnabled: z.boolean().optional().default(true),
     allowWaitlist: z.boolean().optional().default(true),
     certificateTemplate: z.any().optional(),
-    paymentMethod: z.enum(['FREE', 'COLLEGE_PAYMENT', 'MANUAL_TRANSACTION']).optional().default('FREE'),
     registrationFee: z.coerce.number().optional().default(0),
     paymentInstructions: z.string().optional().nullable(),
-    collegePaymentUrl: z.string().url().optional().nullable().or(z.literal("")),
-    upiId: z.string().optional().nullable(),
+    collegePaymentUrl: z.string().optional().nullable().or(z.literal("")),
     postRegistrationMessage: z.string().optional().nullable(),
     accountHolderName: z.string().optional().nullable(),
     reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
     isDraft: z.boolean().optional(),
+    clubIds: z.array(z.string()).optional(),
+    clubId: z.string().optional(),
     sponsors: z.array(z.object({
       name: z.string().min(1),
       logoUrl: z.string().url(),
@@ -214,7 +205,7 @@ const eventUpdateSchema = z.object({
   params: z.object({}).passthrough().optional(),
 });
 
-// createdBy now comes from StudentUser
+// createdBy comes from StudentUser
 const eventInclude = {
   createdBy: {
     select: { id: true, name: true, email: true },
@@ -222,14 +213,12 @@ const eventInclude = {
   reviewedBy: {
     select: { id: true, name: true },
   },
-  centralOrganizer: {
-    select: { id: true, name: true, email: true, profileImage: true },
-  },
-  participatingClubs: {
-    include: { club: { select: { id: true, clubName: true, clubLogo: true, slug: true } } },
-  },
-  club: {
-    select: { id: true, clubName: true, clubLogo: true, slug: true, category: true, socialLinks: true },
+  organizers: {
+    include: {
+      club: {
+        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true, socialLinks: true },
+      },
+    },
   },
   sponsors: true,
   media: true,
@@ -244,9 +233,6 @@ const eventInclude = {
   },
 };
 
-// The feed does not need the large sponsor/media/custom payment payloads used
-// by the event detail and management screens. Keeping this selection narrow
-// reduces database work, response size, and JSON serialization time.
 const publicEventSelect = {
   id: true,
   title: true,
@@ -256,7 +242,7 @@ const publicEventSelect = {
   startTime: true,
   endTime: true,
   totalSeats: true,
-  entryFee: true,
+  registrationFee: true,
   allowExternal: true,
   allowedPrograms: true,
   allowedYears: true,
@@ -267,9 +253,6 @@ const publicEventSelect = {
   waitingListIds: true,
   requiredFields: true,
   createdById: true,
-  clubId: true,
-  organizerType: true,
-  centralOrganizerId: true,
   registrationDeadline: true,
   reviewStatus: true,
   winners: true,
@@ -278,8 +261,7 @@ const publicEventSelect = {
   registrationType: true,
   minTeamSize: true,
   maxTeamSize: true,
-  paymentMethod: true,
-  registrationFee: true,
+  collegePaymentUrl: true,
   createdAt: true,
   updatedAt: true,
   _count: {
@@ -294,19 +276,11 @@ const publicEventSelect = {
   createdBy: {
     select: { id: true, name: true },
   },
-  centralOrganizer: {
-    select: { id: true, name: true },
-  },
-  participatingClubs: {
-    include: { club: { select: { id: true, clubName: true, clubLogo: true, slug: true } } },
-  },
-  club: {
-    select: {
-      id: true,
-      clubName: true,
-      clubLogo: true,
-      slug: true,
-      category: true,
+  organizers: {
+    include: {
+      club: {
+        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true },
+      },
     },
   },
   sponsors: {
@@ -346,10 +320,10 @@ router.get("/", async (req, res) => {
       : 50
     const skip = (page - 1) * limit;
     const cacheKey = "events:public:" + page + ":" + limit;
-    const cachedEvents = getPublicResponse(cacheKey);
+    const cachedEvents = await getPublicResponse(cacheKey);
 
     if (cachedEvents) {
-      res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
+      res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
       res.set("X-Public-Cache", "HIT");
       return res.json(cachedEvents);
     }
@@ -363,8 +337,8 @@ router.get("/", async (req, res) => {
     });
 
     const response = events.map(serializeEvent);
-    setPublicResponse(cacheKey, response);
-    res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
+    await setPublicResponse(cacheKey, response, 60_000);
+    res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
     res.set("X-Public-Cache", "MISS");
     res.json(response);
   } catch (err) {
@@ -383,7 +357,7 @@ router.get("/club/:clubId", validate(clubIdParamSchema), async (req, res) => {
   try {
     const events = await prisma.event.findMany({
       where: {
-        clubId: req.params.clubId,
+        organizers: { some: { clubId: req.params.clubId } },
         reviewStatus: "PUBLISHED",
       },
       include: eventInclude,
@@ -432,7 +406,7 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
     }
 
     if (clubId && clubId !== "all") {
-      where.clubId = clubId;
+      where.organizers = { some: { clubId } };
     }
 
     const isAdminOrFC = req.user.role === "admin" || req.user.role === "facultyCoordinator";
@@ -446,11 +420,11 @@ router.get("/calendar", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW), 
 
     // Role scoping: if faculty coordinator, scope to assigned club if not admin
     if (req.user.role === "facultyCoordinator" && req.user.clubId) {
-      where.clubId = req.user.clubId;
+      where.organizers = { some: { clubId: req.user.clubId } };
     }
 
     if (category && category !== "all") {
-      where.club = { category };
+      where.organizers = { some: { club: { category } } };
     }
 
     const events = await prisma.event.findMany({
@@ -494,7 +468,11 @@ router.get("/conflicts", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW),
   try {
     const publishedEvents = await prisma.event.findMany({
       where: { reviewStatus: "PUBLISHED" },
-      include: { club: { select: { id: true, clubName: true } } },
+      include: {
+        organizers: {
+          include: { club: { select: { id: true, clubName: true } } },
+        },
+      },
       orderBy: { startTime: "asc" }
     });
 
@@ -521,13 +499,15 @@ router.get("/conflicts", verifyToken, requirePermission(PERMISSIONS.EVENT_VIEW),
           const e2End = new Date(e2.endTime);
 
           if (s1 < e2End && e1End > s2) {
+            const e1Club = e1.organizers?.[0]?.club?.clubName;
+            const e2Club = e2.organizers?.[0]?.club?.clubName;
             issues.push({
               id: `conflict-${e1.id}-${e2.id}`,
               type: "Venue Conflict",
               severity: "HIGH",
               venue: e1.venue,
-              event1: { id: e1.id, title: e1.title, clubName: e1.club?.clubName, startTime: e1.startTime, endTime: e1.endTime },
-              event2: { id: e2.id, title: e2.title, clubName: e2.club?.clubName, startTime: e2.startTime, endTime: e2.endTime },
+              event1: { id: e1.id, title: e1.title, clubName: e1Club, startTime: e1.startTime, endTime: e1.endTime },
+              event2: { id: e2.id, title: e2.title, clubName: e2Club, startTime: e2.startTime, endTime: e2.endTime },
               message: `Venue "${e1.venue}" is double-booked between "${e1.title}" and "${e2.title}".`
             });
           }
@@ -596,7 +576,8 @@ router.put("/:id/reschedule", verifyToken, requirePermission(PERMISSIONS.EVENT_U
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     if (req.user.role !== "admin" && event.createdById !== req.user.userId) {
-      if (req.user.role === "facultyCoordinator" && event.clubId !== req.user.clubId) {
+      const eventClubIds = (event.organizers || []).map(o => o.clubId);
+      if (req.user.role === "facultyCoordinator" && !eventClubIds.includes(req.user.clubId)) {
         return res.status(403).json({ message: "You can only reschedule events for your assigned club." });
       }
     }
@@ -709,7 +690,9 @@ router.get(
     try {
       const { clubId } = req.params;
       const events = await prisma.event.findMany({
-        where: { clubId },
+        where: {
+          organizers: { some: { clubId } },
+        },
         include: eventInclude,
         orderBy: { startTime: "desc" },
       });
@@ -728,9 +711,15 @@ router.get(
     try {
       const { clubId } = req.params;
       const events = await prisma.event.findMany({
-        where: { clubId },
+        where: {
+          organizers: { some: { clubId } },
+        },
         include: {
-          club: { select: { clubName: true } },
+          organizers: {
+            include: {
+              club: { select: { clubName: true } },
+            },
+          },
           participations: true,
         },
         orderBy: { startTime: "desc" },
@@ -738,10 +727,11 @@ router.get(
 
       const exportData = events.map((e) => {
         const regCount = e.participations ? e.participations.filter(p => p.status === 'REGISTERED' || p.status === 'ATTENDED').length : 0;
-        const totalAmt = e.isPaid ? regCount * (e.ticketPrice || 0) : 0;
+        const fee = e.registrationFee || 0;
+        const totalAmt = fee * (e.participations ? e.participations.filter(p => p.paymentStatus === 'SUCCESS').length : 0);
         return {
           eventName: e.title || e.eventName || "",
-          clubName: e.club?.clubName || "",
+          clubName: e.organizers?.[0]?.club?.clubName || "",
           totalRegistrations: regCount,
           eventDate: e.startTime,
           totalAmountReceived: totalAmt,
@@ -776,7 +766,6 @@ router.get(
             OR: [
               { externalUserId: userId },
               { externalUserId: authUserId },
-              { externalEmail: authEmail || userId },
               { studentId: userId },
             ],
           }
@@ -786,8 +775,6 @@ router.get(
           eventId: true,
           studentId: true,
           externalUserId: true,
-          externalEmail: true,
-          externalName: true,
           status: true,
           qrCode: true,
           qrVersion: true,
@@ -795,9 +782,6 @@ router.get(
           qrKeyId: true,
           attendedAt: true,
           paymentStatus: true,
-          amountPaid: true,
-          paymentId: true,
-          orderId: true,
           paymentTimestamp: true,
           transactionId: true,
           payerName: true,
@@ -807,9 +791,6 @@ router.get(
           paymentReviewMessage: true,
           formResponses: true,
           createdAt: true,
-          updatedAt: true,
-          // The old query loaded the complete event graph and every student
-          // column. This projection contains what My Events/tickets need.
           event: {
             select: {
               ...publicEventSelect,
@@ -817,7 +798,6 @@ router.get(
               postRegistrationMessage: true,
               paymentInstructions: true,
               collegePaymentUrl: true,
-              upiId: true,
               accountHolderName: true,
               certificateTemplate: true,
             },
@@ -832,7 +812,6 @@ router.get(
               branch: true,
               program: true,
               expectedGraduationYear: true,
-              academicStatus: true,
             },
           },
           externalUser: {
@@ -850,18 +829,17 @@ router.get(
             select: {
               id: true,
               teamName: true,
-              leaderId: true,
-              leader: { select: { id: true, name: true, email: true, rollNo: true } },
-              leaderExternal: { select: { id: true, name: true, email: true, collegeName: true } },
+              leaderStudentId: true,
+              leaderStudent: { select: { id: true, name: true, email: true, rollNo: true } },
               members: {
                 select: {
-                  userId: true,
-                  user: { select: { id: true, name: true, email: true, rollNo: true } },
-                  externalUser: { select: { id: true, name: true, email: true, collegeName: true } },
+                  id: true,
+                  studentId: true,
+                  student: { select: { id: true, name: true, email: true, rollNo: true } },
                 },
-              }
-            }
-          }
+              },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
       });
@@ -879,7 +857,6 @@ router.get(
             branch: true,
             program: true,
             expectedGraduationYear: true,
-            academicStatus: true,
           },
         });
         if (studentInfo) {
@@ -894,7 +871,6 @@ router.get(
               postRegistrationMessage: true,
               paymentInstructions: true,
               collegePaymentUrl: true,
-              upiId: true,
               accountHolderName: true,
               certificateTemplate: true,
             },
@@ -983,19 +959,22 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       postRegistrationMessage,
     } = req.body;
 
-    if (!req.user.clubId && req.user.role !== "admin") {
-      return res.status(403).json({
-        message: "You must be associated with a club to create events.",
-      });
+    let targetClubIds = [];
+    if (Array.isArray(req.body.clubIds) && req.body.clubIds.length > 0) {
+      targetClubIds = req.body.clubIds;
+    } else if (req.body.clubId) {
+      targetClubIds = [req.body.clubId];
+    } else if (req.user.clubId) {
+      targetClubIds = [req.user.clubId];
     }
 
-    const targetClubId = req.user.role === "admin" ? req.body.clubId : req.user.clubId;
-    if (!targetClubId) {
-      return res.status(400).json({ message: "Club ID is required." });
+    if (targetClubIds.length === 0 && req.user.role !== "admin") {
+      return res.status(400).json({ message: "At least one club ID is required." });
     }
-    const targetClub = await prisma.club.findUnique({ where: { id: targetClubId } });
-    if (!targetClub) {
-      return res.status(404).json({ message: "Club not found." });
+
+    const clubs = await prisma.club.findMany({ where: { id: { in: targetClubIds } } });
+    if (clubs.length !== targetClubIds.length && req.user.role !== "admin") {
+      return res.status(404).json({ message: "One or more clubs not found." });
     }
 
     const isDraft = req.body.reviewStatus === "DRAFT" || req.body.isDraft === true;
@@ -1023,7 +1002,32 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
     }
 
     const isStudentCreator = req.user.principalType === "STUDENT" || req.user.userType === "student";
-    const studentUserRecord = isStudentCreator ? await prisma.studentUser.findUnique({ where: { id: req.user.userId }, select: { id: true } }) : null;
+    let effectiveUpiId = typeof upiId === 'string' && upiId.trim() ? upiId.trim() : null;
+    let effectiveCollegeUrl = typeof collegePaymentUrl === 'string' && collegePaymentUrl.trim() ? collegePaymentUrl.trim() : null;
+
+    if (req.body.paymentMethod === 'COLLEGE_PAYMENT') {
+      effectiveUpiId = null;
+    } else if (req.body.paymentMethod === 'MANUAL_TRANSACTION') {
+      effectiveCollegeUrl = null;
+    } else if (req.body.paymentMethod === 'FREE') {
+      effectiveUpiId = null;
+      effectiveCollegeUrl = null;
+    } else if (effectiveCollegeUrl && effectiveCollegeUrl.includes('@') && !effectiveCollegeUrl.startsWith('http')) {
+      if (!effectiveUpiId) effectiveUpiId = effectiveCollegeUrl;
+    }
+
+    let finalPaymentInstructions = typeof paymentInstructions === 'string' ? paymentInstructions.trim() : '';
+    if (req.body.paymentMethod === 'COLLEGE_PAYMENT' && finalPaymentInstructions) {
+      finalPaymentInstructions = finalPaymentInstructions
+        .split('\n')
+        .filter(l => !l.trim().toLowerCase().startsWith('upi id:'))
+        .join('\n')
+        .trim();
+    } else if (effectiveUpiId && (!finalPaymentInstructions || !finalPaymentInstructions.includes(effectiveUpiId))) {
+      finalPaymentInstructions = finalPaymentInstructions
+        ? `${finalPaymentInstructions}\nUPI ID: ${effectiveUpiId}`
+        : `UPI ID: ${effectiveUpiId}`;
+    }
 
     const savedEvent = await prisma.event.create({
       data: {
@@ -1034,12 +1038,11 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         startTime: start,
         endTime: end,
         totalSeats: totalSeats || 0,
-        entryFee: Number(entryFee || 0),
+        registrationFee: Number(registrationFee || entryFee || 0),
         imageUrl: imageUrl || "",
         requiredFields: requiredFields || [],
         customFields: customFields || [],
         createdById: studentUserRecord?.id || null,
-        clubId: targetClubId,
         allowedPrograms: allowedPrograms || ["BTECH", "MTECH", "OTHER"],
         allowedYears: allowedYears || [],
         allowedBranches: allowedBranches || [],
@@ -1052,15 +1055,20 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         provideCertificate: provideCertificate || false,
         feedbackEnabled: feedbackEnabled !== undefined ? Boolean(feedbackEnabled) : true,
         allowWaitlist: allowWaitlist !== undefined ? Boolean(allowWaitlist) : true,
-        paymentMethod: paymentMethod || "FREE",
-        registrationFee: Number(registrationFee || 0),
-        paymentInstructions: paymentInstructions || null,
-        collegePaymentUrl: collegePaymentUrl || null,
-        upiId: upiId || null,
+        paymentInstructions: finalPaymentInstructions || null,
+        collegePaymentUrl: effectiveCollegeUrl?.startsWith('http') ? effectiveCollegeUrl : (effectiveCollegeUrl && !effectiveCollegeUrl.includes('@') ? effectiveCollegeUrl : null),
         accountHolderName: accountHolderName || null,
         postRegistrationMessage: postRegistrationMessage || null,
         slug: await slugifyUnique(title, 'event', 'slug'),
         reviewStatus: isDraft ? "DRAFT" : "PENDING",
+        organizers: {
+          createMany: {
+            data: targetClubIds.map(clubId => ({
+              id: createObjectId(),
+              clubId,
+            })),
+          },
+        },
         sponsors: { createMany: { data: (sponsors || []).map(s => ({ id: createObjectId(), ...s })) } },
         media: { createMany: { data: (media || []).map(m => ({ id: createObjectId(), ...m })) } },
       },
@@ -1072,31 +1080,33 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
     }
 
     // Notify supervised Faculty Coordinator of incoming event review request ONLY if PENDING
-    if (!isDraft && savedEvent.clubId) {
+    if (!isDraft && targetClubIds.length > 0) {
       try {
-        const club = await prisma.club.findUnique({
-          where: { id: savedEvent.clubId },
-          select: { facultyCoordinatorId: true, clubName: true },
+        const clubsWithFC = await prisma.club.findMany({
+          where: { id: { in: targetClubIds }, facultyCoordinatorId: { not: null } },
+          select: { id: true, facultyCoordinatorId: true, clubName: true },
         });
-        if (club?.facultyCoordinatorId) {
-          const notif = await prisma.notification.create({
-            data: {
-              id: createObjectId(),
-              targetScope: "FACULTY_COORDINATOR",
-              clubId: savedEvent.clubId,
-              recipientUserId: club.facultyCoordinatorId,
-              eventId: savedEvent.id,
-              type: "EVENT_REVIEW_REQUEST",
-              title: `New Event Pending Approval: ${savedEvent.title}`,
-              message: `${club.clubName || "A club"} has submitted "${savedEvent.title}" for faculty review and approval.`,
-            },
-          });
-          if (req.io) {
-            req.io.to(club.facultyCoordinatorId).emit("new-notification", {
-              ...notif,
-              _id: notif.id,
-              sender: { name: club.clubName || "Club" },
+        for (const club of clubsWithFC) {
+          if (club.facultyCoordinatorId) {
+            const notif = await prisma.notification.create({
+              data: {
+                id: createObjectId(),
+                targetScope: "FACULTY_COORDINATOR",
+                clubId: club.id,
+                recipientUserId: club.facultyCoordinatorId,
+                eventId: savedEvent.id,
+                type: "EVENT_REVIEW_REQUEST",
+                title: `New Event Pending Approval: ${savedEvent.title}`,
+                message: `${club.clubName || "A club"} has submitted "${savedEvent.title}" for faculty review and approval.`,
+              },
             });
+            if (req.io) {
+              req.io.to(club.facultyCoordinatorId).emit("new-notification", {
+                ...notif,
+                _id: notif.id,
+                sender: { name: club.clubName || "Club" },
+              });
+            }
           }
         }
       } catch (fErr) {
@@ -1122,10 +1132,14 @@ router.put(
         return res.status(400).json({ message: "Invalid review status." });
       }
 
-      const event = await prisma.event.findUnique({ where: { id: req.params.id } });
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        include: { organizers: true },
+      });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      if (req.user.role !== "admin" && event.clubId !== req.user.clubId) {
+      const eventClubIds = event.organizers.map(o => o.clubId);
+      if (req.user.role !== "admin" && (!req.user.clubId || !eventClubIds.includes(req.user.clubId))) {
         return res.status(403).json({
           message: "You can only review events for your assigned club.",
         });
@@ -1143,6 +1157,7 @@ router.put(
 
       if (updated.createdById) {
         try {
+          const primaryClubId = updated.organizers?.[0]?.clubId || null;
           const notif = await prisma.notification.create({
             data: {
               id: createObjectId(),
@@ -1151,7 +1166,7 @@ router.put(
               recipientUserId: updated.createdById,
               senderAdminId: req.user.userId,
               eventId: updated.id,
-              clubId: updated.clubId,
+              clubId: primaryClubId,
               type: "EVENT_REVIEW_RESULT",
               title: `Event ${status === "PUBLISHED" ? "Approved" : "Rejected"}: ${updated.title}`,
               message: status === "PUBLISHED"
@@ -1189,7 +1204,7 @@ router.post(
     try {
       const event = await prisma.event.findUnique({
         where: { id: req.params.id },
-        include: { club: true },
+        include: { organizers: { include: { club: true } } },
       });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
@@ -1233,17 +1248,6 @@ router.post(
           errors.push("Minimum team size cannot exceed maximum team size.");
         }
       }
-      if (event.paymentMethod && event.paymentMethod !== "FREE") {
-        if (Number(event.registrationFee || 0) <= 0) {
-          errors.push("Registration fee must be greater than 0 for paid events.");
-        }
-        if (event.paymentMethod === "MANUAL_TRANSACTION" && !event.upiId) {
-          errors.push("UPI ID is required for manual transaction payments.");
-        }
-        if (event.paymentMethod === "COLLEGE_PAYMENT" && !event.collegePaymentUrl) {
-          errors.push("College payment URL is required for college portal payments.");
-        }
-      }
 
       if (errors.length > 0) {
         return res.status(422).json({
@@ -1285,31 +1289,34 @@ router.post(
 
       if (targetStatus === "PUBLISHED") {
         invalidatePublicResponses(["events:public:*"]);
-      } else if (targetStatus === "PENDING" && updated.clubId) {
+      } else if (targetStatus === "PENDING" && updated.organizers?.length > 0) {
         try {
-          const club = await prisma.club.findUnique({
-            where: { id: updated.clubId },
-            select: { facultyCoordinatorId: true, clubName: true },
+          const clubIds = updated.organizers.map(o => o.clubId);
+          const clubsWithFC = await prisma.club.findMany({
+            where: { id: { in: clubIds }, facultyCoordinatorId: { not: null } },
+            select: { id: true, facultyCoordinatorId: true, clubName: true },
           });
-          if (club?.facultyCoordinatorId) {
-            const notif = await prisma.notification.create({
-              data: {
-                id: createObjectId(),
-                targetScope: "FACULTY_COORDINATOR",
-                clubId: updated.clubId,
-                recipientUserId: club.facultyCoordinatorId,
-                eventId: updated.id,
-                type: "EVENT_REVIEW_REQUEST",
-                title: `New Event Pending Approval: ${updated.title}`,
-                message: `${club.clubName || "A club"} has submitted "${updated.title}" for faculty review and approval.`,
-              },
-            });
-            if (req.io) {
-              req.io.to(club.facultyCoordinatorId).emit("new-notification", {
-                ...notif,
-                _id: notif.id,
-                sender: { name: club.clubName || "Club" },
+          for (const club of clubsWithFC) {
+            if (club.facultyCoordinatorId) {
+              const notif = await prisma.notification.create({
+                data: {
+                  id: createObjectId(),
+                  targetScope: "FACULTY_COORDINATOR",
+                  clubId: club.id,
+                  recipientUserId: club.facultyCoordinatorId,
+                  eventId: updated.id,
+                  type: "EVENT_REVIEW_REQUEST",
+                  title: `New Event Pending Approval: ${updated.title}`,
+                  message: `${club.clubName || "A club"} has submitted "${updated.title}" for faculty review and approval.`,
+                },
               });
+              if (req.io) {
+                req.io.to(club.facultyCoordinatorId).emit("new-notification", {
+                  ...notif,
+                  _id: notif.id,
+                  sender: { name: club.clubName || "Club" },
+                });
+              }
             }
           }
         } catch (notifErr) {
@@ -1372,7 +1379,23 @@ router.get("/:id/preview", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const event = await getEventByIdOrSlug(req.params.id);
+    const eventIdOrSlug = req.params.id;
+    const cacheKey = `events:detail:${eventIdOrSlug}`;
+    const isAnonymous = !req.headers.authorization && !req.cookies?.token;
+
+    // Use cached response for anonymous public requests
+    if (isAnonymous && req.query.skipIncrement !== "true") {
+      const cached = await getPublicResponse(cacheKey);
+      if (cached) {
+        if (cached.id) {
+          prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${cached.id}`.catch(() => {});
+        }
+        res.set("X-Public-Cache", "HIT");
+        return res.json(cached);
+      }
+    }
+
+    const event = await getEventByIdOrSlug(eventIdOrSlug);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const attendedCount = await prisma.participation.count({
@@ -1387,28 +1410,20 @@ router.get("/:id", async (req, res) => {
 
       const isCreator = Boolean(event.createdById && (event.createdById === decoded.userId || event.createdById === decoded.id));
       const isAdmin = decoded.role === "admin";
+      const eventClubIds = (event.organizers || []).map((o) => o.clubId).concat(event.clubId ? [event.clubId] : []);
       const isAssignedFaculty =
         decoded.role === "facultyCoordinator" &&
-        (String(event.clubId) === String(decoded.clubId) || String(event.clubId) === String(decoded.club?.id));
-      const isCO =
-        event.organizerType === "CENTRAL" &&
-        (decoded.role === "central_organizer" || event.centralOrganizerId === decoded.userId);
-      const isClubAccount =
-        (decoded.principalType === "CLUB" || decoded.userType === "club" || decoded.role === "club" || decoded.role === "club_account") &&
-        (String(event.clubId) === String(decoded.clubId) ||
-          String(event.clubId) === String(decoded.userId) ||
-          String(event.clubId) === String(decoded.clubAccountId));
+        eventClubIds.some((cid) => String(cid) === String(decoded.clubId));
       const isClubOwner =
-        (decoded.clubId && String(event.clubId) === String(decoded.clubId)) ||
-        (decoded.userId && String(event.clubId) === String(decoded.userId));
+        decoded.clubId && eventClubIds.some((cid) => String(cid) === String(decoded.clubId));
 
       let isClubMemberAuthorized = false;
-      if (decoded.userId && event.clubId) {
+      if (decoded.userId && eventClubIds.length > 0) {
         try {
           const membership = await prisma.clubMembership.findFirst({
             where: {
               studentId: decoded.userId,
-              clubId: event.clubId,
+              clubId: { in: eventClubIds },
               status: { not: "INACTIVE" },
             },
           });
@@ -1434,7 +1449,7 @@ router.get("/:id", async (req, res) => {
         }
       }
 
-      if (!isCreator && !isAdmin && !isAssignedFaculty && !isCO && !isClubAccount && !isClubOwner && !isClubMemberAuthorized) {
+      if (!isCreator && !isAdmin && !isAssignedFaculty && !isClubOwner && !isClubMemberAuthorized) {
         return res.status(403).json({ message: "This event is currently under review." });
       }
     }
@@ -1446,10 +1461,16 @@ router.get("/:id", async (req, res) => {
       );
     }
 
-    res.json({
+    const response = {
       ...serializeEvent(event),
       attendedCount
-    });
+    };
+
+    if (event.reviewStatus === "PUBLISHED") {
+      await setPublicResponse(cacheKey, response, 60_000);
+    }
+
+    res.json(response);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -1471,9 +1492,8 @@ router.post(
   async (req, res) => {
     try {
       const eventId = req.params.id;
-      const { externalEmail, externalName, transactionId, payerName, paymentRemarks, formResponses } = req.body;
-      const isExternalUser = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
-      const isExternal = isExternalUser || !!externalEmail;
+      const { transactionId, payerName, paymentRemarks, formResponses } = req.body;
+      const isExternal = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
@@ -1528,18 +1548,12 @@ router.post(
         ? customFieldCheck.sanitizedResponses
         : null;
 
-      const extUserId = isExternalUser ? req.user.userId : null;
-      const extEmail = isExternalUser ? req.user.email : (externalEmail || null);
-      const extName = isExternalUser ? req.user.name : (externalName || null);
-
       if (isExternal) {
+        const extUserId = req.user.userId;
         const existing = await prisma.participation.findFirst({
           where: {
             eventId,
-            OR: [
-              ...(extUserId ? [{ externalUserId: extUserId }] : []),
-              ...(extEmail ? [{ externalEmail: extEmail }] : []),
-            ]
+            externalUserId: extUserId,
           },
         });
         if (existing) return res.status(400).json({ message: "Already registered for this event." });
@@ -1614,14 +1628,17 @@ router.post(
       const ticketId = crypto.randomBytes(12).toString("base64url");
       const { qrPayload, qrVersion, qrKeyId } = signTicket(eventId, ticketId);
 
+      const unifiedUserId = req.user.userId;
+      const isFree = Number(event.registrationFee || 0) === 0;
+      const initialPaymentStatus = isFree ? "SUCCESS" : "PENDING";
+
       const participationData = isExternal
         ? {
           id: createObjectId(),
           eventId,
+          userId: unifiedUserId,
           studentId: null,
-          externalUserId: extUserId,
-          externalEmail: extEmail,
-          externalName: extName,
+          externalUserId: req.user.userId,
           qrCode: ticketId,
           qrPayload,
           qrVersion,
@@ -1631,16 +1648,14 @@ router.post(
           payerName: payerName || null,
           paymentRemarks: paymentRemarks || null,
           formResponses: validatedResponses,
-          amountPaid: (event.paymentMethod === 'FREE') ? 0 : (event.registrationFee || event.entryFee || 0),
-          paymentStatus: (event.paymentMethod === 'MANUAL_TRANSACTION') ? 'PENDING' : (event.paymentMethod === 'COLLEGE_PAYMENT') ? 'PENDING' : 'SUCCESS',
+          paymentStatus: initialPaymentStatus,
         }
         : {
           id: createObjectId(),
           eventId,
+          userId: unifiedUserId,
           studentId: req.user.userId,
           externalUserId: null,
-          externalEmail: null,
-          externalName: null,
           qrCode: ticketId,
           qrPayload,
           qrVersion,
@@ -1650,8 +1665,7 @@ router.post(
           payerName: payerName || null,
           paymentRemarks: paymentRemarks || null,
           formResponses: validatedResponses,
-          amountPaid: (event.paymentMethod === 'FREE') ? 0 : (event.registrationFee || event.entryFee || 0),
-          paymentStatus: (event.paymentMethod === 'MANUAL_TRANSACTION') ? 'PENDING' : (event.paymentMethod === 'COLLEGE_PAYMENT') ? 'PENDING' : 'SUCCESS',
+          paymentStatus: initialPaymentStatus,
         };
 
       const participation = await prisma.$transaction(async (tx) => {
@@ -1756,7 +1770,6 @@ router.get(
               rollNo: true,
               branch: true,
               expectedGraduationYear: true,
-              academicStatus: true,
               program: true,
             },
           },
@@ -1773,7 +1786,7 @@ router.get(
           },
           team: {
             include: {
-              leader: {
+              leaderStudent: {
                 select: {
                   id: true,
                   name: true,
@@ -1782,23 +1795,11 @@ router.get(
                   branch: true,
                   program: true,
                   expectedGraduationYear: true,
-                  academicStatus: true,
-                },
-              },
-              leaderExternal: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  collegeName: true,
-                  program: true,
-                  graduationYear: true,
-                  phone: true,
                 },
               },
               members: {
                 include: {
-                  user: {
+                  student: {
                     select: {
                       id: true,
                       name: true,
@@ -1807,18 +1808,6 @@ router.get(
                       branch: true,
                       program: true,
                       expectedGraduationYear: true,
-                      academicStatus: true,
-                    },
-                  },
-                  externalUser: {
-                    select: {
-                      id: true,
-                      name: true,
-                      email: true,
-                      collegeName: true,
-                      program: true,
-                      graduationYear: true,
-                      phone: true,
                     },
                   },
                 },
@@ -1840,18 +1829,18 @@ router.get(
               semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
               isExternal: false,
             }
-            : (p.externalUser || p.externalName || p.externalEmail)
+            : p.externalUser
               ? {
-                id: p.externalUserId || p.externalUser?.id || null,
-                _id: p.externalUserId || p.externalUser?.id || null,
-                name: p.externalUser?.name || p.externalName || "External Participant",
-                email: p.externalUser?.email || p.externalEmail || "",
-                collegeName: p.externalUser?.collegeName || "External College",
-                rollNo: p.externalUser?.collegeName || "External",
-                program: p.externalUser?.program || "N/A",
-                year: p.externalUser?.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'Verified Guest',
-                academicYearLabel: p.externalUser?.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'Verified Guest',
-                phone: p.externalUser?.phone || null,
+                id: p.externalUserId || p.externalUser.id,
+                _id: p.externalUserId || p.externalUser.id,
+                name: p.externalUser.name || "External Participant",
+                email: p.externalUser.email || "",
+                collegeName: p.externalUser.collegeName || "External College",
+                rollNo: p.externalUser.collegeName || "External",
+                program: p.externalUser.program || "N/A",
+                year: p.externalUser.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'External Student',
+                academicYearLabel: p.externalUser.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'External Student',
+                phone: p.externalUser.phone || null,
                 isExternal: true,
               }
               : null;
@@ -1859,39 +1848,25 @@ router.get(
           const team = p.team
             ? {
               ...p.team,
-              leader: p.team.leader
+              leader: p.team.leaderStudent
                 ? {
-                  ...p.team.leader,
-                  year: calculateAcademicProgress(p.team.leader).academicYearLabel,
-                  academicYear: calculateAcademicProgress(p.team.leader).academicYear,
-                  semester: calculateAcademicProgress(p.team.leader).semester,
+                  ...p.team.leaderStudent,
+                  year: calculateAcademicProgress(p.team.leaderStudent).academicYearLabel,
+                  academicYear: calculateAcademicProgress(p.team.leaderStudent).academicYear,
+                  semester: calculateAcademicProgress(p.team.leaderStudent).semester,
                   isExternal: false,
                 }
-                : p.team.leaderExternal
-                  ? {
-                    ...p.team.leaderExternal,
-                    rollNo: p.team.leaderExternal.collegeName,
-                    year: p.team.leaderExternal.graduationYear ? `Class of ${p.team.leaderExternal.graduationYear}` : 'Verified Guest',
-                    isExternal: true,
-                  }
-                  : null,
+                : null,
               members: (p.team.members || []).map((m) => {
-                const memberUser = m.user
+                const memberUser = m.student
                   ? {
-                    ...m.user,
-                    year: calculateAcademicProgress(m.user).academicYearLabel,
-                    academicYear: calculateAcademicProgress(m.user).academicYear,
-                    semester: calculateAcademicProgress(m.user).semester,
+                    ...m.student,
+                    year: calculateAcademicProgress(m.student).academicYearLabel,
+                    academicYear: calculateAcademicProgress(m.student).academicYear,
+                    semester: calculateAcademicProgress(m.student).semester,
                     isExternal: false,
                   }
-                  : m.externalUser
-                    ? {
-                      ...m.externalUser,
-                      rollNo: m.externalUser.collegeName,
-                      year: m.externalUser.graduationYear ? `Class of ${m.externalUser.graduationYear}` : 'Verified Guest',
-                      isExternal: true,
-                    }
-                    : null;
+                  : null;
                 return {
                   ...m,
                   user: memberUser,
@@ -1904,13 +1879,13 @@ router.get(
           return {
             id: p.id,
             studentId: p.studentId,
-            externalEmail: p.externalEmail,
-            externalName: p.externalName,
+            externalUserId: p.externalUserId,
+            userId: p.userId,
             status: p.status,
             qrCode: p.qrCode,
             attendedAt: p.attendedAt,
             markedByMemberId: p.markedByMemberId,
-            amountPaid: p.amountPaid,
+            amountPaid: event.registrationFee || 0,
             formResponses: p.formResponses,
             createdAt: p.createdAt,
             timestamp: p.createdAt,
@@ -2063,7 +2038,12 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       }
     }
 
-    if (updates.entryFee !== undefined) updates.entryFee = Number(updates.entryFee || 0);
+    if (updates.entryFee !== undefined) {
+      if (updates.registrationFee === undefined) {
+        updates.registrationFee = Number(updates.entryFee || 0);
+      }
+      delete updates.entryFee;
+    }
     if (updates.totalSeats !== undefined) updates.totalSeats = Number(updates.totalSeats || 0);
     if (updates.minTeamSize !== undefined) updates.minTeamSize = Number(updates.minTeamSize || 1);
     if (updates.maxTeamSize !== undefined) updates.maxTeamSize = Number(updates.maxTeamSize || 1);
@@ -2071,11 +2051,50 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       updates.registeredCount = 0;
     }
     if (updates.registrationFee !== undefined) updates.registrationFee = Number(updates.registrationFee || 0);
-    if (updates.paymentMethod !== undefined) updates.paymentMethod = updates.paymentMethod || "FREE";
+    const targetPayMethod = updates.paymentMethod;
+    if (targetPayMethod !== undefined) {
+      if (targetPayMethod === 'COLLEGE_PAYMENT') {
+        delete updates.upiId;
+        if (updates.paymentInstructions) {
+          updates.paymentInstructions = updates.paymentInstructions
+            .split('\n')
+            .filter(l => !l.trim().toLowerCase().startsWith('upi id:'))
+            .join('\n')
+            .trim() || null;
+        }
+      } else if (targetPayMethod === 'MANUAL_TRANSACTION') {
+        updates.collegePaymentUrl = null;
+      } else if (targetPayMethod === 'FREE') {
+        updates.collegePaymentUrl = null;
+        delete updates.upiId;
+        updates.paymentInstructions = null;
+      }
+      delete updates.paymentMethod;
+    }
+    if (updates.upiId !== undefined) {
+      if (updates.upiId && !updates.paymentInstructions?.includes(updates.upiId)) {
+        updates.paymentInstructions = updates.paymentInstructions
+          ? `${updates.paymentInstructions} (UPI: ${updates.upiId})`
+          : `UPI ID: ${updates.upiId}`;
+      }
+      delete updates.upiId;
+    }
     if (updates.paymentInstructions !== undefined) updates.paymentInstructions = updates.paymentInstructions || null;
-    if (updates.collegePaymentUrl !== undefined) updates.collegePaymentUrl = updates.collegePaymentUrl || null;
-    if (updates.upiId !== undefined) updates.upiId = updates.upiId || null;
+    if (updates.collegePaymentUrl !== undefined) {
+      const cUrl = typeof updates.collegePaymentUrl === 'string' ? updates.collegePaymentUrl.trim() : '';
+      if (cUrl && cUrl.includes('@') && !cUrl.startsWith('http')) {
+        if (!updates.paymentInstructions?.includes(cUrl)) {
+          updates.paymentInstructions = updates.paymentInstructions
+            ? `${updates.paymentInstructions}\nUPI ID: ${cUrl}`
+            : `UPI ID: ${cUrl}`;
+        }
+        updates.collegePaymentUrl = null;
+      } else {
+        updates.collegePaymentUrl = cUrl || null;
+      }
+    }
     if (updates.accountHolderName !== undefined) updates.accountHolderName = updates.accountHolderName || null;
+    if (updates.postRegistrationMessage !== undefined) updates.postRegistrationMessage = updates.postRegistrationMessage || null;
 
     let promotedCandidates = [];
     const updatedEvent = await prisma.$transaction(async (tx) => {
@@ -2152,14 +2171,25 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
   }
 });
 
-router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), async (req, res) => {
+router.delete("/:id", verifyToken, requirePermission([PERMISSIONS.EVENT_DELETE, PERMISSIONS.EVENT_DELETE_REQUEST]), async (req, res) => {
   try {
-    const event = await prisma.event.findUnique({ where: { id: req.params.id } });
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      include: {
+        organizers: {
+          include: {
+            club: { select: { id: true, clubName: true, facultyCoordinatorId: true } },
+          },
+        },
+      },
+    });
     if (!event) return res.status(404).json({ message: "Event not found" });
 
+    const eventClubIds = event.organizers.map(o => o.clubId);
     const isCreator = event.createdById === req.user.userId;
-    const isClubOwner = (req.user.clubId && String(event.clubId) === String(req.user.clubId)) || (req.user.userId && String(event.clubId) === String(req.user.userId));
-    const isAdmin = req.user.role === "admin";
+    const isClubOwner = (req.user.clubId && eventClubIds.includes(req.user.clubId)) ||
+      (req.user.memberships && req.user.memberships.some(m => eventClubIds.includes(m.clubId) && ["CLUB_HEAD", "STUDENT_LEAD", "COORDINATOR"].includes((m.role || "").toUpperCase())));
+    const isAdmin = req.user.role === "admin" || req.user.role === "SUPER_ADMIN";
     const isFaculty = req.user.role === "facultyCoordinator";
 
     if (!isCreator && !isClubOwner && !isAdmin && !isFaculty) {
@@ -2168,7 +2198,7 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
 
     // Admin / Faculty Coordinator role: can delete/approve deletion immediately
     if (isAdmin || isFaculty) {
-      if (isFaculty && req.user.clubId && String(event.clubId) !== String(req.user.clubId)) {
+      if (isFaculty && req.user.clubId && !eventClubIds.includes(req.user.clubId)) {
         return res.status(403).json({ message: "You can only delete events for your assigned club." });
       }
 
@@ -2177,45 +2207,43 @@ router.delete("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_DELETE), 
       return res.json({ message: "Event deleted successfully." });
     }
 
-    // Club / Member role: submit deletion request for faculty approval
+    // Student Lead / Club Member role: submit deletion request for faculty approval
     await prisma.event.update({
       where: { id: req.params.id },
       data: { reviewStatus: "DELETION_REQUESTED" }
     });
 
-    const eventToDel = await prisma.event.findUnique({
-      where: { id: req.params.id },
-      select: { title: true, clubId: true, club: { select: { facultyCoordinatorId: true, clubName: true } } }
-    });
-    if (eventToDel?.club?.facultyCoordinatorId) {
-      try {
-        const notif = await prisma.notification.create({
-          data: {
-            id: createObjectId(),
-            targetScope: "FACULTY_COORDINATOR",
-            clubId: eventToDel.clubId,
-            recipientUserId: eventToDel.club.facultyCoordinatorId,
-            eventId: req.params.id,
-            type: "EVENT_DELETION_REQUEST",
-            title: `Deletion Requested: ${eventToDel.title}`,
-            message: `${eventToDel.club?.clubName || "A club"} has requested approval to delete "${eventToDel.title}".`,
-          }
-        });
-        if (req.io) {
-          req.io.to(eventToDel.club.facultyCoordinatorId).emit("new-notification", {
-            ...notif,
-            _id: notif.id,
-            sender: { name: eventToDel.club?.clubName || "Club" }
+    for (const org of event.organizers) {
+      if (org.club?.facultyCoordinatorId) {
+        try {
+          const notif = await prisma.notification.create({
+            data: {
+              id: createObjectId(),
+              targetScope: "FACULTY_COORDINATOR",
+              clubId: org.clubId,
+              recipientUserId: org.club.facultyCoordinatorId,
+              eventId: req.params.id,
+              type: "EVENT_DELETION_REQUEST",
+              title: `Deletion Requested: ${event.title}`,
+              message: `${org.club.clubName || "A club"} has requested approval to delete "${event.title}".`,
+            }
           });
+          if (req.io) {
+            req.io.to(org.club.facultyCoordinatorId).emit("new-notification", {
+              ...notif,
+              _id: notif.id,
+              sender: { name: org.club.clubName || "Club" }
+            });
+          }
+        } catch (delErr) {
+          console.error("Failed to notify faculty of deletion request:", delErr.message);
         }
-      } catch (delErr) {
-        console.error("Failed to notify faculty of deletion request:", delErr.message);
       }
     }
 
     return res.json({ message: "Deletion request submitted for faculty approval." });
   } catch (err) {
-    res.status(550).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -2265,8 +2293,6 @@ router.delete(
             OR: [
               { externalUserId: userId },
               { externalUserId: studentId },
-              { externalEmail: req.user.email },
-              { externalEmail: studentId },
             ],
           },
           include: { event: true },
@@ -2279,12 +2305,11 @@ router.delete(
           });
 
           if (team) {
-            const isLeader = team.leaderId === (userId || studentId);
+            const isLeader = team.leaderStudentId === (userId || studentId);
             if (!isLeader && req.user?.role !== "admin") {
               return res.status(403).json({ message: "Only the team leader can deregister a team registration." });
             }
 
-            // Leader deregistering deletes the whole team registration
             const teamParticipations = await prisma.participation.findMany({
               where: { teamId: p.teamId },
             });
@@ -2354,11 +2379,11 @@ router.delete(
       if (participation.teamId) {
         const team = await prisma.team.findUnique({
           where: { id: participation.teamId },
-          include: { leader: true }
+          include: { leaderStudent: true }
         });
 
         if (team) {
-          const isLeader = team.leaderId === studentId;
+          const isLeader = team.leaderStudentId === studentId;
           if (!isLeader && req.user.role !== "admin") {
             return res.status(403).json({ message: "Only the team leader can deregister a team registration." });
           }
@@ -2412,12 +2437,12 @@ router.delete(
 
           // Send notifications to all team members (except the leader)
           for (const tp of teamParticipations) {
-            if (tp.studentId && tp.studentId !== team.leaderId) {
+            if (tp.studentId && tp.studentId !== team.leaderStudentId) {
               await notifyMemberDeregistered(
                 req.io,
                 tp.studentId,
                 "Team Deregistered",
-                `The team leader ${team.leader?.name || 'leader'} has deregistered team "${team.teamName}" for event "${event.title}". Your registration has been cancelled.`
+                `The team leader ${team.leaderStudent?.name || 'leader'} has deregistered team "${team.teamName}" for event "${event.title}". Your registration has been cancelled.`
               );
             }
           }
@@ -2476,17 +2501,23 @@ router.post(
 
       if (!qrCode) return res.status(400).json({ message: "QR Code is required." });
 
-      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: { organizers: true },
+      });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      if (!(await checkEventAccess(req, event.clubId, "canTakeAttendance"))) {
+      if (!(await checkEventAccess(req, event, "canTakeAttendance"))) {
         return res.status(403).json({ message: "Unauthorized scanner." });
       }
 
       // Check both internal and external participations
       let participation = await prisma.participation.findFirst({
         where: { qrCode, eventId },
-        include: { student: { select: { name: true, rollNo: true } } },
+        include: {
+          student: { select: { name: true, rollNo: true } },
+          externalUser: { select: { name: true, collegeName: true, email: true } },
+        },
       });
 
       let type = "internal";
@@ -2503,7 +2534,7 @@ router.post(
         return res.status(400).json({
           message: "Participant already marked as attended.",
           alreadyAttended: true,
-          participantName: type === "internal" ? participation.student?.name : participation.externalName,
+          participantName: type === "internal" ? participation.student?.name : (participation.externalUser?.name || "External Participant"),
         });
       }
 
@@ -2521,8 +2552,8 @@ router.post(
         success: true,
         message: "Check-in successful!",
         participant: {
-          name: type === "internal" ? participation.student?.name : participation.externalName,
-          details: type === "internal" ? participation.student?.rollNo : participation.externalEmail,
+          name: type === "internal" ? participation.student?.name : (participation.externalUser?.name || "External Participant"),
+          details: type === "internal" ? participation.student?.rollNo : (participation.externalUser?.collegeName || participation.externalUser?.email || "External"),
           type,
         },
       });
@@ -2546,10 +2577,13 @@ router.post(
         return res.status(400).json({ message: "Participation ID and type are required." });
       }
 
-      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: { organizers: true },
+      });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      if (!(await checkEventAccess(req, event.clubId, "canTakeAttendance"))) {
+      if (!(await checkEventAccess(req, event, "canTakeAttendance"))) {
         return res.status(403).json({ message: "Unauthorized to mark attendance for this club." });
       }
 
@@ -2574,14 +2608,20 @@ router.post(
 router.patch("/:id/feature", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const event = await prisma.event.findUnique({ where: { id } });
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: { organizers: true },
+    });
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // If club event, unset any other featured event in this club if enabling
     const newFeaturedState = !event.isFeatured;
-    if (newFeaturedState && event.clubId) {
+    const primaryClubId = event.organizers?.[0]?.clubId;
+    if (newFeaturedState && primaryClubId) {
       await prisma.event.updateMany({
-        where: { clubId: event.clubId, isFeatured: true },
+        where: {
+          organizers: { some: { clubId: primaryClubId } },
+          isFeatured: true,
+        },
         data: { isFeatured: false },
       });
     }
@@ -2589,9 +2629,7 @@ router.patch("/:id/feature", verifyToken, async (req, res) => {
     const updated = await prisma.event.update({
       where: { id },
       data: { isFeatured: newFeaturedState },
-      include: {
-        club: { select: { id: true, clubName: true, clubLogo: true, slug: true } },
-      },
+      include: eventInclude,
     });
 
     invalidatePublicResponses("events");

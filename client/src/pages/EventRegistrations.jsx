@@ -30,6 +30,11 @@ const EventRegistrations = () => {
     const [submittingReview, setSubmittingReview] = useState(false);
 
     const openReviewModal = (reg, status) => {
+        if (!reg) return;
+        if (status === 'APPROVED' && (reg.paymentStatus === 'APPROVED' || reg.paymentStatus === 'SUCCESS')) {
+            toast.success('This registration is already approved.');
+            return;
+        }
         setSelectedReg(reg);
         setReviewStatus(status);
         setReviewComment('');
@@ -37,20 +42,49 @@ const EventRegistrations = () => {
     };
 
     const submitReview = async () => {
-        if (!selectedReg) return;
-        setSubmittingReview(true);
-        try {
-            await reviewPayment(
-                selectedReg.id || selectedReg._id,
-                { status: reviewStatus, message: reviewComment }
-            );
-            toast.success(`Payment ${reviewStatus.toLowerCase()} successfully!`);
+        if (!selectedReg || submittingReview) return;
+        const targetId = selectedReg.id || selectedReg._id;
+
+        if (reviewStatus === 'APPROVED' && (selectedReg.paymentStatus === 'APPROVED' || selectedReg.paymentStatus === 'SUCCESS')) {
+            toast.success('Payment is already approved.');
             setReviewModalOpen(false);
-            const regRes = await getEventRegistrations(id);
-            const data = regRes.data;
-            setRegistrations(data.participations || (Array.isArray(data) ? data : []));
+            return;
+        }
+
+        setSubmittingReview(true);
+        const newStatus = reviewStatus === 'APPROVED' ? 'SUCCESS' : (reviewStatus === 'REJECTED' ? 'FAILED' : 'PENDING');
+
+        // Instant optimistic update
+        setRegistrations(prev => prev.map(r => {
+            const rId = r.id || r._id;
+            if (rId === targetId) {
+                return { ...r, paymentStatus: newStatus, paymentReviewMessage: reviewComment };
+            }
+            return r;
+        }));
+
+        try {
+            const res = await reviewPayment(targetId, { status: reviewStatus, message: reviewComment });
+            toast.success(res?.data?.message || `Payment ${reviewStatus.toLowerCase()} successfully!`);
+            setReviewModalOpen(false);
+
+            // Re-fetch in background to sync authoritative state
+            getEventRegistrations(id).then(regRes => {
+                const data = regRes?.data;
+                if (data) {
+                    setRegistrations(data.participations || (Array.isArray(data) ? data : []));
+                }
+            }).catch(console.warn);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update review status.');
+            // Revert on error
+            try {
+                const regRes = await getEventRegistrations(id);
+                const data = regRes.data;
+                setRegistrations(data.participations || (Array.isArray(data) ? data : []));
+            } catch (syncErr) {
+                console.error('Failed to sync registrations after error:', syncErr);
+            }
         } finally {
             setSubmittingReview(false);
         }
@@ -93,14 +127,12 @@ const EventRegistrations = () => {
             { key: 'teamName', label: 'Team Name', getValue: row => row.team?.teamName },
             { key: 'teamRole', label: 'Role in Team', getValue: row => row.role },
         ] : []),
-        { key: 'name', label: 'Name', getValue: row => row.reg.student?.name || row.reg.externalName },
-        { key: 'rollNo', label: 'Roll Number', getValue: row => row.reg.student?.rollNo },
-        { key: 'email', label: 'Email', getValue: row => row.reg.student?.email || row.reg.externalEmail },
-        { key: 'branch', label: 'Branch', getValue: row => row.reg.student?.branch },
+        { key: 'name', label: 'Name', getValue: row => row.reg.student?.name || 'N/A' },
+        { key: 'rollNo', label: 'Roll Number', getValue: row => row.reg.student?.rollNo || (row.reg.student?.isExternal ? row.reg.student?.collegeName : '-') },
+        { key: 'email', label: 'Email', getValue: row => row.reg.student?.email || '-' },
+        { key: 'branch', label: 'Branch', getValue: row => row.reg.student?.branch || (row.reg.student?.isExternal ? 'External' : '-') },
         { key: 'year', label: 'Year', getValue: row => row.reg.student?.year || row.reg.student?.academicYearLabel || '' },
-        { key: 'program', label: 'Program', getValue: row => row.reg.student?.program },
-        { key: 'externalName', label: 'External Name', getValue: row => row.reg.externalName },
-        { key: 'externalEmail', label: 'External Email', getValue: row => row.reg.externalEmail },
+        { key: 'program', label: 'Program', getValue: row => row.reg.student?.program || '-' },
         { key: 'eventName', label: 'Event Name', getValue: () => eventData?.title },
         { key: 'status', label: 'Registration Status', getValue: row => row.reg.status },
         { key: 'attendanceStatus', label: 'Attendance Status', getValue: row => row.reg.attendedAt || row.reg.status === 'ATTENDED' ? 'Attended' : 'Not attended' },
@@ -174,17 +206,16 @@ const EventRegistrations = () => {
     const filteredRegistrations = (Array.isArray(registrations) ? registrations : []).filter(reg => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
-        const name = (reg.student?.name || reg.externalName || '').toLowerCase();
+        const name = (reg.student?.name || '').toLowerCase();
         const rollNo = (reg.student?.rollNo || '').toLowerCase();
-        const email = (reg.student?.email || reg.externalEmail || '').toLowerCase();
+        const email = (reg.student?.email || '').toLowerCase();
         const branch = (reg.student?.branch || '').toLowerCase();
-        const externalEmail = (reg.externalEmail || '').toLowerCase();
-        const externalName = (reg.externalName || '').toLowerCase();
+        const collegeName = (reg.student?.collegeName || '').toLowerCase();
         // Also match team name and team leader name for team registrations
         const teamName = (reg.team?.teamName || '').toLowerCase();
         const leaderName = (reg.team?.leader?.name || '').toLowerCase();
         return name.includes(q) || rollNo.includes(q) || email.includes(q) || branch.includes(q)
-            || externalEmail.includes(q) || externalName.includes(q)
+            || collegeName.includes(q)
             || teamName.includes(q) || leaderName.includes(q);
     });
 
@@ -218,9 +249,9 @@ const EventRegistrations = () => {
         if ((team.teamName || '').toLowerCase().includes(q)) return true;
         if ((team.leader?.name || '').toLowerCase().includes(q)) return true;
         return team.members.some(m =>
-            (m.student?.name || m.externalName || '').toLowerCase().includes(q) ||
+            (m.student?.name || '').toLowerCase().includes(q) ||
             (m.student?.rollNo || '').toLowerCase().includes(q) ||
-            (m.student?.email || m.externalEmail || '').toLowerCase().includes(q) ||
+            (m.student?.email || '').toLowerCase().includes(q) ||
             (m.student?.branch || '').toLowerCase().includes(q)
         );
     });
@@ -514,18 +545,29 @@ const EventRegistrations = () => {
                                             {eventData?.paymentMethod && eventData?.paymentMethod !== 'FREE' && (() => {
                                                 const leaderPart = team.members.find(m => m.studentId === team.leader?.id) || team.members[0];
                                                 if (!leaderPart) return null;
+                                                const isApproved = leaderPart.paymentStatus === 'APPROVED' || leaderPart.paymentStatus === 'SUCCESS';
+                                                const isRejected = leaderPart.paymentStatus === 'REJECTED' || leaderPart.paymentStatus === 'FAILED';
                                                 return (
-                                                    <div className="p-4 bg-brand-50/20 dark:bg-neutral-900 border-b border-neutral-150 dark:border-neutral-850 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                    <div className="p-4 bg-brand-50/20 dark:bg-neutral-900 border-b border-neutral-150 dark:border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                         <div className="text-xs space-y-1 text-left">
-                                                            <p className="font-bold text-neutral-800 dark:text-neutral-200">
-                                                                Payment Status: <span className={`uppercase font-black ${
-                                                                    leaderPart.paymentStatus === 'APPROVED' ? 'text-emerald-600' :
-                                                                    leaderPart.paymentStatus === 'REJECTED' ? 'text-rose-600' : 'text-amber-600 animate-pulse'
-                                                                }`}>{leaderPart.paymentStatus}</span>
-                                                            </p>
+                                                            <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+                                                                <span>Payment Status:</span>
+                                                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] uppercase font-black ${
+                                                                    isApproved
+                                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60'
+                                                                        : isRejected
+                                                                            ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60'
+                                                                            : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60'
+                                                                }`}>
+                                                                    {!isApproved && !isRejected && (
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
+                                                                    )}
+                                                                    {isApproved ? 'SUCCESS' : leaderPart.paymentStatus}
+                                                                </span>
+                                                            </div>
                                                             {leaderPart.transactionId && (
                                                                 <p className="text-neutral-500 dark:text-neutral-400">
-                                                                    UTR/Transaction ID: <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">{leaderPart.transactionId}</span>
+                                                                    UTR/Transaction ID: <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300 select-all">{leaderPart.transactionId}</span>
                                                                 </p>
                                                             )}
                                                             {leaderPart.payerName && (
@@ -539,29 +581,39 @@ const EventRegistrations = () => {
                                                                 </p>
                                                             )}
                                                             {leaderPart.paymentReviewMessage && (
-                                                                <p className="text-rose-600 dark:text-rose-450 font-bold">
+                                                                <p className="text-rose-600 dark:text-rose-400 font-bold">
                                                                     Comment: {leaderPart.paymentReviewMessage}
                                                                 </p>
                                                             )}
                                                         </div>
 
-                                                        {leaderPart.paymentStatus !== 'APPROVED' && (
+                                                        {isApproved ? (
+                                                            <div className="flex items-center">
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
+                                                                    <i className="ri-checkbox-circle-fill text-emerald-600 dark:text-emerald-400 text-sm" />
+                                                                    Approved already
+                                                                </span>
+                                                            </div>
+                                                        ) : (
                                                             <div className="flex gap-2 shrink-0">
                                                                 <button
+                                                                    disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'APPROVED')}
-                                                                    className="px-3.5 py-1.5 bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition cursor-pointer border-0 outline-none"
+                                                                    className="px-3.5 py-1.5 bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Approve
                                                                 </button>
                                                                 <button
+                                                                    disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'REJECTED')}
-                                                                    className="px-3.5 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-rose-700 transition cursor-pointer border-0 outline-none"
+                                                                    className="px-3.5 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Reject
                                                                 </button>
                                                                 <button
+                                                                    disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'NEED_MORE_DETAILS')}
-                                                                    className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-805 text-neutral-705 dark:text-neutral-305 border border-neutral-300 dark:border-neutral-700 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-neutral-200 transition cursor-pointer border-0 outline-none"
+                                                                    className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Need Info
                                                                 </button>
@@ -680,13 +732,16 @@ const EventRegistrations = () => {
                                 </thead>
                                 <tbody className="bg-white dark:bg-neutral-900 divide-y divide-neutral-100 dark:divide-neutral-800">
                                     {individualRegs.map((reg, idx) => {
-                                        const isInternal = !!reg.student;
-                                        const studentName = reg.student?.name || reg.externalName || 'Unknown';
-                                        const studentEmail = reg.student?.email || reg.externalEmail || '-';
+                                        const isInternal = !!reg.student && !reg.student.isExternal;
+                                        const studentName = reg.student?.name || 'Unknown';
+                                        const studentEmail = reg.student?.email || '-';
                                         const rollNo = reg.student?.rollNo || '-';
                                         const programInfo = isInternal
                                             ? `${reg.student.program || '-'} • ${reg.student.branch || '-'} (${reg.student.year || reg.student.academicYearLabel || '-'})`
-                                            : 'External Participant';
+                                            : `External (${reg.student?.collegeName || 'Participant'})`;
+
+                                        const isApproved = reg.paymentStatus === 'APPROVED' || reg.paymentStatus === 'SUCCESS';
+                                        const isRejected = reg.paymentStatus === 'REJECTED' || reg.paymentStatus === 'FAILED';
 
                                         return (
                                             <tr key={reg.id || reg._id} className="hover:bg-neutral-100/80 dark:hover:bg-neutral-900/40 transition-colors">
@@ -725,12 +780,17 @@ const EventRegistrations = () => {
                                                     <>
                                                         <td className="px-5 py-4 text-left">
                                                             <div className="flex flex-col gap-1 text-xs">
-                                                                <span className={`px-2 py-0.5 inline-flex text-[9px] font-bold uppercase tracking-wider rounded-md border w-fit ${
-                                                                    reg.paymentStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50' :
-                                                                    reg.paymentStatus === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/50' :
-                                                                    'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50 animate-pulse-slow'
+                                                                <span className={`px-2 py-0.5 inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider rounded-md border w-fit ${
+                                                                    isApproved
+                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60'
+                                                                        : isRejected
+                                                                            ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60'
+                                                                            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60'
                                                                 }`}>
-                                                                    {reg.paymentStatus}
+                                                                    {!isApproved && !isRejected && (
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
+                                                                    )}
+                                                                    {isApproved ? 'SUCCESS' : reg.paymentStatus}
                                                                 </span>
                                                                 {reg.transactionId && (
                                                                     <span className="font-mono text-[10px] text-neutral-600 dark:text-neutral-350">
@@ -743,37 +803,43 @@ const EventRegistrations = () => {
                                                                     </span>
                                                                 )}
                                                                 {reg.paymentReviewMessage && (
-                                                                    <span className="text-[10px] text-rose-600 dark:text-rose-450 font-bold">
+                                                                    <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold">
                                                                         Msg: {reg.paymentReviewMessage}
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         </td>
                                                         <td className="px-5 py-4 whitespace-nowrap text-left">
-                                                            {reg.paymentStatus !== 'APPROVED' ? (
+                                                            {isApproved ? (
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
+                                                                    <i className="ri-checkbox-circle-fill text-emerald-600 dark:text-emerald-400 text-xs" />
+                                                                    Approved already
+                                                                </span>
+                                                            ) : (
                                                                 <div className="flex gap-1.5">
                                                                     <button
+                                                                        disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'APPROVED')}
-                                                                        className="px-2.5 py-1 bg-emerald-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-emerald-700 transition cursor-pointer border-0 outline-none"
+                                                                        className="px-2.5 py-1 bg-emerald-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                     >
                                                                         Approve
                                                                     </button>
                                                                     <button
+                                                                        disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'REJECTED')}
-                                                                        className="px-2.5 py-1 bg-rose-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-rose-700 transition cursor-pointer border-0 outline-none"
+                                                                        className="px-2.5 py-1 bg-rose-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                     >
                                                                         Reject
                                                                     </button>
                                                                     <button
+                                                                        disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'NEED_MORE_DETAILS')}
-                                                                        className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-350 dark:border-neutral-700 font-bold text-[9px] uppercase tracking-wider rounded hover:bg-neutral-200 transition cursor-pointer border-0 outline-none"
+                                                                        className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-350 dark:border-neutral-700 font-bold text-[9px] uppercase tracking-wider rounded hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                         title="Need Info"
                                                                     >
                                                                         Info
                                                                     </button>
                                                                 </div>
-                                                            ) : (
-                                                                <span className="text-xs text-neutral-400">-</span>
                                                             )}
                                                         </td>
                                                     </>
@@ -872,7 +938,7 @@ const EventRegistrations = () => {
                             
                             <div className="p-6 space-y-4 text-left text-cn-text-secondary">
                                 <div className="bg-cn-surface-muted border border-cn-border p-4 rounded-xl space-y-2 text-xs text-cn-text-secondary">
-                                    <p><span className="font-bold text-cn-text-muted">Student:</span> <strong className="text-cn-text font-semibold">{selectedReg.student?.name || selectedReg.externalName}</strong></p>
+                                    <p><span className="font-bold text-cn-text-muted">Student:</span> <strong className="text-cn-text font-semibold">{selectedReg.student?.name || 'Participant'}</strong></p>
                                     {selectedReg.student?.rollNo && <p><span className="font-bold text-cn-text-muted">Roll No:</span> <strong className="text-cn-text font-mono font-semibold">{selectedReg.student.rollNo}</strong></p>}
                                     <p><span className="font-bold text-cn-text-muted">Registration Fee:</span> ₹{eventData?.registrationFee || eventData?.entryFee}</p>
                                     <p><span className="font-bold text-cn-text-muted">UTR / Transaction ID:</span> <span className="font-mono font-bold select-all text-cn-text">{selectedReg.transactionId}</span></p>

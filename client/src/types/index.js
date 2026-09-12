@@ -48,8 +48,8 @@ export const PaymentStatus = Object.freeze({
  * @typedef {{ name: string, logoUrl: string, websiteUrl?: string }} Sponsor
  * @typedef {{ url: string, type: 'IMAGE'|'VIDEO'|'SPONSOR_LOGO' }} Media
  * @typedef {{
- *   id: string, eventId: string, studentId: string|null,
- *   externalEmail: string|null, externalName: string|null,
+ *   id: string, eventId: string, userId: string,
+ *   studentId: string|null, externalUserId: string|null,
  *   status: string, qrCode: string|null,
  *   attendedAt: string|null, markedByMemberId: string|null
  * }} Participation

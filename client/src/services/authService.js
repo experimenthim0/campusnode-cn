@@ -29,6 +29,9 @@ export const resetPassword = (token, newPassword) =>
 export const verifyEmail = (token) =>
   api.get(`/api/auth/verify-email/${token}`);
 
+export const resendVerificationEmail = (email) =>
+  api.post('/api/auth/send-verification-email', { email });
+
 export const changePassword = (currentPassword, newPassword) =>
   api.post('/api/auth/change-password', { currentPassword, newPassword });
 

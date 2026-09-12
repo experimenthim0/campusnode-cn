@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ScrollReveal from "../components/ScrollReveal";
 import ClubCard from "../components/ClubCard";
 import ClubCardSkeleton from "../components/skeletons/ClubCardSkeleton";
+import CardCarousel from "../components/CardCarousel";
 import { Skeleton } from "../components/ui/Skeleton";
 import Section from "../components/layout/Section";
 import { useTheme } from "../context/ThemeContext";
@@ -346,19 +347,27 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
         </div>
       )}
 
-      {/* Clubs Grid */}
+      {/* Clubs Grid or Carousel (when > 1 row on Home) */}
       {clubsToShow.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {clubsToShow.map((club, index) => (
-            <ScrollReveal
-              direction="up"
-              delay={(index % 3) * 0.08}
-              key={club._id || club.id || club.slug || index}
-            >
-              <ClubCard club={club} />
-            </ScrollReveal>
-          ))}
-        </div>
+        isHome ? (
+          <CardCarousel threshold={3}>
+            {clubsToShow.map((club, index) => (
+              <ClubCard key={club._id || club.id || club.slug || index} club={club} />
+            ))}
+          </CardCarousel>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {clubsToShow.map((club, index) => (
+              <ScrollReveal
+                direction="up"
+                delay={(index % 3) * 0.08}
+                key={club._id || club.id || club.slug || index}
+              >
+                <ClubCard club={club} />
+              </ScrollReveal>
+            ))}
+          </div>
+        )
       )}
     </>
   );

@@ -13,11 +13,9 @@ export const getEventBySlug = (slug) =>
 
 export const getEventById = (id, params = {}) =>
   api.get(`/api/events/${id}`, {
-    params,
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
+    params: {
+      ...params,
+      _t: Date.now(),
     },
   });
 

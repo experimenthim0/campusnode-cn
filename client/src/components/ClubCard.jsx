@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 import { getColorSync } from "colorthief";
 import { useImageBlob } from "../hooks/useImageBlob";
 import { useTheme } from "../context/ThemeContext";
-import { markdownToHtml } from "../utils/htmlMarkdownConverter";
-import "../components/WysiwygMarkdownEditor.css";
-import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
+import { ArrowRight } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/instagram";
 import { LinkedinIcon } from "@/components/ui/linkedin";
 import { TwitterIcon } from "@/components/ui/twitter";
@@ -23,7 +21,7 @@ const ClubCard = ({ club }) => {
   const cardRef = useRef(null);
 
   // Use fallback logo instantly, preload real clubLogo in background
-  const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
+  const fallbackLogo = isDark ? "/lightthemelogo2.png" : "/darkthemelogo.png";
   const [logoSrc, setLogoSrc] = useState(fallbackLogo);
 
   useEffect(() => {
@@ -80,24 +78,23 @@ const ClubCard = ({ club }) => {
     }
 
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;  // cursor x relative to card
-    const y = e.clientY - rect.top;   // cursor y relative to card
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     const w = rect.width;
     const h = rect.height;
 
-    // Distance from each edge
-    const distLeft   = x;
-    const distRight  = w - x;
-    const distTop    = y;
+    const distLeft = x;
+    const distRight = w - x;
+    const distTop = y;
     const distBottom = h - y;
 
     const minDist = Math.min(distLeft, distRight, distTop, distBottom);
 
     let origin;
-    if (minDist === distLeft)        origin = "left center";
-    else if (minDist === distRight)  origin = "right center";
-    else if (minDist === distTop)    origin = "center top";
-    else                             origin = "center bottom";
+    if (minDist === distLeft) origin = "left center";
+    else if (minDist === distRight) origin = "right center";
+    else if (minDist === distTop) origin = "center top";
+    else origin = "center bottom";
 
     setTransformOrigin(origin);
     setIsHovered(true);
@@ -107,7 +104,7 @@ const ClubCard = ({ club }) => {
     setIsHovered(false);
   }, []);
 
-  // Construct premium card styles dynamically
+  // Construct card styles dynamically
   const cardStyle = (isHovered && rgb)
     ? {
       borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35)`,
@@ -126,10 +123,7 @@ const ClubCard = ({ club }) => {
 
   const buttonStyle = (isHovered && rgb)
     ? {
-      color: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
       borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`,
-      backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.08)`,
-      boxShadow: `0 4px 14px 0 rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.2)`,
     }
     : {};
 
@@ -141,8 +135,8 @@ const ClubCard = ({ club }) => {
   const studentName = club.studentHeads && club.studentHeads.length > 0
     ? club.studentHeads.join(", ")
     : club.studentCoordinators && club.studentCoordinators.length > 0
-    ? club.studentCoordinators.join(", ")
-    : "Not Assigned";
+      ? club.studentCoordinators.join(", ")
+      : club.studentLead || "Not Assigned";
 
   return (
     <div
@@ -150,155 +144,150 @@ const ClubCard = ({ club }) => {
       style={cardStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative bg-cn-surface border border-cn-border rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 hover:scale-[1.02] flex flex-col h-full group shadow-sm hover:shadow-xl"
+      className="relative  border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col h-full group"
     >
-      {/* Top right ambient color gradient overlay */}
-      <div
+      {/* Ambient color gradient overlay on hover */}
+      {/* <div
         className="absolute inset-0 pointer-events-none transition-all duration-500 ease-out"
         style={glowOverlayStyle}
-      />
+      /> */}
 
-      <div className="relative w-full h-28 sm:h-32 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden shrink-0">
+      {/* Campus Building Header Banner with Progressive Depth Shading */}
+      <div className="relative w-full h-32 sm:h-36 overflow-hidden shrink-0 bg-neutral-100 dark:bg-neutral-800">
         <img
-          src={club.bannerImage || club.coverImage || "/mainbuilding.jpeg"}
+          src={club.bannerImage || club.coverImage || "/itbuilding.jpeg"}
           alt={`${club.clubName} Banner`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = "/collegeimg.jpeg";
+            e.target.src = "/itbuilding.jpeg";
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
+
+        {/* Subtle top vignette for banner depth */}
+        {/* <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/25 to-transparent pointer-events-none" /> */}
+
+        {/* Ambient brand color tint from extracted logo color on hover */}
+        {/* {rgb && (
+          <div
+            className="absolute inset-x-0 bottom-0 h-20 pointer-events-none transition-opacity duration-500 opacity-25 group-hover:opacity-50"
+            style={{
+              background: `linear-gradient(to top, rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35) 0%, transparent 100%)`,
+            }}
+          />
+        )} */}
+
+        {/* Multi-layered progressive fade matching card surface (eliminates hard edge) */}
+        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-16 bg-gradient-to-t from-white/95 via-white/65 via-35% to-transparent dark:from-[#121316]/95 dark:via-[#121316]/65 dark:via-35% dark:to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-[#121316] to-transparent pointer-events-none" />
+      </div>
+
+      {/* Floating Circular Club Logo */}
+      <div className="-mt-8 sm:-mt-9 flex justify-center relative z-10">
+        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-neutral-900 border-1 border-neutral-700/80 shadow-lg flex items-center justify-center overflow-hidden p-1 group-hover:scale-105 transition-transform duration-300">
+          <img
+            ref={imgRef}
+            src={displayUrl}
+            alt={club.clubName}
+            crossOrigin={isBlobLoaded && club.clubLogo ? "anonymous" : undefined}
+            onLoad={handleImageLoad}
+            className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = fallbackLogo;
+            }}
+          />
+        </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="p-5 sm:p-6 pt-0 flex flex-col flex-grow relative z-10">
+      <div className="p-5 pt-1 flex flex-col flex-grow relative z-10">
+        {/* Club Name */}
+        <h3
+          className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-white text-center leading-snug mb-1.5 line-clamp-1 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 transition-colors"
+          title={club.clubName}
+        >
+          {club.clubName}
+        </h3>
 
-        {/* Upper section: Overlapping Logo & Title + Category in same row */}
-        <div className="flex items-end gap-3.5 -mt-1 sm:-mt-9 mb-2 min-w-0">
-          
-          {/* Logo with border */}
-          <div className="w-16 h-16 sm:w-18 sm:h-18 bg-cn-surface rounded-full flex items-center justify-center border-2 border-white dark:border-cn-surface shadow-md shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300 ">
-            <img
-              ref={imgRef}
-              src={displayUrl}
-              alt={club.clubName}
-              crossOrigin={isBlobLoaded && club.clubLogo ? "anonymous" : undefined}
-              onLoad={handleImageLoad}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = fallbackLogo;
-              }}
-            />
-          </div>
+        {/* Category Pill Badge */}
+        {/* <div className="flex justify-center mb-4">
+          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-wide bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+            {club.category ? `${club.category.charAt(0).toUpperCase() + club.category.slice(1)} Club` : "Student Club"}
+          </span>
+        </div> */}
 
-          {/* Name & Category in same row */}
-          <div className="space-y-0.5 min-w-0 flex-1 pb-0.5">
-             <h2 className="text-lg sm:text-xl font-bold tracking-wide text-neutral-900 dark:text-white leading-tight truncate" title={club.clubName}>
-              {club.clubName}
-            </h2>
-            <span className="inline-flex px-2 py-0.5 text-[9px] font-bold tracking-widest bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full">
-              {club.category || "Student Club"}
+        {/* Faculty Lead & Student Head (Left-aligned text block matching design) */}
+        <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5 pb-2 text-left space-y-1 flex flex-row justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block mb-1">
+              FACULTY LEAD
             </span>
-           
-          </div>
-        </div>
-
-        {/* Description */}
-        <div
-          className="campusnode-markdown-preview text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed [&_*]:!text-inherit [&_*]:!bg-transparent [&>p]:!mb-0 [&>p:last-child]:!mb-0 [&>h1]:!text-sm [&>h1]:!my-0 [&>h1]:!border-none [&>h1]:!pb-0 [&>h2]:!text-sm [&>h2]:!my-0 [&>h3]:!text-sm [&>h3]:!my-0 [&>ul]:!my-0 [&>ol]:!my-0 [&>blockquote]:!my-0 [&>blockquote]:!p-0 [&>blockquote]:!border-none [&_a]:text-brand-600 [&_a]:underline"
-          dangerouslySetInnerHTML={{
-            __html: markdownToHtml(
-              club.description ||
-                "The official student group dedicated to community, innovation, and campus spirit."
-            ),
-          }}
-        />
-
-        <div className="border-t border-neutral-200/75 dark:border-neutral-800/80 my-2" />
-
-        <div className="space-y-1">
-          <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
-              Faculty Lead
-            </span>
-            <p
-              className="text-sm font-bold text-neutral-800 dark:text-neutral-200 truncate"
-              title={facultyName}
-            >
+            <p className="text-sm font-bold text-neutral-900 dark:text-white truncate" title={facultyName}>
               {facultyName}
             </p>
           </div>
 
-          <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-0.5">
-              Student Lead
-            </span>
-            <p
-              className="text-sm font-bold text-neutral-800 dark:text-neutral-200 truncate"
-              title={studentName}
-            >
-              {studentName}
-            </p>
-          </div>
+          {studentName && studentName !== "Not Assigned" && (
+            <div>
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block mb-1">
+                STUDENT LEAD
+              </span>
+
+              <p className="text-sm font-bold text-neutral-900 dark:text-white truncate" title={studentName}>
+                {studentName}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Push socials & footer to bottom */}
-        <div className="mt-auto pt-2 space-y-2">
-
-          {/* Social connections row */}
+        {/* Social connections & View Page Button at bottom */}
+        <div className="mt-auto pt-3">
+          {/* Social connections row above View Page button */}
           {club.socialLinks && club.socialLinks.length > 0 && (
-            <div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-1.5">
-                Connect
-              </span>
-              <div className="flex flex-wrap gap-1.5 min-h-[32px]">
-                {club.socialLinks.map((link, i) => {
-                  const platform = link.platform?.toLowerCase() || "website";
-                  const iconProps = { className: "w-6 h-6" };
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3 min-h-[32px]">
+              {club.socialLinks.map((link, i) => {
+                const platform = link.platform?.toLowerCase() || "website";
+                const iconProps = { className: "w-5 h-5" };
 
-                  const getIcon = () => {
-                    if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={28} />;
-                    if (platform.includes("linkedin")) return <LinkedinIcon {...iconProps} size={28} />;
-                    if (platform.includes("twitter") || platform.includes("x")) return <TwitterIcon {...iconProps} size={28} />;
-                    if (platform.includes("github")) return <GithubIcon {...iconProps} size={28} />;
-                    if (platform.includes("whatsapp")) return <MessageCircleIcon {...iconProps} size={28} />;
-                    if (platform.includes("website")) return <EarthIcon {...iconProps} size={28} />;
-                    return <i className="ri-links-line text-sm" />;
-                  };
+                const getIcon = () => {
+                  if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={18} />;
+                  if (platform.includes("linkedin")) return <LinkedinIcon {...iconProps} size={18} />;
+                  if (platform.includes("twitter") || platform.includes("x")) return <TwitterIcon {...iconProps} size={18} />;
+                  if (platform.includes("github")) return <GithubIcon {...iconProps} size={18} />;
+                  if (platform.includes("whatsapp")) return <MessageCircleIcon {...iconProps} size={18} />;
+                  if (platform.includes("website")) return <EarthIcon {...iconProps} size={18} />;
+                  return <i className="ri-links-line text-xs" />;
+                };
 
-                  return (
-                    <a
-                      key={link._id || i}
-                      href={platform === "whatsapp" ? `https://wa.me/${link.url.replace(/\s+/g, "")}` : link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-brand-600 transition-all duration-300"
-                      title={link.platform}
-                    >
-                      {getIcon()}
-                    </a>
-                  );
-                })}
-              </div>
+                return (
+                  <a
+                    key={link._id || i}
+                    href={platform === "whatsapp" ? `https://wa.me/${link.url.replace(/\s+/g, "")}` : link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white  hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all duration-200"
+                    title={link.platform}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {getIcon()}
+                  </a>
+                );
+              })}
             </div>
           )}
 
-          <div className="border-t border-neutral-200/75 dark:border-neutral-800/80 pt-3.5">
-            <Link
-              to={`/club/${club.slug || club._id}`}
-              style={buttonStyle}
-              className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 border border-neutral-200 dark:border-neutral-800 rounded-full text-xs font-semibold tracking-wider text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md"
-            >
-              <ArrowUpRightIcon size={16}>
-                View Page
-              </ArrowUpRightIcon>
-            </Link>
-          </div>
-
+          {/* View Page Button */}
+          <Link
+            to={`/club/${club.slug || club._id || club.id}`}
+            style={buttonStyle}
+            className="w-full py-2.5 px-4 rounded-xl border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md"
+          >
+            <span>View Page</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+          </Link>
         </div>
-
       </div>
     </div>
   );

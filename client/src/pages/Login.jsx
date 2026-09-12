@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { resendVerificationEmail } from '../services/authService';
 
 const STUDENT_FAILURE_MESSAGES = [
   {
@@ -53,16 +54,38 @@ const Login = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState(''); // '' | 'sending' | 'sent' | 'error'
+  const [resendMsg, setResendMsg] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
+    if (needsVerification) setNeedsVerification(false);
+  };
+
+  const handleResendVerification = async () => {
+    const targetEmail = verificationEmail || formData.email;
+    if (!targetEmail) return;
+    setResendStatus('sending');
+    try {
+      const res = await resendVerificationEmail(targetEmail);
+      setResendStatus('sent');
+      setResendMsg(res.data?.message || 'Verification email resent! Please check your inbox.');
+    } catch (err) {
+      setResendStatus('error');
+      setResendMsg(err.response?.data?.message || 'Failed to resend verification email.');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError('');
+    setNeedsVerification(false);
+    setResendStatus('');
+    setResendMsg('');
     setIsLoading(true);
     try {
       const result = await login(formData.email, formData.password);
@@ -74,8 +97,14 @@ const Login = () => {
       }
       // Navigation is handled by AuthContext
     } catch (err) {
-      setFailedAttempts((prev) => prev + 1);
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      if (err.response?.data?.requiresVerification) {
+        setNeedsVerification(true);
+        setVerificationEmail(err.response?.data?.email || formData.email);
+        setError(err.response?.data?.message || 'Please verify your email before logging in.');
+      } else {
+        setFailedAttempts((prev) => prev + 1);
+        setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -118,22 +147,60 @@ const Login = () => {
           
           {/* Card Header */}
           <div className="text-center mb-6">
-            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-[11px] font-semibold uppercase tracking-wider mb-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>CampusNode Authentication</span>
-            </div> */}
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Sign In
+              <span>CampusNode NITJ</span>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+              Welcome back
             </h1>
             <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              Access your student, organizer, or club account
+              Sign in to manage clubs, events, and campus updates.
             </p>
           </div>
 
           {!showOTP ? (
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              {/* Humorous failure message after 2 failed attempts */}
-              {failedAttempts >= 2 && (
+              {/* Dedicated Email Verification Required Banner */}
+              {needsVerification && (
+                <div className="p-4 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-2xl text-zinc-900 dark:text-white text-xs flex flex-col gap-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="block font-semibold text-xs text-amber-950 dark:text-amber-200">
+                        Email Verification Required
+                      </strong>
+                      <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">
+                        {error || "Please verify your email address before logging in."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {resendStatus === 'sent' ? (
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 p-2 rounded-xl border border-emerald-500/20">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>{resendMsg}</span>
+                    </div>
+                  ) : (
+                    <div className="pt-1 flex items-center justify-between border-t border-amber-500/20">
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Didn't receive the link?</span>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={resendStatus === 'sending'}
+                        className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline cursor-pointer disabled:opacity-50"
+                      >
+                        {resendStatus === 'sending' ? 'Sending link...' : 'Resend verification email'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Humorous failure message after 2 failed attempts (only if not verification error) */}
+              {!needsVerification && failedAttempts >= 2 && (
                 <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
                   <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                   <div className="space-y-0.5 w-full">
@@ -156,7 +223,7 @@ const Login = () => {
               )}
 
               {/* Standard error for 1st failed attempt */}
-              {error && failedAttempts < 2 && (
+              {!needsVerification && error && failedAttempts < 2 && (
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl text-center">
                   {error}
                 </div>

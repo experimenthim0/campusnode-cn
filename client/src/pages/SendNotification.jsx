@@ -1,10 +1,31 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { sendNotification, getSentNotifications } from "../services/notificationService";
 import { getClubManagedEvents } from "../services/eventService";
 import { getClubById } from "../services/clubService";
 import ClubAnnouncementsSection from "../components/ClubAnnouncementsSection";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import {
+  Bell,
+  Megaphone,
+  Send,
+  Shield,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Calendar,
+  Users,
+  Building,
+  Loader2,
+  Radio,
+  Clock,
+  Compass
+} from "lucide-react";
 
 const formatRelativeTime = (dateStr) => {
   const now = new Date();
@@ -28,9 +49,13 @@ const SendNotification = () => {
   
   // Tab state: "notifications" | "announcements"
   const currentTab = searchParams.get("tab") === "announcements" ? "announcements" : "notifications";
+  const urlClubId = searchParams.get("clubId");
 
   const handleTabChange = (tab) => {
-    setSearchParams(tab === "notifications" ? {} : { tab });
+    const params = {};
+    if (tab === "announcements") params.tab = "announcements";
+    if (selectedClubId) params.clubId = selectedClubId;
+    setSearchParams(params);
   };
 
   const [targetType, setTargetType] = useState("ALL_STUDENTS");
@@ -44,9 +69,15 @@ const SendNotification = () => {
   const [history, setHistory] = useState([]);
 
   const [managedClubs, setManagedClubs] = useState([]);
-  const [selectedClubId, setSelectedClubId] = useState(null);
+  const [selectedClubId, setSelectedClubId] = useState(urlClubId || null);
   const [activeClubData, setActiveClubData] = useState(null);
   const [loadingClub, setLoadingClub] = useState(false);
+
+  useEffect(() => {
+    if (urlClubId && urlClubId !== selectedClubId) {
+      setSelectedClubId(urlClubId);
+    }
+  }, [urlClubId]);
 
   useEffect(() => {
     if (user) {
@@ -55,24 +86,27 @@ const SendNotification = () => {
         clubs.push({
           id: user.clubId,
           name: user.name || "Club",
+          logo: user.clubLogo || user.profileImage,
         });
       } else if (role === "club") {
         clubs.push({
           id: user.id || user._id,
           name: user.name || "Club",
+          logo: user.clubLogo || user.profileImage,
         });
       }
 
       if (user.memberships && Array.isArray(user.memberships)) {
         user.memberships.forEach((m) => {
           if (
-            (m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.role === "facultyCoordinator") &&
+            (m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.role === "facultyCoordinator" || m.canEditEvents) &&
             m.clubId &&
             !clubs.some((c) => c.id === m.clubId)
           ) {
             clubs.push({
               id: m.clubId,
               name: m.clubName || "Club",
+              logo: m.clubLogo,
             });
           }
         });
@@ -80,10 +114,10 @@ const SendNotification = () => {
 
       setManagedClubs(clubs);
       if (clubs.length > 0 && !selectedClubId) {
-        setSelectedClubId(clubs[0].id);
+        setSelectedClubId(urlClubId || clubs[0].id);
       }
     }
-  }, [user, role, selectedClubId]);
+  }, [user, role, selectedClubId, urlClubId]);
 
   const fetchActiveClubDetails = useCallback(async (clubIdToFetch) => {
     const targetId = clubIdToFetch || selectedClubId;
@@ -112,7 +146,7 @@ const SendNotification = () => {
   useEffect(() => {
     if (user && (user.id || user.clubId || user._id)) {
       const isCentral = role === "central_organizer" || user?.principalType === "INSTITUTIONAL";
-      const targetClubId = user.clubId || selectedClubId;
+      const targetClubId = selectedClubId || user.clubId;
 
       if (isCentral) {
         import("../services/api").then(({ default: api }) => {
@@ -128,7 +162,7 @@ const SendNotification = () => {
           .catch((err) => console.error("Could not fetch events", err));
       }
 
-      getSentNotifications()
+      getSentNotifications(targetClubId ? { clubId: targetClubId } : undefined)
         .then((res) => setHistory(res.data || []))
         .catch((err) => console.error("Could not fetch history", err));
     }
@@ -140,18 +174,27 @@ const SendNotification = () => {
     setSuccessMsg("");
     setErrorMsg("");
 
+    const targetClubId = selectedClubId || user.clubId;
+
+    if (!targetClubId && role !== "admin" && user?.principalType !== "ADMIN") {
+      setErrorMsg("Please select an authorized club before broadcasting.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await sendNotification({
         title,
         message,
         targetType,
+        clubId: targetClubId,
         eventId:
           targetType === "REGISTERED_STUDENTS" || targetType === "EVENT_PARTICIPANTS"
             ? selectedEventId
             : undefined,
       });
 
-      setSuccessMsg("Notification broadcast dispatched successfully!");
+      setSuccessMsg("Club broadcast dispatched successfully!");
       setHistory((prev) => [res.data, ...prev]);
       setTitle("");
       setMessage("");
@@ -170,75 +213,163 @@ const SendNotification = () => {
     user?.name ||
     "Club";
 
+  const currentClubLogo =
+    activeClubData?.clubLogo ||
+    managedClubs.find((c) => c.id === selectedClubId)?.logo ||
+    null;
+
+  // Access Control: regular students without club coordinator roles cannot broadcast
+  const isStudent = role === "student" || role === "member" || user?.principalType === "STUDENT";
+  const hasNoClubAuth = managedClubs.length === 0 && role !== "admin" && user?.principalType !== "ADMIN" && role !== "club";
+
+  if (isStudent && hasNoClubAuth) {
+    return (
+      <div className="max-w-[650px] mx-auto px-4 py-10 text-center">
+        <Card className="p-5 sm:p-6 space-y-3">
+          <div className="w-14 h-14 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
+            <Shield className="w-7 h-7" />
+          </div>
+          <CardTitle className="text-xl">Authorized Club Leadership Required</CardTitle>
+          <CardDescription className="text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+            Broadcasting is restricted to official student club heads, coordinators, and faculty. Personal student broadcasts are not permitted.
+          </CardDescription>
+          <div className="pt-2">
+            <Button asChild className="font-semibold gap-2">
+              <Link to="/clubs">
+                <Compass className="w-4 h-4" />
+                <span>Browse Clubs</span>
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-[850px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 myfont space-y-6 md:space-y-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-6">
+      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50 rounded-full">
+          <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/30">
             Broadcasts & Communication
-          </span>
+          </Badge>
         </div>
-        <h1 className="text-2xl md:text-3xl font-black text-black dark:text-white tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
           Broadcast Center
         </h1>
-        <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm mt-1">
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
           Dispatch real-time notifications to student feeds and post official club announcements.
         </p>
       </div>
 
-      <div className="flex items-center gap-2 p-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800">
-        <button
+      {/* Tabs */}
+      <div className="flex items-center gap-2 p-1 bg-muted rounded-xl border border-border">
+        <Button
           type="button"
+          variant={currentTab === "notifications" ? "default" : "ghost"}
+          size="sm"
           onClick={() => handleTabChange("notifications")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-            currentTab === "notifications"
-              ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs"
-              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-          }`}
+          className={`flex-1 gap-2 font-semibold ${currentTab === "notifications" ? "shadow-xs" : "text-muted-foreground"}`}
         >
-          <i className="ri-broadcast-line text-brand-600 text-base font-light" />
+          <Bell className="w-4 h-4" />
           <span>Push Notification</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant={currentTab === "announcements" ? "default" : "ghost"}
+          size="sm"
           onClick={() => handleTabChange("announcements")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-            currentTab === "announcements"
-              ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs"
-              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-          }`}
+          className={`flex-1 gap-2 font-semibold ${currentTab === "announcements" ? "shadow-xs" : "text-muted-foreground"}`}
         >
-          <i className="ri-megaphone-line text-brand-600 text-base font-light" />
+          <Megaphone className="w-4 h-4" />
           <span>Club Announcements</span>
           {activeClubData?.announcements?.length > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-black bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-full">
+            <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-bold">
               {activeClubData.announcements.length}
-            </span>
+            </Badge>
           )}
-        </button>
+        </Button>
       </div>
 
       {currentTab === "notifications" && (
-        <div className="space-y-8 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-xs">
-            {successMsg && (
-              <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 font-semibold text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm rounded-xl flex items-center gap-2">
-                <i className="ri-checkbox-circle-fill text-lg"></i>
-                {successMsg}
-              </div>
-            )}
-            {errorMsg && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 font-semibold text-red-700 dark:text-red-400 text-xs sm:text-sm rounded-xl flex items-center gap-2">
-                <i className="ri-error-warning-fill text-lg"></i>
-                {errorMsg}
+        <div className="space-y-6">
+          <Card className="p-4 sm:p-6">
+            {/* Multiple Managed Clubs Selector if applicable */}
+            {managedClubs.length > 1 && (
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-muted/40 border border-border rounded-xl">
+                <div className="flex items-center gap-2">
+                  <Building className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold">
+                    Broadcasting on behalf of:
+                  </span>
+                </div>
+                <select
+                  value={selectedClubId || ""}
+                  onChange={(e) => {
+                    setSelectedClubId(e.target.value);
+                    setSearchParams({ ...(currentTab === "announcements" ? { tab: "announcements" } : {}), clubId: e.target.value });
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary"
+                >
+                  {managedClubs.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 
-            <form onSubmit={handleSubmitNotification} className="flex flex-col gap-5">
+            {/* Official Club Broadcast Identity Banner */}
+            {(selectedClubId || currentClubName !== "Club") && (
+              <div className="mb-6 flex items-center gap-3.5 p-3.5 bg-primary/5 border border-primary/20 rounded-xl">
+                <div className="w-11 h-11 rounded-lg overflow-hidden bg-background border border-border flex items-center justify-center shrink-0">
+                  {currentClubLogo ? (
+                    <img src={currentClubLogo} alt={currentClubName} className="w-full h-full object-cover" />
+                  ) : (
+                    <Users className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                      Sending As Official Club
+                    </span>
+                    <Badge variant="outline" className="text-[9px] font-bold text-primary border-primary/30 py-0">
+                      <ShieldCheck className="w-3 h-3 mr-1 text-primary" /> Verified
+                    </Badge>
+                  </div>
+                  <div className="text-sm font-bold truncate mt-0.5">
+                    {currentClubName}
+                  </div>
+                </div>
+                <div className="text-right hidden sm:block">
+                  <span className="text-[11px] text-muted-foreground">
+                    Sender email protected
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="mb-6 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-semibold text-xs sm:text-sm rounded-xl flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+            {errorMsg && (
+              <div className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive font-semibold text-xs sm:text-sm rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitNotification} className="space-y-5">
               {/* Target Audience */}
-              <div className="flex flex-col gap-2">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Target Audience
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -248,10 +379,10 @@ const SendNotification = () => {
                   ].map((opt) => (
                     <label
                       key={opt.value}
-                      className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                      className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all flex-1 ${
                         targetType === opt.value
-                          ? "border-brand-500 bg-brand-50 dark:bg-brand-950/20 dark:border-brand-600"
-                          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-border/80"
                       }`}
                     >
                       <input
@@ -260,9 +391,9 @@ const SendNotification = () => {
                         value={opt.value}
                         checked={targetType === opt.value}
                         onChange={() => setTargetType(opt.value)}
-                        className="accent-brand-600 scale-110"
+                        className="accent-primary"
                       />
-                      <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{opt.label}</span>
+                      <span className="text-xs sm:text-sm font-medium">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -270,15 +401,15 @@ const SendNotification = () => {
 
               {/* Event Selector (Conditional) */}
               {targetType === "REGISTERED_STUDENTS" && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Select Event
                   </label>
                   <select
                     value={selectedEventId}
                     onChange={(e) => setSelectedEventId(e.target.value)}
                     required
-                    className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all"
+                    className="w-full border border-border rounded-xl px-4 py-2.5 text-xs sm:text-sm bg-background text-foreground outline-none focus:border-primary transition-all"
                   >
                     <option value="" disabled>
                       -- Select an event --
@@ -289,108 +420,95 @@ const SendNotification = () => {
                       </option>
                     ))}
                   </select>
-                  <p className="text-[11px] text-neutral-400 mt-1">
+                  <p className="text-[11px] text-muted-foreground">
                     Only students registered for this event will receive the notification.
                   </p>
                 </div>
               )}
 
               {/* Title */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Notification Title
                 </label>
-                <input
+                <Input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                   placeholder="e.g., Important Venue Change"
-                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
+                  className="text-xs sm:text-sm"
                 />
               </div>
 
               {/* Message */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Message
                 </label>
-                <textarea
+                <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required
                   rows={4}
-                  placeholder="Write your message here..."
-                  className="w-full border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-sm font-medium bg-white dark:bg-neutral-900 text-black dark:text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400 resize-y"
+                  placeholder="Write your broadcast message here..."
+                  className="text-xs sm:text-sm resize-y"
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
                 disabled={loading}
-                className={`w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all shadow-xs ${
-                  loading ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 cursor-pointer"
-                }`}
+                className="w-full font-semibold uppercase tracking-wider text-xs gap-2 py-5"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <i className="ri-loader-4-line animate-spin text-lg" /> Sending...
-                  </span>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending Broadcast...</span>
+                  </>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <i className="ri-send-plane-line font-light" /> Send Notification
-                  </span>
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Send Notification</span>
+                  </>
                 )}
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
 
           {/* History */}
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-black dark:text-white tracking-tight mb-4">
+            <h2 className="text-base sm:text-lg font-bold tracking-tight mb-4">
               Notification History
             </h2>
             {history.length === 0 ? (
-              <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl py-12 flex flex-col items-center gap-3 text-center px-6">
-                <div className="w-12 h-12 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl flex items-center justify-center text-neutral-300 dark:text-neutral-700">
-                  <i className="ri-notification-off-line text-xl"></i>
-                </div>
-                <p className="text-sm font-bold text-neutral-400">No notifications sent yet.</p>
-              </div>
+              <Card className="border-dashed p-10 text-center flex flex-col items-center gap-2">
+                <Bell className="w-8 h-8 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">No notifications sent yet.</p>
+              </Card>
             ) : (
-              <div className="flex flex-col gap-3.5">
+              <div className="space-y-3">
                 {history.map((notif) => (
-                  <div
+                  <Card
                     key={notif.id || notif._id}
-                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 shadow-2xs"
+                    className="p-4 hover:border-border/80 transition-colors"
                   >
                     <div className="flex justify-between items-start mb-2 gap-3 flex-wrap">
-                      <span
-                        className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg ${
-                          notif.targetType === "ALL_STUDENTS"
-                            ? "bg-brand-50 dark:bg-brand-950/20 text-brand-600 border border-brand-200/50 dark:border-brand-900/40"
-                            : "bg-blue-50 dark:bg-blue-950/20 text-blue-600 border border-blue-200/50 dark:border-blue-900/40"
-                        }`}
+                      <Badge
+                        variant={notif.targetType === "ALL_STUDENTS" ? "secondary" : "outline"}
+                        className="text-[10px] font-semibold"
                       >
                         {notif.targetType === "ALL_STUDENTS"
                           ? "Sent to all students"
-                          : `Event: ${notif.eventId?.title || "Unknown Event"}`}
-                      </span>
-                      <span className="text-[11px] font-medium text-neutral-400" title={new Date(notif.createdAt).toLocaleString()}>
+                          : `Event: ${notif.eventId?.title || "Event Participants"}`}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground font-mono" title={new Date(notif.createdAt).toLocaleString()}>
                         {formatRelativeTime(notif.createdAt)}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-black dark:text-white mb-1">{notif.title}</h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">{notif.message}</p>
-                    {/* <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between flex-wrap gap-2">
-                      <span className="text-[10px] font-semibold text-neutral-400">
-                        Read by {notif.readBy?.length || 0} student(s)
-                      </span>
-                      <span className="text-[10px] font-semibold text-neutral-400">
-                        Sent to {notif.targetType === "ALL_STUDENTS" ? "All" : (notif.recipients?.length || 0)} student(s)
-                      </span>
-                    </div> */}
-                  </div>
+                    <h3 className="text-sm font-bold mb-1">{notif.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{notif.message}</p>
+                  </Card>
                 ))}
               </div>
             )}
@@ -399,17 +517,17 @@ const SendNotification = () => {
       )}
 
       {currentTab === "announcements" && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           {/* Multiple Managed Clubs Selector if applicable */}
           {managedClubs.length > 1 && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-              <label className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            <Card className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Select Club to Manage:
               </label>
               <select
                 value={selectedClubId || ""}
                 onChange={(e) => setSelectedClubId(e.target.value)}
-                className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white outline-none focus:border-brand-500"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary"
               >
                 {managedClubs.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -417,14 +535,14 @@ const SendNotification = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </Card>
           )}
 
           {loadingClub && !activeClubData ? (
-            <div className="p-12 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <i className="ri-loader-4-line animate-spin text-2xl text-brand-600 mb-2 inline-block" />
-              <p className="text-xs font-semibold text-neutral-400">Loading club announcements...</p>
-            </div>
+            <Card className="p-6 sm:p-8 text-center flex flex-col items-center gap-2">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">Loading club announcements...</p>
+            </Card>
           ) : selectedClubId ? (
             <ClubAnnouncementsSection
               clubId={selectedClubId}
@@ -434,15 +552,15 @@ const SendNotification = () => {
               onUpdate={() => fetchActiveClubDetails(selectedClubId)}
             />
           ) : (
-            <div className="p-12 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800">
-              <i className="ri-building-line text-3xl text-neutral-400 mb-2 inline-block" />
-              <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+            <Card className="border-dashed p-6 sm:p-8 text-center">
+              <Building className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm font-semibold">
                 No club assigned to manage announcements.
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                 You must be a club account or hold a leadership role (Club Head / Coordinator) to post announcements.
               </p>
-            </div>
+            </Card>
           )}
         </div>
       )}

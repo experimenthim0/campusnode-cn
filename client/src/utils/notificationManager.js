@@ -58,9 +58,20 @@ export function normalizeNotification(rawNotif) {
       : (rawNotif.eventId ? `/event/${rawNotif.eventId}` : '/notifications')
   );
 
-  const sender = isTeam
+  const club = rawNotif.club || null;
+  let sender = isTeam
     ? { name: 'CampusNode', clubName: 'CampusNode' }
-    : (rawNotif.sender || { name: 'CampusNode', clubName: 'CampusNode' });
+    : (rawNotif.sender || (club ? { name: club.clubName, clubName: club.clubName, clubLogo: club.clubLogo } : { name: 'CampusNode', clubName: 'CampusNode' }));
+
+  if (club) {
+    sender = {
+      ...sender,
+      clubName: club.clubName || sender.clubName,
+      name: club.clubName || sender.name,
+      clubLogo: club.clubLogo || sender.clubLogo,
+      slug: club.slug || sender.slug,
+    };
+  }
 
   return {
     id,
@@ -71,6 +82,8 @@ export function normalizeNotification(rawNotif) {
     type: rawNotif.type || 'general',
     eventId: rawNotif.eventId || null,
     teamId: rawNotif.teamId || null,
+    clubId: rawNotif.clubId || club?.id || null,
+    club,
     sender,
     createdAt: rawNotif.createdAt || new Date().toISOString(),
     readBy: rawNotif.readBy || [],

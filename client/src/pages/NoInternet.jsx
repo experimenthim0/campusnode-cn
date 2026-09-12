@@ -18,6 +18,10 @@ import {
 import toast from "react-hot-toast";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { useTheme } from "../context/ThemeContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
 
 // Simple Web Audio API Synthesizer for 100% offline sound effects
 const playSound = (type, soundEnabled = true) => {
@@ -442,73 +446,61 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-black transition-colors duration-300">
-      {/* Classic / Original Offline Card */}
-      <div className="w-full max-w-md border border-neutral-200 dark:border-neutral-800 rounded-3xl p-8 sm:p-10 text-center bg-white dark:bg-neutral-950 shadow-sm transition-colors">
-        {/* Wifi Off Icon */}
-        <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center">
-            <WifiOff size={34} className="text-neutral-900 dark:text-white" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-cn-bg text-cn-text transition-colors duration-200">
+      {/* Clean shadcn-styled offline card */}
+      <Card className="w-full max-w-md border-border bg-card shadow-xs text-center p-2 sm:p-4">
+        <CardHeader className="space-y-4 pb-2">
+          <div className="mx-auto size-16 rounded-full border border-border bg-muted/40 flex items-center justify-center text-foreground">
+            <WifiOff className="size-7 text-muted-foreground" />
           </div>
-        </div>
+          <div>
+            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight">
+              You're Offline
+            </CardTitle>
+            <CardDescription className="text-sm mt-2 leading-relaxed text-muted-foreground">
+              CampusNode cannot reach the campus network. Check your Wi-Fi or mobile connection and retry.
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-        {/* Heading */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-          You're Offline
-        </h1>
-
-        <p className="mt-4 text-neutral-600 dark:text-neutral-400 leading-7 text-sm sm:text-base">
-          CampusNode can't connect to the internet.
-          <br />
-          Check your Wi-Fi or mobile data and try again.
-        </p>
-
-        <p className="mt-3 text-xs sm:text-sm text-neutral-500 dark:text-neutral-500">
-          Don't worry. Everything will continue where you left off.
-        </p>
-
-        {/* Try Again Button */}
-        <button
-          onClick={handleRetry}
-          disabled={loading}
-          className="mt-8 w-full h-12 rounded-xl bg-black dark:bg-white text-white dark:text-black font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-70 cursor-pointer text-sm"
-        >
-          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-          {loading ? "Checking..." : "Try Again"}
-        </button>
-
-        {/* Easter Egg 2048 Game Launcher Button */}
-        <div className="mt-4">
-          <button
-            onClick={() => setGameModalOpen(true)}
-            className="w-full py-3 px-4 rounded-xl border border-brand-300/70 dark:border-brand-800/60 bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs group"
+        <CardContent className="space-y-4 pt-2">
+          <Button
+            onClick={handleRetry}
+            disabled={loading}
+            className="w-full h-10 gap-2 font-semibold shadow-xs cursor-pointer"
           >
-            <div className="w-6 h-6 rounded-lg bg-brand-500 text-white flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
-              <Gamepad2 size={14} />
+            <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
+            {loading ? "Checking Connectivity..." : "Try Again"}
+          </Button>
+
+          {/* 2048 Game Launcher Button */}
+          <Button
+            variant="outline"
+            onClick={() => setGameModalOpen(true)}
+            className="w-full h-10 justify-between font-semibold border-border cursor-pointer hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-2 text-foreground">
+              <Gamepad2 className="size-4 text-primary" />
+              <span className="text-xs">Play 2048 Arcade</span>
             </div>
-            <span>Play 2048 while you wait</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand-500 text-white font-mono uppercase tracking-wider">
-              Game
-            </span>
-          </button>
-        </div>
+            <Badge variant="secondary" className="text-[10px] font-mono uppercase tracking-wider">
+              Offline
+            </Badge>
+          </Button>
 
-        {targetPath && (
-          <p className="mt-5 text-xs text-cn-text-muted truncate">
-            Returning to <span className="font-mono">{targetPath}</span>
-          </p>
-        )}
+          {targetPath && (
+            <p className="text-xs text-muted-foreground truncate font-mono">
+              Preserved path: {targetPath}
+            </p>
+          )}
 
-        {/* Divider */}
-        <div className="my-8 border-t border-cn-border-subtle" />
-
-        {/* Branding */}
-        <div>
-          <h2 className="font-medium text-cn-text logofont tracking-wider">
-            Campus<span className="text-brand-500 dark:text-brand-400">Node</span>
-          </h2>
-        </div>
-      </div>
+          <div className="pt-4 border-t border-border">
+            <p className="text-[11px] text-muted-foreground uppercase font-medium tracking-wider">
+              CampusNode Platform • Auto Reconnect Active
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 2048 Game Popup Modal */}
       {gameModalOpen && (

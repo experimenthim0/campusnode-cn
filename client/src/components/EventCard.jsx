@@ -10,7 +10,7 @@ import { Handshake } from 'lucide-react';
 const EventCard = ({ event, onRegister, isRegistered }) => {
     const { title, description, venue, startTime, totalSeats, registeredCount, status, _id, entryFee, registrationDeadline, slug, showWinner } = event;
 
-    const DEFAULT_IMAGE = '/CLUBSETU.png';
+    const DEFAULT_IMAGE = '/fallback-img.jpg';
     const displayImage = event.imageUrl || DEFAULT_IMAGE;
 
     const { displayUrl, isBlobLoaded } = useImageBlob(displayImage);
@@ -125,12 +125,10 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             ? (allowWaitlist && waitlistCount > 0 ? `${waitlistCount} waitlisted` : '0 left')
             : `${remainingSeats} left`;
 
-    // Construct premium card styles dynamically
+    // Construct premium card styles dynamically (clean static background, no image-tinted bg on hover)
     const customStyles = (isHovered && rgb)
         ? {
-            backgroundColor: isDark
-                ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`
-                : `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.08)`,
+            backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
             boxShadow: isDark
                 ? `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.25)`
                 : `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`,
@@ -178,7 +176,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 {/* Status Badge */}
                 <div className="absolute top-1 left-1.5">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
+                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
@@ -198,12 +196,41 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
 
             <div className="px-4 pt-2 flex flex-auto flex-col">
                 <div className="flex items-center justify-between gap-2 min-w-0 mb-1">
-                    {(event.club?.clubName || event.createdBy?.clubName) ? (
+                {(() => {
+                    const organizers = event.organizers || [];
+                    const isJoint = organizers.length > 1;
+                    const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
+
+                    if (isJoint) {
+                        const jointNames = organizers.map(o => o.club?.clubName).filter(Boolean).join(' × ');
+                        return (
+                            <div className="flex items-center min-w-0 gap-1.5">
+                                <div className="flex items-center -space-x-1.5 shrink-0">
+                                    {organizers.slice(0, 3).map((o, i) => (
+                                        <div key={o.club?.id || i} className="w-5 h-5 rounded-full overflow-hidden border-2 border-white dark:border-neutral-900 shrink-0" title={o.club?.clubName}>
+                                            <img
+                                                src={o.club?.clubLogo || fallbackLogo}
+                                                alt={o.club?.clubName || 'Club'}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = fallbackLogo; }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <Handshake size={13} className="text-brand-500 shrink-0" />
+                                <span className="truncate text-brand-600 text-[11px] font-semibold">
+                                    {jointNames}
+                                </span>
+                            </div>
+                        );
+                    }
+
+                    return primaryClubName ? (
                         <div className="flex items-center min-w-0">
                             <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700 shrink-0">
                                 <img
                                     src={clubLogoSrc}
-                                    alt={event.club?.clubName || event.createdBy?.clubName || 'Club Logo'}
+                                    alt={primaryClubName || 'Club Logo'}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -212,10 +239,11 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 />
                             </div>
                             <span className="truncate text-brand-600 text-[12px] font-semibold">
-                                {event.club?.clubName || event.createdBy?.clubName}
+                                {primaryClubName}
                             </span>
                         </div>
-                    ) : <div />}
+                    ) : <div />;
+                })()}
 
                     {/* Sponsors (max 2) in blank space of club name row */}
                     {event.sponsors && event.sponsors.length > 0 && (

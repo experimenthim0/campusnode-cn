@@ -270,7 +270,6 @@ const AdminDashboard = () => {
         calendar: { title: 'Event Calendar & Venue Scheduling', subtitle: 'Interactive month, week, day, and venue timeline scheduling grid' },
         'calendar-schedule': { title: 'Event Calendar & Venue Scheduling', subtitle: 'Interactive month, week, day, and venue timeline scheduling grid' },
         venues: { title: 'Venues Management', subtitle: 'Manage campus event venues and configure their event booking availability' },
-        'central-organizer': { title: 'Central Organizer Management', subtitle: 'Assign, view, or revoke the college-wide Central Organizer student account' },
         'club-heads': { title: 'Clubs Management', subtitle: 'Create, edit, and configure registered student clubs' },
         coordinators: { title: 'Coordinators Management', subtitle: 'Manage faculty coordinator accounts' },
         'payments-overview': { title: 'Transactions Management', subtitle: 'Overview of manual transaction registrations and UTR verifications' },
@@ -453,6 +452,7 @@ const AdminDashboard = () => {
                     <NotificationsTab
                         adminNotifications={adminNotifications}
                         loadingNotifications={loadingNotifications}
+                        onRefresh={fetchAdminNotifications}
                     />
                 )}
 

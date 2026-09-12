@@ -43,52 +43,53 @@ const MemberSocials = ({ student }) => {
   if (student.githubProfile)
     links.push({
       url: formatUrl(student.githubProfile),
-      icon: <GithubIcon className="w-4 h-4" />,
+      icon: <GithubIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "GitHub",
     });
   if (student.linkedinProfile)
     links.push({
       url: formatUrl(student.linkedinProfile),
-      icon: <LinkedinIcon className="w-4 h-4" />,
+      icon: <LinkedinIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "LinkedIn",
     });
   if (student.xProfile)
     links.push({
       url: formatUrl(student.xProfile),
-      icon: <TwitterIcon className="w-4 h-4" />,
+      icon: <TwitterIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "X",
     });
   if (student.instagramProfile)
     links.push({
       url: formatUrl(student.instagramProfile),
-      icon: <InstagramIcon className="w-4 h-4" />,
+      icon: <InstagramIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "Instagram",
     });
   if (student.whatsappNumber)
     links.push({
       url: `https://wa.me/${student.whatsappNumber.replace(/[^\d+]/g, "")}`,
-      icon: <MessageCircleIcon className="w-4 h-4" />,
+      icon: <MessageCircleIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "WhatsApp",
     });
   if (student.portfolioUrl)
     links.push({
       url: formatUrl(student.portfolioUrl),
-      icon: <EarthIcon className="w-4 h-4" />,
+      icon: <EarthIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "Portfolio",
     });
 
   if (links.length === 0) return null;
 
   return (
-    <div className="flex items-center flex-wrap gap-1 w-full">
+    <div className="flex items-center flex-wrap gap-1 w-full justify-start -ml-1">
       {links.map((l, idx) => (
         <a
           key={idx}
           href={l.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0"
           title={l.title}
+          aria-label={l.title}
         >
           {l.icon}
         </a>
@@ -375,7 +376,15 @@ const TeamMemberCard = ({
         </div>
 
         {/* Email or Social Links */}
-        {(email || student) && (
+        {(email ||
+          Boolean(
+            student?.githubProfile ||
+              student?.linkedinProfile ||
+              student?.xProfile ||
+              student?.instagramProfile ||
+              student?.whatsappNumber ||
+              student?.portfolioUrl
+          )) && (
           <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80">
             {email ? (
               <a
@@ -414,11 +423,16 @@ const ClubDetails = () => {
   const [isHead, setIsHead] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  // Section Expansion States (capped at 6 items initially)
+  // Section Expansion States
   const [isAnnouncementsExpanded, setIsAnnouncementsExpanded] = useState(false);
+  const [isLiveEventsExpanded, setIsLiveEventsExpanded] = useState(false);
   const [isUpcomingEventsExpanded, setIsUpcomingEventsExpanded] = useState(false);
   const [isPastEventsExpanded, setIsPastEventsExpanded] = useState(false);
+  const [isCoordinatorsExpanded, setIsCoordinatorsExpanded] = useState(false);
+  const [isMembersExpanded, setIsMembersExpanded] = useState(false);
+  const [isAchievementsExpanded, setIsAchievementsExpanded] = useState(false);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
+  const [isSponsorsExpanded, setIsSponsorsExpanded] = useState(false);
 
   // Active sub-views
   const [eventViewMode, setEventViewMode] = useState("list"); // "list" | "calendar"
@@ -1229,14 +1243,33 @@ const ClubDetails = () => {
                       Live Now
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {liveEvents.map((e) => (
-                      <EventCard
-                        key={e._id || e.id}
-                        event={getFullEvent(e)}
-                        isRegistered={registeredEvents.includes(e._id || e.id)}
-                      />
-                    ))}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(isLiveEventsExpanded ? liveEvents : liveEvents.slice(0, 3)).map((e) => (
+                        <EventCard
+                          key={e._id || e.id}
+                          event={getFullEvent(e)}
+                          isRegistered={registeredEvents.includes(e._id || e.id)}
+                        />
+                      ))}
+                    </div>
+
+                    {liveEvents.length > 3 && (
+                      <div className="flex justify-center pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsLiveEventsExpanded((prev) => !prev)}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                        >
+                          <span>
+                            {isLiveEventsExpanded
+                              ? "Show Less"
+                              : `View All Live Events (${liveEvents.length})`}
+                          </span>
+                          <i className={isLiveEventsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1248,7 +1281,7 @@ const ClubDetails = () => {
                 {upcomingEvents.length > 0 ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(isUpcomingEventsExpanded ? upcomingEvents : upcomingEvents.slice(0, 6)).map((e) => (
+                      {(isUpcomingEventsExpanded ? upcomingEvents : upcomingEvents.slice(0, 3)).map((e) => (
                         <EventCard
                           key={e._id || e.id}
                           event={getFullEvent(e)}
@@ -1257,7 +1290,7 @@ const ClubDetails = () => {
                       ))}
                     </div>
 
-                    {upcomingEvents.length > 6 && (
+                    {upcomingEvents.length > 3 && (
                       <div className="flex justify-center pt-2">
                         <button
                           type="button"
@@ -1290,7 +1323,7 @@ const ClubDetails = () => {
                   </h3>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(isPastEventsExpanded ? pastEvents : pastEvents.slice(0, 6)).map((e) => (
+                      {(isPastEventsExpanded ? pastEvents : pastEvents.slice(0, 3)).map((e) => (
                         <EventCard
                           key={e._id || e.id}
                           event={getFullEvent(e)}
@@ -1299,7 +1332,7 @@ const ClubDetails = () => {
                       ))}
                     </div>
 
-                    {pastEvents.length > 6 && (
+                    {pastEvents.length > 3 && (
                       <div className="flex justify-center pt-2">
                         <button
                           type="button"
@@ -1389,7 +1422,7 @@ const ClubDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {studentCoordinators.map((m) => (
+                    {(isCoordinatorsExpanded ? studentCoordinators : studentCoordinators.slice(0, 8)).map((m) => (
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
@@ -1400,6 +1433,23 @@ const ClubDetails = () => {
                       />
                     ))}
                   </div>
+
+                  {studentCoordinators.length > 8 && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsCoordinatorsExpanded((prev) => !prev)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>
+                          {isCoordinatorsExpanded
+                            ? "Show Less"
+                            : `View All Coordinators (${studentCoordinators.length})`}
+                        </span>
+                        <i className={isCoordinatorsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1415,7 +1465,7 @@ const ClubDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {regularMembers.map((m) => (
+                    {(isMembersExpanded ? regularMembers : regularMembers.slice(0, 8)).map((m) => (
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
@@ -1426,6 +1476,23 @@ const ClubDetails = () => {
                       />
                     ))}
                   </div>
+
+                  {regularMembers.length > 8 && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsMembersExpanded((prev) => !prev)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>
+                          {isMembersExpanded
+                            ? "Show Less"
+                            : `View All Members (${regularMembers.length})`}
+                        </span>
+                        <i className={isMembersExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1442,40 +1509,59 @@ const ClubDetails = () => {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
-                        {item.date || "Milestone"}
-                      </span>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(isAchievementsExpanded ? achievements : achievements.slice(0, 4)).map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
+                          {item.date || "Milestone"}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                        {item.title}
+                      </h3>
+                      {item.description && (
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                          {item.description}
+                        </p>
+                      )}
                     </div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                      {item.title}
-                    </h3>
-                    {item.description && (
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                        {item.description}
-                      </p>
+
+                    {item.externalUrl && (
+                      <a
+                        href={item.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        Read more <i className="ri-external-link-line text-xs" />
+                      </a>
                     )}
                   </div>
+                ))}
+              </div>
 
-                  {item.externalUrl && (
-                    <a
-                      href={item.externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
-                    >
-                      Read more <i className="ri-external-link-line text-xs" />
-                    </a>
-                  )}
+              {achievements.length > 4 && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAchievementsExpanded((prev) => !prev)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                  >
+                    <span>
+                      {isAchievementsExpanded
+                        ? "Show Less"
+                        : `View All Achievements (${achievements.length})`}
+                    </span>
+                    <i className={isAchievementsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </section>
         )}
@@ -1496,7 +1582,7 @@ const ClubDetails = () => {
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                {(isGalleryExpanded ? galleryMedia : galleryMedia.slice(0, 6)).map((m, idx) => {
+                {(isGalleryExpanded ? galleryMedia : galleryMedia.slice(0, 8)).map((m, idx) => {
                   const imgUrl = typeof m === "string" ? m : m.url;
                   const caption = typeof m === "object" ? m.caption : null;
                   return (
@@ -1520,7 +1606,7 @@ const ClubDetails = () => {
                 })}
               </div>
 
-              {galleryMedia.length > 6 && (
+              {galleryMedia.length > 8 && (
                 <div className="flex justify-center pt-2">
                   <button
                     type="button"
@@ -1547,32 +1633,54 @@ const ClubDetails = () => {
             Sponsors & Partners
               </h2>
             </div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-              {(club.sponsors || club.clubSponsors || []).map((s, idx) => {
-                const logoUrl = typeof s === "string" ? s : s.logoUrl;
-                const name = typeof s === "object" ? s.name : "Sponsor";
-                const website = typeof s === "object" ? s.websiteUrl : null;
-                return website ? (
-                  <a
-                    key={idx}
-                    href={website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="h-12 max-w-[140px] transition opacity-100 flex items-center justify-center"
-                    title={name}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
+                {(isSponsorsExpanded
+                  ? (club.sponsors || club.clubSponsors || [])
+                  : (club.sponsors || club.clubSponsors || []).slice(0, 8)
+                ).map((s, idx) => {
+                  const logoUrl = typeof s === "string" ? s : s.logoUrl;
+                  const name = typeof s === "object" ? s.name : "Sponsor";
+                  const website = typeof s === "object" ? s.websiteUrl : null;
+                  return website ? (
+                    <a
+                      key={idx}
+                      href={website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-12 max-w-[140px] transition opacity-100 flex items-center justify-center hover:opacity-80"
+                      title={name}
+                    >
+                      <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
+                    </a>
+                  ) : (
+                    <div
+                      key={idx}
+                      className="h-12 max-w-[140px] transition flex items-center justify-center"
+                      title={name}
+                    >
+                      <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {(club.sponsors || club.clubSponsors || []).length > 8 && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSponsorsExpanded((prev) => !prev)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                   >
-                    <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                  </a>
-                ) : (
-                  <div
-                    key={idx}
-                    className="h-12 max-w-[140px] transition  flex items-center justify-center"
-                    title={name}
-                  >
-                    <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                  </div>
-                );
-              })}
+                    <span>
+                      {isSponsorsExpanded
+                        ? "Show Less"
+                        : `View All Sponsors (${(club.sponsors || club.clubSponsors || []).length})`}
+                    </span>
+                    <i className={isSponsorsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         )}

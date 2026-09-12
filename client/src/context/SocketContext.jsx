@@ -30,6 +30,7 @@ export const SocketProvider = ({ children }) => {
 
   const { showRealtimeToast } = useNotification() || {};
   const mountTimeRef = useRef(new Date());
+  const toastedNotificationIdsRef = useRef(new Set());
 
   // Sync app icon badge whenever unreadCount updates
   useEffect(() => {
@@ -59,11 +60,24 @@ export const SocketProvider = ({ children }) => {
       setUnreadCount(unread);
       setAppIconBadge(unread);
 
-      // Check if any genuinely NEW notification arrived during polling sync
-      if (!isInitialSync) {
+      // On initial load, mark all existing notifications as seen so we never toast them
+      if (isInitialSync) {
         normalizedList.forEach((notif) => {
+          const notifId = notif.id || notif._id;
+          if (notifId) toastedNotificationIdsRef.current.add(String(notifId));
+        });
+      } else {
+        // Check if any genuinely NEW notification arrived during polling sync
+        normalizedList.forEach((notif) => {
+          const notifId = notif.id || notif._id;
+          const strId = notifId ? String(notifId) : null;
           const createdAt = new Date(notif.createdAt);
-          if (createdAt > mountTimeRef.current && !(notif.readBy || []).includes(currentUserId)) {
+          if (
+            createdAt > mountTimeRef.current &&
+            !(notif.readBy || []).includes(currentUserId) &&
+            (!strId || !toastedNotificationIdsRef.current.has(strId))
+          ) {
+            if (strId) toastedNotificationIdsRef.current.add(strId);
             processNotification(notif, {
               onToast: (toastData) => {
                 if (showRealtimeToast) showRealtimeToast(toastData);
@@ -102,6 +116,15 @@ export const SocketProvider = ({ children }) => {
 
     const handleNewNotification = (rawNotif) => {
       console.log("[SocketContext] new-notification event received:", rawNotif?.title);
+
+      const rawId = rawNotif?.id || rawNotif?._id;
+      const strId = rawId ? String(rawId) : null;
+      if (strId && toastedNotificationIdsRef.current.has(strId)) {
+        return;
+      }
+      if (strId) {
+        toastedNotificationIdsRef.current.add(strId);
+      }
 
       const processed = processNotification(rawNotif, {
         onToast: (toastData) => {

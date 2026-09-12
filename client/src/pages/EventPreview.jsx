@@ -1,32 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
   Users,
-  CreditCard,
-  Building2,
+  ShieldCheck,
   AlertTriangle,
   CheckCircle2,
   ExternalLink,
   Edit3,
   Send,
-  Globe,
-  Tag,
-  Sparkles,
   Loader2,
-  ShieldCheck,
+  Check,
+  X,
+  Eye,
   AlertCircle
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { markdownToHtml } from '../utils/htmlMarkdownConverter';
-import { getEventById, submitEventForReview } from '../services/eventService';
+import '../components/WysiwygMarkdownEditor.css';
+import { getEventById, reviewEvent, submitEventForReview } from '../services/eventService';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import { validateAllEventSteps } from '../utils/eventValidation';
+import CalendarDropdown from '../components/CalendarDropdown';
+import ImageZoomModal from '../components/ImageZoomModal';
 import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
+import { InstagramIcon } from "@/components/ui/instagram";
+import ShimmerText from '../components/ShimmerText';
+import { LinkedinIcon } from "@/components/ui/linkedin";
+import { TwitterIcon } from "@/components/ui/twitter";
+import { GithubIcon } from "@/components/ui/github";
+import { MessageCircleIcon } from "@/components/ui/message-circle";
+import { EarthIcon } from "@/components/ui/earth";
+
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
+
+const FAQItem = ({ question, answer, isOpen, onToggle }) => (
+  <div
+    className={`rounded-2xl transition-all duration-200 border overflow-hidden backdrop-blur-md ${
+      isOpen
+        ? 'bg-white/95 dark:bg-zinc-900/90 border-cn-blue-300/30 dark:border-cn-blue-300/30 shadow-md'
+        : 'bg-white/70 dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700'
+    }`}
+  >
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer select-none"
+      aria-expanded={isOpen}
+    >
+      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
+      <div
+        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+          isOpen
+            ? 'rotate-180 bg-brand-500/10 text-brand-600 dark:text-brand-400'
+            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+        }`}
+      >
+        <i className="ri-arrow-down-s-line text-lg" />
+      </div>
+    </button>
+    <div
+      className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+    >
+      <div className="px-5 pb-4 pt-2 border-t border-neutral-100 dark:border-neutral-800/60 text-[13px] text-neutral-600 dark:text-neutral-300 leading-relaxed">
+        {answer}
+      </div>
+    </div>
+  </div>
+);
 
 const EventPreview = () => {
   const { id } = useParams();
@@ -37,30 +80,33 @@ const EventPreview = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [validationResult, setValidationResult] = useState(null);
+  const [openFAQ, setOpenFAQ] = useState(null);
+
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [activeModalImage, setActiveModalImage] = useState({ src: '', title: '', alt: '' });
+
+  const openImageModal = (src, titleText, altText) => {
+    setActiveModalImage({
+      src: src || DEFAULT_IMAGE,
+      title: titleText || event?.title || 'Event Poster',
+      alt: altText || event?.title || 'Poster',
+    });
+    setImageModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         setLoading(true);
         const res = await getEventById(id);
-        const data = res.data;
-        setEvent(data);
-
-        // Run client validation check for completeness
-        const vResult = validateAllEventSteps(data, {
-          sponsors: data.sponsors || [],
-          media: data.media || [],
-          isUnlimited: data.totalSeats === 0,
-        });
-        setValidationResult(vResult);
+        setEvent(res.data);
       } catch (err) {
         console.error('Failed to load event for preview:', err);
         showNotification(
           err.response?.data?.message || 'Could not load event for preview.',
           'error'
         );
-        navigate('/events');
+        navigate(-1);
       } finally {
         setLoading(false);
       }
@@ -71,37 +117,74 @@ const EventPreview = () => {
     }
   }, [id, navigate, showNotification]);
 
-  const handleSubmitForReview = async (directPublish = false) => {
-    if (!validationResult?.isValid) {
-      showNotification(
-        'Please resolve incomplete sections before submitting.',
-        'error'
-      );
-      return;
-    }
+  // Role evaluations
+  const isFacultyCoordinator = Boolean(
+    user?.role === 'facultyCoordinator' ||
+    user?.principalType === 'FACULTY' ||
+    user?.memberships?.some(m =>
+      m.role === 'FACULTY_COORDINATOR' ||
+      m.role === 'facultyCoordinator' ||
+      m.role === 'FACULTY'
+    )
+  );
 
+  const isStudentLeadOrCoordinator = Boolean(
+    !isFacultyCoordinator && (
+      user?.role === 'admin' ||
+      user?.role === 'SUPER_ADMIN' ||
+      user?.role === 'CLUB_HEAD' ||
+      user?.role === 'COORDINATOR' ||
+      user?.memberships?.some(m =>
+        (String(m.clubId || m.club?.id) === String(event?.clubId) ||
+         String(m.clubId || m.club?.id) === String(event?.club?.id)) &&
+        (m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents)
+      ) ||
+      (event && (
+        event.createdById === user?.id ||
+        event.createdById === user?._id ||
+        (event.createdBy && (event.createdBy.id === user?.id || event.createdBy.id === user?._id))
+      ))
+    )
+  );
+
+  const handleClosePreview = () => {
+    if (window.opener && !window.opener.closed) {
+      window.close();
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate(`/club-events/${event?.clubId || ''}`);
+    }
+  };
+
+  const handleReview = async (status, reason = null) => {
+    if (!event) return;
     try {
       setSubmitting(true);
-      const res = await submitEventForReview(id, { directPublish });
-      showNotification(
-        res.data?.message ||
-          (directPublish
-            ? 'Event published successfully!'
-            : 'Event submitted for faculty approval!'),
-        'success'
-      );
-      // Reload event data to reflect new status
+      await reviewEvent(event.id || event._id, { status, reason });
+      showNotification(`Event ${status === 'PUBLISHED' ? 'approved' : 'rejected'} successfully!`, 'success');
+      // Refresh event
+      const res = await getEventById(id);
+      setEvent(res.data);
+    } catch (err) {
+      console.error('Review failed:', err);
+      showNotification(err.response?.data?.message || 'Failed to update review status', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitForReview = async () => {
+    if (!event) return;
+    try {
+      setSubmitting(true);
+      const res = await submitEventForReview(event.id || event._id, { directPublish: false });
+      showNotification(res.data?.message || 'Event submitted for faculty approval!', 'success');
       const updated = res.data?.event || res.data;
       setEvent(prev => ({ ...prev, ...updated }));
     } catch (err) {
       console.error('Submission failed:', err);
-      const msg = err.response?.data?.message || 'Failed to submit event.';
-      const errors = err.response?.data?.errors;
-      if (Array.isArray(errors) && errors.length > 0) {
-        showNotification(`${msg}: ${errors.join(' ')}`, 'error');
-      } else {
-        showNotification(msg, 'error');
-      }
+      showNotification(err.response?.data?.message || 'Failed to submit event.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -109,572 +192,880 @@ const EventPreview = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
-        <p className="text-sm font-medium text-neutral-500">Loading event preview...</p>
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center">
+        <ShimmerText text="Loading event preview..." className="text-sm font-semibold tracking-wide" />
       </div>
     );
   }
 
-  if (!event) return null;
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
+        <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl p-10 text-center max-w-sm bg-white dark:bg-neutral-900 shadow-sm">
+          <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center text-rose-600 mx-auto mb-5">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h2 className="font-bold text-xl text-neutral-900 dark:text-white mb-2">Event Not Found</h2>
+          <p className="text-neutral-500 text-sm mb-6">The requested event preview is unavailable or has been removed.</p>
+          <button
+            onClick={handleClosePreview}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold uppercase tracking-wider rounded-xl transition hover:opacity-90 cursor-pointer"
+          >
+            Close Preview
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const start = event.startTime ? new Date(event.startTime) : null;
-  const end = event.endTime ? new Date(event.endTime) : null;
-  const regDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
+  const {
+    title,
+    description,
+    venue,
+    startTime,
+    endTime,
+    totalSeats,
+    registeredCount = 0,
+    views = 0,
+    status,
+    reviewStatus,
+    registrationDeadline,
+    entryFee = 0,
+    registrationFee
+  } = event;
 
-  const formattedDate = start
-    ? start.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : 'Date to be announced';
+  const effectiveFee = registrationFee ?? entryFee ?? 0;
+  const isUnlimited = !totalSeats || totalSeats === 0;
+  const isFull = !isUnlimited && registeredCount >= totalSeats;
+  const isLive = status === 'LIVE';
+  const isEnded = status === 'ENDED';
+  const fillPct = isUnlimited ? 0 : Math.min(100, Math.round((registeredCount / totalSeats) * 100));
 
-  const formattedStartTime = start
-    ? start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    : '';
-  const formattedEndTime = end
-    ? end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    : '';
+  const isDraft = reviewStatus === 'DRAFT';
+  const isPending = reviewStatus === 'PENDING';
+  const isRejected = reviewStatus === 'REJECTED';
+  const isPublished = reviewStatus === 'PUBLISHED';
 
-  const posterImage = event.imageUrl || '/CLUBSETU.png';
-  const clubName = event.club?.clubName || 'Club Event';
-  const clubLogo = event.club?.clubLogo;
+  const winners = (event.winners || []).filter(w => w.name);
+  const showWinners = isEnded && event.showWinner && winners.length > 0;
+  const medalConfig = {
+    1: { badgeBg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300', label: '1st' },
+    2: { badgeBg: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300', label: '2nd' },
+    3: { badgeBg: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border border-orange-300', label: '3rd' },
+  };
 
-  const paymentMethod = event.paymentMethod || 'FREE';
-  const isPaid = paymentMethod !== 'FREE' || event.registrationFee > 0;
-  const feeAmount = event.registrationFee ?? event.entryFee ?? 0;
+  const isCentralEvent = event.organizerType === 'CENTRAL' || !!event.centralOrganizerId || (!event.club && !event.clubId && (!!event.centralOrganizer || !!event.participatingClubs));
+  const clubSlugOrId = isCentralEvent ? null : (event.club?.slug || event.club?._id || event.club?.id || event.createdBy?.slug || event.createdBy?._id || event.createdBy?.id);
+  const displayName = isCentralEvent ? 'Office of DSW' : (event.club?.clubName || event.createdBy?.clubName || 'Organizer Club');
 
-  const isTeam = event.registrationType === 'team' || (event.maxTeamSize && event.maxTeamSize > 1);
-  const minTeam = event.minTeamSize || 1;
-  const maxTeam = event.maxTeamSize || 1;
-
-  const isAllPrograms =
-    !event.allowedPrograms ||
+  const isAllPrograms = !event.allowedPrograms ||
     !Array.isArray(event.allowedPrograms) ||
     event.allowedPrograms.length === 0 ||
-    event.allowedPrograms.length >= PROGRAM_OPTIONS.length;
-  const allowedPrograms = isAllPrograms
-    ? ['All Programs']
-    : event.allowedPrograms.map((p) => PROGRAM_LABELS[p] || p);
+    event.allowedPrograms.length >= PROGRAM_OPTIONS.length ||
+    (PROGRAM_OPTIONS.length > 0 && PROGRAM_OPTIONS.every(p => event.allowedPrograms.includes(p)));
 
-  const allowedYears =
-    Array.isArray(event.allowedYears) && event.allowedYears.length > 0
-      ? event.allowedYears
-      : ['All Years'];
+  const programDisplay = isAllPrograms
+    ? 'All Programs'
+    : event.allowedPrograms.map(p => PROGRAM_LABELS[p] || p).join(', ');
 
-  const allowedBranches =
-    Array.isArray(event.allowedBranches) && event.allowedBranches.length > 0
-      ? event.allowedBranches
-      : ['All Branches'];
+  const getRegistrationTypeDisplay = () => {
+    const type = event.registrationType;
+    if (type === 'none') return 'Open Entry';
+    if (type === 'team') {
+      const min = event.minTeamSize;
+      const max = event.maxTeamSize;
+      if (min && max && min === max) return `Team (${min})`;
+      if (min && max) return `Team (${min}-${max})`;
+      return 'Team';
+    }
+    if (type === 'both') {
+      const min = event.minTeamSize;
+      const max = event.maxTeamSize;
+      if (min && max) return `Solo / Team (${min}-${max})`;
+      return 'Solo / Team';
+    }
+    return 'Individual';
+  };
 
-  const canDirectPublish =
-    user?.role === 'admin' || user?.role === 'SUPER_ADMIN';
+  const highlights = [
+    { icon: 'ri-group-line', label: 'Capacity', value: isUnlimited ? 'Unlimited Seats' : `${totalSeats} Seats` },
+    { icon: 'ri-coin-line', label: 'Entry Fee', value: effectiveFee > 0 ? `₹${effectiveFee}` : 'Free Entry' },
+    {
+      icon: event.registrationType === 'team' || event.registrationType === 'both' ? 'ri-team-line' : 'ri-user-line',
+      label: 'Registration',
+      value: getRegistrationTypeDisplay(),
+    },
+    { icon: 'ri-time-line', label: 'Duration', value: (() => {
+      if (!startTime || !endTime) return 'TBA';
+      const diff = new Date(endTime) - new Date(startTime);
+      const hrs = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      return hrs > 0 ? `${hrs}h ${mins > 0 ? `${mins}m` : ''}` : `${mins}m`;
+    })() },
+    ...(event.provideCertificate ? [{ icon: 'ri-award-line', label: 'Certificate', value: 'Provided' }] : []),
+    ...(event.showWinner ? [{
+      icon: 'ri-trophy-line',
+      label: 'Competition',
+      value: showWinners ? 'Winners Announced' : 'Winners will be announced',
+    }] : []),
+    { icon: 'ri-graduation-cap-line', label: 'Open To', value: programDisplay },
+    ...(event.allowedBranches && event.allowedBranches.length > 0
+      ? [{ icon: 'ri-git-branch-line', label: 'Branches', value: event.allowedBranches.join(', ') }]
+      : []),
+    ...(event.allowedYears && event.allowedYears.length > 0
+      ? [{ icon: 'ri-calendar-check-line', label: 'Eligible Year', value: event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ') }]
+      : []),
+  ];
 
-  const isCreator = Boolean(
-    event &&
-      user &&
-      (event.createdById === user.id ||
-        event.createdById === user._id ||
-        (event.createdBy && (event.createdBy.id === user.id || event.createdBy.id === user._id)))
-  );
-
-  const isClubCoordinator = Boolean(
-    user &&
-      (user.role === 'club' ||
-        user.role === 'club_account' ||
-        (user.clubId && String(event?.clubId) === String(user.clubId)))
-  );
-
-  const canEdit = canDirectPublish || isCreator || isClubCoordinator;
-
-  const isDraft = event.reviewStatus === 'DRAFT';
-  const isRejected = event.reviewStatus === 'REJECTED';
-  const isPending = event.reviewStatus === 'PENDING';
-  const isPublished = event.reviewStatus === 'PUBLISHED';
+  const faqItems = [
+    {
+      question: 'When and where is the event scheduled?',
+      answer: (
+        <span>
+          The event starts on{' '}
+          <strong className="font-bold text-neutral-900 dark:text-white">
+            {startTime ? new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'} at {startTime ? new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
+          </strong>{' '}
+          and ends on{' '}
+          <strong className="font-bold text-neutral-900 dark:text-white">
+            {endTime ? new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'} at {endTime ? new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
+          </strong>
+          . It will be held at{' '}
+          <strong className="font-bold text-neutral-900 dark:text-white">
+            {venue || 'Campus Venue'}
+          </strong>.
+        </span>
+      ),
+    },
+    {
+      question: 'What are the registration details, deadline, and entry fees?',
+      answer: (
+        <span>
+          {registrationDeadline ? (
+            <>
+              Registration closes on{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                {new Date(registrationDeadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(registrationDeadline).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+              </strong>.{' '}
+            </>
+          ) : (
+            <>There is no separate registration deadline — registrations remain open until the event starts. </>
+          )}
+          {effectiveFee > 0 ? (
+            <>
+              The entry fee is{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                ₹{effectiveFee}
+              </strong>{' '}
+              (non-refundable), payable securely via the event's designated payment method.{' '}
+            </>
+          ) : (
+            <>
+              This event is{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                Completely Free
+              </strong>{' '}
+              to attend!{' '}
+            </>
+          )}
+        </span>
+      ),
+    },
+    {
+      question: 'What is the seat capacity, program eligibility, and are certificates provided?',
+      answer: (
+        <span>
+          {isUnlimited ? (
+            <>
+              This event has{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                Unlimited Seats
+              </strong>.{' '}
+            </>
+          ) : (
+            <>
+              Total capacity is{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                {totalSeats} seats
+              </strong>.{' '}
+            </>
+          )}
+          {!isAllPrograms && event.allowedPrograms && event.allowedPrograms.length > 0 ? (
+            <>
+              Eligibility is open to programs:{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                {programDisplay}
+              </strong>.{' '}
+            </>
+          ) : (
+            <>All academic programs are welcome to register.{' '}</>
+          )}
+          {event.provideCertificate && (
+            <>
+              {' '}Certificates of participation/achievement will be provided to verified attendees.
+            </>
+          )}
+        </span>
+      ),
+    },
+    {
+      question: 'Who is organizing this event?',
+      answer: (
+        <span>
+          {isCentralEvent ? (
+            <>
+              This event is organized centrally by the{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                Office of DSW (Dean Student Welfare)
+              </strong>.
+            </>
+          ) : (
+            <>
+              This event is organized by{' '}
+              <strong className="font-bold text-neutral-900 dark:text-white">
+                {displayName}
+              </strong>.
+            </>
+          )}
+        </span>
+      ),
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-cn-bg pb-24">
-      {/* Top sticky organizer toolbar */}
-      <div className="sticky top-16 z-30 bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-b border-neutral-200 dark:border-neutral-800 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-          {/* Left: Back to edit & Status Pill */}
-          <div className="flex items-center space-x-3">
-            {canEdit && (
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 myfont text-neutral-900 dark:text-neutral-100">
+
+      {/* Top Sticky Preview Bar matching EventDetails styling */}
+      <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+        <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-3">
+          
+          {/* Left: Back / Close button */}
+          <div className="flex items-center gap-3">
+            {isStudentLeadOrCoordinator ? (
               <Link
-                to={`/events/edit/${event.id}`}
-                className="inline-flex items-center text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                to={`/events/edit/${event.id || event._id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                title="Return to editing this event"
               >
-                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Back to Edit
+                <i className="ri-arrow-left-line text-base" /> Back to Edit
               </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={handleClosePreview}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                title="Close this preview tab and return to dashboard"
+              >
+                <i className="ri-close-line text-base" /> Close Preview
+              </button>
             )}
 
             {/* Status pill */}
             {isDraft && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-700 border border-neutral-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 mr-1.5" />
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mr-1" />
                 Draft Preview
               </span>
             )}
             {isPending && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-300">
-                <Clock className="w-3 h-3 mr-1" />
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60">
+                <Clock className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                 Pending Faculty Review
               </span>
             )}
             {isRejected && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Needs Changes (Rejected)
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+                <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                Changes Requested
               </span>
             )}
             {isPublished && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300">
-                <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
-                Published & Live
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                Published &amp; Live
               </span>
             )}
           </div>
 
-          {/* Center: Quick Step Jumps */}
-          {canEdit && (
-            <div className="hidden lg:flex items-center space-x-1.5 text-xs text-neutral-500">
-              <span className="mr-1">Jump to:</span>
-              {[
-                { id: 1, label: 'Basic' },
-                { id: 2, label: 'Schedule' },
-                { id: 3, label: 'Registration' },
-                { id: 4, label: 'Extras' },
-              ].map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => navigate(`/events/edit/${event.id}?step=${s.id}`)}
-                  className="px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium transition-colors cursor-pointer"
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Center: Title indicator */}
+          <span className="text-[13px] font-bold text-neutral-500 dark:text-neutral-400 tracking-wide truncate max-w-[240px] hidden md:block">
+            Event Preview (Read-Only)
+          </span>
 
-          {/* Right: Submission & Action Buttons */}
-          <div className="flex items-center space-x-2.5">
-            {isPublished ? (
-              <Link
-                to={`/event/${event.slug || event.id}`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors shadow-sm"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                View Public Event
-              </Link>
-            ) : canEdit ? (
+          {/* Right: Faculty review or student submit actions */}
+          <div className="flex items-center gap-2">
+            {isFacultyCoordinator && isPending && (
               <>
                 <button
                   type="button"
-                  onClick={() => navigate(`/events/edit/${event.id}`)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                  onClick={() => handleReview('PUBLISHED')}
+                  disabled={submitting}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  Edit Event
+                  <i className="ri-check-line text-sm font-bold" />
+                  Approve
                 </button>
-
-                {canDirectPublish && (
-                  <button
-                    type="button"
-                    disabled={submitting || !validationResult?.isValid}
-                    onClick={() => handleSubmitForReview(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-                  >
-                    {submitting ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    )}
-                    Publish Directly
-                  </button>
-                )}
-
                 <button
                   type="button"
-                  disabled={submitting || !validationResult?.isValid}
-                  onClick={() => handleSubmitForReview(false)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+                  onClick={() => {
+                    const reason = prompt('Enter rejection reason:');
+                    if (reason) handleReview('REJECTED', reason);
+                  }}
+                  disabled={submitting}
+                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
-                  {submitting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Send className="w-3.5 h-3.5" />
-                  )}
-                  {isRejected ? 'Resubmit for Approval' : 'Submit for Faculty Approval'}
+                  <i className="ri-close-line text-sm font-bold" />
+                  Reject
                 </button>
               </>
-            ) : null}
+            )}
+
+            {isStudentLeadOrCoordinator && isDraft && (
+              <button
+                type="button"
+                onClick={handleSubmitForReview}
+                disabled={submitting}
+                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Submit for Review
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Rejection notice banner if rejected */}
-      {isRejected && (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-200 dark:border-rose-900/60 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200 uppercase tracking-wide">
-                  Event Needs Revisions
-                </h3>
-                <p className="mt-1 text-sm text-rose-800 dark:text-rose-300">
-                  {event.reviewComment
-                    ? `Faculty Feedback: "${event.reviewComment}"`
-                    : 'The faculty coordinator requested changes before approving this event.'}
-                </p>
+      <div className="max-w-[1300px] mx-auto px-6 lg:px-10 py-8">
+
+        {/* Rejection Feedback Banner */}
+        {isRejected && (
+          <div className="mb-6 bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900 rounded-xl p-5 shadow-xs flex items-start gap-4">
+            <div className="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-lg text-rose-600 dark:text-rose-400 shrink-0">
+              <i className="ri-error-warning-fill text-2xl" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <span className="text-xs font-black uppercase tracking-widest text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2.5 py-0.5 rounded-full">
+                  Event Proposal Rejected
+                </span>
                 {event.reviewedBy?.name && (
-                  <p className="mt-2 text-xs text-rose-700 dark:text-rose-400">
-                    Reviewed by: <span className="font-semibold">{event.reviewedBy.name}</span>
-                  </p>
-                )}
-                <div className="mt-4 flex items-center space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/events/edit/${event.id}`)}
-                    className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    Edit Required Steps
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Validation issues warning banner */}
-      {validationResult && !validationResult.isValid && (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-2xl p-4 shadow-sm">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
-                  Event isn't ready for submission ({validationResult.invalidSteps.length} section{validationResult.invalidSteps.length > 1 ? 's' : ''} need attention)
-                </h4>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {validationResult.invalidSteps.map((s) => (
-                    <button
-                      key={s.stepId}
-                      type="button"
-                      onClick={() => navigate(`/events/edit/${event.id}?step=${s.stepId}`)}
-                      className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 transition-colors cursor-pointer"
-                    >
-                      <span className="mr-1 font-bold">!</span>
-                      <span>{s.stepName}</span>
-                      <span className="ml-1 text-[11px] opacity-75">({s.issues[0]})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Event Content — True attendee presentation layout */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        {/* Banner image */}
-        <div className="relative rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 shadow-sm aspect-[16/9] md:aspect-[21/9]">
-          <img
-            src={posterImage}
-            alt={event.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.src = '/CLUBSETU.png';
-            }}
-          />
-          <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-black/70 text-white backdrop-blur-md">
-              {isPaid ? `₹${feeAmount}` : 'FREE ENTRY'}
-            </span>
-            {isTeam && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-600/90 text-white backdrop-blur-md">
-                Team Event ({minTeam}-{maxTeam} Members)
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Header Details */}
-        <div className="mt-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center space-x-3">
-              {clubLogo ? (
-                <img
-                  src={clubLogo}
-                  alt={clubName}
-                  className="w-12 h-12 rounded-xl object-cover border border-neutral-200 dark:border-neutral-700"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-lg">
-                  {clubName.charAt(0)}
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
-                  Organized by
-                </p>
-                <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-                  {clubName}
-                </h3>
-              </div>
-            </div>
-
-            {/* Registration status badge */}
-            <div className="text-right">
-              <span className="text-xs text-neutral-400 block font-medium">Registration</span>
-              <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                {event.totalSeats === 0 ? 'Unlimited Seats' : `${event.totalSeats} Total Seats`}
-              </span>
-            </div>
-          </div>
-
-          <h1 className="mt-6 text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-            {event.title || 'Untitled Event Draft'}
-          </h1>
-
-          {/* Quick info grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-100 dark:border-neutral-800">
-              <Calendar className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[11px] font-bold uppercase text-neutral-400">Date</span>
-                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                  {formattedDate}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-100 dark:border-neutral-800">
-              <Clock className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[11px] font-bold uppercase text-neutral-400">Time</span>
-                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                  {formattedStartTime} {formattedEndTime ? `- ${formattedEndTime}` : ''}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-100 dark:border-neutral-800">
-              <MapPin className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[11px] font-bold uppercase text-neutral-400">Venue</span>
-                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                  {event.venue || 'TBD'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Description Section */}
-          <div className="mt-8 pt-8 border-t border-neutral-100 dark:border-neutral-800">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-              About the Event
-            </h2>
-            {event.description ? (
-              <div
-                className="prose dark:prose-invert max-w-none text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed wysiwyg-rendered-content"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(markdownToHtml(event.description)),
-                }}
-              />
-            ) : (
-              <p className="text-sm italic text-neutral-400">No description provided yet.</p>
-            )}
-          </div>
-
-          {/* Eligibility & Access Details */}
-          <div className="mt-8 pt-8 border-t border-neutral-100 dark:border-neutral-800">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-              Eligibility & Access
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                <span className="font-bold text-neutral-500 uppercase tracking-wider block mb-2">
-                  Academic Programs
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {allowedPrograms.map((prog, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-0.5 rounded bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 font-medium text-neutral-700 dark:text-neutral-200"
-                    >
-                      {prog}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                <span className="font-bold text-neutral-500 uppercase tracking-wider block mb-2">
-                  Years Allowed
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {allowedYears.map((yr, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-0.5 rounded bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 font-medium text-neutral-700 dark:text-neutral-200"
-                    >
-                      {yr}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                <span className="font-bold text-neutral-500 uppercase tracking-wider block mb-2">
-                  Registration Deadline
-                </span>
-                <p className="text-neutral-800 dark:text-neutral-200 font-medium">
-                  {regDeadline
-                    ? regDeadline.toLocaleString('en-US', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })
-                    : 'Open until event start'}
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                <span className="font-bold text-neutral-500 uppercase tracking-wider block mb-2">
-                  External Participants
-                </span>
-                <p className="text-neutral-800 dark:text-neutral-200 font-medium">
-                  {event.allowExternal !== false
-                    ? 'Allowed (Students from other colleges may join)'
-                    : 'Campus only (Restricted to internal students)'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Details if Paid */}
-          {isPaid && (
-            <div className="mt-8 pt-8 border-t border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-                Payment Details
-              </h2>
-              <div className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-500">Payment Method</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200">
-                    {paymentMethod === 'MANUAL_TRANSACTION'
-                      ? 'Manual UPI Verification'
-                      : paymentMethod === 'COLLEGE_PAYMENT'
-                      ? 'College Payment Portal'
-                      : paymentMethod}
+                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                    Reviewed by: {event.reviewedBy.name}
                   </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-500">Registration Fee</span>
-                  <span className="text-base font-bold text-brand-600">₹{feeAmount}</span>
-                </div>
-                {paymentMethod === 'MANUAL_TRANSACTION' && event.upiId && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-neutral-500">UPI ID / Number</span>
-                    <span className="text-xs font-mono font-medium text-neutral-800 dark:text-neutral-200">
-                      {event.upiId}
-                    </span>
-                  </div>
-                )}
-                {paymentMethod === 'COLLEGE_PAYMENT' && event.collegePaymentUrl && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-neutral-500">Payment Portal</span>
-                    <a
-                      href={event.collegePaymentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-brand-600 hover:underline flex items-center"
-                    >
-                      Portal Link <ExternalLink className="w-3 h-3 ml-1" />
-                    </a>
-                  </div>
-                )}
-                {event.paymentInstructions && (
-                  <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 text-xs text-neutral-600 dark:text-neutral-400">
-                    <span className="font-semibold block mb-1">Instructions:</span>
-                    <p>{event.paymentInstructions}</p>
-                  </div>
                 )}
               </div>
+              <p className="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-1">
+                <span className="font-bold">Feedback: </span>
+                {event.reviewComment || "No specific feedback comment provided. Please contact the faculty coordinator."}
+              </p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Sponsors if available */}
-          {Array.isArray(event.sponsors) && event.sponsors.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-                Event Sponsors
-              </h2>
-              <div className="flex flex-wrap items-center gap-4">
-                {event.sponsors.map((s, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 flex items-center space-x-3"
-                  >
-                    <img
-                      src={s.logoUrl}
-                      alt={s.name}
-                      className="w-10 h-10 object-contain rounded"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                    <div>
-                      <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                        {s.name}
-                      </p>
-                      {s.websiteUrl && (
-                        <a
-                          href={s.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-brand-600 hover:underline flex items-center"
+        {/* Pending Review Banner */}
+        {isPending && (
+          <div className="mb-6 bg-teal-50/80 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 rounded-xl p-4 shadow-xs flex items-center gap-3">
+            <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-bold text-teal-800 dark:text-teal-300">
+                This event proposal is currently <span className="underline font-black">PENDING REVIEW</span> by the faculty coordinator and is not yet public.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+          {/* Left Column (65%) */}
+          <div className="w-full lg:w-[65%] min-w-0">
+
+            {/* Poster Container matching EventDetails */}
+            <div
+              onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
+              className="mb-6 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative group cursor-zoom-in transition-all"
+              title="Click to view and zoom poster"
+            >
+              <img
+                src={event.imageUrl || DEFAULT_IMAGE}
+                alt={title}
+                className="w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+                style={{ maxHeight: '560px' }}
+                onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
+              />
+
+              {/* Status badge overlay */}
+              <div className="absolute top-3 left-3">
+                {isLive && (
+                  <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
+                  </span>
+                )}
+                {isEnded && (
+                  <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    <i className="ri-check-line" /> Ended
+                  </span>
+                )}
+                {!isLive && !isEnded && (
+                  <span className="inline-flex items-center gap-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    <i className="ri-time-line" /> Upcoming
+                  </span>
+                )}
+              </div>
+
+              {/* Zoom hint badge */}
+              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <i className="ri-zoom-in-line" /> Click to Zoom
+              </div>
+            </div>
+
+            {/* Event Title */}
+            <h1 className="font-black text-2xl md:text-3xl text-black dark:text-white leading-tight tracking-tight mb-4">
+              {title}
+            </h1>
+
+            {/* Metadata bar */}
+            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+              <span className="inline-flex items-center gap-1.5">
+                <i className="ri-calendar-event-line text-brand-500" />
+                {startTime ? new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA'}
+              </span>
+              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <span className="inline-flex items-center gap-1.5">
+                <i className="ri-map-pin-2-line text-brand-500" />
+                <span className="truncate max-w-[160px]">{venue || 'Venue TBA'}</span>
+              </span>
+              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              {isCentralEvent ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="ri-building-2-line text-brand-500" />
+                  <span className="truncate max-w-[140px]">Office of DSW</span>
+                </span>
+              ) : clubSlugOrId ? (
+                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+                  <i className="ri-team-line text-brand-500" />
+                  <span className="truncate max-w-[140px]">{displayName}</span>
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="ri-team-line text-brand-500" />
+                  <span className="truncate max-w-[140px]">{displayName}</span>
+                </span>
+              )}
+              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <span className="inline-flex items-center gap-1.5">
+                <i className="ri-user-line text-brand-500" />
+                {registeredCount} Registered
+              </span>
+              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <span className="inline-flex items-center gap-1.5" title="Total event views">
+                <i className="ri-eye-line text-brand-500" />
+                {views || 0} Views
+              </span>
+            </div>
+
+            {/* Winners Section if applicable */}
+            {showWinners && (
+              <div id="winners-section" className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg flex items-center justify-center text-brand-500 text-lg">
+                    <i className="ri-trophy-fill" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
+                    <p className="text-[15px] font-black text-black dark:text-white">
+                      {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2.5">
+                  {[...winners].sort((a, b) => a.rank - b.rank).map((winner, i) => {
+                    const medal = medalConfig[winner.rank];
+                    const memberList = winner.members || winner.teamMembers || winner.students || [];
+                    const isTeamWinner = event.registrationType === 'team' || (memberList && memberList.length > 0);
+
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3.5 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl transition-all shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700"
+                      >
+                        <div
+                          className={`w-9 h-9 shrink-0 rounded-lg ${
+                            medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+                          } flex items-center justify-center font-black text-sm`}
                         >
-                          Website <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
-                        </a>
-                      )}
+                          <span>#{winner.rank}</span>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-black dark:text-white truncate">
+                              {winner.name}
+                            </p>
+                            {isTeamWinner && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                                <i className="ri-team-line text-[10px]" /> Team
+                              </span>
+                            )}
+                          </div>
+
+                          {memberList && memberList.length > 0 && (() => {
+                            const namesArr = Array.isArray(memberList)
+                              ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
+                              : [typeof memberList === 'string' ? memberList : memberList?.name].filter(Boolean);
+                            const uniqueNames = Array.from(new Set(namesArr));
+                            if (uniqueNames.length === 0) return null;
+                            return (
+                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
+                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
+                                {uniqueNames.join(', ')}
+                              </p>
+                            );
+                          })()}
+                        </div>
+
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                          {medal ? `${medal.label} Place` : `#${winner.rank}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* About this Event */}
+            {description && (
+              <div className="mb-8">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
+                  About this Event
+                </h2>
+                <div
+                  className="text-[15px] text-neutral-700 dark:text-neutral-300 leading-relaxed event-description campusnode-markdown-preview px-0"
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(description) }}
+                />
+              </div>
+            )}
+
+            {/* Event Highlights Grid */}
+            <div className="mb-8">
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                Event Highlights
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {highlights.map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-300 dark:hover:border-brand-700 transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
+                      <i className={`${h.icon} text-brand-600 dark:text-brand-400 text-base`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                      <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Media Items if available */}
-          {Array.isArray(event.media) && event.media.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-                Media Gallery
+            {/* Gallery */}
+            {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  Gallery
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {event.media.filter(m => m.type !== 'SPONSOR_LOGO').map((item, i) => (
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 relative group">
+                      {item.type === 'IMAGE' ? (
+                        <div
+                          className="w-full h-full cursor-zoom-in"
+                          onClick={() => openImageModal(item.url, `${title} - Gallery Image ${i + 1}`, `Gallery ${i + 1}`)}
+                        >
+                          <img
+                            src={item.url}
+                            alt={`Gallery ${i}`}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
+                          />
+                        </div>
+                      ) : (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full h-full flex flex-col items-center justify-center bg-black gap-1.5"
+                        >
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="white" className="opacity-80">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                          <span className="text-[9px] text-white font-medium uppercase tracking-widest opacity-50">Watch</span>
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* FAQs Accordion */}
+            <div className="mb-8">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                Frequently Asked Questions
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {event.media.map((m, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 aspect-video bg-neutral-100 dark:bg-neutral-800"
-                  >
-                    {m.type === 'VIDEO' ? (
-                      <video src={m.url} controls className="w-full h-full object-cover" />
-                    ) : (
-                      <img src={m.url} alt={`Media ${idx + 1}`} className="w-full h-full object-cover" />
-                    )}
-                  </div>
+              <div className="space-y-3">
+                {faqItems.map((item, i) => (
+                  <FAQItem
+                    key={i}
+                    question={item.question}
+                    answer={item.answer}
+                    isOpen={openFAQ === i}
+                    onToggle={() => setOpenFAQ(openFAQ === i ? null : i)}
+                  />
                 ))}
               </div>
             </div>
-          )}
+
+          </div>
+
+          {/* Right Column (35% Sticky Sidebar) */}
+          <div className="w-full lg:w-[35%] lg:sticky lg:top-[80px] shrink-0">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+
+              {/* Date & Time */}
+              <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
+                  DATE &amp; TIME
+                </p>
+                <div className="space-y-2.5">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p>
+                    <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
+                      {startTime ? new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'}
+                    </p>
+                    <p className="text-[14px] font-semibold text-brand-600">
+                      {startTime ? new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
+                    </p>
+                  </div>
+                  {endTime && (
+                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/60">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
+                      <p className="text-[13px] font-semibold text-neutral-700 dark:text-neutral-300">
+                        {new Date(endTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' })} · {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Availability Progress */}
+              {!isUnlimited && (
+                <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${fillPct >= 90 ? 'bg-red-500' : fillPct >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      style={{ width: `${fillPct}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-neutral-500 mt-1.5">
+                    {Math.min(registeredCount, totalSeats)} / {totalSeats} seats filled
+                  </p>
+                </div>
+              )}
+
+              {/* Venue, Fee & Disabled Preview CTA */}
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500 mb-4 px-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <i className="ri-map-pin-2-line text-neutral-500 dark:text-neutral-500 text-sm shrink-0" />
+                    <span className="truncate font-medium text-neutral-600 dark:text-neutral-400">{venue || 'Venue TBA'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <i className="ri-ticket-2-line text-neutral-500 dark:text-neutral-500 text-sm" />
+                    <span className={`font-black text-sm ${effectiveFee > 0 ? 'text-black dark:text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      {effectiveFee > 0 ? `₹${effectiveFee}` : 'Free'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 py-3 px-4 text-[12px] font-bold mysans tracking-wide rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 cursor-not-allowed text-center select-none flex items-center justify-center gap-2"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-neutral-400" />
+                    Preview Mode — Registrations Disabled
+                  </button>
+
+                  <CalendarDropdown
+                    event={event}
+                    btnClassName="w-11 h-11 flex items-center justify-center border border-neutral-200/80 dark:border-neutral-800 rounded-full bg-white/70 dark:bg-neutral-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 cursor-pointer shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0"
+                  />
+                </div>
+
+                {registrationDeadline && (
+                  <p className="text-[11px] font-medium text-neutral-500 mt-3 text-center">
+                    Registration deadline: {new Date(registrationDeadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                  </p>
+                )}
+              </div>
+
+              {/* Organized by Section */}
+              {isCentralEvent ? (
+                <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                  <div className="px-3 flex items-center gap-3 pb-3">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-900/50">
+                      <i className="ri-building-2-line text-brand-600 dark:text-brand-400 text-lg" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Organized by</p>
+                      <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
+                      <p className="text-[11px] font-medium text-brand-600 dark:text-brand-400">Dean Student Welfare</p>
+                    </div>
+                  </div>
+
+                  {event.participatingClubs?.length > 0 && (
+                    <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2">
+                        Participating Clubs
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {event.participatingClubs.map((pc) => (
+                          <span
+                            key={pc.id || pc._id}
+                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg"
+                          >
+                            {pc.club?.clubName || pc.clubName}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="px-1 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                  <div className="px-3 flex items-center gap-3 pb-4">
+                    {clubSlugOrId ? (
+                      <Link
+                        to={`/club/${clubSlugOrId}`}
+                        className="w-9 h-9 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors overflow-hidden"
+                      >
+                        {event.club?.clubLogo ? (
+                          <img src={event.club.clubLogo} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
+                        ) : (
+                          <i className="ri-team-line text-brand-600 dark:text-brand-400 text-sm" />
+                        )}
+                      </Link>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
+                        <i className="ri-team-line text-brand-600 dark:text-brand-400 text-sm" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Organized by</p>
+                      {clubSlugOrId ? (
+                        <Link
+                          to={`/club/${clubSlugOrId}`}
+                          className="text-[13px] font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200 truncate block hover:underline"
+                        >
+                          {displayName}
+                        </Link>
+                      ) : (
+                        <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
+                    <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2.5">
+                        Connect with {displayName}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {event.club.socialLinks.map((link, i) => {
+                          const platform = link.platform?.toLowerCase() || "website";
+                          const iconProps = { className: "w-6 h-6" };
+
+                          const getIcon = () => {
+                            if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={28} />;
+                            if (platform.includes("linkedin")) return <LinkedinIcon {...iconProps} size={28} />;
+                            if (platform.includes("twitter") || platform.includes("x")) return <TwitterIcon {...iconProps} size={28} />;
+                            if (platform.includes("github")) return <GithubIcon {...iconProps} size={28} />;
+                            if (platform.includes("whatsapp")) return <MessageCircleIcon {...iconProps} size={28} />;
+                            if (platform.includes("website")) return <EarthIcon {...iconProps} size={28} />;
+                            return <i className="ri-links-line text-sm" />;
+                          };
+
+                          const href = platform === "whatsapp"
+                            ? `https://wa.me/${link.url.replace(/\s+/g, "")}`
+                            : link.url;
+
+                          return (
+                            <a
+                              key={link._id || link.id || i}
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                              title={link.platform}
+                            >
+                              {getIcon()}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sponsors / Partners */}
+            {event.sponsors && event.sponsors.length > 0 && (
+              <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 mb-4">
+                  Sponsors / Partners
+                </h3>
+                <div className="flex flex-wrap gap-5 items-center">
+                  {event.sponsors.map((sponsor, i) => (
+                    <a
+                      key={i}
+                      href={sponsor.websiteUrl || '#'}
+                      target={sponsor.websiteUrl ? "_blank" : "_self"}
+                      rel="noopener noreferrer"
+                      className={`flex flex-col items-center gap-1.5 transition-opacity justify-center ${
+                        sponsor.websiteUrl ? 'cursor-pointer hover:opacity-100 opacity-80' : 'cursor-default opacity-80'
+                      }`}
+                    >
+                      <img
+                        src={sponsor.logoUrl}
+                        alt={sponsor.name}
+                        className="h-7 w-auto object-contain bg-white dark:bg-black rounded-sm"
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
-      </main>
+      </div>
+
+      {/* Image Zoom Modal for posters and gallery */}
+      <ImageZoomModal
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        src={activeModalImage.src}
+        alt={activeModalImage.alt}
+        title={activeModalImage.title}
+      />
     </div>
   );
 };

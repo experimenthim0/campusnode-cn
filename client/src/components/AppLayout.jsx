@@ -18,6 +18,7 @@ const SIDEBAR_ROUTE_PREFIXES = [
   "/club-events",
   "/payments",
   "/send-notification",
+  "/notifications",
   "/club/edit",
   "/club/",       // catches /club/:clubId/team
   "/dashboard",
@@ -32,9 +33,9 @@ const SIDEBAR_ROUTE_PREFIXES = [
  * Check if the given pathname should show the sidebar layout.
  */
 const isSidebarRoute = (pathname) => {
-  // Registration, attendance, and certificate management pages are event
+  // Registration, attendance, feedback, and certificate management pages are event
   // dashboard pages too. Keep public event details outside this layout.
-  if (/^\/event\/[^/]+\/(registrations|check-in|design-certificate)$/.test(pathname)) {
+  if (/^\/event\/[^/]+\/(registrations|check-in|design-certificate|feedback)$/.test(pathname)) {
     return true;
   }
 
@@ -145,7 +146,7 @@ const AppLayout = () => {
       </div>
 
       {/* BottomNav — mobile only (self-hides on md+, suppressed on auth routes) */}
-    <BottomNav />
+      {!isAuth && <BottomNav />}
     </div>
   ) : (
     <div className={`cn-app-height flex min-w-0 flex-col bg-cn-bg text-cn-text ${isAuth ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0 transition-colors duration-300`}>
@@ -154,7 +155,7 @@ const AppLayout = () => {
         <Outlet />
       </div>
       <Footer />
-      <BottomNav />
+      {!isAuth && <BottomNav />}
     </div>
   );
 

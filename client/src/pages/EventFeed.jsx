@@ -10,6 +10,7 @@ import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
 import Section from '../components/layout/Section';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
+import CardCarousel from '../components/CardCarousel';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -22,7 +23,7 @@ const CAT_IMAGES = [
   "/cat.png",
 ];
 
-const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false }) => {
+const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false, isCarousel = false }) => {
   const { showNotification } = useNotification();
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState([]);
@@ -112,8 +113,14 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     const names = new Set();
     if (Array.isArray(events)) {
       events.forEach(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+        const hasOrganizers = Array.isArray(e.organizers) && e.organizers.length > 0;
+        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && !hasOrganizers);
         if (isCentral) return;
+        if (hasOrganizers) {
+          e.organizers.forEach(o => {
+            if (o.club?.clubName) names.add(o.club.clubName);
+          });
+        }
         const cName = e.club?.clubName || e.createdBy?.clubName;
         if (cName) names.add(cName);
       });
@@ -205,14 +212,17 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         e.organizerType === 'CENTRAL_ORGANIZATION' ||
         Boolean(e.centralOrganizerId) ||
         Boolean(e.centralOrganizer) ||
-        (!e.club && !e.clubId)
+        (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0))
       );
     } else {
+      const targetClub = filterClub.trim().toLowerCase();
       filtered = filtered.filter(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
         if (isCentral) return false;
-        const cName = e.club?.clubName || e.createdBy?.clubName;
-        return cName && cName.trim().toLowerCase() === filterClub.trim().toLowerCase();
+        const matchesOrganizer = Array.isArray(e.organizers) && e.organizers.some(o => o.club?.clubName && o.club.clubName.trim().toLowerCase() === targetClub);
+        const legacyClubName = e.club?.clubName || e.createdBy?.clubName;
+        const matchesLegacy = legacyClubName && legacyClubName.trim().toLowerCase() === targetClub;
+        return matchesOrganizer || matchesLegacy;
       });
     }
   }
@@ -238,10 +248,12 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   if (searchQuery.trim() !== '') {
     const query = searchQuery.toLowerCase().trim();
     filtered = filtered.filter(e => {
-      const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+      const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
       const titleMatch = e.title?.toLowerCase().includes(query);
-      const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query);
-      const categoryMatch = (e.club?.category || '').toLowerCase().includes(query);
+      const organizerNames = (e.organizers || []).map(o => o.club?.clubName || '').join(' ').toLowerCase();
+      const organizerCategories = (e.organizers || []).map(o => o.club?.category || '').join(' ').toLowerCase();
+      const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query) || organizerNames.includes(query);
+      const categoryMatch = (e.club?.category || '').toLowerCase().includes(query) || organizerCategories.includes(query);
       const centralMatch = isCentral && ('central'.includes(query) || 'odsw'.includes(query) || 'college'.includes(query));
       return titleMatch || clubMatch || categoryMatch || centralMatch;
     });
@@ -475,7 +487,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {liveEvents.length > 0 && (
         <div className="mb-14">
           {!hideHeader && (
-            <h2 className="text-lg font-semibold text-primary mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-red-500 mb-6 flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -492,16 +504,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h3>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {liveEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && liveEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {liveEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {liveEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -513,16 +538,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h2>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {upcomingEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && upcomingEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {upcomingEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {upcomingEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -538,16 +576,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               Past Events
             </h3>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {endedEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && endedEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {endedEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {endedEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

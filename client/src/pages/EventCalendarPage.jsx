@@ -15,7 +15,6 @@ import EventApprovalPreviewModal from "../components/EventApprovalPreviewModal";
 import RescheduleConfirmModal from "../components/calendar/RescheduleConfirmModal";
 import BlackoutModal from "../components/calendar/BlackoutModal";
 import ConflictCenter from "../components/calendar/ConflictCenter";
-import ShimmerText from "../components/ShimmerText";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -26,25 +25,36 @@ import {
   Plus,
   Layers,
   ExternalLink,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from "lucide-react";
+import { Card, CardContent } from "../components/ui/card";
+import ShimmerText from "../components/ShimmerText";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "../components/ui/table";
 
 const StatCard = ({ label, value, accent, icon: Icon }) => (
-  <div
-    className={`p-4 rounded-2xl border transition-all ${
-      accent
-        ? "bg-brand-500/10 border-brand-500/30 text-brand-600 dark:text-brand-400"
-        : "bg-cn-surface border-cn-border"
-    }`}
-  >
-    <div className="flex items-center justify-between">
-      <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400">
-        {label}
+  <Card className={`transition-all ${accent ? "border-amber-500/30 bg-amber-500/5" : ""}`}>
+    <CardContent className="p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        {Icon && <Icon size={16} className={accent ? "text-amber-500" : "text-muted-foreground"} />}
+      </div>
+      <p className={`text-2xl font-bold font-mono mt-1 ${accent ? "text-amber-600 dark:text-amber-400" : ""}`}>
+        {value}
       </p>
-      {Icon && <Icon size={16} className="text-neutral-400" />}
-    </div>
-    <p className="text-2xl font-black mt-1 text-black dark:text-white">{value}</p>
-  </div>
+    </CardContent>
+  </Card>
 );
 
 const EventCalendarPage = ({ readOnly = false }) => {
@@ -218,7 +228,6 @@ const EventCalendarPage = ({ readOnly = false }) => {
 
   const handleApproveEvent = async (eventItemOrId, comment = "Approved by faculty coordinator") => {
     const eventId = typeof eventItemOrId === 'string' ? eventItemOrId : (eventItemOrId?.id || eventItemOrId?._id);
-    const title = typeof eventItemOrId === 'object' ? eventItemOrId?.title : 'Event';
     try {
       await reviewEvent(eventId, {
         status: "PUBLISHED",
@@ -239,7 +248,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
     let reason = customReason;
     if (reason === null) {
       reason = prompt(`Enter rejection reason for "${title}":`);
-      if (reason === null) return; // Cancelled
+      if (reason === null) return;
     }
     try {
       await reviewEvent(eventId, {
@@ -267,7 +276,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
   );
 
   return (
-    <div className="space-y-6 myfont px-5 py-3">
+    <div className="space-y-6 px-4 sm:px-6 py-4">
       {/* Operational metrics are for administrators; club users get the schedule view only. */}
       {!readOnly && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -283,7 +292,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <CalendarViewSwitch activeView={activeView} onViewChange={setActiveView} />
 
-        <p className="text-xs text-neutral-400 font-medium hidden sm:block">
+        <p className="text-xs text-muted-foreground font-medium hidden sm:block">
           Displaying {events.length} events across campus venues
         </p>
       </div>
@@ -308,24 +317,24 @@ const EventCalendarPage = ({ readOnly = false }) => {
 
       {/* Calendar Views Render Switch */}
       {loading ? (
-        <div className="p-16 border border-neutral-200 dark:border-zinc-800 rounded-2xl text-center">
-          <ShimmerText text="Loading CampusNode calendar schedule..." className="text-sm font-medium" />
+        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+          <ShimmerText text="Loading calendar schedule..." className="text-sm font-semibold tracking-wider" />
         </div>
       ) : activeView === "list" ? (
-        <div className="bg-cn-surface border border-cn-border rounded-2xl overflow-hidden shadow-xs">
+        <Card className="overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs divide-y divide-neutral-100 dark:divide-zinc-800/60">
-              <thead>
-                <tr className="bg-neutral-50/60 dark:bg-zinc-900/40 text-neutral-400 dark:text-neutral-500 font-black uppercase text-[10px] tracking-wider">
-                  <th className="py-3.5 px-4">Event Name</th>
-                  <th className="py-3.5 px-4">Date & Time</th>
-                  <th className="py-3.5 px-4">Venue</th>
-                  <th className="py-3.5 px-4">Organizing Club</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-zinc-800/50 font-medium">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40">
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Event Name</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Date & Time</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Venue</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Organizing Club</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-wider text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {events.map((e) => {
                   const eventId = e.id || e._id;
                   const eventSlug = e.slug || eventId;
@@ -342,86 +351,93 @@ const EventCalendarPage = ({ readOnly = false }) => {
                   const status = e.reviewStatus || "PENDING";
                   
                   return (
-                    <tr
+                    <TableRow
                       key={eventId}
                       onClick={() => handleSelectEvent(e)}
-                      className="hover:bg-neutral-50/80 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors"
+                      className="cursor-pointer hover:bg-muted/40 transition-colors"
                     >
-                      <td className="py-3.5 px-4">
+                      <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors text-xs line-clamp-1">
+                          <span className="font-bold hover:text-primary transition-colors text-xs line-clamp-1">
                             {e.title}
                           </span>
-                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
+                          <span className="text-[10px] text-muted-foreground">
                             {e.club?.category || "General"}
                           </span>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </TableCell>
+                      <TableCell>
                         <div className="flex flex-col leading-tight">
-                          <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-xs">
+                          <span className="font-medium text-xs">
                             {dateStr}
                           </span>
                           {timeStr && (
-                            <span className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                            <span className="text-[11px] text-muted-foreground mt-0.5">
                               {timeStr}
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-neutral-800 dark:text-neutral-200">
-                        <div className="flex items-center gap-1.5">
-                          <Building2 size={13} className="text-neutral-400 shrink-0" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 font-medium text-xs">
+                          <Building2 size={13} className="text-muted-foreground shrink-0" />
                           <span className="truncate max-w-[150px]">{e.venue || "TBD / Auditorium"}</span>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`font-semibold ${clubName === 'ODSW' ? 'text-brand-600 dark:text-brand-400 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`text-xs font-semibold ${clubName === 'ODSW' ? 'text-primary' : ''}`}>
                           {clubName}
                         </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                          status === "PUBLISHED"
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                            : status === "PENDING"
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                            : status === "REJECTED"
-                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                            : "bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-700"
-                        }`}>
-                          {status === "PUBLISHED" ? "Approved" : status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right" onClick={(ev) => ev.stopPropagation()}>
-                        <a
-                          href={eventUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold transition-colors"
-                          title="Open public event page"
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={status === "PUBLISHED" ? "default" : status === "PENDING" ? "outline" : "destructive"}
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            status === "PUBLISHED"
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : status === "PENDING"
+                              ? "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                              : ""
+                          }`}
                         >
-                          <span>View</span>
-                          <ExternalLink size={11} />
-                        </a>
-                      </td>
-                    </tr>
+                          {status === "PUBLISHED" ? "Approved" : status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(ev) => ev.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="h-7 px-2.5 text-xs font-semibold gap-1"
+                        >
+                          <a
+                            href={eventUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open public event page"
+                          >
+                            <span>View</span>
+                            <ExternalLink size={11} />
+                          </a>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
                 {events.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="py-16 text-center text-neutral-400 text-xs">
-                      <div className="max-w-xs mx-auto space-y-2">
-                        <p className="font-semibold text-neutral-700 dark:text-neutral-300">No events found for this time period</p>
-                        <p className="text-[11px]">Adjust your date selector, view switch, or clear active filters.</p>
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-16 text-center text-muted-foreground text-xs">
+                      <div className="max-w-xs mx-auto space-y-1.5">
+                        <p className="font-semibold text-foreground">No events found for this time period</p>
+                        <p className="text-[11px] text-muted-foreground">Adjust your date selector, view switch, or clear active filters.</p>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-        </div>
+        </Card>
       ) : activeView === "calendar" ? (
         subView === "month" ? (
           <MonthView

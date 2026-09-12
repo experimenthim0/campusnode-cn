@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { createEvent } from '../services/eventService';
+import { getClubs } from '../services/clubService';
 import WysiwygMarkdownEditor from '../components/WysiwygMarkdownEditor';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
@@ -31,6 +32,8 @@ const BRANCHES = ALL_BRANCH_CODES;
 
 const CreateEvent = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const urlClubId = searchParams.get('clubId');
     const { user } = useAuth();
     const { showNotification } = useNotification();
 
@@ -51,7 +54,7 @@ const CreateEvent = () => {
         customFields: [],
         registrationDeadline: '',
         createdBy: user?.id || user?._id,
-        clubId: user?.clubId,
+        clubId: urlClubId || user?.clubId || user?.memberships?.find(m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents)?.clubId || user?.memberships?.[0]?.clubId || '',
         allowedPrograms: ['BTECH', 'MTECH', 'OTHER'],
         allowedYears: [],
         allowedBranches: [],
@@ -82,6 +85,33 @@ const CreateEvent = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
+    const [availableClubs, setAvailableClubs] = useState([]);
+
+    const eligibleClubs = useMemo(() => {
+        if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
+            return availableClubs;
+        }
+        if (user?.principalType === 'CLUB' || user?.role === 'club') {
+            return [{ id: user.clubId || user._id, clubName: user.name || 'My Club' }];
+        }
+        return (user?.memberships || []).filter(
+            m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents
+        );
+    }, [user, availableClubs]);
+
+    useEffect(() => {
+        if (urlClubId) {
+            setFormData(prev => ({ ...prev, clubId: urlClubId }));
+        } else if (!formData.clubId) {
+            const defClub = user?.clubId || user?.memberships?.find(m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents)?.clubId || user?.memberships?.[0]?.clubId;
+            if (defClub) {
+                setFormData(prev => ({ ...prev, clubId: defClub }));
+            }
+        }
+        if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
+            getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
+        }
+    }, [user, urlClubId]);
 
     // Validation state
     const [fieldErrors, setFieldErrors] = useState({});
@@ -330,12 +360,15 @@ const CreateEvent = () => {
     };
 
     const buildPayload = useCallback((isDraftStatus = false) => {
+        const effectiveClubId = formData.clubId || user?.clubId || user?.memberships?.find(m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents)?.clubId || user?.memberships?.[0]?.clubId;
         return {
             ...formData,
+            clubId: effectiveClubId,
+            clubIds: effectiveClubId ? [effectiveClubId] : [],
             startTime: formData.startTime ? new Date(formData.startTime).toISOString() : null,
             endTime: formData.endTime ? new Date(formData.endTime).toISOString() : null,
-            entryFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
             registrationFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
+            entryFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
             totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
             registrationDeadline: formData.registrationDeadline ? new Date(formData.registrationDeadline).toISOString() : null,
             allowedYears: allYears ? [] : formData.allowedYears,
@@ -348,11 +381,15 @@ const CreateEvent = () => {
             sponsors: sponsors.map(s => ({ name: s.name, logoUrl: s.logoUrl, websiteUrl: s.websiteUrl || undefined })),
             media: media.map(m => ({ url: m.url, type: m.type })),
             paymentMethod: formData.paymentMethod,
-            paymentInstructions: formData.paymentMethod === 'FREE' ? null : formData.paymentInstructions,
-            collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? formData.collegePaymentUrl : null,
-            upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.upiId : null,
-            accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.accountHolderName : null,
-            postRegistrationMessage: formData.postRegistrationMessage || null,
+            paymentInstructions: formData.paymentMethod === 'FREE'
+                ? null
+                : (formData.paymentMethod === 'MANUAL_TRANSACTION' && formData.upiId?.trim() && !formData.paymentInstructions?.includes(formData.upiId.trim())
+                    ? (formData.paymentInstructions?.trim() ? `${formData.paymentInstructions.trim()}\nUPI ID: ${formData.upiId.trim()}` : `UPI ID: ${formData.upiId.trim()}`)
+                    : (formData.paymentInstructions?.trim() || null)),
+            collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? (formData.collegePaymentUrl?.trim() || null) : null,
+            accountHolderName: null,
+            postRegistrationMessage: formData.postRegistrationMessage?.trim() || null,
+            upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.upiId?.trim() || null) : null,
             reviewStatus: isDraftStatus ? 'DRAFT' : 'PENDING',
             isDraft: isDraftStatus,
         };
@@ -598,6 +635,28 @@ const CreateEvent = () => {
                                     </h2>
                                 </div>
                             </div>
+
+                            {/* Organizing Club Selection */}
+                            {(eligibleClubs.length > 1 || user?.role === 'admin' || user?.role === 'SUPER_ADMIN') && (
+                                <div>
+                                    <label className={labelCls}>Organizing Club <span className="text-brand-600">*</span></label>
+                                    <select
+                                        name="clubId"
+                                        className={getFieldCls('clubId')}
+                                        value={formData.clubId}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="">Select Organizing Club</option>
+                                        {eligibleClubs.map((m) => {
+                                            const cid = m.clubId || m.id || m._id;
+                                            const cname = m.club?.clubName || m.clubName || m.name;
+                                            const roleTag = m.role ? ` (${m.role === 'CLUB_HEAD' ? 'Lead' : 'Coordinator'})` : '';
+                                            return <option key={cid} value={cid}>{cname}{roleTag}</option>;
+                                        })}
+                                    </select>
+                                    {renderFieldError('clubId')}
+                                </div>
+                            )}
 
                             {/* Event Title */}
                             <div>
@@ -981,20 +1040,26 @@ const CreateEvent = () => {
                                 </div>
                             )}
 
-                            {/* Payment Method Selector */}
+                            {/* Payment Option Selector */}
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <label className={labelCls}>Payment Option <span className="text-brand-600">*</span></label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {[
-                                        { id: 'FREE', title: 'Free Event', desc: 'No fee charged' },
-                                        { id: 'MANUAL_TRANSACTION', title: 'UPI Verification', desc: 'Manual transaction ID check' },
-                                        { id: 'COLLEGE_PAYMENT', title: 'College Portal', desc: 'Official payment gateway' },
+                                        { id: 'FREE', title: 'Free Event', desc: 'No registration fee charged' },
+                                        { id: 'MANUAL_TRANSACTION', title: 'Manual UPI Payment', desc: 'Direct UPI ID with QR code generation & UPI apps' },
+                                        { id: 'COLLEGE_PAYMENT', title: 'College Payment Portal', desc: 'Official SBI Collect or College ERP payment URL' },
                                     ].map((opt) => (
                                         <button
                                             key={opt.id}
                                             type="button"
                                             onClick={() => {
-                                                setFormData(prev => ({ ...prev, paymentMethod: opt.id }));
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    paymentMethod: opt.id,
+                                                    upiId: opt.id === 'MANUAL_TRANSACTION' ? prev.upiId : '',
+                                                    collegePaymentUrl: opt.id === 'COLLEGE_PAYMENT' ? prev.collegePaymentUrl : '',
+                                                    registrationFee: opt.id === 'FREE' ? 0 : (prev.registrationFee || 50),
+                                                }));
                                                 setIsFree(opt.id === 'FREE');
                                             }}
                                             className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
@@ -1014,8 +1079,8 @@ const CreateEvent = () => {
                                 </div>
                             </div>
 
-                            {/* Paid Event Details */}
-                            {formData.paymentMethod !== 'FREE' && (
+                            {/* Paid Event Details: Manual UPI Payment */}
+                            {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
                                 <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
@@ -1026,67 +1091,85 @@ const CreateEvent = () => {
                                             className={getFieldCls('registrationFee')}
                                             value={formData.registrationFee}
                                             onChange={handleChange}
-                                            placeholder="e.g. 50"
+                                            placeholder="e.g. 100"
                                         />
                                         {renderFieldError('registrationFee')}
                                     </div>
 
-                                    {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
-                                        <>
-                                            <div>
-                                                <label className={labelCls}>UPI ID / Phone Number <span className="text-brand-600">*</span></label>
-                                                <input
-                                                    type="text"
-                                                    name="upiId"
-                                                    className={getFieldCls('upiId')}
-                                                    value={formData.upiId}
-                                                    onChange={handleChange}
-                                                    placeholder="e.g. clubname@oksbi or 9876543210"
-                                                />
-                                                {renderFieldError('upiId')}
-                                            </div>
-                                            <div>
-                                                <label className={labelCls}>Account Holder Name (Optional)</label>
-                                                <input
-                                                    type="text"
-                                                    name="accountHolderName"
-                                                    className={inputCls}
-                                                    value={formData.accountHolderName}
-                                                    onChange={handleChange}
-                                                    placeholder="e.g. John Doe (Club Treasurer)"
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
-                                        <div>
-                                            <label className={labelCls}>College Payment Portal URL <span className="text-brand-600">*</span></label>
-                                            <input
-                                                type="url"
-                                                name="collegePaymentUrl"
-                                                className={getFieldCls('collegePaymentUrl')}
-                                                value={formData.collegePaymentUrl}
-                                                onChange={handleChange}
-                                                placeholder="https://payment.nitj.ac.in/..."
-                                            />
-                                            {renderFieldError('collegePaymentUrl')}
-                                        </div>
-                                    )}
+                                    <div>
+                                        <label className={labelCls}>Beneficiary UPI ID <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="upiId"
+                                            className={getFieldCls('upiId')}
+                                            value={formData.upiId}
+                                            onChange={handleChange}
+                                            placeholder="e.g. clubname@oksbi or 9876543210@paytm"
+                                        />
+                                        {renderFieldError('upiId')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Used to generate dynamic QR codes and mobile UPI app links (GPay, PhonePe, Paytm, BHIM).</p>
+                                    </div>
 
                                     <div>
-                                        <label className={labelCls}>Payment Instructions</label>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
                                         <textarea
                                             name="paymentInstructions"
                                             rows="2"
                                             className={inputCls}
                                             value={formData.paymentInstructions}
                                             onChange={handleChange}
-                                            placeholder="Instructions shown to attendee during registration..."
+                                            placeholder="Additional guidelines shown to attendees during payment (e.g. category selection, transfer steps)..."
                                         />
                                     </div>
                                 </div>
                             )}
+
+                            {/* Paid Event Details: College Payment Portal */}
+                            {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
+                                <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                                    <div>
+                                        <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="number"
+                                            name="registrationFee"
+                                            min="1"
+                                            className={getFieldCls('registrationFee')}
+                                            value={formData.registrationFee}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 100"
+                                        />
+                                        {renderFieldError('registrationFee')}
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Official College Payment Portal URL <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="collegePaymentUrl"
+                                            className={getFieldCls('collegePaymentUrl')}
+                                            value={formData.collegePaymentUrl}
+                                            onChange={handleChange}
+                                            placeholder="https://www.onlinesbi.sbi/sbicollect/..."
+                                        />
+                                        {renderFieldError('collegePaymentUrl')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Attendees will see a direct button that opens this official portal in a new tab without closing their registration.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
+                                        <textarea
+                                            name="paymentInstructions"
+                                            rows="2"
+                                            className={inputCls}
+                                            value={formData.paymentInstructions}
+                                            onChange={handleChange}
+                                            placeholder="Guidelines for portal payment (e.g. select category, department name, fee head)..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            
 
                             {/* Custom Registration Form Fields */}
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
@@ -1193,20 +1276,23 @@ const CreateEvent = () => {
                                 ))}
                             </div>
 
-                            {/* Post Registration Message */}
-                            <div>
-                                <label className={labelCls}>Post-Registration Success Message (Optional)</label>
+                            {/* Post-Registration Message / Links */}
+                            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-1.5">
+                                <label className={labelCls}>Post-Registration Message & Links (Optional)</label>
                                 <textarea
                                     name="postRegistrationMessage"
                                     rows="2"
                                     className={inputCls}
                                     value={formData.postRegistrationMessage}
                                     onChange={handleChange}
-                                    placeholder="Message displayed to attendee after successfully registering (e.g. WhatsApp group link)..."
+                                    placeholder="e.g. Join the official participants WhatsApp group: https://chat.whatsapp.com/... for schedule and announcements."
                                 />
+                                <p className="text-[11px] text-neutral-400">
+                                    Shown to participants immediately after successful registration (supports clickable WhatsApp/Discord links).
+                                </p>
                             </div>
                         </div>
-                    )}
+                                        )}
 
                     {/* STEP 4: Extras */}
                     {currentStep === 4 && (

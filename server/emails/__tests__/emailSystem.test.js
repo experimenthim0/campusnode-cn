@@ -37,7 +37,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(ids).toContain("auth:verify-account");
       expect(ids).toContain("auth:login-otp");
       expect(ids).toContain("auth:reset-password");
-      expect(ids).toContain("clubs:credentials");
+      expect(ids).toContain("clubs:student-head-assigned");
       expect(ids).toContain("clubs:faculty-assigned");
     });
 
@@ -65,7 +65,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("Alex &lt;Student&gt;");
       expect(rendered.html).toContain("verify-email/test-token-123");
       expect(rendered.html).toContain("Verify My Account");
-      expect(rendered.html).toContain("https://clubsetu.nikhim.me/cn_logo.png");
+      expect(rendered.html).toContain("CampusNode");
       expect(rendered.html).toContain("fonts.googleapis.com/css2?family=Google+Sans");
     });
 
@@ -98,7 +98,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(studentRender.html).toContain("TIME");
       expect(studentRender.html).toContain("Feb 9, 10:34 AM");
       expect(studentRender.html).toContain("SFMono-Regular");
-      expect(studentRender.html).toContain("https://clubsetu.nikhim.me/cn_logo.png");
+      expect(studentRender.html).toContain("CampusNode");
 
       // 2. Admin portal context
       const adminRender = renderEmail(template, {
@@ -135,23 +135,36 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("Feb 9, 10:34 AM");
     });
 
-    it("clubs:credentials - should render club onboarding details", () => {
-      const template = getTemplate("clubs:credentials");
+    it("clubs:student-head-assigned - should render student lead appointment details with dark mode compatibility", () => {
+      const template = getTemplate("clubs:student-head-assigned");
 
-      expect(() => template.validate({})).toThrow(/Missing required field/);
+      expect(() => template.validate({})).toThrow(/Missing required field: "studentName"/);
+      expect(() => template.validate({ studentName: "Rahul" })).toThrow(/Missing required field: "clubName"/);
 
       const rendered = renderEmail(template, {
-        clubName: "Coding Club",
-        clubEmail: "coding@nitj.ac.in",
-        defaultPassword: "password123",
-        loginUrl: "https://campusnode.vercel.app/login",
+        studentName: "Rahul Sharma",
+        studentEmail: "rahul@nitj.ac.in",
+        rollNo: "22103045",
+        clubName: "Coding Club NITJ",
+        dashboardUrl: "https://campusnode.vercel.app/events",
       });
 
-      expect(rendered.subject).toBe("Welcome to CampusNode - Coding Club Account Credentials");
-      expect(rendered.html).toContain("Coding Club");
-      expect(rendered.html).toContain("coding@nitj.ac.in");
-      expect(rendered.html).toContain("password123");
-      expect(rendered.html).toContain("Log In to Club Account");
+      expect(rendered.subject).toBe("🎉 Congratulations Rahul Sharma! You've been appointed as Club Head of Coding Club NITJ");
+      expect(rendered.html).toContain("Rahul Sharma");
+      expect(rendered.html).toContain("Coding Club NITJ");
+      expect(rendered.html).toContain("rahul@nitj.ac.in");
+      expect(rendered.html).toContain("22103045");
+      expect(rendered.html).toContain("Club Head (Student Lead)");
+      expect(rendered.html).toContain("Go to Club Dashboard");
+      expect(rendered.html).toContain("info-table");
+      expect(rendered.html).toContain("No Separate Password Needed");
+
+      // Verify dark mode theme injection
+      const darkRendered = renderEmail(template, {
+        studentName: "Rahul Sharma",
+        clubName: "Coding Club NITJ",
+      }, { theme: "dark" });
+      expect(darkRendered.html).toContain('data-theme="dark"');
     });
 
     it("clubs:faculty-assigned - should render unified coordinator template", () => {
@@ -172,7 +185,6 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("Robotics Club");
       expect(rendered.html).toContain("sharma@nitj.ac.in");
       expect(rendered.html).toContain("tempPassword!");
-      expect(rendered.html).toContain("Access Faculty Portal");
     });
   });
 

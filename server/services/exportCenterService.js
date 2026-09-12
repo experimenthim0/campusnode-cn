@@ -52,7 +52,7 @@ export const DATASETS = {
   students: {
     id: "students",
     label: "Students",
-    description: "Student user profiles, branches, programs, and verification statuses.",
+    description: "Student user profiles, branches, programs, and graduation years.",
     requiredPermission: PERMISSIONS.USER_VIEW,
     defaultColumns: ["name", "rollNo", "email", "branch", "year", "program", "userCategory", "createdAt"],
     allColumns: [
@@ -64,8 +64,6 @@ export const DATASETS = {
       { id: "year", label: "Year" },
       { id: "program", label: "Program" },
       { id: "userCategory", label: "User Role Category" },
-      { id: "isVerified", label: "Email Verified" },
-      { id: "isBlocked", label: "Status (Blocked)" },
       { id: "createdAt", label: "Registered Date" },
     ],
   },
@@ -162,23 +160,31 @@ export async function getEventsList(user, clubId = "all") {
   const isSuperAdmin = user.role === "admin" || user.role === "SUPER_ADMIN";
   const where = {};
   if (!isSuperAdmin && (user.role === "facultyCoordinator" || user.role === "club")) {
-    where.clubId = user.clubId;
+    where.organizers = { some: { clubId: user.clubId } };
   } else if (clubId && clubId !== "all") {
-    where.clubId = clubId;
+    where.organizers = { some: { clubId } };
   }
 
   const events = await prisma.event.findMany({
     where,
-    select: { id: true, title: true, organizerType: true, centralOrganizerId: true, clubId: true, club: { select: { clubName: true } } },
+    select: {
+      id: true,
+      title: true,
+      organizers: {
+        select: {
+          club: { select: { clubName: true } },
+        },
+      },
+    },
     orderBy: { startTime: "desc" },
   });
 
   return events.map((e) => {
-    const isCentral = e.organizerType === "CENTRAL" || !!e.centralOrganizerId || (!e.club && !e.clubId);
+    const clubNames = e.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
     return {
       id: e.id,
       title: e.title,
-      clubName: e.club?.clubName || (isCentral ? "ODSW" : "N/A"),
+      clubName: clubNames,
     };
   });
 }
@@ -210,13 +216,13 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
   switch (datasetId) {
     case "events": {
       const where = {};
-      if (effectiveClubId) where.clubId = effectiveClubId;
+      if (effectiveClubId) where.organizers = { some: { clubId: effectiveClubId } };
       if (filters.eventId && filters.eventId !== "all") where.id = filters.eventId;
       if (filters.reviewStatus && filters.reviewStatus !== "all") where.reviewStatus = filters.reviewStatus;
       if (filters.registrationType && filters.registrationType !== "all") where.registrationType = filters.registrationType;
 
-      if (filters.eventType === "Paid") where.entryFee = { gt: 0 };
-      else if (filters.eventType === "Free") where.entryFee = 0;
+      if (filters.eventType === "Paid") where.registrationFee = { gt: 0 };
+      else if (filters.eventType === "Free") where.registrationFee = 0;
 
       if (dateRange) {
         where.startTime = { gte: dateRange.gte, lte: dateRange.lte };
@@ -225,24 +231,29 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       totalCount = await prisma.event.count({ where });
       const rawEvents = await prisma.event.findMany({
         where,
-        include: { club: { select: { clubName: true } } },
+        include: {
+          organizers: {
+            include: { club: { select: { clubName: true } } },
+          },
+        },
         orderBy: { startTime: "desc" },
         skip: isExport ? undefined : skip,
         take: isExport ? undefined : take,
       });
 
       records = rawEvents.map((e) => {
-        const isCentral = e.organizerType === "CENTRAL" || !!e.centralOrganizerId || (!e.club && !e.clubId);
+        const clubNames = e.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
+        const fee = e.registrationFee || 0;
         return {
           id: e.id,
           title: e.title,
-          clubName: e.club?.clubName || (isCentral ? "ODSW" : "N/A"),
+          clubName: clubNames,
           venue: e.venue || "N/A",
           startTime: e.startTime ? new Date(e.startTime).toLocaleString() : "",
           endTime: e.endTime ? new Date(e.endTime).toLocaleString() : "",
           reviewStatus: e.reviewStatus,
-          entryFee: e.entryFee || 0,
-          eventType: e.entryFee > 0 ? "Paid" : "Free",
+          entryFee: fee,
+          eventType: fee > 0 ? "Paid" : "Free",
           registeredCount: e.registeredCount || 0,
           registrationType: e.registrationType || "individual",
           registrationDeadline: e.registrationDeadline ? new Date(e.registrationDeadline).toLocaleString() : "",
@@ -254,7 +265,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
 
     case "registrations": {
       const where = {};
-      if (effectiveClubId) where.event = { clubId: effectiveClubId };
+      if (effectiveClubId) where.event = { organizers: { some: { clubId: effectiveClubId } } };
       if (filters.eventId && filters.eventId !== "all") where.eventId = filters.eventId;
       if (filters.status && filters.status !== "all") where.status = filters.status;
       if (filters.paymentStatus && filters.paymentStatus !== "all") where.paymentStatus = filters.paymentStatus;
@@ -268,7 +279,14 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
         where,
         include: {
           student: { select: { name: true, rollNo: true, email: true } },
-          event: { select: { title: true, club: { select: { clubName: true } } } },
+          externalUser: { select: { name: true, email: true, collegeName: true } },
+          event: {
+            select: {
+              title: true,
+              registrationFee: true,
+              organizers: { include: { club: { select: { clubName: true } } } },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip: isExport ? undefined : skip,
@@ -276,17 +294,19 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       });
 
       records = rawParts.map((p) => {
-        const isCentral = p.event?.organizerType === "CENTRAL" || !!p.event?.centralOrganizerId || (!p.event?.club && !p.event?.clubId);
+        const clubNames = p.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
+        const fee = p.event?.registrationFee || 0;
+        const amountPaid = (p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED") ? fee : 0;
         return {
           id: p.id,
-          studentName: p.student?.name || p.externalName || "N/A",
-          rollNo: p.student?.rollNo || "N/A",
-          email: p.student?.email || p.externalEmail || "N/A",
+          studentName: p.student?.name || p.externalUser?.name || "N/A",
+          rollNo: p.student?.rollNo || p.externalUser?.collegeName || "N/A",
+          email: p.student?.email || p.externalUser?.email || "N/A",
           eventName: p.event?.title || "N/A",
-          clubName: p.event?.club?.clubName || (isCentral ? "ODSW" : "N/A"),
+          clubName: clubNames,
           status: p.status,
           paymentStatus: p.paymentStatus,
-          amountPaid: p.amountPaid || 0,
+          amountPaid,
           transactionId: p.transactionId || "N/A",
           createdAt: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
         };
@@ -298,10 +318,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       const where = {};
       if (filters.branch && filters.branch !== "all") where.branch = filters.branch;
       if (filters.program && filters.program !== "all") where.program = filters.program;
-      if (filters.isVerified === "true") where.isVerified = true;
-      if (filters.isVerified === "false") where.isVerified = false;
-      if (filters.isBlocked === "true") where.isBlocked = true;
-      if (filters.isBlocked === "false") where.isBlocked = false;
 
       const userCategory = filters.userCategory || "students_only";
       if (userCategory === "students_only") {
@@ -321,9 +337,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           branch: true,
           program: true,
           expectedGraduationYear: true,
-          academicStatus: true,
-          isVerified: true,
-          isBlocked: true,
           createdAt: true,
           memberships: {
             where: { role: "CLUB_HEAD" },
@@ -350,8 +363,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           semester: progress.semesterLabel,
           program: s.program || "N/A",
           userCategory: isClubHead ? `Club Head (${clubName || 'Club'})` : "Student",
-          isVerified: s.isVerified ? "Yes" : "No",
-          isBlocked: s.isBlocked ? "Blocked" : "Active",
           createdAt: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "",
         };
       });
@@ -403,14 +414,13 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
 
     case "transactions": {
       const where = {
-        event: { entryFee: { gt: 0 } },
+        event: { registrationFee: { gt: 0 } },
         OR: [
           { paymentStatus: { in: ["SUCCESS", "APPROVED", "PENDING", "REJECTED", "NEED_MORE_DETAILS"] } },
-          { amountPaid: { gt: 0 } },
           { transactionId: { not: null } },
         ],
       };
-      if (effectiveClubId) where.event = { ...where.event, clubId: effectiveClubId };
+      if (effectiveClubId) where.event = { ...where.event, organizers: { some: { clubId: effectiveClubId } } };
       if (filters.eventId && filters.eventId !== "all") where.eventId = filters.eventId;
       if (filters.paymentStatus && filters.paymentStatus !== "all") where.paymentStatus = filters.paymentStatus;
 
@@ -423,7 +433,14 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
         where,
         include: {
           student: { select: { name: true, rollNo: true, email: true } },
-          event: { select: { title: true, club: { select: { clubName: true } } } },
+          externalUser: { select: { name: true, email: true, collegeName: true } },
+          event: {
+            select: {
+              title: true,
+              registrationFee: true,
+              organizers: { include: { club: { select: { clubName: true } } } },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip: isExport ? undefined : skip,
@@ -431,16 +448,18 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       });
 
       records = rawTxns.map((t) => {
-        const isCentral = t.event?.organizerType === "CENTRAL" || !!t.event?.centralOrganizerId || (!t.event?.club && !t.event?.clubId);
+        const clubNames = t.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
+        const fee = t.event?.registrationFee || 0;
+        const amountPaid = (t.paymentStatus === "SUCCESS" || t.paymentStatus === "APPROVED") ? fee : 0;
         return {
           transactionId: t.transactionId || "N/A",
-          studentName: t.student?.name || t.externalName || "N/A",
-          rollNo: t.student?.rollNo || "N/A",
-          email: t.student?.email || t.externalEmail || "N/A",
+          studentName: t.student?.name || t.externalUser?.name || "N/A",
+          rollNo: t.student?.rollNo || t.externalUser?.collegeName || "N/A",
+          email: t.student?.email || t.externalUser?.email || "N/A",
           eventName: t.event?.title || "N/A",
-          clubName: t.event?.club?.clubName || (isCentral ? "ODSW" : "N/A"),
+          clubName: clubNames,
           payerName: t.payerName || "N/A",
-          amountPaid: t.amountPaid || 0,
+          amountPaid,
           paymentStatus: t.paymentStatus || "N/A",
           paymentRemarks: t.paymentRemarks || "",
           paymentReviewedBy: t.paymentReviewedBy || "N/A",
@@ -451,8 +470,8 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
     }
 
     case "payouts": {
-      const where = { entryFee: { gt: 0 } };
-      if (effectiveClubId) where.clubId = effectiveClubId;
+      const where = { registrationFee: { gt: 0 } };
+      if (effectiveClubId) where.organizers = { some: { clubId: effectiveClubId } };
       if (filters.eventId && filters.eventId !== "all") where.id = filters.eventId;
 
       if (dateRange) {
@@ -463,10 +482,12 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       const rawPayoutEvents = await prisma.event.findMany({
         where,
         include: {
-          club: { select: { clubName: true } },
+          organizers: {
+            include: { club: { select: { clubName: true } } },
+          },
           participations: {
             where: { paymentStatus: { in: ["SUCCESS", "APPROVED"] } },
-            select: { amountPaid: true },
+            select: { id: true },
           },
         },
         orderBy: { startTime: "desc" },
@@ -475,13 +496,15 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       });
 
       records = rawPayoutEvents.map((e) => {
-        const totalRevenue = (e.participations || []).reduce((sum, p) => sum + (p.amountPaid || 0), 0);
-        const isCentral = e.organizerType === "CENTRAL" || !!e.centralOrganizerId || (!e.club && !e.clubId);
+        const paidCount = (e.participations || []).length;
+        const fee = e.registrationFee || 0;
+        const totalRevenue = paidCount * fee;
+        const clubNames = e.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
         return {
           id: e.id,
           title: e.title,
-          clubName: e.club?.clubName || (isCentral ? "ODSW" : "N/A"),
-          entryFee: e.entryFee || 0,
+          clubName: clubNames,
+          entryFee: fee,
           registeredCount: e.registeredCount || 0,
           totalRevenue,
           startTime: e.startTime ? new Date(e.startTime).toLocaleString() : "",

@@ -4,8 +4,6 @@ import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { z } from "zod";
 import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
-import { generateAIFeedbackReview } from "../services/openRouterService.js";
-import { generateFeedbackReviewPDF } from "../services/pdfReportService.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 
 const router = express.Router();
@@ -32,29 +30,20 @@ async function canAccessEventAnalytics(user, event) {
   if (!user || !event) return false;
   if (user.role === "admin" || user.role === "SUPER_ADMIN" || user.principalType === "ADMIN") return true;
 
-  if (event.organizerType === "CENTRAL" || event.institutionalAccountId) {
-    if (user.role === "central_organizer" || user.principalType === "INSTITUTIONAL") return true;
-    const instAssignment = (user.institutionalAssignments || []).find(
-      (a) => a.status === "ACTIVE" || a.status === undefined
-    );
-    if (instAssignment) return true;
-  }
+  const eventWithOrganizers = event.organizers ? event : await prisma.event.findUnique({
+    where: { id: event.id },
+    include: { organizers: true },
+  });
+  const organizerClubIds = (eventWithOrganizers?.organizers || []).map((o) => o.clubId);
 
-  if (event.clubId) {
-    if (user.role === "facultyCoordinator" && String(user.clubId) === String(event.clubId)) return true;
-    if (user.principalType === "CLUB" && String(user.clubId) === String(event.clubId)) return true;
-    const membership = (user.memberships || []).find(
-      (m) => String(m.clubId) === String(event.clubId) && m.status !== "INACTIVE"
-    );
-    if (membership && ["CLUB_HEAD", "COORDINATOR"].includes(membership.role)) return true;
-  }
+  if (user.role === "facultyCoordinator" && user.clubId && organizerClubIds.includes(user.clubId)) return true;
+
+  const membership = (user.memberships || []).find(
+    (m) => organizerClubIds.includes(m.clubId) && m.status !== "INACTIVE"
+  );
+  if (membership && ["CLUB_HEAD", "COORDINATOR"].includes(membership.role)) return true;
 
   if (String(event.createdById) === String(user.userId || user.id || user.studentId)) return true;
-
-  const staff = await prisma.eventStaff.findFirst({
-    where: { eventId: event.id, userId: user.userId || user.id, status: "ACTIVE" },
-  });
-  if (staff) return true;
 
   return false;
 }
@@ -92,13 +81,16 @@ router.get("/pending", verifyToken, async (req, res) => {
             startTime: true,
             endTime: true,
             imageUrl: true,
-            clubId: true,
-            club: {
-              select: {
-                id: true,
-                clubName: true,
-                clubLogo: true,
-                slug: true,
+            organizers: {
+              include: {
+                club: {
+                  select: {
+                    id: true,
+                    clubName: true,
+                    clubLogo: true,
+                    slug: true,
+                  },
+                },
               },
             },
           },
@@ -141,7 +133,7 @@ router.get("/pending", verifyToken, async (req, res) => {
           startTime: p.event.startTime,
           endTime: p.event.endTime,
           imageUrl: p.event.imageUrl,
-          club: p.event.club,
+          club: p.event.organizers?.[0]?.club || null,
           feedbackOpenAt,
           feedbackDeadline,
           attendedAt: p.attendedAt,
@@ -179,12 +171,16 @@ router.get("/my-feedback", verifyToken, async (req, res) => {
             startTime: true,
             endTime: true,
             imageUrl: true,
-            club: {
-              select: {
-                id: true,
-                clubName: true,
-                clubLogo: true,
-                slug: true,
+            organizers: {
+              include: {
+                club: {
+                  select: {
+                    id: true,
+                    clubName: true,
+                    clubLogo: true,
+                    slug: true,
+                  },
+                },
               },
             },
           },
@@ -197,7 +193,10 @@ router.get("/my-feedback", verifyToken, async (req, res) => {
       feedbacks: feedbacks.map((f) => ({
         id: f.id,
         eventId: f.eventId,
-        event: f.event,
+        event: {
+          ...f.event,
+          club: f.event?.organizers?.[0]?.club || null,
+        },
         overallRating: f.overallRating,
         organizationRating: f.organizationRating,
         usefulnessRating: f.usefulnessRating,
@@ -353,7 +352,11 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
-        club: { select: { id: true, clubName: true, clubLogo: true } },
+        organizers: {
+          include: {
+            club: { select: { id: true, clubName: true, clubLogo: true } },
+          },
+        },
       },
     });
 
@@ -494,362 +497,6 @@ router.get(["/:eventId/analytics", "/events/:eventId/analytics"], verifyToken, a
   }
 });
 
-router.get("/:eventId/ai-reviews", verifyToken, async (req, res) => {
-  try {
-    const { eventId } = req.params;
-
-    const event = await prisma.event.findFirst({
-      where: { OR: [{ id: eventId }, { slug: eventId }] },
-      include: { club: { select: { id: true, clubName: true, slug: true } } },
-    });
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found." });
-    }
-
-    const hasAccess = await canAccessEventAnalytics(req.user, event);
-    if (!hasAccess) {
-      return res.status(403).json({ message: "Access denied. Organizer permissions required." });
-    }
-
-    const reviews = await prisma.eventAIReview.findMany({
-      where: { eventId: event.id, status: "COMPLETED" },
-      orderBy: { reviewNumber: "asc" },
-    });
-
-    const now = new Date();
-    const eventEnd = new Date(event.endTime);
-    const windowClosesAt = new Date(eventEnd.getTime() + FEEDBACK_WINDOW_MS);
-    const isWindowLocked = now < windowClosesAt;
-
-    const completedCount = reviews.length;
-    const remainingReviews = Math.max(0, 2 - completedCount);
-
-    res.json({
-      eventId: event.id,
-      eventTitle: event.title,
-      completedCount,
-      remainingReviews,
-      maxAllowed: 2,
-      isWindowLocked,
-      windowClosesAt: windowClosesAt.toISOString(),
-      reviews,
-    });
-  } catch (error) {
-    console.error("GET /api/feedback/:eventId/ai-reviews Error:", error);
-    res.status(500).json({ message: "Failed to fetch AI reviews.", error: error.message });
-  }
-});
-
-/**
- * ── POST /api/feedback/:eventId/ai-review ───────────────────────────────────
- * Generates an AI review for the event using OpenRouter.
- * Enforces:
- * 1. Organizer authorization.
- * 2. 72-hour window completion.
- * 3. Maximum 2 completed AI reviews per event (atomic database reservation).
- * 4. Failure-safe rollback (failed/timeout calls never consume a review slot).
- */
-router.post("/:eventId/ai-review", verifyToken, async (req, res) => {
-  let reservationId = null;
-  try {
-    const { eventId } = req.params;
-
-    const event = await prisma.event.findFirst({
-      where: { OR: [{ id: eventId }, { slug: eventId }] },
-      include: { club: { select: { id: true, clubName: true, slug: true } } },
-    });
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found." });
-    }
-
-    const hasAccess = await canAccessEventAnalytics(req.user, event);
-    if (!hasAccess) {
-      return res.status(403).json({ message: "Access denied. Organizer permissions required to generate AI review." });
-    }
-
-    // 1. 72-Hour Window Gating Check
-    const now = new Date();
-    const eventEnd = new Date(event.endTime);
-    const windowClosesAt = new Date(eventEnd.getTime() + FEEDBACK_WINDOW_MS);
-
-    if (now < windowClosesAt) {
-      return res.status(400).json({
-        message: `AI review is only available after the 72-hour feedback collection window completes (${windowClosesAt.toLocaleString()}).`,
-        windowClosesAt: windowClosesAt.toISOString(),
-        isWindowLocked: true,
-      });
-    }
-
-    const [completedReviews, totalAttendees] = await Promise.all([
-      prisma.eventAIReview.findMany({
-        where: { eventId: event.id, status: "COMPLETED" },
-        orderBy: { reviewNumber: "asc" },
-      }),
-      prisma.participation.count({
-        where: { eventId: event.id, status: "ATTENDED" },
-      }),
-    ]);
-
-    if (completedReviews.length >= 2) {
-      return res.status(429).json({
-        message: "Maximum AI review limit reached (2 / 2 reviews used). No additional AI reviews are available for this event.",
-        completedCount: 2,
-        remainingReviews: 0,
-      });
-    }
-
-    await prisma.eventAIReview.deleteMany({
-      where: {
-        eventId: event.id,
-        status: "IN_PROGRESS",
-        createdAt: { lt: new Date(Date.now() - 60000) },
-      },
-    });
-
-    const activeLock = await prisma.eventAIReview.findFirst({
-      where: {
-        eventId: event.id,
-        status: "IN_PROGRESS",
-      },
-    });
-
-    if (activeLock) {
-      return res.status(409).json({
-        message: "An AI review generation is already currently in progress. Please wait a moment.",
-      });
-    }
-
-    const reviewNumber = completedReviews.length + 1;
-
-    const newReservationId = createObjectId();
-    const reservation = await prisma.eventAIReview.create({
-      data: {
-        id: newReservationId,
-        eventId: event.id,
-        reviewNumber,
-        status: "IN_PROGRESS",
-        responseCount: 0,
-        attendeeCount: totalAttendees,
-        overallSentiment: "insufficient_data",
-        overallSummary: "Generating...",
-        whatStudentsLiked: [],
-        improvementAreas: [],
-        keyTakeaways: [],
-        recommendations: [],
-        positiveHighlights: [],
-        constructiveHighlights: [],
-        model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-preview-02-05:free",
-        generatedById: req.user.userId || req.user.id || null,
-      },
-    });
-    reservationId = reservation.id;
-
-    const allFeedbacks = await prisma.eventFeedback.findMany({
-      where: { eventId: event.id },
-      orderBy: { submittedAt: "desc" },
-    });
-
-    if (!allFeedbacks.length) {
-      await prisma.eventAIReview.delete({ where: { id: reservationId } });
-      reservationId = null;
-      return res.status(400).json({
-        message: "There is not enough feedback to generate an AI review.",
-      });
-    }
-
-    const recCounts = { YES: 0, MAYBE: 0, NO: 0 };
-    allFeedbacks.forEach((f) => {
-      if (recCounts[f.attendSimilar] !== undefined) recCounts[f.attendSimilar]++;
-    });
-
-    const attendAgainSummary = {
-      yesPercentage: Math.round((recCounts.YES / allFeedbacks.length) * 100),
-      maybePercentage: Math.round((recCounts.MAYBE / allFeedbacks.length) * 100),
-      noPercentage: Math.round((recCounts.NO / allFeedbacks.length) * 100),
-    };
-
-    let aiResult;
-    try {
-      aiResult = await generateAIFeedbackReview({
-        event,
-        feedbacks: allFeedbacks,
-        totalAttendees,
-      });
-    } catch (aiErr) {
-      // Rollback reservation on any failure — DO NOT consume review slot
-      await prisma.eventAIReview.delete({ where: { id: reservationId } });
-      reservationId = null;
-      console.error("AI Generation Failed:", aiErr.message);
-      return res.status(502).json({
-        message: "AI review could not be generated. Your review limit has not been used. Please try again.",
-        error: aiErr.message,
-      });
-    }
-
-    const completedReview = await prisma.eventAIReview.update({
-      where: { id: reservation.id },
-      data: {
-        status: "COMPLETED",
-        responseCount: allFeedbacks.length,
-        attendeeCount: totalAttendees,
-        overallSentiment: aiResult.overallSentiment,
-        overallSummary: aiResult.overallSummary,
-        whatStudentsLiked: aiResult.whatStudentsLiked,
-        improvementAreas: aiResult.improvementAreas,
-        keyTakeaways: aiResult.keyTakeaways,
-        recommendations: aiResult.recommendations,
-        positiveHighlights: aiResult.positiveHighlights,
-        constructiveHighlights: aiResult.constructiveHighlights,
-        attendAgainSummary,
-        model: aiResult.modelUsed || process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-preview-02-05:free",
-        generatedAt: new Date(),
-      },
-    });
-
-    res.status(201).json({
-      message: "AI Feedback Review generated successfully.",
-      review: completedReview,
-      completedCount: reviewNumber,
-      remainingReviews: Math.max(0, 2 - reviewNumber),
-    });
-  } catch (error) {
-    if (reservationId) {
-      try {
-        await prisma.eventAIReview.delete({ where: { id: reservationId } });
-      } catch {
-        // ignore rollback cleanup error
-      }
-    }
-    console.error("POST /api/feedback/:eventId/ai-review Error:", error);
-    res.status(500).json({
-      message: "An unexpected error occurred while generating the AI review. Your review limit was not used.",
-      error: error.message,
-    });
-  }
-});
-
-router.get("/:eventId/ai-reviews/:reviewNumber/pdf", verifyToken, async (req, res) => {
-  try {
-    const { eventId, reviewNumber } = req.params;
-    const rNum = parseInt(reviewNumber, 10);
-
-    if (isNaN(rNum) || rNum < 1 || rNum > 2) {
-      return res.status(400).json({ message: "Invalid review number. Must be 1 or 2." });
-    }
-
-    const event = await prisma.event.findFirst({
-      where: { OR: [{ id: eventId }, { slug: eventId }] },
-      include: { club: { select: { id: true, clubName: true, slug: true } } },
-    });
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found." });
-    }
-
-    const hasAccess = await canAccessEventAnalytics(req.user, event);
-    if (!hasAccess) {
-      return res.status(403).json({ message: "Access denied." });
-    }
-
-    const review = await prisma.eventAIReview.findFirst({
-      where: { eventId: event.id, reviewNumber: rNum, status: "COMPLETED" },
-    });
-
-    if (!review) {
-      return res.status(404).json({ message: `AI Review #${rNum} has not been generated for this event.` });
-    }
-
-    const [allFeedbacks, totalAttendees] = await Promise.all([
-      prisma.eventFeedback.findMany({ where: { eventId: event.id } }),
-      prisma.participation.count({ where: { eventId: event.id, status: "ATTENDED" } }),
-    ]);
-
-    const totalResponses = allFeedbacks.length;
-    const responseRate = totalAttendees > 0 ? Math.round((totalResponses / totalAttendees) * 100) : 0;
-
-    const calculateAvg = (key) => {
-      if (!totalResponses) return 0;
-      const sum = allFeedbacks.reduce((acc, f) => acc + (f[key] || 0), 0);
-      return Number((sum / totalResponses).toFixed(1));
-    };
-
-    const averageRatings = {
-      overall: calculateAvg("overallRating"),
-      organization: calculateAvg("organizationRating"),
-      usefulness: calculateAvg("usefulnessRating"),
-      speaker: calculateAvg("speakerRating"),
-      venue: calculateAvg("venueRating"),
-      timing: calculateAvg("timingRating"),
-    };
-
-    const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    allFeedbacks.forEach((f) => {
-      if (ratingDistribution[f.overallRating] !== undefined) ratingDistribution[f.overallRating]++;
-    });
-    const distributionArray = [5, 4, 3, 2, 1].map((stars) => ({
-      stars,
-      count: ratingDistribution[stars],
-      percentage: totalResponses > 0 ? Math.round((ratingDistribution[stars] / totalResponses) * 100) : 0,
-    }));
-
-    const recCounts = { YES: 0, MAYBE: 0, NO: 0 };
-    allFeedbacks.forEach((f) => {
-      if (recCounts[f.attendSimilar] !== undefined) recCounts[f.attendSimilar]++;
-    });
-    const recommendationAnalytics = {
-      yes: { count: recCounts.YES, percentage: totalResponses > 0 ? Math.round((recCounts.YES / totalResponses) * 100) : 0 },
-      maybe: { count: recCounts.MAYBE, percentage: totalResponses > 0 ? Math.round((recCounts.MAYBE / totalResponses) * 100) : 0 },
-      no: { count: recCounts.NO, percentage: totalResponses > 0 ? Math.round((recCounts.NO / totalResponses) * 100) : 0 },
-    };
-
-    const analytics = {
-      overview: { totalResponses, totalAttendees, responseRate },
-      averageRatings,
-      ratingDistribution: distributionArray,
-      recommendationAnalytics,
-    };
-
-    const sanitizedTitle = (event.title || "event").replace(/[^a-zA-Z0-9_-]/g, "_");
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="CampusNode-AI-Feedback-Review-${sanitizedTitle}-R${rNum}.pdf"`);
-
-    generateFeedbackReviewPDF({ event, review, analytics, stream: res });
-  } catch (error) {
-    console.error("GET /api/feedback/:eventId/ai-reviews/:reviewNumber/pdf Error:", error);
-    res.status(500).json({ message: "Failed to generate review PDF.", error: error.message });
-  }
-});
-
-router.get("/:eventId/ai-reviews/:reviewNumber/json", verifyToken, async (req, res) => {
-  try {
-    const { eventId, reviewNumber } = req.params;
-    const rNum = parseInt(reviewNumber, 10);
-
-    const event = await prisma.event.findFirst({
-      where: { OR: [{ id: eventId }, { slug: eventId }] },
-      include: { club: { select: { id: true, clubName: true, slug: true } } },
-    });
-
-    if (!event) return res.status(404).json({ message: "Event not found." });
-
-    const hasAccess = await canAccessEventAnalytics(req.user, event);
-    if (!hasAccess) return res.status(403).json({ message: "Access denied." });
-
-    const review = await prisma.eventAIReview.findFirst({
-      where: { eventId: event.id, reviewNumber: rNum, status: "COMPLETED" },
-    });
-
-    if (!review) {
-      return res.status(404).json({ message: `AI Review #${rNum} not found.` });
-    }
-
-    res.json({ event, review });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to export review JSON.", error: error.message });
-  }
-});
-
 export default router;
+
 

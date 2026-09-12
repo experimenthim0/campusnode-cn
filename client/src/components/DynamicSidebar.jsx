@@ -19,12 +19,21 @@ import {
   Sparkles,
   BookOpen,
 } from "lucide-react";
-import { hasPermission, PERMISSIONS } from "../utils/rbac";
+import { hasPermission, PERMISSIONS, isStudentLeadRole } from "../utils/rbac";
+import { useSocket } from "../context/SocketContext";
 
 /**
  * Returns a human-readable role label for display.
  */
 const getRoleLabel = (role, user) => {
+  const isFaculty = Boolean(
+    role === "facultyCoordinator" ||
+    user?.role === "facultyCoordinator" ||
+    user?.principalType === "FACULTY" ||
+    user?.memberships?.some(m => m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || m.role === "FACULTY")
+  );
+  if (isFaculty) return "Faculty Coordinator";
+
   const isExternal = Boolean(
     role === 'external' ||
     user?.role === 'external' ||
@@ -43,7 +52,6 @@ const getRoleLabel = (role, user) => {
     member: "Student",
     student: "Student",
     external: "External Participant",
-    club: "Club Account",
     facultyCoordinator: "Faculty Coordinator",
     admin: "Administrator",
     paymentAdmin: "Payment Admin",
@@ -57,11 +65,11 @@ const getRoleLabel = (role, user) => {
 /**
  * Sidebar direct nav link component.
  */
-const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed }) => (
+const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) => (
   <Link
     to={to}
     title={isCollapsed ? label : undefined}
-    className={`group flex items-center rounded-xl text-[13px] transition-all duration-200 ${isCollapsed
+    className={`group flex items-center rounded-xl text-[13px] transition-all duration-200 relative ${isCollapsed
         ? "w-10 h-10 mx-auto justify-center p-0"
         : "w-full gap-3 px-3 py-1.5"
       } ${isActive
@@ -69,16 +77,26 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed }) => (
         : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
       }`}
   >
-    <Icon
-      size={17}
-      strokeWidth={isActive ? 2.2 : 1.8}
-      className={`w-[17px] h-[17px] min-w-[17px] min-h-[17px] shrink-0 transition-colors duration-200 ${isActive
-          ? "text-brand-600 dark:text-brand-400"
-          : "text-slate-600 dark:text-slate-400 group-hover:text-black dark:group-hover:text-white"
-        }`}
-    />
+    <div className="relative shrink-0 flex items-center justify-center">
+      <Icon
+        size={17}
+        strokeWidth={isActive ? 2.2 : 1.8}
+        className={`w-[17px] h-[17px] min-w-[17px] min-h-[17px] shrink-0 transition-colors duration-200 ${isActive
+            ? "text-brand-600 dark:text-brand-400"
+            : "text-slate-600 dark:text-slate-400 group-hover:text-black dark:group-hover:text-white"
+          }`}
+      />
+      {isCollapsed && badge && (
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white dark:ring-zinc-900" />
+      )}
+    </div>
     {!isCollapsed && <span className="truncate">{label}</span>}
-    {!isCollapsed && isActive && (
+    {!isCollapsed && badge && (
+      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-black rounded-full bg-brand-500 text-white leading-none">
+        {badge}
+      </span>
+    )}
+    {!isCollapsed && !badge && isActive && (
       <ChevronRight size={14} className="w-3.5 h-3.5 min-w-[12px] min-h-[12px] ml-auto text-brand-600 shrink-0" />
     )}
   </Link>
@@ -207,7 +225,15 @@ const DynamicSidebar = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem("sidebar_collapsed") === "true");
   const location = useLocation();
   const role = localStorage.getItem("role");
-  const isClubAccount = user?.principalType === "CLUB" || (!user?.rollNo && role === "club");
+  const { unreadCount = 0 } = useSocket() || {};
+  const isFacultyCoordinator = Boolean(
+    role === "facultyCoordinator" ||
+    user?.role === "facultyCoordinator" ||
+    user?.principalType === "FACULTY" ||
+    user?.memberships?.some(
+      (m) => m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || m.role === "FACULTY"
+    )
+  );
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
@@ -226,6 +252,36 @@ const DynamicSidebar = ({ user }) => {
   };
 
   const userClubId = user?.clubId || user?.clubSlug || user?.memberships?.[0]?.clubId;
+
+  // Detect active club context from current URL pathname
+  const matchClubEvents = location.pathname.match(/\/club-events\/([a-zA-Z0-9_-]+)/);
+  const matchClub = location.pathname.match(/\/club\/(?:edit\/|team\/)?([a-zA-Z0-9_-]+)/);
+  const activeRouteClubId = matchClubEvents?.[1] || matchClub?.[1];
+
+  const eligibleCreateClubs = (user?.memberships || []).filter(
+    (m) => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents
+  );
+
+  let createEventUrl = "/create";
+  if (activeRouteClubId) {
+    createEventUrl = `/create?clubId=${activeRouteClubId}`;
+  } else if (eligibleCreateClubs.length === 1) {
+    createEventUrl = `/create?clubId=${eligibleCreateClubs[0].clubId}`;
+  }
+
+  // Assigned clubs for faculty coordinator
+  const facultyClubs = [];
+  if (user?.clubId) {
+    facultyClubs.push({ clubId: user.clubId, clubName: user.clubName || "Assigned Club" });
+  }
+  (user?.memberships || []).forEach((m) => {
+    if ((m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || isFacultyCoordinator) && !facultyClubs.some((c) => c.clubId === m.clubId)) {
+      facultyClubs.push({ clubId: m.clubId, clubName: m.clubName || m.club?.name || "Assigned Club" });
+    }
+  });
+  if (facultyClubs.length === 0 && isFacultyCoordinator && userClubId) {
+    facultyClubs.push({ clubId: userClubId, clubName: "Assigned Club" });
+  }
 
   return (
     <aside
@@ -255,7 +311,7 @@ const DynamicSidebar = ({ user }) => {
                 <p className="text-sm font-semibold text-black dark:text-white truncate">
                   {userName}
                 </p>
-                <p className="text-[11px] text-brand-600 font-medium tracking-wide">
+                <p className="text-[11px] text-brand-400 font-semibold tracking-wide">
                   {getRoleLabel(role, user)}
                 </p>
               </div>
@@ -275,11 +331,11 @@ const DynamicSidebar = ({ user }) => {
         </div>
       </div>
 
-      {(isClubAccount || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents)) &&
+      {!isFacultyCoordinator && user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents) &&
         hasPermission(user, PERMISSIONS.EVENT_CREATE) && (
         <div className={`pt-2 pb-2 shrink-0 ${isCollapsed ? "px-2 flex justify-center" : "px-4"}`}>
           <Link
-            to="/create"
+            to={createEventUrl}
             title={isCollapsed ? "Create Event" : undefined}
             className={`flex items-center justify-center bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black shadow-sm hover:shadow-md hover:-translate-y-px transition-all font-bold text-[12px] uppercase tracking-wider cursor-pointer border-0 outline-none ${isCollapsed ? "w-10 h-10 p-0 rounded-xl" : "w-full gap-2.5 px-3 py-3 rounded-full"
               }`}
@@ -293,95 +349,58 @@ const DynamicSidebar = ({ user }) => {
       <nav className={`flex-1 py-3 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : "px-3"}`} aria-label="Dashboard navigation">
 
         <SectionLabel isCollapsed={isCollapsed}>General</SectionLabel>
-        {(role === "central_organizer" || user?.principalType === "INSTITUTIONAL") ? (
-          <SidebarLink to="/central-organizer" icon={Shield} label="Central Dashboard" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} />
-        ) : (
-          <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
-        )}
+        <SidebarLink to="/profile" icon={User} label="Profile" isActive={isActive("/profile")} isCollapsed={isCollapsed} />
+        <SidebarLink
+          to="/notifications"
+          icon={Bell}
+          label="Notifications"
+          badge={unreadCount > 0 ? unreadCount : null}
+          isActive={isActive("/notifications")}
+          isCollapsed={isCollapsed}
+        />
 
-        {!isClubAccount && role !== "central_organizer" && user?.principalType !== "INSTITUTIONAL" && (Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || user?.collegeName || role === "student" || role === "member" || role === "external" || user?.role === "external" || user?.isExternal || (user?.memberships && user.memberships.length > 0))) && (
+        {role !== "admin" && (Boolean(isFacultyCoordinator || user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || user?.collegeName || role === "student" || role === "member" || role === "external" || user?.role === "external" || user?.isExternal || (user?.memberships && user.memberships.length > 0))) && (
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 
-        {(user?.accessLevel === "central_organizer" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || (user?.institutionalAssignments && user.institutionalAssignments.length > 0)) && (
-          <>
-            <SectionLabel isCollapsed={isCollapsed}>Central Events</SectionLabel>
-            {/* <SidebarLink to="/central-organizer" icon={Shield} label="Central Organizer" isActive={isActive("/central-organizer") && location.pathname !== "/central-organizer/guide"} isCollapsed={isCollapsed} /> */}
-            <SidebarLink to="/event-calendar" icon={CalendarDays} label="Calendar / Venues" isActive={isActive("/event-calendar")} isCollapsed={isCollapsed} />
-            <SidebarLink to="/send-notification" icon={Radio} label="Campus Broadcasts" isActive={isActive("/send-notification")} isCollapsed={isCollapsed} />
-    
-            <SidebarLink to="/central-organizer/guide" icon={BookOpen} label="Organizer Guide" isActive={isActive("/central-organizer/guide")} isCollapsed={isCollapsed} />
-          </>
-        )}
-
-        <SidebarLink to="/event-staff" icon={ShieldCheck} label="Event Staff Portal" isActive={isActive("/event-staff")} isCollapsed={isCollapsed} />
-        {isClubAccount && (
-          <SidebarLink to="/event-calendar" icon={CalendarDays} label="Calendar/Venues" isActive={isActive("/event-calendar")} isCollapsed={isCollapsed} />
-        )}
-
-        {(role === "club" || role === "facultyCoordinator" || user?.principalType === "CLUB" || user?.memberships?.some(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR")) && (
-          <SidebarDropdown
-            icon={Radio}
-            label="Broadcasts"
-            isCollapsed={isCollapsed}
-            items={[
-              { label: "Send Notification", to: "/send-notification" },
-              { label: "Club Announcements", to: "/send-notification?tab=announcements" },
-            ]}
-          />
-        )}
-
-        {(isClubAccount || role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
+        {((isFacultyCoordinator && facultyClubs.length > 0) || (!isFacultyCoordinator && (user?.memberships && user.memberships.length > 0))) && (
           <>
             <SectionLabel isCollapsed={isCollapsed}>Management</SectionLabel>
 
-            {/* Official Club Account */}
-            {isClubAccount && userClubId && (
-              <div className="space-y-1 mb-3">
-                <SidebarLink
-                  to={`/club-events/${userClubId}`}
-                  icon={CalendarDays}
-                  label="Club Events"
-                  isActive={isActive(`/club-events/${userClubId}`)}
-                  isCollapsed={isCollapsed}
-                />
-                {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: userClubId }) && (
-                  <SidebarLink
-                    to={`/club/${userClubId}/team`}
-                    icon={Users}
-                    label="Team Management"
-                    isActive={isActive(`/club/${userClubId}/team`)}
-                    isCollapsed={isCollapsed}
-                  />
-                )}
-                {hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: userClubId }) && (
-                  <SidebarLink
-                    to="/payments"
-                    icon={Wallet}
-                    label="Payments"
-                    isActive={isActive("/payments")}
-                    isCollapsed={isCollapsed}
-                  />
-                )}
-                {hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: userClubId }) && (
-                  <SidebarLink
-                    to={`/club/edit/${userClubId}`}
-                    icon={LayoutGrid}
-                    label="Club Settings"
-                    isActive={isActive(`/club/edit/${userClubId}`)}
-                    isCollapsed={isCollapsed}
-                  />
-                )}
+            {/* Faculty Coordinator: only Club Events and Team Management */}
+            {isFacultyCoordinator && (
+              <div className="space-y-3 mb-3">
+                {facultyClubs.map((fc) => (
+                  <div key={fc.clubId} className="space-y-1">
+                    <ClubHeader name={fc.clubName || "Assigned Club"} isCollapsed={isCollapsed} />
+                    <SidebarLink
+                      to={`/club-events/${fc.clubId}`}
+                      icon={CalendarDays}
+                      label="Club Events"
+                      isActive={isActive(`/club-events/${fc.clubId}`)}
+                      isCollapsed={isCollapsed}
+                    />
+                    <SidebarLink
+                      to={`/club/${fc.clubId}/team`}
+                      icon={Users}
+                      label="Team Management"
+                      isActive={isActive(`/club/${fc.clubId}/team`)}
+                      isCollapsed={isCollapsed}
+                    />
+                  </div>
+                ))}
               </div>
             )}
 
             {/* Membership-based clubs (Student Leads & Coordinators across all clubs) */}
-            {!isClubAccount && (() => {
+            {!isFacultyCoordinator && (() => {
               const eligibleMemberships = (user?.memberships || []).filter((m) => {
-                const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+                const isLead = isStudentLeadRole(m.role);
+                const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
                 const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-                const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
-                return canManageTeam || canReviewPayments || canUpdateClub || m.canEditEvents || m.canTakeAttendance;
+                const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+                const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
+                return canManageTeam || canReviewPayments || canUpdateClub || canBroadcast || m.canEditEvents || m.canTakeAttendance;
               });
 
               if (eligibleMemberships.length === 0) return null;
@@ -391,9 +410,11 @@ const DynamicSidebar = ({ user }) => {
                 return (
                   <div className="space-y-1 mb-3">
                     {eligibleMemberships.map((m) => {
-                      const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+                      const isLead = isStudentLeadRole(m.role);
+                      const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
                       const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-                      const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+                      const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+                      const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
 
                       const items = [
                         { label: "Club Events", to: `/club-events/${m.clubId}` },
@@ -403,6 +424,9 @@ const DynamicSidebar = ({ user }) => {
                       }
                       if (canReviewPayments) {
                         items.push({ label: "Payments", to: "/payments" });
+                      }
+                      if (canBroadcast) {
+                        items.push({ label: "Broadcasts", to: `/send-notification?clubId=${m.clubId}` });
                       }
                       if (canUpdateClub) {
                         items.push({ label: "Club Settings", to: `/club/edit/${m.clubId}` });
@@ -424,9 +448,11 @@ const DynamicSidebar = ({ user }) => {
 
               // Exactly 1 club: render flat layout directly without dropdown
               const m = eligibleMemberships[0];
-              const canManageTeam = hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+              const isLead = isStudentLeadRole(m.role);
+              const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
               const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-              const canUpdateClub = hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+              const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
+              const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
 
               return (
                 <div key={m.clubId} className="space-y-1 mb-3">
@@ -462,6 +488,17 @@ const DynamicSidebar = ({ user }) => {
                     />
                   )}
 
+                  {/* Broadcasts */}
+                  {canBroadcast && (
+                    <SidebarLink
+                      to={`/send-notification?clubId=${m.clubId}`}
+                      icon={Radio}
+                      label="Broadcasts"
+                      isActive={isActive(`/send-notification?clubId=${m.clubId}`) || (location.pathname === "/send-notification" && !new URLSearchParams(location.search).get("clubId"))}
+                      isCollapsed={isCollapsed}
+                    />
+                  )}
+
                   {/* Club Settings */}
                   {canUpdateClub && (
                     <SidebarLink
@@ -475,38 +512,6 @@ const DynamicSidebar = ({ user }) => {
                 </div>
               );
             })()}
-
-            {/* Faculty Coordinator fallback (if not in memberships) */}
-            {role === "facultyCoordinator" && user?.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
-              <div className="space-y-1 mb-3">
-                <ClubHeader name="Faculty Review" isCollapsed={isCollapsed} />
-                <SidebarLink
-                  to="/my-events"
-                  icon={CalendarDays}
-                  label="Review Events"
-                  isActive={isActive("/my-events")}
-                  isCollapsed={isCollapsed}
-                />
-                {hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: user.clubId }) && (
-                  <SidebarLink
-                    to={`/club/${user.clubId}/team`}
-                    icon={Users}
-                    label="Team Management"
-                    isActive={isActive(`/club/${user.clubId}/team`)}
-                    isCollapsed={isCollapsed}
-                  />
-                )}
-                {hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: user.clubId }) && (
-                  <SidebarLink
-                    to={`/club/edit/${user.clubId}`}
-                    icon={LayoutGrid}
-                    label="Club Settings"
-                    isActive={isActive(`/club/edit/${user.clubId}`)}
-                    isCollapsed={isCollapsed}
-                  />
-                )}
-              </div>
-            )}
           </>
         )}
       </nav>

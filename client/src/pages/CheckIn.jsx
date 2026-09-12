@@ -6,7 +6,7 @@ import api from '../services/api';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
 import {
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   AlertTriangle,
   Users,
@@ -19,15 +19,15 @@ import {
   Loader2,
   UserCheck,
   X,
-  Sparkles,
-  Calendar,
   Lock,
-  ShieldCheck,
-  Hourglass,
-  CalendarClock
+  Calendar,
+  Radio
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShimmerText from '../components/ShimmerText';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 const formatTimeAgo = (date) => {
   const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -147,7 +147,7 @@ const CheckIn = () => {
       }
 
       if (!canTakeAttendance) {
-        showNotification('Access Denied', 'error');
+        showNotification('Access Denied: Lacking attendance permissions', 'error');
         navigate('/my-events');
         return;
       }
@@ -328,7 +328,7 @@ const CheckIn = () => {
       // Only successful check-in records are added to session log
       addToHistory(
         data.participantName,
-        data.rollNo || data.externalEmail || data.branch || 'Checked In'
+        data.rollNo || data.branch || 'Checked In'
       );
     } catch (err) {
       const status = err.response?.status;
@@ -412,22 +412,17 @@ const CheckIn = () => {
 
   if (loading) {
     return (
-      <div className="mysans min-h-screen flex items-center justify-center bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
-        <div
-          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] opacity-40 dark:opacity-20"
-          style={{
-            background:
-              'radial-gradient(ellipse at center top, rgba(234, 88, 12, 0.14) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 70%)',
-          }}
-          aria-hidden="true"
-        />
-        <div className="flex flex-col items-center gap-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 rounded-3xl p-10 md:px-12 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] text-center relative z-10">
-          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-1">
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <Card className="p-8 max-w-sm w-full text-center flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <ScanLine className="w-6 h-6 animate-pulse" />
           </div>
-          <ShimmerText text="Initializing Attendance Portal..." className="font-bold text-sm tracking-tight" />
-          <p className="m-0 text-xs text-zinc-500 dark:text-zinc-400 font-medium">Verifying event clearances and security credentials</p>
-        </div>
+          <CardTitle className="text-base">Initializing Attendance Portal</CardTitle>
+          <CardDescription className="text-xs">
+            Verifying event clearances and security credentials...
+          </CardDescription>
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mt-2" />
+        </Card>
       </div>
     );
   }
@@ -439,7 +434,7 @@ const CheckIn = () => {
   const showOverlay = scanState !== 'idle';
 
   return (
-    <div className="myfont min-h-screen bg-cn-bg text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       <style>{`
         @keyframes scan-sweep {
           0% { top: 8px; opacity: 0.8; }
@@ -447,43 +442,35 @@ const CheckIn = () => {
           100% { top: calc(100% - 8px); opacity: 0.8; }
         }
         .scan-line { animation: scan-sweep 2.4s ease-in-out infinite; }
-        #reader video { border-radius: 1rem !important; }
+        #reader video { border-radius: 0.75rem !important; }
         #reader { border: none !important; }
         #reader > div { border: none !important; }
       `}</style>
 
-      {/* ── Background Ambient Atmosphere ── */}
-      <div
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
-        style={{
-          background:
-            'radial-gradient(ellipse at center top, rgba(234, 88, 12, 0.14) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 70%)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* ── Top Bar with Frosted Glass ── */}
-      <header className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-4">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <Link
-              to={`/club-events/${event.orgId}`}
-              className="flex items-center justify-center w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all flex-shrink-0"
-              title="Return to My Events"
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => navigate('/profile')}
+              title="Return to Profile"
             >
-              <ArrowLeft size={17} />
-            </Link>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Events</span>
-                <span className="text-[10px] text-zinc-300 dark:text-zinc-700">/</span>
-                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">Attendance</span>
+              <div className="flex items-center gap-1.5 mb-0.5 text-xs text-muted-foreground">
+                <span className="font-medium uppercase tracking-wider text-[10px]">Events</span>
+                <span>/</span>
+                <span className="font-medium text-primary text-[10px] uppercase tracking-wider">Attendance Check-In</span>
               </div>
-              <h1 className="m-0 text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight truncate">
+              <h1 className="text-base sm:text-lg font-bold truncate leading-tight">
                 {event?.title}
               </h1>
               {startTime && (
-                <p className="m-0 text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {startTime.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })},{' '}
                   {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   {endTime ? ` – ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
@@ -493,208 +480,232 @@ const CheckIn = () => {
           </div>
 
           {/* Window Status Badge */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {windowStatus === 'NOT_OPEN' ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold">
-                <Clock size={13} className="animate-pulse" />
+              <Badge variant="outline" className="gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 py-1 px-3">
+                <Clock className="w-3.5 h-3.5 animate-pulse" />
                 <span className="hidden sm:inline">Opens in</span>
-                <span>{formatCountdown(opensAt, currentTime)}</span>
-              </div>
+                <span className="font-mono">{formatCountdown(opensAt, currentTime)}</span>
+              </Badge>
             ) : windowStatus === 'CLOSED' ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-400 text-xs font-semibold">
-                <Lock size={13} />
+              <Badge variant="secondary" className="gap-1.5 py-1 px-3">
+                <Lock className="w-3.5 h-3.5" />
                 <span>Check-in Closed</span>
-              </div>
+              </Badge>
             ) : (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Badge className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white py-1 px-3 border-none">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span>Check-in Active</span>
-              </div>
+              </Badge>
             )}
           </div>
         </div>
       </header>
 
-      {/* ── Main Layout ── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 sm:gap-8 items-start">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-6 sm:gap-8 items-start">
 
-          {/* LEFT COLUMN: Stats & Progress & Logs */}
+          {/* LEFT COLUMN: Metrics, Progress & Attendance Feed */}
           <div className="flex flex-col gap-6">
 
-            {/* Stats Cards Row */}
+            {/* Metrics Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { label: 'Registrations', val: event?.registeredCount ?? '—', icon: Users, color: 'text-sky-500 bg-sky-500/10 border-sky-500/20' },
-                { label: 'Attended', val: attendedCount, icon: BadgeCheck, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-                { label: 'Check-in Rate', val: `${attendRate}%`, icon: CheckCircle, color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' }
-              ].map((stat, i) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={i}
-                    className="p-5 rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] flex items-center gap-4 transition-all hover:-translate-y-0.5 duration-200"
-                  >
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 border ${stat.color}`}>
-                      <Icon size={20} />
-                    </div>
-                    <div>
-                      <p className="m-0 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">
-                        {stat.label}
-                      </p>
-                      <p className="m-0 text-2xl font-bold text-zinc-900 dark:text-white font-mono tracking-tight">
-                        {stat.val}
-                      </p>
-                    </div>
+              <Card>
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
+                    <Users className="w-5 h-5" />
                   </div>
-                );
-              })}
+                  <div>
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Registrations
+                    </p>
+                    <p className="text-2xl font-bold font-mono tracking-tight">
+                      {event?.registeredCount ?? '—'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                    <BadgeCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Attended
+                    </p>
+                    <p className="text-2xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                      {attendedCount}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Check-in Rate
+                    </p>
+                    <p className="text-2xl font-bold font-mono tracking-tight">
+                      {attendRate}%
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Attendance Progress Card */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                  Attendance Progress
-                </span>
-                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 font-mono">
-                  {attendedCount} / {event?.registeredCount ?? 0}
-                </span>
-              </div>
-              <div className="h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${attendRate}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-                  className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
-                />
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Attendance Progress
+                  </span>
+                  <span className="text-xs font-mono font-bold text-primary">
+                    {attendedCount} / {event?.registeredCount ?? 0}
+                  </span>
+                </div>
+                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${attendRate}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className="h-full bg-primary rounded-full"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Session History Card */}
-            <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden">
-              <div className="flex items-center gap-2 p-4 sm:px-6 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40">
-                <Clock size={14} className="text-zinc-400 dark:text-zinc-500" />
-                <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                  Session History
-                </span>
+            <Card className="overflow-hidden">
+              <CardHeader className="py-3 px-5 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <CardTitle className="text-xs font-semibold uppercase tracking-wider">
+                    Session Log
+                  </CardTitle>
+                </div>
                 {attendanceLog.length > 0 && (
-                  <span className="ml-auto text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 rounded-full px-2.5 py-0.5">
-                    {attendanceLog.length} checked in
-                  </span>
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {attendanceLog.length} recorded
+                  </Badge>
                 )}
-              </div>
-              <div className="max-h-[320px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+              </CardHeader>
+              <CardContent className="p-0 max-h-[360px] overflow-y-auto divide-y divide-border">
                 {attendanceLog.length === 0 ? (
-                  <div className="py-12 flex flex-col items-center gap-2 text-center px-4">
-                    <p className="text-sm font-semibold text-zinc-400 dark:text-zinc-500 m-0">
+                  <div className="py-12 flex flex-col items-center justify-center text-center px-4 gap-1.5">
+                    <p className="text-sm font-medium text-muted-foreground">
                       No check-ins yet this session
                     </p>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-600 m-0">
-                      Successful check-ins will display here in real-time as they scan
+                    <p className="text-xs text-muted-foreground/80 max-w-xs">
+                      Verified attendees will appear here in real-time as they scan.
                     </p>
                   </div>
                 ) : (
-                  <ul className="m-0 p-0 list-none">
+                  <ul className="m-0 p-0 list-none divide-y divide-border">
                     {attendanceLog.map((entry) => (
-                      <li key={entry.id} className="flex items-center gap-3 px-5 sm:px-6 py-3.5 hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 transition-colors">
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                          <CheckCircle size={15} />
+                      <li key={entry.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/30 transition-colors">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          <CheckCircle2 className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="m-0 text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">
+                          <p className="text-sm font-medium truncate">
                             {entry.name}
                           </p>
                           {entry.identifier && (
-                            <p className="m-0 text-xs text-zinc-400 dark:text-zinc-500 font-mono truncate">
+                            <p className="text-xs text-muted-foreground font-mono truncate">
                               {entry.identifier}
                             </p>
                           )}
                         </div>
-                        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 flex-shrink-0">
+                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">
                           {formatTimeAgo(entry.time)}
                         </span>
                       </li>
                     ))}
                   </ul>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Connection Status */}
-            <div className="flex items-center gap-2.5 p-3.5 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-white/80 dark:border-white/10 rounded-2xl">
-              <span className={`w-2 h-2 rounded-full ${windowStatus === 'OPEN' ? 'bg-emerald-500 animate-pulse' : windowStatus === 'NOT_OPEN' ? 'bg-amber-500' : 'bg-zinc-400'}`} />
-              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-muted/40 border border-border rounded-xl">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${windowStatus === 'OPEN' ? 'bg-emerald-500 animate-pulse' : windowStatus === 'NOT_OPEN' ? 'bg-amber-500' : 'bg-muted-foreground'}`} />
+              <span className="text-xs text-muted-foreground font-medium">
                 {windowStatus === 'OPEN'
-                  ? 'Scanner active — Real-time ticket verification enabled'
+                  ? 'Scanner active — real-time ticket verification enabled'
                   : windowStatus === 'NOT_OPEN'
-                  ? 'Attendance portal standby'
-                  : 'Attendance verification concluded'}
+                  ? 'Attendance portal on standby until window opens'
+                  : 'Attendance verification concluded for this event'}
               </span>
             </div>
 
           </div>
 
-          {/* RIGHT COLUMN: Scanner / Roll Number Check-in */}
-          <div className="lg:sticky lg:top-24">
-            <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden">
-
-              {/* Tab Toggle */}
-              <div className="flex bg-zinc-100/70 dark:bg-zinc-800/70 backdrop-blur-md p-1.5 m-3 rounded-2xl gap-1">
-                <button
-                  onClick={() => setActiveTab('scan')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-all rounded-xl cursor-pointer ${
-                    activeTab === 'scan'
-                      ? 'text-zinc-900 dark:text-white bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/50 dark:border-zinc-700/50'
-                      : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  <ScanLine size={14} />
-                  <span>Scan QR</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('manual')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider transition-all rounded-xl cursor-pointer ${
-                    activeTab === 'manual'
-                      ? 'text-zinc-900 dark:text-white bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/50 dark:border-zinc-700/50'
-                      : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  <Hash size={14} />
-                  <span>Roll Number</span>
-                </button>
+          {/* RIGHT COLUMN: Scanner Viewfinder / Roll Number Entry */}
+          <div className="lg:sticky lg:top-20">
+            <Card className="overflow-hidden shadow-sm">
+              
+              {/* Segmented Tab Controls */}
+              <div className="p-3 border-b border-border bg-muted/20">
+                <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+                  <Button
+                    type="button"
+                    variant={activeTab === 'scan' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={`h-8 text-xs font-semibold ${activeTab === 'scan' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    onClick={() => setActiveTab('scan')}
+                  >
+                    <ScanLine className="w-3.5 h-3.5 mr-1.5" />
+                    Scan QR
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeTab === 'manual' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={`h-8 text-xs font-semibold ${activeTab === 'manual' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    onClick={() => setActiveTab('manual')}
+                  >
+                    <Hash className="w-3.5 h-3.5 mr-1.5" />
+                    Roll Number
+                  </Button>
+                </div>
               </div>
 
               {activeTab === 'scan' ? (
-                <>
+                <div>
                   {windowStatus === 'NOT_OPEN' ? (
-                    <div className="p-8 sm:p-10 flex flex-col items-center justify-center text-center m-4 rounded-2xl bg-zinc-50/60 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800">
-                      <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
-                        <Clock size={20} className="animate-pulse" />
+                    <div className="p-8 flex flex-col items-center justify-center text-center">
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
+                        <Clock className="w-6 h-6 animate-pulse" />
                       </div>
-                      <p className="text-sm font-bold text-zinc-900 dark:text-white m-0 mb-1">
+                      <p className="text-sm font-bold mb-1">
                         Check-in opens in {formatCountdown(opensAt, currentTime)}
                       </p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500 m-0 max-w-xs">
+                      <p className="text-xs text-muted-foreground max-w-xs">
                         Scanner activates 4 hours before event start ({opensAt?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
                       </p>
                     </div>
                   ) : windowStatus === 'CLOSED' ? (
-                    <div className="p-8 sm:p-10 flex flex-col items-center justify-center text-center m-4 rounded-2xl bg-zinc-50/60 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800">
-                      <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 flex items-center justify-center mb-3">
-                        <Lock size={20} />
+                    <div className="p-8 flex flex-col items-center justify-center text-center">
+                      <div className="w-12 h-12 rounded-xl bg-muted border border-border text-muted-foreground flex items-center justify-center mb-3">
+                        <Lock className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-bold text-zinc-900 dark:text-white m-0 mb-1">
-                        Check-in Closed
-                      </p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500 m-0 max-w-xs">
+                      <p className="text-sm font-bold mb-1">Check-in Closed</p>
+                      <p className="text-xs text-muted-foreground max-w-xs">
                         Event concluded at {endTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   ) : (
-                    <>
-                      <div className="relative bg-black/90 overflow-hidden m-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-800">
-                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-gradient-to-r from-cn-teal-500 via-emerald-400 to-cn-teal-500 rounded z-[9]" />
+                    <div>
+                      <div className="relative bg-black overflow-hidden m-4 rounded-xl border border-border">
+                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-emerald-400 rounded z-[9]" />
                         <div id="reader" className="w-full" />
 
                         {/* Result Overlay */}
@@ -705,244 +716,241 @@ const CheckIn = () => {
                         </AnimatePresence>
                       </div>
 
-                      <p className="m-0 p-3.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 text-center bg-zinc-50/50 dark:bg-zinc-950/20 border-t border-zinc-200/80 dark:border-zinc-800">
-                        Align attendee QR pass inside the target viewfinder
+                      <p className="m-0 p-3 text-xs text-center text-muted-foreground bg-muted/20 border-t border-border font-medium">
+                        Align attendee QR ticket inside the viewfinder
                       </p>
-                    </>
+                    </div>
                   )}
-                </>
+                </div>
               ) : (
-                    /* Roll Number Check-in Tab */
-                    <div className="p-6">
-                      <div className="mb-4">
-                        <p className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-1">
-                          Roll Number Check-in
-                        </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed m-0">
-                          Search registered attendees by university roll number to record their presence.
-                        </p>
+                /* Roll Number Check-in Tab */
+                <div className="p-5">
+                  <div className="mb-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-foreground mb-1">
+                      Roll Number Lookup
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Search registered attendees by university roll number to record presence.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleManualSubmit} className="space-y-3">
+                    <div className="relative flex items-center">
+                      <Hash className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        type="text"
+                        value={manualId}
+                        onChange={(e) => setManualId(e.target.value)}
+                        placeholder={
+                          windowStatus === 'NOT_OPEN'
+                            ? `Opens in ${formatCountdown(opensAt, currentTime)}`
+                            : windowStatus === 'CLOSED'
+                            ? 'Check-in closed'
+                            : 'e.g. 21BCS001 or roll number...'
+                        }
+                        className="pl-9 pr-9"
+                        disabled={manualLoading || windowStatus !== 'OPEN'}
+                        autoFocus={windowStatus === 'OPEN'}
+                      />
+                      {manualId && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => { setManualId(''); setSearchResults([]); }}
+                          className="absolute right-1 h-7 w-7 text-muted-foreground"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full font-semibold"
+                      disabled={manualLoading || windowStatus !== 'OPEN' || !manualId.trim()}
+                    >
+                      {windowStatus === 'NOT_OPEN' ? (
+                        'Check-in Not Open'
+                      ) : windowStatus === 'CLOSED' ? (
+                        'Check-in Closed'
+                      ) : manualLoading && !markingId ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                          <span>Marking Attendance...</span>
+                        </>
+                      ) : (
+                        'Mark Attendance'
+                      )}
+                    </Button>
+                  </form>
+
+                  {/* Registered Students Search Results */}
+                  {manualId.trim() && (
+                    <div className="mt-5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          Registered Attendees {searchLoading ? '...' : `(${searchResults.length})`}
+                        </span>
+                        {searchLoading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
                       </div>
 
-                      <form onSubmit={handleManualSubmit} className="flex flex-col gap-3">
-                        <div className="relative flex items-center">
-                          <div className="absolute left-3.5 text-zinc-400 pointer-events-none">
-                            <Hash size={16} />
-                          </div>
-                          <input
-                            type="text"
-                            value={manualId}
-                            onChange={(e) => setManualId(e.target.value)}
-                            placeholder={
-                              windowStatus === 'NOT_OPEN'
-                                ? `Opens in ${formatCountdown(opensAt, currentTime)}`
-                                : windowStatus === 'CLOSED'
-                                ? 'Check-in closed'
-                                : 'e.g. 21BCS001 or roll number...'
-                            }
-                            className="w-full pl-10 pr-9 py-3 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800 rounded-2xl text-sm font-medium outline-none text-zinc-900 dark:text-white focus:border-cn-blue-500 transition-all placeholder:text-zinc-400 disabled:opacity-60"
-                            disabled={manualLoading || windowStatus !== 'OPEN'}
-                            autoFocus={windowStatus === 'OPEN'}
-                          />
-                          {manualId && (
-                            <button
-                              type="button"
-                              onClick={() => { setManualId(''); setSearchResults([]); }}
-                              className="absolute right-3 p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
+                      {searchLoading && searchResults.length === 0 ? (
+                        <div className="p-4 text-center bg-muted/40 border border-border rounded-xl">
+                          <p className="text-xs text-muted-foreground">Searching attendees...</p>
                         </div>
+                      ) : searchResults.length > 0 ? (
+                        <div className="max-h-[260px] overflow-y-auto space-y-2 pr-0.5">
+                          {searchResults.map((item) => {
+                            const isAttended = item.status === 'ATTENDED';
+                            const isItemLoading = markingId === item.participationId;
 
-                        <button
-                          type="submit"
-                          disabled={manualLoading || windowStatus !== 'OPEN' || !manualId.trim()}
-                          className={`w-full py-3 rounded-2xl text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                            manualLoading || windowStatus !== 'OPEN' || !manualId.trim()
-                              ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
-                              : 'bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 cursor-pointer shadow-xs'
-                          }`}
-                        >
-                          {windowStatus === 'NOT_OPEN'
-                            ? 'Check-in Not Open'
-                            : windowStatus === 'CLOSED'
-                            ? 'Check-in Closed'
-                            : manualLoading && !markingId ? (
-                            <>
-                              <Loader2 size={13} className="animate-spin" />
-                              <span>Marking Attendance...</span>
-                            </>
-                          ) : (
-                            'Mark Attendance'
-                          )}
-                        </button>
-                      </form>
-
-                      {/* Registered Students Search Results */}
-                      {manualId.trim() && (
-                        <div className="mt-5 flex flex-col gap-2.5">
-                          <div className="flex items-center justify-between px-1">
-                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                              Registered Attendees {searchLoading ? '...' : `(${searchResults.length})`}
-                            </span>
-                            {searchLoading && <Loader2 size={12} className="animate-spin text-zinc-400" />}
-                          </div>
-
-                          {searchLoading && searchResults.length === 0 ? (
-                            <div className="p-5 text-center bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800 rounded-2xl">
-                              <p className="text-xs text-zinc-400 m-0">Searching registered attendees...</p>
-                            </div>
-                          ) : searchResults.length > 0 ? (
-                            <div className="max-h-[260px] overflow-y-auto space-y-2 pr-0.5">
-                              {searchResults.map((item) => {
-                                const isAttended = item.status === 'ATTENDED';
-                                const isItemLoading = markingId === item.participationId;
-
-                                return (
-                                  <div
-                                    key={item.participationId}
-                                    className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                                      isAttended
-                                        ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-900/40'
-                                        : 'bg-white/80 dark:bg-zinc-900/80 border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                                    }`}
-                                  >
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-center gap-2 mb-0.5">
-                                        <p className="m-0 text-sm font-bold text-zinc-900 dark:text-white truncate">
-                                          {item.student?.name || 'Registered Attendee'}
-                                        </p>
-                                        {item.student?.rollNo && (
-                                          <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-md">
-                                            {item.student.rollNo}
-                                          </span>
-                                        )}
-                                      </div>
-                                      <p className="m-0 text-[11px] text-zinc-400 dark:text-zinc-500 truncate">
-                                        {item.student?.branch || item.student?.program || 'Student'}
-                                        {item.student?.expectedGraduationYear ? ` • Class of ${item.student.expectedGraduationYear}` : ''}
-                                      </p>
-                                    </div>
-
-                                    <div className="flex-shrink-0">
-                                      {isAttended ? (
-                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                                          <CheckCircle size={13} />
-                                          <span>Checked In</span>
-                                        </div>
-                                      ) : (
-                                        <button
-                                          type="button"
-                                          onClick={() => handleMarkStudent(item)}
-                                          disabled={manualLoading || isItemLoading}
-                                          className="px-3 py-1.5 bg-zinc-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                                        >
-                                          {isItemLoading ? <Loader2 size={12} className="animate-spin" /> : <UserCheck size={13} />}
-                                          <span>Check In</span>
-                                        </button>
-                                      )}
-                                    </div>
+                            return (
+                              <div
+                                key={item.participationId}
+                                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                                  isAttended
+                                    ? 'bg-emerald-500/10 border-emerald-500/20'
+                                    : 'bg-card border-border hover:border-border/80'
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="text-sm font-semibold truncate">
+                                      {item.student?.name || 'Registered Attendee'}
+                                    </p>
+                                    {item.student?.rollNo && (
+                                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                                        {item.student.rollNo}
+                                      </Badge>
+                                    )}
                                   </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div className="p-5 text-center bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800 rounded-2xl">
-                              <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 mb-1">
-                                No registered attendees found
-                              </p>
-                              <p className="text-[11px] text-zinc-400 dark:text-zinc-500 m-0">
-                                Only students registered for this event appear here. Unregistered students cannot be checked in.
-                              </p>
-                            </div>
-                          )}
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {item.student?.branch || item.student?.program || 'Student'}
+                                    {item.student?.expectedGraduationYear ? ` • Class of ${item.student.expectedGraduationYear}` : ''}
+                                  </p>
+                                </div>
+
+                                <div className="shrink-0">
+                                  {isAttended ? (
+                                    <Badge className="bg-emerald-600 text-white gap-1 text-[10px]">
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      <span>Checked In</span>
+                                    </Badge>
+                                  ) : (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={() => handleMarkStudent(item)}
+                                      disabled={manualLoading || isItemLoading}
+                                      className="h-8 text-xs font-medium gap-1.5"
+                                    >
+                                      {isItemLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                      <span>Check In</span>
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center bg-muted/30 border border-border rounded-xl">
+                          <p className="text-xs font-semibold mb-1">
+                            No registered attendees found
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Only students registered for this event can be checked in.
+                          </p>
                         </div>
                       )}
-
-                      {/* Manual Feedback Notification */}
-                      <AnimatePresence>
-                        {showOverlay && activeTab === 'manual' && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            className="mt-4"
-                          >
-                            {scanState === 'success' && (
-                              <div className="flex items-center gap-3 p-4 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl">
-                                <CheckCircle size={18} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-bold text-zinc-900 dark:text-white">Successfully Checked In</p>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                                    {scanResult?.participantName} — {scanResult?.rollNo || scanResult?.externalEmail || 'Checked In'}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            {scanState === 'already_marked' && (
-                              <div className="flex items-center gap-3 p-4 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl">
-                                <AlertTriangle size={18} className="text-amber-500 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-bold text-zinc-900 dark:text-white">Attendance Already Recorded</p>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                                    {scanResult?.message || 'Attendance is already recorded.'}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            {(scanState === 'not_open' || scanState === 'closed') && (
-                              <div className="flex items-center gap-3 p-4 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl">
-                                <Clock size={18} className="text-amber-500 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-bold text-zinc-900 dark:text-white">
-                                    {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
-                                  </p>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                                    {scanResult?.message}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            {scanState === 'wrong_event' && (
-                              <div className="flex items-center gap-3 p-4 bg-red-50/60 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-2xl">
-                                <XCircle size={18} className="text-red-500 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-bold text-zinc-900 dark:text-white">Wrong Event</p>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                                    {scanResult?.message || 'This pass is for a different event.'}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            {(scanState === 'not_found' || scanState === 'unauthorized' || scanState === 'invalid_signature' || scanState === 'network_error') && (
-                              <div className="flex items-center gap-3 p-4 bg-red-50/60 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-2xl">
-                                <XCircle size={18} className="text-red-500 flex-shrink-0" />
-                                <div>
-                                  <p className="text-xs font-bold text-zinc-900 dark:text-white">
-                                    {scanState === 'unauthorized'
-                                      ? 'Access Denied'
-                                      : scanState === 'invalid_signature'
-                                      ? 'Security Verification Failed'
-                                      : scanState === 'network_error'
-                                      ? 'Connection Error'
-                                      : 'Not Found'}
-                                  </p>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                                    {scanResult?.message ||
-                                      (scanState === 'unauthorized'
-                                        ? 'Lacking attendance clearance level.'
-                                        : 'Invalid registration identifier.')}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
                     </div>
                   )}
 
-            </div>
+                  {/* Manual Feedback Notification */}
+                  <AnimatePresence>
+                    {showOverlay && activeTab === 'manual' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="mt-4"
+                      >
+                        {scanState === 'success' && (
+                          <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl">
+                            <CheckCircle2 className="w-5 h-5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold">Successfully Checked In</p>
+                              <p className="text-xs font-medium opacity-90">
+                                {scanResult?.participantName} — {scanResult?.rollNo || scanResult?.branch || 'Checked In'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {scanState === 'already_marked' && (
+                          <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
+                            <AlertTriangle className="w-5 h-5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold">Attendance Already Recorded</p>
+                              <p className="text-xs font-medium opacity-90">
+                                {scanResult?.message || 'Attendance is already recorded.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {(scanState === 'not_open' || scanState === 'closed') && (
+                          <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
+                            <Clock className="w-5 h-5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold">
+                                {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
+                              </p>
+                              <p className="text-xs font-medium opacity-90">
+                                {scanResult?.message}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {scanState === 'wrong_event' && (
+                          <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
+                            <XCircle className="w-5 h-5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold">Wrong Event</p>
+                              <p className="text-xs font-medium opacity-90">
+                                {scanResult?.message || 'This pass is for a different event.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {(scanState === 'not_found' || scanState === 'unauthorized' || scanState === 'invalid_signature' || scanState === 'network_error') && (
+                          <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
+                            <XCircle className="w-5 h-5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold">
+                                {scanState === 'unauthorized'
+                                  ? 'Access Denied'
+                                  : scanState === 'invalid_signature'
+                                  ? 'Security Verification Failed'
+                                  : scanState === 'network_error'
+                                  ? 'Connection Error'
+                                  : 'Not Found'}
+                              </p>
+                              <p className="text-xs font-medium opacity-90">
+                                {scanResult?.message ||
+                                  (scanState === 'unauthorized'
+                                    ? 'Lacking attendance clearance level.'
+                                    : 'Invalid registration identifier.')}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+            </Card>
           </div>
 
         </div>
@@ -957,128 +965,138 @@ function ScanOverlay({ scanState, scanResult }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 flex items-center justify-center z-20 backdrop-blur-md bg-black/75 p-4"
+      className="absolute inset-0 flex items-center justify-center z-20 bg-background/85 backdrop-blur-md p-4"
     >
       {scanState === 'processing' && (
-        <div className="flex flex-col items-center justify-center bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/80 dark:border-white/10 w-[290px] text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-2" />
-          <ShimmerText text="Validating pass..." className="text-xs font-semibold" />
-        </div>
+        <Card className="p-6 text-center max-w-[280px] w-full flex flex-col items-center gap-2.5 shadow-lg">
+          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+          <p className="text-xs font-semibold">Validating pass...</p>
+        </Card>
       )}
 
       {scanState === 'success' && (
         <motion.div
-          initial={{ scale: 0.92, y: 8 }}
+          initial={{ scale: 0.95, y: 6 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 flex flex-col items-center gap-2.5 w-[290px] shadow-2xl border border-white/80 dark:border-white/10"
+          className="w-full max-w-[290px]"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 mb-0.5">
-            <CheckCircle size={26} />
-          </div>
-          <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-            Checked In
-          </p>
-          <p className="m-0 text-sm font-bold text-zinc-900 dark:text-white text-center truncate max-w-full">
-            {scanResult?.participantName || 'Attendee'}
-          </p>
-          <div className="w-full bg-zinc-50/80 dark:bg-zinc-950/80 rounded-2xl p-3 mt-1 border border-zinc-200/60 dark:border-zinc-800">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                {scanResult?.rollNo ? 'Roll No' : scanResult?.branch ? 'Branch' : 'Email'}
-              </span>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200 font-mono truncate ml-2">
-                {scanResult?.rollNo || scanResult?.branch || scanResult?.externalEmail || 'Verified'}
-              </span>
+          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-emerald-500/30">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-          </div>
-          <p className="m-0 text-[10px] font-medium text-zinc-400 mt-1">Resuming scan in 2.5s</p>
+            <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 uppercase tracking-wider text-[10px]">
+              Checked In
+            </Badge>
+            <p className="text-sm font-bold truncate max-w-full">
+              {scanResult?.participantName || 'Attendee'}
+            </p>
+            <div className="w-full bg-muted/60 rounded-lg p-2.5 border border-border">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                  {scanResult?.rollNo ? 'Roll No' : scanResult?.branch ? 'Branch' : 'Email'}
+                </span>
+                <span className="font-mono font-medium truncate ml-2">
+                  {scanResult?.rollNo || scanResult?.branch || 'Verified'}
+                </span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
+          </Card>
         </motion.div>
       )}
 
       {scanState === 'already_marked' && (
         <motion.div
-          initial={{ scale: 0.92, y: 8 }}
+          initial={{ scale: 0.95, y: 6 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 flex flex-col items-center gap-2.5 w-[290px] shadow-2xl border border-white/80 dark:border-white/10"
+          className="w-full max-w-[290px]"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/20 text-amber-500 mb-0.5">
-            <AlertTriangle size={26} />
-          </div>
-          <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-amber-500">
-            Already Marked
-          </p>
-          <p className="m-0 text-xs font-medium text-zinc-600 dark:text-zinc-300 text-center leading-relaxed">
-            {scanResult?.message || 'Attendance record is already active.'}
-          </p>
-          <p className="m-0 text-[10px] font-medium text-zinc-400 mt-1">Resuming scan in 2.5s</p>
+          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-amber-500/30">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px]">
+              Already Marked
+            </Badge>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {scanResult?.message || 'Attendance record is already active.'}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
+          </Card>
         </motion.div>
       )}
 
       {(scanState === 'not_open' || scanState === 'closed') && (
         <motion.div
-          initial={{ scale: 0.92, y: 8 }}
+          initial={{ scale: 0.95, y: 6 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 flex flex-col items-center gap-2.5 w-[290px] shadow-2xl border border-white/80 dark:border-white/10"
+          className="w-full max-w-[290px]"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/20 text-amber-500 mb-0.5">
-            <Clock size={26} />
-          </div>
-          <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-amber-500">
-            {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
-          </p>
-          <p className="m-0 text-xs font-medium text-zinc-600 dark:text-zinc-300 text-center leading-relaxed">
-            {scanResult?.message}
-          </p>
-          <p className="m-0 text-[10px] font-medium text-zinc-400 mt-1">Resuming scan in 2.5s</p>
+          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-amber-500/30">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <Clock className="w-6 h-6" />
+            </div>
+            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px]">
+              {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
+            </Badge>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {scanResult?.message}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
+          </Card>
         </motion.div>
       )}
 
       {scanState === 'wrong_event' && (
         <motion.div
-          initial={{ scale: 0.92, y: 8 }}
+          initial={{ scale: 0.95, y: 6 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 flex flex-col items-center gap-2.5 w-[290px] shadow-2xl border border-white/80 dark:border-white/10"
+          className="w-full max-w-[290px]"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 mb-0.5">
-            <XCircle size={26} />
-          </div>
-          <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-red-500">
-            Wrong Event
-          </p>
-          <p className="m-0 text-xs font-medium text-zinc-600 dark:text-zinc-300 text-center leading-relaxed">
-            {scanResult?.message || 'This ticket is for a different event.'}
-          </p>
-          <p className="m-0 text-[10px] font-medium text-zinc-400 mt-1">Resuming scan in 2.5s</p>
+          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-destructive/30">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10 text-destructive border border-destructive/20">
+              <XCircle className="w-6 h-6" />
+            </div>
+            <Badge variant="destructive" className="uppercase tracking-wider text-[10px]">
+              Wrong Event
+            </Badge>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {scanResult?.message || 'This ticket is for a different event.'}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
+          </Card>
         </motion.div>
       )}
 
       {(scanState === 'unauthorized' || scanState === 'not_found' || scanState === 'invalid_signature' || scanState === 'network_error') && (
         <motion.div
-          initial={{ scale: 0.92, y: 8 }}
+          initial={{ scale: 0.95, y: 6 }}
           animate={{ scale: 1, y: 0 }}
-          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-6 flex flex-col items-center gap-2.5 w-[290px] shadow-2xl border border-white/80 dark:border-white/10"
+          className="w-full max-w-[290px]"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 mb-0.5">
-            <XCircle size={26} />
-          </div>
-          <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-red-500">
-            {scanState === 'unauthorized'
-              ? 'Access Denied'
-              : scanState === 'invalid_signature'
-              ? 'Security Failed'
-              : scanState === 'network_error'
-              ? 'Connection Error'
-              : 'Invalid Ticket'}
-          </p>
-          <p className="m-0 text-xs font-medium text-zinc-600 dark:text-zinc-300 text-center leading-relaxed">
-            {scanResult?.message ||
-              (scanState === 'unauthorized'
-                ? 'Lacking attendance clearance permissions.'
+          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-destructive/30">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10 text-destructive border border-destructive/20">
+              <XCircle className="w-6 h-6" />
+            </div>
+            <Badge variant="destructive" className="uppercase tracking-wider text-[10px]">
+              {scanState === 'unauthorized'
+                ? 'Access Denied'
                 : scanState === 'invalid_signature'
-                ? 'This pass signature could not be verified.'
-                : 'Registration record not found.')}
-          </p>
-          <p className="m-0 text-[10px] font-medium text-zinc-400 mt-1">Resuming scan in 2.5s</p>
+                ? 'Security Failed'
+                : scanState === 'network_error'
+                ? 'Connection Error'
+                : 'Invalid Ticket'}
+            </Badge>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {scanResult?.message ||
+                (scanState === 'unauthorized'
+                  ? 'Lacking attendance clearance permissions.'
+                  : scanState === 'invalid_signature'
+                  ? 'This pass signature could not be verified.'
+                  : 'Registration record not found.')}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
+          </Card>
         </motion.div>
       )}
     </motion.div>

@@ -1,6 +1,33 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { markdownToHtml, htmlToMarkdown } from '../utils/htmlMarkdownConverter';
 import './WysiwygMarkdownEditor.css';
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Quote,
+  Minus,
+  Table as TableIcon,
+  RemoveFormatting,
+  Undo2,
+  Redo2,
+  ChevronDown,
+  Trash2,
+  X,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Unlink
+} from 'lucide-react';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
 
 const WysiwygMarkdownEditor = ({
   value = '',
@@ -122,7 +149,6 @@ const WysiwygMarkdownEditor = ({
       const unorderedList = document.queryCommandState('insertUnorderedList');
       const orderedList = document.queryCommandState('insertOrderedList');
 
-      // Check current block tag (H1, H2, H3, Blockquote, P, A)
       let blockType = 'p';
       let isLink = false;
       const selection = window.getSelection();
@@ -152,129 +178,99 @@ const WysiwygMarkdownEditor = ({
         orderedList,
         isLink,
       });
-    } catch (e) {
-      // Browser selection error fallback
-    }
+    } catch (e) {}
   }, []);
 
   const updateFloatingBubble = useCallback(() => {
-    if (!containerRef.current || !editorRef.current || linkPopover.isOpen || imagePopover.isOpen) return;
-
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
-      setBubbleToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    if (
+      !selection ||
+      selection.isCollapsed ||
+      !editorRef.current ||
+      !editorRef.current.contains(selection.anchorNode)
+    ) {
+      setBubbleToolbar({ visible: false, top: 0, left: 0 });
       return;
     }
 
-    const range = selection.getRangeAt(0);
-    if (!editorRef.current.contains(range.commonAncestorContainer)) {
-      setBubbleToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    const selectedText = selection.toString().trim();
+    if (!selectedText) {
+      setBubbleToolbar({ visible: false, top: 0, left: 0 });
       return;
     }
 
-    const text = selection.toString().trim();
-    if (!text) {
-      setBubbleToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
-      return;
+    try {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+
+      let top = rect.top - containerRect.top - 46;
+      let left = rect.left - containerRect.left + (rect.width / 2) - 150;
+
+      if (top < 10) {
+        top = rect.bottom - containerRect.top + 10;
+      }
+      left = Math.max(10, Math.min(containerRect.width - 310, left));
+
+      setBubbleToolbar({
+        visible: true,
+        top,
+        left,
+      });
+    } catch (e) {
+      setBubbleToolbar({ visible: false, top: 0, left: 0 });
     }
+  }, []);
 
-    const rangeRect = range.getBoundingClientRect();
-    const containerRect = containerRef.current.getBoundingClientRect();
-
-    const top = rangeRect.top - containerRect.top - 52;
-    const left = rangeRect.left - containerRect.left + rangeRect.width / 2;
-
-    setBubbleToolbar({
-      visible: true,
-      top: Math.max(10, top),
-      left: Math.max(140, Math.min(containerRect.width - 140, left)),
-    });
-  }, [linkPopover.isOpen, imagePopover.isOpen]);
-
-  // Listen for selection changes across the document
   useEffect(() => {
-    const handleDocSelectionChange = () => {
+    const handleSelectionChange = () => {
       updateActiveFormats();
       updateFloatingBubble();
     };
 
-    document.addEventListener('selectionchange', handleDocSelectionChange);
-    return () => document.removeEventListener('selectionchange', handleDocSelectionChange);
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [updateActiveFormats, updateFloatingBubble]);
 
-  const clearSelectedImageHighlight = () => {
-    if (editorRef.current) {
-      const imgs = editorRef.current.querySelectorAll('img.selected-editor-image');
-      imgs.forEach((img) => img.classList.remove('selected-editor-image'));
-    }
-    selectedImgRef.current = null;
-  };
-
-  // Close dropdowns / popovers on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (headingMenuRef.current && !headingMenuRef.current.contains(e.target)) {
-        setIsHeadingMenuOpen(false);
-      }
-      if (linkPopoverRef.current && !linkPopoverRef.current.contains(e.target)) {
-        setLinkPopover((prev) => (prev.isOpen ? { ...prev, isOpen: false } : prev));
-      }
-      if (imagePopoverRef.current && !imagePopoverRef.current.contains(e.target)) {
-        if (!e.target.closest('.wysiwyg-editor-area img')) {
-          setImagePopover((prev) => (prev.isOpen ? { ...prev, isOpen: false } : prev));
-          clearSelectedImageHighlight();
-        }
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Execute standard formatting command without losing selection focus
-  const execCommand = (cmd, arg = null) => {
+  const execCommand = (command, value = null) => {
     editorRef.current?.focus();
-    document.execCommand(cmd, false, arg);
+    document.execCommand(command, false, value);
     handleEditorInput();
-    updateFloatingBubble();
   };
 
-  // Set block format (Heading 1, 2, 3, Paragraph, Quote)
   const setBlockFormat = (tag) => {
     setIsHeadingMenuOpen(false);
     editorRef.current?.focus();
-    if (tag === 'p') {
-      document.execCommand('formatBlock', false, '<p>');
+
+    if (tag === 'blockquote') {
+      execCommand('formatBlock', 'blockquote');
     } else if (['h1', 'h2', 'h3'].includes(tag)) {
-      document.execCommand('formatBlock', false, `<${tag}>`);
-    } else if (tag === 'blockquote') {
-      document.execCommand('formatBlock', false, '<blockquote>');
+      execCommand('formatBlock', tag);
+    } else {
+      execCommand('formatBlock', 'p');
     }
-    handleEditorInput();
-    updateFloatingBubble();
   };
 
   const openLinkPopover = () => {
     setBubbleToolbar({ visible: false, top: 0, left: 0 });
     setImagePopover((prev) => ({ ...prev, isOpen: false }));
-    clearSelectedImageHighlight();
 
     const selection = window.getSelection();
-    let selectedText = '';
-    let existingUrl = '';
-    let isExistingLink = false;
+    let selectedStr = '';
+    let existingHref = '';
+    let isExisting = false;
 
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       savedSelectionRange.current = range.cloneRange();
-      selectedText = selection.toString();
+      selectedStr = range.toString().trim();
 
-      // Check if cursor/selection is on an existing link
       let node = selection.anchorNode;
       while (node && node !== editorRef.current) {
         if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'a') {
-          existingUrl = node.getAttribute('href') || '';
-          if (!selectedText) selectedText = node.textContent || '';
-          isExistingLink = true;
+          existingHref = node.getAttribute('href') || '';
+          isExisting = true;
+          if (!selectedStr) selectedStr = node.textContent || '';
           break;
         }
         node = node.parentNode;
@@ -287,18 +283,18 @@ const WysiwygMarkdownEditor = ({
         let top = rangeRect.bottom - containerRect.top + 6;
         let left = rangeRect.left - containerRect.left;
 
-        if (top + 90 > containerRect.height && rangeRect.top - containerRect.top > 90) {
-          top = Math.max(8, rangeRect.top - containerRect.top - 65);
+        if (top + 140 > containerRect.height && rangeRect.top - containerRect.top > 140) {
+          top = Math.max(8, rangeRect.top - containerRect.top - 130);
         }
 
-        left = Math.max(12, Math.min(containerRect.width - 340, left));
+        left = Math.max(12, Math.min(containerRect.width - 320, left));
 
         setLinkPopover({
           isOpen: true,
           top,
           left,
-          hasSelectedText: Boolean(selectedText.trim()),
-          isExistingLink,
+          hasSelectedText: Boolean(selectedStr),
+          isExistingLink: isExisting,
         });
       }
     } else {
@@ -312,61 +308,44 @@ const WysiwygMarkdownEditor = ({
       });
     }
 
-    setLinkText(selectedText);
-    setLinkUrl(existingUrl);
+    setLinkText(selectedStr);
+    setLinkUrl(existingHref);
     setLinkError('');
 
     setTimeout(() => {
       linkUrlInputRef.current?.focus();
-      linkUrlInputRef.current?.select();
     }, 40);
   };
 
-  const handleApplyLink = (e) => {
-    e?.preventDefault();
+  const handleApplyLink = () => {
     if (!linkUrl.trim()) {
-      setLinkError('Enter a URL');
+      setLinkError('Please enter a URL');
       return;
     }
 
     let url = linkUrl.trim();
-    if (!/^https?:\/\//i.test(url) && !url.startsWith('mailto:')) {
+    if (!/^https?:\/\//i.test(url) && !url.startsWith('mailto:') && !url.startsWith('#')) {
       url = `https://${url}`;
     }
 
     editorRef.current?.focus();
-
     if (savedSelectionRange.current) {
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(savedSelectionRange.current);
     }
 
-    if (linkText.trim() && (!savedSelectionRange.current || savedSelectionRange.current.collapsed)) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.textContent = linkText.trim();
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.insertNode(a);
-        range.setStartAfter(a);
-        range.collapse(true);
-      } else {
-        editorRef.current?.appendChild(a);
-      }
+    if (!linkPopover.hasSelectedText && linkText.trim()) {
+      const anchorHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText.trim()}</a>`;
+      execCommand('insertHTML', anchorHtml);
     } else {
-      document.execCommand('createLink', false, url);
+      execCommand('createLink', url);
     }
 
-    handleEditorInput();
     setLinkPopover({ isOpen: false, top: 0, left: 0, hasSelectedText: false, isExistingLink: false });
     setLinkText('');
     setLinkUrl('');
-    setLinkError('');
+    handleEditorInput();
   };
 
   const handleUnlink = () => {
@@ -376,15 +355,22 @@ const WysiwygMarkdownEditor = ({
       selection.removeAllRanges();
       selection.addRange(savedSelectionRange.current);
     }
-    document.execCommand('unlink', false, null);
-    handleEditorInput();
+    execCommand('unlink');
     setLinkPopover({ isOpen: false, top: 0, left: 0, hasSelectedText: false, isExistingLink: false });
+    handleEditorInput();
+  };
+
+  const clearSelectedImageHighlight = () => {
+    if (selectedImgRef.current) {
+      selectedImgRef.current.classList.remove('editor-img-selected');
+      selectedImgRef.current = null;
+    }
   };
 
   const openImagePopoverForElement = (imgNode) => {
     clearSelectedImageHighlight();
-    imgNode.classList.add('selected-editor-image');
     selectedImgRef.current = imgNode;
+    imgNode.classList.add('editor-img-selected');
 
     setBubbleToolbar({ visible: false, top: 0, left: 0 });
     setLinkPopover((prev) => ({ ...prev, isOpen: false }));
@@ -393,7 +379,7 @@ const WysiwygMarkdownEditor = ({
     const currentAlt = imgNode.getAttribute('alt') || '';
     const currentWidth = imgNode.getAttribute('width') || imgNode.style.width || '100%';
     const currentHeight = imgNode.getAttribute('height') || imgNode.style.height || '';
-    const currentAlign = imgNode.getAttribute('align') || (imgNode.parentElement?.style?.textAlign) || 'center';
+    const currentAlign = imgNode.getAttribute('align') || 'center';
 
     setImageUrl(currentSrc);
     setImageAlt(currentAlt);
@@ -504,7 +490,6 @@ const WysiwygMarkdownEditor = ({
     }
   };
 
-  // Insert new image OR update existing image
   const handleInsertOrUpdateImage = (e) => {
     e?.preventDefault();
     if (!imageUrl.trim()) {
@@ -522,7 +507,6 @@ const WysiwygMarkdownEditor = ({
     const heightVal = imageHeight.trim();
     const alignVal = imageAlign;
 
-    // Build style and attributes
     const styleRules = ['max-width: 100%'];
     if (heightVal && heightVal !== 'auto') {
       styleRules.push(`height: ${heightVal}`);
@@ -542,7 +526,6 @@ const WysiwygMarkdownEditor = ({
       styleRules.push(`width: ${widthVal}`);
     }
 
-    // If updating existing image
     if (imagePopover.isExistingImage && selectedImgRef.current) {
       const imgNode = selectedImgRef.current;
       imgNode.setAttribute('src', url);
@@ -576,7 +559,6 @@ const WysiwygMarkdownEditor = ({
       return;
     }
 
-    // If creating a new image
     editorRef.current?.focus();
     if (savedImageRange.current) {
       const selection = window.getSelection();
@@ -611,7 +593,6 @@ const WysiwygMarkdownEditor = ({
     setImageError('');
   };
 
-  // Delete selected image
   const handleDeleteImage = () => {
     if (selectedImgRef.current) {
       const parent = selectedImgRef.current.parentElement;
@@ -625,7 +606,6 @@ const WysiwygMarkdownEditor = ({
     setImagePopover({ isOpen: false, isExistingImage: false, top: 0, left: 0 });
   };
 
-  // Click handler inside editor (opens image popover when image is clicked)
   const handleEditorClick = (e) => {
     const target = e.target;
     if (target && target.tagName && target.tagName.toLowerCase() === 'img') {
@@ -638,7 +618,6 @@ const WysiwygMarkdownEditor = ({
     }
   };
 
-  // Keyboard shortcut handler (Ctrl+K inside editor)
   const handleKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
@@ -646,7 +625,6 @@ const WysiwygMarkdownEditor = ({
     }
   };
 
-  // Insert Table Template
   const insertTable = () => {
     const tableHtml = `
       <table>
@@ -675,7 +653,6 @@ const WysiwygMarkdownEditor = ({
     execCommand('insertHTML', tableHtml);
   };
 
-  // Handle Clean Paste (strip dirty external styles while keeping structure)
   const handlePaste = (e) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
@@ -686,20 +663,19 @@ const WysiwygMarkdownEditor = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full bg-cn-surface border border-cn-border rounded-2xl shadow-xs transition-all ${className}`}
+      className={`relative w-full bg-card border border-border rounded-xl shadow-xs transition-all overflow-hidden ${className}`}
     >
-      
       {showToolbar && (
-        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-2 border-b border-cn-border bg-cn-surface/95 backdrop-blur-md text-cn-text rounded-t-2xl shadow-xs">
-          
-          {/* Headings & Block Types Dropdown */}
+        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-md">
+          {/* Headings Dropdown */}
           <div className="relative" ref={headingMenuRef}>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setIsHeadingMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-bold border border-neutral-200 dark:border-neutral-800 transition-colors cursor-pointer"
-              title="Paragraph and Heading Styles"
+              className="h-7 text-xs font-semibold gap-1.5 px-2.5"
             >
               <span>
                 {activeFormats.blockType === 'h1'
@@ -709,399 +685,316 @@ const WysiwygMarkdownEditor = ({
                   : activeFormats.blockType === 'h3'
                   ? 'Heading 3'
                   : activeFormats.blockType === 'blockquote'
-                  ? 'Quote Box'
-                  : 'Normal Text'}
+                  ? 'Quote'
+                  : 'Normal'}
               </span>
-              <i className="ri-arrow-down-s-line text-neutral-400" />
-            </button>
+              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            </Button>
 
             {isHeadingMenuOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-30 py-1.5 animate-fadeIn">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setBlockFormat('p')}
-                  className={`w-full text-left px-3.5 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'p' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-700 dark:text-neutral-300'
-                  }`}
-                >
-                  <span>Normal Paragraph</span>
-                  <span className="text-[10px] text-neutral-400 font-mono">P</span>
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setBlockFormat('h1')}
-                  className={`w-full text-left px-3.5 py-2 text-sm font-black hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h1' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-900 dark:text-white'
-                  }`}
-                >
-                  <span>Heading 1</span>
-                  <span className="text-[10px] text-neutral-400 font-mono font-normal">H1</span>
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setBlockFormat('h2')}
-                  className={`w-full text-left px-3.5 py-2 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h2' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-800 dark:text-neutral-200'
-                  }`}
-                >
-                  <span>Heading 2</span>
-                  <span className="text-[10px] text-neutral-400 font-mono font-normal">H2</span>
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setBlockFormat('h3')}
-                  className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'h3' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-800 dark:text-neutral-200'
-                  }`}
-                >
-                  <span>Heading 3</span>
-                  <span className="text-[10px] text-neutral-400 font-mono font-normal">H3</span>
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setBlockFormat('blockquote')}
-                  className={`w-full text-left px-3.5 py-2 text-xs italic hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer ${
-                    activeFormats.blockType === 'blockquote' ? 'text-brand-600 font-bold bg-brand-50 dark:bg-brand-950/20' : 'text-neutral-700 dark:text-neutral-300'
-                  }`}
-                >
-                  <span>Important Note / Quote</span>
-                  <span className="text-[10px] text-neutral-400 font-mono font-normal">&ldquo;</span>
-                </button>
-              </div>
+              <Card className="absolute top-full left-0 mt-1 w-44 shadow-lg z-30 py-1 p-1 space-y-0.5">
+                {[
+                  { tag: 'p', label: 'Normal Paragraph', mono: 'P' },
+                  { tag: 'h1', label: 'Heading 1', mono: 'H1' },
+                  { tag: 'h2', label: 'Heading 2', mono: 'H2' },
+                  { tag: 'h3', label: 'Heading 3', mono: 'H3' },
+                  { tag: 'blockquote', label: 'Quote Box', mono: '“' },
+                ].map((item) => (
+                  <button
+                    key={item.tag}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setBlockFormat(item.tag)}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md flex items-center justify-between transition-colors cursor-pointer ${
+                      activeFormats.blockType === item.tag
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{item.mono}</span>
+                  </button>
+                ))}
+              </Card>
             )}
           </div>
 
-          <div className="h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-1" />
+          <div className="h-4 w-px bg-border mx-1" />
 
           {/* Inline Styles: Bold, Italic, Underline, Strikethrough */}
-          <button
+          <Button
             type="button"
+            variant={activeFormats.bold ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('bold')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm cursor-pointer transition-colors ${
-              activeFormats.bold
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Bold (Ctrl+B)"
           >
-            <strong>B</strong>
-          </button>
+            <Bold className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.italic ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('italic')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center italic font-serif text-sm cursor-pointer transition-colors ${
-              activeFormats.italic
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Italic (Ctrl+I)"
           >
-            <em>I</em>
-          </button>
+            <Italic className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.underline ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('underline')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center underline text-sm cursor-pointer transition-colors ${
-              activeFormats.underline
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Underline (Ctrl+U)"
           >
-            <u>U</u>
-          </button>
+            <Underline className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.strikeThrough ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('strikeThrough')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center line-through text-sm cursor-pointer transition-colors ${
-              activeFormats.strikeThrough
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Strikethrough"
           >
-            S
-          </button>
+            <Strikethrough className="w-3.5 h-3.5" />
+          </Button>
 
-          <div className="h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-1" />
+          <div className="h-4 w-px bg-border mx-1" />
 
           {/* Lists */}
-          <button
+          <Button
             type="button"
+            variant={activeFormats.unorderedList ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('insertUnorderedList')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
-              activeFormats.unorderedList
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Bullet List"
           >
-            <i className="ri-list-unordered" />
-          </button>
+            <List className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.orderedList ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('insertOrderedList')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
-              activeFormats.orderedList
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 w-7"
             title="Numbered List"
           >
-            <i className="ri-list-ordered" />
-          </button>
+            <ListOrdered className="w-3.5 h-3.5" />
+          </Button>
 
-          <div className="h-5 w-px bg-neutral-200 dark:bg-neutral-800 mx-1" />
+          <div className="h-4 w-px bg-border mx-1" />
 
-          <button
+          {/* Link & Image */}
+          <Button
             type="button"
+            variant={activeFormats.isLink || linkPopover.isOpen ? 'default' : 'ghost'}
+            size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={openLinkPopover}
-            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-              activeFormats.isLink || linkPopover.isOpen
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/30 text-neutral-700 dark:text-neutral-300'
-            }`}
+            className="h-7 px-2 text-xs gap-1 font-semibold"
             title="Insert Link (Ctrl+K)"
           >
-            <i className="ri-link text-sm" />
+            <LinkIcon className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Link</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={imagePopover.isOpen ? 'default' : 'ghost'}
+            size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={openImagePopover}
-            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-              imagePopover.isOpen
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/30 text-neutral-700 dark:text-neutral-300'
-            }`}
-            title="Insert Image by URL with Size & Alignment"
+            className="h-7 px-2 text-xs gap-1 font-semibold"
+            title="Insert Image"
           >
-            <i className="ri-image-add-line text-sm" />
+            <ImageIcon className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Image</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.blockType === 'blockquote' ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat('blockquote')}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base cursor-pointer transition-colors ${
-              activeFormats.blockType === 'blockquote'
-                ? 'bg-brand-600 text-white shadow-xs'
-                : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
-            }`}
-            title="Important Note Callout"
+            className="h-7 w-7"
+            title="Important Note / Callout"
           >
-            <i className="ri-double-quotes-l" />
-          </button>
+            <Quote className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('insertHorizontalRule')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm cursor-pointer transition-colors"
+            className="h-7 w-7"
             title="Divider Line"
           >
-            <i className="ri-separator" />
-          </button>
+            <Minus className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={insertTable}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-base cursor-pointer transition-colors"
+            className="h-7 w-7"
             title="Insert Table"
           >
-            <i className="ri-table-line" />
-          </button>
+            <TableIcon className="w-3.5 h-3.5" />
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('removeFormat')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 text-sm cursor-pointer transition-colors"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
             title="Clear Formatting"
           >
-            <i className="ri-format-clear" />
-          </button>
+            <RemoveFormatting className="w-3.5 h-3.5" />
+          </Button>
 
           {/* Undo / Redo */}
-          <div className="ml-auto flex items-center gap-1">
-            <button
+          <div className="ml-auto flex items-center gap-0.5">
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => execCommand('undo')}
-              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-sm transition-colors cursor-pointer"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
               title="Undo (Ctrl+Z)"
             >
-              <i className="ri-arrow-go-back-line" />
-            </button>
-            <button
+              <Undo2 className="w-3.5 h-3.5" />
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => execCommand('redo')}
-              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-sm transition-colors cursor-pointer"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
               title="Redo (Ctrl+Y)"
             >
-              <i className="ri-arrow-go-forward-line" />
-            </button>
+              <Redo2 className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </div>
       )}
 
+      {/* Floating Selection Bubble */}
       {bubbleToolbar.visible && !linkPopover.isOpen && !imagePopover.isOpen && (
-        <div
-          className="floating-bubble-toolbar absolute z-30 flex items-center gap-1 p-1 bg-neutral-100/95 dark:bg-black/95 text-white backdrop-blur-md rounded-xl border border-neutral-300 dark:border-neutral-700 shadow-2xl"
+        <Card
+          className="absolute z-30 flex items-center gap-0.5 p-1 shadow-xl border-border bg-card/95 backdrop-blur-md"
           style={{
             top: `${bubbleToolbar.top}px`,
             left: `${bubbleToolbar.left}px`,
           }}
         >
-          <button
+          <Button
             type="button"
+            variant={activeFormats.blockType === 'h2' ? 'default' : 'ghost'}
+            size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h2' ? 'p' : 'h2')}
-            className={`px-2 py-1 rounded-lg text-xs font-black transition-colors cursor-pointer ${
-              activeFormats.blockType === 'h2' ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Heading 2"
+            className="h-6 px-1.5 text-[11px] font-bold"
           >
             H2
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={activeFormats.blockType === 'h3' ? 'default' : 'ghost'}
+            size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h3' ? 'p' : 'h3')}
-            className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-              activeFormats.blockType === 'h3' ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Heading 3"
+            className="h-6 px-1.5 text-[11px] font-bold"
           >
             H3
-          </button>
+          </Button>
 
-          <div className="h-4 w-px bg-neutral-700 mx-0.5" />
+          <div className="h-4 w-px bg-border mx-0.5" />
 
-          <button
+          <Button
             type="button"
+            variant={activeFormats.bold ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('bold')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs transition-colors cursor-pointer ${
-              activeFormats.bold ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Bold"
+            className="h-6 w-6"
           >
-            <strong>B</strong>
-          </button>
-
-          <button
+            <Bold className="w-3 h-3" />
+          </Button>
+          <Button
             type="button"
+            variant={activeFormats.italic ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('italic')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center italic font-serif text-xs transition-colors cursor-pointer ${
-              activeFormats.italic ? 'text-brand-600' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Italic"
+            className="h-6 w-6"
           >
-            <em>I</em>
-          </button>
-
-          <button
+            <Italic className="w-3 h-3" />
+          </Button>
+          <Button
             type="button"
+            variant={activeFormats.underline ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('underline')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center underline text-xs transition-colors cursor-pointer ${
-              activeFormats.underline ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Underline"
+            className="h-6 w-6"
           >
-            <u>U</u>
-          </button>
-
-          <button
+            <Underline className="w-3 h-3" />
+          </Button>
+          <Button
             type="button"
+            variant={activeFormats.strikeThrough ? 'default' : 'ghost'}
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => execCommand('strikeThrough')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center line-through text-xs transition-colors cursor-pointer ${
-              activeFormats.strikeThrough ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Strikethrough"
+            className="h-6 w-6"
           >
-            S
-          </button>
+            <Strikethrough className="w-3 h-3" />
+          </Button>
 
-          <div className="h-4 w-px bg-neutral-700 mx-0.5" />
+          <div className="h-4 w-px bg-border mx-0.5" />
 
-          <button
+          <Button
             type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => execCommand('insertUnorderedList')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-colors cursor-pointer ${
-              activeFormats.unorderedList ? 'text-brand-600 ' : 'hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Bullet List"
-          >
-            <i className="ri-list-unordered" />
-          </button>
-
-          {/* Minimal in-place link trigger */}
-          <button
-            type="button"
+            variant="ghost"
+            size="icon"
             onMouseDown={(e) => e.preventDefault()}
             onClick={openLinkPopover}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-sm hover:bg-neutral-200  text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
-            title="Insert Link"
+            className="h-6 w-6"
           >
-            <i className="ri-link" />
-          </button>
-
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={openImagePopover}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-sm hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
-            title="Insert Image"
-          >
-            <i className="ri-image-add-line" />
-          </button>
-
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setBlockFormat('blockquote')}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-colors cursor-pointer ${
-              activeFormats.blockType === 'blockquote' ? 'text-brand-600' : 'hover:bg-neutral-200  text-neutral-700 dark:text-neutral-200'
-            }`}
-            title="Quote"
-          >
-            <i className="ri-double-quotes-l" />
-          </button>
-
-          <div className="bubble-arrow bg-neutral-100 dark:bg-neutral-900 border-r border-b border-neutral-300 dark:border-neutral-700" />
-        </div>
+            <LinkIcon className="w-3 h-3" />
+          </Button>
+        </Card>
       )}
 
+      {/* Link Popover */}
       {linkPopover.isOpen && (
-        <div
+        <Card
           ref={linkPopoverRef}
-          className="absolute z-40 bg-cn-surface border border-cn-border rounded-xl shadow-2xl p-2 animate-fadeIn flex flex-col gap-2 min-w-[280px] max-w-[360px]"
+          className="absolute z-40 p-2.5 shadow-2xl flex flex-col gap-2 min-w-[280px] max-w-[360px]"
           style={{
             top: `${linkPopover.top}px`,
             left: `${linkPopover.left}px`,
@@ -1109,18 +1002,18 @@ const WysiwygMarkdownEditor = ({
           onClick={(e) => e.stopPropagation()}
         >
           {!linkPopover.hasSelectedText && (
-            <input
+            <Input
               type="text"
               placeholder="Text to display..."
               value={linkText}
               onChange={(e) => setLinkText(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+              className="h-8 text-xs"
             />
           )}
 
           <div className="flex items-center gap-1.5">
             <div className="relative flex-1">
-              <input
+              <Input
                 ref={linkUrlInputRef}
                 type="text"
                 placeholder="Paste link (e.g. https://...)"
@@ -1139,94 +1032,99 @@ const WysiwygMarkdownEditor = ({
                     editorRef.current?.focus();
                   }
                 }}
-                className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
-                  linkError ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-700'
-                }`}
+                className={`h-8 pl-7 text-xs ${linkError ? 'border-destructive' : ''}`}
               />
-              <i className="ri-link absolute left-2 top-1.5 text-neutral-400 text-xs" />
+              <LinkIcon className="w-3.5 h-3.5 absolute left-2 top-2.5 text-muted-foreground" />
             </div>
 
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={handleApplyLink}
-              className="px-3 py-1.5 bg-black hover:bg-brand-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shrink-0"
-              title="Apply Link (Enter)"
+              className="h-8 px-2.5 text-xs font-semibold"
             >
               Apply
-            </button>
+            </Button>
 
             {linkPopover.isExistingLink && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={handleUnlink}
-                className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                className="h-8 w-8 text-destructive hover:bg-destructive/10"
                 title="Remove Link"
               >
-                <i className="ri-link-unlink-m text-sm" />
-              </button>
+                <Unlink className="w-3.5 h-3.5" />
+              </Button>
             )}
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setLinkPopover((prev) => ({ ...prev, isOpen: false }))}
-              className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-md transition-colors cursor-pointer"
-              title="Close (Esc)"
+              className="h-8 w-8 text-muted-foreground"
             >
-              <i className="ri-close-line text-sm" />
-            </button>
+              <X className="w-3.5 h-3.5" />
+            </Button>
           </div>
 
           {linkError && (
-            <span className="text-[10px] font-semibold text-red-600 px-1">
+            <span className="text-[10px] font-semibold text-destructive px-1">
               {linkError}
             </span>
           )}
-        </div>
+        </Card>
       )}
 
+      {/* Image Popover */}
       {imagePopover.isOpen && (
-        <div
+        <Card
           ref={imagePopoverRef}
-          className="absolute z-40 bg-cn-surface border border-cn-border rounded-xl shadow-2xl p-3 animate-fadeIn flex flex-col gap-2.5 min-w-[320px] max-w-[400px]"
+          className="absolute z-40 p-3 shadow-2xl flex flex-col gap-2.5 min-w-[320px] max-w-[400px]"
           style={{
             top: `${imagePopover.top}px`,
             left: `${imagePopover.left}px`,
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between pb-1.5 border-b border-neutral-100 dark:border-neutral-800">
-            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
-              <i className="ri-image-line text-brand-600 font-light" />
-              {imagePopover.isExistingImage ? 'Edit Image & Sizing' : 'Insert Image via Link'}
+          <div className="flex items-center justify-between pb-1 border-b border-border">
+            <span className="text-xs font-semibold flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-primary" />
+              <span>{imagePopover.isExistingImage ? 'Edit Image & Sizing' : 'Insert Image via Link'}</span>
             </span>
 
             <div className="flex items-center gap-1">
               {imagePopover.isExistingImage && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={handleDeleteImage}
-                  className="p-1 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors cursor-pointer"
+                  className="h-7 w-7 text-destructive hover:bg-destructive/10"
                   title="Delete Image"
                 >
-                  <i className="ri-delete-bin-line text-sm" />
-                </button>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
               )}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   setImagePopover((prev) => ({ ...prev, isOpen: false }));
                   clearSelectedImageHighlight();
                 }}
-                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-md transition-colors cursor-pointer"
-                title="Close"
+                className="h-7 w-7 text-muted-foreground"
               >
-                <i className="ri-close-line text-sm" />
-              </button>
+                <X className="w-3.5 h-3.5" />
+              </Button>
             </div>
           </div>
 
           <div className="relative">
-            <input
+            <Input
               ref={imageUrlInputRef}
               type="text"
               placeholder="Image URL (e.g. https://.../poster.jpg)"
@@ -1246,33 +1144,24 @@ const WysiwygMarkdownEditor = ({
                   editorRef.current?.focus();
                 }
               }}
-              className={`w-full pl-7 pr-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100 ${
-                imageError ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-700'
-              }`}
+              className={`h-8 pl-7 text-xs ${imageError ? 'border-destructive' : ''}`}
             />
-            <i className="ri-link absolute left-2 top-1.5 text-neutral-400 text-xs" />
+            <LinkIcon className="w-3.5 h-3.5 absolute left-2 top-2.5 text-muted-foreground" />
           </div>
 
-          {/* Alt / Caption Text */}
-          <input
+          <Input
             type="text"
-            placeholder="Alt text / Caption (e.g. Workshop schedule)"
+            placeholder="Alt text / Caption"
             value={imageAlt}
             onChange={(e) => setImageAlt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleInsertOrUpdateImage();
-              }
-            }}
-            className="w-full px-2.5 py-1.5 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+            className="h-8 text-xs"
           />
 
-          {/* Width & Size Presets */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-              <span>Display Width Presets</span>
-              <span>{imageWidth}</span>
+          {/* Width Presets */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span>Width Presets</span>
+              <span className="font-mono">{imageWidth}</span>
             </div>
             
             <div className="grid grid-cols-4 gap-1">
@@ -1280,107 +1169,112 @@ const WysiwygMarkdownEditor = ({
                 { label: '25%', val: '25%' },
                 { label: '50%', val: '50%' },
                 { label: '75%', val: '75%' },
-                { label: '100% (Full)', val: '100%' },
+                { label: 'Full', val: '100%' },
               ].map((p) => (
-                <button
+                <Button
                   key={p.val}
                   type="button"
+                  variant={imageWidth === p.val ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => handleSizePresetSelect(p.val)}
-                  className={`py-1 text-[11px] font-semibold rounded-md border transition-colors cursor-pointer ${
-                    imageWidth === p.val
-                      ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-600 border-brand-300 dark:border-brand-800 font-bold'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800'
-                  }`}
+                  className="h-6 text-[10px] font-semibold px-1"
                 >
                   {p.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
-          {/* Custom Width & Height Inputs + Alignment */}
-          <div className="grid grid-cols-3 gap-2 pt-1">
+          {/* Custom Dimensions & Alignment */}
+          <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="block text-[10px] font-medium text-neutral-500 mb-0.5">Width</label>
-              <input
+              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Width</label>
+              <Input
                 type="text"
-                placeholder="100%, 400px"
+                placeholder="100%"
                 value={imageWidth}
                 onChange={(e) => {
                   setImageWidth(e.target.value);
                   setSizePreset('custom');
                 }}
-                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+                className="h-7 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-medium text-neutral-500 mb-0.5">Height (Opt)</label>
-              <input
+              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Height</label>
+              <Input
                 type="text"
-                placeholder="auto, 280px"
+                placeholder="auto"
                 value={imageHeight}
                 onChange={(e) => setImageHeight(e.target.value)}
-                className="w-full px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md focus:border-brand-600 focus:outline-none text-neutral-900 dark:text-neutral-100"
+                className="h-7 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-medium text-neutral-500 mb-0.5">Align</label>
-              <div className="flex rounded-md border border-neutral-200 dark:border-neutral-700 overflow-hidden bg-neutral-50 dark:bg-neutral-900">
+              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Align</label>
+              <div className="flex rounded-md border border-border overflow-hidden">
                 {[
-                  { align: 'left', icon: 'ri-align-left' },
-                  { align: 'center', icon: 'ri-align-center' },
-                  { align: 'right', icon: 'ri-align-right' },
-                ].map((a) => (
-                  <button
-                    key={a.align}
-                    type="button"
-                    onClick={() => setImageAlign(a.align)}
-                    className={`flex-1 py-1 flex items-center justify-center text-xs transition-colors cursor-pointer ${
-                      imageAlign === a.align
-                        ? 'bg-brand-600 text-white'
-                        : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                    }`}
-                    title={`Align ${a.align}`}
-                  >
-                    <i className={a.icon} />
-                  </button>
-                ))}
+                  { align: 'left', icon: AlignLeft },
+                  { align: 'center', icon: AlignCenter },
+                  { align: 'right', icon: AlignRight },
+                ].map((a) => {
+                  const AlignIcon = a.icon;
+                  return (
+                    <button
+                      key={a.align}
+                      type="button"
+                      onClick={() => setImageAlign(a.align)}
+                      className={`flex-1 py-1 flex items-center justify-center transition-colors cursor-pointer ${
+                        imageAlign === a.align
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted text-muted-foreground'
+                      }`}
+                      title={`Align ${a.align}`}
+                    >
+                      <AlignIcon className="w-3 h-3" />
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {imageError && (
-            <span className="text-[10px] font-semibold text-red-600 px-1">
+            <span className="text-[10px] font-semibold text-destructive px-1">
               {imageError}
             </span>
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
-            <button
+          <div className="flex items-center justify-end gap-2 pt-1 border-t border-border">
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setImagePopover((prev) => ({ ...prev, isOpen: false }));
                 clearSelectedImageHighlight();
               }}
-              className="px-2.5 py-1 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 rounded-lg transition-colors cursor-pointer"
+              className="h-7 text-xs"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={handleInsertOrUpdateImage}
-              className="px-3.5 py-1.5 bg-black hover:bg-brand-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+              className="h-7 text-xs font-semibold"
             >
               {imagePopover.isExistingImage ? 'Update Image' : 'Insert Image'}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       )}
 
-      <div className="relative bg-cn-surface rounded-b-2xl">
+      {/* Editable Area */}
+      <div className="relative bg-card">
         <div
           ref={editorRef}
           contentEditable
@@ -1398,22 +1292,21 @@ const WysiwygMarkdownEditor = ({
       </div>
 
       {showStats && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-neutral-50 dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-500 dark:text-neutral-400 select-none rounded-b-2xl">
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="font-medium">
-              <strong className="text-neutral-900 dark:text-neutral-100">{stats.words}</strong> words
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground select-none">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span>
+              <strong className="text-foreground">{stats.words}</strong> words
             </span>
-            <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-            <span className="font-medium">
-              <strong className="text-neutral-900 dark:text-neutral-100">{stats.characters}</strong> characters
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+            <span>
+              <strong className="text-foreground">{stats.characters}</strong> characters
             </span>
-            <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
             <span>~{stats.readTime} min read</span>
           </div>
 
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-            <i className="ri-heart-line text-sm" />
-            <span>Made with <i className="ri-arrow-left-s-line text-sm" />3</span>
+          <div className="text-[11px] text-muted-foreground font-mono">
+            Markdown Engine
           </div>
         </div>
       )}

@@ -1,5 +1,22 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  ChevronDown,
+  MoreHorizontal,
+  Bell,
+  Calendar,
+  Users,
+  CreditCard,
+  Megaphone,
+  Check,
+  CheckCheck,
+  ExternalLink,
+  X,
+  Clock,
+  Inbox,
+  Loader2
+} from "lucide-react";
 import { useSocket } from "../context/SocketContext";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -14,43 +31,73 @@ import {
   unsubscribePushSubscription,
   isPushSubscribed,
 } from "../utils/pushSubscription";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from "../components/ui/dropdown-menu";
 
-const formatRelativeTime = (dateStr) => {
+/**
+ * Format notification timestamp to clean time labels
+ */
+const formatMeetSphereTime = (dateStr) => {
   if (!dateStr) return "";
-  const now = new Date();
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
 
-  const diffMs = now - date;
+  const now = new Date();
+  const diffMs = now - d;
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
+  const diffDays = Math.floor(diffHr / 24);
 
   if (diffSec < 60) return "Just now";
   if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay === 1) return "Yesterday";
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+  const isToday =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    if (diffHr <= 3) {
+      return `${diffHr}h ago`;
+    }
+    return `Today, ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}`;
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    d.getDate() === yesterday.getDate() &&
+    d.getMonth() === yesterday.getMonth() &&
+    d.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) {
+    return `Yesterday, ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}`;
+  }
+
+  if (diffDays <= 7) {
+    return `${diffDays}d ago`;
+  }
+
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 };
 
-const getDateGroup = (dateStr) => {
-  if (!dateStr) return "EARLIER";
-  const notifDate = new Date(dateStr);
-  if (isNaN(notifDate.getTime())) return "EARLIER";
-
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const itemDate = new Date(notifDate.getFullYear(), notifDate.getMonth(), notifDate.getDate());
-
-  const diffDays = Math.round((today.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 0) return "TODAY";
-  if (diffDays === 1) return "YESTERDAY";
-  return "EARLIER";
-};
-
-const NotificationAvatar = ({ notif }) => {
+/**
+ * Determines icon and category tag for the notification
+ */
+const getNotificationBadge = (notif) => {
   const isTeam =
     notif.type === "TEAM_INVITATION" ||
     notif.type === "TEAM_RESPONSE" ||
@@ -58,52 +105,61 @@ const NotificationAvatar = ({ notif }) => {
     notif.title?.toLowerCase().includes("team") ||
     notif.title?.toLowerCase().includes("invitation");
 
-  const logoUrl = !isTeam
-    ? notif.sender?.clubLogo ||
-      notif.sender?.club?.clubLogo ||
-      notif.sender?.logo ||
-      notif.clubLogo
-    : null;
+  const isPayment =
+    notif.type === "PAYMENT_REVIEW" ||
+    notif.title?.toLowerCase().includes("payment");
 
-  if (logoUrl) {
-    return (
-      <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 flex items-center justify-center shadow-2xs">
-        <img
-          src={logoUrl}
-          alt=""
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
-    );
-  }
+  const isClub =
+    Boolean(notif.clubId) ||
+    Boolean(notif.sender?.clubName) ||
+    Boolean(notif.sender?.clubLogo) ||
+    notif.type === "BROADCAST";
 
-  const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
-  const isEvent = Boolean(notif.eventId) || notif.type === "EVENT_UPDATE" || notif.title?.toLowerCase().includes("event");
-
-  let iconClass = "ri-notification-3-line text-neutral-600 dark:text-neutral-400";
-  let bgClass = "bg-neutral-100 dark:bg-neutral-800/80 border-neutral-200/80 dark:border-neutral-700/80";
+  const isEvent =
+    Boolean(notif.eventId) ||
+    notif.type === "EVENT_UPDATE" ||
+    notif.type === "EVENT_ANNOUNCEMENT" ||
+    notif.title?.toLowerCase().includes("event");
 
   if (isTeam) {
-    iconClass = "ri-team-line text-brand-600 dark:text-brand-400";
-    bgClass = "bg-brand-50 dark:bg-brand-950/30 border-brand-200/80 dark:border-brand-900/40";
-  } else if (isPayment) {
-    iconClass = "ri-wallet-3-line text-emerald-600 dark:text-emerald-400";
-    bgClass = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/40";
-  } else if (isEvent) {
-    iconClass = "ri-calendar-event-line text-neutral-700 dark:text-neutral-300";
-    bgClass = "bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700";
+    return {
+      icon: Users,
+      label: "Team Invite",
+      variant: "secondary",
+      className: "text-primary border-primary/20 bg-primary/10",
+    };
   }
-
-  return (
-    <div
-      className={`w-10 h-10 rounded-xl shrink-0 border flex items-center justify-center shadow-2xs ${bgClass}`}
-    >
-      <i className={`${iconClass} text-lg`} />
-    </div>
-  );
+  if (isPayment) {
+    return {
+      icon: CreditCard,
+      label: "Payment Review",
+      variant: "secondary",
+      className: "text-emerald-600 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
+    };
+  }
+  if (isClub) {
+    const clubLabel = notif.sender?.clubName || notif.club?.clubName || "Club Broadcast";
+    return {
+      icon: Megaphone,
+      label: clubLabel.length > 24 ? `${clubLabel.slice(0, 22)}...` : clubLabel,
+      variant: "outline",
+      className: "",
+    };
+  }
+  if (isEvent) {
+    return {
+      icon: Calendar,
+      label: "Event Alert",
+      variant: "secondary",
+      className: "text-sky-600 dark:text-sky-400 border-sky-500/20 bg-sky-500/10",
+    };
+  }
+  return {
+    icon: Bell,
+    label: "Notification",
+    variant: "outline",
+    className: "",
+  };
 };
 
 const Notifications = () => {
@@ -111,8 +167,15 @@ const Notifications = () => {
   const { notifications, unreadCount, setUnreadCount, setNotifications, syncNotifications } =
     useSocket() || {};
   const { showNotification } = useNotification() || {};
+  const { user } = useAuth();
+  const currentUserId = String(user?._id || user?.id || "");
+
+  const [activeTab, setActiveTab] = useState("unread"); // 'unread' | 'read'
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest"); // 'newest' | 'oldest'
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
+
   const [permissionState, setPermissionState] = useState(getNotificationPermissionState());
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [enablingPush, setEnablingPush] = useState(false);
@@ -120,13 +183,9 @@ const Notifications = () => {
     () => localStorage.getItem("hidePushBanner") === "true"
   );
 
-  const { user } = useAuth();
-  const currentUserId = String(user?._id || user?.id || "");
-
   useEffect(() => {
     document.title = "Notifications - CampusNode";
-    const state = getNotificationPermissionState();
-    setPermissionState(state);
+    setPermissionState(getNotificationPermissionState());
     isPushSubscribed().then((sub) => setIsSubscribed(sub));
     if (syncNotifications) {
       syncNotifications(true);
@@ -141,7 +200,7 @@ const Notifications = () => {
       if (state === "granted") {
         const sub = await registerPushSubscription();
         setIsSubscribed(!!sub);
-        if (showNotification) showNotification("Push notifications enabled successfully!", "success");
+        if (showNotification) showNotification("Push notifications enabled!", "success");
       } else if (state === "denied") {
         if (showNotification) showNotification("Notifications blocked by browser settings.", "warning");
       }
@@ -152,52 +211,9 @@ const Notifications = () => {
     }
   };
 
-  const handleDisablePush = async () => {
-    setEnablingPush(true);
-    try {
-      await unsubscribePushSubscription();
-      setIsSubscribed(false);
-      if (showNotification) showNotification("Unsubscribed from push notifications.", "info");
-    } catch (err) {
-      console.error("Failed to disable push:", err);
-    } finally {
-      setEnablingPush(false);
-    }
-  };
-
   const handleDismissBanner = () => {
     setBannerDismissed(true);
     localStorage.setItem("hidePushBanner", "true");
-  };
-
-  const handleAcceptInvite = async (notifId, e) => {
-    if (e) e.stopPropagation();
-    if (actionLoading[notifId]) return;
-    setActionLoading((prev) => ({ ...prev, [notifId]: "accept" }));
-    try {
-      const res = await api.post(`/api/teams/invitations/${notifId}/accept`);
-      if (showNotification) showNotification(res.data.message || "Invitation accepted successfully!", "success");
-      if (syncNotifications) await syncNotifications(true);
-    } catch (err) {
-      if (showNotification) showNotification(err.response?.data?.message || "Failed to accept invitation", "error");
-    } finally {
-      setActionLoading((prev) => ({ ...prev, [notifId]: null }));
-    }
-  };
-
-  const handleDeclineInvite = async (notifId, e) => {
-    if (e) e.stopPropagation();
-    if (actionLoading[notifId]) return;
-    setActionLoading((prev) => ({ ...prev, [notifId]: "decline" }));
-    try {
-      const res = await api.post(`/api/teams/invitations/${notifId}/decline`);
-      if (showNotification) showNotification(res.data.message || "Invitation declined.", "success");
-      if (syncNotifications) await syncNotifications(true);
-    } catch (err) {
-      if (showNotification) showNotification(err.response?.data?.message || "Failed to decline invitation", "error");
-    } finally {
-      setActionLoading((prev) => ({ ...prev, [notifId]: null }));
-    }
   };
 
   const handleMarkAllAsRead = async () => {
@@ -212,6 +228,7 @@ const Notifications = () => {
           readBy: [...(n.readBy || []), currentUserId],
         }))
       );
+      if (showNotification) showNotification("All notifications marked as read.", "success");
     } catch (err) {
       console.error("Failed to mark all as read", err);
     } finally {
@@ -239,8 +256,38 @@ const Notifications = () => {
     }
   };
 
-  const handleCardClick = (notif, e) => {
-    if (e.target.closest("button") || e.target.closest("a")) {
+  const handleAcceptInvite = async (notifId, e) => {
+    if (e) e.stopPropagation();
+    if (actionLoading[notifId]) return;
+    setActionLoading((prev) => ({ ...prev, [notifId]: "accept" }));
+    try {
+      const res = await api.post(`/api/teams/invitations/${notifId}/accept`);
+      if (showNotification) showNotification(res.data.message || "Invitation accepted!", "success");
+      if (syncNotifications) await syncNotifications(true);
+    } catch (err) {
+      if (showNotification) showNotification(err.response?.data?.message || "Failed to accept", "error");
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [notifId]: null }));
+    }
+  };
+
+  const handleDeclineInvite = async (notifId, e) => {
+    if (e) e.stopPropagation();
+    if (actionLoading[notifId]) return;
+    setActionLoading((prev) => ({ ...prev, [notifId]: "decline" }));
+    try {
+      const res = await api.post(`/api/teams/invitations/${notifId}/decline`);
+      if (showNotification) showNotification(res.data.message || "Invitation declined.", "info");
+      if (syncNotifications) await syncNotifications(true);
+    } catch (err) {
+      if (showNotification) showNotification(err.response?.data?.message || "Failed to decline", "error");
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [notifId]: null }));
+    }
+  };
+
+  const handleRowClick = (notif, e) => {
+    if (e.target.closest("button") || e.target.closest("a") || e.target.closest("[data-slot='dropdown-menu']")) {
       return;
     }
 
@@ -259,364 +306,400 @@ const Notifications = () => {
 
     const targetUrl =
       notif.url ||
-      (notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment")
-        ? `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`
-        : notif.eventId
+      (notif.eventId
         ? `/event/${notif.eventId}`
+        : notif.type === "PAYMENT_REVIEW"
+        ? "/my-events"
         : null);
 
     if (targetUrl) {
-      navigate(targetUrl);
+      try {
+        navigate(targetUrl);
+      } catch {
+        window.location.href = targetUrl;
+      }
     }
   };
 
-  // Group notifications into TODAY, YESTERDAY, EARLIER
-  const groupedNotifications = useMemo(() => {
-    if (!notifications || notifications.length === 0) return {};
+  // Precomputed unread / read counts
+  const unreadNotifications = useMemo(() => {
+    return (notifications || []).filter((n) => !(n.readBy || []).includes(currentUserId));
+  }, [notifications, currentUserId]);
 
-    const groups = {
-      TODAY: [],
-      YESTERDAY: [],
-      EARLIER: [],
-    };
+  const readNotifications = useMemo(() => {
+    return (notifications || []).filter((n) => (n.readBy || []).includes(currentUserId));
+  }, [notifications, currentUserId]);
 
-    notifications.forEach((notif) => {
-      const groupKey = getDateGroup(notif.createdAt);
-      if (groups[groupKey]) {
-        groups[groupKey].push(notif);
-      } else {
-        groups.EARLIER.push(notif);
-      }
+  // Filtered and sorted notifications for current active tab
+  const displayedNotifications = useMemo(() => {
+    let list = activeTab === "unread" ? unreadNotifications : readNotifications;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((n) => {
+        const title = (n.title || "").toLowerCase();
+        const msg = (n.message || "").toLowerCase();
+        const sender = (n.sender?.clubName || n.sender?.name || "").toLowerCase();
+        return title.includes(q) || msg.includes(q) || sender.includes(q);
+      });
+    }
+
+    return [...list].sort((a, b) => {
+      const timeA = new Date(a.createdAt || 0).getTime();
+      const timeB = new Date(b.createdAt || 0).getTime();
+      return sortOrder === "newest" ? timeB - timeA : timeA - timeB;
     });
-
-    return groups;
-  }, [notifications]);
-
-  const activeGroupKeys = useMemo(() => {
-    return ["TODAY", "YESTERDAY", "EARLIER"].filter(
-      (key) => groupedNotifications[key] && groupedNotifications[key].length > 0
-    );
-  }, [groupedNotifications]);
-
-  const totalCount = notifications?.length || 0;
+  }, [activeTab, unreadNotifications, readNotifications, searchQuery, sortOrder]);
 
   return (
-    <div className="min-h-screen bg-cn-bg transition-colors duration-300">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+    <div className="w-full bg-background text-foreground min-h-full py-6 sm:py-8 transition-colors duration-200">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Push Notification Banner */}
+        {!isSubscribed && !bannerDismissed && permissionState !== "denied" && (
+          <Card className="mb-6 p-4 flex items-center justify-between gap-4 flex-wrap bg-card border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Bell size={18} />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-semibold">
+                  Enable browser push notifications
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Receive instant real-time updates for registered events and club broadcasts.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleEnablePush}
+                disabled={enablingPush}
+                className="h-8 text-xs font-semibold"
+              >
+                {enablingPush ? "Enabling..." : "Enable"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDismissBanner}
+                className="h-8 w-8 text-muted-foreground"
+                title="Dismiss"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Page Header */}
         <div className="mb-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-900 dark:text-white">
-                  Notifications
-                </h1>
-                {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-brand-100 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/40">
-                    {unreadCount} new
-                  </span>
-                )}
-              </div>
-              <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm mt-1">
-                Updates from clubs, event organizers, and campus activities.
-              </p>
-            </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-4">
+            Notifications
+          </h1>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={isSubscribed ? handleDisablePush : handleEnablePush}
-                disabled={enablingPush}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-brand-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
-                title={isSubscribed ? "Click to unsubscribe from Push Notifications" : "Click to enable Push Notifications"}
-              >
-                {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-brand-500 text-xs" />
-                ) : isSubscribed ? (
-                  <i className="ri-notification-3-fill text-emerald-500 text-xs" />
-                ) : (
-                  <i className="ri-notification-3-line text-neutral-400 text-xs" />
-                )}
-                <span>{enablingPush ? "Updating..." : isSubscribed ? "Push Enabled" : "Enable Push"}</span>
-              </button>
-
-              {unreadCount > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  disabled={loading}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-semibold hover:border-brand-500 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
-                >
-                  {loading ? (
-                    <i className="ri-loader-4-line animate-spin text-xs" />
-                  ) : (
-                    <i className="ri-check-double-line text-xs text-brand-600 dark:text-brand-400" />
-                  )}
-                  <span>Mark all read</span>
-                </button>
+          {/* Tabs: Unread | Read */}
+          <div className="flex items-center gap-6 border-b border-border">
+            <button
+              type="button"
+              onClick={() => setActiveTab("unread")}
+              className={`pb-3 text-xs sm:text-sm font-semibold transition-all relative cursor-pointer flex items-center gap-2 ${
+                activeTab === "unread"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground font-normal"
+              }`}
+            >
+              <span>Unread</span>
+              {unreadNotifications.length > 0 && (
+                <Badge variant="secondary" className="text-[10px] font-bold px-1.5 py-0 h-4">
+                  {unreadNotifications.length}
+                </Badge>
               )}
-            </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("read")}
+              className={`pb-3 text-xs sm:text-sm font-semibold transition-all relative cursor-pointer flex items-center gap-2 ${
+                activeTab === "read"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground font-normal"
+              }`}
+            >
+              <span>Read</span>
+              {readNotifications.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  ({readNotifications.length})
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Push Notification Banner */}
-        {!isSubscribed && !bannerDismissed && permissionState !== "denied" && (
-          <div className="mb-6 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs relative transition-all">
-            <button
-              onClick={handleDismissBanner}
-              className="absolute top-2.5 right-2.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 transition-colors cursor-pointer"
-              title="Dismiss banner"
-            >
-              <i className="ri-close-line text-base" />
-            </button>
-
-            <div className="flex items-center justify-between gap-4 flex-wrap pr-6">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200/80 dark:border-brand-900/40 flex items-center justify-center text-base shrink-0">
-                  <i className="ri-notification-badge-line" />
-                </div>
-
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
-                    Get Real-time Event Alerts
-                  </h3>
-                  <p className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400">
-                    Enable push notifications for registered events and invitations.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={handleEnablePush}
-                disabled={enablingPush}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-60 shrink-0"
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          {/* Search Box */}
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search notifications..."
+              className="pl-9 pr-8 text-xs sm:text-sm h-9"
+            />
+            {searchQuery && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
               >
-                {enablingPush ? (
-                  <i className="ri-loader-4-line animate-spin text-xs" />
-                ) : (
-                  <i className="ri-notification-badge-line text-xs" />
-                )}
-                <span>Enable Notifications</span>
-              </button>
-            </div>
+                <X size={14} />
+              </Button>
+            )}
           </div>
-        )}
 
-        {/* Notification Activity Feed Grouped by Date */}
-        {totalCount > 0 ? (
-          <div className="space-y-6">
-            {activeGroupKeys.map((groupKey) => (
-              <section key={groupKey} className="space-y-3">
-                {/* Date Section Heading */}
-                <div className="flex items-center gap-2.5 px-0.5">
-                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    {groupKey}
-                  </span>
-                  <div className="h-px flex-1 bg-neutral-200/70 dark:bg-neutral-800/80" />
-                </div>
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {/* Sort Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 gap-2 text-xs font-medium">
+                  <span>Date: {sortOrder === "newest" ? "Newest first" : "Oldest first"}</span>
+                  <ChevronDown size={14} className="text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortOrder("newest")} className="flex items-center justify-between">
+                  <span>Newest first</span>
+                  {sortOrder === "newest" && <Check size={14} className="text-primary ml-2" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOrder("oldest")} className="flex items-center justify-between">
+                  <span>Oldest first</span>
+                  {sortOrder === "oldest" && <Check size={14} className="text-primary ml-2" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-                {/* Group Notifications List */}
-                <div className="space-y-2.5">
-                  {groupedNotifications[groupKey].map((notif) => {
-                    const notifId = notif.id || notif._id;
-                    const isRead = (notif.readBy || []).includes(currentUserId);
-                    const isTeamNotif =
-                      notif.type === "TEAM_INVITATION" ||
-                      notif.type === "TEAM_RESPONSE" ||
-                      Boolean(notif.teamId) ||
-                      notif.title?.toLowerCase().includes("team") ||
-                      notif.title?.toLowerCase().includes("invitation");
-                    const isTeamInvite = notif.type === "TEAM_INVITATION" && notif.title === "Team Invitation";
-                    const isPayment = notif.type === "PAYMENT_REVIEW" || notif.title?.toLowerCase().includes("payment");
-                    const hasClickableDestination = Boolean(
-                      notif.url ||
-                      notif.eventId ||
-                      isPayment ||
-                      (isTeamInvite && notif.eventId)
-                    );
+            {/* Mark all as read button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkAllAsRead}
+              disabled={loading || unreadNotifications.length === 0}
+              className="h-9 gap-1.5 text-xs font-medium"
+            >
+              {loading ? (
+                <Loader2 size={14} className="animate-spin text-primary" />
+              ) : (
+                <CheckCheck size={15} className="text-primary" />
+              )}
+              <span>Mark all as read</span>
+            </Button>
+          </div>
+        </div>
 
-                    return (
-                      <div
-                        key={notifId}
-                        onClick={(e) => handleCardClick(notif, e)}
-                        className={`group relative rounded-xl border p-3.5 sm:p-4 transition-all duration-150 flex items-start gap-3 sm:gap-3.5 ${
-                          hasClickableDestination
-                            ? "cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-2xs"
-                            : ""
-                        } ${
-                          !isRead
-                            ? "border-brand-200/80 dark:border-brand-900/40 bg-brand-50/20 dark:bg-brand-950/10"
-                            : "border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900"
-                        }`}
-                      >
-                        {/* Source Avatar / Icon */}
-                        <NotificationAvatar notif={notif} />
+        {/* Notifications List */}
+        <Card className="overflow-hidden shadow-xs">
+          {displayedNotifications.length === 0 ? (
+            <div className="py-20 px-6 text-center">
+              <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground mx-auto flex items-center justify-center mb-3">
+                <Inbox size={22} />
+              </div>
+              <h3 className="text-sm font-semibold">
+                {searchQuery
+                  ? "No matching notifications found"
+                  : activeTab === "unread"
+                  ? "No unread notifications"
+                  : "No read notifications"}
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+                {searchQuery
+                  ? `No updates match "${searchQuery}". Try clearing search filters.`
+                  : activeTab === "unread"
+                  ? "You are completely caught up! New updates from campus clubs and events will appear here."
+                  : "You haven't marked any notifications as read yet."}
+              </p>
+              {activeTab === "unread" && readNotifications.length > 0 && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setActiveTab("read")}
+                  className="mt-3 text-xs"
+                >
+                  View read history
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {displayedNotifications.map((notif) => {
+                const notifId = notif.id || notif._id;
+                const isRead = (notif.readBy || []).includes(currentUserId);
+                const badge = getNotificationBadge(notif);
+                const BadgeIcon = badge.icon;
+                const formattedTime = formatMeetSphereTime(notif.createdAt);
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          {/* Source Name + Time + Dot */}
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${
-                                !isRead
-                                  ? "text-brand-600 dark:text-brand-400"
-                                  : "text-neutral-500 dark:text-neutral-400"
-                              }`}>
-                                {isTeamNotif ? "CampusNode" : (notif.sender?.clubName || notif.sender?.name || "CampusNode")}
-                              </span>
-                              {!isRead && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" title="Unread" />
-                              )}
-                            </div>
+                const isTeamInvite =
+                  notif.type === "TEAM_INVITATION" &&
+                  notif.title?.toLowerCase().includes("invitation");
 
-                            <span
-                              className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 shrink-0 whitespace-nowrap"
-                              title={new Date(notif.createdAt).toLocaleString()}
+                return (
+                  <div
+                    key={notifId}
+                    onClick={(e) => handleRowClick(notif, e)}
+                    className="group relative flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4 hover:bg-muted/30 transition-colors cursor-pointer"
+                  >
+                    {/* Left Column: Indicator Dot + Title & Message */}
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <div className="pt-1.5 shrink-0">
+                        <span
+                          className={`block w-2 h-2 rounded-full ${
+                            !isRead ? "bg-primary shadow-xs" : "bg-transparent"
+                          }`}
+                          title={!isRead ? "Unread notification" : "Read"}
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">
+                          {notif.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 leading-relaxed">
+                          {notif.message}
+                        </p>
+
+                        {/* Inline team invite actions on mobile */}
+                        {isTeamInvite && (
+                          <div className="flex items-center gap-2 mt-2 md:hidden">
+                            <Button
+                              size="sm"
+                              onClick={(e) => handleAcceptInvite(notifId, e)}
+                              disabled={actionLoading[notifId] === "accept"}
+                              className="h-7 px-2.5 text-[11px] font-bold"
                             >
-                              {formatRelativeTime(notif.createdAt)}
-                            </span>
-                          </div>
-
-                          {/* Title */}
-                          <h3 className={`text-xs sm:text-sm leading-snug ${
-                            !isRead
-                              ? "font-bold text-neutral-900 dark:text-white"
-                              : "font-semibold text-neutral-800 dark:text-neutral-200"
-                          }`}>
-                            {notif.title}
-                          </h3>
-
-                          {/* Message Body */}
-                          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed break-words">
-                            {notif.message}
-                          </p>
-
-                          {/* Action Buttons */}
-                          {isTeamInvite ? (
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <button
-                                onClick={(e) => handleAcceptInvite(notifId, e)}
-                                disabled={!!actionLoading[notifId]}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:opacity-60 text-white text-xs font-semibold transition-colors cursor-pointer border-0 shadow-2xs"
-                              >
-                                {actionLoading[notifId] === "accept" ? (
-                                  <>
-                                    <i className="ri-loader-4-line animate-spin text-xs" />
-                                    <span>Accepting...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="ri-check-line text-xs" />
-                                    <span>Accept</span>
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                onClick={(e) => handleDeclineInvite(notifId, e)}
-                                disabled={!!actionLoading[notifId]}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
-                              >
-                                {actionLoading[notifId] === "decline" ? (
-                                  <>
-                                    <i className="ri-loader-4-line animate-spin text-xs" />
-                                    <span>Declining...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="ri-close-line text-xs" />
-                                    <span>Decline</span>
-                                  </>
-                                )}
-                              </button>
-                              {notif.eventId && (
-                                <Link
-                                  to={`/event/${notif.eventId}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium transition-colors"
-                                >
-                                  <span>View Event</span>
-                                  <i className="ri-arrow-right-s-line text-xs" />
-                                </Link>
-                              )}
-                            </div>
-                          ) : isPayment ? (
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <Link
-                                to={notif.url || `/my-events${notif.eventId ? `?eventId=${notif.eventId}` : ""}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-colors shadow-2xs"
-                              >
-                                <i className="ri-wallet-3-line text-xs font-light" />
-                                <span>{notif.title?.includes("Approved") ? "View Ticket" : "Update Payment"}</span>
-                              </Link>
-                              {!isRead && (
-                                <button
-                                  onClick={(e) => handleMarkAsRead(notifId, e)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 text-xs font-medium transition-colors cursor-pointer"
-                                >
-                                  Mark read
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                              {notif.eventId && (
-                                <Link
-                                  to={`/event/${notif.eventId}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
-                                >
-                                  <span>View Event</span>
-                                  <i className="ri-arrow-right-line text-xs" />
-                                </Link>
-                              )}
-
-                              {!isRead && (
-                                <button
-                                  onClick={(e) => handleMarkAsRead(notifId, e)}
-                                  className="text-[11px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer inline-flex items-center gap-1"
-                                >
-                                  <i className="ri-check-line text-xs" /> Mark read
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Subtle Right Chevron on hover for clickable cards */}
-                        {hasClickableDestination && (
-                          <div className="hidden sm:flex items-center self-center text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all shrink-0">
-                            <i className="ri-arrow-right-s-line text-lg" />
+                              {actionLoading[notifId] === "accept" ? "Accepting..." : "Accept"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => handleDeclineInvite(notifId, e)}
+                              disabled={actionLoading[notifId] === "decline"}
+                              className="h-7 px-2.5 text-[11px] font-bold"
+                            >
+                              {actionLoading[notifId] === "decline" ? "Declining..." : "Decline"}
+                            </Button>
                           </div>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl py-16 flex flex-col items-center gap-3 text-center px-6 shadow-2xs">
-            <div className="w-12 h-12 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-center text-neutral-400 dark:text-neutral-600 text-xl">
-              <i className="ri-notification-off-line" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-neutral-900 dark:text-white">
-                You're all caught up!
-              </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                No new notifications or pending announcements.
-              </p>
-            </div>
-            <Link
-              to="/"
-              className="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl hover:bg-brand-600 dark:hover:bg-brand-600 hover:text-white dark:hover:text-white transition-colors cursor-pointer mt-1"
-            >
-              Go to Home
-            </Link>
-          </div>
-        )}
+                    </div>
 
+                    {/* Middle Column: Category Badge */}
+                    <div className="flex items-center gap-3 pl-5 md:pl-0 shrink-0">
+                      <div className="w-40 hidden md:flex items-center">
+                        <Badge
+                          variant={badge.variant}
+                          className={`gap-1.5 text-xs truncate font-medium ${badge.className}`}
+                          title={badge.label}
+                        >
+                          <BadgeIcon size={12} className="shrink-0" />
+                          <span className="truncate">{badge.label}</span>
+                        </Badge>
+                      </div>
+
+                      {/* Right Column: Timestamp */}
+                      <div className="w-24 text-left md:text-right shrink-0 mr-3">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap font-medium">
+                          {formattedTime}
+                        </span>
+                      </div>
+
+                      {/* Far Right Column: Action Dropdown */}
+                      <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu modal={false}>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              aria-label="Notification actions"
+                            >
+                              <MoreHorizontal size={16} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            {!isRead ? (
+                              <DropdownMenuItem
+                                onClick={(e) => handleMarkAsRead(notifId, e)}
+                                className="text-xs font-medium cursor-pointer"
+                              >
+                                <Check size={14} className="text-primary mr-2" />
+                                <span>Mark as read</span>
+                              </DropdownMenuItem>
+                            ) : (
+                              <div className="px-2 py-1 text-[11px] text-muted-foreground font-medium">
+                                Already marked as read
+                              </div>
+                            )}
+
+                            {isTeamInvite && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={(e) => handleAcceptInvite(notifId, e)}
+                                  disabled={actionLoading[notifId] === "accept"}
+                                  className="text-xs font-medium text-emerald-600 dark:text-emerald-400 cursor-pointer"
+                                >
+                                  <Check size={14} className="mr-2" />
+                                  <span>Accept invitation</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={(e) => handleDeclineInvite(notifId, e)}
+                                  disabled={actionLoading[notifId] === "decline"}
+                                  className="text-xs font-medium text-destructive cursor-pointer"
+                                >
+                                  <X size={14} className="mr-2" />
+                                  <span>Decline invitation</span>
+                                </DropdownMenuItem>
+                              </>
+                            )}
+
+                            {notif.eventId && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => navigate(`/event/${notif.eventId}`)}
+                                  className="text-xs font-medium cursor-pointer"
+                                >
+                                  <ExternalLink size={13} className="mr-2" />
+                                  <span>View event details</span>
+                                </DropdownMenuItem>
+                              </>
+                            )}
+
+                            {notif.sender?.slug && (
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/club/${notif.sender.slug}`)}
+                                className="text-xs font-medium cursor-pointer"
+                              >
+                                <ExternalLink size={13} className="mr-2" />
+                                <span>View club page</span>
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
