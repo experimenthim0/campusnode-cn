@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
 import WysiwygMarkdownEditor from '../components/WysiwygMarkdownEditor';
 import api from '../services/api';
 import { updateEvent, getEventById } from '../services/eventService';
+import { getClubs } from '../services/clubService';
 import { useNotification } from '../context/NotificationContext';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
@@ -37,6 +38,7 @@ import {
   Check,
   X,
   FileText,
+  Handshake,
 } from 'lucide-react';
 
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
@@ -96,6 +98,10 @@ const EditEvent = () => {
     const [uploading, setUploading] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
     const [reviewInfo, setReviewInfo] = useState(null);
+    const [availableClubs, setAvailableClubs] = useState([]);
+    const [isJointEvent, setIsJointEvent] = useState(false);
+    const [primaryClubId, setPrimaryClubId] = useState(null);
+    const [collaboratingClubIds, setCollaboratingClubIds] = useState([]);
 
     // Validation & Stepper state
     const [fieldErrors, setFieldErrors] = useState({});
@@ -120,6 +126,10 @@ const EditEvent = () => {
             setCurrentStep(stepParam);
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
+    }, []);
 
     useEffect(() => {
         const fetchOpenVenues = async () => {
@@ -227,6 +237,15 @@ const EditEvent = () => {
             accountHolderName: event.accountHolderName || '',
             postRegistrationMessage: event.postRegistrationMessage || '',
         });
+
+        const initialJoint = (event.organizers || []).length > 1;
+        setIsJointEvent(initialJoint);
+        const pCid = event.clubId || event.club?.id || event.club?._id || event.organizers?.[0]?.clubId || null;
+        setPrimaryClubId(pCid);
+        const partnerIds = (event.organizers || [])
+            .map(o => o.clubId || o.club?.id || o.club?._id)
+            .filter(cid => cid && cid !== pCid);
+        setCollaboratingClubIds(partnerIds);
 
         if (event.sponsors && event.sponsors.length > 0) {
             setSponsors(event.sponsors.map(s => ({
@@ -493,11 +512,16 @@ const EditEvent = () => {
         const base = {};
 
         if (stepNumber === 1) {
+            const allTargetClubIds = primaryClubId
+                ? [primaryClubId, ...(isJointEvent ? collaboratingClubIds.filter(id => id !== primaryClubId) : [])]
+                : (isJointEvent ? collaboratingClubIds : []);
+
             return {
                 ...base,
                 title: formData.title,
                 description: formData.description,
                 imageUrl: formData.imageUrl?.trim() || '',
+                clubIds: allTargetClubIds,
             };
         }
 
@@ -931,6 +955,89 @@ const EditEvent = () => {
                                     <Save className="w-3.5 h-3.5" />
                                     Save Step 1
                                 </Button>
+                            </div>
+
+                            {/* Joint Event (Club Collaboration) */}
+                            <div className="rounded-xl border border-neutral-200/80 dark:border-neutral-800 p-4 bg-neutral-50/50 dark:bg-neutral-900/40">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                            <Handshake className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="edit-joint-event-toggle" className="text-xs font-bold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                                Joint Event (Club Collaboration)
+                                            </label>
+                                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                Co-hosting this event with other campus clubs or student chapters?
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        id="edit-joint-event-toggle"
+                                        type="checkbox"
+                                        checked={isJointEvent}
+                                        onChange={(e) => {
+                                            setIsJointEvent(e.target.checked);
+                                            if (!e.target.checked) setCollaboratingClubIds([]);
+                                        }}
+                                        className="w-4 h-4 text-brand-600 rounded border-neutral-300 focus:ring-brand-500 cursor-pointer"
+                                    />
+                                </div>
+
+                                {isJointEvent && (
+                                    <div className="mt-4 pt-3 border-t border-neutral-200/80 dark:border-neutral-800 space-y-3">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                            Select Collaborating Club(s)
+                                        </label>
+                                        <select
+                                            className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 focus:border-brand-500 dark:focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all cursor-pointer"
+                                            value=""
+                                            onChange={(e) => {
+                                                const selectedId = e.target.value;
+                                                if (selectedId && !collaboratingClubIds.includes(selectedId)) {
+                                                    setCollaboratingClubIds((prev) => [...prev, selectedId]);
+                                                }
+                                            }}
+                                        >
+                                            <option value="">+ Select a partner club to co-host...</option>
+                                            {availableClubs
+                                                .filter(c => (c.id || c._id) !== primaryClubId && !collaboratingClubIds.includes(c.id || c._id))
+                                                .map(c => (
+                                                    <option key={c.id || c._id} value={c.id || c._id}>
+                                                        {c.clubName} {c.category ? `(${c.category})` : ''}
+                                                    </option>
+                                                ))}
+                                        </select>
+
+                                        {collaboratingClubIds.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {collaboratingClubIds.map(cid => {
+                                                    const club = availableClubs.find(c => (c.id || c._id) === cid);
+                                                    return (
+                                                        <span
+                                                            key={cid}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold"
+                                                        >
+                                                            {club?.clubLogo && (
+                                                                <img src={club.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                                            )}
+                                                            <span>{club?.clubName || 'Selected Club'}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCollaboratingClubIds(prev => prev.filter(id => id !== cid))}
+                                                                className="hover:text-rose-500 ml-1 p-0.5 rounded-full cursor-pointer"
+                                                                title="Remove club"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Event Title */}

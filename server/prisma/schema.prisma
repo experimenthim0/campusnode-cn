@@ -183,7 +183,6 @@ model Club {
   memberships          ClubMembership[]
   organizedEvents      EventOrganizer[]
   media                Media[]
-  sponsors             Sponsor[]
   announcements        ClubAnnouncement[]
   achievements         ClubAchievement[]
   notifications        Notification[]
@@ -442,13 +441,10 @@ model Sponsor {
   name       String  @db.VarChar
   logoUrl    String  @db.VarChar
   websiteUrl String? @db.VarChar
-  clubId     String? @db.VarChar(24)
   eventId    String? @db.VarChar(24)
 
-  club       Club?   @relation(fields: [clubId], references: [id])
   event      Event?  @relation(fields: [eventId], references: [id])
 
-  @@index([clubId])
   @@index([eventId])
 }
 

@@ -171,7 +171,7 @@ if (redisUrl) {
   try {
     nativeClient = new Redis(redisUrl, {
       maxRetriesPerRequest: 1,
-      connectTimeout: 2000,
+      connectTimeout: 5000,
       lazyConnect: true,
       enableOfflineQueue: false,
       retryStrategy(times) {

@@ -24,7 +24,7 @@ const HomeFooter = () => {
   ];
 
   const otherLinks = [
-    { label: 'Contact', onClick: () => setIsContactOpen(true) },
+    { label: 'Contact', to: '/contact' },
     { label: 'Team', to: '/team' },
     { label: 'NITJ Website', href: 'https://nitj.ac.in' },
     { label: 'Privacy Policy', to: '/privacy' },
@@ -49,12 +49,12 @@ const HomeFooter = () => {
              <p className="text-[13px] text-cn-text-muted mt-4">
               Have any questions or suggestion?{' '}
               <br/>
-              <button 
-                onClick={() => setIsContactOpen(true)} 
+              <Link 
+                to="/contact" 
                 className="text-brand-600 hover:underline font-medium cursor-pointer"
               >
                 Send us a suggestion
-              </button>
+              </Link>
               {' '}or email at{' '}
               <a href="mailto:clubsetu@nikhim.me" className="text-brand-600 hover:underline font-medium">
                 clubsetu@nikhim.me

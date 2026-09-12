@@ -8,6 +8,7 @@ import { signTicket } from "../services/qrSigningService.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import redis from "../lib/redis.js";
 import { validateCustomFields } from "../utils/customFields.js";
 import { MAX_WAITLIST_CAPACITY } from "../services/waitlistService.js";
 
@@ -71,9 +72,20 @@ router.post(
   requirePermission(PERMISSIONS.TEAM_CREATE),
   async (req, res) => {
     const { eventId, teamName, members, formResponses, transactionId, payerName, paymentRemarks } = req.body;
-    const leaderId = req.user.userId;
+    const leaderId = req.user?.userId;
+    const teamLockKey = eventId && leaderId ? `lock:team:create:${eventId}:${leaderId}` : null;
+    let lockAcquired = false;
 
     try {
+      if (teamLockKey) {
+        lockAcquired = await redis.acquireLock(teamLockKey, 5);
+        if (!lockAcquired) {
+          return res.status(429).json({
+            message: "A team creation request for this event is already being processed. Please wait.",
+          });
+        }
+      }
+
       if (req.user.userType !== "student") {
         return res.status(403).json({ message: "Only enrolled students can create and lead teams." });
       }
@@ -351,6 +363,10 @@ router.post(
         });
       }
       res.status(500).json({ message: err.message });
+    } finally {
+      if (lockAcquired && teamLockKey) {
+        await redis.releaseLock(teamLockKey);
+      }
     }
   },
 );

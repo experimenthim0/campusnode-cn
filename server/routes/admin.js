@@ -715,14 +715,13 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
         }
       });
 
-      await tx.sponsor.deleteMany({
-        where: {
-          OR: [
-            { clubId },
-            ...(eventIds.length > 0 ? [{ eventId: { in: eventIds } }] : [])
-          ]
-        }
-      });
+      if (eventIds.length > 0) {
+        await tx.sponsor.deleteMany({
+          where: {
+            eventId: { in: eventIds }
+          }
+        });
+      }
 
       // 3. Remove event organizer relations
       await tx.eventOrganizer.deleteMany({ where: { clubId } });

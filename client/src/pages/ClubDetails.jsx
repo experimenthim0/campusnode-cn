@@ -432,7 +432,6 @@ const ClubDetails = () => {
   const [isMembersExpanded, setIsMembersExpanded] = useState(false);
   const [isAchievementsExpanded, setIsAchievementsExpanded] = useState(false);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
-  const [isSponsorsExpanded, setIsSponsorsExpanded] = useState(false);
 
   // Active sub-views
   const [eventViewMode, setEventViewMode] = useState("list"); // "list" | "calendar"
@@ -1619,65 +1618,6 @@ const ClubDetails = () => {
                         : `View All Photos (${galleryMedia.length})`}
                     </span>
                     <i className={isGalleryExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {((club.sponsors && club.sponsors.length > 0) || (club.clubSponsors && club.clubSponsors.length > 0)) && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            Sponsors & Partners
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-                {(isSponsorsExpanded
-                  ? (club.sponsors || club.clubSponsors || [])
-                  : (club.sponsors || club.clubSponsors || []).slice(0, 8)
-                ).map((s, idx) => {
-                  const logoUrl = typeof s === "string" ? s : s.logoUrl;
-                  const name = typeof s === "object" ? s.name : "Sponsor";
-                  const website = typeof s === "object" ? s.websiteUrl : null;
-                  return website ? (
-                    <a
-                      key={idx}
-                      href={website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-12 max-w-[140px] transition opacity-100 flex items-center justify-center hover:opacity-80"
-                      title={name}
-                    >
-                      <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                    </a>
-                  ) : (
-                    <div
-                      key={idx}
-                      className="h-12 max-w-[140px] transition flex items-center justify-center"
-                      title={name}
-                    >
-                      <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {(club.sponsors || club.clubSponsors || []).length > 8 && (
-                <div className="flex justify-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsSponsorsExpanded((prev) => !prev)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
-                  >
-                    <span>
-                      {isSponsorsExpanded
-                        ? "Show Less"
-                        : `View All Sponsors (${(club.sponsors || club.clubSponsors || []).length})`}
-                    </span>
-                    <i className={isSponsorsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
                   </button>
                 </div>
               )}

@@ -5,7 +5,7 @@ import { getColorSync } from 'colorthief';
 import { useImageBlob } from '../hooks/useImageBlob';
 import { useTheme } from '../context/ThemeContext';
 import { prefetchEventDetail } from '../lib/prefetchManager';
-import { Handshake } from 'lucide-react';
+import { HandHeart, Handshake } from 'lucide-react';
 
 const EventCard = ({ event, onRegister, isRegistered }) => {
     const { title, description, venue, startTime, totalSeats, registeredCount, status, _id, entryFee, registrationDeadline, slug, showWinner } = event;
@@ -249,7 +249,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     {event.sponsors && event.sponsors.length > 0 && (
                         <div className="flex items-center gap-1.5 shrink-0 ml-auto pl-2">
                             <span title="Sponsored by" className="inline-flex items-center text-brand-500 dark:text-brand-500">
-                                <Handshake size={17} className="shrink-0" />
+                                <HandHeart size={17} className="shrink-0" />
                             </span>
                             <div className="flex items-center gap-1.5">
                                 {event.sponsors.slice(0, 2).map((s, idx) => (

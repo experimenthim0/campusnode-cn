@@ -73,6 +73,7 @@ const publicClubSelect = {
   motto: true,
   mission: true,
   establishedYear: true,
+  clubEmail: true,
   facultyCoordinator: { select: { id: true, name: true, email: true } },
   socialLinks: true,
   memberships: {
@@ -338,7 +339,6 @@ router.get("/:id", async (req, res) => {
         facultyCoordinator: { select: { id: true, name: true, email: true } },
         socialLinks: true,
         media: { where: { eventId: null }, orderBy: { id: "desc" } },
-        sponsors: { where: { eventId: null } },
         announcements: {
           where: { isPublished: true },
           orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
@@ -413,7 +413,6 @@ router.get("/:id", async (req, res) => {
         roleCoordinators: roleCoords,
         clubGallery: club.media?.map((m) => m.url) || [],
         mediaList: club.media || [],
-        clubSponsors: club.sponsors?.map((s) => s.logoUrl) || [],
         announcements: club.announcements || [],
         achievements: club.achievements || [],
         stats: {
@@ -553,26 +552,11 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
         }
       }
 
-      if (req.body.clubSponsors && Array.isArray(req.body.clubSponsors)) {
-        await tx.sponsor.deleteMany({ where: { clubId: targetClubId, eventId: null } });
-        if (req.body.clubSponsors.length > 0) {
-          await tx.sponsor.createMany({
-            data: req.body.clubSponsors.map((url) => ({
-              id: crypto.randomBytes(12).toString("hex"),
-              clubId: targetClubId,
-              name: "Sponsor",
-              logoUrl: url,
-            })),
-          });
-        }
-      }
-
       return tx.club.findUnique({
         where: { id: targetClubId },
         include: {
           socialLinks: true,
           media: { where: { eventId: null } },
-          sponsors: { where: { eventId: null } },
           announcements: true,
           achievements: true,
         },
@@ -590,7 +574,6 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
             : [],
         clubGallery: updatedClub.media?.map((m) => m.url) || [],
         mediaList: updatedClub.media || [],
-        clubSponsors: updatedClub.sponsors?.map((s) => s.logoUrl) || [],
       },
     });
   } catch (err) {
@@ -838,7 +821,7 @@ router.post("/:id/upload-image", verifyToken, upload.single("image"), async (req
     }
 
     const folderType = req.query.folder || req.body.folder || "club-gallery";
-    const allowedFolders = ["club-gallery", "club-sponsors", "club-media"];
+    const allowedFolders = ["club-gallery", "club-media"];
     const targetFolder = allowedFolders.includes(folderType) ? folderType : "club-gallery";
 
     const processedBuffer = await (targetFolder === "club-gallery" || targetFolder === "club-media"

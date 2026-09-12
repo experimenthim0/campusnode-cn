@@ -28,6 +28,7 @@ import {
   ShieldCheck,
   FilterX,
   Download,
+  Loader2,
 } from 'lucide-react';
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
@@ -35,15 +36,17 @@ import ColumnExportModal from '../components/ColumnExportModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import ShimmerText from '../components/ShimmerText';
+
 
 const ClubEvents = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
   const { showNotification } = useNotification();
   const { user: authUser, role: authRole } = useAuth();
-  const [user, setUser] = useState(authUser);
-  const [role, setRole] = useState(authRole);
+  const user = authUser || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || 'null') : null);
+  const role = authRole || (typeof window !== 'undefined' ? localStorage.getItem('role') : null);
   const [createdEvents, setCreatedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exportFilters, setExportFilters] = useState({ month: 'all', year: 'all' });
@@ -75,29 +78,28 @@ const ClubEvents = () => {
   }, []);
 
   useEffect(() => {
-    if (authUser) {
-      setUser(authUser);
-      setRole(authRole);
+    const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
+    if (user) {
       fetchClubEvents(clubId);
 
       const isFac = Boolean(
-        authRole === 'facultyCoordinator' ||
-        authUser?.role === 'facultyCoordinator' ||
-        authUser?.principalType === 'FACULTY' ||
-        authUser?.memberships?.some(
+        role === 'facultyCoordinator' ||
+        user?.role === 'facultyCoordinator' ||
+        user?.principalType === 'FACULTY' ||
+        user?.memberships?.some(
           (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
         )
       );
 
-      setCanReview(isFac || authRole === 'admin' || authRole === 'SUPER_ADMIN');
-      if (authRole === 'club' || authRole === 'admin' || authRole === 'SUPER_ADMIN') {
+      setCanReview(isFac || role === 'admin' || role === 'SUPER_ADMIN');
+      if (role === 'club' || role === 'admin' || role === 'SUPER_ADMIN') {
         setCanEdit(true);
         setCanScan(true);
         setCanCheckReg(true);
       }
 
-      // Check immediate membership in authUser
-      const myAuthMem = authUser.memberships?.find(
+      // Check immediate membership in user synchronously
+      const myAuthMem = user.memberships?.find(
         (m) => String(m.clubId || m.club?.id) === String(clubId)
       );
       if (myAuthMem) {
@@ -116,7 +118,7 @@ const ClubEvents = () => {
         }
       }
 
-      // Fetch official club details
+      // Fetch official club details in background
       getClubById(clubId)
         .then((res) => {
           if (res.data?.clubName) {
@@ -125,33 +127,37 @@ const ClubEvents = () => {
         })
         .catch(() => {});
 
-      getClubMembers(clubId)
-        .then((res) => {
-          const members = Array.isArray(res.data) ? res.data : (res.data?.members || []);
-          if (members.length > 0 && members[0]?.clubName) {
-            setClubName((prev) => prev || members[0].clubName);
-          }
-          const userId = String(authUser.id || authUser._id);
-          const myMembership = members.find((m) =>
-            String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId
-          );
-          if (myMembership) {
-            if (myMembership.clubName) setClubName(myMembership.clubName);
-            const r = myMembership.role;
-            const isHead = r === 'CLUB_HEAD' || r === ClubMemberRole.CLUB_HEAD;
-            const isCoordinator = r === 'COORDINATOR' || r === ClubMemberRole.COORDINATOR;
-            setCanEdit(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
-            setCanScan(isHead || isCoordinator || Boolean(myMembership.canTakeAttendance ?? myMembership.permissions?.canTakeAttendance));
-            setCanCheckReg(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
-          }
-        })
-        .catch(() => {});
-    } else {
+      // Only fetch full club members list if the user's role wasn't already determined from auth memberships
+      if (!myAuthMem && role !== 'club' && role !== 'admin' && role !== 'SUPER_ADMIN') {
+        getClubMembers(clubId)
+          .then((res) => {
+            const members = Array.isArray(res.data) ? res.data : (res.data?.members || []);
+            if (members.length > 0 && members[0]?.clubName) {
+              setClubName((prev) => prev || members[0].clubName);
+            }
+            const userId = String(user.id || user._id);
+            const myMembership = members.find((m) =>
+              String(m.studentId?._id || m.studentId || m.student?.id || m.student?._id) === userId
+            );
+            if (myMembership) {
+              if (myMembership.clubName) setClubName(myMembership.clubName);
+              const r = myMembership.role;
+              const isHead = r === 'CLUB_HEAD' || r === ClubMemberRole.CLUB_HEAD;
+              const isCoordinator = r === 'COORDINATOR' || r === ClubMemberRole.COORDINATOR;
+              setCanEdit(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
+              setCanScan(isHead || isCoordinator || Boolean(myMembership.canTakeAttendance ?? myMembership.permissions?.canTakeAttendance));
+              setCanCheckReg(isHead || isCoordinator || Boolean(myMembership.canEditEvents ?? myMembership.permissions?.canEditEvents));
+            }
+          })
+          .catch(() => {});
+      }
+    } else if (!hasToken) {
       setLoading(false);
     }
-  }, [clubId, authUser?.id, authRole]);
+  }, [clubId, user?.id, role]);
 
   const fetchClubEvents = async (id) => {
+    setLoading(true);
     try {
       const res = await getClubManagedEvents(id);
       const events = Array.isArray(res.data) ? res.data : [];
@@ -160,10 +166,10 @@ const ClubEvents = () => {
         const firstEventClub = events[0].club?.clubName || events[0].organizers?.[0]?.club?.clubName;
         if (firstEventClub) setClubName((prev) => prev || firstEventClub);
       }
-      setLoading(false);
     } catch (err) {
       console.error('Failed to fetch events', err);
       showNotification(err.response?.data?.message || 'Failed to load club events', 'error');
+    } finally {
       setLoading(false);
     }
   };
@@ -242,15 +248,9 @@ const ClubEvents = () => {
   };
 
   const isFacultyCoordinator = Boolean(
-    authRole === 'facultyCoordinator' ||
     role === 'facultyCoordinator' ||
-    authUser?.role === 'facultyCoordinator' ||
     user?.role === 'facultyCoordinator' ||
-    authUser?.principalType === 'FACULTY' ||
     user?.principalType === 'FACULTY' ||
-    authUser?.memberships?.some(
-      (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
-    ) ||
     user?.memberships?.some(
       (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
     )
@@ -258,6 +258,7 @@ const ClubEvents = () => {
 
   const canCreateEvent = canEdit && !isFacultyCoordinator;
   const pendingCount = createdEvents.filter(e => e.reviewStatus === 'PENDING' || e.reviewStatus === 'DELETION_REQUESTED').length;
+  const jointCount = createdEvents.filter(e => e.organizers && e.organizers.length > 1).length;
 
   const filteredEvents = createdEvents.filter(event => {
     const eventDate = new Date(event.startTime);
@@ -269,18 +270,96 @@ const ClubEvents = () => {
       ? (event.reviewStatus === 'PENDING' || event.reviewStatus === 'DELETION_REQUESTED')
       : statusTab === 'PUBLISHED'
       ? event.reviewStatus === 'PUBLISHED'
+      : statusTab === 'JOINT'
+      ? (event.organizers && event.organizers.length > 1)
       : true;
     return mMatch && yMatch && sMatch;
   });
 
-  if (!user) return <div className="text-center mt-12 text-muted-foreground font-medium">Please login to view events.</div>;
-  if (loading) {
+  const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
+  if (loading || (!user && hasToken)) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <ShimmerText text="Loading club events..." className="text-sm font-semibold tracking-wide" />
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-200">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28 rounded" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-8 w-60 sm:w-72 rounded-lg" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-44 rounded" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-28 rounded-lg" />
+            <Skeleton className="h-9 w-32 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Filter bar Skeleton */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-2 rounded-xl bg-card border border-border">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-16 rounded-lg" />
+            <Skeleton className="h-8 w-28 rounded-lg" />
+            <Skeleton className="h-8 w-28 rounded-lg" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-24 rounded-lg" />
+            <Skeleton className="h-8 w-20 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Shimmer loading banner with animated spinner */}
+        <div className="flex items-center justify-center gap-2.5 py-3.5 mb-6 rounded-xl bg-brand-50/50 dark:bg-brand-950/20 border border-brand-100 dark:border-brand-900/40 text-brand-700 dark:text-brand-300 shadow-xs">
+          <Loader2 className="w-4 h-4 animate-spin text-brand-600" />
+          <ShimmerText text="Loading club events and permissions..." className="text-xs font-semibold tracking-wide" />
+        </div>
+
+        {/* Event Card Skeletons */}
+        <div className="grid gap-4">
+          {[1, 2, 3].map((idx) => (
+            <Card key={idx} className="overflow-hidden border-border bg-card">
+              <div className="px-5 md:px-6 pt-4 pb-3 border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <Skeleton className="h-5 w-56 rounded" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+              <CardContent className="p-5 md:p-6 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3 w-12 rounded" />
+                    <Skeleton className="h-4 w-28 rounded" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3 w-12 rounded" />
+                    <Skeleton className="h-4 w-24 rounded" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3 w-12 rounded" />
+                    <Skeleton className="h-4 w-24 rounded" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3 w-16 rounded" />
+                    <Skeleton className="h-4 w-20 rounded" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/50">
+                  <Skeleton className="h-8 w-24 rounded-lg" />
+                  <Skeleton className="h-8 w-28 rounded-lg" />
+                  <Skeleton className="h-8 w-8 rounded-lg" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
+
+  if (!user) return <div className="text-center mt-12 text-muted-foreground font-medium">Please login to view events.</div>;
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -396,6 +475,24 @@ const ClubEvents = () => {
             }`}
           >
             Approved / Live
+          </Button>
+          <Button
+            size="sm"
+            variant={statusTab === 'JOINT' ? 'default' : 'ghost'}
+            onClick={() => setStatusTab('JOINT')}
+            className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${
+              statusTab === 'JOINT'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                : 'text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
+            }`}
+          >
+            <Handshake className="w-3.5 h-3.5" />
+            Joint Events
+            {jointCount > 0 && (
+              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-bold">
+                {jointCount}
+              </Badge>
+            )}
           </Button>
         </div>
       )}

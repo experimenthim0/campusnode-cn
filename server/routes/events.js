@@ -12,6 +12,7 @@ import multer from "multer";
 import crypto from "crypto";
 import { uploadImage } from "../utils/cloudinary.js";
 import { getPublicResponse, setPublicResponse, invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import redis from "../lib/redis.js";
 import { validateBooking, checkEventConflict } from "../services/conflictService.js";
 import { signTicket } from "../services/qrSigningService.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
@@ -216,7 +217,7 @@ const eventInclude = {
   organizers: {
     include: {
       club: {
-        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true, socialLinks: true },
+        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true, clubEmail: true, socialLinks: true },
       },
     },
   },
@@ -279,7 +280,7 @@ const publicEventSelect = {
   organizers: {
     include: {
       club: {
-        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true },
+        select: { id: true, clubName: true, clubLogo: true, slug: true, category: true, clubEmail: true },
       },
     },
   },
@@ -1490,8 +1491,21 @@ router.post(
   requirePermission(PERMISSIONS.REGISTRATION_CREATE),
   validate(registerParamSchema),
   async (req, res) => {
+    const eventId = req.params.id;
+    const unifiedUserId = req.user?.userId;
+    const regLockKey = eventId && unifiedUserId ? `lock:reg:${eventId}:${unifiedUserId}` : null;
+    let lockAcquired = false;
+
     try {
-      const eventId = req.params.id;
+      if (regLockKey) {
+        lockAcquired = await redis.acquireLock(regLockKey, 5);
+        if (!lockAcquired) {
+          return res.status(429).json({
+            message: "A registration request for this event is already being processed. Please wait.",
+          });
+        }
+      }
+
       const { transactionId, payerName, paymentRemarks, formResponses } = req.body;
       const isExternal = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
 
@@ -1734,6 +1748,10 @@ router.post(
         });
       }
       res.status(500).json({ message: err.message });
+    } finally {
+      if (lockAcquired && regLockKey) {
+        await redis.releaseLock(regLockKey);
+      }
     }
   },
 );
@@ -1931,7 +1949,7 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       }
     }
 
-    const { sponsors, media } = req.body;
+    const { sponsors, media, clubIds } = req.body;
 
     const allowedFields = [
       "title",
@@ -2131,6 +2149,17 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
             data: validMedia,
           });
         }
+      }
+
+      if (clubIds !== undefined && Array.isArray(clubIds) && clubIds.length > 0) {
+        await tx.eventOrganizer.deleteMany({ where: { eventId: req.params.id } });
+        await tx.eventOrganizer.createMany({
+          data: clubIds.map(clubId => ({
+            id: createObjectId(),
+            eventId: req.params.id,
+            clubId,
+          })),
+        });
       }
 
       const updated = await tx.event.update({

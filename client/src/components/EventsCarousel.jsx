@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import EventCard from './EventCard';
+import EventCardSkeleton from './skeletons/EventCardSkeleton';
 import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
 import { useAuth } from '../context/AuthContext';
@@ -304,14 +305,9 @@ const EventsCarousel = () => {
           {[1, 2, 3].map(n => (
             <div
               key={n}
-              className="w-[290px] sm:w-[330px] md:w-[350px] h-[380px] rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 p-5 shrink-0 animate-pulse flex flex-col justify-between"
+              className="w-[290px] sm:w-[330px] md:w-[350px] shrink-0"
             >
-              <div className="h-40 w-full bg-neutral-200 dark:bg-neutral-800 rounded-xl mb-4" />
-              <div className="space-y-2.5">
-                <div className="h-4 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded" />
-                <div className="h-3 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
-              </div>
-              <div className="h-9 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full mt-4" />
+              <EventCardSkeleton />
             </div>
           ))}
         </div>

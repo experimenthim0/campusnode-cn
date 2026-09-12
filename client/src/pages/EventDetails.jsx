@@ -93,6 +93,18 @@ const EventDetails = () => {
   const [registrationPaymentStatus, setRegistrationPaymentStatus] = useState(null);
   const [postRegMessage, setPostRegMessage] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
+  const [copiedEmail, setCopiedEmail] = useState(null);
+
+  const handleCopyEmail = (emailToCopy) => {
+    if (!emailToCopy) return;
+    navigator.clipboard.writeText(emailToCopy)
+      .then(() => {
+        setCopiedEmail(emailToCopy);
+        showNotification('Club email copied to clipboard!', 'success');
+        setTimeout(() => setCopiedEmail(null), 2500);
+      })
+      .catch(() => showNotification('Failed to copy email', 'error'));
+  };
 
   // Team Registration States
   const [teamModalOpen, setTeamModalOpen] = useState(false);
@@ -619,6 +631,13 @@ const EventDetails = () => {
   const clubCategory = isCentralEvent ? 'College-Wide' : (event.club?.category || null);
   const clubSlugOrId = isCentralEvent ? null : (event.club?.slug || event.club?._id || event.club?.id || event.createdBy?.slug || event.createdBy?._id || event.createdBy?.id);
   const displayName = isCentralEvent ? 'Office of DSW' : (event.club?.clubName || event.createdBy?.clubName || '—');
+
+  const primaryClub = event.club || event.organizers?.[0]?.club || null;
+  const primaryClubEmail = primaryClub?.clubEmail || event.createdBy?.email || null;
+  const allOrganizingClubs = (event.organizers && event.organizers.length > 0)
+    ? event.organizers.map(o => o.club).filter(Boolean)
+    : (primaryClub ? [primaryClub] : []);
+  const isJointEvent = allOrganizingClubs.length > 1;
 
   const isOpenEvent = event.registrationType === 'none';
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1222,6 +1241,119 @@ const EventDetails = () => {
 
             
 
+            {/* Contact Event Organizer Section (Left Panel) */}
+            <div className="mb-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div>
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+                    Questions about this event?
+                  </h3>
+                  <h4 className="text-base sm:text-lg font-bold text-black dark:text-white mt-0.5">
+                    Contact Event Organizer
+                  </h4>
+                </div>
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                  <i className="ri-mail-send-line text-lg" />
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
+                For queries regarding event rules, round timings, team participation, eligibility, or certificates, please contact the organizing club directly.
+              </p>
+
+              {isCentralEvent ? (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 border border-cn-blue-200 dark:border-cn-blue-900/50">
+                      <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-black dark:text-white truncate">Office of DSW</p>
+                      <p className="text-xs text-neutral-500">Dean Student Welfare, NIT Jalandhar</p>
+                    </div>
+                  </div>
+                  <a
+                    href="mailto:dsw@nitj.ac.in"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs shrink-0"
+                  >
+                    <i className="ri-mail-line" /> Contact DSW Office
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {allOrganizingClubs.map((clubObj, idx) => {
+                    const cEmail = clubObj?.clubEmail || (idx === 0 ? (event.club?.clubEmail || event.createdBy?.email) : null) || 'clubsetu@nikhim.me';
+                    const cName = clubObj?.clubName || displayName;
+                    const cSlug = clubObj?.slug || clubSlugOrId;
+                    const cLogo = clubObj?.clubLogo || (idx === 0 ? event.club?.clubLogo : null);
+
+                    return (
+                      <div
+                        key={clubObj?.id || idx}
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {cLogo ? (
+                            <img src={cLogo} alt={cName} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-200/60 dark:border-brand-800/40">
+                              <i className="ri-team-line text-lg" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {cSlug ? (
+                                <Link
+                                  to={`/club/${cSlug}`}
+                                  className="text-sm font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate hover:underline"
+                                >
+                                  {cName}
+                                </Link>
+                              ) : (
+                                <span className="text-sm font-bold text-black dark:text-white truncate">{cName}</span>
+                              )}
+                              {isJointEvent && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
+                                  {idx === 0 ? 'Lead Organizer' : 'Co-Host'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <a
+                                href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
+                                className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 truncate"
+                              >
+                                <i className="ri-mail-line text-xs" /> {cEmail}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyEmail(cEmail)}
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 transition-all cursor-pointer shadow-2xs"
+                            title="Copy email to clipboard"
+                          >
+                            <i className={copiedEmail === cEmail ? "ri-check-line text-emerald-600" : "ri-file-copy-line"} />
+                            <span>{copiedEmail === cEmail ? 'Copied' : 'Copy Email'}</span>
+                          </button>
+                          <a
+                            href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
+                            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer"
+                          >
+                            <i className="ri-mail-send-line" />
+                            <span>Send Email</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="mb-8">
               <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
@@ -1438,8 +1570,38 @@ const EventDetails = () => {
                       ) : (
                         <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
                       )}
+                      {primaryClubEmail && (
+                        <a
+                          href={`mailto:${primaryClubEmail}?subject=${encodeURIComponent(`Inquiry: ${title}`)}`}
+                          className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 mt-0.5 truncate max-w-full"
+                          title={primaryClubEmail}
+                        >
+                          <i className="ri-mail-line text-xs" />
+                          <span className="truncate">{primaryClubEmail}</span>
+                        </a>
+                      )}
                     </div>
                   </div>
+
+                  {isJointEvent && (
+                    <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                        Co-Organizers
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {allOrganizingClubs.slice(1).map((c, i) => (
+                          <Link
+                            key={c.id || i}
+                            to={`/club/${c.slug || c.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
+                          >
+                            {c.clubLogo && <img src={c.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />}
+                            {c.clubName}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                     <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">

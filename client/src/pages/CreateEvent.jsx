@@ -24,7 +24,9 @@ import {
   CreditCard,
   Sparkles,
   FileText,
-  RotateCcw
+  RotateCcw,
+  Handshake,
+  X
 } from 'lucide-react';
 
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
@@ -86,6 +88,8 @@ const CreateEvent = () => {
     const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
     const [availableClubs, setAvailableClubs] = useState([]);
+    const [isJointEvent, setIsJointEvent] = useState(false);
+    const [collaboratingClubIds, setCollaboratingClubIds] = useState([]);
 
     const eligibleClubs = useMemo(() => {
         if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
@@ -108,9 +112,7 @@ const CreateEvent = () => {
                 setFormData(prev => ({ ...prev, clubId: defClub }));
             }
         }
-        if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
-            getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
-        }
+        getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
     }, [user, urlClubId]);
 
     // Validation state
@@ -361,10 +363,14 @@ const CreateEvent = () => {
 
     const buildPayload = useCallback((isDraftStatus = false) => {
         const effectiveClubId = formData.clubId || user?.clubId || user?.memberships?.find(m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents)?.clubId || user?.memberships?.[0]?.clubId;
+        const allTargetClubIds = effectiveClubId
+            ? [effectiveClubId, ...(isJointEvent ? collaboratingClubIds.filter(id => id !== effectiveClubId) : [])]
+            : (isJointEvent ? collaboratingClubIds : []);
+
         return {
             ...formData,
             clubId: effectiveClubId,
-            clubIds: effectiveClubId ? [effectiveClubId] : [],
+            clubIds: allTargetClubIds,
             startTime: formData.startTime ? new Date(formData.startTime).toISOString() : null,
             endTime: formData.endTime ? new Date(formData.endTime).toISOString() : null,
             registrationFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
@@ -657,6 +663,89 @@ const CreateEvent = () => {
                                     {renderFieldError('clubId')}
                                 </div>
                             )}
+
+                            {/* Joint Event (Club Collaboration) */}
+                            <div className="rounded-xl border border-neutral-200/80 dark:border-neutral-800 p-4 bg-neutral-50/50 dark:bg-neutral-900/40">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                            <Handshake className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="joint-event-toggle" className="text-xs font-bold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                                Joint Event (Club Collaboration)
+                                            </label>
+                                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                Co-hosting this event with other campus clubs or student societies?
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        id="joint-event-toggle"
+                                        type="checkbox"
+                                        checked={isJointEvent}
+                                        onChange={(e) => {
+                                            setIsJointEvent(e.target.checked);
+                                            if (!e.target.checked) setCollaboratingClubIds([]);
+                                        }}
+                                        className="w-4 h-4 text-brand-600 rounded border-neutral-300 focus:ring-brand-500 cursor-pointer"
+                                    />
+                                </div>
+
+                                {isJointEvent && (
+                                    <div className="mt-4 pt-3 border-t border-neutral-200/80 dark:border-neutral-800 space-y-3">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                            Select Collaborating Club(s)
+                                        </label>
+                                        <select
+                                          className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 focus:border-brand-500 dark:focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all cursor-pointer"
+                                          value=""
+                                          onChange={(e) => {
+                                              const selectedId = e.target.value;
+                                              if (selectedId && !collaboratingClubIds.includes(selectedId)) {
+                                                  setCollaboratingClubIds((prev) => [...prev, selectedId]);
+                                              }
+                                          }}
+                                        >
+                                            <option value="">+ Select a partner club to co-host...</option>
+                                            {availableClubs
+                                                .filter(c => (c.id || c._id) !== formData.clubId && !collaboratingClubIds.includes(c.id || c._id))
+                                                .map(c => (
+                                                    <option key={c.id || c._id} value={c.id || c._id}>
+                                                        {c.clubName} {c.category ? `(${c.category})` : ''}
+                                                    </option>
+                                                ))}
+                                        </select>
+
+                                        {collaboratingClubIds.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {collaboratingClubIds.map(cid => {
+                                                    const club = availableClubs.find(c => (c.id || c._id) === cid);
+                                                    return (
+                                                        <span
+                                                            key={cid}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold"
+                                                        >
+                                                            {club?.clubLogo && (
+                                                                <img src={club.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                                            )}
+                                                            <span>{club?.clubName || 'Selected Club'}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCollaboratingClubIds(prev => prev.filter(id => id !== cid))}
+                                                                className="hover:text-rose-500 ml-1 p-0.5 rounded-full cursor-pointer"
+                                                                title="Remove club"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Event Title */}
                             <div>

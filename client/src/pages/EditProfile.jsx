@@ -291,7 +291,7 @@ const EditProfile = () => {
         setIsSaving2FA(true);
         try {
             setFormData(prev => ({ ...prev, isTwoStepEnabled: newVal }));
-            const targetRole = isClubAccount ? 'club' : 'student';
+            const targetRole = isClubAccount ? 'club' : (isExternalAccount ? 'external' : (isFacultyAccount ? 'facultyCoordinator' : (authRole === 'admin' || role === 'admin' ? 'admin' : 'student')));
             const res = await updateProfile(targetRole, user.id || user._id, { isTwoStepEnabled: newVal });
             setSession(res.data.user, authRole || role);
             await invalidateCache(['/api/users/*', '/api/auth/me']);
@@ -742,33 +742,31 @@ const EditProfile = () => {
                         </div>
                     </form>
 
-                    {/* 2-Step Verification Card (Hidden for all student and student lead accounts) */}
-                    {!isStudentAccount && (
-                        <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
-                            <label className="flex items-center justify-between p-4 bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-xl cursor-pointer group hover:border-brand-500 transition-colors">
-                                <div className="flex items-center gap-3.5">
-                                    <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
-                                        <ShieldCheck size={20} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight">Two-Factor Authentication (2FA)</p>
-                                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Requires a secure email OTP code whenever you log in.</p>
-                                    </div>
+                    {/* 2-Step Verification Card (Available for all accounts) */}
+                    <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
+                        <label className="flex items-center justify-between p-4 bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-xl cursor-pointer group hover:border-brand-500 transition-colors">
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                                    <ShieldCheck size={20} />
                                 </div>
-                                <div className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.isTwoStepEnabled}
-                                        disabled={isSaving2FA}
-                                        onChange={(e) => handleToggle2FA(e.target.checked)}
-                                        className="sr-only peer"
-                                        id="isTwoStepEnabledToggle"
-                                    />
-                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                <div>
+                                    <p className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight">Two-Factor Authentication (2FA)</p>
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Requires a secure email OTP code whenever you log in.</p>
                                 </div>
-                            </label>
-                        </div>
-                    )}
+                            </div>
+                            <div className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isTwoStepEnabled}
+                                    disabled={isSaving2FA}
+                                    onChange={(e) => handleToggle2FA(e.target.checked)}
+                                    className="sr-only peer"
+                                    id="isTwoStepEnabledToggle"
+                                />
+                                <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                            </div>
+                        </label>
+                    </div>
 
                 </div>
             )}

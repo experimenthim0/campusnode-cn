@@ -70,14 +70,11 @@ const EditClub = () => {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
-  const [isUploadingSponsor, setIsUploadingSponsor] = useState(false);
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
 
-  // Gallery and Sponsor Lists
+  // Gallery List
   const [galleryList, setGalleryList] = useState([]);
-  const [sponsorsList, setSponsorsList] = useState([]);
   const [newGalleryUrl, setNewGalleryUrl] = useState("");
-  const [newSponsorUrl, setNewSponsorUrl] = useState("");
 
   // Lightbox Preview
   const [lightboxImage, setLightboxImage] = useState(null);
@@ -86,7 +83,6 @@ const EditClub = () => {
   const logoInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const galleryInputRef = useRef(null);
-  const sponsorInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     clubName: "",
@@ -138,18 +134,6 @@ const EditClub = () => {
       ? rawGallery.split(",").map((s) => s.trim()).filter(Boolean)
       : [];
     setGalleryList(parsedGallery);
-
-    // Process Sponsors
-    const rawSponsors =
-      club.clubSponsors ||
-      club.sponsors?.map((s) => (typeof s === "string" ? s : s.logoUrl)) ||
-      [];
-    const parsedSponsors = Array.isArray(rawSponsors)
-      ? rawSponsors
-      : typeof rawSponsors === "string" && rawSponsors
-      ? rawSponsors.split(",").map((s) => s.trim()).filter(Boolean)
-      : [];
-    setSponsorsList(parsedSponsors);
 
     setFormData({
       clubName: club.clubName || "",
@@ -492,78 +476,6 @@ const EditClub = () => {
     setGalleryList((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  // --- SPONSORS ACTIONS ---
-  const handleSponsorUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    setIsUploadingSponsor(true);
-    try {
-      const uploadedUrls = [];
-      for (const file of files) {
-        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-          showNotification(
-            `Skipping ${file.name}: invalid image format.`,
-            "error",
-          );
-          continue;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          showNotification(
-            `Skipping ${file.name}: file exceeds 5MB limit.`,
-            "error",
-          );
-          continue;
-        }
-        const fd = new FormData();
-        fd.append("image", file);
-        const res = await uploadClubImage(clubId, fd, "club-sponsors");
-        const url = res.data?.secure_url || res.data?.url;
-        if (url) uploadedUrls.push(url);
-      }
-
-      if (uploadedUrls.length > 0) {
-        setSponsorsList((prev) => [...prev, ...uploadedUrls]);
-        showNotification(
-          `Added ${uploadedUrls.length} sponsor logo${
-            uploadedUrls.length > 1 ? "s" : ""
-          }!`,
-          "success",
-        );
-      }
-    } catch (err) {
-      showNotification(
-        err.response?.data?.message || "Failed to upload sponsor logo",
-        "error",
-      );
-    } finally {
-      setIsUploadingSponsor(false);
-      if (sponsorInputRef.current) sponsorInputRef.current.value = "";
-    }
-  };
-
-  const handleAddSponsorUrl = () => {
-    const url = newSponsorUrl.trim();
-    if (!url) return;
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      showNotification(
-        "Please enter a valid logo URL starting with http:// or https://",
-        "error",
-      );
-      return;
-    }
-    if (sponsorsList.includes(url)) {
-      showNotification("This sponsor logo is already added.", "error");
-      return;
-    }
-    setSponsorsList((prev) => [...prev, url]);
-    setNewSponsorUrl("");
-  };
-
-  const handleRemoveSponsor = (index) => {
-    setSponsorsList((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
   // --- SAVE ALL SETTINGS ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -584,7 +496,6 @@ const EditClub = () => {
         bannerImage: formData.bannerImage || null,
         socialLinks,
         clubGallery: galleryList.filter(Boolean),
-        clubSponsors: sponsorsList.filter(Boolean),
         studentCoordinators: formData.studentCoordinators
           .split(",")
           .map((s) => s.trim())
@@ -664,7 +575,7 @@ const EditClub = () => {
             Club Settings & Brand Hub
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Manage your club's visual branding, cover photo, media gallery, sponsors, and identity in one place.
+            Manage your club's visual branding, cover photo, media gallery, and identity in one place.
           </p>
         </div>
 
@@ -1091,136 +1002,7 @@ const EditClub = () => {
         </Card>
 
         {/* ========================================================= */}
-        {/* 3. CLUB SPONSORS & PARTNERS MANAGER */}
-        {/* ========================================================= */}
-        <Card className="border-border shadow-xs bg-card">
-          <CardHeader className="border-b border-border pb-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Handshake className="w-4 h-4 text-primary" />
-                  <CardTitle className="text-base font-semibold">Sponsors & Partners</CardTitle>
-                  <Badge variant="secondary" className="text-xs">
-                    {sponsorsList.length}
-                  </Badge>
-                </div>
-                <CardDescription className="text-xs mt-0.5">
-                  Feature organizations, tech companies, and community supporters partnering with your club.
-                </CardDescription>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => sponsorInputRef.current?.click()}
-                  disabled={isUploadingSponsor}
-                  className="gap-1.5 h-8 text-xs font-semibold"
-                >
-                  {isUploadingSponsor ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                      Uploading…
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload Logo
-                    </>
-                  )}
-                </Button>
-                <input
-                  ref={sponsorInputRef}
-                  type="file"
-                  multiple
-                  accept=".jpg,.jpeg,.png,.webp"
-                  onChange={handleSponsorUpload}
-                  className="hidden"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="pt-4 sm:pt-5 space-y-3 sm:space-y-4">
-            {/* Add via URL Bar */}
-            <div className="flex gap-2">
-              <Input
-                type="url"
-                value={newSponsorUrl}
-                onChange={(e) => setNewSponsorUrl(e.target.value)}
-                placeholder="Or paste sponsor logo URL (https://sponsor.com/logo.png)…"
-                className="text-xs flex-1"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSponsorUrl();
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleAddSponsorUrl}
-                className="text-xs font-semibold h-9 shrink-0"
-              >
-                Add Logo
-              </Button>
-            </div>
-
-            {/* Sponsors Cards Grid */}
-            {sponsorsList.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3.5 pt-1">
-                {sponsorsList.map((url, idx) => (
-                  <div
-                    key={idx}
-                    className="relative group h-24 p-3 rounded-xl border border-border bg-muted/20 flex items-center justify-center overflow-hidden shadow-xs hover:border-primary/40 transition-colors"
-                  >
-                    <img
-                      src={url}
-                      alt={`Sponsor ${idx + 1}`}
-                      className="max-h-16 max-w-full object-contain transition-all duration-200 group-hover:scale-105"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/collegeimg.jpeg";
-                      }}
-                    />
-
-                    {/* Remove Overlay */}
-                    <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleRemoveSponsor(idx)}
-                        className="w-6 h-6 rounded-md"
-                        title="Remove sponsor"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="border border-dashed border-border rounded-xl p-6 text-center flex flex-col items-center justify-center bg-muted/20">
-                <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-2">
-                  <Handshake className="w-5 h-5" />
-                </div>
-                <p className="text-xs font-semibold text-foreground">
-                  No sponsors or partners added yet.
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Upload brand logos of organizations supporting your club.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* ========================================================= */}
-        {/* 4. BASIC INFORMATION & ACADEMIC LEADERSHIP */}
+        {/* 3. BASIC INFORMATION & ACADEMIC LEADERSHIP */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
           <CardHeader className="border-b border-border pb-4">
@@ -1397,7 +1179,7 @@ const EditClub = () => {
         </Card>
 
         {/* ========================================================= */}
-        {/* 5. SOCIAL LINKS & PUBLIC PRESENCE */}
+        {/* 4. SOCIAL LINKS & PUBLIC PRESENCE */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
           <CardHeader className="border-b border-border pb-4">

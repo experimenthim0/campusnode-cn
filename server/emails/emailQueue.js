@@ -27,7 +27,7 @@ export const getBullConnection = () => {
     };
     if (parsed.password) opts.password = decodeURIComponent(parsed.password);
     if (parsed.username) opts.username = decodeURIComponent(parsed.username);
-    if (parsed.protocol === "rediss:") opts.tls = {};
+    if (parsed.protocol === "rediss:") opts.tls = { servername: parsed.hostname };
     return opts;
   } catch {
     return { host: "127.0.0.1", port: 6379, maxRetriesPerRequest: null };
@@ -76,7 +76,7 @@ export const initEmailWorker = () => {
 
   const conn = getBullConnection();
   if (!conn) {
-    console.log("[EmailWorker] External Redis not configured. Operating in asynchronous fallback mode.");
+    console.log("[EmailWorker] Info: Redis not configured. Operating in asynchronous in-memory delivery mode.");
     return null;
   }
 

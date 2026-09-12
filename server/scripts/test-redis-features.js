@@ -142,6 +142,27 @@ async function runTests() {
     // Clean up
     await redis.del(lockKey);
 
+    // Event & Team Registration Distributed Locks (Preventing Overbooking & Race Conditions)
+    const eventRegLockKey = "lock:reg:ev_101:user_std_501";
+    const regLockAcquired1 = await redis.acquireLock(eventRegLockKey, 5);
+    assert(regLockAcquired1 === true, "First event registration request acquires distributed lock");
+
+    const regLockAcquired2 = await redis.acquireLock(eventRegLockKey, 5);
+    assert(regLockAcquired2 === false, "Simultaneous duplicate registration request rejected by distributed lock");
+
+    await redis.releaseLock(eventRegLockKey);
+    const regLockAcquired3 = await redis.acquireLock(eventRegLockKey, 5);
+    assert(regLockAcquired3 === true, "Distributed lock released cleanly after registration completes");
+    await redis.releaseLock(eventRegLockKey);
+
+    // Team creation lock
+    const teamLockKey = "lock:team:create:ev_101:user_std_501";
+    const teamLockAcquired1 = await redis.acquireLock(teamLockKey, 5);
+    assert(teamLockAcquired1 === true, "First team creation request acquires distributed lock");
+    const teamLockAcquired2 = await redis.acquireLock(teamLockKey, 5);
+    assert(teamLockAcquired2 === false, "Concurrent duplicate team creation blocked by lock");
+    await redis.releaseLock(teamLockKey);
+
     // Recipient deduplication test
     const rawRecipients = ["student_1", "student_2", "student_1", "student_3", "student_2", null, undefined];
     const deduped = [...new Set(rawRecipients.filter(Boolean))];
