@@ -54,6 +54,8 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
         ...(expectedEventId ? { eventId: expectedEventId } : {}),
         OR: [
           { student: { rollNo: { equals: rawInput, mode: 'insensitive' } } },
+          { student: { email: { equals: rawInput, mode: 'insensitive' } } },
+          { externalUser: { email: { equals: rawInput, mode: 'insensitive' } } },
           { qrCode: targetTicketId },
           { qrPayload: rawInput },
           { qrCode: rawInput },
@@ -62,7 +64,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
         ],
       },
       include: {
-        event: true,
+        event: { include: { organizers: true } },
         student: true,
         externalUser: { select: { name: true, collegeName: true, email: true } },
       },
@@ -100,6 +102,33 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       });
     }
 
+    // Step 3: Check check-in window (Check-in opens 4 hours before event starts and closes when event ends)
+    const now = new Date();
+    const event = participation.event;
+    if (event?.startTime) {
+      const startTime = new Date(event.startTime).getTime();
+      const opensAt = startTime - 4 * 60 * 60 * 1000;
+      if (now.getTime() < opensAt) {
+        return res.status(403).json({
+          status: 'CHECKIN_NOT_OPEN',
+          message: 'Check-in is not open yet. It opens 4 hours before the event starts.',
+          opensAt: new Date(opensAt),
+          startTime: new Date(startTime),
+        });
+      }
+    }
+
+    if (event?.endTime) {
+      const endTime = new Date(event.endTime).getTime();
+      if (now.getTime() > endTime) {
+        return res.status(403).json({
+          status: 'CHECKIN_CLOSED',
+          message: 'Check-in has closed as the event has already ended.',
+          endTime: new Date(endTime),
+        });
+      }
+    }
+
     // Step 4: Guard against double-marking (both participation status and AttendanceRecord check)
     const existingRecord = await prisma.attendanceRecord.findUnique({
       where: { eventId_participationId: { eventId: participation.eventId, participationId: participation.id } },
@@ -109,17 +138,16 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       return res.status(409).json({
         status: 'ALREADY_ATTENDED',
         message: 'Attendance already recorded for this attendee.',
-        participantName: participation.student?.name || participation.externalUser?.name || participation.externalName || 'Unknown',
+        participantName: participation.student?.name || participation.externalUser?.name || 'Unknown',
         branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
         rollNo: participation.student?.rollNo || (participation.externalUser ? 'External' : null),
-        externalEmail: participation.externalEmail || participation.externalUser?.email || null,
+        externalEmail: participation.externalUser?.email || null,
         attendedAt: existingRecord?.scannedAt || participation.attendedAt || new Date(),
       });
     }
 
     // Step 5: Mark attendance in participation and attendanceRecord
     const attendanceId = createObjectId();
-    const now = new Date();
     await prisma.$transaction([
       prisma.participation.update({
         where: { id: participation.id },
@@ -134,16 +162,17 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
           id: attendanceId,
           eventId: participation.eventId,
           participationId: participation.id,
+          localAttendanceId: `online_${attendanceId}`,
           scannedAt: now,
           verificationMode: 'ONLINE',
         },
       }),
     ]);
 
-    const participantName = participation.student?.name || participation.externalUser?.name || participation.externalName || 'Unknown';
+    const participantName = participation.student?.name || participation.externalUser?.name || 'Unknown';
     const branch = participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null);
     const rollNo = participation.student?.rollNo || (participation.externalUser ? 'External' : null);
-    const externalEmail = participation.externalEmail || participation.externalUser?.email || null;
+    const externalEmail = participation.externalUser?.email || null;
 
     return res.status(200).json({
       status: 'VALID',
@@ -187,7 +216,7 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
-      select: { id: true, clubId: true, organizerType: true, centralOrganizerId: true },
+      include: { organizers: true },
     });
     if (!event) return res.status(404).json({ message: 'Event not found.' });
 
@@ -200,10 +229,12 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
       where: {
         eventId,
         status: { in: ['REGISTERED', 'ATTENDED'] },
-        studentId: { not: null },
         OR: [
           { student: { rollNo: { contains: query, mode: 'insensitive' } } },
           { student: { name: { contains: query, mode: 'insensitive' } } },
+          { student: { email: { contains: query, mode: 'insensitive' } } },
+          { externalUser: { name: { contains: query, mode: 'insensitive' } } },
+          { externalUser: { email: { contains: query, mode: 'insensitive' } } },
         ],
       },
       select: {
@@ -216,16 +247,24 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
             id: true,
             name: true,
             rollNo: true,
+            email: true,
             branch: true,
             program: true,
             expectedGraduationYear: true,
+          },
+        },
+        externalUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            collegeName: true,
           },
         },
       },
       take: 15,
       orderBy: [
         { status: 'asc' }, // REGISTERED first, then ATTENDED
-        { student: { rollNo: 'asc' } },
       ],
     });
 
@@ -235,7 +274,13 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
         status: p.status,
         attendedAt: p.attendedAt,
         ticketId: p.qrCode,
-        student: p.student,
+        student: p.student || (p.externalUser ? {
+          id: p.externalUser.id,
+          name: p.externalUser.name,
+          rollNo: 'External',
+          email: p.externalUser.email,
+          branch: p.externalUser.collegeName,
+        } : null),
       })),
     });
   } catch (err) {

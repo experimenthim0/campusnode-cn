@@ -558,15 +558,22 @@ export function hasPermission(user, permission, resource = null) {
   if (targetClubId && user.memberships && user.memberships.length > 0) {
     const membership = user.memberships.find((m) => String(m.clubId) === String(targetClubId));
     if (membership && membership.status !== "INACTIVE") {
-      // Student CLUB_HEAD
-      if (membership.role === "CLUB_HEAD") {
+      const roleUpper = (membership.role || "").toUpperCase();
+      // Student CLUB_HEAD / STUDENT_LEAD
+      if (
+        roleUpper === "CLUB_HEAD" ||
+        roleUpper === "STUDENT_LEAD" ||
+        roleUpper === "CLUBHEAD" ||
+        roleUpper === "HEAD" ||
+        roleUpper === "LEAD"
+      ) {
         if (STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission)) {
           return true;
         }
       }
 
       // Student COORDINATOR
-      if (membership.role === "COORDINATOR") {
+      if (roleUpper === "COORDINATOR" || roleUpper === "COORD") {
         if (
           perm === PERMISSIONS.CLUB_MANAGE_MEMBERS ||
           perm === PERMISSIONS.CLUB_INVITE_MEMBERS ||
@@ -648,4 +655,29 @@ export function hasPermission(user, permission, resource = null) {
   }
 
   return false;
+}
+
+/**
+ * Checks if a membership role string represents a Student Lead / Club Head.
+ */
+export function isStudentLeadRole(role) {
+  if (!role) return false;
+  const r = String(role).trim().toUpperCase();
+  return r === "CLUB_HEAD" || r === "STUDENT_LEAD" || r === "CLUBHEAD" || r === "HEAD" || r === "LEAD";
+}
+
+/**
+ * Checks if a membership role string represents a Coordinator.
+ */
+export function isCoordinatorRole(role) {
+  if (!role) return false;
+  const r = String(role).trim().toUpperCase();
+  return r === "COORDINATOR" || r === "COORD";
+}
+
+/**
+ * Checks if a membership role string has club leadership/management privileges.
+ */
+export function isClubManagementRole(role) {
+  return isStudentLeadRole(role) || isCoordinatorRole(role);
 }

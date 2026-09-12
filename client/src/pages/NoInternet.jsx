@@ -18,6 +18,10 @@ import {
 import toast from "react-hot-toast";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { useTheme } from "../context/ThemeContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
 
 // Simple Web Audio API Synthesizer for 100% offline sound effects
 const playSound = (type, soundEnabled = true) => {
@@ -141,21 +145,21 @@ const hasMovesAvailable = (board) => {
 const getTileStyles = (val) => {
   switch (val) {
     case 2:
-      return "bg-[#FFF7ED] text-[#C2410C] dark:bg-[#2A1A0F] dark:text-[#FB923C] border border-[#FDBA74]/40 dark:border-[#9A3412]/40 text-base sm:text-xl font-bold shadow-xs";
+      return "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400 border border-brand-300/40 dark:border-brand-800/40 text-base sm:text-xl font-bold shadow-xs";
     case 4:
-      return "bg-[#FFEDD5] text-[#9A3412] dark:bg-[#3D1E0E] dark:text-[#FDBA74] border border-[#FB923C]/50 dark:border-[#EA580C]/40 text-base sm:text-xl font-bold shadow-xs";
+      return "bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-300 border border-brand-400/50 dark:border-brand-700/40 text-base sm:text-xl font-bold shadow-xs";
     case 8:
-      return "bg-[#FB923C] text-white dark:bg-[#EA580C] dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
+      return "bg-brand-400 text-white dark:bg-brand-600 dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
     case 16:
-      return "bg-[#F97316] text-white dark:bg-[#F97316] dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
+      return "bg-brand-500 text-white dark:bg-brand-500 dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
     case 32:
-      return "bg-[#EA580C] text-white dark:bg-[#C2410C] dark:text-white text-base sm:text-xl font-black shadow-md";
+      return "bg-brand-600 text-white dark:bg-brand-700 dark:text-white text-base sm:text-xl font-black shadow-md";
     case 64:
-      return "bg-[#C2410C] text-white dark:bg-[#9A3412] dark:text-white text-base sm:text-xl font-black shadow-md";
+      return "bg-brand-700 text-white dark:bg-brand-800 dark:text-white text-base sm:text-xl font-black shadow-md";
     case 128:
-      return "bg-[#9A3412] text-amber-100 dark:bg-[#7C2D12] dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-1 ring-amber-400/40";
+      return "bg-brand-800 text-amber-100 dark:bg-brand-900 dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-1 ring-amber-400/40";
     case 256:
-      return "bg-[#7C2D12] text-amber-200 dark:bg-[#602008] dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-2 ring-amber-400/60";
+      return "bg-brand-900 text-amber-200 dark:bg-brand-950 dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-2 ring-amber-400/60";
     case 512:
       return "bg-gradient-to-br from-amber-500 to-brand-600 text-white text-sm sm:text-lg font-black shadow-xl ring-2 ring-amber-300";
     case 1024:
@@ -205,7 +209,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
       const next = !prev;
       try {
         localStorage.setItem("campusnode_2048_sound", String(next));
-      } catch {}
+      } catch { }
       return next;
     });
   };
@@ -308,7 +312,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
           setBestScore(newScore);
           try {
             localStorage.setItem("campusnode_2048_best", String(newScore));
-          } catch {}
+          } catch { }
         }
 
         if (scoreToAdd > 0) {
@@ -442,73 +446,61 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-black transition-colors duration-300">
-      {/* Classic / Original Offline Card */}
-      <div className="w-full max-w-md border border-neutral-200 dark:border-neutral-800 rounded-3xl p-8 sm:p-10 text-center bg-white dark:bg-neutral-950 shadow-sm transition-colors">
-        {/* Wifi Off Icon */}
-        <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center">
-            <WifiOff size={34} className="text-neutral-900 dark:text-white" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-cn-bg text-cn-text transition-colors duration-200">
+      {/* Clean shadcn-styled offline card */}
+      <Card className="w-full max-w-md border-border bg-card shadow-xs text-center p-2 sm:p-4">
+        <CardHeader className="space-y-4 pb-2">
+          <div className="mx-auto size-16 rounded-full border border-border bg-muted/40 flex items-center justify-center text-foreground">
+            <WifiOff className="size-7 text-muted-foreground" />
           </div>
-        </div>
+          <div>
+            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight">
+              You're Offline
+            </CardTitle>
+            <CardDescription className="text-sm mt-2 leading-relaxed text-muted-foreground">
+              CampusNode cannot reach the campus network. Check your Wi-Fi or mobile connection and retry.
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-        {/* Heading */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-          You're Offline
-        </h1>
-
-        <p className="mt-4 text-neutral-600 dark:text-neutral-400 leading-7 text-sm sm:text-base">
-          CampusNode can't connect to the internet.
-          <br />
-          Check your Wi-Fi or mobile data and try again.
-        </p>
-
-        <p className="mt-3 text-xs sm:text-sm text-neutral-500 dark:text-neutral-500">
-          Don't worry. Everything will continue where you left off.
-        </p>
-
-        {/* Try Again Button */}
-        <button
-          onClick={handleRetry}
-          disabled={loading}
-          className="mt-8 w-full h-12 rounded-xl bg-black dark:bg-white text-white dark:text-black font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-70 cursor-pointer text-sm"
-        >
-          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-          {loading ? "Checking..." : "Try Again"}
-        </button>
-
-        {/* Easter Egg 2048 Game Launcher Button */}
-        <div className="mt-4">
-          <button
-            onClick={() => setGameModalOpen(true)}
-            className="w-full py-3 px-4 rounded-xl border border-[#FDBA74]/70 dark:border-[#9A3412]/60 bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#C2410C] dark:text-[#FB923C] hover:bg-[#FFEDD5] dark:hover:bg-[#382012] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs group"
+        <CardContent className="space-y-4 pt-2">
+          <Button
+            onClick={handleRetry}
+            disabled={loading}
+            className="w-full h-10 gap-2 font-semibold shadow-xs cursor-pointer"
           >
-            <div className="w-6 h-6 rounded-lg bg-[#F97316] text-white flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
-              <Gamepad2 size={14} />
+            <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
+            {loading ? "Checking Connectivity..." : "Try Again"}
+          </Button>
+
+          {/* 2048 Game Launcher Button */}
+          <Button
+            variant="outline"
+            onClick={() => setGameModalOpen(true)}
+            className="w-full h-10 justify-between font-semibold border-border cursor-pointer hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-2 text-foreground">
+              <Gamepad2 className="size-4 text-primary" />
+              <span className="text-xs">Play 2048 Arcade</span>
             </div>
-            <span>Play 2048 while you wait</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#F97316] text-white font-mono uppercase tracking-wider">
-              Game
-            </span>
-          </button>
-        </div>
+            <Badge variant="secondary" className="text-[10px] font-mono uppercase tracking-wider">
+              Offline
+            </Badge>
+          </Button>
 
-        {targetPath && (
-          <p className="mt-5 text-xs text-neutral-500 truncate">
-            Returning to <span className="font-mono">{targetPath}</span>
-          </p>
-        )}
+          {targetPath && (
+            <p className="text-xs text-muted-foreground truncate font-mono">
+              Preserved path: {targetPath}
+            </p>
+          )}
 
-        {/* Divider */}
-        <div className="my-8 border-t border-neutral-200 dark:border-neutral-800" />
-
-        {/* Branding */}
-        <div>
-          <h2 className="font-medium text-neutral-900 dark:text-white logofont tracking-wider">
-            Campus<span className="text-brand-500">Node</span>
-          </h2>
-        </div>
-      </div>
+          <div className="pt-4 border-t border-border">
+            <p className="text-[11px] text-muted-foreground uppercase font-medium tracking-wider">
+              CampusNode Platform • Auto Reconnect Active
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 2048 Game Popup Modal */}
       {gameModalOpen && (
@@ -516,18 +508,18 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-200"
           onClick={(e) => e.target === e.currentTarget && setGameModalOpen(false)}
         >
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm sm:max-w-md w-full shadow-2xl overflow-hidden flex flex-col transition-colors max-h-[95vh] overflow-y-auto">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm sm:max-w-md w-full shadow-2xl overflow-hidden flex flex-col transition-colors max-h-[95vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="px-5 py-3.5 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+            <div className="px-5 py-3.5 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
                   <Gamepad2 size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="text-base font-bold text-cn-text leading-tight">
                     2048 Offline Arcade
                   </h3>
-                  <p className="text-[11px] text-[#888888] dark:text-[#808080] font-normal">
+                  <p className="text-[11px] text-cn-text-muted font-normal">
                     Join tiles to reach 2048!
                   </p>
                 </div>
@@ -535,7 +527,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
 
               <button
                 onClick={() => setGameModalOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
@@ -547,20 +539,20 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
               {/* Scoreboard & Actions Bar */}
               <div className="w-full flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl px-3 py-1 text-center min-w-[65px]">
-                    <span className="block text-[9px] font-bold text-[#888888] dark:text-[#808080] uppercase tracking-wider">
+                  <div className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-1 text-center min-w-[65px]">
+                    <span className="block text-[9px] font-bold text-cn-text-muted uppercase tracking-wider">
                       Score
                     </span>
-                    <span className="block text-sm font-black text-[#111111] dark:text-[#F5F5F5]">
+                    <span className="block text-sm font-black text-cn-text">
                       {score}
                     </span>
                   </div>
 
-                  <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl px-3 py-1 text-center min-w-[65px]">
-                    <div className="flex items-center justify-center gap-1 text-[9px] font-bold text-[#888888] dark:text-[#808080] uppercase tracking-wider">
-                      <Trophy size={10} className="text-[#F97316]" /> Best
+                  <div className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-1 text-center min-w-[65px]">
+                    <div className="flex items-center justify-center gap-1 text-[9px] font-bold text-cn-text-muted uppercase tracking-wider">
+                      <Trophy size={10} className="text-brand-500" /> Best
                     </div>
-                    <span className="block text-sm font-black text-[#111111] dark:text-[#F5F5F5]">
+                    <span className="block text-sm font-black text-cn-text">
                       {bestScore}
                     </span>
                   </div>
@@ -569,7 +561,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={toggleSound}
-                    className="p-2 rounded-xl bg-transparent hover:bg-[#F5F5F5] dark:hover:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] border border-[#E5E5E5] dark:border-[#303030] transition-colors cursor-pointer"
+                    className="p-2 rounded-xl bg-transparent hover:bg-cn-surface-muted text-cn-text-secondary border border-cn-border transition-colors cursor-pointer"
                     title={soundEnabled ? "Mute" : "Unmute"}
                   >
                     {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
@@ -578,7 +570,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                   <button
                     onClick={handleUndo}
                     disabled={!prevGameState}
-                    className="px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-[#F5F5F5] dark:hover:bg-[#222222] text-[#555555] dark:text-[#B5B5B5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-cn-surface-muted text-cn-text-secondary border border-cn-border font-bold text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                     title="Undo"
                   >
                     <Undo2 size={13} />
@@ -587,7 +579,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
 
                   <button
                     onClick={startNewGame}
-                    className="px-3 py-1.5 rounded-xl bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
                     title="New Game"
                   >
                     <RotateCcw size={13} />
@@ -602,7 +594,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 style={{ touchAction: "none" }}
-                className="relative w-full aspect-square bg-neutral-200/90 dark:bg-[#222222] p-2 sm:p-2.5 rounded-2xl border border-[#E5E5E5] dark:border-[#303030] shadow-sm grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 overflow-hidden"
+                className="relative w-full aspect-square bg-neutral-200/90 dark:bg-neutral-800 p-2 sm:p-2.5 rounded-2xl border border-cn-border shadow-sm grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 overflow-hidden"
               >
                 {board.map((row, r) =>
                   row.map((val, c) => (
@@ -610,7 +602,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                       key={`${r}-${c}`}
                       className="w-full h-full rounded-xl flex items-center justify-center transition-all duration-100 relative"
                     >
-                      <div className="absolute inset-0 rounded-xl bg-neutral-100 dark:bg-[#181818]/90 border border-neutral-200/50 dark:border-neutral-800/60" />
+                      <div className="absolute inset-0 rounded-xl bg-neutral-100 dark:bg-neutral-900/90 border border-cn-border-subtle" />
 
                       {val > 0 && (
                         <div
@@ -640,13 +632,13 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                     <div className="flex gap-2 w-full max-w-xs">
                       <button
                         onClick={() => setKeepPlaying(true)}
-                        className="flex-1 py-2 px-2.5 bg-white text-[#111111] hover:bg-neutral-100 font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-2.5 bg-cn-surface text-cn-text hover:bg-cn-surface-muted font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         Keep Going
                       </button>
                       <button
                         onClick={startNewGame}
-                        className="flex-1 py-2 px-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-2.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         New Game
                       </button>
@@ -657,7 +649,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                 {/* Game Over Overlay */}
                 {gameOver && (
                   <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center animate-in fade-in duration-200 z-20">
-                    <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-lg mb-2">
+                    <div className="w-10 h-10 rounded-2xl bg-danger-500/20 text-danger-400 border border-danger-500/30 flex items-center justify-center text-lg mb-2">
                       <WifiOff size={18} />
                     </div>
                     <h3 className="text-lg font-bold text-white leading-tight">
@@ -677,7 +669,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                       )}
                       <button
                         onClick={startNewGame}
-                        className="flex-1 py-2 px-3 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-3 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         Try Again
                       </button>
@@ -691,7 +683,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                 <button
                   onClick={() => move("up")}
                   aria-label="Move Up"
-                  className="w-10 h-9 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] active:bg-[#F5F5F5] flex items-center justify-center shadow-xs cursor-pointer mb-1"
+                  className="w-10 h-9 rounded-xl bg-cn-surface-muted border border-cn-border text-cn-text-secondary active:bg-cn-surface flex items-center justify-center shadow-xs cursor-pointer mb-1"
                 >
                   <ArrowUp size={16} />
                 </button>
@@ -699,21 +691,21 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                   <button
                     onClick={() => move("left")}
                     aria-label="Move Left"
-                    className="w-10 h-9 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] active:bg-[#F5F5F5] flex items-center justify-center shadow-xs cursor-pointer"
+                    className="w-10 h-9 rounded-xl bg-cn-surface-muted border border-cn-border text-cn-text-secondary active:bg-cn-surface flex items-center justify-center shadow-xs cursor-pointer"
                   >
                     <ArrowLeft size={16} />
                   </button>
                   <button
                     onClick={() => move("down")}
                     aria-label="Move Down"
-                    className="w-10 h-9 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] active:bg-[#F5F5F5] flex items-center justify-center shadow-xs cursor-pointer"
+                    className="w-10 h-9 rounded-xl bg-cn-surface-muted border border-cn-border text-cn-text-secondary active:bg-cn-surface flex items-center justify-center shadow-xs cursor-pointer"
                   >
                     <ArrowDown size={16} />
                   </button>
                   <button
                     onClick={() => move("right")}
                     aria-label="Move Right"
-                    className="w-10 h-9 rounded-xl bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] text-[#555555] dark:text-[#B5B5B5] active:bg-[#F5F5F5] flex items-center justify-center shadow-xs cursor-pointer"
+                    className="w-10 h-9 rounded-xl bg-cn-surface-muted border border-cn-border text-cn-text-secondary active:bg-cn-surface flex items-center justify-center shadow-xs cursor-pointer"
                   >
                     <ArrowRight size={16} />
                   </button>
@@ -722,7 +714,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
 
               {/* Controls Tip */}
               <div className="mt-2.5 text-center">
-                <p className="text-[10px] sm:text-[11px] text-[#888888] dark:text-[#808080] font-medium">
+                <p className="text-[10px] sm:text-[11px] text-cn-text-muted font-medium">
                   Use Arrow keys / WASD or swipe on board to move.
                 </p>
               </div>

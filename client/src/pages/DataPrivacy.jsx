@@ -8,7 +8,7 @@ const DataPrivacy = () => {
                 <i className="ri-arrow-left-line" /> Back to Home
             </Link>
 
-            <div className="bg-white border-2 border-black rounded-sm shadow-[6px_6px_0px_#0D0D0D] p-8 md:p-12">
+            <div className="bg-white border-2 border-black rounded-sm shadow-[6px_6px_0px_var(--cn-text)] p-8 md:p-12">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 bg-blue-600 rounded-sm flex items-center justify-center">
                         <i className="ri-database-2-line text-white text-xl" />

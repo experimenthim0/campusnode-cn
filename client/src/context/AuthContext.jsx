@@ -103,12 +103,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     persistSession(data.user, data.role, data.token);
-
-    if (data.role === 'lostFoundAdmin') {
-      navigate('/admin/lost-found');
-    } else {
-      navigate('/profile');
-    }
+    navigate('/profile');
     return { needs2FA: false, role: data.role };
   }, [navigate, persistSession]);
 
@@ -117,12 +112,7 @@ export const AuthProvider = ({ children }) => {
     const data = res.data;
 
     persistSession(data.user, data.role, data.token);
-
-    if (data.role === 'lostFoundAdmin') {
-      navigate('/admin/lost-found');
-    } else {
-      navigate('/profile');
-    }
+    navigate('/profile');
     return data;
   }, [navigate, persistSession]);
 
@@ -133,9 +123,7 @@ export const AuthProvider = ({ children }) => {
     if (data.success) {
       persistSession(data.admin, data.admin.role, data.token);
 
-      if (data.admin.role === 'lostFoundAdmin') {
-        navigate('/admin/lost-found');
-      } else if (data.admin.role === 'facultyCoordinator') {
+      if (data.admin.role === 'facultyCoordinator') {
         navigate('/profile');
       } else {
         navigate('/admin-dashboard');

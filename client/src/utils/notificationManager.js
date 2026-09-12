@@ -43,15 +43,35 @@ export function normalizeNotification(rawNotif) {
   const title = rawNotif.title || rawNotif.heading || 'CampusNode';
   const message = rawNotif.message || rawNotif.content || rawNotif.body || 'New campus update!';
   
-  const isTeamInvitation = rawNotif.type === 'TEAM_INVITATION' || title.toLowerCase().includes('team invitation');
+  const isTeam =
+    rawNotif.type === 'TEAM_INVITATION' ||
+    rawNotif.type === 'TEAM_RESPONSE' ||
+    Boolean(rawNotif.teamId) ||
+    title.toLowerCase().includes('team') ||
+    title.toLowerCase().includes('invitation');
   const isPayment = rawNotif.type === 'PAYMENT_REVIEW' || title.toLowerCase().includes('payment');
   const url = rawNotif.link || rawNotif.url || (
-    isTeamInvitation
+    isTeam
       ? '/notifications'
       : isPayment
       ? `/my-events${rawNotif.eventId ? `?eventId=${rawNotif.eventId}` : ''}`
       : (rawNotif.eventId ? `/event/${rawNotif.eventId}` : '/notifications')
   );
+
+  const club = rawNotif.club || null;
+  let sender = isTeam
+    ? { name: 'CampusNode', clubName: 'CampusNode' }
+    : (rawNotif.sender || (club ? { name: club.clubName, clubName: club.clubName, clubLogo: club.clubLogo } : { name: 'CampusNode', clubName: 'CampusNode' }));
+
+  if (club) {
+    sender = {
+      ...sender,
+      clubName: club.clubName || sender.clubName,
+      name: club.clubName || sender.name,
+      clubLogo: club.clubLogo || sender.clubLogo,
+      slug: club.slug || sender.slug,
+    };
+  }
 
   return {
     id,
@@ -62,7 +82,9 @@ export function normalizeNotification(rawNotif) {
     type: rawNotif.type || 'general',
     eventId: rawNotif.eventId || null,
     teamId: rawNotif.teamId || null,
-    sender: rawNotif.sender || { name: 'CampusNode' },
+    clubId: rawNotif.clubId || club?.id || null,
+    club,
+    sender,
     createdAt: rawNotif.createdAt || new Date().toISOString(),
     readBy: rawNotif.readBy || [],
   };

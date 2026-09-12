@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import {
   getClubMembers,
@@ -14,8 +13,39 @@ import { toast } from "react-hot-toast";
 import { ClubMemberRole } from "../types/index.js";
 import { hasPermission, PERMISSIONS } from "../utils/rbac.js";
 import { invalidateCache } from "../lib/cacheManager";
+import {
+  Users,
+  ShieldCheck,
+  Trash2,
+  Lock,
+  Crown,
+  ArrowLeft,
+  Search,
+  Plus,
+  ArrowRightLeft,
+  X,
+  Loader2,
+  ShieldAlert,
+} from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import ShimmerText from "../components/ShimmerText";
 
-const Avatar = ({ name }) => {
+const MemberAvatar = ({ name, image }) => {
+  if (image) {
+    return <img src={image} alt={name || "Member"} className="h-9 w-9 rounded-full object-cover border border-border" />;
+  }
+
   const initials = name
     ?.split(" ")
     .slice(0, 2)
@@ -24,23 +54,9 @@ const Avatar = ({ name }) => {
     .toUpperCase() ?? "??";
 
   return (
-    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-[11px] font-medium text-blue-500">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 text-xs font-semibold border border-brand-200/50 dark:border-brand-900/50">
       {initials}
     </div>
-  );
-};
-
-const RoleBadge = ({ role }) => {
-  const map = {
-    [ClubMemberRole.CLUB_HEAD]: { style: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", label: "Student Lead" },
-    [ClubMemberRole.COORDINATOR]: { style: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400", label: "Coordinator" },
-    [ClubMemberRole.MEMBER]: { style: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", label: "Member" },
-  };
-  const { style, label } = map[role] ?? map[ClubMemberRole.MEMBER];
-  return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium ${style}`}>
-      {label}
-    </span>
   );
 };
 
@@ -49,70 +65,33 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
     type="button"
     onClick={disabled || loading ? null : onToggle}
     disabled={disabled || loading}
-    className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${active ? "bg-neutral-800" : "bg-neutral-200"
-      } ${disabled || loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+      active ? "bg-brand-500" : "bg-neutral-300 dark:bg-neutral-700"
+    } ${disabled || loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
     title={loading ? "Updating permission..." : active ? "Permission granted" : "Permission revoked"}
   >
     {loading ? (
       <span className="flex h-full w-full items-center justify-center">
-        <svg className="h-3 w-3 animate-spin text-white" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-        </svg>
+        <Loader2 className="h-3 w-3 animate-spin text-white" />
       </span>
     ) : (
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${active ? "translate-x-[18px]" : "translate-x-[3px]"
-          }`}
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-xs transition-transform duration-200 ${
+          active ? "translate-x-[18px]" : "translate-x-[3px]"
+        }`}
       />
     )}
   </button>
 );
 
-const Th = ({ children, center = false }) => (
-  <th
-    className={`px-4 py-3 text-[11px] font-medium tracking-wide text-neutral-400 ${center ? "text-center" : "text-left"
-      }`}
-  >
-    {children}
-  </th>
-);
-
-const TrashIcon = () => (
-  <svg
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.6"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-    />
-  </svg>
-);
-
-const PeopleIcon = () => (
-  <svg
-    className="h-10 w-10 text-neutral-200"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
-    />
-  </svg>
-);
-
 const ClubMembers = () => {
   const { clubId } = useParams();
   const { user: authUser } = useAuth();
+  const isAdmin =
+    authUser?.role === "admin" ||
+    authUser?.role === "SUPER_ADMIN" ||
+    authUser?.userType === "admin" ||
+    authUser?.principalType === "ADMIN";
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inviting, setInviting] = useState(false);
@@ -124,6 +103,10 @@ const ClubMembers = () => {
   const [studentSearchResults, setStudentSearchResults] = useState([]);
   const [searchingStudents, setSearchingStudents] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [selectedNewLeadId, setSelectedNewLeadId] = useState("");
+  const [transferring, setTransferring] = useState(false);
 
   const handleSearchStudents = async (q) => {
     setInviteEmail(q);
@@ -160,10 +143,6 @@ const ClubMembers = () => {
     return false;
   };
 
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [selectedNewLeadId, setSelectedNewLeadId] = useState("");
-  const [transferring, setTransferring] = useState(false);
-
   useEffect(() => {
     fetchMembers();
   }, [clubId]);
@@ -194,9 +173,15 @@ const ClubMembers = () => {
       toast.error("Maximum limit of 5 active coordinators reached for this club.");
       return;
     }
-    if (selectedRole === ClubMemberRole.CLUB_HEAD && activeStudentLead) {
-      toast.error("This club already has an active Student Lead. Use 'Transfer Leadership' to transfer the role.");
-      return;
+    if (selectedRole === ClubMemberRole.CLUB_HEAD) {
+      if (!isAdmin) {
+        toast.error("Only administrators can assign the Student Lead role. Use the Admin Panel.");
+        return;
+      }
+      if (activeStudentLead) {
+        toast.error("This club already has an active Student Lead.");
+        return;
+      }
     }
     const toastId = toast.loading("Adding member...");
     try {
@@ -207,6 +192,7 @@ const ClubMembers = () => {
       });
       toast.success("Member added successfully", { id: toastId });
       setInviteEmail("");
+      setSelectedStudent(null);
       await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
     } catch (err) {
@@ -297,15 +283,25 @@ const ClubMembers = () => {
     if (!member) return;
 
     if (isCurrentMemberSelf(member)) {
-      toast.error("You cannot change your own role. Use 'Transfer Leadership' to assign a new Student Lead.");
+      toast.error("You cannot change your own role.");
       return;
     }
 
-    // If attempting to promote to Student Lead when one exists, prompt transfer modal
-    if (newRole === ClubMemberRole.CLUB_HEAD && activeStudentLead && (activeStudentLead.id || activeStudentLead._id) !== membershipId) {
-      setSelectedNewLeadId(membershipId);
-      setIsTransferModalOpen(true);
+    if (member.role === ClubMemberRole.CLUB_HEAD && !isAdmin) {
+      toast.error("Student Lead role can only be changed by an administrator in the Admin Panel.");
       return;
+    }
+
+    if (newRole === ClubMemberRole.CLUB_HEAD) {
+      if (!isAdmin) {
+        toast.error("Only administrators can assign the Student Lead role.");
+        return;
+      }
+      if (activeStudentLead && (activeStudentLead.id || activeStudentLead._id) !== membershipId) {
+        setSelectedNewLeadId(membershipId);
+        setIsTransferModalOpen(true);
+        return;
+      }
     }
 
     if (newRole === ClubMemberRole.COORDINATOR && member.role !== ClubMemberRole.COORDINATOR && isCoordinatorLimitReached) {
@@ -393,8 +389,8 @@ const ClubMembers = () => {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-neutral-400">
-        Loading members…
+      <div className="flex h-64 items-center justify-center">
+        <ShimmerText text="Loading members..." className="text-sm font-semibold tracking-wide" />
       </div>
     );
   }
@@ -403,127 +399,150 @@ const ClubMembers = () => {
 
   if (!canManageTeam) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400">
-          <i className="ri-shield-keyhole-line text-3xl" />
-        </div>
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-          Team Management Restricted
-        </h2>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-          Team Management (adding members, changing roles, assigning permissions, and leadership transfers) is reserved for the <strong>Student Lead (Club Head)</strong> and Club Administrators. Coordinators do not have permission to manage team members.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Link
-            to={`/club-events/${clubId}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-brand-700 transition-all"
-          >
-            <i className="ri-arrow-left-line" /> Back to Club Events
-          </Link>
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all"
-          >
-            Go to Profile
-          </Link>
-        </div>
+      <div className="mx-auto max-w-xl px-4 py-20 text-center">
+        <Card className="border-border p-8 bg-card">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">
+            Team Management Restricted
+          </h2>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+            Team Management (adding members, managing roles, assigning event & attendance permissions) is reserved for the <strong>Student Lead (Club Head)</strong> and Club Administrators.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button asChild size="sm" className="bg-brand-500 hover:bg-brand-600 text-white gap-1.5">
+              <Link to={`/club-events/${clubId}`}>
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Club Events
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/profile">
+                Go to Profile
+              </Link>
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 md:px-6 py-8 md:py-12">
+      {/* Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Team Management</h1>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <Link
+            to={`/club-events/${clubId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Club Events
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Team Management</h1>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Manage club members, leadership designations, and event editing permissions.
           </p>
         </div>
-        {activeStudentLead && (
-          <button
-            type="button"
+        {isAdmin && activeStudentLead && (
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               setSelectedNewLeadId("");
               setIsTransferModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-brand-300 dark:border-brand-700/60 bg-brand-50 dark:bg-brand-950/40 px-4 py-2 text-xs font-bold text-brand-700 dark:text-brand-300 shadow-2xs hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-all cursor-pointer"
+            className="gap-1.5 text-xs font-medium border-brand-200 dark:border-brand-900/60 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/40"
           >
-            <i className="ri-swap-line text-sm" /> Transfer Leadership
-          </button>
+            <ArrowRightLeft className="w-3.5 h-3.5" /> Transfer Leadership
+          </Button>
         )}
       </div>
 
       {/* Role Quota Indicators */}
       <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Student Lead</p>
+        <Card className="p-3.5 border-border bg-card shadow-2xs">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Student Lead</p>
+            <Badge variant="outline" className="text-[9px] font-bold text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
+              Admin Designated
+            </Badge>
+          </div>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-neutral-900 dark:text-white truncate">
+            <span className="text-sm font-bold text-foreground truncate">
               {activeStudentLead?.student?.name || "Not assigned"}
             </span>
-            <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+            <Badge variant="secondary" className="text-[10px] font-bold">
               {activeStudentLead ? "1 / 1" : "0 / 1"}
-            </span>
+            </Badge>
           </div>
-        </div>
+          <p className="mt-1 text-[10px] text-muted-foreground truncate">
+            {activeStudentLead ? "Appointed by Institute Administration" : "Pending appointment in Admin Panel"}
+          </p>
+        </Card>
 
-        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Coordinators</p>
+        <Card className="p-3.5 border-border bg-card shadow-2xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Coordinators</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+            <span className="text-sm font-bold text-foreground">
               {coordinatorCount} Active
             </span>
-            <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${isCoordinatorLimitReached
-              ? "bg-red-500/10 text-red-600 dark:text-red-400"
-              : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
-              }`}>
+            <Badge
+              variant="outline"
+              className={`text-[10px] font-bold ${
+                isCoordinatorLimitReached
+                  ? "border-destructive text-destructive bg-destructive/10"
+                  : "border-sky-200 text-sky-600 bg-sky-50 dark:bg-sky-950/30"
+              }`}
+            >
               {coordinatorCount} / 5
-            </span>
+            </Badge>
           </div>
-        </div>
+          <p className="mt-1 text-[10px] text-muted-foreground">Maximum limit: 5 coordinators</p>
+        </Card>
 
-        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Total Team</p>
+        <Card className="p-3.5 border-border bg-card shadow-2xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Team</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+            <span className="text-sm font-bold text-foreground">
               {members.filter((m) => !m.isClubAccount).length} Members
             </span>
-            <span className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-[10px] font-bold text-neutral-600 dark:text-neutral-400">
+            <Badge variant="secondary" className="text-[10px] font-bold">
               Active
-            </span>
+            </Badge>
           </div>
-        </div>
+          <p className="mt-1 text-[10px] text-muted-foreground">Active roster</p>
+        </Card>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 sm:p-6 shadow-xs space-y-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">
+      {/* Add Member Card */}
+      <Card className="mb-6 p-5 sm:p-6 border-border bg-card shadow-xs">
+        <div className="mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-foreground">
             Add New Team Member
           </p>
-         
         </div>
 
         <form onSubmit={handleInvite} className="space-y-3">
           <div className="flex flex-wrap items-start gap-3">
             <div className="relative min-w-[260px] flex-1">
-              <input
+              <Input
                 type="text"
                 placeholder="Search student by name, email or roll number..."
                 value={inviteEmail}
                 onChange={(e) => handleSearchStudents(e.target.value)}
                 required
-                className="h-10 w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3.5 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none transition-colors"
+                className="h-10 text-xs sm:text-sm bg-background border-input focus-visible:ring-brand-500"
               />
 
               {searchingStudents && (
-                <div className="absolute right-3 top-2.5 text-xs text-neutral-400">
-                  Searching...
+                <div className="absolute right-3 top-2.5 text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Searching...</span>
                 </div>
               )}
 
               {studentSearchResults.length > 0 && (
-                <div className="absolute left-0 right-0 top-11 z-30 max-h-56 overflow-y-auto rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl divide-y divide-neutral-100 dark:divide-neutral-800">
+                <div className="absolute left-0 right-0 top-11 z-30 max-h-56 overflow-y-auto rounded-xl border border-border bg-popover shadow-xl divide-y divide-border">
                   {studentSearchResults.map((st) => (
                     <button
                       key={st.id}
@@ -532,25 +551,25 @@ const ClubMembers = () => {
                       onClick={() => handleSelectStudent(st)}
                       className={`w-full text-left p-3 flex items-center justify-between gap-3 transition-colors ${
                         st.isAlreadyMember
-                          ? "opacity-50 cursor-not-allowed bg-neutral-50 dark:bg-neutral-800/50"
-                          : "hover:bg-brand-50/50 dark:hover:bg-zinc-800 cursor-pointer"
+                          ? "opacity-50 cursor-not-allowed bg-muted/50"
+                          : "hover:bg-muted cursor-pointer"
                       }`}
                     >
                       <div>
-                        <p className="text-xs font-bold text-neutral-900 dark:text-white">{st.name}</p>
-                        <p className="text-[11px] text-neutral-400">
+                        <p className="text-xs font-semibold text-foreground">{st.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
                           {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
                         </p>
-                        <p className="text-[10px] text-neutral-500">
+                        <p className="text-[10px] text-muted-foreground">
                           {st.branch || "Branch N/A"} • Year {st.year || "N/A"}
                         </p>
                       </div>
                       {st.isAlreadyMember ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                        <Badge variant="secondary" className="text-[10px]">
                           Already in team
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="text-[11px] font-bold text-brand-600 dark:text-brand-400">
+                        <span className="text-[11px] font-semibold text-brand-600">
                           Select
                         </span>
                       )}
@@ -563,85 +582,90 @@ const ClubMembers = () => {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 text-sm font-medium text-neutral-700 dark:text-neutral-200 focus:border-brand-500 focus:outline-none cursor-pointer"
+              className="h-10 rounded-xl border border-input bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-brand-500 focus:outline-none cursor-pointer"
             >
               <option value={ClubMemberRole.MEMBER}>Member</option>
               <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
                 Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
               </option>
-              <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
-                Student Lead {activeStudentLead ? "(Assigned - use Transfer)" : ""}
-              </option>
+              {isAdmin && (
+                <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
+                  Student Lead {activeStudentLead ? "(Already Assigned)" : ""}
+                </option>
+              )}
             </select>
 
-            <button
+            <Button
               type="submit"
               disabled={inviting}
-              className="h-10 rounded-xl bg-black dark:bg-white hover:bg-gray-600 dark:hover:bg-gray-400 px-5 text-sm font-bold text-white dark:text-black transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+              className="h-10 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer"
             >
+              {inviting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {inviting ? "Adding…" : "Add Member"}
-            </button>
+            </Button>
           </div>
 
           {/* Selected Student Confirmation Pill */}
           {selectedStudent && (
             <div className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs">
-              <span className="font-bold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
-              <span className="text-neutral-800 dark:text-neutral-200 font-semibold">{selectedStudent.name}</span>
-              <span className="text-neutral-500">({selectedStudent.email})</span>
+              <span className="font-semibold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
+              <span className="text-foreground font-medium">{selectedStudent.name}</span>
+              <span className="text-muted-foreground">({selectedStudent.email})</span>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedStudent(null);
                   setInviteEmail("");
                 }}
-                className="ml-auto text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 underline"
+                className="ml-auto text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
               >
                 Clear
               </button>
             </div>
           )}
         </form>
-      </div>
+      </Card>
 
-      {isTransferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-[#E5E5E5] dark:border-[#303030] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+      {/* Transfer Leadership Modal */}
+      {isTransferModalOpen && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <Card className="w-full max-w-md rounded-2xl border-border bg-card shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] shrink-0">
-                  <i className="ri-swap-box-line text-lg" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600 border border-brand-200/60 shrink-0">
+                  <ArrowRightLeft className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">Transfer Student Lead Role</h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Atomic transition of club leadership</p>
+                  <h3 className="text-base font-semibold text-foreground leading-tight">Transfer Student Lead Role</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Atomic transition of club leadership</p>
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsTransferModalOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                 title="Close"
               >
-                <i className="ri-close-line text-lg" />
-              </button>
+                <X className="w-4 h-4" />
+              </Button>
             </div>
 
             <form onSubmit={handleTransferLeadership}>
-              <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
-                <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
-                  Transferring leadership will atomically assign <strong className="text-[#111111] dark:text-[#F5F5F5]">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-[#111111] dark:text-[#F5F5F5]">Coordinator</strong>.
+              <div className="p-6 space-y-4 text-left">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Transferring leadership will atomically assign <strong className="text-foreground">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-foreground">Coordinator</strong>.
                 </p>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+                  <label className="block text-xs font-semibold text-foreground mb-1.5">
                     Select New Student Lead:
                   </label>
                   <select
                     value={selectedNewLeadId}
                     onChange={(e) => setSelectedNewLeadId(e.target.value)}
                     required
-                    className="w-full h-10 rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] px-3.5 text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors"
+                    className="w-full h-10 rounded-xl border border-input bg-background px-3.5 text-xs sm:text-sm text-foreground focus:border-brand-500 focus:outline-none transition-colors"
                   >
                     <option value="">-- Choose member --</option>
                     {members
@@ -658,220 +682,237 @@ const ClubMembers = () => {
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-                <button
+              <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-end gap-3 shrink-0">
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setIsTransferModalOpen(false)}
                   disabled={transferring}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer disabled:opacity-50"
+                  className="rounded-xl text-xs font-medium"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  size="sm"
                   disabled={transferring || !selectedNewLeadId}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                  className="bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs gap-1.5"
                 >
+                  {transferring && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   {transferring ? "Transferring…" : "Confirm Transfer"}
-                </button>
+                </Button>
               </div>
             </form>
-          </div>
+          </Card>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+      {/* Members Table */}
+      <Card className="overflow-hidden border-border bg-card shadow-xs">
         {members.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-            <PeopleIcon />
-            <p className="text-sm font-medium text-neutral-400">No team members added yet.</p>
+            <Users className="w-12 h-12 text-muted-foreground/30" />
+            <p className="text-sm font-medium text-muted-foreground">No team members added yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                  <Th>Member</Th>
-                  <Th>Role</Th>
-                  <Th center>Attendance</Th>
-                  <Th center>Events</Th>
-                  <th className="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {members.map((member) => {
-                  const id = member._id || member.id;
-                  const updatingType = updatingIds[id];
-                  const isUpdating = Boolean(updatingType);
-                  const isSelf = isCurrentMemberSelf(member);
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-border bg-muted/30">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Member</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</TableHead>
+                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Attendance</TableHead>
+                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Events</TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {members.map((member) => {
+                const id = member._id || member.id;
+                const updatingType = updatingIds[id];
+                const isUpdating = Boolean(updatingType);
+                const isSelf = isCurrentMemberSelf(member);
 
-                  return (
-                    <tr
-                      key={id}
-                      className={`transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 ${isUpdating ? "bg-brand-50/30 dark:bg-brand-950/20" : ""
-                        } ${member.isClubAccount ? "bg-brand-500/5 dark:bg-brand-500/10" : ""}`}
-                    >
-                      {/* Member info */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          {/* <Avatar name={member.student?.name} /> */}
-                          {
-
-                            member.student.profileImage ? <img src={member.student.profileImage} alt="Profile" className="h-10 w-10 rounded-full" /> :
-                              <Avatar name={member.student?.name} />
-                          }
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-neutral-900 dark:text-white">
-                                {member.student?.name}
-                              </p>
-                              {isSelf && (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-1.5 py-0.5 text-[10px] font-bold">
-                                  You
-                                </span>
-                              )}
-                              {member.isClubAccount && (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 px-1.5 py-0.5 text-[10px] font-bold">
-                                  Primary Owner
-                                </span>
-                              )}
-                              {isUpdating && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 dark:bg-brand-950/60 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-400 animate-pulse">
-                                  Updating…
-                                </span>
-                              )}
-                            </div>
-                            <p className="font-mono text-[11px] text-neutral-400">
-                              {member.student?.email}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Role */}
-                      <td className="px-4 py-3.5">
-                        {member.isClubAccount ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 text-xs font-bold whitespace-nowrap shadow-2xs">
-                            <i className="ri-shield-star-fill text-brand-500 text-xs" /> Official Club Account
-                          </span>
-                        ) : isSelf ? (
-                          <div title="You cannot change your own role. Use 'Transfer Leadership' to assign a new lead.">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold whitespace-nowrap">
-                              {member.role === ClubMemberRole.CLUB_HEAD ? "Student Lead (Head)" : member.role === ClubMemberRole.COORDINATOR ? "Coordinator" : "Member"}
+                return (
+                  <TableRow
+                    key={id}
+                    className={`transition-colors hover:bg-muted/40 ${isUpdating ? "bg-brand-50/20 dark:bg-brand-950/10" : ""} ${
+                      member.isClubAccount ? "bg-brand-50/10 dark:bg-brand-950/20" : ""
+                    }`}
+                  >
+                    {/* Member info */}
+                    <TableCell className="py-3.5">
+                      <div className="flex items-center gap-3">
+                        <MemberAvatar name={member.student?.name} image={member.student?.profileImage} />
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs sm:text-sm font-semibold text-foreground">
+                              {member.student?.name}
                             </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={member.role}
-                              onChange={(e) => changeRole(id, e.target.value)}
-                              disabled={isUpdating}
-                              className={`h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 focus:border-brand-500 focus:outline-none ${isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
-                                }`}
-                            >
-                              <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
-                              <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
-                              <option value={ClubMemberRole.MEMBER}>Member</option>
-                            </select>
-                            {updatingType === "role" && (
-                              <svg
-                                className="h-3.5 w-3.5 animate-spin text-brand-600 shrink-0"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                              </svg>
+                            {isSelf && (
+                              <Badge variant="secondary" className="text-[10px] font-semibold py-0 px-1.5">
+                                You
+                              </Badge>
+                            )}
+                            {member.isClubAccount && (
+                              <Badge variant="outline" className="text-[10px] font-semibold py-0 px-1.5 text-brand-600 border-brand-200">
+                                Primary Owner
+                              </Badge>
+                            )}
+                            {isUpdating && (
+                              <Badge variant="outline" className="text-[10px] font-medium animate-pulse text-brand-600">
+                                Updating…
+                              </Badge>
                             )}
                           </div>
-                        )}
-                      </td>
+                          <p className="font-mono text-[11px] text-muted-foreground">
+                            {member.student?.email}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
 
-                      {/* Permissions */}
-                      <td className="px-4 py-3.5 text-center">
-                        {member.isClubAccount || isSelf ? (
-                          <div title={isSelf ? "You cannot modify your own permissions" : "Fixed permissions for official club account"}>
-                            <PermissionToggle
-                              active={member.canTakeAttendance}
-                              disabled={true}
-                              loading={false}
-                              onToggle={null}
-                            />
-                          </div>
-                        ) : (
+                    {/* Role */}
+                    <TableCell className="py-3.5">
+                      {member.isClubAccount ? (
+                        <Badge variant="outline" className="gap-1 text-xs font-medium text-brand-600 border-brand-200 bg-brand-50/50 dark:bg-brand-950/30">
+                          <ShieldCheck className="w-3.5 h-3.5 text-brand-600" /> Official Club Account
+                        </Badge>
+                      ) : member.role === ClubMemberRole.CLUB_HEAD ? (
+                        <div className="flex items-center gap-1.5" title="Student Lead role is designated by Institute Administration">
+                          <Badge variant="outline" className="gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
+                            <Crown className="w-3.5 h-3.5 text-amber-500" /> Student Lead
+                          </Badge>
+                          {!isAdmin && (
+                            <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline">
+                              (Admin assigned)
+                            </span>
+                          )}
+                        </div>
+                      ) : isSelf ? (
+                        <Badge variant="secondary" className="text-xs font-medium">
+                          {member.role === ClubMemberRole.COORDINATOR ? "Coordinator" : "Member"}
+                        </Badge>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={member.role}
+                            onChange={(e) => changeRole(id, e.target.value)}
+                            disabled={isUpdating}
+                            className={`h-8 rounded-lg border border-input bg-background px-2 text-xs font-medium text-foreground focus:border-brand-500 focus:outline-none ${
+                              isUpdating ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                            }`}
+                          >
+                            <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
+                            <option value={ClubMemberRole.MEMBER}>Member</option>
+                            {isAdmin && (
+                              <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
+                            )}
+                          </select>
+                          {updatingType === "role" && (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-600 shrink-0" />
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
+
+                    {/* Attendance Permission */}
+                    <TableCell className="py-3.5 text-center">
+                      {member.isClubAccount || isSelf || member.role === ClubMemberRole.CLUB_HEAD ? (
+                        <div title={
+                          member.role === ClubMemberRole.CLUB_HEAD
+                            ? "Student Lead has full attendance management permissions"
+                            : isSelf
+                            ? "You cannot modify your own permissions"
+                            : "Fixed permissions for official club account"
+                        }>
                           <PermissionToggle
                             active={member.canTakeAttendance}
-                            disabled={isUpdating}
-                            loading={updatingType === "canTakeAttendance"}
-                            onToggle={() =>
-                              togglePermission(id, "canTakeAttendance", member.canTakeAttendance)
-                            }
+                            disabled={true}
+                            loading={false}
+                            onToggle={null}
                           />
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        {member.isClubAccount || isSelf ? (
-                          <div title={isSelf ? "You cannot modify your own permissions" : "Fixed permissions for official club account"}>
-                            <PermissionToggle
-                              active={member.canEditEvents}
-                              disabled={true}
-                              loading={false}
-                              onToggle={null}
-                            />
-                          </div>
-                        ) : (
+                        </div>
+                      ) : (
+                        <PermissionToggle
+                          active={member.canTakeAttendance}
+                          disabled={isUpdating}
+                          loading={updatingType === "canTakeAttendance"}
+                          onToggle={() =>
+                            togglePermission(id, "canTakeAttendance", member.canTakeAttendance)
+                          }
+                        />
+                      )}
+                    </TableCell>
+
+                    {/* Events Permission */}
+                    <TableCell className="py-3.5 text-center">
+                      {member.isClubAccount || isSelf || member.role === ClubMemberRole.CLUB_HEAD ? (
+                        <div title={
+                          member.role === ClubMemberRole.CLUB_HEAD
+                            ? "Student Lead has full event editing permissions"
+                            : isSelf
+                            ? "You cannot modify your own permissions"
+                            : "Fixed permissions for official club account"
+                        }>
                           <PermissionToggle
                             active={member.canEditEvents}
-                            disabled={isUpdating}
-                            loading={updatingType === "canEditEvents"}
-                            onToggle={() =>
-                              togglePermission(id, "canEditEvents", member.canEditEvents)
-                            }
+                            disabled={true}
+                            loading={false}
+                            onToggle={null}
                           />
-                        )}
-                      </td>
+                        </div>
+                      ) : (
+                        <PermissionToggle
+                          active={member.canEditEvents}
+                          disabled={isUpdating}
+                          loading={updatingType === "canEditEvents"}
+                          onToggle={() =>
+                            togglePermission(id, "canEditEvents", member.canEditEvents)
+                          }
+                        />
+                      )}
+                    </TableCell>
 
-                      {/* Remove */}
-                      <td className="px-5 py-3.5 text-right">
-                        {member.isClubAccount || isSelf ? (
-                          <span
-                            className="inline-flex items-center justify-center rounded-lg p-1.5 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
-                            title={isSelf ? "You cannot remove yourself from the club" : "Official Club Account is permanent and cannot be removed"}
-                          >
-                            <i className="ri-lock-2-line text-sm" />
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => removeMember(id)}
-                            disabled={isUpdating}
-                            className={`inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${isUpdating
-                              ? "text-neutral-300 dark:text-neutral-700 cursor-not-allowed"
-                              : "text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
-                              }`}
-                            title="Remove member"
-                          >
-                            {updatingType === "remove" ? (
-                              <svg className="h-4 w-4 animate-spin text-red-500" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                              </svg>
-                            ) : (
-                              <TrashIcon />
-                            )}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    {/* Remove Action */}
+                    <TableCell className="py-3.5 text-right">
+                      {member.isClubAccount || isSelf || (member.role === ClubMemberRole.CLUB_HEAD && !isAdmin) ? (
+                        <span
+                          className="inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground/40 cursor-not-allowed"
+                          title={
+                            member.role === ClubMemberRole.CLUB_HEAD
+                              ? "Student Lead can only be removed or changed by an Administrator in the Admin Panel"
+                              : isSelf
+                              ? "You cannot remove yourself from the club"
+                              : "Official Club Account is permanent and cannot be removed"
+                          }
+                        >
+                          <Lock className="w-4 h-4" />
+                        </span>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeMember(id)}
+                          disabled={isUpdating}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Remove member"
+                        >
+                          {updatingType === "remove" ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

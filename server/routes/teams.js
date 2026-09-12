@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken, allowRoles, requirePermission } from "../middleware/auth.js";
+import { verifyToken, requirePermission } from "../middleware/auth.js";
 import { PERMISSIONS } from "../utils/rbac.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
@@ -8,16 +8,19 @@ import { signTicket } from "../services/qrSigningService.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
 import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import redis from "../lib/redis.js";
 import { validateCustomFields } from "../utils/customFields.js";
+import { MAX_WAITLIST_CAPACITY } from "../services/waitlistService.js";
 
 const router = express.Router();
-async function notifyTeamMember(io, recipientId, title, message, senderStudentId = null) {
+
+async function notifyTeamMember(io, recipientId, title, message) {
   try {
     const notification = await prisma.notification.create({
       data: {
         id: createObjectId(),
-        senderStudentId,
         recipientStudentId: recipientId,
+        type: "TEAM_RESPONSE",
         title,
         message,
       },
@@ -25,7 +28,7 @@ async function notifyTeamMember(io, recipientId, title, message, senderStudentId
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: "System" },
+      sender: { name: "CampusNode", clubName: "CampusNode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);
@@ -36,12 +39,11 @@ async function notifyTeamMember(io, recipientId, title, message, senderStudentId
   }
 }
 
-async function notifyInvitation(io, recipientId, eventId, teamId, teamName, eventTitle, leaderName, senderStudentId) {
+async function notifyInvitation(io, recipientId, eventId, teamId, teamName, eventTitle, leaderName) {
   try {
     const notification = await prisma.notification.create({
       data: {
         id: createObjectId(),
-        senderStudentId,
         recipientStudentId: recipientId,
         title: "Team Invitation",
         message: `${leaderName} invited you to join team "${teamName}" for the event "${eventTitle}".`,
@@ -53,7 +55,7 @@ async function notifyInvitation(io, recipientId, eventId, teamId, teamName, even
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: leaderName },
+      sender: { name: "CampusNode", clubName: "CampusNode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);
@@ -70,9 +72,24 @@ router.post(
   requirePermission(PERMISSIONS.TEAM_CREATE),
   async (req, res) => {
     const { eventId, teamName, members, formResponses, transactionId, payerName, paymentRemarks } = req.body;
-    const leaderId = req.user.userId;
+    const leaderId = req.user?.userId;
+    const teamLockKey = eventId && leaderId ? `lock:team:create:${eventId}:${leaderId}` : null;
+    let lockAcquired = false;
 
     try {
+      if (teamLockKey) {
+        lockAcquired = await redis.acquireLock(teamLockKey, 5);
+        if (!lockAcquired) {
+          return res.status(429).json({
+            message: "A team creation request for this event is already being processed. Please wait.",
+          });
+        }
+      }
+
+      if (req.user.userType !== "student") {
+        return res.status(403).json({ message: "Only enrolled students can create and lead teams." });
+      }
+
       if (!eventId || !teamName || !Array.isArray(members)) {
         return res.status(400).json({ message: "Event ID, Team Name, and Members array are required." });
       }
@@ -84,6 +101,10 @@ router.post(
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
+
+      if (event.reviewStatus !== "PUBLISHED") {
+        return res.status(400).json({ message: "Team registration is not open. This event is not yet published." });
+      }
 
       const now = new Date();
       if (now > new Date(event.endTime)) {
@@ -102,7 +123,14 @@ router.post(
         return res.status(400).json({ message: "This event does not support team registration." });
       }
 
-      // Validate required and typed custom fields
+      if (event.totalSeats > 0 && event.registeredCount >= event.totalSeats && event.allowWaitlist === false) {
+        return res.status(400).json({
+          message: "Registration closed. This event is full.",
+          isFull: true,
+          waitlistAllowed: false,
+        });
+      }
+
       const customFieldCheck = validateCustomFields(event.customFields, formResponses);
       if (!customFieldCheck.valid) {
         return res.status(400).json({ message: customFieldCheck.message });
@@ -117,22 +145,12 @@ router.post(
         return res.status(400).json({ message: `Team size must be between ${minSize} and ${maxSize} members.` });
       }
 
-      const [students, externalUsers] = await Promise.all([
-        prisma.studentUser.findMany({ where: { id: { in: allMembers } } }),
-        prisma.externalUser.findMany({ where: { id: { in: allMembers } } }),
-      ]);
+      const students = await prisma.studentUser.findMany({ where: { id: { in: allMembers } } });
+      const studentsMap = new Map();
+      students.forEach((s) => studentsMap.set(s.id, s));
 
-      const allUsersMap = new Map();
-      students.forEach(s => allUsersMap.set(s.id, { ...s, isExternal: false }));
-      externalUsers.forEach(e => allUsersMap.set(e.id, { ...e, isExternal: true }));
-
-      if (allUsersMap.size !== teamSize) {
-        return res.status(400).json({ message: "One or more team members do not exist as registered participants." });
-      }
-
-      const hasExternalMember = externalUsers.length > 0;
-      if (hasExternalMember && event.allowExternal === false) {
-        return res.status(403).json({ message: "This event is exclusive to internal NITJ students only. External participants cannot join this event." });
+      if (studentsMap.size !== teamSize) {
+        return res.status(400).json({ message: "One or more team members do not exist as registered student participants." });
       }
 
       for (const student of students) {
@@ -161,33 +179,24 @@ router.post(
       const existing = await prisma.participation.findFirst({
         where: {
           eventId,
-          OR: [
-            { studentId: { in: allMembers } },
-            { externalUserId: { in: allMembers } },
-          ],
+          studentId: { in: allMembers },
         },
-        include: { student: true, externalUser: true },
+        include: { student: true },
       });
 
       if (existing) {
         return res.status(400).json({
-          message: `${existing.student?.name || existing.externalUser?.name || "A member"} is already registered for this event.`,
+          message: `${existing.student?.name || "A member"} is already registered for this event.`,
         });
       }
 
-      // Validate payment details if paid event with manual transaction
-      if (event.entryFee > 0 || (event.registrationFee > 0 && event.paymentMethod === 'MANUAL_TRANSACTION')) {
-        if (!transactionId) {
-          return res.status(400).json({ message: "Transaction ID is required for paid events." });
-        }
+      if (event.registrationFee > 0 && !transactionId) {
+        return res.status(400).json({ message: "Transaction ID is required for paid events." });
       }
 
       const teamId = createObjectId();
       let leaderRegStatus = "REGISTERED";
-      let paymentStatusValue = "SUCCESS";
-
-      const leaderInfo = allUsersMap.get(leaderId);
-      const isLeaderExternal = leaderInfo?.isExternal;
+      const leaderInfo = studentsMap.get(leaderId);
 
       await prisma.$transaction(async (tx) => {
         const events = await tx.$queryRaw`
@@ -196,10 +205,27 @@ router.post(
         const latestEvent = events[0];
         if (!latestEvent) throw new Error("Event not found");
 
-        leaderRegStatus =
-          latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats
-            ? "WAITLISTED"
-            : "REGISTERED";
+        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+        if (isFull) {
+          if (latestEvent.allowWaitlist === false) {
+            const err = new Error("Registration closed. This event is full.");
+            err.statusCode = 400;
+            err.isFull = true;
+            err.waitlistAllowed = false;
+            throw err;
+          }
+          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+            const err = new Error(`Registration closed. The waitlist for this event is full (maximum ${MAX_WAITLIST_CAPACITY} participants allowed).`);
+            err.statusCode = 400;
+            err.waitlistFull = true;
+            err.waitlistAllowed = true;
+            throw err;
+          }
+          leaderRegStatus = "WAITLISTED";
+        } else {
+          leaderRegStatus = "REGISTERED";
+        }
 
         await tx.team.create({
           data: {
@@ -207,8 +233,7 @@ router.post(
             eventId,
             teamName,
             leaderId,
-            leaderStudentId: isLeaderExternal ? null : leaderId,
-            leaderExternalId: isLeaderExternal ? leaderId : null,
+            leaderStudentId: leaderId,
             status: "active",
           },
         });
@@ -218,26 +243,23 @@ router.post(
             id: createObjectId(),
             teamId,
             userId: leaderId,
-            studentId: isLeaderExternal ? null : leaderId,
-            externalUserId: isLeaderExternal ? leaderId : null,
+            studentId: leaderId,
             role: "leader",
           },
         });
 
-        const isPaid = latestEvent.entryFee > 0 || (latestEvent.registrationFee > 0 && latestEvent.paymentMethod !== 'FREE');
-        paymentStatusValue = latestEvent.paymentMethod === 'MANUAL_TRANSACTION' ? 'PENDING' : (latestEvent.paymentMethod === 'COLLEGE_PAYMENT' ? 'PENDING' : 'SUCCESS');
+        const isPaid = latestEvent.registrationFee > 0;
+        const paymentStatusValue = isPaid ? "PENDING" : "SUCCESS";
+
         await tx.participation.create({
           data: {
             id: createObjectId(),
             eventId,
-            studentId: isLeaderExternal ? null : leaderId,
-            externalUserId: isLeaderExternal ? leaderId : null,
-            externalEmail: isLeaderExternal ? leaderInfo.email : null,
-            externalName: isLeaderExternal ? leaderInfo.name : null,
+            userId: leaderId,
+            studentId: leaderId,
             teamId,
             status: leaderRegStatus,
             paymentStatus: paymentStatusValue,
-            amountPaid: isPaid ? (latestEvent.registrationFee || latestEvent.entryFee) : 0,
             transactionId: transactionId || null,
             payerName: payerName || null,
             paymentRemarks: paymentRemarks || null,
@@ -260,10 +282,7 @@ router.post(
           const leaderPart = await tx.participation.findFirst({
             where: {
               teamId,
-              OR: [
-                { studentId: leaderId },
-                { externalUserId: leaderId },
-              ],
+              studentId: leaderId,
             },
             select: { id: true },
           });
@@ -276,16 +295,12 @@ router.post(
         }
 
         for (const memberId of members) {
-          const memberInfo = allUsersMap.get(memberId);
-          const isMemberExternal = memberInfo?.isExternal;
-
           await tx.teamMember.create({
             data: {
               id: createObjectId(),
               teamId,
               userId: memberId,
-              studentId: isMemberExternal ? null : memberId,
-              externalUserId: isMemberExternal ? memberId : null,
+              studentId: memberId,
               role: "member",
             },
           });
@@ -297,14 +312,11 @@ router.post(
             data: {
               id: createObjectId(),
               eventId,
-              studentId: isMemberExternal ? null : memberId,
-              externalUserId: isMemberExternal ? memberId : null,
-              externalEmail: isMemberExternal ? memberInfo.email : null,
-              externalName: isMemberExternal ? memberInfo.name : null,
+              userId: memberId,
+              studentId: memberId,
               teamId,
               status: "INVITED",
               paymentStatus: "SUCCESS",
-              amountPaid: 0,
               qrCode: memberTicketId,
               qrPayload: mPayload,
               qrVersion: mVer,
@@ -326,7 +338,6 @@ router.post(
           teamName,
           event.title,
           leaderName,
-          leaderId
         );
       }
 
@@ -334,68 +345,107 @@ router.post(
 
       res.status(201).json({
         success: true,
-        message: "Team registration successful. Invitations sent to teammates.",
+        message:
+          leaderRegStatus === "WAITLISTED"
+            ? "Event is currently full. Your team has been registered on the waitlist."
+            : "Team created successfully! Invitations have been sent to your team members.",
         teamId,
         status: leaderRegStatus,
-        paymentStatus: paymentStatusValue,
-        postRegistrationMessage: event.postRegistrationMessage || null,
       });
     } catch (err) {
       console.error("Team registration error:", err);
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({
+          message: err.message,
+          isFull: err.isFull,
+          waitlistAllowed: err.waitlistAllowed,
+          waitlistFull: err.waitlistFull,
+        });
+      }
       res.status(500).json({ message: err.message });
+    } finally {
+      if (lockAcquired && teamLockKey) {
+        await redis.releaseLock(teamLockKey);
+      }
     }
-  }
+  },
 );
 
 router.post(
-  "/invitations/:id/accept",
+  "/invitations/:id/respond",
   verifyToken,
   async (req, res) => {
     const notificationId = req.params.id;
+    const { action } = req.body;
     const userId = req.user.userId;
+
+    if (!["accept", "decline"].includes(action)) {
+      return res.status(400).json({ message: "Action must be 'accept' or 'decline'." });
+    }
 
     try {
       const notif = await prisma.notification.findUnique({
-        where: { id: notificationId }
+        where: { id: notificationId },
       });
 
       if (!notif || notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
         return res.status(404).json({ message: "Invitation not found." });
       }
 
-      const isExternalUser =
-        req.user.userType === "external" ||
-        req.user.role === "external" ||
-        req.user.principalType === "EXTERNAL";
-
       const participation = await prisma.participation.findFirst({
         where: {
           eventId: notif.eventId,
           teamId: notif.teamId,
           status: "INVITED",
-          OR: [
-            { studentId: userId },
-            { externalUserId: userId },
-          ],
+          studentId: userId,
         },
         include: {
           event: true,
-          team: { include: { leader: true, leaderExternal: true } }
-        }
+          team: { include: { leaderStudent: true } },
+        },
       });
 
       if (!participation) {
         return res.status(400).json({ message: "Invalid or already processed invitation." });
       }
 
-      let newStatus = "REGISTERED";
       const event = participation.event;
 
-      if (event && isExternalUser && event.allowExternal === false) {
-        return res.status(403).json({
-          message: "This event is exclusive to internal NITJ students only. External participants cannot join this event.",
+      if (action === "decline") {
+        await prisma.$transaction(async (tx) => {
+          await tx.teamMember.deleteMany({
+            where: {
+              teamId: notif.teamId,
+              userId,
+            },
+          });
+
+          await tx.participation.delete({
+            where: { id: participation.id },
+          });
+
+          await tx.notification.update({
+            where: { id: notificationId },
+            data: {
+              title: "Declined Team Invitation",
+              message: `You declined ${participation.team.leaderStudent?.name}'s invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
+              readBy: { push: [userId] },
+            },
+          });
         });
+
+        const student = await prisma.studentUser.findUnique({ where: { id: userId } });
+        await notifyTeamMember(
+          req.io,
+          participation.team.leaderId,
+          "Invitation Declined",
+          `${student?.name || "A member"} declined your invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
+        );
+
+        return res.json({ success: true, message: "Invitation declined successfully." });
       }
+
+      let newStatus = "REGISTERED";
 
       if (event) {
         const now = new Date();
@@ -418,25 +468,34 @@ router.post(
         `;
         const latestEvent = events[0];
 
-        newStatus =
-          latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats
-            ? "WAITLISTED"
-            : "REGISTERED";
+        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+        if (isFull) {
+          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+            const err = new Error("Cannot accept invitation. The event and its waitlist are completely full.");
+            err.statusCode = 400;
+            err.waitlistFull = true;
+            throw err;
+          }
+          newStatus = "WAITLISTED";
+        } else {
+          newStatus = "REGISTERED";
+        }
 
         await tx.participation.update({
           where: { id: participation.id },
-          data: { status: newStatus }
+          data: { status: newStatus },
         });
 
         if (newStatus === "REGISTERED") {
           await tx.event.update({
             where: { id: event.id },
-            data: { registeredCount: { increment: 1 } }
+            data: { registeredCount: { increment: 1 } },
           });
         } else {
           await tx.event.update({
             where: { id: event.id },
-            data: { waitingListIds: { push: [participation.id] } }
+            data: { waitingListIds: { push: [participation.id] } },
           });
         }
 
@@ -444,9 +503,9 @@ router.post(
           where: { id: notificationId },
           data: {
             title: "Accepted Team Invitation",
-            message: `You accepted ${participation.team.leader?.name}'s invitation to join team "${participation.team.teamName}" for "${event.title}".`,
-            readBy: { push: [userId] }
-          }
+            message: `You accepted ${participation.team.leaderStudent?.name}'s invitation to join team "${participation.team.teamName}" for "${event.title}".`,
+            readBy: { push: [userId] },
+          },
         });
       });
 
@@ -456,7 +515,6 @@ router.post(
         participation.team.leaderId,
         "Invitation Accepted",
         `${student?.name || "A member"} accepted your invitation to join team "${participation.team.teamName}" for "${event.title}".`,
-        userId
       );
 
       invalidatePublicResponses(["events:public:*"]);
@@ -464,81 +522,12 @@ router.post(
       res.json({ success: true, status: newStatus, message: "Invitation accepted successfully." });
     } catch (err) {
       console.error("Accept invitation error:", err);
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message, waitlistFull: err.waitlistFull });
+      }
       res.status(500).json({ message: err.message });
     }
-  }
-);
-
-router.post(
-  "/invitations/:id/decline",
-  verifyToken,
-  async (req, res) => {
-    const notificationId = req.params.id;
-    const userId = req.user.userId;
-
-    try {
-      const notif = await prisma.notification.findUnique({
-        where: { id: notificationId }
-      });
-
-      if (!notif || notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
-        return res.status(404).json({ message: "Invitation not found." });
-      }
-
-      const participation = await prisma.participation.findFirst({
-        where: {
-          eventId: notif.eventId,
-          studentId: userId,
-          teamId: notif.teamId,
-          status: "INVITED"
-        },
-        include: {
-          event: true,
-          team: { include: { leader: true } }
-        }
-      });
-
-      if (!participation) {
-        return res.status(400).json({ message: "Invalid or already processed invitation." });
-      }
-
-      await prisma.$transaction(async (tx) => {
-        await tx.teamMember.deleteMany({
-          where: {
-            teamId: notif.teamId,
-            userId: userId
-          }
-        });
-
-        await tx.participation.delete({
-          where: { id: participation.id }
-        });
-
-        await tx.notification.update({
-          where: { id: notificationId },
-          data: {
-            title: "Declined Team Invitation",
-            message: `You declined ${participation.team.leader?.name}'s invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
-            readBy: { push: [userId] }
-          }
-        });
-      });
-
-      const student = await prisma.studentUser.findUnique({ where: { id: userId } });
-      await notifyTeamMember(
-        req.io,
-        participation.team.leaderId,
-        "Invitation Declined",
-        `${student?.name || "A member"} declined your invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
-        userId
-      );
-
-      res.json({ success: true, message: "Invitation declined successfully." });
-    } catch (err) {
-      console.error("Decline invitation error:", err);
-      res.status(500).json({ message: err.message });
-    }
-  }
+  },
 );
 
 router.post(
@@ -558,8 +547,8 @@ router.post(
         where: { id: teamId },
         include: {
           event: true,
-          members: true
-        }
+          members: true,
+        },
       });
 
       if (!team) return res.status(404).json({ message: "Team not found." });
@@ -590,62 +579,45 @@ router.post(
         return res.status(400).json({ message: `Team is already at its maximum size of ${maxSize} members.` });
       }
 
-      const alreadyInTeam = team.members.some(m => m.userId === studentId);
+      const alreadyInTeam = team.members.some((m) => m.userId === studentId);
       if (alreadyInTeam) {
         return res.status(400).json({ message: "This user is already a member of your team." });
       }
 
-      const [student, externalUser] = await Promise.all([
-        prisma.studentUser.findUnique({ where: { id: studentId } }),
-        prisma.externalUser.findUnique({ where: { id: studentId } }),
-      ]);
+      const student = await prisma.studentUser.findUnique({ where: { id: studentId } });
+      if (!student) return res.status(404).json({ message: "Student not found." });
 
-      if (!student && !externalUser) return res.status(404).json({ message: "User not found." });
-
-      const isTargetExternal = Boolean(externalUser);
-
-      if (isTargetExternal && event.allowExternal === false) {
-        return res.status(403).json({
-          message: "This event is exclusive to internal NITJ students only. External participants cannot join this event.",
-        });
+      if (
+        event.allowedPrograms?.length > 0 &&
+        student.program &&
+        !event.allowedPrograms.includes(student.program)
+      ) {
+        return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
       }
 
-      if (student) {
-        if (
-          event.allowedPrograms?.length > 0 &&
-          student.program &&
-          !event.allowedPrograms.includes(student.program)
-        ) {
-          return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
-        }
+      if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
+        const progress = calculateAcademicProgress(student);
+        return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
+      }
 
-        if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
-          const progress = calculateAcademicProgress(student);
-          return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
-        }
-
-        if (
-          event.allowedBranches?.length > 0 &&
-          student.branch &&
-          !event.allowedBranches.includes(student.branch)
-        ) {
-          return res.status(400).json({ message: `${student.name} is ineligible due to their branch (${student.branch}).` });
-        }
+      if (
+        event.allowedBranches?.length > 0 &&
+        student.branch &&
+        !event.allowedBranches.includes(student.branch)
+      ) {
+        return res.status(400).json({ message: `${student.name} is ineligible due to their branch (${student.branch}).` });
       }
 
       const existing = await prisma.participation.findFirst({
         where: {
           eventId: event.id,
-          OR: [
-            { studentId: studentId },
-            { externalUserId: studentId },
-          ],
+          studentId,
         },
       });
 
       if (existing) {
         return res.status(400).json({
-          message: `${student?.name || externalUser?.name || "This user"} is already registered or invited to this event.`,
+          message: `${student.name} is already registered or invited to this event.`,
         });
       }
 
@@ -655,8 +627,9 @@ router.post(
             id: createObjectId(),
             teamId,
             userId: studentId,
-            role: "member"
-          }
+            studentId,
+            role: "member",
+          },
         });
 
         const memberTicketId = crypto.randomBytes(12).toString("base64url");
@@ -666,28 +639,22 @@ router.post(
           data: {
             id: createObjectId(),
             eventId: event.id,
-            studentId: isTargetExternal ? null : studentId,
-            externalUserId: isTargetExternal ? externalUser.id : null,
-            externalEmail: isTargetExternal ? externalUser.email : null,
-            externalName: isTargetExternal ? externalUser.name : null,
+            userId: studentId,
+            studentId,
             teamId,
             status: "INVITED",
             paymentStatus: "SUCCESS",
-            amountPaid: 0,
             qrCode: memberTicketId,
             qrPayload: mPayload,
             qrVersion: mVer,
             qrKeyId: mKey,
-            formResponses: {}
-          }
+            formResponses: {},
+          },
         });
       });
 
-      const [leaderStudent, leaderExternal] = await Promise.all([
-        prisma.studentUser.findUnique({ where: { id: leaderId } }),
-        prisma.externalUser.findUnique({ where: { id: leaderId } }),
-      ]);
-      const leaderName = leaderStudent?.name || leaderExternal?.name || "Team Leader";
+      const leaderStudent = await prisma.studentUser.findUnique({ where: { id: leaderId } });
+      const leaderName = leaderStudent?.name || "Team Leader";
 
       await notifyInvitation(
         req.io,
@@ -697,18 +664,17 @@ router.post(
         team.teamName,
         event.title,
         leaderName,
-        leaderId
       );
 
       res.json({
         success: true,
-        message: `Invitation successfully sent to ${student?.name || externalUser?.name || "the participant"}.`,
+        message: `Invitation successfully sent to ${student.name}.`,
       });
     } catch (err) {
       console.error("Invite teammate error:", err);
       res.status(500).json({ message: err.message });
     }
-  }
+  },
 );
 
 router.get(
@@ -729,23 +695,24 @@ router.get(
         where: {
           eventId,
           OR: [
-            { leader: { rollNo: { equals: q, mode: 'insensitive' } } },
-            { leader: { name: { contains: q, mode: 'insensitive' } } },
-            { teamName: { contains: q, mode: 'insensitive' } }
-          ]
+            { leaderStudent: { rollNo: { equals: q, mode: "insensitive" } } },
+            { leaderStudent: { email: { equals: q, mode: "insensitive" } } },
+            { leaderStudent: { name: { contains: q, mode: "insensitive" } } },
+            { teamName: { contains: q, mode: "insensitive" } },
+          ],
         },
         include: {
-          leader: {
-            select: { id: true, name: true, rollNo: true, branch: true }
+          leaderStudent: {
+            select: { id: true, name: true, rollNo: true, branch: true, email: true },
           },
           members: {
             include: {
-              user: {
-                select: { id: true, name: true, rollNo: true, branch: true }
-              }
-            }
-          }
-        }
+              student: {
+                select: { id: true, name: true, rollNo: true, branch: true, email: true },
+              },
+            },
+          },
+        },
       });
 
       if (!team) {
@@ -753,8 +720,8 @@ router.get(
       }
 
       const rawMembers = [
-        team.leader?.name,
-        ...(team.members || []).map(m => m.user?.name)
+        team.leaderStudent?.name,
+        ...(team.members || []).map((m) => m.student?.name),
       ].filter(Boolean);
 
       const memberNames = Array.from(new Set(rawMembers));
@@ -762,15 +729,16 @@ router.get(
       res.json({
         id: team.id,
         teamName: team.teamName,
-        leaderName: team.leader?.name,
-        leaderRollNo: team.leader?.rollNo,
-        members: memberNames
+        leaderName: team.leaderStudent?.name,
+        leaderRollNo: team.leaderStudent?.rollNo,
+        leaderEmail: team.leaderStudent?.email,
+        members: memberNames,
       });
     } catch (err) {
       console.error("Lookup team leader error:", err);
       res.status(500).json({ message: err.message });
     }
-  }
+  },
 );
 
 router.get(
@@ -782,39 +750,39 @@ router.get(
         where: { id: req.params.id },
         include: {
           event: true,
-          leader: {
-            select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true, academicStatus: true }
+          leaderStudent: {
+            select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true },
           },
           members: {
             include: {
-              user: {
-                select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true, academicStatus: true }
-              }
-            }
-          }
-        }
+              student: {
+                select: { id: true, name: true, email: true, rollNo: true, branch: true, program: true, expectedGraduationYear: true },
+              },
+            },
+          },
+        },
       });
 
       if (!team) return res.status(404).json({ message: "Team not found" });
 
       const enrichedTeam = {
         ...team,
-        leader: team.leader
+        leader: team.leaderStudent
           ? {
-              ...team.leader,
-              year: calculateAcademicProgress(team.leader).academicYearLabel,
-              academicYear: calculateAcademicProgress(team.leader).academicYear,
-              semester: calculateAcademicProgress(team.leader).semester,
+              ...team.leaderStudent,
+              year: calculateAcademicProgress(team.leaderStudent).academicYearLabel,
+              academicYear: calculateAcademicProgress(team.leaderStudent).academicYear,
+              semester: calculateAcademicProgress(team.leaderStudent).semester,
             }
           : null,
         members: (team.members || []).map((m) => ({
           ...m,
-          user: m.user
+          user: m.student
             ? {
-                ...m.user,
-                year: calculateAcademicProgress(m.user).academicYearLabel,
-                academicYear: calculateAcademicProgress(m.user).academicYear,
-                semester: calculateAcademicProgress(m.user).semester,
+                ...m.student,
+                year: calculateAcademicProgress(m.student).academicYearLabel,
+                academicYear: calculateAcademicProgress(m.student).academicYear,
+                semester: calculateAcademicProgress(m.student).semester,
               }
             : null,
         })),
@@ -824,7 +792,7 @@ router.get(
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
-  }
+  },
 );
 
 export default router;

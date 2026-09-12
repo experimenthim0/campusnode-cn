@@ -172,19 +172,19 @@ const ContactModal = ({
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[85dvh] flex flex-col bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden my-auto transition-colors"
+          className="relative w-full max-w-md max-h-[85dvh] flex flex-col bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-2xl shadow-2xl overflow-hidden my-auto transition-colors"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                   Send a Suggestion
                 </h3>
-                <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-xs mt-0.5">
+                <p className="text-xs text-cn-text-muted font-normal truncate max-w-xs mt-0.5">
                   Have an idea or feedback? Share it below.
                 </p>
               </div>
@@ -192,7 +192,7 @@ const ContactModal = ({
             <button
               onClick={handleClose}
               disabled={status === 'submitting'}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors disabled:opacity-50 cursor-pointer"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors disabled:opacity-50 cursor-pointer"
               aria-label="Close modal"
               title="Close"
             >
@@ -201,21 +201,21 @@ const ContactModal = ({
           </div>
 
           {/* Body Content */}
-          <div className="p-6 overflow-y-auto text-[#555555] dark:text-[#B5B5B5]">
+          <div className="p-6 overflow-y-auto text-cn-text-secondary">
             {status === 'success' ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="py-6 text-center flex flex-col items-center justify-center space-y-4"
               >
-                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
+                <div className="w-16 h-16 rounded-full bg-success-50 dark:bg-success-950/40 text-success-600 dark:text-success-400 flex items-center justify-center shadow-inner">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-[#111111] dark:text-[#F5F5F5]">
+                  <h3 className="text-xl font-bold text-cn-text">
                     Thank You!
                   </h3>
-                  <p className="text-[#555555] dark:text-[#B5B5B5] text-xs sm:text-sm max-w-sm mx-auto leading-relaxed">
+                  <p className="text-cn-text-secondary text-xs sm:text-sm max-w-sm mx-auto leading-relaxed">
                     Your response has been recorded successfully. Thank you for helping us improve CampusNode!
                   </p>
                 </div>
@@ -226,13 +226,13 @@ const ContactModal = ({
                       setStatus('idle');
                       setFormData({ name: '', email: '', suggestion: '' });
                     }}
-                    className="flex-1 py-2.5 px-4 rounded-xl border border-[#E5E5E5] dark:border-[#303030] bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] font-bold text-xs transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 px-4 rounded-xl border border-cn-border dark:border-cn-border-subtle bg-transparent hover:bg-cn-surface-muted text-cn-text font-bold text-xs transition-colors cursor-pointer"
                   >
                     Submit Another
                   </button>
                   <button
                     onClick={handleClose}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] text-white dark:text-[#111111] font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 text-white dark:text-neutral-900 font-bold text-xs shadow-xs transition-colors cursor-pointer"
                   >
                     Done
                   </button>
@@ -241,7 +241,7 @@ const ContactModal = ({
             ) : (
               <div>
                 {status === 'error' && (
-                  <div className="mb-4 p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2">
+                  <div className="mb-4 p-3.5 bg-danger-50 dark:bg-danger-950/30 border border-danger-200 dark:border-danger-900/60 rounded-xl text-xs text-danger-600 dark:text-danger-400 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{errorMessage}</span>
                   </div>
@@ -251,11 +251,11 @@ const ContactModal = ({
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Name Field */}
                   <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      Your Name <span className="text-[#F97316]">*</span>
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                      Your Name <span className="text-brand-500">*</span>
                     </label>
                     <div className="relative">
-                      <User className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
+                      <User className="w-4 h-4 absolute left-3.5 top-3 text-cn-text-muted" />
                       <input
                         type="text"
                         name="name"
@@ -263,25 +263,25 @@ const ContactModal = ({
                         onChange={handleChange}
                         placeholder="Himanshu"
                         disabled={status === 'submitting'}
-                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border ${
                           formErrors.name 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
-                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors`}
+                            ? 'border-danger-500 focus:border-danger-500' 
+                            : 'border-cn-border dark:border-cn-border-subtle focus:border-brand-500'
+                        } rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted focus:outline-none transition-colors`}
                       />
                     </div>
                     {formErrors.name && (
-                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.name}</p>
+                      <p className="text-[11px] text-danger-500 font-semibold mt-1">{formErrors.name}</p>
                     )}
                   </div>
 
                   {/* Email Field */}
                   <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      Email Address <span className="text-[#F97316]">*</span>
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                      Email Address <span className="text-brand-500">*</span>
                     </label>
                     <div className="relative">
-                      <Mail className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
+                      <Mail className="w-4 h-4 absolute left-3.5 top-3 text-cn-text-muted" />
                       <input
                         type="email"
                         name="email"
@@ -289,30 +289,30 @@ const ContactModal = ({
                         onChange={handleChange}
                         placeholder="you@example.com"
                         disabled={status === 'submitting'}
-                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border ${
                           formErrors.email 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
-                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors`}
+                            ? 'border-danger-500 focus:border-danger-500' 
+                            : 'border-cn-border dark:border-cn-border-subtle focus:border-brand-500'
+                        } rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted focus:outline-none transition-colors`}
                       />
                     </div>
                     {formErrors.email && (
-                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.email}</p>
+                      <p className="text-[11px] text-danger-500 font-semibold mt-1">{formErrors.email}</p>
                     )}
                   </div>
 
                   {/* Description / Suggestion Field */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
-                        Description / Suggestion <span className="text-[#F97316]">*</span>
+                      <label className="block text-xs font-bold text-cn-text">
+                        Description / Suggestion <span className="text-brand-500">*</span>
                       </label>
-                      <span className="text-[11px] text-[#888888] dark:text-[#808080]">
+                      <span className="text-[11px] text-cn-text-muted">
                         {formData.suggestion.length}/1000
                       </span>
                     </div>
                     <div className="relative">
-                      <Lightbulb className="w-4 h-4 absolute left-3.5 top-3 text-[#888888] dark:text-[#808080]" />
+                      <Lightbulb className="w-4 h-4 absolute left-3.5 top-3 text-cn-text-muted" />
                       <textarea
                         name="suggestion"
                         value={formData.suggestion}
@@ -321,15 +321,15 @@ const ContactModal = ({
                         rows={4}
                         placeholder="Write your description or suggestion here..."
                         disabled={status === 'submitting'}
-                        className={`w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-[#222222] border ${
+                        className={`w-full pl-10 pr-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border ${
                           formErrors.suggestion 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'border-[#E5E5E5] dark:border-[#3A3A3A] focus:border-[#F97316] dark:focus:border-[#FB923C]'
-                        } rounded-xl text-xs sm:text-[13px] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] focus:outline-none transition-colors resize-none`}
+                            ? 'border-danger-500 focus:border-danger-500' 
+                            : 'border-cn-border dark:border-cn-border-subtle focus:border-brand-500'
+                        } rounded-xl text-xs sm:text-[13px] text-cn-text placeholder-cn-text-muted focus:outline-none transition-colors resize-none`}
                       />
                     </div>
                     {formErrors.suggestion && (
-                      <p className="text-[11px] text-red-500 font-semibold mt-1">{formErrors.suggestion}</p>
+                      <p className="text-[11px] text-danger-500 font-semibold mt-1">{formErrors.suggestion}</p>
                     )}
                   </div>
 
@@ -337,7 +337,7 @@ const ContactModal = ({
                     <button
                       type="submit"
                       disabled={status === 'submitting'}
-                      className="w-full py-2.5 px-4 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full py-2.5 px-4 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {status === 'submitting' ? (
                         <>

@@ -6,7 +6,7 @@ import Footer from "./Footer";
 import BottomNav from "./BottomNav";
 import DynamicSidebar from "./DynamicSidebar";
 import DashboardFooter from "./DashboardFooter";
-
+import InstallPwaBanner from "./InstallPwaBanner";
 /**
  * Routes that activate the sidebar "dashboard" layout.
  * If the current pathname starts with any of these prefixes,
@@ -18,6 +18,7 @@ const SIDEBAR_ROUTE_PREFIXES = [
   "/club-events",
   "/payments",
   "/send-notification",
+  "/notifications",
   "/club/edit",
   "/club/",       // catches /club/:clubId/team
   "/dashboard",
@@ -32,9 +33,9 @@ const SIDEBAR_ROUTE_PREFIXES = [
  * Check if the given pathname should show the sidebar layout.
  */
 const isSidebarRoute = (pathname) => {
-  // Registration, attendance, and certificate management pages are event
+  // Registration, attendance, feedback, and certificate management pages are event
   // dashboard pages too. Keep public event details outside this layout.
-  if (/^\/event\/[^/]+\/(registrations|check-in|design-certificate)$/.test(pathname)) {
+  if (/^\/event\/[^/]+\/(registrations|check-in|design-certificate|feedback)$/.test(pathname)) {
     return true;
   }
 
@@ -67,11 +68,29 @@ const isSidebarRoute = (pathname) => {
  *
  * Auth redirect: unauthenticated users on sidebar routes are sent to /login.
  */
-import InstallPwaBanner from "./InstallPwaBanner";
+/**
+ * Authentication and credential recovery routes where mobile BottomNav is suppressed.
+ */
+const AUTH_ROUTE_PREFIXES = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/otp",
+  "/admin-secret-login",
+];
+
+const isAuthRoute = (pathname) => {
+  return AUTH_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`${prefix}?`)
+  );
+};
 
 const AppLayout = () => {
   const location = useLocation();
   const isDashboardRoute = isSidebarRoute(location.pathname);
+  const isAuth = isAuthRoute(location.pathname);
 
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -103,7 +122,7 @@ const AppLayout = () => {
   }
 
   const layoutContent = isDashboardRoute ? (
-    <div className="cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+    <div className="cn-app-height flex min-w-0 flex-col bg-cn-bg text-cn-text transition-colors duration-300">
       {/* Navbar — always pinned at top, full width */}
       <Navbar />
 
@@ -126,17 +145,17 @@ const AppLayout = () => {
         </main>
       </div>
 
-      {/* BottomNav — mobile only (self-hides on md+) */}
-      <BottomNav />
+      {/* BottomNav — mobile only (self-hides on md+, suppressed on auth routes) */}
+      {!isAuth && <BottomNav />}
     </div>
   ) : (
-    <div className="cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 transition-colors duration-300">
+    <div className={`cn-app-height flex min-w-0 flex-col bg-cn-bg text-cn-text ${isAuth ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0 transition-colors duration-300`}>
       <Navbar />
       <div className="flex-1">
         <Outlet />
       </div>
       <Footer />
-      <BottomNav />
+      {!isAuth && <BottomNav />}
     </div>
   );
 

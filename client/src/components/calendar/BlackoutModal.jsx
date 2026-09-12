@@ -107,18 +107,18 @@ const BlackoutModal = ({
   const venueList = venues.map((v) => (typeof v === "string" ? v : v.name));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-all">
-      <div className="w-full max-w-md bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden transition-colors">
-        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-blur transition-all">
+      <div className="w-full max-w-md bg-cn-surface border border-cn-border rounded-2xl shadow-2xl overflow-hidden transition-colors">
+        <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 font-bold">
               <Building2 size={18} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+              <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
                 {editingBlackout ? "Edit Venue Blackout" : "Add Venue Blackout"}
               </h3>
-              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+              <p className="text-xs text-cn-text-muted font-normal mt-0.5">
                 Block a venue for maintenance, exams, or convocation.
               </p>
             </div>
@@ -126,22 +126,22 @@ const BlackoutModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
             title="Close"
           >
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[#555555] dark:text-[#B5B5B5]">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-cn-text-secondary">
           <div>
-            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-              Select Venue <span className="text-[#F97316]">*</span>
+            <label className="block text-xs font-bold text-cn-text mb-1.5">
+              Select Venue <span className="text-brand-500">*</span>
             </label>
             <select
               value={venue}
               onChange={(e) => setVenue(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-bold text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+              className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-bold text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
               required
             >
               {venueList.map((v) => (
@@ -153,21 +153,21 @@ const BlackoutModal = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-              Blackout Title / Reason <span className="text-[#F97316]">*</span>
+            <label className="block text-xs font-bold text-cn-text mb-1.5">
+              Blackout Title / Reason <span className="text-brand-500">*</span>
             </label>
             <input
               type="text"
               placeholder="e.g. Annual Maintenance, Examination, Convocation"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+              className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-medium text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
+            <label className="block text-xs font-bold text-cn-text mb-1.5">
               Additional Details / Description
             </label>
             <textarea
@@ -175,39 +175,39 @@ const BlackoutModal = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-medium text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 resize-none transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                Start Date & Time <span className="text-[#F97316]">*</span>
+              <label className="block text-xs font-bold text-cn-text mb-1.5">
+                Start Date & Time <span className="text-brand-500">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-medium text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                End Date & Time <span className="text-[#F97316]">*</span>
+              <label className="block text-xs font-bold text-cn-text mb-1.5">
+                End Date & Time <span className="text-brand-500">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] font-medium text-[#111111] dark:text-[#F5F5F5] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-medium text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                 required
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
+          <div className="flex items-center justify-between pt-4 border-t border-cn-border-subtle">
             {editingBlackout ? (
               <button
                 type="button"
@@ -226,14 +226,14 @@ const BlackoutModal = ({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {submitting ? "Saving..." : editingBlackout ? "Update Blackout" : "Save Blackout"}
               </button>

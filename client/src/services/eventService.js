@@ -11,8 +11,13 @@ export const getEvents = (params) =>
 export const getEventBySlug = (slug) =>
   api.get(`/api/events/${slug}`);
 
-export const getEventById = (id) =>
-  api.get(`/api/events/${id}`);
+export const getEventById = (id, params = {}) =>
+  api.get(`/api/events/${id}`, {
+    params: {
+      ...params,
+      _t: Date.now(),
+    },
+  });
 
 export const getClubEvents = (clubId) =>
   api.get(`/api/events/club/${clubId}`);
@@ -39,6 +44,9 @@ export const deleteEvent = (id) =>
 
 export const reviewEvent = (id, payload) =>
   api.put(`/api/events/${id}/review`, typeof payload === 'object' ? payload : { status: payload });
+
+export const submitEventForReview = (id, data = {}) =>
+  api.post(`/api/events/${id}/submit`, data);
 
 export const registerForEvent = (eventId, payload) =>
   api.post(`/api/events/${eventId}/register`, payload);

@@ -249,7 +249,7 @@ const AdminSidebar = () => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col shrink-0 bg-white dark:bg-[#0a0a0a] border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${
+      className={`hidden md:flex flex-col shrink-0 bg-cn-surface border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${
         collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
       }`}
       style={{ height: "calc(100dvh - 3.5rem - env(safe-area-inset-top))" }}

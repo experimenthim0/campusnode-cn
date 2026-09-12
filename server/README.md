@@ -24,16 +24,21 @@ server/
 │   ├── certificateController.js        # Dynamic PDF certificate generation & layout logic
 │   └── clubMemberController.js         # Club roster, coordinator hierarchy & membership management
 │
+├── emails/                             # Transactional email engine & BullMQ worker
+│   ├── config/                         # Resend & Nodemailer transport configurations
+│   ├── templates/                      # Responsive HTML email templates
+│   ├── emailQueue.js                   # BullMQ job queue & background worker with fallback
+│   └── emailService.js                 # Template compiler & direct dispatcher
+│
 ├── lib/                                # Core library singletons
-│   └── prisma.js                       # Prisma Client connection pool & lifecycle management
+│   ├── prisma.js                       # Prisma Client connection pool & lifecycle management
+│   └── redis.js                        # Redis / BullMQ client with in-memory TTL fallback
 │
 ├── middleware/                         # Express request processing & security middleware
 │   ├── auth.js                         # JWT authentication & session token verification
 │   ├── errorHandler.js                 # Global centralized error handling & response formatter
-│   ├── eventStaffAuth.js               # Dedicated authentication for event staff / scanner operators
 │   ├── performance.js                  # Response caching, request timing & latency tracking
 │   ├── profileUpload.js                # Multer configuration for profile picture uploads
-│   ├── role.js                         # Basic role verification helpers
 │   └── validate.js                     # Request body schema validation middleware
 │
 ├── prisma/                             # Database schema & migrations
@@ -41,28 +46,24 @@ server/
 │   └── schema.prisma                   # Prisma ORM schema models & relational definitions
 │
 ├── routes/                             # Express REST API endpoints & route handlers
-│   ├── __tests__/                      # Route unit and integration tests
-│   │   └── scanner.test.js
 │   ├── admin.js                        # System administrator control panel & user oversight
 │   ├── auth.js                         # Authentication, OTP login, registration, password resets
 │   ├── blackouts.js                    # Academic & institutional blackout date scheduling
-│   ├── centralOrganizer.js             # Central event board & institution organizer workflows
 │   ├── certificates.js                 # Certificate issuance, verification & download routes
 │   ├── clubMembers.js                  # Club member assignment & coordinator role management
 │   ├── clubs.js                        # Public & authenticated club directory endpoints
-│   ├── eventStaff.js                   # Event staff portal, credentials & event assignments
-│   ├── events.js                       # Event CRUD, registration, seat caps & proposal reviews
-│   ├── exportCenter.js                 # Data export (CSV, Excel) for attendees & reports
-│   ├── lostFound.js                    # Campus Lost & Found item reporting & claim workflows
-│   ├── lostFoundAdmin.js               # Moderation panel & resolution controls for Lost & Found
+│   ├── events.js                       # Event CRUD, joint events, waitlists, and reviews
+│   ├── exportCenter.js                 # Data export (CSV) for attendees, feedback & reports
+│   ├── featuredEvents.js               # Homepage spotlight carousel & sponsor ordering
+│   ├── feedback.js                     # Post-event student feedback & rating analytics
 │   ├── notifications.js                # In-app notifications & announcement broadcasts
 │   ├── participation.js                # Student event attendance & participation verification
 │   ├── payment.js                      # Event fee tracking, payment proofs & transaction reviews
 │   ├── push.js                         # Web Push subscription registration & notification dispatch
 │   ├── scanner.js                      # High-speed cryptographic QR ticket scanning & check-in
 │   ├── teams.js                        # Hackathon & team competition management
-│   ├── users.js                        # User profile updates, preferences & avatar uploads
-│   └── venues.js                       # Campus venue availability, slot booking & collision checks
+│   ├── users.js                        # User profile updates, social links & avatar uploads
+│   └── venues.js                       # Campus venue availability & booking management
 │
 ├── scripts/                            # Operational, database seeding & maintenance scripts
 │   ├── checkIds.js                     # Identity consistency & duplicate verification script
@@ -129,15 +130,19 @@ server/
 
 ### 2. **Database & ORM (`prisma/`)**
 - Uses **Prisma ORM** with **PostgreSQL 16**.
-- Schema defines relational models: `User`, `Club`, `ClubMember`, `Event`, `Registration`, `Team`, `TeamMember`, `LostFoundItem`, `Notification`, `BlackoutDate`, `Venue`, `CertificateTemplate`, `CertificateIssue`, and `AuditLog`.
+- Schema defines relational models: `AdminRole`, `StudentUser`, `StudentSocialLink`, `ExternalUser`, `Club`, `ClubSocialLink`, `ClubMembership`, `Event`, `EventOrganizer`, `Sponsor`, `Participation`, `AttendanceRecord`, `Team`, `TeamMember`, `Venue`, `VenueBlackout`, `EventFeedback`, `Certificate`, `FeaturedEvent`, `FeaturedEventSetting`, `Notification`, `Media`, `Permission`, `RolePermission`, `AuditLog`, and `ExportLog`.
 
 ### 3. **Authentication & Authorization (`routes/auth.js`, `middleware/auth.js`, `utils/rbac.js`)**
 - **JWT Authentication** with HTTP-only cookies and Authorization headers.
-- **Granular RBAC**: Supports `student`, `member`, `club`, `facultyCoordinator`, `central_organizer`, `event_staff`, `lostFoundAdmin`, and `admin`.
+- **Granular RBAC**: Supports `StudentUser`, `AdminRole` (`admin`, `facultyCoordinator`), `ExternalUser`, and Club Leaders (`CLUB_HEAD`, `COORDINATOR`).
 
 ### 4. **QR Code Ticket Signing & Attendance (`services/qrSigningService.js`, `routes/scanner.js`)**
-- Cryptographic digital signing for event passes prevents counterfeit tickets.
-- Fast, low-latency check-in verification pipeline supporting camera scanning and barcode input.
+- Cryptographic digital signing (Ed25519) for event passes prevents counterfeit tickets.
+- Fast, low-latency check-in verification pipeline supporting camera scanning, barcode input, and offline sync packages.
 
 ### 5. **Automated PDF Certificate Engine (`controllers/certificateController.js`, `assets/fonts/`)**
-- Generates verified, personalized PDF certificates dynamically using **PDFKit** and bundled custom calligraphy typography.
+- Generates verified, personalized PDF certificates dynamically using **PDFKit** and bundled custom calligraphy typography with public verification tokens.
+
+### 6. **Background Worker & Email Queue (`emails/emailQueue.js`, `lib/redis.js`)**
+- Uses **BullMQ** with **Redis** for durable background email processing, exponential backoff retries, and rate limiting.
+- Includes automatic zero-crash in-memory async fallback mode for environments where Redis is unconfigured.

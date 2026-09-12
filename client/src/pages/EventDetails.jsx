@@ -37,18 +37,34 @@ const getCategoryEmoji = (category) => {
 };
 
 const FAQItem = ({ question, answer, isOpen, onToggle }) => (
-  <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all duration-200">
+  <div
+    className={`rounded-2xl transition-all duration-200 border overflow-hidden backdrop-blur-md ${
+      isOpen
+        ? 'bg-white/95 dark:bg-zinc-900/90 border-cn-blue-300/30 dark:border-cn-blue-300/30 shadow-md'
+        : 'bg-white/70 dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700'
+    }`}
+  >
     <button
+      type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer select-none"
+      aria-expanded={isOpen}
     >
-      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4">{question}</span>
-      <i className={`ri-arrow-down-s-line text-lg text-neutral-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
+      <div
+        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+          isOpen
+            ? 'rotate-180 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400'
+            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+        }`}
+      >
+        <i className="ri-arrow-down-s-line text-lg" />
+      </div>
     </button>
     <div
       className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
     >
-      <div className="px-5 pb-4 text-[13px] text-neutral-600 dark:text-neutral-500 leading-relaxed">
+      <div className="px-5 pb-4 pt-2 border-t border-neutral-100 dark:border-neutral-800/60 text-[13px] text-neutral-600 dark:text-neutral-300 leading-relaxed">
         {answer}
       </div>
     </div>
@@ -71,14 +87,24 @@ const EventDetails = () => {
   const [customFormModalOpen, setCustomFormModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [customFormResponses, setCustomFormResponses] = useState({});
-  const [externalEmail, setExternalEmail] = useState('');
-  const [externalName, setExternalName] = useState('');
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registrationPaymentStatus, setRegistrationPaymentStatus] = useState(null);
   const [postRegMessage, setPostRegMessage] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
+  const [copiedEmail, setCopiedEmail] = useState(null);
+
+  const handleCopyEmail = (emailToCopy) => {
+    if (!emailToCopy) return;
+    navigator.clipboard.writeText(emailToCopy)
+      .then(() => {
+        setCopiedEmail(emailToCopy);
+        showNotification('Club email copied to clipboard!', 'success');
+        setTimeout(() => setCopiedEmail(null), 2500);
+      })
+      .catch(() => showNotification('Failed to copy email', 'error'));
+  };
 
   // Team Registration States
   const [teamModalOpen, setTeamModalOpen] = useState(false);
@@ -234,8 +260,6 @@ const EventDetails = () => {
         // Individual registration
         const registerBody = {
           studentId: paymentPayload.studentId || null,
-          externalEmail: paymentPayload.externalEmail || null,
-          externalName: paymentPayload.externalName || null,
           formResponses: paymentPayload.formResponses || {},
           transactionId: txId,
           payerName: pName,
@@ -286,9 +310,9 @@ const EventDetails = () => {
     setConfirmModalOpen(false);
 
     try {
-      const registerBody = user
-        ? { studentId: user.id || user._id }
-        : { externalEmail, externalName };
+      const registerBody = {
+        studentId: user?.id || user?._id,
+      };
 
       const res = await registerForEvent(event.id || event._id, registerBody);
       await invalidateCache([
@@ -579,7 +603,7 @@ const EventDetails = () => {
           </div>
           <h2 className="font-black text-xl text-black dark:text-white mb-2">Oops!</h2>
           <p className="text-neutral-500 text-[14px] mb-6">{error || 'Event not found'}</p>
-          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors cursor-pointer border-2 border-black">
+          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg border border-black dark:border-white">
             <i className="ri-arrow-left-line" /> Back to Events
           </button>
         </div>
@@ -598,15 +622,22 @@ const EventDetails = () => {
   const winners = (event.winners || []).filter(w => w.name);
   const showWinners = isEnded && event.showWinner && winners.length > 0;
   const medalConfig = {
-    1: { badgeBg: 'bg-[#FFD700]/80 text-black', icon: 'ri-trophy-fill', label: '1st' },
-    2: { badgeBg: 'bg-[#C0C0C0] text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
-    3: { badgeBg: 'bg-[#CD7F32] text-white', icon: 'ri-award-fill', label: '3rd' },
+    1: { badgeBg: 'bg-tier-gold/80 text-black', icon: 'ri-trophy-fill', label: '1st' },
+    2: { badgeBg: 'bg-tier-silver text-black dark:bg-neutral-700 dark:text-white', icon: 'ri-medal-fill', label: '2nd' },
+    3: { badgeBg: 'bg-tier-bronze text-white', icon: 'ri-award-fill', label: '3rd' },
   };
 
   const isCentralEvent = event.organizerType === 'CENTRAL' || !!event.centralOrganizerId || (!event.club && !event.clubId && (!!event.centralOrganizer || !!event.participatingClubs));
   const clubCategory = isCentralEvent ? 'College-Wide' : (event.club?.category || null);
   const clubSlugOrId = isCentralEvent ? null : (event.club?.slug || event.club?._id || event.club?.id || event.createdBy?.slug || event.createdBy?._id || event.createdBy?.id);
   const displayName = isCentralEvent ? 'Office of DSW' : (event.club?.clubName || event.createdBy?.clubName || '—');
+
+  const primaryClub = event.club || event.organizers?.[0]?.club || null;
+  const primaryClubEmail = primaryClub?.clubEmail || event.createdBy?.email || null;
+  const allOrganizingClubs = (event.organizers && event.organizers.length > 0)
+    ? event.organizers.map(o => o.club).filter(Boolean)
+    : (primaryClub ? [primaryClub] : []);
+  const isJointEvent = allOrganizingClubs.length > 1;
 
   const isOpenEvent = event.registrationType === 'none';
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -618,22 +649,29 @@ const EventDetails = () => {
     currentUser?.principalType === 'EXTERNAL'
   );
   const isExternalRestricted = isExternalUser && event.allowExternal === false;
+  const allowWaitlist = event.allowWaitlist !== false;
+  const waitlistCount = (event.waitingListIds || event.waitingList || []).length;
+  const isWaitlistFull = isFull && allowWaitlist && waitlistCount >= 5;
 
   const btnConfig = isOpenEvent
-    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white border-emerald-600 dark:border-emerald-500 cursor-default', disabled: true }
+    ? { label: 'Open Entry', cls: 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-neutral-950 border-emerald-600 dark:border-emerald-500 cursor-default shadow-xs shadow-emerald-600/20', disabled: true }
     : isEnded
-    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-white border-neutral-300 dark:border-white hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-500 border-neutral-300 dark:border-neutral-700 opacity-80 cursor-not-allowed', disabled: !showWinners }
+    ? { label: showWinners ? 'View Results' : 'Event Ended', cls: showWinners ? 'bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200/80 dark:border-neutral-700 backdrop-blur-md shadow-2xs hover:shadow-xs cursor-pointer' : 'bg-neutral-200/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-500 border-neutral-200 dark:border-neutral-800 opacity-80 cursor-not-allowed', disabled: !showWinners }
     : isLive
-    ? { label: 'Event is Live', cls: 'bg-brand-600 text-white border-brand-600 cursor-not-allowed', disabled: true }
+    ? { label: 'Event is Live', cls: 'bg-brand-600 dark:bg-brand-500 text-white dark:text-neutral-950 border-brand-600 dark:border-brand-500 shadow-xs shadow-brand-600/20 cursor-not-allowed', disabled: true }
     : isDeadlinePassed
     ? { label: 'Deadline Passed', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : isExternalRestricted
-    ? { label: ' NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    ? { label: 'NITJ Students Only', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
     : alreadyRegistered
     ? { label: 'Already Registered', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700', disabled: true }
+    : isFull && !allowWaitlist
+    ? { label: 'Event Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
+    : isWaitlistFull
+    ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
     : isFull
-    ? { label: 'Join Waitlist', cls: 'bg-yellow-400 text-black border-black hover:bg-yellow-300 cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white hover:bg-brand-600 hover:border-brand-600 hover:text-white cursor-pointer', disabled: false };
+    ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white dark:text-neutral-950 border-amber-500 shadow-xs shadow-amber-500/20 hover:shadow-sm cursor-pointer', disabled: false }
+    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600 shadow-sm shadow-brand-600/25 hover:shadow-md cursor-pointer', disabled: false };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -771,18 +809,36 @@ const EventDetails = () => {
               </strong>.{' '}
             </>
           ) : isFull ? (
-            <>
-              All{' '}
-              <strong className="font-bold text-black dark:text-white">
-                {totalSeats} seats
-              </strong>{' '}
-              are filled. However, you can register to join the waitlist.{' '}
-            </>
+            !allowWaitlist ? (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                are filled. Registration is currently closed.{' '}
+              </>
+            ) : isWaitlistFull ? (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                and all 5 waitlist spots are filled. Registration is currently closed.{' '}
+              </>
+            ) : (
+              <>
+                All{' '}
+                <strong className="font-bold text-black dark:text-white">
+                  {totalSeats} seats
+                </strong>{' '}
+                are filled. However, you can register to join the waitlist ({5 - waitlistCount} spots left).{' '}
+              </>
+            )
           ) : (
             <>
               There are{' '}
               <strong className="font-bold text-black dark:text-white">
-                {totalSeats - registeredCount} spots remaining
+                {Math.max(0, totalSeats - registeredCount)} spots remaining
               </strong>{' '}
               out of {totalSeats} total seats.{' '}
             </>
@@ -853,17 +909,17 @@ const EventDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 myfont text-neutral-900 dark:text-neutral-100">
 
       <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white hover:text-brand-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[15px] font-bold text-neutral-600 dark dark:text-neutral-500 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[15px] font-bold text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
@@ -931,7 +987,7 @@ const EventDetails = () => {
                     e.stopPropagation();
                     handleShare();
                   }}
-                  className="inline-flex items-center justify-center bg-black/70 hover:bg-black/90 dark:bg-neutral-900/80 dark:hover:bg-neutral-900 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/20 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
                   title="Share Event"
                   aria-label="Share Event"
                 >
@@ -964,16 +1020,16 @@ const EventDetails = () => {
             {/* <div className="flex items-center gap-2 flex-wrap mb-3">
               {isCentralEvent ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-bold uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
                     <i className="ri-sparkling-line" /> College-Wide Event
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                    <i className="ri-building-2-line text-brand-600" /> Office of DSW
+                    <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400" /> Office of DSW
                   </span>
                 </>
               ) : (
                 clubCategory && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/50 text-[10px] font-light uppercase tracking-wider text-brand-700 dark:text-brand-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-light uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
                     {clubCategory}
                   </span>
                 )
@@ -1010,7 +1066,7 @@ const EventDetails = () => {
                   <span className="truncate max-w-[140px]">Office of DSW</span>
                 </span>
               ) : clubSlugOrId ? (
-                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-brand-600 transition-colors">
+                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors">
                   <i className="ri-team-line text-brand-500" />
                   <span className="truncate max-w-[140px]">{displayName}</span>
                 </Link>
@@ -1129,10 +1185,10 @@ const EventDetails = () => {
                 {highlights.map((h, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-300 dark:hover:border-brand-700 transition-colors"
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-cn-blue-300 dark:hover:border-cn-blue-700 transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
-                      <i className={`${h.icon} text-brand-600 dark:text-brand-400 text-base`} />
+                    <div className="w-9 h-9 rounded-lg bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
+                      <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
@@ -1185,11 +1241,124 @@ const EventDetails = () => {
 
             
 
+            {/* Contact Event Organizer Section (Left Panel) */}
+            <div className="mb-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div>
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+                    Questions about this event?
+                  </h3>
+                  <h4 className="text-base sm:text-lg font-bold text-black dark:text-white mt-0.5">
+                    Contact Event Organizer
+                  </h4>
+                </div>
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                  <i className="ri-mail-send-line text-lg" />
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
+                For queries regarding event rules, round timings, team participation, eligibility, or certificates, please contact the organizing club directly.
+              </p>
+
+              {isCentralEvent ? (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 border border-cn-blue-200 dark:border-cn-blue-900/50">
+                      <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-black dark:text-white truncate">Office of DSW</p>
+                      <p className="text-xs text-neutral-500">Dean Student Welfare, NIT Jalandhar</p>
+                    </div>
+                  </div>
+                  <a
+                    href="mailto:dsw@nitj.ac.in"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs shrink-0"
+                  >
+                    <i className="ri-mail-line" /> Contact DSW Office
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {allOrganizingClubs.map((clubObj, idx) => {
+                    const cEmail = clubObj?.clubEmail || (idx === 0 ? (event.club?.clubEmail || event.createdBy?.email) : null) || 'clubsetu@nikhim.me';
+                    const cName = clubObj?.clubName || displayName;
+                    const cSlug = clubObj?.slug || clubSlugOrId;
+                    const cLogo = clubObj?.clubLogo || (idx === 0 ? event.club?.clubLogo : null);
+
+                    return (
+                      <div
+                        key={clubObj?.id || idx}
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {cLogo ? (
+                            <img src={cLogo} alt={cName} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-200/60 dark:border-brand-800/40">
+                              <i className="ri-team-line text-lg" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {cSlug ? (
+                                <Link
+                                  to={`/club/${cSlug}`}
+                                  className="text-sm font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate hover:underline"
+                                >
+                                  {cName}
+                                </Link>
+                              ) : (
+                                <span className="text-sm font-bold text-black dark:text-white truncate">{cName}</span>
+                              )}
+                              {isJointEvent && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
+                                  {idx === 0 ? 'Lead Organizer' : 'Co-Host'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <a
+                                href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
+                                className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 truncate"
+                              >
+                                <i className="ri-mail-line text-xs" /> {cEmail}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyEmail(cEmail)}
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 transition-all cursor-pointer shadow-2xs"
+                            title="Copy email to clipboard"
+                          >
+                            <i className={copiedEmail === cEmail ? "ri-check-line text-emerald-600" : "ri-file-copy-line"} />
+                            <span>{copiedEmail === cEmail ? 'Copied' : 'Copy Email'}</span>
+                          </button>
+                          <a
+                            href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
+                            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer"
+                          >
+                            <i className="ri-mail-send-line" />
+                            <span>Send Email</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="mb-8">
               <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {faqItems.map((item, i) => (
                   <FAQItem
                     key={i}
@@ -1245,18 +1414,24 @@ const EventDetails = () => {
                     />
                   </div>
                   <p className="text-[11px] text-neutral-500 mt-1.5">
-                    {registeredCount} / {totalSeats} seats filled
+                    {Math.min(registeredCount, totalSeats)} / {totalSeats} seats filled
                   </p>
                   {isFull && (
-                    <p className="text-[11px] text-brand-600 font-semibold mt-1">All seats filled — registering adds you to the waitlist.</p>
+                    !allowWaitlist ? (
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats are filled. Registration closed.</p>
+                    ) : isWaitlistFull ? (
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats and waitlist spots are filled (5/5). Registration closed.</p>
+                    ) : (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">All regular seats filled — join the waitlist ({5 - waitlistCount} spots left).</p>
+                    )
                   )}
                 </div>
               )}
 
               {alreadyRegistered && (
-                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800/50 rounded-full">
-                  <i className="ri-checkbox-circle-line text-brand-600 text-lg shrink-0" />
-                  <p className="text-[13px] font-semibold text-brand-700 dark:text-brand-400">You are already registered for this event.</p>
+                <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-cn-teal-50 dark:bg-cn-teal-950/30 border border-cn-teal-200 dark:border-cn-teal-800/50 rounded-full">
+                  <i className="ri-checkbox-circle-line text-cn-teal-600 dark:text-cn-teal-400 text-lg shrink-0" />
+                  <p className="text-[13px] font-semibold text-cn-teal-700 dark:text-cn-teal-400">You are already registered for this event.</p>
                 </div>
               )}
 
@@ -1279,7 +1454,7 @@ const EventDetails = () => {
 
                   <Link 
                     to="/my-events" 
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
                   >
                     View My Tickets <i className="ri-arrow-right-s-line" />
                   </Link>
@@ -1309,7 +1484,7 @@ const EventDetails = () => {
                         : handleRegister)
                       : undefined}
                     disabled={btnConfig.disabled || isRegistering}
-                    className={`flex-1 py-3 px-6 text-[13px] font-black uppercase tracking-[0.15em] border-2 rounded-full transition-all flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`flex-1 py-3 px-6 text-[13px] font-bold mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
                   >
                     {isRegistering ? (
                       <><i className="ri-loader-4-line animate-spin text-base" /> Processing…</>
@@ -1319,7 +1494,7 @@ const EventDetails = () => {
                   {status === 'UPCOMING' && (
                     <CalendarDropdown
                       event={event}
-                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-600 dark text-neutral-500 cursor-pointer shadow-sm transition-colors shrink-0"
+                      btnClassName="w-12 h-12 flex items-center justify-center border border-neutral-200/80 dark:border-neutral-800 rounded-full bg-white/70 dark:bg-neutral-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 cursor-pointer shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0"
                     />
                   )}
                 </div>
@@ -1335,13 +1510,13 @@ const EventDetails = () => {
               {isCentralEvent ? (
                 <div className="px-1 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
                   <div className="px-3 flex items-center gap-3 pb-3">
-                    <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-900/50">
-                      <i className="ri-building-2-line text-brand-600 text-lg" />
+                    <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 border border-cn-blue-200 dark:border-cn-blue-900/50">
+                      <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
                       <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
-                      <p className="text-[11px] font-medium text-brand-600 dark:text-brand-400">Dean Student Welfare</p>
+                      <p className="text-[11px] font-medium text-cn-blue-600 dark:text-cn-blue-400">Dean Student Welfare</p>
                     </div>
                   </div>
 
@@ -1355,7 +1530,7 @@ const EventDetails = () => {
                           <Link
                             key={pc.id}
                             to={`/club/${pc.club?.slug || pc.club?.id}`}
-                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 rounded-lg transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-cn-blue-50 dark:hover:bg-cn-blue-950/40 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-lg transition-colors"
                           >
                             {pc.club?.clubName}
                           </Link>
@@ -1370,17 +1545,17 @@ const EventDetails = () => {
                     {clubSlugOrId ? (
                       <Link
                         to={`/club/${clubSlugOrId}`}
-                        className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0 hover:bg-brand-200 dark:hover:bg-brand-900/50 transition-colors overflow-hidden"
+                        className="w-9 h-9 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 hover:bg-cn-blue-100 dark:hover:bg-cn-blue-900/50 transition-colors overflow-hidden"
                       >
                         {event.club?.clubLogo ? (
                           <img src={event.club.clubLogo} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
                         ) : (
-                          <i className="ri-team-line text-brand-600 text-sm" />
+                          <i className="ri-team-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
                         )}
                       </Link>
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
-                        <i className="ri-team-line text-brand-600 text-sm" />
+                      <div className="w-9 h-9 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
+                        <i className="ri-team-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -1388,15 +1563,45 @@ const EventDetails = () => {
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-bold text-black dark:text-white hover:text-brand-600 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-bold text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
                       ) : (
                         <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
                       )}
+                      {primaryClubEmail && (
+                        <a
+                          href={`mailto:${primaryClubEmail}?subject=${encodeURIComponent(`Inquiry: ${title}`)}`}
+                          className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 mt-0.5 truncate max-w-full"
+                          title={primaryClubEmail}
+                        >
+                          <i className="ri-mail-line text-xs" />
+                          <span className="truncate">{primaryClubEmail}</span>
+                        </a>
+                      )}
                     </div>
                   </div>
+
+                  {isJointEvent && (
+                    <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                        Co-Organizers
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {allOrganizingClubs.slice(1).map((c, i) => (
+                          <Link
+                            key={c.id || i}
+                            to={`/club/${c.slug || c.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
+                          >
+                            {c.clubLogo && <img src={c.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />}
+                            {c.clubName}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                     <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
@@ -1478,7 +1683,7 @@ const EventDetails = () => {
           <button
             onClick={!btnConfig.disabled && !isRegistering ? handleRegister : undefined}
             disabled={btnConfig.disabled || isRegistering}
-            className={`pointer-events-auto px-5 py-2 text-[13px] font-black  tracking-[0.12em] border-2 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`pointer-events-auto px-6 py-2.5 text-[13px] font-bold mysans tracking-wide border rounded-full shadow-lg dark:shadow-neutral-950/60 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
           >
             {isRegistering ? (
               <><i className="ri-loader-4-line animate-spin text-sm" /> Processing…</>
@@ -1496,17 +1701,17 @@ const EventDetails = () => {
 
       {missingFieldsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-information-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Complete Your Profile
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">
                     Required to continue with registration.
                   </p>
                 </div>
@@ -1514,14 +1719,14 @@ const EventDetails = () => {
               <button
                 type="button"
                 onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
-              <p className="text-xs text-[#888888] dark:text-[#808080] mb-5 leading-relaxed">
+            <div className="p-6 text-cn-text-secondary">
+              <p className="text-xs text-cn-text-muted mb-5 leading-relaxed">
                 This event requires the following profile information. Please provide them to continue:
               </p>
               <div className="space-y-4">
@@ -1530,21 +1735,21 @@ const EventDetails = () => {
                   const placeholder = field === 'portfolioUrl' ? 'https://yourportfolio.com' : `https://${fieldLabel.toLowerCase()}.com/yourprofile`;
                   return (
                     <div key={field}>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 capitalize">
-                        {fieldLabel} <span className="text-[#F97316]">*</span>
+                      <label className="block text-xs font-bold text-cn-text mb-1.5 capitalize">
+                        {fieldLabel} <span className="text-brand-500">*</span>
                       </label>
                       <input type="url" placeholder={placeholder} value={modalInputs[field] || ''} onChange={(e) => setModalInputs({ ...modalInputs, [field]: e.target.value })}
-                        className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                        className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1554,31 +1759,31 @@ const EventDetails = () => {
 
       {customFormModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-file-list-3-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Registration Form
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Fill in the details to complete your registration</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Fill in the details to complete your registration</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 overflow-y-auto flex-1 text-cn-text-secondary">
               <div className="mb-6">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1588,32 +1793,32 @@ const EventDetails = () => {
                     { label: 'Year', value: JSON.parse(localStorage.getItem('user'))?.year },
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
-                    <div key={i} className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl px-3 py-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">{item.label}</p>
-                      <p className="text-xs sm:text-[13px] font-semibold text-[#111111] dark:text-[#F5F5F5] truncate">{item.value || '—'}</p>
+                    <div key={i} className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">{item.label}</p>
+                      <p className="text-xs sm:text-[13px] font-semibold text-cn-text truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="border-t border-[#F0F0F0] dark:border-[#2A2A2A] mb-6" />
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-3">Additional Information</p>
+              <div className="border-t border-cn-border-subtle mb-6" />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
+                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                      {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                     </label>
                     {field.type === 'text' && (
-                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'url' && (
-                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'textarea' && (
-                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" />
+                      <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors resize-none bg-cn-surface text-cn-text placeholder-cn-text-muted" />
                     )}
                     {field.type === 'select' && (
-                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]">
+                      <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text">
                         <option value="">Select an option</option>
                         {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                       </select>
@@ -1622,11 +1827,11 @@ const EventDetails = () => {
                 ))}
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
+              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs">
+              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
                 {isRegistering ? 'Processing...' : (event.paymentMethod && event.paymentMethod !== 'FREE' ? 'Pay & Register' : 'Register')}
               </button>
             </div>
@@ -1636,66 +1841,66 @@ const EventDetails = () => {
 
       {confirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-question-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Confirm Registration
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Please review the event details below.</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Please review the event details below.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setConfirmModalOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 text-[#555555] dark:text-[#B5B5B5]">
-              <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] mb-3">
+            <div className="p-6 text-cn-text-secondary">
+              <p className="text-sm font-bold text-cn-text mb-3">
                 Are you sure you want to register for this event?
               </p>
-              <div className="bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl p-4 mb-4 space-y-2">
-                <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+              <div className="bg-cn-surface-muted border border-cn-border rounded-xl p-4 mb-4 space-y-2">
+                <p className="text-sm font-bold text-cn-text truncate">
                   {event.title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-calendar-event-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-calendar-event-line text-brand-500" />
                   <span>{new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-map-pin-2-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-map-pin-2-line text-brand-500" />
                   <span className="truncate">{venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#B5B5B5]">
-                  <i className="ri-ticket-2-line text-[#F97316]" />
+                <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
+                  <i className="ri-ticket-2-line text-brand-500" />
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
-              {isFull && (
+              {isFull && allowWaitlist && (
                 <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                  Note: All regular seats are filled. Confirming will place you on the waitlist.
+                  Note: All regular seats are filled. Confirming will place you on the waitlist ({5 - waitlistCount} spots left).
                 </p>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1716,7 +1921,7 @@ const EventDetails = () => {
               const isWhatsApp = part.includes('chat.whatsapp.com') || part.includes('wa.me');
               return (
                 <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[#F97316] dark:text-[#FB923C] font-semibold underline underline-offset-2 hover:opacity-80 break-all"
+                  className="inline-flex items-center gap-1 text-brand-500 font-semibold underline underline-offset-2 hover:opacity-80 break-all"
                 >
                   {isWhatsApp && <i className="ri-whatsapp-line text-green-500" />}
                   {isWhatsApp ? 'Join WhatsApp Group' : 'Open Link'}
@@ -1730,37 +1935,37 @@ const EventDetails = () => {
 
         return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto ticket-backdrop-animate">
-            <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
+            <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full relative overflow-hidden flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
               <div className="relative">
                 <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-40 h-40 mx-auto animate-bounce-slow" />
               </div>
               
-              <h3 className="text-lg font-bold text-[#111111] dark:text-[#F5F5F5] mt-4">
+              <h3 className="text-lg font-bold text-cn-text mt-4">
                 {isPendingPayment ? 'Registration Received!' : 'Registration Successful!'}
               </h3>
 
               {isPendingPayment ? (
                 <>
-                  <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
+                  <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <i className="ri-time-line text-[#F97316] dark:text-[#FB923C] text-base" />
-                      <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">Payment Under Review</p>
+                      <i className="ri-time-line text-brand-500 text-base" />
+                      <p className="text-xs font-bold text-cn-text">Payment Under Review</p>
                     </div>
-                    <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed">
-                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-[#111111] dark:text-[#F5F5F5] font-semibold">My Events</strong> section.
+                    <p className="text-xs text-cn-text-secondary leading-relaxed">
+                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-cn-text font-semibold">My Events</strong> section.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] mt-2 leading-relaxed">
+                  <p className="text-xs text-cn-text-muted mt-2 leading-relaxed">
                     You are in! Your ticket has been confirmed. You can view your ticket in the My Events section.
                   </p>
                   
                   {registrationId && (
-                    <div className="my-4 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1.5">Your Registration ID</p>
-                      <p className="text-base font-bold text-[#111111] dark:text-[#F5F5F5] tracking-wider font-mono select-all">
+                    <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
+                      <p className="text-base font-bold text-cn-text tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
                     </div>
@@ -1770,12 +1975,12 @@ const EventDetails = () => {
 
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
-                <div className="my-3 p-4 bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] rounded-xl text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-2 flex items-center gap-1.5">
-                    <i className="ri-information-line text-[#F97316] dark:text-[#FB923C] text-xs" />
-                    Next Steps from Club
+                <div className="my-3 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
+                    <i className="ri-information-line text-brand-500 text-xs" />
+                    Message from Club
                   </p>
-                  <p className="text-xs text-[#555555] dark:text-[#B5B5B5] leading-relaxed break-words whitespace-pre-wrap">
+                  <p className="text-xs text-cn-text-secondary leading-relaxed break-words whitespace-pre-wrap">
                     {renderWithLinks(postRegMessage)}
                   </p>
                 </div>
@@ -1785,14 +1990,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setShowSuccessModal(false); navigate('/my-events'); }}
-                  className="w-full bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-xs border-0 outline-none text-xs cursor-pointer"
+                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
                 >
                   Go to My Events
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="w-full text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] py-2 transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                  className="w-full text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 py-2.5 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border border-transparent hover:border-neutral-200/60 dark:hover:border-neutral-800 bg-transparent outline-none cursor-pointer"
                 >
                   Stay on this page
                 </button>
@@ -1804,9 +2009,9 @@ const EventDetails = () => {
 
       {teamChoiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
-            <h3 className="font-bold text-[#111111] dark:text-[#F5F5F5] text-base sm:text-lg mb-1.5">Registration Mode</h3>
-            <p className="text-[#888888] dark:text-[#808080] text-xs mb-6">Choose how you want to participate in this event.</p>
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
+            <h3 className="font-bold text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
+            <p className="text-cn-text-muted text-xs mb-6">Choose how you want to participate in this event.</p>
             <div className="flex flex-col gap-3">
               <button
                 type="button"
@@ -1814,21 +2019,21 @@ const EventDetails = () => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 Register as Individual
               </button>
               <button
                 type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-4 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
+                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 Register as Team
               </button>
               <button
                 type="button"
                 onClick={() => setTeamChoiceModalOpen(false)}
-                className="w-full px-4 py-2 text-xs text-[#888888] dark:text-[#808080] hover:text-[#111111] dark:hover:text-[#F5F5F5] transition-colors border-0 bg-transparent outline-none cursor-pointer"
+                className="w-full px-4 py-2 text-xs font-medium mysans text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation border-0 bg-transparent outline-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -1839,67 +2044,67 @@ const EventDetails = () => {
 
       {teamModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 flex items-center justify-center shrink-0">
                   <i className="ri-group-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
                     Create Team
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Form a team to register for {event.title}</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Form a team to register for {event.title}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Close"
               >
                 <X size={18} />
               </button>
             </div>
             
-            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-[#555555] dark:text-[#B5B5B5]">
+            <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-cn-text-secondary">
               {/* Team Name */}
               <div>
-                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">Team Name <span className="text-[#F97316]">*</span></label>
+                <label className="block text-xs font-bold text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
                 <input
                   type="text"
                   required
                   placeholder="Enter a unique team name"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]"
+                  className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted"
                 />
               </div>
 
               {/* Members/Teammates selection */}
               <div>
-                <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                  Add Teammates <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
+                <label className="block text-xs font-bold text-cn-text mb-1.5">
+                  Add Teammates <span className="text-xs text-cn-text-muted font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
-                  <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
+                  <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-cn-text-muted" />
                   <input
                     type="text"
                     placeholder="Search by Email or Roll Number..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none bg-cn-surface text-cn-text placeholder-cn-text-muted transition-colors"
                   />
                   {searching && (
                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                      <i className="ri-loader-4-line animate-spin text-[#F97316]" />
+                      <i className="ri-loader-4-line animate-spin text-brand-500" />
                     </div>
                   )}
                 </div>
 
                 {/* Autocomplete dropdown */}
                 {searchResults.length > 0 && (
-                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
+                  <div className="absolute z-50 mt-1 max-h-48 overflow-y-auto bg-cn-surface border border-cn-border rounded-xl shadow-lg w-[calc(100%-3rem)] max-w-md divide-y divide-cn-border-subtle">
                     {searchResults.map((s) => (
                       <div
                         key={s.id}
@@ -1908,48 +2113,48 @@ const EventDetails = () => {
                           setSearchQuery('');
                           setSearchResults([]);
                         }}
-                        className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
+                        className="p-3 text-xs hover:bg-brand-50 dark:hover:bg-brand-950/30 cursor-pointer flex justify-between items-center transition-colors"
                       >
                         <div className="text-left">
-                          <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
-                          <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
+                          <p className="font-bold text-cn-text">{s.name}</p>
+                          <p className="text-cn-text-muted font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
+                        <span className="text-brand-500 font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="bg-[#FAFAFA] dark:bg-[#222222] p-4 border border-[#E5E5E5] dark:border-[#303030] rounded-xl space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] text-left">Team Roster</p>
-                <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
+              <div className="bg-cn-surface-muted p-4 border border-cn-border rounded-xl space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
+                <div className="divide-y divide-cn-border-subtle">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(You)</span></p>
-                      <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
+                      <p className="font-bold text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-bold">(You)</span></p>
+                      <p className="text-cn-text-muted font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-bold text-[#888888] dark:text-[#808080] uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-bold text-cn-text-muted uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{member.name}</p>
-                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{member.rollNo}</p>
+                        <p className="font-bold text-cn-text">{member.name}</p>
+                        <p className="text-cn-text-muted font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setTeammates(teammates.filter(t => t.id !== member.id))}
-                        className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-transparent border-0 outline-none cursor-pointer"
+                        className="px-3 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
                       >
                         Remove
                       </button>
                     </div>
                   ))}
                   {teammates.length === 0 && (
-                    <div className="py-3 text-center text-xs text-[#888888] dark:text-[#808080] font-medium">
+                    <div className="py-3 text-center text-xs text-cn-text-muted font-medium">
                       No teammates added yet. Search above to add.
                     </div>
                   )}
@@ -1958,24 +2163,24 @@ const EventDetails = () => {
 
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
-                <div className="space-y-4 pt-3 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080] mb-1 text-left">Additional Information</p>
+                <div className="space-y-4 pt-3 border-t border-cn-border-subtle">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5 text-left">
-                        {field.label}{' '}{field.required && <span className="text-[#F97316]">*</span>}
+                      <label className="block text-xs font-bold text-cn-text mb-1.5 text-left">
+                        {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                       </label>
                       {field.type === 'text' && (
-                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <input type="text" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'url' && (
-                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <input type="url" placeholder="https://..." value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'textarea' && (
-                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors resize-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080]" required={field.required} />
+                        <textarea rows="3" placeholder={`Enter ${field.label.toLowerCase()}`} value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors resize-none bg-cn-surface text-cn-text placeholder-cn-text-muted" required={field.required} />
                       )}
                       {field.type === 'select' && (
-                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none transition-colors bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5]" required={field.required}>
+                        <select value={customFormResponses[field.label] || ''} onChange={(e) => setCustomFormResponses({ ...customFormResponses, [field.label]: e.target.value })} className="w-full px-3.5 py-2.5 border border-cn-border rounded-xl text-xs sm:text-[13px] focus:border-brand-500 focus:outline-none transition-colors bg-cn-surface text-cn-text" required={field.required}>
                           <option value="">Select an option</option>
                           {(field.options || []).map((opt, optIdx) => <option key={optIdx} value={opt}>{opt}</option>)}
                         </select>
@@ -1985,18 +2190,18 @@ const EventDetails = () => {
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-cn-border-subtle shrink-0">
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

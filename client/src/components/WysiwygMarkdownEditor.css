@@ -139,7 +139,7 @@
 }
 
 .wysiwyg-editor-area ul > li::marker {
-  color: #ea580c;
+  color: var(--cn-brand, #0078d4);
 }
 
 .wysiwyg-editor-area ol > li::marker {
@@ -149,20 +149,20 @@
 
 /* Blockquotes */
 .wysiwyg-editor-area blockquote {
-  border-left: 4px solid #ea580c;
-  background-color: #fff7ed;
+  border-left: 4px solid var(--cn-brand, #0078d4);
+  background-color: var(--cn-brand-soft, #eff8ff);
   padding: 0.85rem 1.25rem;
   border-radius: 0 0.75rem 0.75rem 0;
   margin: 1.15rem 0;
-  color: #9a3412;
+  color: #0b416f;
   font-style: normal;
 }
 
 :is(.dark, .dark *) .wysiwyg-editor-area blockquote,
 .dark .wysiwyg-editor-area blockquote {
-  background-color: rgba(67, 26, 7, 0.3);
-  color: #fdba74;
-  border-left-color: #f97316;
+  background-color: rgba(0, 148, 255, 0.12);
+  color: #7ccaff;
+  border-left-color: var(--cn-brand, #0094ff);
 }
 
 .wysiwyg-editor-area blockquote p {
@@ -171,7 +171,7 @@
 
 /* Links */
 .wysiwyg-editor-area a {
-  color: #ea580c;
+  color: var(--cn-brand, #0078d4);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -407,7 +407,7 @@
 }
 
 .campusnode-markdown-preview ul > li::marker {
-  color: #ea580c;
+  color: var(--cn-brand, #0078d4);
 }
 
 .campusnode-markdown-preview ol > li::marker {
@@ -416,7 +416,7 @@
 }
 
 .campusnode-markdown-preview a {
-  color: #ea580c;
+  color: var(--cn-brand, #0078d4);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -424,29 +424,29 @@
 }
 
 .campusnode-markdown-preview a:hover {
-  color: #c2410c;
+  color: #0061ad;
 }
 
 :is(.dark, .dark *) .campusnode-markdown-preview a,
 .dark .campusnode-markdown-preview a {
-  color: #fb923c;
+  color: #36b5ff;
 }
 
 .campusnode-markdown-preview blockquote {
-  border-left: 4px solid #ea580c;
-  background-color: #fff7ed;
+  border-left: 4px solid var(--cn-brand, #0078d4);
+  background-color: var(--cn-brand-soft, #eff8ff);
   padding: 0.85rem 1.25rem;
   border-radius: 0 0.75rem 0.75rem 0;
   margin: 1.15rem 0;
   font-style: normal;
-  color: #7c2d12;
+  color: #0b416f;
 }
 
 :is(.dark, .dark *) .campusnode-markdown-preview blockquote,
 .dark .campusnode-markdown-preview blockquote {
-  background-color: rgba(67, 26, 7, 0.25);
-  color: #fdba74;
-  border-left-color: #f97316;
+  background-color: rgba(0, 148, 255, 0.12);
+  color: #7ccaff;
+  border-left-color: var(--cn-brand, #0094ff);
 }
 
 .campusnode-markdown-preview hr {
@@ -614,12 +614,12 @@
 }
 
 .wysiwyg-editor-area img:hover {
-  outline: 2px solid rgba(234, 88, 12, 0.5);
+  outline: 2px solid rgba(0, 120, 212, 0.5);
   outline-offset: 2px;
 }
 
 .wysiwyg-editor-area img.selected-editor-image {
-  outline: 3px solid #ea580c !important;
+  outline: 3px solid #0078d4 !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.25) !important;
+  box-shadow: 0 0 0 4px rgba(0, 148, 255, 0.25) !important;
 }

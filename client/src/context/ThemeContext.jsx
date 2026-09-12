@@ -38,7 +38,8 @@ export const ThemeProvider = ({ children }) => {
     // Single runtime-controlled theme-color meta tag
     const metaThemeColor = document.getElementById("theme-color-meta");
     if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", dark ? "#0a0a0a" : "#ffffff");
+      const computedColor = getComputedStyle(root).getPropertyValue(dark ? "--cn-bg" : "--cn-surface").trim() || (dark ? "#0a0a0a" : "#ffffff");
+      metaThemeColor.setAttribute("content", computedColor);
     }
 
     // Dynamic favicon

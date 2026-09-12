@@ -10,6 +10,7 @@ import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
 import Section from '../components/layout/Section';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
+import CardCarousel from '../components/CardCarousel';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -22,7 +23,7 @@ const CAT_IMAGES = [
   "/cat.png",
 ];
 
-const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false }) => {
+const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false, isCarousel = false }) => {
   const { showNotification } = useNotification();
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState([]);
@@ -112,8 +113,14 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     const names = new Set();
     if (Array.isArray(events)) {
       events.forEach(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+        const hasOrganizers = Array.isArray(e.organizers) && e.organizers.length > 0;
+        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && !hasOrganizers);
         if (isCentral) return;
+        if (hasOrganizers) {
+          e.organizers.forEach(o => {
+            if (o.club?.clubName) names.add(o.club.clubName);
+          });
+        }
         const cName = e.club?.clubName || e.createdBy?.clubName;
         if (cName) names.add(cName);
       });
@@ -205,14 +212,17 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         e.organizerType === 'CENTRAL_ORGANIZATION' ||
         Boolean(e.centralOrganizerId) ||
         Boolean(e.centralOrganizer) ||
-        (!e.club && !e.clubId)
+        (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0))
       );
     } else {
+      const targetClub = filterClub.trim().toLowerCase();
       filtered = filtered.filter(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
         if (isCentral) return false;
-        const cName = e.club?.clubName || e.createdBy?.clubName;
-        return cName && cName.trim().toLowerCase() === filterClub.trim().toLowerCase();
+        const matchesOrganizer = Array.isArray(e.organizers) && e.organizers.some(o => o.club?.clubName && o.club.clubName.trim().toLowerCase() === targetClub);
+        const legacyClubName = e.club?.clubName || e.createdBy?.clubName;
+        const matchesLegacy = legacyClubName && legacyClubName.trim().toLowerCase() === targetClub;
+        return matchesOrganizer || matchesLegacy;
       });
     }
   }
@@ -238,10 +248,12 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   if (searchQuery.trim() !== '') {
     const query = searchQuery.toLowerCase().trim();
     filtered = filtered.filter(e => {
-      const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId);
+      const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
       const titleMatch = e.title?.toLowerCase().includes(query);
-      const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query);
-      const categoryMatch = (e.club?.category || '').toLowerCase().includes(query);
+      const organizerNames = (e.organizers || []).map(o => o.club?.clubName || '').join(' ').toLowerCase();
+      const organizerCategories = (e.organizers || []).map(o => o.club?.category || '').join(' ').toLowerCase();
+      const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query) || organizerNames.includes(query);
+      const categoryMatch = (e.club?.category || '').toLowerCase().includes(query) || organizerCategories.includes(query);
       const centralMatch = isCentral && ('central'.includes(query) || 'odsw'.includes(query) || 'college'.includes(query));
       return titleMatch || clubMatch || categoryMatch || centralMatch;
     });
@@ -305,15 +317,14 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     { key: 'ENDED', label: 'Ended', icon: 'ri-history-line' },
   ];
   const Container = hideHeader ? 'div' : Section;
-  const containerProps = hideHeader ? { className: "w-full" } : { className: "py-10 sm:py-12 lg:py-16" };
+  const containerProps = hideHeader ? { className: "myfont w-full" } : { className: "myfont py-10 sm:py-12 lg:py-16" };
 
   return (
     <Container {...containerProps}>
 
       {!hideHeader && (
         <div className="mb-8 sm:mb-10 text-center">
-         
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
             Events & Activities
           </h1>
         </div>
@@ -322,21 +333,21 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {!hideHeader && <FeaturedEventsSection inline={true} />}
 
       {(!hideHeader || showFilters) && (
-        <div className="mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
+        <div className="mb-6 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
 
           <div className="relative group">
-            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 text-sm sm:text-base transition-colors pointer-events-none" />
+            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
               type="text"
               placeholder="Search events, clubs, or categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/70 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-600 dark:focus:border-brand-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
+              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-zinc-900/60 border border-neutral-200 dark:border-zinc-800 rounded-xl focus:bg-white dark:focus:bg-zinc-900 focus:border-brand-600 dark:focus:border-brand-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-600 transition-colors p-1"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors p-1"
                 aria-label="Clear search"
               >
                 <i className="ri-close-circle-fill text-sm sm:text-base" />
@@ -351,14 +362,11 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 <button
                   key={btn.key}
                   onClick={() => setFilterStatus(btn.key)}
-                  className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${filterStatus === btn.key
-                      ? btn.key === 'LIVE'
-                        ? 'bg-red-500 text-white border-red-500 shadow-2xs'
-                        : btn.key === 'UPCOMING'
-                          ? 'bg-brand-600 text-white border-brand-600 shadow-2xs'
-                          : 'bg-neutral-800 text-white border-neutral-800 dark:bg-neutral-200 dark:text-neutral-900 dark:border-neutral-200 shadow-2xs'
-                      : 'bg-neutral-50 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-100 dark:hover:bg-neutral-750'
-                    }`}
+                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                    filterStatus === btn.key
+                      ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
+                      : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
+                  }`}
                 >
                   <i className={`${btn.icon} text-xs`} />
                   <span>{btn.label}</span>
@@ -370,7 +378,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterClub}
                 onChange={(e) => setFilterClub(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Clubs</option>
                 <option value="CENTRAL">Central (ODSW)</option>
@@ -382,7 +390,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Months</option>
                 {availableMonths.map(m => (
@@ -393,7 +401,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
-                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/60 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Years</option>
                 {availableYears.map(y => (
@@ -412,7 +420,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   setSearchQuery('');
                   setSearchParams({});
                 }}
-                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-500 bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
+                className="mysans inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
                 title="Reset all filters"
               >
                 <i className="ri-refresh-line text-xs" />
@@ -421,12 +429,12 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             )}
           </div>
 
-          <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
+          <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
             <span>
               Showing <span className="font-bold text-neutral-800 dark:text-neutral-200">{totalFiltered}</span> {totalFiltered === 1 ? 'event' : 'events'}
             </span>
             {isFilterActive && (
-              <span className="text-[10px] font-bold text-brand-600 dark:text-brand-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
                 Filters applied
               </span>
             )}
@@ -435,7 +443,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       )}
 
       {showEmptyBanner && (
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 sm:p-12 text-center shadow-2xs mb-8">
+        <div className="bg-cn-surface border border-cn-border rounded-2xl p-8 sm:p-12 text-center shadow-2xs mb-8">
           <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-4 flex items-center justify-center">
             <img
               src={randomCat}
@@ -479,7 +487,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {liveEvents.length > 0 && (
         <div className="mb-14">
           {!hideHeader && (
-            <h2 className="text-lg font-semibold text-primary mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-red-500 mb-6 flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -496,16 +504,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h3>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {liveEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && liveEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {liveEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {liveEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -517,16 +538,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h2>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {upcomingEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && upcomingEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {upcomingEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {upcomingEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -542,16 +576,29 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               Past Events
             </h3>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {endedEvents.map(event => (
-              <EventCard
-                key={event.id || event._id}
-                event={event}
-                onRegister={handleRegister}
-                isRegistered={registeredEvents.includes(event.id || event._id)}
-              />
-            ))}
-          </div>
+          {isCarousel || (hideHeader && endedEvents.length > 3) ? (
+            <CardCarousel threshold={3}>
+              {endedEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </CardCarousel>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {endedEvents.map(event => (
+                <EventCard
+                  key={event.id || event._id}
+                  event={event}
+                  onRegister={handleRegister}
+                  isRegistered={registeredEvents.includes(event.id || event._id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

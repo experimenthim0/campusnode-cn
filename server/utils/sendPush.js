@@ -33,7 +33,9 @@ export async function sendWebPushNotification(recipientUserIds, notificationPayl
       title: notificationPayload.title || "CampusNode",
       body: notificationPayload.message || notificationPayload.content || "New campus update!",
       url: notificationPayload.link || (
-        notificationPayload.type === "TEAM_INVITATION"
+        notificationPayload.type === "TEAM_INVITATION" ||
+        notificationPayload.type === "TEAM_RESPONSE" ||
+        Boolean(notificationPayload.teamId)
           ? "/notifications"
           : notificationPayload.eventId
           ? `/event/${notificationPayload.eventId}`

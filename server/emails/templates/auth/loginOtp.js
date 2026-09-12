@@ -39,10 +39,10 @@ export const loginOtpTemplate = {
     }
 
     return `
-      <h2 style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 12px 0; color: #0f172a; text-align: center;">
+      <h2 class="email-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 12px 0; color: #0f172a; text-align: center;">
         Verify Your Login
       </h2>
-      <p style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 20px 0;">
+      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 20px 0;">
         ${recipientPrompt}
       </p>
 
@@ -50,7 +50,7 @@ export const loginOtpTemplate = {
 
       ${OtpBadge({ code: otp })}
 
-      <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; color: #64748b; text-align: center; margin: 20px 0 0 0;">
+      <p class="email-muted-text" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; color: #64748b; text-align: center; margin: 20px 0 0 0;">
         Expires in <strong>${expiryMinutes} minutes</strong>. Do not share this code.
       </p>
     `.trim();

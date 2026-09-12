@@ -12,19 +12,16 @@ import clubMemberRoutes from "./routes/clubMembers.js";
 import notificationRoutes from "./routes/notifications.js";
 import certificateRoutes from "./routes/certificates.js";
 import participationRoutes from "./routes/participation.js";
-import lostFoundRoutes from "./routes/lostFound.js";
-import lostFoundAdminRoutes from "./routes/lostFoundAdmin.js";
 import teamRoutes from "./routes/teams.js";
 import exportCenterRoutes from "./routes/exportCenter.js";
 import pushRoutes from "./routes/push.js";
 import venueRoutes, { ensureVenuesTableAndSeed } from "./routes/venues.js";
 import blackoutRoutes, { ensureBlackoutTable } from "./routes/blackouts.js";
 import scannerRoutes from "./routes/scanner.js";
-import centralOrganizerRoutes from "./routes/centralOrganizer.js";
-import eventStaffRoutes from "./routes/eventStaff.js";
 import feedbackRoutes from "./routes/feedback.js";
 import featuredEventRoutes from "./routes/featuredEvents.js";
 import previewRouter from "./emails/preview/previewRouter.js";
+import { initEmailWorker, closeEmailWorker } from "./emails/index.js";
 import { getPublicKeyInfo } from "./services/qrSigningService.js";
 import prisma from "./lib/prisma.js";
 import compression from "compression";
@@ -158,14 +155,10 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/participation", participationRoutes);
-app.use("/api/lost-found", lostFoundRoutes);
-app.use("/api/admin/lost-found", lostFoundAdminRoutes);
 app.use("/api/export-center", exportCenterRoutes);
 app.use("/api/venues/blackouts", blackoutRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/scanner", scannerRoutes);
-app.use("/api/central-organizer", centralOrganizerRoutes);
-app.use("/api/event-staff", eventStaffRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/featured-events", featuredEventRoutes);
 if (process.env.NODE_ENV !== "production") {
@@ -181,44 +174,6 @@ app.get(["/api/keys", "/api/keys/public"], (req, res) => {
   }
 });
 
-const cleanupReunitedItems = async () => {
-  try {
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    const deleted = await prisma.lostFoundItem.deleteMany({
-      where: {
-        status: "REUNITED",
-        reunitedAt: {
-          lt: threeDaysAgo
-        }
-      }
-    });
-    if (deleted.count > 0) {
-      console.log(`Auto-cleaned ${deleted.count} reunited items older than 3 days.`);
-    }
-  } catch (error) {
-    console.error("Error running auto-cleanup:", error);
-  }
-};
-
-const cleanupUnverifiedStudents = async () => {
-  try {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const deleted = await prisma.studentUser.deleteMany({
-      where: {
-        isVerified: false,
-        createdAt: {
-          lt: twentyFourHoursAgo
-        }
-      }
-    });
-    if (deleted.count > 0) {
-      console.log(`Auto-cleaned ${deleted.count} unverified student account(s) older than 24 hours.`);
-    }
-  } catch (error) {
-    console.error("Error running unverified student auto-cleanup:", error);
-  }
-};
-
 const syncRegisteredCounts = async () => {
   try {
     const events = await prisma.event.findMany({
@@ -229,7 +184,7 @@ const syncRegisteredCounts = async () => {
           select: {
             participations: {
               where: {
-                status: { not: "CANCELLED" },
+                status: { in: ["REGISTERED", "ATTENDED"] },
               },
             },
           },
@@ -251,15 +206,20 @@ const syncRegisteredCounts = async () => {
   }
 };
 
-cleanupReunitedItems();
-cleanupUnverifiedStudents();
 syncRegisteredCounts();
 seedPermissions();
 ensureBlackoutTable();
 ensureVenuesTableAndSeed();
+initEmailWorker();
 
-setInterval(cleanupReunitedItems, 8 * 60 * 60 * 1000);
-setInterval(cleanupUnverifiedStudents, 60 * 60 * 1000);
+const handleShutdown = async () => {
+  console.log("\nShutting down CampusNode server gracefully...");
+  await closeEmailWorker();
+  process.exit(0);
+};
+
+process.on("SIGTERM", handleShutdown);
+process.on("SIGINT", handleShutdown);
 
 app.use(errorHandler);
 

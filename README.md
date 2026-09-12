@@ -231,17 +231,20 @@ VITE_API_BASE_URL="http://localhost:5000/api"
 
 ## 🗄️ Database Schema Overview
 
-The database architecture consists of core models managed via Prisma:
-- **User**: Students, Club Leads, Faculty Coordinators, Admin. Supports 2FA & email verification.
-- **Club**: Club profiles, social links, faculty/student leads.
-- **Event**: Titles, schedule, capacity, fee/free toggle, dynamic registration field rules, review status (`DRAFT`, `PENDING`, `PUBLISHED`, `REJECTED`).
-- **Registration**: Student-to-Event mapping, custom field answers, attendance check-in status.
-- **Team**: Team details, members, invites for hackathons and team events.
-- **LostFoundItem**: Item listings, category, location, claim status, and image URLs.
-- **Notification**: Targeted broadcast messages with read receipts.
-- **CertificateTemplate**: Coordinates, font sizes, background image layout specs per event.
+The database architecture consists of core relational models managed via PostgreSQL and Prisma ORM:
+- **`StudentUser` & `ExternalUser`**: Student and inter-college participant profiles, verification, and decoupled social links (`StudentSocialLink`).
+- **`AdminRole`**: Super administrators and club faculty coordinators.
+- **`Club` & `ClubMembership`**: Club profiles, student coordinators, leadership delegations (`CLUB_HEAD`), announcements, and achievements.
+- **`Event` & `EventOrganizer`**: Multi-club collaborative events, venue booking, seat caps, waitlists, reviews, dynamic custom fields, and sponsors (`Sponsor[]`).
+- **`Participation` & `AttendanceRecord`**: Admissions, tickets, manual UPI payment verification, and Ed25519 cryptographic attendance scans.
+- **`Team` & `TeamMember`**: Hackathon and competition teams, leader assignments, and member invitations.
+- **`Venue` & `VenueBlackout`**: Official campus hall availability and collision prevention during maintenance/exams.
+- **`Certificate`**: Dynamically rendered PDF achievement certificates with public verification tokens.
+- **`FeaturedEvent`**: Curated homepage spotlight carousel with sponsor recognition.
+- **`EventFeedback`**: Post-event participant surveys across 6 rating dimensions.
+- **`Notification`**: Targeted user alerts and broadcast announcements.
 
-For more details, see [BACKEND_SCHEMA.md](file:///c:/Users/yadav/Desktop/club-event/club-event/clubsetu/BACKEND_SCHEMA.md).
+For complete model definitions, refer to [BACKEND_SCHEMA.md](BACKEND_SCHEMA.md).
 
 ---
 
@@ -249,16 +252,26 @@ For more details, see [BACKEND_SCHEMA.md](file:///c:/Users/yadav/Desktop/club-ev
 
 | Module | Route Prefix | Description | Key Methods |
 | :--- | :--- | :--- | :--- |
-| **Auth** | `/api/auth` | Login, Register, 2FA, Password Reset | `POST` |
-| **Events** | `/api/events` | Browse, Create, Review, Register, Export | `GET`, `POST`, `PUT`, `DELETE` |
-| **Clubs** | `/api/clubs` | Club Listings, Details, Updates | `GET`, `PUT` |
-| **Teams** | `/api/teams` | Team creation, invitation, and member management | `GET`, `POST`, `PUT`, `DELETE` |
-| **Lost & Found** | `/api/lost-found` | Report items, claim workflow, reunited status | `GET`, `POST`, `PUT`, `DELETE` |
-| **Admin** | `/api/admin` | Dashboard Stats, Club Provisioning, Global Export | `GET`, `POST` |
-| **Certificates** | `/api/certificates` | Upload Templates & Generate PDF Certificates | `GET`, `POST` |
-| **Notifications** | `/api/notifications` | User & Event Scoped Alerts | `GET`, `POST`, `PUT` |
+| **Auth** | `/api/auth` | Student/External Register, Login, 2FA, Password Resets | `POST`, `GET` |
+| **Users** | `/api/users` | Profile, Social Links, Search, Roll Lookup, Avatars | `GET`, `POST`, `PUT`, `DELETE` |
+| **Events** | `/api/events` | Browse, Create Joint Events, Waitlist, Review, Register | `GET`, `POST`, `PUT`, `DELETE` |
+| **Clubs** | `/api/clubs` | Directory, Profiles, Announcements, Achievements, Gallery | `GET`, `POST`, `PUT`, `DELETE` |
+| **Club Members** | `/api/club-members` | Roster, Search Students, Add Member, Transfer Lead | `GET`, `POST`, `PUT`, `DELETE` |
+| **Teams** | `/api/teams` | Team creation, member invitations, leader lookup | `GET`, `POST` |
+| **Payments** | `/api/payment` | Manual UPI transaction reviews & financial statistics | `GET`, `PUT` |
+| **Venues** | `/api/venues` | Campus halls catalog & operational availability | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` |
+| **Venue Blackouts** | `/api/venues/blackouts` | Schedule blackout slots to prevent booking conflicts | `GET`, `POST`, `PUT`, `DELETE` |
+| **Featured Events** | `/api/featured-events` | Homepage spotlight carousel, reordering & sponsors | `GET`, `POST`, `PATCH`, `DELETE` |
+| **Feedback** | `/api/feedback` | Post-event attendee survey submissions & analytics | `GET`, `POST` |
+| **Certificates** | `/api/certificates` | PDF generation, design templates, token verification | `GET`, `POST`, `PATCH` |
+| **Participation** | `/api/participation` | Universal QR ticket verification & attendee search | `GET`, `POST`, `PATCH` |
+| **Scanner** | `/api/scanner` | Offline sync package, scanner sessions, QR check-in | `GET`, `POST` |
+| **Notifications** | `/api/notifications` | Targeted & broadcast user notifications | `GET`, `POST`, `PUT` |
+| **Web Push** | `/api/push` | VAPID public key, browser subscriptions | `GET`, `POST` |
+| **Export Center** | `/api/export-center` | Custom dataset previews and CSV export logging | `GET`, `POST` |
+| **Admin** | `/api/admin` | Campus metrics, club provisioning, coordinator management | `GET`, `POST`, `PUT`, `DELETE` |
 
-For complete payload details and request formats, refer to [API_ENDPOINTS.md](file:///c:/Users/yadav/Desktop/club-event/club-event/clubsetu/API_ENDPOINTS.md).
+For complete payload schemas and request parameters, refer to [API_ENDPOINTS.md](API_ENDPOINTS.md).
 
 ---
 

@@ -54,7 +54,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
           {showViewAll && (
             <Link
               to="/featured-events"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors group cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs group"
             >
               <span>View all featured</span>
               <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

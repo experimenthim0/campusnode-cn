@@ -145,7 +145,7 @@ const EventApprovalPreviewModal = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
       <div
-        className="bg-white dark:bg-[#0f0f0f] border border-neutral-200 dark:border-zinc-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden text-neutral-900 dark:text-neutral-100 relative"
+        className="bg-cn-surface border border-cn-border rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden text-cn-text relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Floating Close Button */}
@@ -251,7 +251,7 @@ const EventApprovalPreviewModal = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-neutral-200 dark:border-zinc-800 bg-white dark:bg-[#0f0f0f] overflow-x-auto">
+        <div className="flex items-center gap-2 px-6 pt-3 border-b border-cn-border bg-cn-surface overflow-x-auto">
           {[
             { id: 'overview', label: 'Overview & Details', icon: FileText },
             { id: 'payment', label: 'Payment & Financials', icon: CreditCard, badge: isPaidEvent ? `₹${feeAmount}` : 'Free' },
@@ -635,7 +635,7 @@ const EventApprovalPreviewModal = ({
                 onChange={(e) => setReviewComment(e.target.value)}
                 placeholder="e.g. Please verify SAC venue booking confirmation before publishing / Fee details look correct..."
                 rows={2}
-                className="w-full px-3.5 py-3 bg-white dark:bg-[#0c0c0c] border border-neutral-300 dark:border-zinc-800 rounded-xl text-xs outline-none focus:border-brand-600 transition-colors text-neutral-900 dark:text-white"
+                className="w-full px-3.5 py-3 bg-cn-surface border border-cn-border rounded-xl text-xs outline-none focus:border-brand-600 transition-colors text-cn-text"
               />
             </div>
           )}

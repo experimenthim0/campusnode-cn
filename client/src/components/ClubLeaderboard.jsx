@@ -186,9 +186,9 @@ const ClubLeaderboard = () => {
           {leaderboard.map((club, index) => {
             const isTop3 = index < 3;
             const rankStyles = [
-              { bg: 'bg-[#FFD700]/30 dark:bg-[#FFD700]/15', border: 'border-[#FFD700]/40 dark:border-[#FFD700]/30', text: 'text-[#FFD700] dark:text-[#FFD700]', icon: 'ri-vip-crown-fill', label: 'Champion' },
-              { bg: 'bg-[#C0C0C0]/30 dark:bg-neutral-700/20', border: 'border-neutral-300 dark:border-neutral-700', text: 'text-neutral-700 dark:text-neutral-300', icon: 'ri-award-fill', label: 'Runner Up' },
-              { bg: 'bg-[#CD7F32]/30 dark:bg-brand-500/15', border: 'border-brand-400/40 dark:border-brand-500/30', text: 'text-brand-700 dark:text-brand-400', icon: 'ri-medal-line', label: 'Third Place' }
+              { bg: 'bg-tier-gold/30 dark:bg-tier-gold/15', border: 'border-tier-gold/40 dark:border-tier-gold/30', text: 'text-tier-gold dark:text-tier-gold', icon: 'ri-vip-crown-fill', label: 'Champion' },
+              { bg: 'bg-tier-silver/30 dark:bg-neutral-700/20', border: 'border-neutral-300 dark:border-neutral-700', text: 'text-neutral-700 dark:text-neutral-300', icon: 'ri-award-fill', label: 'Runner Up' },
+              { bg: 'bg-tier-bronze/30 dark:bg-brand-500/15', border: 'border-brand-400/40 dark:border-brand-500/30', text: 'text-brand-700 dark:text-brand-400', icon: 'ri-medal-line', label: 'Third Place' }
             ];
 
             return (

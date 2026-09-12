@@ -6,27 +6,24 @@ const Footer = () => {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   return (
-    <footer className="bg-[#fafafa] dark:bg-[#0c0c0c] border-t border-neutral-200 dark:border-neutral-800 py-4 px-6  hidden md:block transition-colors duration-300">
+    <footer className="bg-cn-bg border-t border-cn-border py-4 px-6 hidden md:block transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <div className="flex sm:flex-row items-center justify-between gap-4">
-          <p className="text-[12px] text-neutral-500 dark:text-neutral-400 tracking-wide">
-            © {new Date().getFullYear()} <span className="font-light text-black dark:text-neutral-100 logofont tracking-wider select-none">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span>
+          <p className="text-[12px] text-cn-text-muted tracking-wide">
+            © {new Date().getFullYear()} <span className="font-light text-cn-text logofont tracking-wider select-none">CampusNode</span>
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-            {/* <button
-              onClick={() => setIsContactOpen(true)}
-              className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors cursor-pointer bg-transparent border-0 p-0"
-            >
-              Contact / Feedback
-            </button> */}
-            <Link to='/Team' className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">
+            <Link to='/Team' className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
               Team
             </Link>
-            <Link to="/contribute" className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">
+            <Link to="/contribute" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
               Contribute
             </Link>
-            <Link to="/faq" className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">
+            <Link to="/contact" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
+              Contact
+            </Link>
+            <Link to="/faq" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
               FAQ
             </Link>
           </div>

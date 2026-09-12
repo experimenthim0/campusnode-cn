@@ -22,7 +22,7 @@ const FeaturedEventCard = ({ event, isPreview = false, className = "" }) => {
 
   const CardContent = (
     <div
-      className={`group relative flex flex-col justify-between h-full p-4 sm:p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl transition-all duration-200  hover:border-brand-500/50 dark:hover:border-brand-500/40 cursor-pointer select-none text-left ${className}`}
+      className={`group relative flex flex-col justify-between h-full p-4 sm:p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl transition-all duration-200 hover:border-brand-500/50 dark:hover:border-brand-500/40 hover:-translate-y-1 hover:shadow-md active:scale-[0.99] touch-manipulation cursor-pointer select-none text-left ${className}`}
     >
       {/* Top Bar: Badge & Arrow */}
       <div>

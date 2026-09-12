@@ -26,19 +26,19 @@ const VerifyEmail = () => {
     }, [token]);
 
     return (
-        <div className="min-h-screen bg-neutral-50/70 dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-4 py-8 sm:px-6">
+        <div className="min-h-screen bg-cn-bg text-cn-text flex flex-col items-center justify-center px-4 py-8 sm:px-6">
             
 
-            <div className="w-full max-w-[420px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-xs text-center">
+            <div className="w-full max-w-[420px] bg-cn-surface border border-cn-border rounded-2xl p-6 sm:p-8 shadow-xs text-center">
                 {status === 'loading' && (
                     <div className="flex flex-col items-center py-2">
-                        <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-500 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-cn-blue-500/10 dark:bg-cn-blue-500/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                             <Loader2 className="w-6 h-6 animate-spin stroke-[2.2]" />
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-cn-text">
                             Verifying your email
                         </h1>
-                        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-cn-text-muted mt-2 leading-relaxed">
                             Please wait while we confirm your account.
                         </p>
                     </div>
@@ -46,13 +46,13 @@ const VerifyEmail = () => {
 
                 {status === 'success' && (
                     <div className="flex flex-col items-center py-2">
-                        <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-500/20 text-brand-600 dark:text-brand-500 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-cn-teal-500/15 dark:bg-cn-teal-500/20 text-cn-teal-600 dark:text-cn-teal-400 flex items-center justify-center mb-4 border border-cn-teal-500/30">
                             <CheckCircle className="w-6 h-6 stroke-[2.2]" />
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-cn-text">
                             Email verified
                         </h1>
-                        <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-cn-text-secondary mt-2 leading-relaxed">
                             {message || 'Your email address has been successfully verified.'}
                         </p>
                        
@@ -67,20 +67,20 @@ const VerifyEmail = () => {
 
                 {status === 'error' && (
                     <div className="flex flex-col items-center py-2">
-                        <div className="w-12 h-12 r text-red-600 dark:text-red-400 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 r text-danger-600 dark:text-danger-400 flex items-center justify-center mb-4">
                             <XCircle className="w-16 h-16 stroke-[2.2]" />
-</div>
-                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                        </div>
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-cn-text">
                             Verification failed
                         </h1>
-                        <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-cn-text-secondary mt-2 leading-relaxed">
                             {message || 'The verification link is invalid or has expired.'}
                         </p>
                         
-                        <div className="w-full mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                        <div className="w-full mt-6 pt-4 border-t border-cn-border-subtle">
                             <Link
                                 to="/login"
-                                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors group"
+                                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-colors group"
                             >
                                 <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                                 <span>Back to Login</span>

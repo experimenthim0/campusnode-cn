@@ -5,12 +5,12 @@ import { getColorSync } from 'colorthief';
 import { useImageBlob } from '../hooks/useImageBlob';
 import { useTheme } from '../context/ThemeContext';
 import { prefetchEventDetail } from '../lib/prefetchManager';
-import { Handshake } from 'lucide-react';
+import { HandHeart, Handshake } from 'lucide-react';
 
 const EventCard = ({ event, onRegister, isRegistered }) => {
     const { title, description, venue, startTime, totalSeats, registeredCount, status, _id, entryFee, registrationDeadline, slug, showWinner } = event;
 
-    const DEFAULT_IMAGE = '/CLUBSETU.png';
+    const DEFAULT_IMAGE = '/fallback-img.jpg';
     const displayImage = event.imageUrl || DEFAULT_IMAGE;
 
     const { displayUrl, isBlobLoaded } = useImageBlob(displayImage);
@@ -115,16 +115,20 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
     const isUpcoming = !isLive && status === 'UPCOMING';
     const isUnlimited = !totalSeats || totalSeats === 0;
     const isFull = !isUnlimited && registeredCount >= totalSeats;
+    const allowWaitlist = event.allowWaitlist !== false;
+    const waitlistCount = (event.waitingListIds || event.waitingList || []).length;
+    const isWaitlistFull = isFull && allowWaitlist && waitlistCount >= 5;
+    const remainingSeats = isUnlimited ? 0 : Math.max(0, totalSeats - registeredCount);
     const seatsText = isUnlimited
-        ? ` `
-        : `${totalSeats - registeredCount} left`;
+        ? ' '
+        : isFull
+            ? (allowWaitlist && waitlistCount > 0 ? `${waitlistCount} waitlisted` : '0 left')
+            : `${remainingSeats} left`;
 
-    // Construct premium card styles dynamically
+    // Construct premium card styles dynamically (clean static background, no image-tinted bg on hover)
     const customStyles = (isHovered && rgb)
         ? {
-            backgroundColor: isDark
-                ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`
-                : `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.08)`,
+            backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
             boxShadow: isDark
                 ? `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.25)`
                 : `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`,
@@ -172,7 +176,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 {/* Status Badge */}
                 <div className="absolute top-1 left-1.5">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
+                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
@@ -192,12 +196,41 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
 
             <div className="px-4 pt-2 flex flex-auto flex-col">
                 <div className="flex items-center justify-between gap-2 min-w-0 mb-1">
-                    {(event.club?.clubName || event.createdBy?.clubName) ? (
+                {(() => {
+                    const organizers = event.organizers || [];
+                    const isJoint = organizers.length > 1;
+                    const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
+
+                    if (isJoint) {
+                        const jointNames = organizers.map(o => o.club?.clubName).filter(Boolean).join(' × ');
+                        return (
+                            <div className="flex items-center min-w-0 gap-1.5">
+                                <div className="flex items-center -space-x-1.5 shrink-0">
+                                    {organizers.slice(0, 3).map((o, i) => (
+                                        <div key={o.club?.id || i} className="w-5 h-5 rounded-full overflow-hidden border-2 border-white dark:border-neutral-900 shrink-0" title={o.club?.clubName}>
+                                            <img
+                                                src={o.club?.clubLogo || fallbackLogo}
+                                                alt={o.club?.clubName || 'Club'}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = fallbackLogo; }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <Handshake size={13} className="text-brand-500 shrink-0" />
+                                <span className="truncate text-brand-600 text-[11px] font-semibold">
+                                    {jointNames}
+                                </span>
+                            </div>
+                        );
+                    }
+
+                    return primaryClubName ? (
                         <div className="flex items-center min-w-0">
                             <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700 shrink-0">
                                 <img
                                     src={clubLogoSrc}
-                                    alt={event.club?.clubName || event.createdBy?.clubName || 'Club Logo'}
+                                    alt={primaryClubName || 'Club Logo'}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -206,16 +239,17 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 />
                             </div>
                             <span className="truncate text-brand-600 text-[12px] font-semibold">
-                                {event.club?.clubName || event.createdBy?.clubName}
+                                {primaryClubName}
                             </span>
                         </div>
-                    ) : <div />}
+                    ) : <div />;
+                })()}
 
                     {/* Sponsors (max 2) in blank space of club name row */}
                     {event.sponsors && event.sponsors.length > 0 && (
                         <div className="flex items-center gap-1.5 shrink-0 ml-auto pl-2">
                             <span title="Sponsored by" className="inline-flex items-center text-brand-500 dark:text-brand-500">
-                                <Handshake size={17} className="shrink-0" />
+                                <HandHeart size={17} className="shrink-0" />
                             </span>
                             <div className="flex items-center gap-1.5">
                                 {event.sponsors.slice(0, 2).map((s, idx) => (
@@ -267,9 +301,9 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                                 </span>
                                                 <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
                                             </div>
-                                            {winner.rank === 1 && <i className="ri-medal-fill text-amber-500" />}
-                                            {winner.rank === 2 && <i className="ri-medal-fill text-neutral-400" />}
-                                            {winner.rank === 3 && <i className="ri-medal-fill text-[#CD7F32]" />}
+                                            {winner.rank === 1 && <i className="ri-medal-fill text-tier-gold" />}
+                                            {winner.rank === 2 && <i className="ri-medal-fill text-tier-silver" />}
+                                            {winner.rank === 3 && <i className="ri-medal-fill text-tier-bronze" />}
                                         </div>
                                     ))}
                                 </div>
@@ -384,30 +418,34 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     {isRegistered ? (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className="flex-1 block text-center py-2 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer shadow-sm hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-colors"
+                            className="flex-1 inline-flex items-center justify-center py-2.5 px-4 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer shadow-xs hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                             View Event
                         </Link>
                     ) : (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className={`flex-1 block text-center py-2 rounded-full text-xs font-bold tracking-wider border transition-all cursor-pointer shadow-xs ${(isEnded || isLive)
-                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                            className={`flex-1 inline-flex items-center justify-center py-2.5 px-4 rounded-full text-xs font-semibold tracking-wider border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer ${(isEnded || isLive)
+                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 shadow-xs hover:shadow-md'
                                     : event.registrationType === 'none'
-                                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
-                                        : isFull
-                                            ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600'
-                                            : 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200'
+                                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30'
+                                        : isFull && !allowWaitlist
+                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
+                                        : isWaitlistFull
+                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
+                                            : isFull
+                                                ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30'
+                                                : 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg'
                                 }`}
                         >
-                            {(isEnded || isLive) ? 'View Event' : event.registrationType === 'none' ? 'Open Event' : isFull ? 'Join Waitlist' : 'Register Now'}
+                            {(isEnded || isLive) ? 'View Event' : event.registrationType === 'none' ? 'Open Event' : isFull && !allowWaitlist ? 'Event Full' : isWaitlistFull ? 'Waitlist Full' : isFull ? 'Join Waitlist' : 'Register Now'}
                         </Link>
                     )}
 
                     {isUpcoming && (
                         <CalendarDropdown
                             event={event}
-                            btnClassName="p-2 border rounded-lg shadow-sm hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-colors duration-200 shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
+                            btnClassName="p-2 border rounded-full shadow-xs hover:shadow-md hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
                         />
                     )}
                 </div>

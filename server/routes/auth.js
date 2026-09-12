@@ -10,6 +10,7 @@ import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { PROGRAM_OPTIONS, isValidBranchForProgram } from "../constants/academicConstants.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
+import redis from "../lib/redis.js";
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
@@ -22,32 +23,57 @@ const getCookieOptions = (maxAge = 7 * 24 * 60 * 60 * 1000) => ({
   maxAge,
 });
 
+async function generateAndSendLoginOtp(req, user, userType, contextLabel) {
+  const cleanEmail = user.email.toLowerCase().trim();
+  const otpCode = crypto.randomInt(100000, 1000000).toString();
+  const otpHash = crypto.createHash("sha256").update(otpCode).digest("hex");
+  const otpKey = `otp:login:${cleanEmail}`;
+
+  // Store in Redis with 5-minute (300 seconds) TTL
+  await redis.setex(
+    otpKey,
+    300,
+    JSON.stringify({
+      otpHash,
+      attempts: 0,
+      userType,
+      userId: user.id,
+      email: cleanEmail,
+    })
+  );
+
+  const securityMeta = await extractSecurityMetadata(req);
+  await sendEmail({
+    to: user.email,
+    template: "auth:login-otp",
+    data: {
+      email: user.email,
+      otp: otpCode,
+      contextLabel: contextLabel || userType,
+      expiryMinutes: 5,
+      ...securityMeta,
+    },
+  });
+
+  return {
+    needs2FA: true,
+    email: user.email,
+    userType,
+    message: "Verification code sent to your email.",
+  };
+}
+
 
 export async function getStudentRoleAndClub(studentId) {
-  const [studentUser, memberships, instAssignments] = await Promise.all([
-    prisma.studentUser.findUnique({
-      where: { id: studentId },
-      select: { accessLevel: true },
-    }),
-    prisma.clubMembership.findMany({
-      where: { studentId, status: { not: "INACTIVE" } },
-      include: {
-        club: { select: { id: true, clubName: true, slug: true, clubLogo: true } }
-      }
-    }),
-    prisma.institutionalAccountAssignment.findMany({
-      where: { studentId, status: { not: "INACTIVE" } },
-      include: {
-        institutionalAccount: { select: { id: true, name: true, type: true, email: true } }
-      }
-    })
-  ]);
+  const memberships = await prisma.clubMembership.findMany({
+    where: { studentId },
+    include: {
+      club: { select: { id: true, clubName: true, slug: true, clubLogo: true } }
+    }
+  });
 
-  const activeInstAssignment = instAssignments.find((a) => a.status === "ACTIVE" || a.status === undefined);
-  const isCentralOrganizer = Boolean(activeInstAssignment) || studentUser?.accessLevel === "central_organizer";
   const managementMembership = memberships.find(m => m.role === "CLUB_HEAD" || m.role === "COORDINATOR");
-  
-  const derivedRole = isCentralOrganizer ? "central_organizer" : managementMembership ? "club" : "member";
+  const derivedRole = managementMembership ? "club" : "member";
 
   return {
     role: derivedRole,
@@ -59,8 +85,6 @@ export async function getStudentRoleAndClub(studentId) {
       slug: m.club?.slug,
       clubLogo: m.club?.clubLogo,
       role: m.role,
-      status: m.status,
-      academicSessionId: m.academicSessionId,
       customPermissions: m.customPermissions || [],
       canTakeAttendance: m.canTakeAttendance,
       canEditEvents: m.canEditEvents,
@@ -69,19 +93,6 @@ export async function getStudentRoleAndClub(studentId) {
         canEditEvents: m.canEditEvents,
       }
     })),
-    institutionalAssignments: instAssignments.map(a => ({
-      id: a.id,
-      institutionalAccountId: a.institutionalAccountId,
-      accountName: a.institutionalAccount?.name,
-      accountType: a.institutionalAccount?.type,
-      role: a.role,
-      status: a.status,
-      canManageEvents: a.canManageEvents,
-      canTakeAttendance: a.canTakeAttendance,
-      canVerifyPayments: a.canVerifyPayments,
-      canDelegateStaff: a.canDelegateStaff,
-      customPermissions: a.customPermissions || [],
-    }))
   };
 }
 
@@ -103,7 +114,6 @@ export async function getAdminClubId(adminId) {
 router.post("/register/student", async (req, res) => {
   try {
     const { name, rollNo, branch, year, expectedGraduationYear, program, email, password } = req.body;
-    const clientUrl = getClientUrl(req.headers.origin);
 
     if (!email.endsWith("@nitj.ac.in")) {
       return res.status(400).json({
@@ -119,12 +129,13 @@ router.post("/register/student", async (req, res) => {
       return res.status(400).json({ message: "Invalid program selected." });
     }
 
+    if (!rollNo || !branch || (!year && !expectedGraduationYear)) {
+      return res.status(400).json({
+        message: "Roll number, branch, and graduation year are required.",
+      });
+    }
+
     if (program !== "OTHER") {
-      if (!rollNo || !branch || (!year && !expectedGraduationYear)) {
-        return res.status(400).json({
-          message: "Roll number, branch, and graduation year are required.",
-        });
-      }
       if (!isValidBranchForProgram(program, branch)) {
         return res.status(400).json({
           message: `Invalid branch '${branch}' for ${program} program.`,
@@ -132,18 +143,8 @@ router.post("/register/student", async (req, res) => {
       }
     }
 
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const orFilters = [{ email }];
     if (rollNo) orFilters.push({ rollNo });
-
-    // Auto-delete unverified student account if 24 hours have passed without verification
-    await prisma.studentUser.deleteMany({
-      where: {
-        isVerified: false,
-        OR: orFilters,
-        createdAt: { lt: twentyFourHoursAgo },
-      },
-    });
 
     const existingUser = await prisma.studentUser.findFirst({ where: { OR: orFilters } });
     if (existingUser) {
@@ -158,251 +159,113 @@ router.post("/register/student", async (req, res) => {
       year: year || null,
     });
 
-    const isDevMode =
-      process.env.NODE_ENV !== "production" && process.env.SKIP_VERIFICATION === "true";
-    const verificationToken = isDevMode ? null : crypto.randomBytes(20).toString("hex");
-    const verificationTokenExpire = isDevMode
-      ? null
-      : new Date(Date.now() + 24 * 60 * 60 * 1000);
-
+    const shouldSkipVerification = process.env.SKIP_VERIFICATION === "true";
+    const studentId = `I_${createObjectId().slice(0, 22)}`;
     const newUser = await prisma.studentUser.create({
       data: {
-        id: createObjectId(),
+        id: studentId,
         name: name.toUpperCase(),
-        rollNo: rollNo || null,
-        branch: branch || null,
+        rollNo,
+        branch,
         expectedGraduationYear: progress.expectedGraduationYear,
-        academicStatus: progress.academicStatus,
         program,
         email,
         password: await bcrypt.hash(password, 10),
-        verificationToken,
-        verificationTokenExpire,
+        isVerified: shouldSkipVerification,
       },
     });
 
-    if (!isDevMode) {
-      const verifyUrl = `${clientUrl}/verify-email/${verificationToken}`;
+    if (shouldSkipVerification) {
+      const { role, clubId, memberships } = await getStudentRoleAndClub(newUser.id);
+      const token = generateToken(newUser, role, "student", clubId);
+      const userObj = {
+        ...sanitizeUser(newUser),
+        academicYear: progress.academicYear,
+        academicYearLabel: progress.academicYearLabel,
+        semester: progress.semester,
+        semesterLabel: progress.semesterLabel,
+        expectedGraduationYear: progress.expectedGraduationYear,
+        year: progress.academicYearLabel,
+        clubId,
+        memberships,
+      };
 
-      try {
-        await sendEmail({
-          to: newUser.email,
-          template: "auth:verify-account",
-          data: {
-            name,
-            verifyUrl,
-            expiryHours: 24,
-          },
-        });
-        return res.status(201).json({
-          message: "Registration successful. Please check your email to verify your account.",
-        });
-      } catch {
-        await prisma.studentUser.delete({ where: { id: newUser.id } });
-        return res.status(500).json({ message: "Email could not be sent. Please try again." });
-      }
+      res.cookie("token", token, getCookieOptions());
+      return res.status(201).json({ success: true, message: "Registered successfully", user: userObj, role, token });
     }
 
-    const { role, clubId, memberships } = await getStudentRoleAndClub(newUser.id);
-    const token = generateToken(newUser, role, "student", clubId);
-    const userObj = {
-      ...sanitizeUser(newUser),
-      academicYear: progress.academicYear,
-      academicYearLabel: progress.academicYearLabel,
-      semester: progress.semester,
-      semesterLabel: progress.semesterLabel,
-      expectedGraduationYear: progress.expectedGraduationYear,
-      academicStatus: progress.academicStatus,
-      year: progress.academicYearLabel,
-      clubId,
-      memberships,
-    };
+    // Email verification required: generate token and send email
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verifyKey = `email_verify:${hashedToken}`;
 
-    res.cookie("token", token, getCookieOptions());
+    // Store in Redis with 24-hour TTL (86400 seconds)
+    await redis.setex(
+      verifyKey,
+      86400,
+      JSON.stringify({ userId: newUser.id, email: newUser.email, userType: "student" })
+    );
 
-    res.status(201).json({ success: true, message: "Registered successfully", user: userObj, role, token });
+    const clientUrl = getClientUrl(req.headers.origin);
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    try {
+      await sendEmail({
+        to: newUser.email,
+        template: "auth:verify-account",
+        data: {
+          name: newUser.name,
+          verifyUrl,
+          expiryHours: 24,
+        },
+      });
+    } catch (emailErr) {
+      console.error("[Auth] Failed to send student verification email:", emailErr);
+    }
+
+    return res.status(201).json({
+      success: true,
+      requiresVerification: true,
+      message: "Registration successful! A verification link has been sent to your NITJ email. Please verify your email before logging in.",
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Authenticates official club accounts (ClubAccount table), institutional accounts, students (StudentUser table), admin/faculty (AdminRole table), or external users (ExternalUser table)
+// Authenticates students (StudentUser table), admin/faculty (AdminRole table), or external users (ExternalUser table)
 
 router.post(["/login", "/login/student"], async (req, res) => {
   try {
     const { email, password } = req.body;
     const cleanEmail = String(email || "").trim().toLowerCase();
 
-    // 1. Club Account
-    const clubAccount = await prisma.clubAccount.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      include: {
-        club: {
-          select: {
-            id: true,
-            clubName: true,
-            slug: true,
-            clubLogo: true,
-            category: true,
-            motto: true,
-            mission: true,
-            establishedYear: true,
-            description: true,
-            socialLinks: true,
-          },
-        },
-      },
-    });
-
-    if (clubAccount && clubAccount.isActive) {
-      const isMatch = await bcrypt.compare(password, clubAccount.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const socialMap = {};
-      (clubAccount.club?.socialLinks || []).forEach((l) => {
-        const plat = (l.platform || "").toLowerCase();
-        if (plat === "instagram") socialMap.instagramProfile = l.url;
-        if (plat === "linkedin") socialMap.linkedinProfile = l.url;
-        if (plat === "x" || plat === "twitter") socialMap.xProfile = l.url;
-        if (plat === "whatsapp") socialMap.whatsappNumber = l.url;
-        if (plat === "website") socialMap.portfolioUrl = l.url;
-        if (plat === "github") socialMap.githubProfile = l.url;
-      });
-
-      const token = generateToken(clubAccount, "club", "club", clubAccount.clubId, "CLUB");
-      const userObj = {
-        id: clubAccount.id,
-        clubAccountId: clubAccount.id,
-        email: clubAccount.email,
-        name: clubAccount.club?.clubName,
-        clubName: clubAccount.club?.clubName,
-        clubId: clubAccount.clubId,
-        slug: clubAccount.club?.slug,
-        clubLogo: clubAccount.club?.clubLogo,
-        profileImage: clubAccount.club?.clubLogo,
-        category: clubAccount.club?.category,
-        motto: clubAccount.club?.motto,
-        mission: clubAccount.club?.mission,
-        establishedYear: clubAccount.club?.establishedYear,
-        description: clubAccount.club?.description,
-        principalType: "CLUB",
-        club: clubAccount.club,
-        socialLinks: clubAccount.club?.socialLinks || [],
-        instagramProfile: socialMap.instagramProfile || "",
-        linkedinProfile: socialMap.linkedinProfile || "",
-        xProfile: socialMap.xProfile || "",
-        whatsappNumber: socialMap.whatsappNumber || "",
-        portfolioUrl: socialMap.portfolioUrl || "",
-        githubProfile: socialMap.githubProfile || "",
-      };
-
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role: "club",
-        userType: "club",
-        principalType: "CLUB",
-        token,
-      });
-    }
-
-    // 2. Institutional Account (Central Organizer)
-    const instAccount = await prisma.institutionalAccount.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" }, isActive: true },
-    });
-
-    if (instAccount && instAccount.password) {
-      const isMatch = await bcrypt.compare(password, instAccount.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const token = generateToken(instAccount, "central_organizer", "institutional", null, "INSTITUTIONAL");
-      const userObj = {
-        id: instAccount.id,
-        institutionalAccountId: instAccount.id,
-        email: instAccount.email,
-        name: instAccount.name,
-        type: instAccount.type,
-        role: "central_organizer",
-        userType: "institutional",
-        principalType: "INSTITUTIONAL",
-      };
-
-      res.cookie("token", token, getCookieOptions());
-      return res.json({
-        success: true,
-        message: "Login successful",
-        user: userObj,
-        role: "central_organizer",
-        userType: "institutional",
-        principalType: "INSTITUTIONAL",
-        token,
-      });
-    }
-
-    // 3. Student User
+    // 1. Student User
     const student = await prisma.studentUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (student) {
-      if (student.isBlocked) {
-        return res.status(401).json({ message: "Your account is suspended. Please contact administrator." });
-      }
-
-      if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
-        const hasPrivilegedRole = (student.accessLevel === "central_organizer")
-          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }))
-          || Boolean(await prisma.clubMembership.findFirst({ where: { studentId: student.id, role: { in: ["CLUB_HEAD", "COORDINATOR"] } } }));
-
-        if (hasPrivilegedRole) {
-          await prisma.studentUser.update({
-            where: { id: student.id },
-            data: { isVerified: true },
-          });
-          student.isVerified = true;
-        } else {
-          const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-          if (student.createdAt < twentyFourHoursAgo || (student.verificationTokenExpire && new Date(student.verificationTokenExpire) < new Date())) {
-            await prisma.studentUser.delete({ where: { id: student.id } });
-            return res.status(401).json({ message: "Verification link expired (24 hours passed). Please register again." });
-          }
-          return res.status(401).json({ message: "Please verify your email to login." });
-        }
-      }
-
       const isMatch = await bcrypt.compare(password, student.password);
       if (!isMatch) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      if (student.isTwoStepEnabled) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        await prisma.studentUser.update({
-          where: { id: student.id },
-          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
+      if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
+        return res.status(403).json({
+          success: false,
+          requiresVerification: true,
+          email: student.email,
+          message: "Please verify your email address before logging in. Check your inbox for the verification link.",
         });
-        const securityMeta = await extractSecurityMetadata(req);
-        await sendEmail({
-          to: student.email,
-          template: "auth:login-otp",
-          data: {
-            otp,
-            email: student.email,
-            contextLabel: "Student",
-            expiryMinutes: 5,
-            ...securityMeta,
-          },
-        });
-        return res.json({ needs2FA: true, email: student.email, message: "Verification code sent to your email." });
       }
 
-      const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
+      if (student.isTwoStepEnabled) {
+        const result = await generateAndSendLoginOtp(req, student, "student", "Student");
+        return res.json(result);
+      }
+
+      const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
 
       const progress = calculateAcademicProgress(student);
       const token = generateToken(student, role, "student", clubId, "STUDENT");
@@ -413,12 +276,10 @@ router.post(["/login", "/login/student"], async (req, res) => {
         semester: progress.semester,
         semesterLabel: progress.semesterLabel,
         expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
-        academicStatus: student.academicStatus || progress.academicStatus,
         year: progress.academicYearLabel,
         principalType: "STUDENT",
         clubId,
         memberships,
-        institutionalAssignments,
       };
 
       res.cookie("token", token, getCookieOptions());
@@ -434,7 +295,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
       });
     }
 
-    // 4. Admin / Faculty Coordinator User (AdminRole table)
+    // 2. Admin / Faculty Coordinator User (AdminRole table)
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
@@ -446,24 +307,8 @@ router.post(["/login", "/login/student"], async (req, res) => {
       }
 
       if (admin.isTwoStepEnabled) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        await prisma.adminRole.update({
-          where: { id: admin.id },
-          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
-        });
-        const securityMeta = await extractSecurityMetadata(req);
-        await sendEmail({
-          to: admin.email,
-          template: "auth:login-otp",
-          data: {
-            otp,
-            email: admin.email,
-            contextLabel: "Admin",
-            expiryMinutes: 5,
-            ...securityMeta,
-          },
-        });
-        return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent to your email." });
+        const result = await generateAndSendLoginOtp(req, admin, "admin", admin.role || "Admin");
+        return res.json(result);
       }
 
       const clubInfo = (admin.role === "facultyCoordinator" || admin.role === "club")
@@ -514,7 +359,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
       });
     }
 
-    // 5. External User
+    // 3. External User
     const externalUser = await prisma.externalUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
@@ -525,25 +370,18 @@ router.post(["/login", "/login/student"], async (req, res) => {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      if (!externalUser.isVerified && process.env.SKIP_VERIFICATION !== "true") {
+        return res.status(403).json({
+          success: false,
+          requiresVerification: true,
+          email: externalUser.email,
+          message: "Please verify your email address before logging in. Check your inbox for the verification link.",
+        });
+      }
+
       if (externalUser.isTwoStepEnabled) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        await prisma.externalUser.update({
-          where: { id: externalUser.id },
-          data: { otp, otpExpire: new Date(Date.now() + 5 * 60 * 1000) },
-        });
-        const securityMeta = await extractSecurityMetadata(req);
-        await sendEmail({
-          to: externalUser.email,
-          template: "auth:login-otp",
-          data: {
-            otp,
-            email: externalUser.email,
-            contextLabel: "External",
-            expiryMinutes: 5,
-            ...securityMeta,
-          },
-        });
-        return res.json({ needs2FA: true, email: externalUser.email, userType: "external", message: "Verification code sent to your email." });
+        const result = await generateAndSendLoginOtp(req, externalUser, "external", "External");
+        return res.json(result);
       }
 
       const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
@@ -556,11 +394,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         program: externalUser.program,
         graduationYear: externalUser.graduationYear,
         profileImage: externalUser.profileImage,
-        githubProfile: externalUser.githubProfile,
-        linkedinProfile: externalUser.linkedinProfile,
-        xProfile: externalUser.xProfile,
-        instagramProfile: externalUser.instagramProfile,
-        whatsappNumber: externalUser.whatsappNumber,
         portfolioUrl: externalUser.portfolioUrl,
         role: "external",
         userType: "external",
@@ -585,7 +418,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
   }
 });
 
-// Authenticates platform admins, faculty coordinators, and payment admins (AdminRole table)
+// Authenticates platform admins and faculty coordinators (AdminRole table)
 
 router.post("/login/admin", async (req, res) => {
   try {
@@ -596,24 +429,6 @@ router.post("/login/admin", async (req, res) => {
     });
 
     if (!admin) {
-      const student = await prisma.studentUser.findFirst({
-        where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      });
-      if (student) {
-        const isCO = student.accessLevel === "central_organizer"
-          || Boolean(await prisma.institutionalAccountAssignment.findFirst({ where: { studentId: student.id, status: { not: "INACTIVE" } } }));
-        if (isCO) {
-          const isMatch = await bcrypt.compare(password, student.password);
-          if (!isMatch) return res.status(401).json({ message: "Invalid admin credentials" });
-
-          const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
-          const token = generateToken(student, role, "student", clubId, "STUDENT");
-          const userObj = { ...sanitizeUser(student), principalType: "STUDENT", clubId, memberships, institutionalAssignments };
-
-          res.cookie("token", token, getCookieOptions());
-          return res.json({ success: true, message: "Login successful", user: userObj, role, userType: "student", principalType: "STUDENT", token });
-        }
-      }
       return res.status(401).json({ message: "Invalid admin credentials" });
     }
 
@@ -624,24 +439,8 @@ router.post("/login/admin", async (req, res) => {
 
     // 2FA for admin accounts
     if (admin.isTwoStepEnabled) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpire = new Date(Date.now() + 5 * 60 * 1000);
-      await prisma.adminRole.update({ where: { id: admin.id }, data: { otp, otpExpire } });
-
-      const securityMeta = await extractSecurityMetadata(req);
-      await sendEmail({
-        to: admin.email,
-        template: "auth:login-otp",
-        data: {
-          otp,
-          email: admin.email,
-          contextLabel: admin.role || "Admin",
-          expiryMinutes: 5,
-          ...securityMeta,
-        },
-      });
-
-      return res.json({ needs2FA: true, email: admin.email, message: "Verification code sent to your email." });
+      const result = await generateAndSendLoginOtp(req, admin, "admin", admin.role || "Admin");
+      return res.json(result);
     }
 
     const club = admin.role === "facultyCoordinator" ? await getAdminClubId(admin.id) : null;
@@ -734,9 +533,12 @@ router.post("/register/external", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const externalId = `E_${createObjectId().slice(0, 22)}`;
+    const shouldSkipVerification = process.env.SKIP_VERIFICATION === "true";
+
     const externalUser = await prisma.externalUser.create({
       data: {
-        id: createObjectId(),
+        id: externalId,
         name: name.trim(),
         email: cleanEmail,
         password: hashedPassword,
@@ -744,34 +546,70 @@ router.post("/register/external", async (req, res) => {
         phone: phone?.trim() || null,
         program: program?.trim() || null,
         graduationYear: graduationYear ? parseInt(graduationYear, 10) : null,
-        isVerified: true,
+        isVerified: shouldSkipVerification,
       },
     });
 
-    const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
-    const userObj = {
-      id: externalUser.id,
-      name: externalUser.name,
-      email: externalUser.email,
-      collegeName: externalUser.collegeName,
-      phone: externalUser.phone,
-      program: externalUser.program,
-      graduationYear: externalUser.graduationYear,
-      role: "external",
-      userType: "external",
-      principalType: "EXTERNAL",
-    };
+    if (shouldSkipVerification) {
+      const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+      const userObj = {
+        id: externalUser.id,
+        name: externalUser.name,
+        email: externalUser.email,
+        collegeName: externalUser.collegeName,
+        phone: externalUser.phone,
+        program: externalUser.program,
+        graduationYear: externalUser.graduationYear,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+      };
 
-    res.cookie("token", token, getCookieOptions());
+      res.cookie("token", token, getCookieOptions());
+
+      return res.status(201).json({
+        success: true,
+        message: "External participant account created successfully!",
+        user: userObj,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+        token,
+      });
+    }
+
+    // Email verification required
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verifyKey = `email_verify:${hashedToken}`;
+
+    await redis.setex(
+      verifyKey,
+      86400,
+      JSON.stringify({ userId: externalUser.id, email: externalUser.email, userType: "external" })
+    );
+
+    const clientUrl = getClientUrl(req.headers.origin);
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    try {
+      await sendEmail({
+        to: externalUser.email,
+        template: "auth:verify-account",
+        data: {
+          name: externalUser.name,
+          verifyUrl,
+          expiryHours: 24,
+        },
+      });
+    } catch (emailErr) {
+      console.error("[Auth] Failed to send external verification email:", emailErr);
+    }
 
     return res.status(201).json({
       success: true,
-      message: "External participant account created successfully!",
-      user: userObj,
-      role: "external",
-      userType: "external",
-      principalType: "EXTERNAL",
-      token,
+      requiresVerification: true,
+      message: "Account registered successfully! A verification email has been sent. Please verify your email before logging in.",
     });
   } catch (err) {
     console.error("External user registration error:", err);
@@ -781,7 +619,7 @@ router.post("/register/external", async (req, res) => {
 
 router.post("/login/external", async (req, res) => {
   try {
-    const { email, password, otp } = req.body;
+    const { email, password } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required." });
@@ -789,31 +627,35 @@ router.post("/login/external", async (req, res) => {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    let externalUser;
-    if (otp) {
-      externalUser = await prisma.externalUser.findFirst({
-        where: { email: cleanEmail, otp, otpExpire: { gt: new Date() } },
+    const externalUser = await prisma.externalUser.findFirst({
+      where: { email: cleanEmail },
+    });
+
+    if (!externalUser) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required." });
+    }
+
+    const isMatch = await bcrypt.compare(password, externalUser.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!externalUser.isVerified && process.env.SKIP_VERIFICATION !== "true") {
+      return res.status(403).json({
+        success: false,
+        requiresVerification: true,
+        email: externalUser.email,
+        message: "Please verify your email address before logging in. Check your inbox for the verification link.",
       });
-      if (!externalUser) {
-        return res.status(401).json({ message: "Invalid or expired access code." });
-      }
-      await prisma.externalUser.update({
-        where: { id: externalUser.id },
-        data: { otp: null, otpExpire: null },
-      });
-    } else if (password) {
-      externalUser = await prisma.externalUser.findFirst({
-        where: { email: cleanEmail },
-      });
-      if (!externalUser) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      const isMatch = await bcrypt.compare(password, externalUser.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-    } else {
-      return res.status(400).json({ message: "Password or OTP is required." });
+    }
+
+    if (externalUser.isTwoStepEnabled) {
+      const result = await generateAndSendLoginOtp(req, externalUser, "external", "External");
+      return res.json(result);
     }
 
     const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
@@ -826,11 +668,6 @@ router.post("/login/external", async (req, res) => {
       program: externalUser.program,
       graduationYear: externalUser.graduationYear,
       profileImage: externalUser.profileImage,
-      githubProfile: externalUser.githubProfile,
-      linkedinProfile: externalUser.linkedinProfile,
-      xProfile: externalUser.xProfile,
-      instagramProfile: externalUser.instagramProfile,
-      whatsappNumber: externalUser.whatsappNumber,
       portfolioUrl: externalUser.portfolioUrl,
       role: "external",
       userType: "external",
@@ -854,23 +691,60 @@ router.post("/login/external", async (req, res) => {
   }
 });
 
-// Checks StudentUser first, then AdminRole
+// 2FA verification — checks StudentUser, AdminRole, then ExternalUser
 
 router.post("/verify-2fa", async (req, res) => {
   try {
     const { email, otp } = req.body;
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const cleanOtp = String(otp || "").trim();
 
+    if (!cleanEmail || !cleanOtp) {
+      return res.status(400).json({ message: "Email and verification code are required." });
+    }
+
+    const otpKey = `otp:login:${cleanEmail}`;
+    const stored = await redis.get(otpKey);
+    if (!stored) {
+      return res.status(401).json({ message: "Invalid or expired verification code." });
+    }
+
+    let otpData;
+    try {
+      otpData = JSON.parse(stored);
+    } catch {
+      await redis.del(otpKey);
+      return res.status(401).json({ message: "Invalid verification session. Please login again." });
+    }
+
+    // Rate limiting / brute force prevention: max 5 failed attempts
+    if (otpData.attempts >= 5) {
+      await redis.del(otpKey);
+      return res.status(429).json({ message: "Too many failed attempts. Please request a new verification code." });
+    }
+
+    const inputHash = crypto.createHash("sha256").update(cleanOtp).digest("hex");
+    if (inputHash !== otpData.otpHash) {
+      otpData.attempts = (otpData.attempts || 0) + 1;
+      const remainingTtl = await redis.ttl(otpKey);
+      await redis.setex(otpKey, remainingTtl > 0 ? remainingTtl : 300, JSON.stringify(otpData));
+      const remaining = 5 - otpData.attempts;
+      return res.status(401).json({
+        message: `Invalid verification code. ${remaining} attempt${remaining === 1 ? "" : "s"} remaining.`,
+      });
+    }
+
+    // Code matches! Consume the OTP immediately
+    await redis.del(otpKey);
+
+    // Retrieve user based on cleanEmail
+    // 1. Student
     const student = await prisma.studentUser.findFirst({
-      where: { email, otp, otpExpire: { gt: new Date() } },
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (student) {
-      await prisma.studentUser.update({
-        where: { id: student.id },
-        data: { otp: null, otpExpire: null },
-      });
-
-      const { role, clubId, memberships, institutionalAssignments } = await getStudentRoleAndClub(student.id);
+      const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
       const progress = calculateAcademicProgress(student);
       const token = generateToken(student, role, "student", clubId, "STUDENT");
       const userObj = {
@@ -880,73 +754,120 @@ router.post("/verify-2fa", async (req, res) => {
         semester: progress.semester,
         semesterLabel: progress.semesterLabel,
         expectedGraduationYear: student.expectedGraduationYear || progress.expectedGraduationYear,
-        academicStatus: student.academicStatus || progress.academicStatus,
         year: progress.academicYearLabel,
         principalType: "STUDENT",
         clubId,
         memberships,
-        institutionalAssignments,
       };
 
       res.cookie("token", token, getCookieOptions());
-
-      return res.json({ success: true, message: "Verification successful", user: userObj, role, userType: "student", principalType: "STUDENT", token });
+      return res.json({
+        success: true,
+        message: "Verification successful",
+        user: userObj,
+        role,
+        userType: "student",
+        principalType: "STUDENT",
+        token,
+      });
     }
 
+    // 2. Admin / Faculty
     const admin = await prisma.adminRole.findFirst({
-      where: { email, otp, otpExpire: { gt: new Date() } },
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (admin) {
-      await prisma.adminRole.update({
-        where: { id: admin.id },
-        data: { otp: null, otpExpire: null },
-      });
-
-      const club = admin.role === "facultyCoordinator" ? await getAdminClubId(admin.id) : null;
+      const club = (admin.role === "facultyCoordinator" || admin.role === "club")
+        ? await getAdminClubId(admin.id)
+        : null;
       const clubId = club?.id ?? null;
-      const token = generateToken(admin, admin.role, "admin", clubId);
-      const userObj = { ...sanitizeUser(admin), clubId };
+      const isFaculty = admin.role === "facultyCoordinator";
+      const principalType = isFaculty ? "FACULTY" : "ADMIN";
+      const memberships = club ? [{
+        id: `fac_${club.id}`,
+        clubId: club.id,
+        clubName: club.clubName,
+        slug: club.slug,
+        clubLogo: club.clubLogo,
+        role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
+        canCheckRegistration: true,
+        canViewDashboard: true,
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true,
+        },
+      }] : [];
+
+      const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+      const userObj = {
+        ...sanitizeUser(admin),
+        principalType,
+        clubId,
+        clubName: club?.clubName ?? null,
+        memberships,
+      };
 
       res.cookie("token", token, getCookieOptions());
-
-      return res.json({ success: true, message: "Verification successful", user: userObj, role: admin.role, token });
+      return res.json({
+        success: true,
+        message: "Verification successful",
+        user: userObj,
+        admin: userObj,
+        role: admin.role,
+        userType: "admin",
+        principalType,
+        token,
+      });
     }
 
-    return res.status(401).json({ message: "Invalid or expired OTP." });
+    // 3. External User
+    const externalUser = await prisma.externalUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    });
+
+    if (externalUser) {
+      const token = generateToken(externalUser, "external", "external", null, "EXTERNAL");
+      const userObj = {
+        id: externalUser.id,
+        name: externalUser.name,
+        email: externalUser.email,
+        collegeName: externalUser.collegeName,
+        phone: externalUser.phone,
+        program: externalUser.program,
+        graduationYear: externalUser.graduationYear,
+        profileImage: externalUser.profileImage,
+        portfolioUrl: externalUser.portfolioUrl,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+      };
+
+      res.cookie("token", token, getCookieOptions());
+      return res.json({
+        success: true,
+        message: "Verification successful",
+        user: userObj,
+        role: "external",
+        userType: "external",
+        principalType: "EXTERNAL",
+        token,
+      });
+    }
+
+    return res.status(404).json({ message: "User account not found." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Only students verify email; admins are pre-verified, externals use OTP
-
-router.get("/verify-email/:token", async (req, res) => {
-  try {
-    const user = await prisma.studentUser.findFirst({
-      where: {
-        verificationToken: req.params.token,
-        verificationTokenExpire: { gt: new Date() },
-      },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    await prisma.studentUser.update({
-      where: { id: user.id },
-      data: { isVerified: true, verificationToken: null, verificationTokenExpire: null },
-    });
-
-    res.status(200).json({ success: true, message: "Email verified successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Checks InstitutionalAccount, StudentUser, AdminRole, and ClubAccount
-
+// Forgot password — checks StudentUser, AdminRole, ExternalUser
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -957,50 +878,37 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(400).json({ message: "Email is required." });
     }
 
-    const instAcc = await prisma.institutionalAccount.findFirst({
+    const student = await prisma.studentUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
-    const student = !instAcc ? await prisma.studentUser.findFirst({
+    const admin = !student ? await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     }) : null;
-    const admin = (!instAcc && !student) ? await prisma.adminRole.findFirst({
-      where: { email: { equals: cleanEmail, mode: "insensitive" } },
-    }) : null;
-    const clubAcc = (!instAcc && !student && !admin) ? await prisma.clubAccount.findFirst({
+    const externalUser = (!student && !admin) ? await prisma.externalUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     }) : null;
 
-    const user = instAcc || student || admin || clubAcc;
+    const user = student || admin || externalUser;
 
     if (!user) {
       return res.json({ message: "If an account exists, a reset link has been sent." });
     }
 
+    const userType = student ? "student" : admin ? "admin" : "external";
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-    const resetPasswordExpire = new Date(Date.now() + 30 * 60 * 1000);
+    const resetKey = `pwd_reset:${hashedToken}`;
 
-    if (instAcc) {
-      await prisma.institutionalAccount.update({
-        where: { id: instAcc.id },
-        data: { resetPasswordToken: hashedToken, resetPasswordExpire },
-      });
-    } else if (student) {
-      await prisma.studentUser.update({
-        where: { id: student.id },
-        data: { resetPasswordToken: hashedToken, resetPasswordExpire },
-      });
-    } else if (admin) {
-      await prisma.adminRole.update({
-        where: { id: admin.id },
-        data: { resetPasswordToken: hashedToken, resetPasswordExpire },
-      });
-    } else if (clubAcc) {
-      await prisma.clubAccount.update({
-        where: { id: clubAcc.id },
-        data: { resetPasswordToken: hashedToken, resetPasswordExpire },
-      });
-    }
+    // Store in Redis with 30-minute (1800 seconds) TTL
+    await redis.setex(
+      resetKey,
+      1800,
+      JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        userType,
+      })
+    );
 
     const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
     const securityMeta = await extractSecurityMetadata(req);
@@ -1015,29 +923,9 @@ router.post("/forgot-password", async (req, res) => {
           ...securityMeta,
         },
       });
-      res.json({ message: "If an account exists, a reset link has been sent." });
-    } catch {
-      if (instAcc) {
-        await prisma.institutionalAccount.update({
-          where: { id: instAcc.id },
-          data: { resetPasswordToken: null, resetPasswordExpire: null },
-        });
-      } else if (student) {
-        await prisma.studentUser.update({
-          where: { id: student.id },
-          data: { resetPasswordToken: null, resetPasswordExpire: null },
-        });
-      } else if (admin) {
-        await prisma.adminRole.update({
-          where: { id: admin.id },
-          data: { resetPasswordToken: null, resetPasswordExpire: null },
-        });
-      } else if (clubAcc) {
-        await prisma.clubAccount.update({
-          where: { id: clubAcc.id },
-          data: { resetPasswordToken: null, resetPasswordExpire: null },
-        });
-      }
+      return res.json({ message: "If an account exists, a reset link has been sent." });
+    } catch (err) {
+      await redis.del(resetKey);
       return res.status(500).json({ message: "Email could not be sent." });
     }
   } catch (err) {
@@ -1045,62 +933,168 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-
 router.post("/reset-password/:token", async (req, res) => {
   try {
-    const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+    const rawToken = req.params.token;
+    if (!rawToken) {
+      return res.status(400).json({ message: "Reset token is required." });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const resetKey = `pwd_reset:${hashedToken}`;
+
+    const stored = await redis.get(resetKey);
+    if (!stored) {
+      return res.status(400).json({ message: "Invalid or expired reset token." });
+    }
+
+    let tokenData;
+    try {
+      tokenData = JSON.parse(stored);
+    } catch {
+      await redis.del(resetKey);
+      return res.status(400).json({ message: "Invalid reset token." });
+    }
+
     const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const { userId, userType } = tokenData;
 
-    const instAcc = await prisma.institutionalAccount.findFirst({
-      where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
-    });
-
-    if (instAcc) {
-      await prisma.institutionalAccount.update({
-        where: { id: instAcc.id },
-        data: { password: hashedPassword, resetPasswordToken: null, resetPasswordExpire: null },
+    if (userType === "admin") {
+      await prisma.adminRole.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
       });
-      return res.json({ message: "Password reset successful." });
+    } else if (userType === "external") {
+      await prisma.externalUser.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+    } else {
+      await prisma.studentUser.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+    }
+
+    // Single-use token: consume immediately
+    await redis.del(resetKey);
+
+    return res.json({
+      success: true,
+      message: "Password reset successfully. You may now log in with your new password.",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Email verification endpoints
+router.get("/verify-email/:token", async (req, res) => {
+  try {
+    const rawToken = req.params.token;
+    if (!rawToken) {
+      return res.status(400).json({ message: "Verification token is required." });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verifyKey = `email_verify:${hashedToken}`;
+
+    const stored = await redis.get(verifyKey);
+    if (!stored) {
+      return res.status(400).json({ message: "The verification link is invalid or has expired." });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(stored);
+    } catch {
+      await redis.del(verifyKey);
+      return res.status(400).json({ message: "Invalid verification link." });
+    }
+
+    const { userId, userType } = data;
+    if (userType === "student") {
+      await prisma.studentUser.update({
+        where: { id: userId },
+        data: { isVerified: true },
+      });
+    } else if (userType === "external") {
+      await prisma.externalUser.update({
+        where: { id: userId },
+        data: { isVerified: true },
+      });
+    }
+
+    // Single-use token: consume upon verification
+    await redis.del(verifyKey);
+
+    return res.json({
+      success: true,
+      message: "Your email address has been successfully verified! You can now sign in.",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post(["/send-verification-email", "/resend-verification"], async (req, res) => {
+  try {
+    const { email } = req.body;
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    if (!cleanEmail) {
+      return res.status(400).json({ message: "Email is required." });
     }
 
     const student = await prisma.studentUser.findFirst({
-      where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
+    const externalUser = !student ? await prisma.externalUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    }) : null;
 
-    if (student) {
-      await prisma.studentUser.update({
-        where: { id: student.id },
-        data: { password: hashedPassword, resetPasswordToken: null, resetPasswordExpire: null },
-      });
-      return res.json({ message: "Password reset successful." });
+    const user = student || externalUser;
+    if (!user) {
+      return res.json({ message: "If the account exists, a verification email has been sent." });
     }
 
-    const admin = await prisma.adminRole.findFirst({
-      where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
-    });
-
-    if (admin) {
-      await prisma.adminRole.update({
-        where: { id: admin.id },
-        data: { password: hashedPassword, resetPasswordToken: null, resetPasswordExpire: null },
-      });
-      return res.json({ message: "Password reset successful." });
+    if (user.isVerified) {
+      return res.status(400).json({ message: "This account is already verified. You can log in directly." });
     }
 
-    const clubAcc = await prisma.clubAccount.findFirst({
-      where: { resetPasswordToken: hashedToken, resetPasswordExpire: { gt: new Date() } },
+    const userType = student ? "student" : "external";
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verifyKey = `email_verify:${hashedToken}`;
+
+    // 24 hours TTL (86400 seconds)
+    await redis.setex(
+      verifyKey,
+      86400,
+      JSON.stringify({ userId: user.id, email: user.email, userType })
+    );
+
+    const clientUrl = getClientUrl(req.headers.origin);
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    await sendEmail({
+      to: user.email,
+      template: "auth:verify-account",
+      data: {
+        name: user.name,
+        verifyUrl,
+        expiryHours: 24,
+      },
     });
 
-    if (clubAcc) {
-      await prisma.clubAccount.update({
-        where: { id: clubAcc.id },
-        data: { password: hashedPassword, resetPasswordToken: null, resetPasswordExpire: null },
-      });
-      return res.json({ message: "Password reset successful." });
-    }
-
-    return res.status(400).json({ message: "Invalid or expired token" });
+    return res.json({
+      success: true,
+      message: "Verification email sent successfully.",
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -1110,25 +1104,19 @@ router.post("/reset-password/:token", async (req, res) => {
 router.post("/change-password", verifyToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const { userId, userType, principalType } = req.user;
+    const { userId, userType } = req.user;
 
     let user;
-    if (principalType === "INSTITUTIONAL" || userType === "institutional") {
-      user = await prisma.institutionalAccount.findUnique({ where: { id: req.user.institutionalAccountId || userId } });
-    } else if (principalType === "CLUB" || userType === "club") {
-      user = await prisma.clubAccount.findUnique({ where: { id: req.user.clubAccountId || userId } });
-    } else if (userType === "admin") {
+    if (userType === "admin") {
       user = await prisma.adminRole.findUnique({ where: { id: userId } });
+    } else if (userType === "external") {
+      user = await prisma.externalUser.findUnique({ where: { id: userId } });
     } else {
       user = await prisma.studentUser.findUnique({ where: { id: userId } });
     }
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
-    }
-
-    if (userType !== "club" && principalType !== "CLUB" && principalType !== "INSTITUTIONAL" && !checkPasswordRateLimit(user)) {
-      return res.status(429).json({ message: "Daily password change limit exceeded. Try again tomorrow." });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -1138,33 +1126,20 @@ router.post("/change-password", verifyToken, async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    if (principalType === "INSTITUTIONAL" || userType === "institutional") {
-      await prisma.institutionalAccount.update({
-        where: { id: user.id },
-        data: { password: hashedPassword },
-      });
-    } else if (principalType === "CLUB" || userType === "club") {
-      await prisma.clubAccount.update({
-        where: { id: user.id },
-        data: { password: hashedPassword },
-      });
-    } else if (userType === "admin") {
+    if (userType === "admin") {
       await prisma.adminRole.update({
         where: { id: user.id },
-        data: {
-          password: hashedPassword,
-          passwordChangeCount: (user.passwordChangeCount || 0) + 1,
-          lastPasswordChangeDate: new Date(),
-        },
+        data: { password: hashedPassword },
+      });
+    } else if (userType === "external") {
+      await prisma.externalUser.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
       });
     } else {
       await prisma.studentUser.update({
         where: { id: user.id },
-        data: {
-          password: hashedPassword,
-          passwordChangeCount: (user.passwordChangeCount || 0) + 1,
-          lastPasswordChangeDate: new Date(),
-        },
+        data: { password: hashedPassword },
       });
     }
 
@@ -1185,4 +1160,3 @@ router.post("/logout", (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 export default router;
-

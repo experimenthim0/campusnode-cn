@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const EventGuide = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] py-12 px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg text-cn-text py-12 px-4 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
 
         <div className="mb-10">
@@ -20,7 +20,7 @@ const EventGuide = () => {
         </div>
 
         {/* Who can create */}
-        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-user-star-line text-brand-600 text-xl" />
             Who Can Create Events?
@@ -35,7 +35,7 @@ const EventGuide = () => {
         </section>
 
         {/* 4-Step Creation Workflow */}
-        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2.5">
             <i className="ri-git-commit-line text-brand-600 text-xl" />
             The 4-Step Event Creation Wizard
@@ -71,7 +71,7 @@ const EventGuide = () => {
                 icon: 'ri-sparkles-line',
               },
             ].map((s) => (
-              <div key={s.step} className="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/60 dark:border-neutral-800 rounded-xl relative overflow-hidden">
+              <div key={s.step} className="p-4 bg-cn-surface-muted border border-cn-border-subtle rounded-xl relative overflow-hidden">
                 <span className="absolute top-2 right-3 text-3xl font-black text-neutral-200 dark:text-neutral-800 select-none">
                   {s.step}
                 </span>
@@ -89,7 +89,7 @@ const EventGuide = () => {
           </div>
         </section>
 
-        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
             <i className="ri-layout-grid-line text-brand-600 text-xl" />
             Supported Event Types
@@ -127,7 +127,7 @@ const EventGuide = () => {
                 desc: 'Keynote talks by industry experts with first-come-first-served registration caps.',
               },
             ].map((item) => (
-              <div key={item.title} className="flex gap-4 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/50 dark:border-neutral-800 rounded-xl hover:border-brand-500/25 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-300">
+              <div key={item.title} className="flex gap-4 p-4 bg-cn-surface-muted border border-cn-border-subtle rounded-xl hover:border-brand-500/25 hover:bg-cn-surface transition-all duration-300">
                 <div className="w-10 h-10 bg-brand-50 dark:bg-brand-950/40 text-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <i className={`${item.icon} text-lg`} />
                 </div>
@@ -141,7 +141,7 @@ const EventGuide = () => {
         </section>
 
         {/* All Fields Explained */}
-        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
             <i className="ri-file-list-3-line text-brand-600 text-xl" />
             Event Form Fields — Complete Reference
@@ -324,7 +324,7 @@ const EventGuide = () => {
         </section>
 
         {/* Custom Field Types */}
-        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-magic-line text-brand-600 text-xl" />
             Custom Registration Field Types
@@ -332,17 +332,17 @@ const EventGuide = () => {
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
             Custom fields let you collect tailored information from students during registration. Here are the available field types:
           </p>
-          <div className="overflow-hidden border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm">
+          <div className="overflow-hidden border border-cn-border rounded-xl shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+                  <tr className="bg-cn-surface-muted border-b border-cn-border">
                     <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Type</th>
                     <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Use Case</th>
                     <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Example</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 text-sm">
+                <tbody className="divide-y divide-cn-border-subtle text-sm">
                   <tr>
                     <td className="px-5 py-3.5 font-semibold text-neutral-800 dark:text-neutral-200">Text</td>
                     <td className="px-5 py-3.5 text-neutral-600 dark:text-neutral-400">Short single-line answers</td>
@@ -370,14 +370,14 @@ const EventGuide = () => {
         </section>
 
         {/* Pro Tips */}
-        <section className="bg-neutral-900 text-white rounded-2xl p-6 md:p-8 mb-6 shadow-md relative overflow-hidden">
+        <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
           
-          <h2 className="text-lg font-bold mb-5 flex items-center gap-2.5 text-white relative z-10">
+          <h2 className="text-lg font-bold mb-5 flex items-center gap-2.5 text-cn-text relative z-10">
             <i className="ri-lightbulb-line text-amber-400 text-xl" />
             Pro Tips for Event Organizers
           </h2>
-          <ul className="space-y-4 text-sm text-neutral-300 relative z-10">
+          <ul className="space-y-4 text-sm text-cn-text-secondary relative z-10">
             {[
               'Upload a clear 16:9 poster (under 5MB) for optimal display on mobile and desktop event cards.',
               'Set a registration deadline at least 2-3 hours prior to event start time to prepare participant lists.',

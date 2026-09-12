@@ -65,7 +65,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
   const currentTimeTop = (currentHour - 8) * 70;
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+    <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="p-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-black text-black dark:text-white">
@@ -92,7 +92,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
         </div>
 
         {/* Schedule Day Slot Area */}
-        <div className="relative h-[1050px] bg-white dark:bg-[#0a0a0a]">
+        <div className="relative h-[1050px] bg-cn-surface">
           {/* Background Hour Lines */}
           {HOURS.map((h, i) => (
             <div key={i} className="h-[70px] border-b border-neutral-100 dark:border-zinc-800/40" />

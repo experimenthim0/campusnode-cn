@@ -1,14 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import WysiwygMarkdownEditor from '../components/WysiwygMarkdownEditor';
 import api from '../services/api';
 import { updateEvent, getEventById } from '../services/eventService';
+import { getClubs } from '../services/clubService';
 import { useNotification } from '../context/NotificationContext';
 import { EVENT_VENUES } from '../constants/eventVenues';
 import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/academicConstants';
 import { MediaType } from '../types/index';
 import EventFormStepper from '../components/EventFormStepper';
 import ShimmerText from '../components/ShimmerText';
+import AutosaveStatusBadge from '../components/AutosaveStatusBadge';
+import { validateEventStep, validateAllEventSteps } from '../utils/eventValidation';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Separator } from '../components/ui/separator';
+import {
+  Eye,
+  Save,
+  ArrowRight,
+  ArrowLeft,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Globe,
+  Upload,
+  Clock,
+  Calendar,
+  MapPin,
+  ExternalLink,
+  Plus,
+  Trash2,
+  CreditCard,
+  Sparkles,
+  Check,
+  X,
+  FileText,
+  Handshake,
+} from 'lucide-react';
 
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
 const BRANCHES = ALL_BRANCH_CODES;
@@ -16,7 +47,9 @@ const BRANCHES = ALL_BRANCH_CODES;
 const EditEvent = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
     const { showNotification } = useNotification();
+
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         title: '',
@@ -38,6 +71,7 @@ const EditEvent = () => {
         showWinner: false,
         provideCertificate: false,
         feedbackEnabled: true,
+        allowWaitlist: true,
         registrationType: 'individual',
         minTeamSize: 1,
         maxTeamSize: 1,
@@ -49,6 +83,7 @@ const EditEvent = () => {
         accountHolderName: '',
         postRegistrationMessage: '',
     });
+
     const isEventCompleted = formData.endTime && new Date(formData.endTime) < new Date();
     const [sponsors, setSponsors] = useState([]);
     const [media, setMedia] = useState([]);
@@ -63,6 +98,38 @@ const EditEvent = () => {
     const [uploading, setUploading] = useState(false);
     const [availableVenues, setAvailableVenues] = useState(EVENT_VENUES);
     const [reviewInfo, setReviewInfo] = useState(null);
+    const [availableClubs, setAvailableClubs] = useState([]);
+    const [isJointEvent, setIsJointEvent] = useState(false);
+    const [primaryClubId, setPrimaryClubId] = useState(null);
+    const [collaboratingClubIds, setCollaboratingClubIds] = useState([]);
+
+    // Validation & Stepper state
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [stepErrors, setStepErrors] = useState({});
+    const [completedSteps, setCompletedSteps] = useState([1, 2, 3, 4]);
+
+    // Autosave state
+    const [autosaveStatus, setAutosaveStatus] = useState('saved'); // 'saving' | 'saved' | 'error' | 'idle'
+    const [lastSavedTime, setLastSavedTime] = useState(null);
+    const isInitialMount = useRef(true);
+    const saveSequenceRef = useRef(0);
+    const autosaveTimerRef = useRef(null);
+    const lastKnownUpdatedAtRef = useRef(null);
+    const inFlightSaveRef = useRef(false);
+    const lastSavedPayloadRef = useRef({});
+    const isDirtyRef = useRef(false);
+
+    // Sync step from query param (e.g. ?step=2 from Preview)
+    useEffect(() => {
+        const stepParam = parseInt(searchParams.get('step'), 10);
+        if (stepParam >= 1 && stepParam <= 4) {
+            setCurrentStep(stepParam);
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
+    }, []);
 
     useEffect(() => {
         const fetchOpenVenues = async () => {
@@ -98,80 +165,214 @@ const EditEvent = () => {
     const toLocalISOString = (dateObj) => {
         if (!dateObj) return '';
         const date = new Date(dateObj);
-        const tzOffset = date.getTimezoneOffset() * 60000;
-        return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+        if (isNaN(date.getTime())) return '';
+        const pad = (num) => String(num).padStart(2, '0');
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
+    // Thoroughly erase any stale local draft, edit cache, or collision keys for this event across storage
+    const purgeLocalEventData = useCallback((eventId = id) => {
+        try {
+            if (!eventId) return;
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && (k.includes(eventId) || k.startsWith(`event_draft_${eventId}`) || k.startsWith(`edit_event_${eventId}`))) {
+                    keysToRemove.push(k);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+        } catch (e) {
+            console.warn('Storage cleanup notice:', e);
+        }
+    }, [id]);
+
+    // Authoritative event state applicator
+    const applyEventToState = useCallback((event) => {
+        if (!event) return;
+        lastKnownUpdatedAtRef.current = event.updatedAt;
+        const feeAmt = event.registrationFee ?? event.entryFee ?? 0;
+        const rawCollegeUrl = event.collegePaymentUrl?.trim() || '';
+        const isCollege = Boolean(rawCollegeUrl && (rawCollegeUrl.startsWith('http') || !rawCollegeUrl.includes('@')));
+        const payMethod = event.paymentMethod || (feeAmt > 0 ? (isCollege ? 'COLLEGE_PAYMENT' : 'MANUAL_TRANSACTION') : 'FREE');
+        const extractedUpi = payMethod === 'MANUAL_TRANSACTION'
+            ? (event.upiId || event.paymentInstructions?.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/)?.[0] || '')
+            : '';
+        const collegeUrl = payMethod === 'COLLEGE_PAYMENT' ? rawCollegeUrl : '';
+
+        setFormData({
+            title: event.title || '',
+            description: event.description || '',
+            venue: event.venue || '',
+            startTime: toLocalISOString(event.startTime),
+            endTime: toLocalISOString(event.endTime),
+            totalSeats: event.totalSeats || '',
+            entryFee: feeAmt,
+            imageUrl: event.imageUrl || '',
+            requiredFields: event.requiredFields || [],
+            customFields: event.customFields || [],
+            registrationDeadline: toLocalISOString(event.registrationDeadline),
+            allowedPrograms: event.allowedPrograms || ['BTECH', 'MTECH', 'OTHER'],
+            allowedYears: event.allowedYears || [],
+            allowedBranches: event.allowedBranches || [],
+            allowExternal: event.allowExternal !== undefined ? event.allowExternal : true,
+            winners: event.winners || [],
+            showWinner: event.showWinner || false,
+            provideCertificate: event.provideCertificate || false,
+            feedbackEnabled: event.feedbackEnabled !== undefined ? event.feedbackEnabled : true,
+            allowWaitlist: event.allowWaitlist !== undefined ? event.allowWaitlist : true,
+            registrationType: event.registrationType || 'individual',
+            minTeamSize: event.minTeamSize || 1,
+            maxTeamSize: event.maxTeamSize || 1,
+            paymentMethod: payMethod,
+            registrationFee: feeAmt,
+            paymentInstructions: event.paymentInstructions || '',
+            collegePaymentUrl: collegeUrl,
+            upiId: extractedUpi,
+            accountHolderName: event.accountHolderName || '',
+            postRegistrationMessage: event.postRegistrationMessage || '',
+        });
+
+        const initialJoint = (event.organizers || []).length > 1;
+        setIsJointEvent(initialJoint);
+        const pCid = event.clubId || event.club?.id || event.club?._id || event.organizers?.[0]?.clubId || null;
+        setPrimaryClubId(pCid);
+        const partnerIds = (event.organizers || [])
+            .map(o => o.clubId || o.club?.id || o.club?._id)
+            .filter(cid => cid && cid !== pCid);
+        setCollaboratingClubIds(partnerIds);
+
+        if (event.sponsors && event.sponsors.length > 0) {
+            setSponsors(event.sponsors.map(s => ({
+                name: s.name,
+                logoUrl: s.logoUrl,
+                websiteUrl: s.websiteUrl || ''
+            })));
+        } else {
+            setSponsors([]);
+        }
+
+        if (event.media && event.media.length > 0) {
+            setMedia(event.media.map(m => ({
+                url: m.url,
+                type: m.type
+            })));
+        } else {
+            setMedia([]);
+        }
+
+        setIsFree(payMethod === 'FREE');
+        setIsUnlimited(!event.totalSeats || event.totalSeats === 0);
+        setAllYears(!event.allowedYears || event.allowedYears.length === 0);
+        setAllBranches(!event.allowedBranches || event.allowedBranches.length === 0);
+        setReviewInfo({
+            reviewStatus: event.reviewStatus,
+            reviewComment: event.reviewComment,
+            reviewedBy: event.reviewedBy,
+        });
+
+        // Compute step errors across all steps
+        const vResult = validateAllEventSteps(
+            {
+                ...event,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                paymentMethod: payMethod,
+                registrationFee: feeAmt,
+            },
+            {
+                sponsors: event.sponsors || [],
+                media: event.media || [],
+                isUnlimited: !event.totalSeats || event.totalSeats === 0,
+            }
+        );
+        setStepErrors(vResult.stepErrors);
+        isDirtyRef.current = false;
+    }, []);
+
+    // Initial load: Fetch fresh event from server and purge any stale local cached data
     useEffect(() => {
         const fetchEvent = async () => {
-             try {
-                const res = await getEventById(id);
-                const event = res.data;
-                if (event) {
-                    const start = toLocalISOString(event.startTime);
-                    const end = toLocalISOString(event.endTime);
-                    const unlimited = !event.totalSeats || event.totalSeats === 0;
-                    const yearArr = event.allowedYears || [];
-                    const branchArr = event.allowedBranches || [];
-                    setFormData({
-                        title: event.title,
-                        description: event.description || '',
-                        venue: event.venue,
-                        startTime: start,
-                        endTime: end,
-                        totalSeats: unlimited ? '' : event.totalSeats,
-                        entryFee: event.entryFee || 0,
-                        imageUrl: event.imageUrl || '',
-                        requiredFields: event.requiredFields || [],
-                        customFields: event.customFields || [],
-                        registrationDeadline: event.registrationDeadline ? toLocalISOString(event.registrationDeadline) : '',
-                        allowedPrograms: event.allowedPrograms || ['BTECH', 'MTECH', 'OTHER'],
-                        allowedYears: yearArr,
-                        allowedBranches: branchArr,
-                        allowExternal: event.allowExternal !== undefined ? Boolean(event.allowExternal) : true,
-                        winners: event.winners || [],
-                        showWinner: event.showWinner || false,
-                        provideCertificate: event.provideCertificate || false,
-                        feedbackEnabled: event.feedbackEnabled !== undefined ? event.feedbackEnabled : true,
-                        registrationType: event.registrationType || 'individual',
-                        minTeamSize: event.minTeamSize || 1,
-                        maxTeamSize: event.maxTeamSize || 1,
-                        paymentMethod: event.paymentMethod || 'FREE',
-                        registrationFee: event.registrationFee || event.entryFee || 0,
-                        paymentInstructions: event.paymentInstructions || '',
-                        collegePaymentUrl: event.collegePaymentUrl || '',
-                        upiId: event.upiId || '',
-                        accountHolderName: event.accountHolderName || '',
-                        postRegistrationMessage: event.postRegistrationMessage || '',
-                    });
-                    setIsFree(!event.paymentMethod || event.paymentMethod === 'FREE');
-                    setIsUnlimited(unlimited);
-                    setAllYears(yearArr.length === 0);
-                    setAllBranches(branchArr.length === 0);
-                    setSponsors(event.sponsors || []);
-                    setMedia(event.media || []);
-                    setSponsorErrors((event.sponsors || []).map(() => ({})));
-                    setMediaErrors((event.media || []).map(() => ({})));
-                    setReviewInfo({
-                        reviewStatus: event.reviewStatus,
-                        reviewComment: event.reviewComment,
-                        reviewedBy: event.reviewedBy,
-                    });
-                } else {
-                    showNotification('Event not found', 'error');
-                    navigate('/profile');
-                }
-                setLoading(false);
+            try {
+                purgeLocalEventData(id);
+                const res = await getEventById(id, { skipIncrement: true });
+                applyEventToState(res.data);
             } catch (err) {
-                showNotification('Failed to fetch event details', 'error');
+                showNotification(err.response?.data?.message || 'Failed to load event details', 'error');
+                navigate('/events');
+            } finally {
                 setLoading(false);
             }
         };
-        fetchEvent();
-    }, [id]);
+
+        if (id) {
+            fetchEvent();
+        }
+    }, [id, navigate, showNotification, purgeLocalEventData, applyEventToState]);
+
+    // Multi-device sync: When user switches back to this tab/window,
+    // detect if another device updated the event and sync automatically.
+    useEffect(() => {
+        const handleSyncCheck = async () => {
+            if (document.visibilityState !== 'visible' || !id || loading) return;
+            try {
+                // Erase local storage to avoid collisions
+                purgeLocalEventData(id);
+
+                const res = await getEventById(id, { skipIncrement: true });
+                const serverEvent = res.data;
+                if (!serverEvent?.updatedAt) return;
+
+                const serverUpdatedTime = new Date(serverEvent.updatedAt).getTime();
+                const localUpdatedTime = lastKnownUpdatedAtRef.current
+                    ? new Date(lastKnownUpdatedAtRef.current).getTime()
+                    : 0;
+
+                // Server has newer changes saved from another device/session
+                if (serverUpdatedTime > localUpdatedTime) {
+                    if (!isDirtyRef.current) {
+                        // User has no unsaved local typing in this tab -> auto-sync immediately
+                        applyEventToState(serverEvent);
+                        showNotification('Event data synchronized with latest changes.', 'info');
+                    } else {
+                        // User was actively typing in this tab -> notify non-intrusively
+                        showNotification(
+                            'A newer version of this event was saved on another device.',
+                            'warning'
+                        );
+                    }
+                }
+            } catch (err) {
+                console.warn('Cross-device sync check notice:', err.message);
+            }
+        };
+
+        window.addEventListener('focus', handleSyncCheck);
+        document.addEventListener('visibilitychange', handleSyncCheck);
+
+        return () => {
+            window.removeEventListener('focus', handleSyncCheck);
+            document.removeEventListener('visibilitychange', handleSyncCheck);
+        };
+    }, [id, loading, showNotification, purgeLocalEventData, applyEventToState]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        isDirtyRef.current = true;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear field-level error when user edits
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            });
+        }
     };
 
     const handleFileChange = async (e) => {
@@ -182,14 +383,14 @@ const EditEvent = () => {
             return;
         }
         setUploading(true);
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', file);
         try {
-            const formDataUpload = new FormData();
-            formDataUpload.append('image', file);
             const { data } = await api.post('/api/events/upload', formDataUpload, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
-            showNotification('Image uploaded successfully!', 'success');
+            showNotification('Poster uploaded successfully!', 'success');
         } catch (err) {
             showNotification(err.response?.data?.message || 'Upload failed', 'error');
         } finally {
@@ -197,21 +398,10 @@ const EditEvent = () => {
         }
     };
 
-    const handleRequiredFieldsChange = (e) => {
-        const value = e.target.value;
-        const checked = e.target.checked;
-        if (checked) {
-            setFormData({ ...formData, requiredFields: [...formData.requiredFields, value] });
-        } else {
-            setFormData({ ...formData, requiredFields: formData.requiredFields.filter(field => field !== value) });
-        }
-    };
-
     const handleProgramToggle = (prog) => {
         setFormData(prev => {
             const current = prev.allowedPrograms;
             if (current.includes(prog)) {
-                if (current.length <= 1) return prev;
                 return { ...prev, allowedPrograms: current.filter(p => p !== prog) };
             }
             return { ...prev, allowedPrograms: [...current, prog] };
@@ -315,137 +505,297 @@ const EditEvent = () => {
         });
     };
 
-    const URL_PATTERN = /^https?:\/\/.+/;
+    // Helper to construct normalized step-specific update payload
+    // Note: expectedUpdatedAt is intentionally omitted so updates across multiple devices/sessions
+    // are seamlessly accepted without triggering artificial 409 stale data conflicts.
+    const buildStepPayload = useCallback((stepNumber = currentStep) => {
+        const base = {};
 
-    const validateSponsorsAndMedia = () => {
-        let valid = true;
-        const newSponsorErrors = sponsors.map(s => {
-            const errs = {};
-            if (!s.name.trim()) errs.name = 'Sponsor name is required.';
-            if (!URL_PATTERN.test(s.logoUrl)) errs.logoUrl = 'Logo URL must be a valid URL (https://...).';
-            if (Object.keys(errs).length) valid = false;
-            return errs;
-        });
-        const newMediaErrors = media.map(m => {
-            const errs = {};
-            if (!URL_PATTERN.test(m.url)) errs.url = 'Media URL must be a valid URL (https://...).';
-            if (Object.keys(errs).length) valid = false;
-            return errs;
-        });
-        setSponsorErrors(newSponsorErrors);
-        setMediaErrors(newMediaErrors);
-        return valid;
+        if (stepNumber === 1) {
+            const allTargetClubIds = primaryClubId
+                ? [primaryClubId, ...(isJointEvent ? collaboratingClubIds.filter(id => id !== primaryClubId) : [])]
+                : (isJointEvent ? collaboratingClubIds : []);
+
+            return {
+                ...base,
+                title: formData.title,
+                description: formData.description,
+                imageUrl: formData.imageUrl?.trim() || '',
+                clubIds: allTargetClubIds,
+            };
+        }
+
+        if (stepNumber === 2) {
+            const sTime = formData.startTime ? new Date(formData.startTime) : null;
+            const eTime = formData.endTime ? new Date(formData.endTime) : null;
+            const dTime = formData.registrationDeadline ? new Date(formData.registrationDeadline) : null;
+
+            return {
+                ...base,
+                venue: formData.venue || '',
+                startTime: sTime && !isNaN(sTime.getTime()) ? sTime.toISOString() : undefined,
+                endTime: eTime && !isNaN(eTime.getTime()) ? eTime.toISOString() : undefined,
+                registrationDeadline: dTime && !isNaN(dTime.getTime()) ? dTime.toISOString() : null,
+                allowedPrograms: formData.allowedPrograms,
+                allowedYears: allYears ? [] : formData.allowedYears,
+                allowedBranches: allBranches ? [] : formData.allowedBranches,
+                allowExternal: Boolean(formData.allowExternal),
+            };
+        }
+
+        if (stepNumber === 3) {
+            const isFree = formData.paymentMethod === 'FREE';
+            const fee = isFree ? 0 : Number(formData.registrationFee || 0);
+            const collegeUrl = formData.paymentMethod === 'COLLEGE_PAYMENT' ? formData.collegePaymentUrl?.trim() : null;
+
+            return {
+                ...base,
+                totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
+                allowWaitlist: isUnlimited ? false : Boolean(formData.allowWaitlist),
+                registrationType: formData.registrationType || 'individual',
+                minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
+                maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
+                registrationFee: fee,
+                paymentMethod: formData.paymentMethod,
+                paymentInstructions: isFree
+                    ? null
+                    : (formData.paymentMethod === 'MANUAL_TRANSACTION' && formData.upiId?.trim() && !formData.paymentInstructions?.includes(formData.upiId.trim())
+                        ? (formData.paymentInstructions?.trim() ? `${formData.paymentInstructions.trim()}\nUPI ID: ${formData.upiId.trim()}` : `UPI ID: ${formData.upiId.trim()}`)
+                        : (formData.paymentInstructions?.trim() || null)),
+                collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? (formData.collegePaymentUrl?.trim() || null) : null,
+                accountHolderName: null,
+                upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? (formData.upiId?.trim() || null) : null,
+                requiredFields: formData.requiredFields || [],
+                customFields: formData.customFields || [],
+                postRegistrationMessage: formData.postRegistrationMessage?.trim() || null,
+            };
+        }
+
+        if (stepNumber === 4) {
+            const validSponsors = (sponsors || [])
+                .filter(s => s && s.name && s.name.trim() && s.logoUrl && s.logoUrl.trim())
+                .map(s => ({
+                    name: s.name.trim(),
+                    logoUrl: s.logoUrl.trim(),
+                    websiteUrl: s.websiteUrl?.trim() || null,
+                }));
+
+            const validMedia = (media || [])
+                .filter(m => m && m.url && m.url.trim())
+                .map(m => ({
+                    url: m.url.trim(),
+                    type: m.type,
+                }));
+
+            return {
+                ...base,
+                sponsors: validSponsors,
+                media: validMedia,
+                provideCertificate: Boolean(formData.provideCertificate),
+                certificateTemplate: formData.certificateTemplate || null,
+                feedbackEnabled: formData.feedbackEnabled !== undefined ? Boolean(formData.feedbackEnabled) : true,
+                winners: (formData.winners || []).map(({ error, ...rest }) => rest),
+                showWinner: Boolean(formData.showWinner),
+            };
+        }
+
+        return base;
+    }, [formData, sponsors, media, isUnlimited, allYears, allBranches, currentStep]);
+
+    // Independent main step saving function
+    // Independent from autosave: can always be triggered manually by the user
+    const handleSaveCurrentStep = async (stepNumber = currentStep) => {
+        // Clear any pending debounced autosave so it doesn't double-fire
+        if (autosaveTimerRef.current) {
+            clearTimeout(autosaveTimerRef.current);
+        }
+        // Invalidate in-flight autosave callbacks so their catch/finally never interfere with manual save
+        saveSequenceRef.current++;
+        inFlightSaveRef.current = false;
+        setIsSaving(true);
+        setAutosaveStatus('saving');
+        try {
+            const payload = buildStepPayload(stepNumber);
+            const res = await updateEvent(id, payload);
+            if (res.data?.updatedAt) {
+                lastKnownUpdatedAtRef.current = res.data.updatedAt;
+            }
+            lastSavedPayloadRef.current[stepNumber] = JSON.stringify(payload);
+            isDirtyRef.current = false;
+
+            // Erase any local storage keys for this event to avoid collisions
+            purgeLocalEventData(id);
+
+            setAutosaveStatus('saved');
+            setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            showNotification(`Step ${stepNumber} changes saved.`, 'success');
+            return true;
+        } catch (err) {
+            if (err.response?.status === 409 && err.response?.data?.conflict) {
+                setFieldErrors(prev => ({
+                    ...prev,
+                    venue: err.response.data.message || 'Selected venue/time conflicts with another booking.'
+                }));
+            }
+            setAutosaveStatus('error');
+            showNotification(err.response?.data?.message || 'Failed to save changes.', 'error');
+            return false;
+        } finally {
+            setIsSaving(false);
+            inFlightSaveRef.current = false;
+        }
     };
 
-    const validateStep1 = () => {
-        if (!formData.title || !formData.title.trim()) {
-            return 'Event Title is required.';
+    // Debounced autosave (strictly non-intrusive background helper)
+    // If autosave fails, it will NEVER block manual saving or form usage
+    useEffect(() => {
+        if (loading) return;
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            // Record initial baseline payloads for all steps
+            [1, 2, 3, 4].forEach(s => {
+                const p = buildStepPayload(s);
+                lastSavedPayloadRef.current[s] = JSON.stringify(p);
+            });
+            return;
         }
-        if (!formData.venue) {
-            return 'Please select a Venue.';
-        }
-        return null;
-    };
 
-    const validateStep2 = () => {
-        if (!formData.startTime) {
-            return 'Start Time is required.';
-        }
-        if (!formData.endTime) {
-            return 'End Time is required.';
-        }
-        const start = new Date(formData.startTime);
-        const end = new Date(formData.endTime);
-        if (start >= end) {
-            return 'End time must be after start time.';
-        }
-        if (formData.registrationDeadline && new Date(formData.registrationDeadline) > start) {
-            return 'Registration deadline cannot be after event start time.';
-        }
-        if (!formData.allowedPrograms || formData.allowedPrograms.length === 0) {
-            return 'At least one program must be allowed.';
-        }
-        if (!allYears && (!formData.allowedYears || formData.allowedYears.length === 0)) {
-            return 'Please select at least one allowed year or enable "Allow All Years".';
-        }
-        if (!allBranches && (!formData.allowedBranches || formData.allowedBranches.length === 0)) {
-            return 'Please select at least one allowed branch or enable "Allow All Branches".';
-        }
-        return null;
-    };
+        // Basic sanity check before attempting autosave to avoid unnecessary 400s while user types
+        const isStepReadyForAutosave = () => {
+            if (currentStep === 1) {
+                if (!formData.title || formData.title.trim().length < 3) return false;
+            }
+            if (currentStep === 2) {
+                if (formData.startTime && formData.endTime) {
+                    const start = new Date(formData.startTime);
+                    const end = new Date(formData.endTime);
+                    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) return false;
+                }
+            }
+            if (currentStep === 3) {
+                if (formData.paymentMethod === 'COLLEGE_PAYMENT' && formData.collegePaymentUrl) {
+                    if (!/^https?:\/\/.+/i.test(formData.collegePaymentUrl.trim())) return false;
+                }
+            }
+            return true;
+        };
 
-    const validateStep3 = () => {
-        if (formData.registrationType === 'team' || formData.registrationType === 'both') {
-            const min = Number(formData.minTeamSize || 1);
-            const max = Number(formData.maxTeamSize || 1);
-            if (min < 1) {
-                return 'Minimum team size must be at least 1.';
-            }
-            if (max < min) {
-                return 'Maximum team size cannot be less than minimum team size.';
-            }
+        if (!isStepReadyForAutosave()) {
+            return;
         }
-        if (!isUnlimited) {
-            const seats = Number(formData.totalSeats);
-            if (!formData.totalSeats || seats < 1) {
-                return 'Total seats must be specified or select Unlimited Seats.';
-            }
-        }
-        if (formData.paymentMethod !== 'FREE') {
-            const fee = Number(formData.registrationFee || 0);
-            if (fee <= 0) {
-                return 'Registration fee must be greater than 0 for paid events.';
-            }
-            if (formData.paymentMethod === 'MANUAL_TRANSACTION' && !formData.upiId?.trim()) {
-                return 'UPI ID / Phone Number is required for Manual Transaction Verification.';
-            }
-            if (formData.paymentMethod === 'COLLEGE_PAYMENT' && (!formData.collegePaymentUrl?.trim() || !URL_PATTERN.test(formData.collegePaymentUrl.trim()))) {
-                return 'Valid College Payment Portal URL (https://...) is required.';
-            }
-        }
-        for (let i = 0; i < formData.customFields.length; i++) {
-            if (!formData.customFields[i].label?.trim()) {
-                return `Custom field #${i + 1} is missing a field label.`;
-            }
-        }
-        return null;
-    };
 
-    const validateStep4 = () => {
-        if (!validateSponsorsAndMedia()) {
-            return 'Please fix the sponsor and media errors before submitting.';
-        }
-        return null;
-    };
+        const payload = buildStepPayload(currentStep);
+        const serialized = JSON.stringify(payload);
 
-    const validateCurrentStep = (stepNumber) => {
-        switch (stepNumber) {
-            case 1:
-                return validateStep1();
-            case 2:
-                return validateStep2();
-            case 3:
-                return validateStep3();
-            case 4:
-                return validateStep4();
-            default:
-                return null;
+        // Don't save if step payload hasn't changed since last save
+        if (lastSavedPayloadRef.current[currentStep] === serialized) {
+            return;
         }
-    };
 
-    const handleNextStep = (e) => {
+        setAutosaveStatus('saving');
+        if (autosaveTimerRef.current) {
+            clearTimeout(autosaveTimerRef.current);
+        }
+
+        const currentSeq = ++saveSequenceRef.current;
+        autosaveTimerRef.current = setTimeout(async () => {
+            if (inFlightSaveRef.current || isSaving) return;
+            inFlightSaveRef.current = true;
+            try {
+                const savePayload = buildStepPayload(currentStep);
+                const res = await updateEvent(id, savePayload);
+                if (res.data?.updatedAt) {
+                    lastKnownUpdatedAtRef.current = res.data.updatedAt;
+                }
+                lastSavedPayloadRef.current[currentStep] = JSON.stringify(savePayload);
+                isDirtyRef.current = false;
+
+                if (saveSequenceRef.current === currentSeq) {
+                    setAutosaveStatus('saved');
+                    setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                }
+            } catch (err) {
+                if (saveSequenceRef.current === currentSeq) {
+                    console.warn('Autosave background notice (non-blocking):', err.response?.data?.message || err.message);
+                    // Autosave failure is purely informational and NEVER blocks the main form or main save
+                    setAutosaveStatus('error');
+                }
+            } finally {
+                inFlightSaveRef.current = false;
+            }
+        }, 1500);
+
+        return () => {
+            if (autosaveTimerRef.current) {
+                clearTimeout(autosaveTimerRef.current);
+            }
+        };
+    }, [formData, sponsors, media, isUnlimited, allYears, allBranches, id, loading, buildStepPayload, currentStep]);
+
+    // Step navigation: Forward validation & smooth step commit
+    const handleNextStep = async (e) => {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
-        const err = validateCurrentStep(currentStep);
-        if (err) {
-            showNotification(err, 'error');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const result = validateEventStep(currentStep, formData, {
+            isDraft: false,
+            isUnlimited,
+            sponsors,
+            media,
+            allYears,
+            allBranches,
+        });
+
+        if (!result.isValid) {
+            setFieldErrors(result.errors);
+            setStepErrors(prev => ({ ...prev, [currentStep]: true }));
+
+            // Focus and scroll to first invalid field
+            if (result.firstErrorField) {
+                setTimeout(() => {
+                    const el = document.querySelector(`[name="${result.firstErrorField}"]`) ||
+                               document.getElementById(result.firstErrorField);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.focus();
+                    }
+                }, 50);
+            }
             return;
         }
+
+        setFieldErrors({});
+        setStepErrors(prev => ({ ...prev, [currentStep]: false }));
+        setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
+
+        // Attempt background step commit when continuing without blocking navigation
+        handleSaveCurrentStep(currentStep).catch(() => {});
+
         setCurrentStep(prev => Math.min(prev + 1, 4));
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleGoToPreview = async () => {
+        const result = validateEventStep(4, formData, {
+            isDraft: false,
+            isUnlimited,
+            sponsors,
+            media,
+            allYears,
+            allBranches,
+        });
+
+        if (!result.isValid) {
+            setFieldErrors(result.errors);
+            setStepErrors(prev => ({ ...prev, 4: true }));
+            return;
+        }
+
+        // Commit step 4 before navigating to preview
+        await handleSaveCurrentStep(4);
+        navigate(`/events/${id}/preview`);
     };
 
     const handlePrevStep = (e) => {
@@ -453,256 +803,257 @@ const EditEvent = () => {
             e.preventDefault();
             e.stopPropagation();
         }
+        setFieldErrors({});
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Direct step click navigation (organizer can click ANY step directly)
     const handleStepClick = (targetStep) => {
         if (targetStep === currentStep) return;
-
-        if (targetStep > currentStep) {
-            for (let s = currentStep; s < targetStep; s++) {
-                const err = validateCurrentStep(s);
-                if (err) {
-                    showNotification(err, 'error');
-                    setCurrentStep(s);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    return;
-                }
-            }
-        }
-
+        setFieldErrors({});
         setCurrentStep(targetStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const addWinner = () => {
-        setFormData(prev => ({
-            ...prev,
-            winners: [...prev.winners, { rank: prev.winners.length + 1, name: '', rollNo: '', members: [], leaderName: '', error: null }]
-        }));
-    };
-
-    const removeWinner = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            winners: prev.winners.filter((_, i) => i !== index)
-        }));
-    };
-
-    const updateWinner = (index, field, value) => {
-        setFormData(prev => {
-            const updated = [...prev.winners];
-            updated[index] = { ...updated[index], [field]: value };
-            return { ...prev, winners: updated };
-        });
-    };
-
-    const handleWinnerLookup = async (index, queryVal) => {
-        if (!queryVal || !queryVal.trim()) return;
-        const isTeamEvent = formData.registrationType === 'team' || formData.registrationType === 'both';
-        const token = localStorage.getItem('token');
-
-        if (isTeamEvent) {
-            try {
-                const res = await api.get(
-                    `/api/teams/event/${id}/lookup-leader?query=${encodeURIComponent(queryVal.trim())}`
-                );
-                const { teamName, members, leaderName } = res.data;
-
-                setFormData(prev => {
-                    const updated = [...prev.winners];
-                    updated[index] = {
-                        ...updated[index],
-                        name: teamName,
-                        members: members || [],
-                        leaderName: leaderName || '',
-                        error: null
-                    };
-                    return { ...prev, winners: updated };
-                });
-                return;
-            } catch (err) {
-                // Fallback to student roll number lookup below
-            }
-        }
-
-        try {
-            const res = await api.get(
-                `/api/users/lookup/${encodeURIComponent(queryVal.trim())}`
-            );
-            const { name, branch } = res.data;
-            const displayName = branch ? `${name}(${branch})` : name;
-
-            setFormData(prev => {
-                const updated = [...prev.winners];
-                updated[index] = {
-                    ...updated[index],
-                    name: displayName,
-                    members: [],
-                    leaderName: '',
-                    error: null
-                };
-                return { ...prev, winners: updated };
-            });
-        } catch (err) {
-            setFormData(prev => {
-                const updated = [...prev.winners];
-                updated[index] = {
-                    ...updated[index],
-                    name: '',
-                    members: [],
-                    leaderName: '',
-                    error: isTeamEvent ? 'No registered team or student found.' : 'Student not found.'
-                };
-                return { ...prev, winners: updated };
-            });
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        if (e) {
-            e.preventDefault();
-        }
-
-        if (isSaving) return;
-
-        // If user presses Enter on steps 1-3, advance step instead of submitting early
-        if (currentStep < 4) {
-            handleNextStep(e);
-            return;
-        }
-
-        // Validate all steps before submitting
-        const step1Err = validateStep1();
-        if (step1Err) { setCurrentStep(1); showNotification(step1Err, 'error'); return; }
-        const step2Err = validateStep2();
-        if (step2Err) { setCurrentStep(2); showNotification(step2Err, 'error'); return; }
-        const step3Err = validateStep3();
-        if (step3Err) { setCurrentStep(3); showNotification(step3Err, 'error'); return; }
-        const step4Err = validateStep4();
-        if (step4Err) { setCurrentStep(4); showNotification(step4Err, 'error'); return; }
-
-        const payload = {
-            ...formData,
-            startTime: new Date(formData.startTime).toISOString(),
-            endTime: new Date(formData.endTime).toISOString(),
-            entryFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
-            registrationFee: formData.paymentMethod === 'FREE' ? 0 : Number(formData.registrationFee || 0),
-            totalSeats: isUnlimited ? 0 : Number(formData.totalSeats),
-            registrationDeadline: formData.registrationDeadline ? new Date(formData.registrationDeadline).toISOString() : null,
-            allowedYears: allYears ? [] : formData.allowedYears,
-            allowedBranches: allBranches ? [] : formData.allowedBranches,
-            allowExternal: Boolean(formData.allowExternal),
-            registrationType: formData.registrationType || 'individual',
-            minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
-            maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
-            winners: (formData.winners || []).map(({ error, ...rest }) => rest),
-            sponsors: sponsors.map(s => ({ name: s.name, logoUrl: s.logoUrl, websiteUrl: s.websiteUrl || undefined })),
-            media: media.map(m => ({ url: m.url, type: m.type })),
-            paymentMethod: formData.paymentMethod,
-            paymentInstructions: formData.paymentMethod === 'FREE' ? null : formData.paymentInstructions,
-            collegePaymentUrl: formData.paymentMethod === 'COLLEGE_PAYMENT' ? formData.collegePaymentUrl : null,
-            upiId: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.upiId : null,
-            accountHolderName: formData.paymentMethod === 'MANUAL_TRANSACTION' ? formData.accountHolderName : null,
-            postRegistrationMessage: formData.postRegistrationMessage || null,
-        };
-
-        setIsSaving(true);
-        try {
-            await updateEvent(id, payload);
-            showNotification('Event updated successfully!', 'success');
-            navigate(`/event/${id}`);
-        } catch (err) {
-            showNotification(err.response?.data?.message || 'Failed to update event', 'error');
-        } finally {
-            setIsSaving(false);
-        }
+    // Helper for rendering inline error message
+    const renderFieldError = (fieldName) => {
+        if (!fieldErrors[fieldName]) return null;
+        return (
+            <p id={`${fieldName}-error`} className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{fieldErrors[fieldName]}</span>
+            </p>
+        );
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+            <div className="min-h-screen bg-cn-bg flex items-center justify-center">
                 <ShimmerText text="Loading event..." className="text-[13px] font-bold uppercase tracking-widest" />
             </div>
         );
     }
 
     const inputCls =
-        'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-white dark:bg-[#0a0a0a] text-black dark:text-white placeholder:text-neutral-400';
+        'w-full px-3.5 py-2 border border-input rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-background text-foreground text-sm placeholder:text-muted-foreground';
     const labelCls =
-        'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
+        'block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5';
+
+    const getFieldCls = (fieldName) =>
+        `${inputCls} ${fieldErrors[fieldName] ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''}`;
 
     return (
-        <div className="min-h-screen bg-neutral-50 py-8 md:py-12 px-4 md:px-6">
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
-                    {/* <button
-                        type="button"
-                        onClick={() => navigate('/profile')}
-                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4 cursor-pointer"
-                    >
-                        <i className="ri-arrow-left-line text-lg" /> Back to Profile
-                    </button> */}
-                    <h1 className="text-3xl md:text-5xl font-black text-black tracking-wide">Edit Event</h1>
-                    <p className="text-sm text-neutral-500 mt-1.5">Refine your event details and registration requirements step-by-step.</p>
+        <div className="min-h-screen bg-muted/20 py-8 md:py-10 px-4 sm:px-6">
+            {/* Fixed width & margin: eliminate ~384px gutter on desktop next to sidebar */}
+            <div className="w-full max-w-5xl xl:max-w-6xl mx-auto md:mx-0 md:ml-6 lg:ml-10 pr-4 md:pr-8 space-y-6">
+                
+                {/* Header with Title, Autosave Status, and Quick Preview Button */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                            Edit Event
+                        </h1>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                            Modify any section directly. Changes autosave automatically.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <AutosaveStatusBadge
+                            status={autosaveStatus}
+                            lastSavedTime={lastSavedTime}
+                            onRetry={() => handleSaveCurrentStep(currentStep)}
+                        />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="gap-1.5"
+                        >
+                            <Link to={`/events/${id}/preview`}>
+                                <Eye className="w-3.5 h-3.5 text-primary" />
+                                Preview Event
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Rejection / Review Feedback Notice Banner */}
                 {reviewInfo?.reviewStatus === 'REJECTED' && (
-                    <div className="mb-6 bg-rose-50 border-2 border-rose-200 rounded-xl p-5 shadow-xs flex items-start gap-4">
-                        <div className="p-2.5 bg-rose-100 rounded-lg text-rose-600 shrink-0">
-                            <i className="ri-error-warning-fill text-2xl" />
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-5 shadow-xs flex items-start gap-4">
+                        <div className="p-2 bg-destructive/20 rounded-lg text-destructive shrink-0 mt-0.5">
+                            <AlertTriangle className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                                <span className="text-xs font-black uppercase tracking-widest text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
+                                <Badge variant="outline" className="text-xs font-semibold bg-destructive/15 text-destructive border-destructive/30">
                                     Proposal Needs Revision
-                                </span>
+                                </Badge>
                                 {reviewInfo.reviewedBy?.name && (
-                                    <span className="text-[11px] font-bold text-rose-600">
-                                        Reviewed by: {reviewInfo.reviewedBy.name}
+                                    <span className="text-xs font-medium text-destructive">
+                                        Reviewed by: <strong>{reviewInfo.reviewedBy.name}</strong>
                                     </span>
                                 )}
                             </div>
-                            <h4 className="text-sm font-bold text-rose-900 mt-1">Reviewer Feedback:</h4>
-                            <p className="text-sm font-semibold text-rose-700 mt-1 bg-white/70 p-3 rounded-lg border border-rose-200">
-                                {reviewInfo.reviewComment || "No specific feedback comment provided. Please check timings, fees, and requirements before resubmitting."}
+                            <h4 className="text-sm font-semibold text-foreground mt-1">
+                                Reviewer Feedback:
+                            </h4>
+                            <p className="text-sm text-muted-foreground mt-1 bg-card/80 p-3 rounded-lg border border-destructive/20">
+                                {reviewInfo.reviewComment || "Please update the event details as requested and resubmit for approval."}
                             </p>
-                            <p className="text-xs text-rose-600 mt-2">
-                                Please make the necessary modifications in the form below and save your changes.
-                            </p>
+                            <div className="mt-3 flex items-center gap-3">
+                                <Link
+                                    to={`/events/${id}/preview`}
+                                    className="inline-flex items-center text-xs font-semibold text-destructive underline hover:text-destructive/80 cursor-pointer"
+                                >
+                                    View in Preview & Resubmit →
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}
                 
-                {/* Stepper Component */}
-                <EventFormStepper currentStep={currentStep} onStepClick={handleStepClick} />
+                {/* Compact, Validation-Aware Stepper */}
+                <EventFormStepper
+                    currentStep={currentStep}
+                    onStepClick={handleStepClick}
+                    completedSteps={completedSteps}
+                    stepErrors={stepErrors}
+                    isEditMode={true}
+                />
 
-                <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
+                {/* Main Form Container */}
+                <Card className="border-border shadow-xs bg-card">
+                    <CardContent className="p-5 md:p-6 space-y-5">
                     
                     {/* STEP 1: Basic Details */}
                     {currentStep === 1 && (
-                        <div className="space-y-6 animate-step-fadeIn">
-                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-file-text-line text-brand-600 text-base" />
+                        <div className="space-y-6 animate-fadeIn">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <FileText className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                            Step 1
+                                        </span>
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
+                                            Basic Details
+                                        </h2>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
-                                        Step 1
-                                    </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Basic Details
-                                    </h2>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleSaveCurrentStep(1)}
+                                    disabled={isSaving}
+                                    className="gap-1.5 h-8 text-xs font-semibold"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save Step 1
+                                </Button>
+                            </div>
+
+                            {/* Joint Event (Club Collaboration) */}
+                            <div className="rounded-xl border border-neutral-200/80 dark:border-neutral-800 p-4 bg-neutral-50/50 dark:bg-neutral-900/40">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                            <Handshake className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="edit-joint-event-toggle" className="text-xs font-bold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                                Joint Event (Club Collaboration)
+                                            </label>
+                                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                Co-hosting this event with other campus clubs or student chapters?
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        id="edit-joint-event-toggle"
+                                        type="checkbox"
+                                        checked={isJointEvent}
+                                        onChange={(e) => {
+                                            setIsJointEvent(e.target.checked);
+                                            if (!e.target.checked) setCollaboratingClubIds([]);
+                                        }}
+                                        className="w-4 h-4 text-brand-600 rounded border-neutral-300 focus:ring-brand-500 cursor-pointer"
+                                    />
                                 </div>
+
+                                {isJointEvent && (
+                                    <div className="mt-4 pt-3 border-t border-neutral-200/80 dark:border-neutral-800 space-y-3">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                            Select Collaborating Club(s)
+                                        </label>
+                                        <select
+                                            className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 focus:border-brand-500 dark:focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all cursor-pointer"
+                                            value=""
+                                            onChange={(e) => {
+                                                const selectedId = e.target.value;
+                                                if (selectedId && !collaboratingClubIds.includes(selectedId)) {
+                                                    setCollaboratingClubIds((prev) => [...prev, selectedId]);
+                                                }
+                                            }}
+                                        >
+                                            <option value="">+ Select a partner club to co-host...</option>
+                                            {availableClubs
+                                                .filter(c => (c.id || c._id) !== primaryClubId && !collaboratingClubIds.includes(c.id || c._id))
+                                                .map(c => (
+                                                    <option key={c.id || c._id} value={c.id || c._id}>
+                                                        {c.clubName} {c.category ? `(${c.category})` : ''}
+                                                    </option>
+                                                ))}
+                                        </select>
+
+                                        {collaboratingClubIds.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {collaboratingClubIds.map(cid => {
+                                                    const club = availableClubs.find(c => (c.id || c._id) === cid);
+                                                    return (
+                                                        <span
+                                                            key={cid}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold"
+                                                        >
+                                                            {club?.clubLogo && (
+                                                                <img src={club.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                                            )}
+                                                            <span>{club?.clubName || 'Selected Club'}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCollaboratingClubIds(prev => prev.filter(id => id !== cid))}
+                                                                className="hover:text-rose-500 ml-1 p-0.5 rounded-full cursor-pointer"
+                                                                title="Remove club"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Event Title */}
                             <div>
                                 <label className={labelCls}>Event Title <span className="text-brand-600">*</span></label>
-                                <input type="text" name="title" className={inputCls}
-                                    value={formData.title} onChange={handleChange} placeholder="Enter event title" />
+                                <input
+                                    type="text"
+                                    name="title"
+                                    className={getFieldCls('title')}
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    placeholder="Enter event title"
+                                    aria-invalid={Boolean(fieldErrors.title)}
+                                    aria-describedby={fieldErrors.title ? "title-error" : undefined}
+                                />
+                                {renderFieldError('title')}
                             </div>
 
                             {/* Description */}
@@ -714,17 +1065,25 @@ const EditEvent = () => {
                                     placeholder="Write a clear, engaging event description. Use the visual toolbar above to style headings, bold text, lists, and links..."
                                     minHeight="320px"
                                 />
+                                {renderFieldError('description')}
                             </div>
 
                             {/* Venue */}
                             <div>
                                 <label className={labelCls}>Venue <span className="text-brand-600">*</span></label>
-                                <select name="venue" className={inputCls} value={formData.venue} onChange={handleChange}>
+                                <select
+                                    name="venue"
+                                    className={getFieldCls('venue')}
+                                    value={formData.venue}
+                                    onChange={handleChange}
+                                    aria-invalid={Boolean(fieldErrors.venue)}
+                                >
                                     <option value="">Select Venue</option>
                                     {availableVenues.map((venue) => (
                                         <option key={venue} value={venue}>{venue}</option>
                                     ))}
                                 </select>
+                                {renderFieldError('venue')}
                             </div>
 
                             {/* Event Poster Upload */}
@@ -739,7 +1098,7 @@ const EditEvent = () => {
                                 />
                                 <label
                                     htmlFor="poster-upload"
-                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center gap-2">
@@ -758,7 +1117,7 @@ const EditEvent = () => {
                                 </label>
 
                                 {formData.imageUrl && (
-                                    <div className="relative mt-4 border border-neutral-200 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
+                                    <div className="relative mt-4 border border-neutral-200 dark:border-neutral-800 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
                                         <img src={formData.imageUrl} alt="Poster Preview" className="max-h-64 object-contain rounded-lg" />
                                         <button
                                             type="button"
@@ -776,727 +1135,833 @@ const EditEvent = () => {
 
                     {/* STEP 2: Timings & Access */}
                     {currentStep === 2 && (
-                        <div className="space-y-6 animate-step-fadeIn">
-                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-calendar-line text-brand-600 text-base" />
+                        <div className="space-y-6 animate-fadeIn">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <Calendar className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                            Step 2
+                                        </span>
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
+                                            Schedule & Access
+                                        </h2>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
-                                        Step 2
-                                    </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Timings & Access
-                                    </h2>
-                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleSaveCurrentStep(2)}
+                                    disabled={isSaving}
+                                    className="gap-1.5 h-8 text-xs font-semibold"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save Step 2
+                                </Button>
                             </div>
 
-                            {/* Date & Time */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="space-y-2">
+                            {/* Start & End Times */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
                                     <label className={labelCls}>Start Time <span className="text-brand-600">*</span></label>
-                                    <input type="datetime-local" name="startTime" className={inputCls}
-                                        value={formData.startTime} onChange={handleChange} />
+                                    <input
+                                        type="datetime-local"
+                                        name="startTime"
+                                        className={getFieldCls('startTime')}
+                                        value={formData.startTime}
+                                        onChange={handleChange}
+                                    />
+                                    {renderFieldError('startTime')}
                                 </div>
-                                <div className="space-y-2">
+                                <div>
                                     <label className={labelCls}>End Time <span className="text-brand-600">*</span></label>
-                                    <input type="datetime-local" name="endTime" className={inputCls}
-                                        value={formData.endTime} onChange={handleChange} />
+                                    <input
+                                        type="datetime-local"
+                                        name="endTime"
+                                        className={getFieldCls('endTime')}
+                                        value={formData.endTime}
+                                        onChange={handleChange}
+                                    />
+                                    {renderFieldError('endTime')}
                                 </div>
                             </div>
 
                             {/* Registration Deadline */}
                             <div>
-                                <label className={labelCls}>Registration Deadline</label>
-                                <input type="datetime-local" name="registrationDeadline" className={inputCls}
-                                    value={formData.registrationDeadline} onChange={handleChange} />
-                                <p className="text-xs text-neutral-500 mt-1">Optional: If left blank, registrations stay open until start time.</p>
+                                <label className={labelCls}>Registration Deadline <span className="text-neutral-400 font-normal">(optional)</span></label>
+                                <input
+                                    type="datetime-local"
+                                    name="registrationDeadline"
+                                    className={getFieldCls('registrationDeadline')}
+                                    value={formData.registrationDeadline}
+                                    onChange={handleChange}
+                                />
+                                <p className="text-[11px] text-neutral-400 mt-1">Leave empty to allow registration until event start.</p>
+                                {renderFieldError('registrationDeadline')}
                             </div>
 
-                            <div className="bg-neutral-50 dark:bg-neutral-950 p-6 border border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col gap-5">
-                                <div>
-                                    <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">Registration Restrictions</h3>
-                                    <p className="text-xs text-neutral-500 mt-1">Restrict event registration to specific programs, years, or branches.</p>
+                            {/* Academic Programs */}
+                            <div>
+                                <label className={labelCls}>Allowed Academic Programs <span className="text-brand-600">*</span></label>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    {PROGRAM_OPTIONS.map((prog) => {
+                                        const isSelected = formData.allowedPrograms.includes(prog);
+                                        return (
+                                            <button
+                                                key={prog}
+                                                type="button"
+                                                onClick={() => handleProgramToggle(prog)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                    isSelected
+                                                        ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
+                                                        : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                                                }`}
+                                            >
+                                                {PROGRAM_LABELS[prog] || prog}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
+                                {renderFieldError('allowedPrograms')}
+                            </div>
 
-                                {/* Allowed Programs */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Programs <span className="text-brand-600">*</span></label>
-                                    <div className="flex flex-wrap gap-5 mt-1">
-                                        {PROGRAM_OPTIONS.map((prog) => (
-                                            <label key={prog} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                    checked={formData.allowedPrograms.includes(prog)}
-                                                    onChange={() => handleProgramToggle(prog)} />
-                                                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{PROGRAM_LABELS[prog]}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allowed Years */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Years</label>
-                                    <div className="flex items-center gap-4">
-                                        <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                checked={allYears} onChange={() => {
-                                                    setAllYears(!allYears);
-                                                    if (!allYears) setFormData(prev => ({ ...prev, allowedYears: [] }));
-                                                }} />
-                                            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Allow All Years</span>
-                                        </label>
-                                    </div>
-                                    {!allYears && (
-                                        <div className="flex flex-wrap gap-4 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-                                            {YEARS.map(year => (
-                                                <label key={year} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
-                                                        checked={formData.allowedYears.includes(year)}
-                                                        onChange={() => handleYearToggle(year)} />
-                                                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{year}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allowed Branches */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">Allowed Branches</label>
-                                    <div className="flex items-center gap-4">
-                                        <label className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                            <input type="checkbox" className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                                checked={allBranches} onChange={() => {
-                                                    setAllBranches(!allBranches);
-                                                    if (!allBranches) setFormData(prev => ({ ...prev, allowedBranches: [] }));
-                                                }} />
-                                            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Allow All Branches</span>
-                                        </label>
-                                    </div>
-                                    {!allBranches && (
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-2 p-3 bg-white dark:bg-neutral-905 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-                                            {BRANCHES.map(branch => (
-                                                <label key={branch} className="inline-flex items-center cursor-pointer gap-2 select-none">
-                                                    <input type="checkbox" className="w-4 h-4 accent-brand-600 border-neutral-300 rounded focus:ring-brand-600"
-                                                        checked={(formData.allowedBranches || []).includes(branch)}
-                                                        onChange={() => handleBranchToggle(branch)} />
-                                                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{branch}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <hr className="border-neutral-200 dark:border-neutral-800" />
-
-                                {/* Allow External Participants */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-500">External Participant Access</label>
-                                    <label className="inline-flex items-center cursor-pointer gap-2 select-none">
+                            {/* Allowed Years */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className={labelCls}>Allowed Academic Years</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            name="allowExternal"
-                                            className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                            checked={formData.allowExternal}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
+                                            checked={allYears}
+                                            onChange={(e) => setAllYears(e.target.checked)}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                         />
-                                        <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                                            Allow External Participants (Other Colleges & Universities)
-                                        </span>
+                                        <span>Allow All Years</span>
                                     </label>
-                                    <p className="text-xs text-neutral-500">
-                                        {formData.allowExternal
-                                            ? 'Students from other colleges and institutions are eligible to register and participate in this event.'
-                                            : 'Participation is strictly restricted to internal NITJ students only. External accounts cannot register.'}
-                                    </p>
                                 </div>
+                                {!allYears && (
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                        {YEARS.map((yr) => {
+                                            const isSelected = formData.allowedYears.includes(yr);
+                                            return (
+                                                <button
+                                                    key={yr}
+                                                    type="button"
+                                                    onClick={() => handleYearToggle(yr)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
+                                                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                                                    }`}
+                                                >
+                                                    {yr}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {renderFieldError('allowedYears')}
+                            </div>
+
+                            {/* Allowed Branches */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className={labelCls}>Allowed Branches</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={allBranches}
+                                            onChange={(e) => setAllBranches(e.target.checked)}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span>Allow All Branches</span>
+                                    </label>
+                                </div>
+                                {!allBranches && (
+                                    <div className="flex flex-wrap gap-1.5 mt-1 max-h-40 overflow-y-auto p-2 border border-neutral-200 dark:border-neutral-700 rounded-lg">
+                                        {BRANCHES.map((br) => {
+                                            const isSelected = (formData.allowedBranches || []).includes(br);
+                                            return (
+                                                <button
+                                                    key={br}
+                                                    type="button"
+                                                    onClick={() => handleBranchToggle(br)}
+                                                    className={`px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? 'bg-neutral-900 text-white border-neutral-900'
+                                                            : 'bg-white dark:bg-neutral-800 text-neutral-600 border-neutral-200'
+                                                    }`}
+                                                >
+                                                    {br}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {renderFieldError('allowedBranches')}
+                            </div>
+
+                            {/* External Participation Checkbox */}
+                            <div className="pt-2">
+                                <label className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="allowExternal"
+                                        checked={Boolean(formData.allowExternal)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
+                                    <span className="font-semibold">Allow External (Non-Campus) Participants</span>
+                                </label>
+                                <p className="text-xs text-neutral-400 mt-0.5 ml-6">
+                                    Enables students from other institutions to register with external credentials.
+                                </p>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 3: Registration & Payments */}
+                    {/* STEP 3: Registration & Payment */}
                     {currentStep === 3 && (
-                        <div className="space-y-6 animate-step-fadeIn">
-                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-ticket-line text-brand-600 text-base" />
+                        <div className="space-y-6 animate-fadeIn">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <CreditCard className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                            Step 3
+                                        </span>
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
+                                            Registration & Payment
+                                        </h2>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
-                                        Step 3
-                                    </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Registration & Payments
-                                    </h2>
-                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleSaveCurrentStep(3)}
+                                    disabled={isSaving}
+                                    className="gap-1.5 h-8 text-xs font-semibold"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save Step 3
+                                </Button>
                             </div>
 
                             {/* Registration Type */}
                             <div>
-                                <label className={labelCls}>Registration Type <span className="text-brand-600">*</span></label>
-                                <select name="registrationType" className={inputCls} value={formData.registrationType} onChange={handleChange}>
+                                <label className={labelCls}>Registration Mode <span className="text-brand-600">*</span></label>
+                                <select
+                                    name="registrationType"
+                                    className={inputCls}
+                                    value={formData.registrationType}
+                                    onChange={handleChange}
+                                >
                                     <option value="individual">Individual Registration</option>
-                                    <option value="team">Team Registration</option>
-                                    <option value="both">Both (Individual & Team)</option>
-                                    <option value="none">No Registration (Open / Walk-in)</option>
+                                    <option value="team">Team Only</option>
+                                    <option value="both">Both Individual & Team</option>
                                 </select>
                             </div>
 
-                            {/* Team Size Configurations (conditional) */}
+                            {/* Team Size inputs */}
                             {(formData.registrationType === 'team' || formData.registrationType === 'both') && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
                                     <div>
-                                        <label className={labelCls}>Minimum Team Size <span className="text-brand-600">*</span></label>
-                                        <input type="number" name="minTeamSize" min="1" className={inputCls}
-                                            value={formData.minTeamSize} onChange={handleChange} />
+                                        <label className={labelCls}>Min Team Size</label>
+                                        <input
+                                            type="number"
+                                            name="minTeamSize"
+                                            min="1"
+                                            className={getFieldCls('minTeamSize')}
+                                            value={formData.minTeamSize}
+                                            onChange={handleChange}
+                                        />
+                                        {renderFieldError('minTeamSize')}
                                     </div>
                                     <div>
-                                        <label className={labelCls}>Maximum Team Size <span className="text-brand-600">*</span></label>
-                                        <input type="number" name="maxTeamSize" min="1" className={inputCls}
-                                            value={formData.maxTeamSize} onChange={handleChange} />
+                                        <label className={labelCls}>Max Team Size</label>
+                                        <input
+                                            type="number"
+                                            name="maxTeamSize"
+                                            min="1"
+                                            className={getFieldCls('maxTeamSize')}
+                                            value={formData.maxTeamSize}
+                                            onChange={handleChange}
+                                        />
+                                        {renderFieldError('maxTeamSize')}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Seats & Fee Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <label className={labelCls}>Seat Availability <span className="text-brand-600">*</span></label>
-                                    <div className="flex items-center gap-3">
-                                        <input type="checkbox" id="unlimited-check" className="w-5 h-5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                            checked={isUnlimited} onChange={() => {
-                                                setIsUnlimited(!isUnlimited);
-                                                if (!isUnlimited) setFormData({ ...formData, totalSeats: '' });
-                                            }} />
-                                        <label htmlFor="unlimited-check" className="text-sm font-medium uppercase tracking-widest text-neutral-700 dark:text-neutral-300 cursor-pointer">Unlimited Seats</label>
-                                    </div>
-                                    {!isUnlimited && (
-                                        <input type="number" name="totalSeats" min="1" className={inputCls}
-                                            value={formData.totalSeats} onChange={handleChange} placeholder="Capacity" />
-                                    )}
+                            {/* Total Seats & Unlimited Option */}
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className={labelCls}>Total Seats</label>
+                                    <label className="flex items-center space-x-1.5 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={isUnlimited}
+                                            onChange={(e) => {
+                                                setIsUnlimited(e.target.checked);
+                                                if (e.target.checked) setFormData(prev => ({ ...prev, totalSeats: 0 }));
+                                            }}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span>Unlimited Seats</span>
+                                    </label>
+                                </div>
+                                {!isUnlimited && (
+                                    <input
+                                        type="number"
+                                        name="totalSeats"
+                                        min="1"
+                                        className={getFieldCls('totalSeats')}
+                                        value={formData.totalSeats}
+                                        onChange={handleChange}
+                                        placeholder="e.g. 100"
+                                    />
+                                )}
+                                {renderFieldError('totalSeats')}
+                            </div>
+
+                            {/* Waitlist Toggle */}
+                            {!isUnlimited && (
+                                <div>
+                                    <label className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="allowWaitlist"
+                                            checked={Boolean(formData.allowWaitlist)}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, allowWaitlist: e.target.checked }))}
+                                            className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span className="font-semibold">Enable Waiting List</span>
+                                    </label>
+                                    <p className="text-xs text-neutral-400 mt-0.5 ml-6">
+                                        Attendees can join a waitlist once seats are full.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Payment Option Selector */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <label className={labelCls}>Payment Option <span className="text-brand-600">*</span></label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'FREE', title: 'Free Event', desc: 'No registration fee charged' },
+                                        { id: 'MANUAL_TRANSACTION', title: 'Manual UPI Payment', desc: 'Direct UPI ID with QR code generation & UPI apps' },
+                                        { id: 'COLLEGE_PAYMENT', title: 'College Payment Portal', desc: 'Official SBI Collect or College ERP payment URL' },
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    paymentMethod: opt.id,
+                                                    upiId: opt.id === 'MANUAL_TRANSACTION' ? prev.upiId : '',
+                                                    collegePaymentUrl: opt.id === 'COLLEGE_PAYMENT' ? prev.collegePaymentUrl : '',
+                                                    registrationFee: opt.id === 'FREE' ? 0 : (prev.registrationFee || 50),
+                                                }));
+                                                setIsFree(opt.id === 'FREE');
+                                            }}
+                                            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                                formData.paymentMethod === opt.id
+                                                    ? 'border-brand-600 bg-brand-50/50 dark:bg-brand-950/20 ring-1 ring-brand-600'
+                                                    : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300'
+                                            }`}
+                                        >
+                                            <span className="text-xs font-bold block text-neutral-900 dark:text-white">
+                                                {opt.title}
+                                            </span>
+                                            <span className="text-[11px] text-neutral-500 mt-0.5 block">
+                                                {opt.desc}
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Payment Settings */}
-                            <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
-                                <div>
-                                    <h3 className="text-lg font-bold text-black dark:text-white uppercase tracking-wider">Payment Settings</h3>
-                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">Choose how users pay for event registration.</p>
-                                </div>
-
-                                {/* Payment Method Option Selector */}
-                                <div>
-                                    <label className={labelCls}>Payment Method <span className="text-brand-600">*</span></label>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'FREE' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="FREE"
-                                                    checked={formData.paymentMethod === 'FREE'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'FREE', registrationFee: 0 })}
-                                                    className="w-4 h-4 accent-brand-600"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">Free</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">No entry fee required to join the event.</span>
-                                        </label>
-
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'MANUAL_TRANSACTION' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="MANUAL_TRANSACTION"
-                                                    checked={formData.paymentMethod === 'MANUAL_TRANSACTION'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'MANUAL_TRANSACTION' })}
-                                                    className="w-4 h-4 accent-brand-600"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">Manual Transaction</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">Users scan your QR code/UPI ID and submit Transaction ID.</span>
-                                        </label>
-
-                                        <label className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all ${formData.paymentMethod === 'COLLEGE_PAYMENT' ? 'border-brand-600 bg-brand-50/30 dark:bg-brand-950/20' : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 bg-white dark:bg-neutral-900'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="COLLEGE_PAYMENT"
-                                                    checked={formData.paymentMethod === 'COLLEGE_PAYMENT'}
-                                                    onChange={() => setFormData({ ...formData, paymentMethod: 'COLLEGE_PAYMENT' })}
-                                                    className="w-4 h-4 accent-brand-600 cursor-pointer"
-                                                />
-                                                <span className="text-sm font-bold text-black dark:text-white">College Portal</span>
-                                            </div>
-                                            <span className="text-xs text-neutral-500 mt-2">Direct users to official college payment portal URL.</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {formData.paymentMethod !== 'FREE' && (
+                            {/* Paid Event Details: Manual UPI Payment */}
+                            {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
+                                <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
                                     <div>
                                         <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
                                         <input
                                             type="number"
                                             name="registrationFee"
                                             min="1"
-                                            className={inputCls}
-                                            placeholder="Enter amount in ₹"
+                                            className={getFieldCls('registrationFee')}
                                             value={formData.registrationFee}
                                             onChange={handleChange}
+                                            placeholder="e.g. 100"
+                                        />
+                                        {renderFieldError('registrationFee')}
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Beneficiary UPI ID <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="upiId"
+                                            className={getFieldCls('upiId')}
+                                            value={formData.upiId}
+                                            onChange={handleChange}
+                                            placeholder="e.g. clubname@oksbi or 9876543210@paytm"
+                                        />
+                                        {renderFieldError('upiId')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Used to generate dynamic QR codes and mobile UPI app links (GPay, PhonePe, Paytm, BHIM).</p>
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
+                                        <textarea
+                                            name="paymentInstructions"
+                                            rows="2"
+                                            className={inputCls}
+                                            value={formData.paymentInstructions}
+                                            onChange={handleChange}
+                                            placeholder="Additional guidelines shown to attendees during payment (e.g. category selection, transfer steps)..."
                                         />
                                     </div>
-                                )}
-
-                                {/* Manual Transaction Verification Fields (Conditional) */}
-                                {formData.paymentMethod === 'MANUAL_TRANSACTION' && (
-                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className={labelCls}>UPI ID / Phone Number <span className="text-brand-600">*</span></label>
-                                                <input
-                                                    type="text"
-                                                    name="upiId"
-                                                    className={inputCls}
-                                                    placeholder="e.g. name@upi or 9876543210"
-                                                    value={formData.upiId}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className={labelCls}>Account Holder Name</label>
-                                                <input
-                                                    type="text"
-                                                    name="accountHolderName"
-                                                    className={inputCls}
-                                                    placeholder="e.g. Club Secretary or Club Account Name"
-                                                    value={formData.accountHolderName}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className={labelCls}>Custom Payment Instructions</label>
-                                            <textarea
-                                                name="paymentInstructions"
-                                                rows="3"
-                                                className={`${inputCls} resize-y`}
-                                                placeholder="Add custom instructions for the user (e.g. Please scan the QR code, pay via GPay/PhonePe/Paytm, and paste the 12-digit UTR/Transaction ID below.)"
-                                                value={formData.paymentInstructions}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* College Payment Portal Fields (Conditional) */}
-                                {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
-                                    <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-800 pt-4">
-                                        <div>
-                                            <label className={labelCls}>College Payment Portal URL <span className="text-brand-600">*</span></label>
-                                            <input
-                                                type="url"
-                                                name="collegePaymentUrl"
-                                                className={inputCls}
-                                                placeholder="https://payments.college.ac.in/event-fee"
-                                                value={formData.collegePaymentUrl}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className={labelCls}>Custom Payment Instructions <span className="text-neutral-400 font-normal">(optional)</span></label>
-                                            <textarea
-                                                name="paymentInstructions"
-                                                rows="3"
-                                                className={`${inputCls} resize-y`}
-                                                placeholder="Add custom instructions for payment on the college portal."
-                                                value={formData.paymentInstructions}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Post-Registration Message */}
-                            <div>
-                                <label className={labelCls}>
-                                    Post-Registration Message <span className="text-neutral-400 font-normal">(optional)</span>
-                                </label>
-                                <p className="text-xs text-neutral-500 mb-2">Show a WhatsApp group link, Discord invite, or any instructions after successful registration.</p>
-                                <textarea
-                                    name="postRegistrationMessage"
-                                    rows="3"
-                                    className={`${inputCls} resize-y`}
-                                    placeholder="e.g. Join our WhatsApp group: https://chat.whatsapp.com/... or Follow the next steps at..."
-                                    value={formData.postRegistrationMessage}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            {/* Required Student Information */}
-                            <div>
-                                <label className={labelCls}>Required Student Information</label>
-                                <p className="text-xs text-neutral-500 mb-3">Select which profile fields students must complete before registering</p>
-                                <div className="space-y-2">
-                                    {[
-                                        { value: 'githubProfile', label: 'GitHub Profile' },
-                                        { value: 'linkedinProfile', label: 'LinkedIn Profile' },
-                                        { value: 'xProfile', label: 'X (Twitter) Profile' },
-                                        { value: 'portfolioUrl', label: 'Portfolio URL' }
-                                    ].map(field => (
-                                        <label key={field.value} className="flex items-center gap-2 cursor-pointer">
-                                            <input type="checkbox" value={field.value}
-                                                checked={formData.requiredFields.includes(field.value)}
-                                                onChange={handleRequiredFieldsChange}
-                                                className="w-4 h-4 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600" />
-                                            <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
-                                        </label>
-                                    ))}
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Custom Registration Fields Builder */}
-                            <div>
-                                <label className={labelCls}>
-                                    Custom Registration Fields
-                                </label>
-                                <p className="text-xs text-neutral-500 mb-4">Add custom fields that students must fill during registration (like Google Forms)</p>
+                            {/* Paid Event Details: College Payment Portal */}
+                            {formData.paymentMethod === 'COLLEGE_PAYMENT' && (
+                                <div className="space-y-4 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                                    <div>
+                                        <label className={labelCls}>Registration Fee (₹) <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="number"
+                                            name="registrationFee"
+                                            min="1"
+                                            className={getFieldCls('registrationFee')}
+                                            value={formData.registrationFee}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 100"
+                                        />
+                                        {renderFieldError('registrationFee')}
+                                    </div>
 
-                                <div className="space-y-4">
-                                    {formData.customFields.map((cf, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
+                                    <div>
+                                        <label className={labelCls}>Official College Payment Portal URL <span className="text-brand-600">*</span></label>
+                                        <input
+                                            type="text"
+                                            name="collegePaymentUrl"
+                                            className={getFieldCls('collegePaymentUrl')}
+                                            value={formData.collegePaymentUrl}
+                                            onChange={handleChange}
+                                            placeholder="https://www.onlinesbi.sbi/sbicollect/..."
+                                        />
+                                        {renderFieldError('collegePaymentUrl')}
+                                        <p className="text-[11px] text-neutral-400 mt-1">Attendees will see a direct button that opens this official portal in a new tab without closing their registration.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className={labelCls}>Payment Instructions <span className="text-neutral-400 font-normal">(Optional)</span></label>
+                                        <textarea
+                                            name="paymentInstructions"
+                                            rows="2"
+                                            className={inputCls}
+                                            value={formData.paymentInstructions}
+                                            onChange={handleChange}
+                                            placeholder="Guidelines for portal payment (e.g. select category, department name, fee head)..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                           
+
+                            {/* Custom Registration Form Fields */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Custom Registration Questions
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Collect additional details (e.g. GitHub profile, dietary preference, T-shirt size).
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addCustomField}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Question
+                                    </button>
+                                </div>
+
+                                {formData.customFields.map((cf, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Question #{idx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove field"
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
                                             >
-                                                <i className="ri-delete-bin-line text-lg" />
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
                                             </button>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Label <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. Team Name, GitHub Repo..."
-                                                        value={cf.label}
-                                                        onChange={(e) => updateCustomField(idx, 'label', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Field Type</label>
-                                                    <select
-                                                        value={cf.type}
-                                                        onChange={(e) => updateCustomField(idx, 'type', e.target.value)}
-                                                        className={inputCls}
-                                                    >
-                                                        <option value="text">Text</option>
-                                                        <option value="url">Link / URL</option>
-                                                        <option value="textarea">Long Text</option>
-                                                        <option value="select">Dropdown</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <label className="inline-flex items-center gap-2 mt-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={cf.required}
-                                                    onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
-                                                    className="w-4 h-4 text-brand-600 border-neutral-300 rounded focus:ring-brand-600 cursor-pointer"
-                                                />
-                                                <span className="text-sm text-neutral-600 dark:text-neutral-400">Required</span>
-                                            </label>
-
-                                            {cf.type === 'select' && (
-                                                <div className="mt-3 pl-4 border-l-2 border-brand-300">
-                                                    <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-2">Dropdown Options</p>
-                                                    {(cf.options || []).map((opt, optIdx) => (
-                                                        <div key={optIdx} className="flex items-center gap-2 mb-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder={`Option ${optIdx + 1}`}
-                                                                value={opt}
-                                                                onChange={(e) => updateCustomFieldOption(idx, optIdx, e.target.value)}
-                                                                className="flex-1 px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-[#0a0a0a] text-black dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 focus:outline-none transition-all"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeOptionFromField(idx, optIdx)}
-                                                                className="text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
-                                                            >
-                                                                <i className="ri-close-line text-lg" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addOptionToField(idx)}
-                                                        className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 mt-1 cursor-pointer"
-                                                    >
-                                                        <i className="ri-add-line" /> Add Option
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
-                                    ))}
-                                </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div className="sm:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Question label (e.g. T-shirt Size)"
+                                                    className={inputCls}
+                                                    value={cf.label}
+                                                    onChange={(e) => updateCustomField(idx, 'label', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <select
+                                                    className={inputCls}
+                                                    value={cf.type}
+                                                    onChange={(e) => updateCustomField(idx, 'type', e.target.value)}
+                                                >
+                                                    <option value="text">Text Input</option>
+                                                    <option value="textarea">Long Text</option>
+                                                    <option value="select">Dropdown Options</option>
+                                                    <option value="checkbox">Checkbox (Yes/No)</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                <button
-                                    type="button"
-                                    onClick={addCustomField}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Custom Field
-                                </button>
+                                        {cf.type === 'select' && (
+                                            <div className="pl-2 border-l-2 border-brand-500 space-y-2 mt-2">
+                                                <span className="text-[11px] font-semibold text-neutral-400 block">
+                                                    Dropdown Choices:
+                                                </span>
+                                                {(cf.options || []).map((opt, oIdx) => (
+                                                    <div key={oIdx} className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={opt}
+                                                            onChange={(e) => updateCustomFieldOption(idx, oIdx, e.target.value)}
+                                                            placeholder={`Option ${oIdx + 1}`}
+                                                            className={inputCls}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeOptionFromField(idx, oIdx)}
+                                                            className="text-neutral-400 hover:text-rose-600 cursor-pointer"
+                                                        >
+                                                            <i className="ri-delete-bin-line" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addOptionToField(idx)}
+                                                    className="text-xs text-brand-600 hover:underline font-semibold cursor-pointer"
+                                                >
+                                                    + Add Choice
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <label className="flex items-center space-x-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={Boolean(cf.required)}
+                                                onChange={(e) => updateCustomField(idx, 'required', e.target.checked)}
+                                                className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                            />
+                                            <span>Required answer</span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                             {/* Post-Registration Message / Links */}
+                            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-1.5">
+                                <label className={labelCls}>Post-Registration Message & Links (Optional)</label>
+                                <textarea
+                                    name="postRegistrationMessage"
+                                    rows="2"
+                                    className={inputCls}
+                                    value={formData.postRegistrationMessage}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Join the official participants WhatsApp group: https://chat.whatsapp.com/... for schedule and announcements."
+                                />
+                                <p className="text-[11px] text-neutral-400">
+                                    Shown to participants immediately after successful registration (supports clickable WhatsApp/Discord links).
+                                </p>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 4: Extras & Publishing */}
+                    {/* STEP 4: Extras */}
                     {currentStep === 4 && (
-                        <div className="space-y-6 animate-step-fadeIn">
-                            <div className="flex items-center gap-3 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-                                <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
-                                    <i className="ri-sparkling-line text-brand-600 text-base" />
-                                </div>
-                                <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
-                                        Step 4
-                                    </span>
-                                    <h2 className="text-base font-bold text-black dark:text-white leading-tight">
-                                        Extras & Publishing
-                                    </h2>
-                                </div>
-                            </div>
-
-                            {/* Status Toggles Grid (Display Results & Digital Certificates) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Show Winners Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
-                                    <input
-                                        type="checkbox"
-                                        name="showWinner"
-                                        checked={formData.showWinner}
-                                        onChange={(e) => setFormData({ ...formData, showWinner: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                    />
-                                    <div>
-                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Display Results / Winners</span>
-                                        <p className="text-xs text-neutral-500 mt-1">Show winners on the event card after completion.</p>
-                                    </div>
-                                </label>
-
-                                {/* Provide Certificate Toggle */}
-                                <label className="flex items-start gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-400 transition-colors select-none">
-                                    <input
-                                        type="checkbox"
-                                        name="provideCertificate"
-                                        checked={formData.provideCertificate}
-                                        onChange={(e) => setFormData({ ...formData, provideCertificate: e.target.checked })}
-                                        className="w-4 h-4 mt-0.5 accent-brand-600 cursor-pointer border-neutral-300 rounded focus:ring-brand-600"
-                                    />
-                                    <div>
-                                        <span className="block text-sm font-bold text-black dark:text-white tracking-wide">Digital Certificates</span>
-                                        <p className="text-xs text-neutral-500 mt-1">Enable downloadable certificates for participants after the event ends.</p>
-                                    </div>
-                                </label>
-                            </div>
-
-                            {/* Sponsors */}
-                            <div>
-                                <label className={labelCls}>Sponsors</label>
-                                <p className="text-xs text-neutral-500 mb-4">Add sponsors for this event (optional)</p>
-                                <div className="space-y-4">
-                                    {sponsors.map((s, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeSponsor(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove sponsor"
-                                            >
-                                                <i className="ri-delete-bin-line text-lg" />
-                                            </button>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Sponsor Name <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. Acme Corp"
-                                                        value={s.name}
-                                                        onChange={(e) => updateSponsor(idx, 'name', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {sponsorErrors[idx]?.name && (
-                                                        <p className="text-xs text-red-600 mt-1">{sponsorErrors[idx].name}</p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Logo URL <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://example.com/logo.png"
-                                                        value={s.logoUrl}
-                                                        onChange={(e) => updateSponsor(idx, 'logoUrl', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {sponsorErrors[idx]?.logoUrl && (
-                                                        <p className="text-xs text-red-600 mt-1">{sponsorErrors[idx].logoUrl}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="mt-3 pr-10">
-                                                <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Website URL <span className="text-neutral-400 font-normal">(optional)</span></label>
-                                                <input
-                                                    type="url"
-                                                    placeholder="https://sponsor-website.com"
-                                                    value={s.websiteUrl}
-                                                    onChange={(e) => updateSponsor(idx, 'websiteUrl', e.target.value)}
-                                                    className={inputCls}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addSponsor}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Sponsor
-                                </button>
-                            </div>
-
-                            {/* Media */}
-                            <div>
-                                <label className={labelCls}>Media</label>
-                                <p className="text-xs text-neutral-500 mb-4">Add images, videos, or sponsor logos for this event (optional)</p>
-                                <div className="space-y-4">
-                                    {media.map((m, idx) => (
-                                        <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 relative bg-neutral-50 dark:bg-neutral-900">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeMedia(idx)}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
-                                                title="Remove media"
-                                            >
-                                                <i className="ri-delete-bin-line text-lg" />
-                                            </button>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-10">
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Media URL <span className="text-brand-600">*</span></label>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://example.com/media.jpg"
-                                                        value={m.url}
-                                                        onChange={(e) => updateMedia(idx, 'url', e.target.value)}
-                                                        className={inputCls}
-                                                    />
-                                                    {mediaErrors[idx]?.url && (
-                                                        <p className="text-xs text-red-600 mt-1">{mediaErrors[idx].url}</p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-neutral-600 dark:text-neutral-400 mb-1 block">Type</label>
-                                                    <select
-                                                        value={m.type}
-                                                        onChange={(e) => updateMedia(idx, 'type', e.target.value)}
-                                                        className={inputCls}
-                                                    >
-                                                        <option value={MediaType.IMAGE}>Image</option>
-                                                        <option value={MediaType.VIDEO}>Video</option>
-                                                        <option value={MediaType.SPONSOR_LOGO}>Sponsor Logo</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addMedia}
-                                    className="mt-4 w-full py-3 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-bold text-neutral-500 hover:border-brand-600 hover:text-brand-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <i className="ri-add-circle-line text-lg" /> Add Media
-                                </button>
-                            </div>
-
-                            {/* Winners Section Note */}
-                            <div className="mt-6 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 p-5 rounded-xl flex items-center justify-between gap-4">
+                        <div className="space-y-6 animate-fadeIn">
+                            <div className="flex items-center justify-between pb-5 border-b border-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 text-brand-600">
-                                        <i className="ri-trophy-line text-xl" />
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                                        <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-                                            Winner Announcement Tool
-                                        </h4>
-                                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                                            Winners can now be announced and edited directly from the event card on your <strong>My Events</strong> or <strong>Club Events</strong> page using the Three-Dot action menu.
+                                        <span className="block text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                            Step 4
+                                        </span>
+                                        <h2 className="text-base font-bold text-foreground leading-tight">
+                                            Extras & Event Settings
+                                        </h2>
+                                    </div>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleSaveCurrentStep(4)}
+                                    disabled={isSaving}
+                                    className="gap-1.5 h-8 text-xs font-semibold"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save Step 4
+                                </Button>
+                            </div>
+
+                            {/* Additional Settings Toggles */}
+                            <div className="space-y-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
+                                    <span className="font-semibold">Provide Certificates to Attendees</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(formData.provideCertificate)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, provideCertificate: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
+                                </label>
+
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
+                                    <span className="font-semibold">Enable Attendee Post-Event Feedback</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(formData.feedbackEnabled)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, feedbackEnabled: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
+                                </label>
+
+                                <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
+                                    <span className="font-semibold">Publicly Display Winners After Event</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(formData.showWinner)}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, showWinner: e.target.checked }))}
+                                        className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                    />
+                                </label>
+                            </div>
+
+                            {/* Sponsors Section */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Event Sponsors
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Add sponsor partner logos and links.
                                         </p>
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={addSponsor}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Sponsor
+                                    </button>
                                 </div>
+
+                                {sponsors.map((sp, sIdx) => (
+                                    <div
+                                        key={sIdx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Sponsor #{sIdx + 1}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSponsor(sIdx)}
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Sponsor Name"
+                                                className={inputCls}
+                                                value={sp.name}
+                                                onChange={(e) => updateSponsor(sIdx, 'name', e.target.value)}
+                                            />
+                                            <input
+                                                type="url"
+                                                placeholder="Logo URL (https://...)"
+                                                className={inputCls}
+                                                value={sp.logoUrl}
+                                                onChange={(e) => updateSponsor(sIdx, 'logoUrl', e.target.value)}
+                                            />
+                                            <input
+                                                type="url"
+                                                placeholder="Website URL (optional)"
+                                                className={inputCls}
+                                                value={sp.websiteUrl}
+                                                onChange={(e) => updateSponsor(sIdx, 'websiteUrl', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Media Section */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                            Media Gallery
+                                        </h3>
+                                        <p className="text-xs text-neutral-400">
+                                            Highlight images and videos from previous iterations.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addMedia}
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Media
+                                    </button>
+                                </div>
+
+                                {media.map((m, mIdx) => (
+                                    <div
+                                        key={mIdx}
+                                        className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-neutral-500">Media #{mIdx + 1}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeMedia(mIdx)}
+                                                className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div className="sm:col-span-2">
+                                                <input
+                                                    type="url"
+                                                    placeholder="Media URL (https://...)"
+                                                    className={inputCls}
+                                                    value={m.url}
+                                                    onChange={(e) => updateMedia(mIdx, 'url', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <select
+                                                    className={inputCls}
+                                                    value={m.type}
+                                                    onChange={(e) => updateMedia(mIdx, 'type', e.target.value)}
+                                                >
+                                                    <option value={MediaType.IMAGE}>Image</option>
+                                                    <option value={MediaType.VIDEO}>Video</option>
+                                                    <option value={MediaType.SPONSOR_LOGO}>Sponsor Logo</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Dynamic Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-neutral-100">
-                        {currentStep === 1 ? (
-                            <button
-                                key="discard-btn"
-                                type="button"
-                                onClick={() => navigate('/profile')}
-                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2 order-2 sm:order-1"
-                            >
-                                Discard Changes
-                            </button>
-                        ) : (
-                            <button
-                                key="prev-step-btn"
-                                type="button"
-                                onClick={handlePrevStep}
-                                className="flex-1 px-6 py-3 bg-white text-neutral-700 font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer hover:bg-neutral-50 transition-colors border border-neutral-300 outline-none flex items-center justify-center gap-2 order-2 sm:order-1"
-                            >
-                                <i className="ri-arrow-left-line" /> Back
-                            </button>
-                        )}
+                    {/* Independent Step Action Bar */}
+                    <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
+                        {/* Left action: Back or Profile */}
+                        <div>
+                            {currentStep > 1 ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handlePrevStep}
+                                    className="gap-1.5 h-9 text-xs font-semibold"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5" /> Previous Step
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    asChild
+                                    className="gap-1.5 h-9 text-xs font-semibold"
+                                >
+                                    <Link to="/profile">
+                                        Cancel & Return
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
 
-                        {currentStep < 4 ? (
-                            <button
-                                key="next-step-btn"
+                        {/* Right actions: Save Step & Next/Preview */}
+                        <div className="flex items-center space-x-3">
+                            <AutosaveStatusBadge
+                                status={autosaveStatus}
+                                lastSavedTime={lastSavedTime}
+                                onRetry={() => handleSaveCurrentStep(currentStep)}
+                            />
+                            {/* Explicit independent save for the current step */}
+                            <Button
                                 type="button"
-                                onClick={handleNextStep}
-                                className="flex-1 px-6 py-3 bg-black hover:bg-neutral-800 hover:shadow-md text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all order-1 sm:order-2 border-0 outline-none flex items-center justify-center gap-2"
-                            >
-                                Next Step <i className="ri-arrow-right-line" />
-                            </button>
-                        ) : (
-                            <button
-                                key="submit-event-btn"
-                                type="submit"
+                                variant="outline"
+                                size="sm"
                                 disabled={isSaving}
-                                className={`flex-1 px-6 py-3 text-white font-bold text-sm uppercase tracking-widest rounded-full cursor-pointer transition-all order-1 sm:order-2 border-0 outline-none ${
-                                    isSaving ? 'bg-neutral-400 cursor-not-allowed shadow-none' : 'bg-black hover:bg-neutral-800 hover:shadow-md'
-                                }`}
+                                onClick={() => handleSaveCurrentStep(currentStep)}
+                                className="gap-1.5 h-9 text-xs font-semibold"
                             >
-                                {isSaving ? 'Syncing...' : 'Update Event Details'}
-                            </button>
-                        )}
+                                <Save className="w-3.5 h-3.5" />
+                                Save Changes
+                            </Button>
+
+                            {currentStep < 4 ? (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={handleNextStep}
+                                    className="gap-1.5 h-9 text-xs font-semibold shadow-xs"
+                                >
+                                    Continue <ArrowRight className="w-3.5 h-3.5" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    disabled={isSaving}
+                                    onClick={handleGoToPreview}
+                                    className="gap-1.5 h-9 text-xs font-semibold shadow-xs"
+                                >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    Go to Preview →
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                </form>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

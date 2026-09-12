@@ -28,24 +28,6 @@ export const PERMISSIONS = {
   REGISTRATION_CREATE: "registration.create",
   REGISTRATION_CANCEL: "registration.cancel",
 
-  LOSTFOUND_CREATE: "lostfound.create",
-  LOSTFOUND_VIEW: "lostfound.view",
-  LOSTFOUND_MODERATE: "lostfound.moderate",
-
-  EVENT_CREATE_INSTITUTION: "event.create.institution",
-  EVENT_UPDATE_INSTITUTION: "event.update.institution",
-  EVENT_DELETE_REQUEST_INSTITUTION: "event.delete.request.institution",
-  EVENT_PUBLISH_INSTITUTION: "event.publish.institution",
-  EVENT_DELETE_INSTITUTION: "event.delete.institution",
-  ATTENDANCE_TAKE_INSTITUTION: "attendance.take.institution",
-  CERTIFICATE_MANAGE_INSTITUTION: "certificate.manage.institution",
-  REGISTRATION_MANAGE_INSTITUTION: "registration.manage.institution",
-  PAYMENT_REVIEW_INSTITUTION: "payment.review.institution",
-  PAYMENT_VERIFY_INSTITUTION: "payment.verify.institution",
-  VENUE_MANAGE_INSTITUTION: "venue.manage.institution",
-  EVENT_STAFF_MANAGE_INSTITUTION: "event_staff.manage.institution",
-  AUDIT_VIEW_INSTITUTION: "audit.view.institution",
-
   EVENT_VIEW: "event.view",
   EVENT_DELETE: "event.delete",
   EVENT_ATTENDANCE: "event.manage_attendance",
@@ -61,21 +43,21 @@ export const PERMISSIONS = {
   USER_VIEW: "user.view",
   USER_UPDATE: "user.update",
   USER_ASSIGN_ROLE: "user.assign_role",
-  USER_BLOCK: "user.block",
-  LOST_FOUND_VIEW: "lost_found.view",
-  LOST_FOUND_CREATE: "lost_found.create",
-  LOST_FOUND_UPDATE: "lost_found.update",
-  LOST_FOUND_RESOLVE: "lost_found.resolve",
-  LOST_FOUND_REPORT: "lost_found.report",
-  LOST_FOUND_MODERATE: "lost_found.moderate",
   NOTIFICATION_VIEW: "notification.view",
   NOTIFICATION_CREATE: "notification.create",
   TEAM_CREATE: "team.create",
   TEAM_MANAGE: "team.manage",
   AUDIT_VIEW: "audit.view",
   AUDIT_EXPORT: "audit.export",
-  EVENT_STAFF_MANAGE: "event_staff.manage",
   FEATURED_EVENTS_MANAGE: "featured_events.manage",
+  LOST_FOUND_VIEW: "lost_found.view",
+  LOST_FOUND_CREATE: "lost_found.create",
+  LOST_FOUND_UPDATE: "lost_found.update",
+  LOST_FOUND_RESOLVE: "lost_found.resolve",
+  LOST_FOUND_MODERATE: "lost_found.moderate",
+  LOSTFOUND_VIEW: "lost_found.view",
+  LOSTFOUND_CREATE: "lost_found.create",
+  LOSTFOUND_MODERATE: "lost_found.moderate",
 };
 
 export function normalizePermission(permission) {
@@ -84,94 +66,16 @@ export function normalizePermission(permission) {
       return PERMISSIONS.ATTENDANCE_TAKE;
     case PERMISSIONS.EVENT_CERTIFICATE:
       return PERMISSIONS.CERTIFICATE_MANAGE;
-    case PERMISSIONS.LOST_FOUND_CREATE:
-      return PERMISSIONS.LOSTFOUND_CREATE;
-    case PERMISSIONS.LOST_FOUND_VIEW:
-      return PERMISSIONS.LOSTFOUND_VIEW;
-    case PERMISSIONS.LOST_FOUND_MODERATE:
-      return PERMISSIONS.LOSTFOUND_MODERATE;
+    case "lostfound.create":
+      return PERMISSIONS.LOST_FOUND_CREATE;
+    case "lostfound.view":
+      return PERMISSIONS.LOST_FOUND_VIEW;
+    case "lostfound.moderate":
+      return PERMISSIONS.LOST_FOUND_MODERATE;
     default:
       return permission;
   }
 }
-
-export const INSTITUTIONAL_LEAD_PERMISSIONS = [
-  PERMISSIONS.EVENT_CREATE,
-  PERMISSIONS.EVENT_UPDATE,
-  PERMISSIONS.EVENT_DELETE,
-  PERMISSIONS.EVENT_DELETE_REQUEST,
-  PERMISSIONS.EVENT_PUBLISH,
-  PERMISSIONS.ATTENDANCE_TAKE,
-  PERMISSIONS.CERTIFICATE_MANAGE,
-  PERMISSIONS.PAYMENT_REVIEW,
-  PERMISSIONS.PAYMENT_VERIFY,
-  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
-  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
-  PERMISSIONS.EVENT_STAFF_MANAGE,
-  PERMISSIONS.AUDIT_VIEW,
-  PERMISSIONS.REGISTRATION_CREATE,
-  PERMISSIONS.REGISTRATION_CANCEL,
-  PERMISSIONS.EVENT_CREATE_INSTITUTION,
-  PERMISSIONS.EVENT_UPDATE_INSTITUTION,
-  PERMISSIONS.EVENT_DELETE_REQUEST_INSTITUTION,
-  PERMISSIONS.EVENT_PUBLISH_INSTITUTION,
-  PERMISSIONS.EVENT_DELETE_INSTITUTION,
-  PERMISSIONS.ATTENDANCE_TAKE_INSTITUTION,
-  PERMISSIONS.CERTIFICATE_MANAGE_INSTITUTION,
-  PERMISSIONS.REGISTRATION_MANAGE_INSTITUTION,
-  PERMISSIONS.PAYMENT_REVIEW_INSTITUTION,
-  PERMISSIONS.PAYMENT_VERIFY_INSTITUTION,
-  PERMISSIONS.VENUE_MANAGE_INSTITUTION,
-  PERMISSIONS.EVENT_STAFF_MANAGE_INSTITUTION,
-  PERMISSIONS.AUDIT_VIEW_INSTITUTION,
-  PERMISSIONS.EVENT_VIEW,
-  PERMISSIONS.EVENT_ATTENDANCE,
-  PERMISSIONS.EVENT_CERTIFICATE,
-  PERMISSIONS.REGISTRATION_VIEW,
-  PERMISSIONS.PAYMENT_VIEW,
-  PERMISSIONS.NOTIFICATION_VIEW,
-  PERMISSIONS.NOTIFICATION_CREATE,
-  PERMISSIONS.CLUB_VIEW,
-  PERMISSIONS.TEAM_CREATE,
-  PERMISSIONS.TEAM_MANAGE,
-  PERMISSIONS.AUDIT_EXPORT,
-  PERMISSIONS.FEATURED_EVENTS_MANAGE,
-];
-
-export const CLUB_ACCOUNT_PERMISSIONS = [
-  PERMISSIONS.EVENT_CREATE,
-  PERMISSIONS.EVENT_UPDATE,
-  PERMISSIONS.EVENT_DELETE_REQUEST,
-  PERMISSIONS.EVENT_PUBLISH,
-  PERMISSIONS.ATTENDANCE_TAKE,
-  PERMISSIONS.CERTIFICATE_MANAGE,
-  PERMISSIONS.CLUB_UPDATE,
-  PERMISSIONS.CLUB_MANAGE_MEMBERS,
-  PERMISSIONS.CLUB_INVITE_MEMBERS,
-  PERMISSIONS.CLUB_REMOVE_MEMBERS,
-  PERMISSIONS.CLUB_ASSIGN_ROLES,
-  PERMISSIONS.CLUB_TRANSFER_LEADERSHIP,
-  PERMISSIONS.PAYMENT_REVIEW,
-  PERMISSIONS.PAYMENT_VERIFY,
-  PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
-  PERMISSIONS.NOTIFICATION_SEND_CAMPUS,
-  PERMISSIONS.REGISTRATION_CREATE,
-  PERMISSIONS.REGISTRATION_CANCEL,
-  PERMISSIONS.EVENT_VIEW,
-  PERMISSIONS.EVENT_ATTENDANCE,
-  PERMISSIONS.EVENT_CERTIFICATE,
-  PERMISSIONS.CLUB_VIEW,
-  PERMISSIONS.CLUB_ANNOUNCEMENTS_MANAGE,
-  PERMISSIONS.CLUB_ACHIEVEMENTS_MANAGE,
-  PERMISSIONS.REGISTRATION_VIEW,
-  PERMISSIONS.PAYMENT_VIEW,
-  PERMISSIONS.NOTIFICATION_VIEW,
-  PERMISSIONS.NOTIFICATION_CREATE,
-  PERMISSIONS.EVENT_STAFF_MANAGE,
-  PERMISSIONS.AUDIT_VIEW,
-  PERMISSIONS.TEAM_CREATE,
-  PERMISSIONS.TEAM_MANAGE,
-];
 
 export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.EVENT_CREATE,
@@ -206,10 +110,6 @@ export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.NOTIFICATION_CREATE,
   PERMISSIONS.USER_VIEW,
-  PERMISSIONS.LOSTFOUND_VIEW,
-  PERMISSIONS.LOSTFOUND_CREATE,
-  PERMISSIONS.LOST_FOUND_VIEW,
-  PERMISSIONS.LOST_FOUND_CREATE,
 ];
 
 export const STUDENT_CLUB_HEAD_PERMISSIONS = [
@@ -241,7 +141,6 @@ export const STUDENT_CLUB_HEAD_PERMISSIONS = [
   PERMISSIONS.PAYMENT_VIEW,
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.NOTIFICATION_CREATE,
-  PERMISSIONS.EVENT_STAFF_MANAGE,
   PERMISSIONS.AUDIT_VIEW,
   PERMISSIONS.TEAM_CREATE,
   PERMISSIONS.TEAM_MANAGE,
@@ -268,7 +167,6 @@ export const STUDENT_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.PAYMENT_VIEW,
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.NOTIFICATION_CREATE,
-  PERMISSIONS.EVENT_STAFF_MANAGE,
   PERMISSIONS.TEAM_CREATE,
   PERMISSIONS.TEAM_MANAGE,
 ];
@@ -278,16 +176,15 @@ export const BASE_STUDENT_PERMISSIONS = [
   PERMISSIONS.REGISTRATION_CREATE,
   PERMISSIONS.REGISTRATION_CANCEL,
   PERMISSIONS.REGISTRATION_VIEW,
-  PERMISSIONS.LOSTFOUND_CREATE,
-  PERMISSIONS.LOSTFOUND_VIEW,
-  PERMISSIONS.LOST_FOUND_CREATE,
-  PERMISSIONS.LOST_FOUND_VIEW,
-  PERMISSIONS.LOST_FOUND_REPORT,
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.TEAM_CREATE,
   PERMISSIONS.TEAM_MANAGE,
   PERMISSIONS.USER_VIEW,
   PERMISSIONS.USER_UPDATE,
+  PERMISSIONS.LOST_FOUND_CREATE,
+  PERMISSIONS.LOST_FOUND_VIEW,
+  PERMISSIONS.LOST_FOUND_UPDATE,
+  PERMISSIONS.LOST_FOUND_RESOLVE,
 ];
 
 export const EXTERNAL_USER_PERMISSIONS = [
@@ -296,28 +193,26 @@ export const EXTERNAL_USER_PERMISSIONS = [
   PERMISSIONS.REGISTRATION_CANCEL,
   PERMISSIONS.REGISTRATION_VIEW,
   PERMISSIONS.NOTIFICATION_VIEW,
-  PERMISSIONS.TEAM_CREATE,
-  PERMISSIONS.TEAM_MANAGE,
   PERMISSIONS.USER_VIEW,
   PERMISSIONS.USER_UPDATE,
 ];
-
-export const CENTRAL_ORGANIZER_PERMISSIONS = INSTITUTIONAL_LEAD_PERMISSIONS;
 
 export const ROLE_PERMISSIONS_MAP = {
   SUPER_ADMIN: Object.values(PERMISSIONS),
   admin: Object.values(PERMISSIONS),
   FACULTY: FACULTY_COORDINATOR_PERMISSIONS,
   facultyCoordinator: FACULTY_COORDINATOR_PERMISSIONS,
-  CLUB: CLUB_ACCOUNT_PERMISSIONS,
-  club: CLUB_ACCOUNT_PERMISSIONS,
+  central_organizer: FACULTY_COORDINATOR_PERMISSIONS,
+  club: STUDENT_CLUB_HEAD_PERMISSIONS,
   STUDENT: BASE_STUDENT_PERMISSIONS,
   student: BASE_STUDENT_PERMISSIONS,
   member: BASE_STUDENT_PERMISSIONS,
   external: EXTERNAL_USER_PERMISSIONS,
-  central_organizer: CENTRAL_ORGANIZER_PERMISSIONS,
-  CENTRAL_ORGANIZER: CENTRAL_ORGANIZER_PERMISSIONS,
-  INSTITUTIONAL: INSTITUTIONAL_LEAD_PERMISSIONS,
+  lostFoundAdmin: [
+    PERMISSIONS.LOST_FOUND_MODERATE,
+    PERMISSIONS.LOST_FOUND_RESOLVE,
+    PERMISSIONS.LOST_FOUND_VIEW,
+  ],
 };
 
 export function roleHasPermission(role, permission) {
@@ -325,38 +220,17 @@ export function roleHasPermission(role, permission) {
   if (role === "admin" || role === "SUPER_ADMIN") return true;
 
   const normalized = normalizePermission(permission);
-  if (role === "facultyCoordinator" || role === "FACULTY") {
+  if (role === "facultyCoordinator" || role === "FACULTY" || role === "central_organizer") {
     return FACULTY_COORDINATOR_PERMISSIONS.includes(permission) || FACULTY_COORDINATOR_PERMISSIONS.includes(normalized);
   }
-  if (role === "club" || role === "CLUB") {
-    return CLUB_ACCOUNT_PERMISSIONS.includes(permission) || CLUB_ACCOUNT_PERMISSIONS.includes(normalized);
-  }
-  if (role === "central_organizer" || role === "CENTRAL_ORGANIZER" || role === "INSTITUTIONAL") {
-    return INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(normalized);
+  if (role === "club") {
+    return STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(normalized) || BASE_STUDENT_PERMISSIONS.includes(permission) || BASE_STUDENT_PERMISSIONS.includes(normalized);
   }
   if (role === "external") {
     return EXTERNAL_USER_PERMISSIONS.includes(permission) || EXTERNAL_USER_PERMISSIONS.includes(normalized);
   }
-  if (role === "paymentAdmin") {
-    return [
-      PERMISSIONS.PAYMENT_VIEW,
-      PERMISSIONS.PAYMENT_VERIFY,
-      PERMISSIONS.PAYMENT_REVIEW,
-      PERMISSIONS.AUDIT_VIEW,
-      PERMISSIONS.AUDIT_EXPORT,
-    ].includes(permission);
-  }
   if (role === "lostFoundAdmin") {
-    return [
-      PERMISSIONS.LOSTFOUND_VIEW,
-      PERMISSIONS.LOSTFOUND_CREATE,
-      PERMISSIONS.LOSTFOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_VIEW,
-      PERMISSIONS.LOST_FOUND_CREATE,
-      PERMISSIONS.LOST_FOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_RESOLVE,
-      PERMISSIONS.LOST_FOUND_REPORT,
-    ].includes(permission);
+    return [PERMISSIONS.LOST_FOUND_MODERATE, PERMISSIONS.LOST_FOUND_RESOLVE, PERMISSIONS.LOST_FOUND_VIEW].includes(permission) || [PERMISSIONS.LOST_FOUND_MODERATE, PERMISSIONS.LOST_FOUND_RESOLVE, PERMISSIONS.LOST_FOUND_VIEW].includes(normalized);
   }
   if (role === "student" || role === "member" || role === "STUDENT") {
     return BASE_STUDENT_PERMISSIONS.includes(permission) || BASE_STUDENT_PERMISSIONS.includes(normalized);
@@ -366,11 +240,11 @@ export function roleHasPermission(role, permission) {
 
 /**
  * Central Scoped Permission Evaluator
- * Resolves permissions according to principal type: CLUB, FACULTY, STUDENT, INSTITUTIONAL, ADMIN, EXTERNAL.
+ * Resolves permissions according to principal type: FACULTY, STUDENT, ADMIN, EXTERNAL.
  *
  * @param {object} user - Authenticated user context from req.user
  * @param {string} permission - Canonical or legacy permission string
- * @param {object|null} resource - Target resource object or context ({ clubId, organizerType, institutionalAccountId, createdById, userId, ... })
+ * @param {object|null} resource - Target resource object or context ({ clubId, createdById, userId, ... })
  * @returns {boolean}
  */
 export function hasPermission(user, permission, resource = null) {
@@ -384,21 +258,11 @@ export function hasPermission(user, permission, resource = null) {
 
   const principalType = user.principalType || (
     user.role === "facultyCoordinator" ? "FACULTY" :
-    user.role === "lostFoundAdmin" ? "ADMIN" :
-    user.role === "paymentAdmin" ? "ADMIN" :
-    user.role === "central_organizer" ? "INSTITUTIONAL" :
     user.userType === "external" || user.role === "external" ? "EXTERNAL" :
-    user.userType === "student" ? "STUDENT" :
-    user.role === "club" ? "CLUB" : "STUDENT"
+    user.userType === "student" ? "STUDENT" : "STUDENT"
   );
 
-  const isInstitutionalResource =
-    resource?.organizerType === "CENTRAL" ||
-    Boolean(resource?.institutionalAccountId) ||
-    Boolean(resource?.isInstitutional) ||
-    (resource && !resource.clubId && !resource.club && resource.type === "INSTITUTION");
-
-  const targetClubId = resource?.clubId ?? (!isInstitutionalResource ? resource?.id : null);
+  const targetClubId = resource?.clubId ?? null;
   const targetUserId = resource?.userId ?? resource?.createdById ?? resource?.id ?? null;
 
   if (principalType === "EXTERNAL" || user.role === "external" || user.userType === "external") {
@@ -408,36 +272,7 @@ export function hasPermission(user, permission, resource = null) {
     return EXTERNAL_USER_PERMISSIONS.includes(perm) || EXTERNAL_USER_PERMISSIONS.includes(permission);
   }
 
-  if (principalType === "INSTITUTIONAL") {
-    if (targetClubId && !isInstitutionalResource) {
-      return false;
-    }
-    return INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission);
-  }
-
-  if (principalType === "CLUB") {
-    // Club accounts strictly cannot manage institutional events (e.g. Fresher Party)
-    if (isInstitutionalResource) {
-      return false;
-    }
-    if (perm === PERMISSIONS.EVENT_APPROVE || perm === PERMISSIONS.EVENT_DELETE_APPROVE) {
-      return false;
-    }
-
-    const hasBase = CLUB_ACCOUNT_PERMISSIONS.includes(perm) || CLUB_ACCOUNT_PERMISSIONS.includes(permission);
-    if (!hasBase) return false;
-
-    if (targetClubId && user.clubId) {
-      return String(user.clubId) === String(targetClubId);
-    }
-    return true;
-  }
-
   if (principalType === "FACULTY") {
-    // Faculty coordinator of a club cannot manage institutional events unless assigned
-    if (isInstitutionalResource) {
-      return false;
-    }
     const hasBase = FACULTY_COORDINATOR_PERMISSIONS.includes(perm) || FACULTY_COORDINATOR_PERMISSIONS.includes(permission);
     if (!hasBase) return false;
 
@@ -447,121 +282,44 @@ export function hasPermission(user, permission, resource = null) {
     return true;
   }
 
-  if (user.role === "lostFoundAdmin") {
-    return [
-      PERMISSIONS.LOSTFOUND_VIEW,
-      PERMISSIONS.LOSTFOUND_CREATE,
-      PERMISSIONS.LOSTFOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_VIEW,
-      PERMISSIONS.LOST_FOUND_CREATE,
-      PERMISSIONS.LOST_FOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_RESOLVE,
-      PERMISSIONS.LOST_FOUND_REPORT,
-    ].includes(perm) || [
-      PERMISSIONS.LOSTFOUND_VIEW,
-      PERMISSIONS.LOSTFOUND_CREATE,
-      PERMISSIONS.LOSTFOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_VIEW,
-      PERMISSIONS.LOST_FOUND_CREATE,
-      PERMISSIONS.LOST_FOUND_MODERATE,
-      PERMISSIONS.LOST_FOUND_RESOLVE,
-      PERMISSIONS.LOST_FOUND_REPORT,
-    ].includes(permission);
-  }
-
-  if (user.role === "paymentAdmin") {
-    return [
-      PERMISSIONS.PAYMENT_VIEW,
-      PERMISSIONS.PAYMENT_VERIFY,
-      PERMISSIONS.PAYMENT_REVIEW,
-      PERMISSIONS.AUDIT_VIEW,
-      PERMISSIONS.AUDIT_EXPORT,
-    ].includes(perm) || [
-      PERMISSIONS.PAYMENT_VIEW,
-      PERMISSIONS.PAYMENT_VERIFY,
-      PERMISSIONS.PAYMENT_REVIEW,
-      PERMISSIONS.AUDIT_VIEW,
-      PERMISSIONS.AUDIT_EXPORT,
-    ].includes(permission);
-  }
-
-  const activeInstAssignment = (user.institutionalAssignments || []).find((a) => a.status === "ACTIVE" || a.status === undefined);
-  const isLegacyCentralOrganizer = user.accessLevel === "central_organizer" || user.role === "central_organizer";
-
-  if (activeInstAssignment || isLegacyCentralOrganizer) {
-    const isLeadCO = isLegacyCentralOrganizer || activeInstAssignment?.role === "CENTRAL_EVENT_ORGANISER";
-
-    if (perm === PERMISSIONS.NOTIFICATION_SEND_CAMPUS || permission === PERMISSIONS.NOTIFICATION_SEND_CAMPUS) {
-      if (isLeadCO || activeInstAssignment?.canManageEvents) return true;
+  // Legacy club user context ({ role: "club", clubId: "..." }) without explicit memberships array
+  if (user.role === "club" && (!user.memberships || user.memberships.length === 0)) {
+    if (resource && (resource.organizerType === "CENTRAL" || resource.institutionalAccountId)) {
+      return false;
     }
+    const hasBase = STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission) || BASE_STUDENT_PERMISSIONS.includes(perm) || BASE_STUDENT_PERMISSIONS.includes(permission);
+    if (targetClubId && user.clubId) {
+      return hasBase && String(user.clubId) === String(targetClubId);
+    }
+    return hasBase;
+  }
 
-    if (isInstitutionalResource || perm.endsWith(".institution") || permission.endsWith(".institution") || !targetClubId) {
-      if (isLeadCO) {
-        if (INSTITUTIONAL_LEAD_PERMISSIONS.includes(perm) || INSTITUTIONAL_LEAD_PERMISSIONS.includes(permission)) {
+  // Student with club memberships
+  const targetClubIds = resource?.clubIds && Array.isArray(resource.clubIds) && resource.clubIds.length > 0
+    ? resource.clubIds.map(String)
+    : (targetClubId ? [String(targetClubId)] : []);
+
+  if (targetClubIds.length > 0 && user.memberships && user.memberships.length > 0) {
+    const membership = user.memberships.find((m) => targetClubIds.includes(String(m.clubId)));
+    if (membership) {
+      const roleUpper = (membership.role || "").toUpperCase();
+      if (
+        roleUpper === "CLUB_HEAD" ||
+        roleUpper === "STUDENT_LEAD" ||
+        roleUpper === "CLUBHEAD" ||
+        roleUpper === "HEAD" ||
+        roleUpper === "LEAD"
+      ) {
+        if (
+          STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) ||
+          STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission) ||
+          perm === PERMISSIONS.EVENT_DELETE_REQUEST
+        ) {
           return true;
         }
       }
 
-      if (activeInstAssignment?.canManageEvents || activeInstAssignment?.role === "EVENT_COORDINATOR") {
-        const eventPerms = [
-          PERMISSIONS.EVENT_CREATE,
-          PERMISSIONS.EVENT_UPDATE,
-          PERMISSIONS.EVENT_PUBLISH,
-          PERMISSIONS.EVENT_DELETE_REQUEST,
-          PERMISSIONS.EVENT_CREATE_INSTITUTION,
-          PERMISSIONS.EVENT_UPDATE_INSTITUTION,
-          PERMISSIONS.EVENT_PUBLISH_INSTITUTION,
-          PERMISSIONS.EVENT_VIEW,
-          PERMISSIONS.NOTIFICATION_SEND_REGISTRANTS,
-        ];
-        if (eventPerms.includes(perm) || eventPerms.includes(permission)) return true;
-      }
-
-      if (activeInstAssignment?.canTakeAttendance || activeInstAssignment?.role === "ATTENDANCE_COORDINATOR") {
-        const attPerms = [
-          PERMISSIONS.ATTENDANCE_TAKE,
-          PERMISSIONS.ATTENDANCE_TAKE_INSTITUTION,
-          PERMISSIONS.EVENT_ATTENDANCE,
-        ];
-        if (attPerms.includes(perm) || attPerms.includes(permission)) return true;
-      }
-
-      if (activeInstAssignment?.canVerifyPayments || activeInstAssignment?.role === "PAYMENT_COORDINATOR") {
-        const payPerms = [
-          PERMISSIONS.PAYMENT_REVIEW,
-          PERMISSIONS.PAYMENT_VERIFY,
-          PERMISSIONS.PAYMENT_REVIEW_INSTITUTION,
-          PERMISSIONS.PAYMENT_VERIFY_INSTITUTION,
-          PERMISSIONS.PAYMENT_VIEW,
-        ];
-        if (payPerms.includes(perm) || payPerms.includes(permission)) return true;
-      }
-
-      if (activeInstAssignment?.canDelegateStaff) {
-        const staffPerms = [
-          PERMISSIONS.EVENT_STAFF_MANAGE,
-          PERMISSIONS.EVENT_STAFF_MANAGE_INSTITUTION,
-        ];
-        if (staffPerms.includes(perm) || staffPerms.includes(permission)) return true;
-      }
-
-      const customInstPerms = activeInstAssignment?.customPermissions || [];
-      if (customInstPerms.includes(perm) || customInstPerms.includes(permission)) {
-        return true;
-      }
-    }
-  }
-
-  if (targetClubId && user.memberships && user.memberships.length > 0) {
-    const membership = user.memberships.find((m) => String(m.clubId) === String(targetClubId));
-    if (membership && membership.status !== "INACTIVE") {
-      if (membership.role === "CLUB_HEAD") {
-        if (STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission)) {
-          return true;
-        }
-      }
-
-      if (membership.role === "COORDINATOR") {
+      if (roleUpper === "COORDINATOR" || roleUpper === "COORD") {
         if (
           perm === PERMISSIONS.CLUB_MANAGE_MEMBERS ||
           perm === PERMISSIONS.CLUB_INVITE_MEMBERS ||
@@ -592,10 +350,9 @@ export function hasPermission(user, permission, resource = null) {
     }
   }
 
-  // Unscoped evaluation for student management roles (e.g. uploading certificate template, general event capability)
-  if (!targetClubId && user.memberships && user.memberships.length > 0) {
+  // Unscoped evaluation for student management roles
+  if (targetClubIds.length === 0 && user.memberships && user.memberships.length > 0) {
     const hasUnscopedRolePerm = user.memberships.some((m) => {
-      if (m.status === "INACTIVE") return false;
       if (m.role === "CLUB_HEAD") {
         return STUDENT_CLUB_HEAD_PERMISSIONS.includes(perm) || STUDENT_CLUB_HEAD_PERMISSIONS.includes(permission);
       }
@@ -625,13 +382,17 @@ export function hasPermission(user, permission, resource = null) {
   }
 
   if (targetUserId && String(targetUserId) === String(user.userId || user.studentId)) {
-    if (perm === PERMISSIONS.USER_UPDATE || perm === PERMISSIONS.LOST_FOUND_UPDATE || perm === PERMISSIONS.LOST_FOUND_RESOLVE) {
+    if (perm === PERMISSIONS.USER_UPDATE) {
       return true;
     }
-    if (resource?.createdById && String(resource.createdById) === String(user.userId || user.studentId)) {
-      if (perm === PERMISSIONS.EVENT_UPDATE || perm === PERMISSIONS.EVENT_DELETE_REQUEST) {
-        return true;
-      }
+  }
+
+  if (resource?.createdById && String(resource.createdById) === String(user.userId || user.studentId)) {
+    if (
+      perm === PERMISSIONS.EVENT_UPDATE ||
+      perm === PERMISSIONS.EVENT_DELETE_REQUEST
+    ) {
+      return true;
     }
   }
 

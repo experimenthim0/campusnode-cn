@@ -4,13 +4,13 @@ import { ArrowLeft, Award, Star, CheckCircle2, ShieldCheck, Zap, Clock, Users, C
 
 const LeaderboardGuide = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg myfont text-cn-text py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto space-y-12">
         
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-500 transition-colors"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -20,8 +20,8 @@ const LeaderboardGuide = () => {
           </span>
         </div>
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 rounded-3xl p-8 sm:p-12 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden bg-neutral-900 dark:bg-zinc-900 border border-neutral-800 dark:border-zinc-800 rounded-3xl p-8 sm:p-12 text-white shadow-xl">
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-brand-300">
@@ -285,7 +285,7 @@ const LeaderboardGuide = () => {
         <div className="text-center pt-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-600/20 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full shadow-xs shadow-brand-500/20 hover:shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <Award className="w-4 h-4" />
             View Live Club Leaderboard

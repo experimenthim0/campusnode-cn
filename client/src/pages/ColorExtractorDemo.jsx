@@ -24,7 +24,7 @@ export const ColorExtractorDemo = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#070708] text-white py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
+    <div className="min-h-screen bg-cn-bg text-cn-text py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       <div className="max-w-4xl mx-auto text-center mb-16">
         <span className="px-3 py-1 text-xs font-semibold tracking-wider text-purple-400 uppercase bg-purple-950/40 rounded-full border border-purple-800/30">
           Component Showcase
@@ -65,7 +65,7 @@ export const ColorExtractorDemo = () => {
           <p>
             2. <strong className="text-neutral-200">The CORS Requirement:</strong> Because <code className="text-purple-300 font-mono">colorthief</code> draws the image onto a temporary HTML5 canvas to extract pixel data, the browser enforces the Same-Origin Policy.
           </p>
-          <div className="bg-[#0f0f11] rounded-xl p-4 border border-neutral-800 font-mono text-[13px] text-neutral-300 space-y-2">
+          <div className="bg-cn-surface rounded-xl p-4 border border-neutral-800 font-mono text-[13px] text-neutral-300 space-y-2">
             <div>{`// 1. Element property:`}</div>
             <div className="text-purple-400">{`&lt;img crossOrigin="anonymous" onLoad={handleImageLoad} /&gt;`}</div>
             <div className="mt-2">{`// 2. Server Response Header requirement:`}</div>

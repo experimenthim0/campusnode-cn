@@ -2,7 +2,7 @@ import React from 'react';
 
 const Maintainance = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen flex-col bg-white dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 p-6 transition-colors selection:bg-brand-500 selection:text-white">
+    <div className="flex items-center justify-center min-h-screen flex-col bg-cn-bg text-cn-text p-6 transition-colors selection:bg-brand-500 selection:text-white">
       <div className="text-center max-w-lg flex flex-col items-center">
         {/* 3D Construction Machine Image */}
         <div className="relative mb-6">
@@ -24,16 +24,16 @@ const Maintainance = () => {
         </div>
 
         {/* Headline */}
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-cn-text tracking-tight">
           Under Construction
         </h1>
 
         {/* Themed Message without time */}
-        <p className="mt-3 text-neutral-600 dark:text-neutral-400 text-sm sm:text-base font-medium leading-relaxed max-w-lg">
-          Campus<span className="text-brand-600 dark:text-brand-500 font-bold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
+        <p className="mt-3 text-cn-text-muted text-sm sm:text-base font-medium leading-relaxed max-w-lg">
+          Campus<span className="text-brand-500 dark:text-brand-400 font-bold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
         </p>
 
-      
+
       </div>
     </div>
   );

@@ -31,18 +31,18 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-all">
-      <div className="w-full max-w-2xl bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col transition-colors">
-        <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-blur transition-all">
+      <div className="w-full max-w-2xl bg-cn-surface border border-cn-border rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col transition-colors">
+        <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold shrink-0">
               <AlertTriangle size={18} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+              <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
                 Conflict Center
               </h3>
-              <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
+              <p className="text-xs text-cn-text-muted font-normal mt-0.5">
                 Operational status report of venue double-bookings, blackout overlaps, & capacity warnings.
               </p>
             </div>
@@ -52,7 +52,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
             <button
               type="button"
               onClick={fetchConflicts}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
               title="Refresh Conflicts"
             >
               <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
@@ -60,7 +60,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
               title="Close"
             >
               <X size={18} />
@@ -68,9 +68,9 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-3 text-[#555555] dark:text-[#B5B5B5]">
+        <div className="flex-1 overflow-y-auto p-6 space-y-3 text-cn-text-secondary">
           {loading ? (
-            <div className="py-16 text-center text-[#888888] dark:text-[#808080] text-xs font-semibold">
+            <div className="py-16 text-center text-cn-text-muted text-xs font-semibold">
               Analyzing active bookings & blackouts...
             </div>
           ) : issues.length === 0 ? (
@@ -78,8 +78,8 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
               <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 size={24} />
               </div>
-              <p className="text-sm font-bold text-[#111111] dark:text-[#F5F5F5]">No Active Conflicts Found</p>
-              <p className="text-xs text-[#888888] dark:text-[#808080] max-w-sm mx-auto">
+              <p className="text-sm font-bold text-cn-text">No Active Conflicts Found</p>
+              <p className="text-xs text-cn-text-muted max-w-sm mx-auto">
                 All campus venues and event schedules are properly validated with zero double-bookings.
               </p>
             </div>
@@ -95,8 +95,8 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                     isBlackout
                       ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40"
                       : isVenueOverlap
-                      ? "bg-[#FFF7ED] dark:bg-[#2A1A0F] border-brand-200/80 dark:border-brand-900/60"
-                      : "bg-[#FAFAFA] dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030]"
+                      ? "bg-brand-50 dark:bg-brand-950/40 border-brand-200/80 dark:border-brand-900/60"
+                      : "bg-cn-surface-muted border-cn-border"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -105,33 +105,33 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                         isBlackout
                           ? "bg-rose-600 text-white"
                           : isVenueOverlap
-                          ? "bg-[#F97316] text-white"
+                          ? "bg-brand-500 text-white"
                           : "bg-neutral-600 text-white"
                       }`}
                     >
                       {issue.type}
                     </span>
 
-                    <span className="text-xs font-bold text-[#888888] dark:text-[#808080] flex items-center gap-1">
+                    <span className="text-xs font-bold text-cn-text-muted flex items-center gap-1">
                       <Building2 size={13} />
                       {issue.venue}
                     </span>
                   </div>
 
-                  <p className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
+                  <p className="text-xs font-bold text-cn-text">
                     {issue.message}
                   </p>
 
                   {/* Context Details */}
                   {issue.event1 && issue.event2 && (
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030]">
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5] truncate">{issue.event1.title}</p>
-                        <p className="text-xs text-[#888888] dark:text-[#808080]">{issue.event1.clubName}</p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-cn-border-subtle">
+                      <div className="p-2.5 rounded-xl bg-cn-surface border border-cn-border">
+                        <p className="font-bold text-cn-text truncate">{issue.event1.title}</p>
+                        <p className="text-xs text-cn-text-muted">{issue.event1.clubName}</p>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030]">
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5] truncate">{issue.event2.title}</p>
-                        <p className="text-xs text-[#888888] dark:text-[#808080]">{issue.event2.clubName}</p>
+                      <div className="p-2.5 rounded-xl bg-cn-surface border border-cn-border">
+                        <p className="font-bold text-cn-text truncate">{issue.event2.title}</p>
+                        <p className="text-xs text-cn-text-muted">{issue.event2.clubName}</p>
                       </div>
                     </div>
                   )}

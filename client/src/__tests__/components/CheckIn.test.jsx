@@ -13,7 +13,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import fc from 'fast-check';
 
 // We replicate the state machine logic so it can be tested without the full component.
@@ -38,8 +37,13 @@ function createScanHandler({ axiosPatch, onStateChange, onCountChange, onResultC
       onCountChange(prev => prev + 1); // optimistic update (Property 3)
     } catch (err) {
       const status = err.response?.status;
-      if (status === 409) {
+      const errorStatus = err.response?.data?.status;
+      if (status === 409 || errorStatus === 'ALREADY_ATTENDED') {
         onStateChange('already_marked');
+      } else if (errorStatus === 'CHECKIN_NOT_OPEN') {
+        onStateChange('not_open');
+      } else if (errorStatus === 'CHECKIN_CLOSED') {
+        onStateChange('closed');
       } else if (status === 403) {
         onStateChange('unauthorized');
       } else {
@@ -85,6 +89,40 @@ describe('CheckIn scan state — HTTP status mappings', () => {
     expect(states).toContain('already_marked');
     expect(states).not.toContain('unauthorized');
     expect(states).not.toContain('not_found');
+  });
+
+  it('403 CHECKIN_NOT_OPEN → not_open state', async () => {
+    const states = [];
+    const axiosPatch = vi.fn().mockRejectedValue({
+      response: { status: 403, data: { status: 'CHECKIN_NOT_OPEN', message: 'Check-in is not open yet.' } },
+    });
+    const handler = createScanHandler({
+      axiosPatch,
+      onStateChange: (s) => states.push(s),
+      onCountChange: vi.fn(),
+      onResultChange: vi.fn(),
+    });
+
+    await handler('some-qr-code');
+    expect(states).toContain('not_open');
+    expect(states).not.toContain('unauthorized');
+  });
+
+  it('403 CHECKIN_CLOSED → closed state', async () => {
+    const states = [];
+    const axiosPatch = vi.fn().mockRejectedValue({
+      response: { status: 403, data: { status: 'CHECKIN_CLOSED', message: 'Check-in has closed.' } },
+    });
+    const handler = createScanHandler({
+      axiosPatch,
+      onStateChange: (s) => states.push(s),
+      onCountChange: vi.fn(),
+      onResultChange: vi.fn(),
+    });
+
+    await handler('some-qr-code');
+    expect(states).toContain('closed');
+    expect(states).not.toContain('unauthorized');
   });
 
   it('403 → unauthorized (red) state', async () => {
@@ -198,8 +236,8 @@ describe('CheckIn — Property 2: scan dedup guard', () => {
   });
 
   it('does not call axios a second time while processing is true', async () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 1 }), async (qrCode) => {
+    await fc.assert(
+      fc.asyncProperty(fc.string({ minLength: 1 }), async (qrCode) => {
         // Use a promise that we can control to keep processing=true
         let resolveFirst;
         const firstCallPromise = new Promise((resolve) => { resolveFirst = resolve; });
@@ -232,8 +270,8 @@ describe('CheckIn — Property 2: scan dedup guard', () => {
   });
 
   it('does not call axios for a second scan with the same QR value (lastResult guard)', async () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 1 }), async (qrCode) => {
+    await fc.assert(
+      fc.asyncProperty(fc.string({ minLength: 1 }), async (qrCode) => {
         const axiosPatch = vi.fn().mockResolvedValue({ data: {} });
         const handler = createScanHandler({
           axiosPatch,
@@ -262,8 +300,8 @@ describe('CheckIn — Property 2: scan dedup guard', () => {
  */
 describe('CheckIn — Property 3: optimistic attendedCount', () => {
   it('increments attendedCount by 1 on successful scan', async () => {
-    fc.assert(
-      fc.property(fc.nat(1000), async (initialCount) => {
+    await fc.assert(
+      fc.asyncProperty(fc.nat(1000), async (initialCount) => {
         let count = initialCount;
         const axiosPatch = vi.fn().mockResolvedValue({
           data: { participantName: 'Test User', rollNo: '21BCE001' },
@@ -284,8 +322,8 @@ describe('CheckIn — Property 3: optimistic attendedCount', () => {
   });
 
   it('does NOT increment attendedCount on 409 (already marked)', async () => {
-    fc.assert(
-      fc.property(fc.nat(1000), async (initialCount) => {
+    await fc.assert(
+      fc.asyncProperty(fc.nat(1000), async (initialCount) => {
         let count = initialCount;
         const axiosPatch = vi.fn().mockRejectedValue({ response: { status: 409 } });
 

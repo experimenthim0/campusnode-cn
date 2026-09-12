@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken, allowRoles, requirePermission } from "../middleware/auth.js";
+import { verifyToken, requirePermission } from "../middleware/auth.js";
 import { PERMISSIONS } from "../utils/rbac.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
@@ -16,14 +16,18 @@ router.put(
     const { participationId } = req.params;
 
     try {
-      if (!["APPROVED", "REJECTED", "NEED_MORE_DETAILS"].includes(status)) {
-        return res.status(400).json({ message: "Invalid review status." });
+      let resolvedStatus = status;
+      if (status === "APPROVED") resolvedStatus = "SUCCESS";
+      if (status === "REJECTED" || status === "NEED_MORE_DETAILS") resolvedStatus = "FAILED";
+
+      if (!["SUCCESS", "FAILED", "PENDING"].includes(resolvedStatus)) {
+        return res.status(400).json({ message: "Invalid review status. Must be SUCCESS, FAILED, or PENDING." });
       }
 
       const participation = await prisma.participation.findUnique({
         where: { id: participationId },
         include: {
-          event: { include: { club: true } },
+          event: { include: { organizers: true } },
           student: { select: { id: true, name: true, email: true } },
         },
       });
@@ -32,23 +36,36 @@ router.put(
         return res.status(404).json({ message: "Registration not found." });
       }
 
-      if (req.user.role !== "admin") {
+      if (participation.paymentStatus === resolvedStatus) {
+        return res.json({
+          success: true,
+          message: `Payment is already marked as ${resolvedStatus === "SUCCESS" ? "approved" : resolvedStatus.toLowerCase()}.`,
+          alreadyProcessed: true,
+          paymentStatus: resolvedStatus,
+        });
+      }
+
+      const organizerClubIds = (participation.event.organizers || []).map((o) => o.clubId);
+
+      if (req.user.role !== "admin" && req.user.principalType !== "ADMIN") {
+        const isFaculty = req.user.role === "facultyCoordinator" && req.user.clubId && organizerClubIds.includes(req.user.clubId);
         const membership = await prisma.clubMembership.findFirst({
           where: {
-            clubId: participation.event.clubId,
+            clubId: { in: organizerClubIds },
             studentId: req.user.userId,
             OR: [{ role: "CLUB_HEAD" }, { role: "COORDINATOR" }],
           },
         });
-        if (!membership) {
+
+        if (!isFaculty && !membership) {
           return res.status(403).json({
-            message: "Only club heads/coordinators can review payments.",
+            message: "Only club heads or coordinators can review payments.",
           });
         }
       }
 
       const updateData = {
-        paymentStatus: status,
+        paymentStatus: resolvedStatus,
         paymentReviewedBy: req.user.userId,
         paymentReviewedAt: new Date(),
       };
@@ -57,39 +74,25 @@ router.put(
         updateData.paymentReviewMessage = message;
       }
 
-      if (status === "APPROVED") {
-        updateData.paymentStatus = "APPROVED";
-
-        await prisma.$transaction(async (tx) => {
-          await tx.participation.update({
-            where: { id: participationId },
-            data: updateData,
-          });
-
-          if (participation.status === "REGISTERED" || participation.status === "WAITLISTED") {
-          }
-        });
-      } else {
-        await prisma.participation.update({
-          where: { id: participationId },
-          data: updateData,
-        });
-      }
+      await prisma.participation.update({
+        where: { id: participationId },
+        data: updateData,
+      });
 
       if (participation.studentId) {
         const notificationTitle =
-          status === "APPROVED"
+          resolvedStatus === "SUCCESS"
             ? "Payment Approved"
-            : status === "REJECTED"
+            : resolvedStatus === "FAILED"
               ? "Payment Rejected"
-              : "More Details Needed";
+              : "Payment Under Review";
 
         const notificationMessage =
-          status === "APPROVED"
+          resolvedStatus === "SUCCESS"
             ? `Your payment for "${participation.event.title}" has been approved. You are now registered!`
-            : status === "REJECTED"
-              ? `Your payment for "${participation.event.title}" has been rejected.${message ? ` Reason: ${message}` : ""}`
-              : `More details are needed for your payment for "${participation.event.title}".${message ? ` Message: ${message}` : ""}`;
+            : resolvedStatus === "FAILED"
+              ? `Your payment for "${participation.event.title}" was not approved.${message ? ` Reason: ${message}` : ""}`
+              : `Your payment for "${participation.event.title}" is being reviewed.${message ? ` Message: ${message}` : ""}`;
 
         const notification = await prisma.notification.create({
           data: {
@@ -117,7 +120,7 @@ router.put(
 
       res.json({
         success: true,
-        message: `Payment ${status.toLowerCase().replace("_", " ")} successfully.`,
+        message: `Payment status updated to ${resolvedStatus}.`,
       });
     } catch (error) {
       res.status(500).json({ message: "Review failed", error: error.message });
@@ -134,18 +137,24 @@ router.get(
       const { eventId } = req.params;
       const { search, status: filterStatus } = req.query;
 
-      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: { organizers: true },
+      });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      if (req.user.role !== "admin") {
+      const organizerClubIds = (event.organizers || []).map((o) => o.clubId);
+
+      if (req.user.role !== "admin" && req.user.principalType !== "ADMIN") {
+        const isFaculty = req.user.role === "facultyCoordinator" && req.user.clubId && organizerClubIds.includes(req.user.clubId);
         const membership = await prisma.clubMembership.findFirst({
           where: {
-            clubId: event.clubId,
+            clubId: { in: organizerClubIds },
             studentId: req.user.userId,
             OR: [{ role: "CLUB_HEAD" }, { role: "COORDINATOR" }, { canEditEvents: true }],
           },
         });
-        if (!membership) {
+        if (!isFaculty && !membership) {
           return res.status(403).json({ message: "Access denied." });
         }
       }
@@ -153,7 +162,13 @@ router.get(
       const where = { eventId };
 
       if (filterStatus && filterStatus !== "ALL") {
-        where.paymentStatus = filterStatus;
+        if (filterStatus === "APPROVED") {
+          where.paymentStatus = "SUCCESS";
+        } else if (filterStatus === "REJECTED") {
+          where.paymentStatus = "FAILED";
+        } else {
+          where.paymentStatus = filterStatus;
+        }
       }
 
       const participations = await prisma.participation.findMany({
@@ -162,12 +177,15 @@ router.get(
           student: {
             select: { id: true, name: true, email: true, rollNo: true },
           },
+          externalUser: {
+            select: { id: true, name: true, email: true, collegeName: true },
+          },
           team: {
             include: {
-              leader: { select: { id: true, name: true } },
+              leaderStudent: { select: { id: true, name: true } },
               members: {
                 include: {
-                  user: { select: { id: true, name: true } },
+                  student: { select: { id: true, name: true } },
                 },
               },
             },
@@ -180,11 +198,11 @@ router.get(
       if (search) {
         const q = search.toLowerCase();
         filtered = participations.filter((p) => {
-          const studentName = p.student?.name?.toLowerCase() || "";
+          const studentName = p.student?.name?.toLowerCase() || p.externalUser?.name?.toLowerCase() || "";
           const transactionId = p.transactionId?.toLowerCase() || "";
           const payerName = p.payerName?.toLowerCase() || "";
           const teamName = p.team?.teamName?.toLowerCase() || "";
-          const leaderName = p.team?.leader?.name?.toLowerCase() || "";
+          const leaderName = p.team?.leaderStudent?.name?.toLowerCase() || "";
           return (
             studentName.includes(q) ||
             transactionId.includes(q) ||
@@ -199,32 +217,30 @@ router.get(
         event: {
           id: event.id,
           title: event.title,
-          paymentMethod: event.paymentMethod,
-          registrationFee: event.registrationFee || event.entryFee,
+          registrationFee: event.registrationFee,
         },
         registrations: filtered.map((p) => ({
           id: p.id,
-          studentName: p.student?.name || p.externalName || "Unknown",
-          studentEmail: p.student?.email || p.externalEmail || "N/A",
-          studentRollNo: p.student?.rollNo || "N/A",
+          studentName: p.student?.name || p.externalUser?.name || "Unknown",
+          studentEmail: p.student?.email || p.externalUser?.email || "N/A",
+          studentRollNo: p.student?.rollNo || (p.externalUser ? "External" : "N/A"),
           transactionId: p.transactionId || null,
           payerName: p.payerName || null,
           paymentRemarks: p.paymentRemarks || null,
           paymentStatus: p.paymentStatus,
           paymentReviewMessage: p.paymentReviewMessage || null,
           paymentReviewedAt: p.paymentReviewedAt || null,
-          amountPaid: p.amountPaid || 0,
+          amountPaid: event.registrationFee || 0,
           registrationStatus: p.status,
           teamName: p.team?.teamName || null,
-          leaderName: p.team?.leader?.name || null,
+          leaderName: p.team?.leaderStudent?.name || null,
           createdAt: p.createdAt,
         })),
         summary: {
           total: filtered.length,
           pending: filtered.filter((p) => p.paymentStatus === "PENDING").length,
-          approved: filtered.filter((p) => ["APPROVED", "SUCCESS"].includes(p.paymentStatus)).length,
-          rejected: filtered.filter((p) => p.paymentStatus === "REJECTED").length,
-          needMoreDetails: filtered.filter((p) => p.paymentStatus === "NEED_MORE_DETAILS").length,
+          approved: filtered.filter((p) => p.paymentStatus === "SUCCESS").length,
+          rejected: filtered.filter((p) => p.paymentStatus === "FAILED").length,
         },
       });
     } catch (error) {
@@ -238,18 +254,19 @@ router.get(
   verifyToken,
   async (req, res) => {
     try {
-      const event = await prisma.event.findUnique({ where: { id: req.params.eventId } });
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.eventId },
+        include: { organizers: true },
+      });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
-      // Permission check: admin / faculty coordinator / club management / authorized member
-      if (req.user.role !== "admin") {
-        if (req.user.role === "facultyCoordinator" && req.user.clubId !== event.clubId) {
-          return res.status(403).json({ message: "Access denied." });
-        }
+      const organizerClubIds = (event.organizers || []).map((o) => o.clubId);
 
+      if (req.user.role !== "admin" && req.user.principalType !== "ADMIN") {
+        const isFaculty = req.user.role === "facultyCoordinator" && req.user.clubId && organizerClubIds.includes(req.user.clubId);
         const membership = await prisma.clubMembership.findFirst({
           where: {
-            clubId: event.clubId,
+            clubId: { in: organizerClubIds },
             studentId: req.user.userId,
             OR: [
               { role: "CLUB_HEAD" },
@@ -258,7 +275,7 @@ router.get(
             ],
           },
         });
-        if (!membership && req.user.clubId !== event.clubId && req.user.role !== "facultyCoordinator") {
+        if (!isFaculty && !membership) {
           return res.status(403).json({
             message: "Access denied. You can only view stats for your own club's events.",
           });
@@ -268,27 +285,25 @@ router.get(
       const participations = await prisma.participation.findMany({
         where: {
           eventId: req.params.eventId,
-          paymentStatus: { in: ["SUCCESS", "APPROVED"] },
+          paymentStatus: "SUCCESS",
         },
         include: {
           student: { select: { id: true, name: true, email: true, rollNo: true } },
+          externalUser: { select: { id: true, name: true, email: true, collegeName: true } },
         },
       });
 
-      const totalMoneyCollected = participations.reduce(
-        (sum, p) => sum + (p.amountPaid || 0),
-        0,
-      );
+      const totalMoneyCollected = participations.length * (event.registrationFee || 0);
 
       res.json({
         eventTitle: event.title,
         totalCollected: totalMoneyCollected,
         registrations: participations.map((p) => ({
-          studentName: p.student?.name || "Unknown",
-          studentEmail: p.student?.email || "N/A",
-          studentRollNo: p.student?.rollNo || "N/A",
-          paymentId: p.paymentId || p.transactionId || "N/A",
-          amountPaid: p.amountPaid || 0,
+          studentName: p.student?.name || p.externalUser?.name || "Unknown",
+          studentEmail: p.student?.email || p.externalUser?.email || "N/A",
+          studentRollNo: p.student?.rollNo || (p.externalUser ? "External" : "N/A"),
+          transactionId: p.transactionId || "N/A",
+          amountPaid: event.registrationFee || 0,
           paymentStatus: p.paymentStatus,
         })),
       });
@@ -298,7 +313,6 @@ router.get(
   },
 );
 
-// ── PUT /payment/:participationId/update-details ── Students update their transaction details ─
 router.put(
   "/:participationId/update-details",
   verifyToken,
@@ -314,9 +328,9 @@ router.put(
       const participation = await prisma.participation.findUnique({
         where: { id: participationId },
         include: {
-          event: { select: { title: true, clubId: true } },
-          student: { select: { name: true } }
-        }
+          event: { select: { title: true } },
+          student: { select: { name: true } },
+        },
       });
 
       if (!participation) {
@@ -326,13 +340,12 @@ router.put(
       const isOwner =
         participation.studentId === req.user.userId ||
         participation.externalUserId === req.user.userId ||
-        participation.externalEmail === req.user.email;
+        participation.userId === req.user.userId;
 
       if (!isOwner && req.user.role !== "admin") {
         return res.status(403).json({ message: "Access denied. You can only update your own registration." });
       }
 
-      // Update the transaction details and set status back to PENDING for re-review
       const updatedParticipation = await prisma.participation.update({
         where: { id: participationId },
         data: {
@@ -346,12 +359,12 @@ router.put(
       res.json({
         success: true,
         message: "Payment details updated successfully. Pending coordinator review.",
-        participation: updatedParticipation
+        participation: updatedParticipation,
       });
     } catch (error) {
       res.status(500).json({ message: "Update failed", error: error.message });
     }
-  }
+  },
 );
 
 export default router;

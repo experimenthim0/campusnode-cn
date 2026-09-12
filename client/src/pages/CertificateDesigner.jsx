@@ -24,7 +24,17 @@ import {
   Sparkles,
   Sliders,
   Move,
+  Upload,
+  Layers,
+  ChevronDown,
+  Info,
 } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Separator } from "../components/ui/separator";
+import ShimmerText from "../components/ShimmerText";
 
 const FONTS = [
   {
@@ -182,6 +192,11 @@ const CertificateDesigner = () => {
     try {
       const res = await getEventById(id);
       setEvent(res.data);
+      if (!res.data?.provideCertificate && !res.data?.certificateTemplate) {
+        showNotification("Certificate designer is not enabled for this event. You can enable it in Edit Event (Step 4).", "warning");
+        navigate("/profile");
+        return;
+      }
       if (res.data.certificateTemplate) {
         const t = res.data.certificateTemplate;
         setImageUrl(t.imageUrl || "");
@@ -798,10 +813,7 @@ const CertificateDesigner = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-3 text-neutral-400">
-          <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
-          <span className="text-sm font-medium">Loading designer…</span>
-        </div>
+        <ShimmerText text="Loading certificate designer..." className="text-sm font-semibold tracking-wide" />
       </div>
     );
   }
@@ -810,135 +822,139 @@ const CertificateDesigner = () => {
     <>
       {/* Small Screen / Mobile Fallback Notice */}
       {!allowMobileView && (
-        <div className="lg:hidden min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
-          <div className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-            <div className="relative mx-auto w-20 h-20 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-5 shadow-xs">
-              <Monitor className="w-9 h-9 stroke-[1.75]" />
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm">
-                <Award className="w-4 h-4" />
+        <div className="lg:hidden min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+          <Card className="w-full max-w-md shadow-lg border-border bg-card">
+            <CardContent className="p-6 sm:p-8">
+              <div className="relative mx-auto w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4">
+                <Monitor className="w-8 h-8" />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-card border border-border flex items-center justify-center text-primary shadow-xs">
+                  <Award className="w-3.5 h-3.5" />
+                </div>
               </div>
-            </div>
 
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-100/70 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 mb-3">
-              <Laptop className="w-3.5 h-3.5" /> Desktop or Laptop Recommended
-            </span>
+              <Badge variant="outline" className="gap-1.5 text-[11px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 mb-3">
+                <Laptop className="w-3 h-3" /> Desktop or Laptop Recommended
+              </Badge>
 
-            <h2 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-snug mb-3">
-              Precision Workspace
-            </h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-2">
+                Precision Studio Workspace
+              </h2>
 
-            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
-              The <strong>Certificate Designer</strong> provides drag-and-drop
-              positioning for student names, roll numbers, awards, and QR codes.
-              A larger screen offers the most accurate alignment experience.
-            </p>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-6">
+                The <strong>Certificate Designer</strong> provides real-time drag-and-drop
+                positioning for student names, roll numbers, awards, and cryptographic QR codes.
+                A desktop viewport offers pixel-perfect alignment.
+              </p>
 
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-100 font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
-                    Link Copied to Clipboard
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy Link for Laptop
-                  </>
-                )}
-              </button>
+              <div className="space-y-2.5">
+                <Button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="w-full gap-2 shadow-xs"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-300" />
+                      Link Copied to Clipboard
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy Link for Laptop
+                    </>
+                  )}
+                </Button>
 
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-semibold text-xs transition-colors cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Go Back
-              </button>
-            </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                  className="w-full gap-1.5"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Go Back
+                </Button>
+              </div>
 
-            <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-              <button
-                type="button"
-                onClick={() => setAllowMobileView(true)}
-                className="text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-2 transition-colors cursor-pointer"
-              >
-                Continue on mobile display anyway →
-              </button>
-            </div>
-          </div>
+              <div className="mt-5 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setAllowMobileView(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors cursor-pointer"
+                >
+                  Continue on mobile display anyway →
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Main Designer Workspace */}
       <div
-        className={`${allowMobileView ? "block" : "hidden lg:block"} min-h-screen bg-neutral-50 dark:bg-neutral-950 px-3 sm:px-4 md:px-0 transition-colors`}
+        className={`${allowMobileView ? "block" : "hidden lg:block"} min-h-screen bg-muted/20 pb-12 transition-colors`}
       >
         {allowMobileView && (
-          <div className="lg:hidden bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+          <div className="lg:hidden bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
             <span className="flex items-center gap-1.5 font-medium">
               <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-              Mobile editing active — use touch to position boxes
+              Mobile editing active — touch and drag to position boxes
             </span>
             <button
               onClick={() => setAllowMobileView(false)}
-              className="text-amber-900 dark:text-amber-200 font-bold underline cursor-pointer ml-2 shrink-0"
+              className="text-amber-900 dark:text-amber-200 font-semibold underline cursor-pointer ml-2 shrink-0"
             >
               Exit
             </button>
           </div>
         )}
 
-        {/* Top Navbar */}
-        <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30 transition-colors shadow-xs">
+        {/* Top Sticky Navbar */}
+        <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur-md transition-colors shadow-xs">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <button
-                onClick={() => navigate("/my-events")}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors p-1 -ml-1 cursor-pointer"
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/profile")}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 title="Back to events"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-800" />
-              <div className="min-w-0 flex items-center">
-                <span className="text-sm font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+              </Button>
+              <Separator orientation="vertical" className="h-5" />
+              <div className="min-w-0 flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                   Certificate Designer
                 </span>
                 {event?.title && (
-                  <span className="text-xs text-neutral-400 ml-2 truncate max-w-[140px] sm:max-w-xs md:max-w-md inline-block">
-                    — {event.title}
-                  </span>
+                  <Badge variant="secondary" className="font-normal text-xs truncate max-w-[160px] sm:max-w-xs">
+                    {event.title}
+                  </Badge>
                 )}
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => navigate("/my-events")}
-                className="px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all cursor-pointer"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/profile")}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
                 onClick={handleSave}
                 disabled={!canSave || saving}
-                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs ${
-                  canSave && !saving
-                    ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100"
-                    : "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed"
-                }`}
+                className="h-8 text-xs font-semibold"
               >
                 {saving ? "Saving…" : "Save Template"}
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Workspace Body */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -951,808 +967,841 @@ const CertificateDesigner = () => {
               className="w-full lg:w-84 flex-shrink-0 space-y-4"
             >
               {/* 1. Background Template Upload */}
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-xs">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                    1 · Background Canvas
-                  </p>
-                  {imageUrl && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                      Loaded
-                    </span>
-                  )}
-                </div>
-
-                <label
-                  className={`
-                  flex flex-col items-center justify-center gap-2 p-4 rounded-xl cursor-pointer transition-all border-2 border-dashed
-                  ${
-                    imageUrl
-                      ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400"
-                      : "border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-500"
-                  }
-                `}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  {uploading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
-                      <span className="text-xs font-semibold">Uploading…</span>
-                    </>
-                  ) : imageUrl ? (
-                    <>
-                      <Check className="w-5 h-5 text-emerald-500" />
-                      <span className="text-xs font-semibold">
-                        Replace Template Image
-                      </span>
-                      <span className="text-[10px] opacity-70">
-                        PNG or JPG (High-res recommended)
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Award className="w-5 h-5 text-neutral-400" />
-                      <span className="text-xs font-semibold">
-                        Upload Certificate Image
-                      </span>
-                      <span className="text-[10px] opacity-70">
-                        PNG or JPG
-                      </span>
-                    </>
-                  )}
-                </label>
-              </div>
+              <Card className="border-border shadow-xs bg-card">
+                <CardHeader className="pb-3 pt-4 px-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      1 · Background Canvas
+                    </CardTitle>
+                    {imageUrl && (
+                      <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+                        Loaded
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4">
+                  <label
+                    className={`
+                    flex flex-col items-center justify-center gap-2 p-4 rounded-xl cursor-pointer transition-all border-2 border-dashed
+                    ${
+                      imageUrl
+                        ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400"
+                        : "border-border bg-muted/30 hover:border-primary/50 text-muted-foreground"
+                    }
+                  `}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {uploading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-medium text-foreground">Uploading template…</span>
+                      </>
+                    ) : imageUrl ? (
+                      <>
+                        <Check className="w-5 h-5 text-emerald-500" />
+                        <span className="text-xs font-semibold text-foreground">
+                          Replace Template Artwork
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          High-res PNG or JPG
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-foreground">
+                          Upload Certificate Artwork
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          PNG or JPG (e.g. 1920x1080)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                </CardContent>
+              </Card>
 
               {/* 2. Designer Elements Selector */}
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                    2 · Dynamic Elements
-                  </p>
-                  <span className="text-[10px] text-neutral-400">
-                    Select to edit
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Name Element Pill */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveElement("name")}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      activeElement === "name"
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs"
-                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:bg-neutral-100 text-neutral-700 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                        activeElement === "name"
-                          ? "bg-blue-500 text-white"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
-                      }`}
-                    >
-                      <Type className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold leading-tight">Name</p>
-                      <p className="text-[10px] text-neutral-400 truncate">
-                        {rect ? "Placed" : "Draw box"}
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Roll Number Pill */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveElement("rollNo")}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      activeElement === "rollNo"
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shadow-xs"
-                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:bg-neutral-100 text-neutral-700 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                        activeElement === "rollNo"
-                          ? "bg-emerald-500 text-white"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
-                      }`}
-                    >
-                      <Hash className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold leading-tight">Roll No</p>
-                      <p className="text-[10px] text-neutral-400 truncate">
-                        {showRollNo ? (rollNoRect ? "Active" : "Enabled") : "Off"}
-                      
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Award Position Pill */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveElement("position")}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      activeElement === "position"
-                        ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 shadow-xs"
-                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:bg-neutral-100 text-neutral-700 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                        activeElement === "position"
-                          ? "bg-amber-500 text-white"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
-                      }`}
-                    >
-                      <Trophy className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold leading-tight">Award</p>
-                      <p className="text-[10px] text-neutral-400 truncate">
-                        {showPosition ? (positionRect ? "Active" : "Enabled") : "Off"}
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* QR Code Pill */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveElement("qr")}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      activeElement === "qr"
-                        ? "border-purple-500 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 shadow-xs"
-                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:bg-neutral-100 text-neutral-700 dark:text-neutral-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                        activeElement === "qr"
-                          ? "bg-purple-500 text-white"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
-                      }`}
-                    >
-                      <QrIcon className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold leading-tight">QR Code</p>
-                      <p className="text-[10px] text-neutral-400 truncate">
-                        {showQr ? (qrRect ? "Active" : "Enabled") : "Off"}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* 3. Contextual Element Customization Panel */}
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-xs space-y-4">
-                {/* Panel Header */}
-                <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-neutral-400" />
-                    <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                      {activeElement === "name" && "Student Name Settings"}
-                      {activeElement === "rollNo" && "Roll Number Settings"}
-                      {activeElement === "position" && "Award Position Settings"}
-                      {activeElement === "qr" && "QR Verification Settings"}
+              <Card className="border-border shadow-xs bg-card">
+                <CardHeader className="pb-3 pt-4 px-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      2 · Active Element
+                    </CardTitle>
+                    <span className="text-[11px] text-muted-foreground">
+                      Click to configure
                     </span>
                   </div>
+                </CardHeader>
 
-                  {/* Enable/Disable Toggle for Optional Elements */}
-                  {activeElement === "rollNo" && (
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showRollNo}
-                        onChange={(e) => setShowRollNo(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500" />
-                    </label>
-                  )}
-                  {activeElement === "position" && (
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showPosition}
-                        onChange={(e) => setShowPosition(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500" />
-                    </label>
-                  )}
-                  {activeElement === "qr" && (
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showQr}
-                        onChange={(e) => setShowQr(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500" />
-                    </label>
-                  )}
-                </div>
-
-                {/* NAME SETTINGS */}
-                {activeElement === "name" && (
-                  <div className="space-y-4">
-                    {/* Font */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-500 font-medium">
-                        Font
-                      </label>
+                <CardContent className="px-4 pb-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Name Element Pill */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveElement("name")}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        activeElement === "name"
+                          ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30 shadow-xs"
+                          : "border-border bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
                       <div
-                        className="relative"
-                        onClick={(e) => e.stopPropagation()}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          activeElement === "name"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}
                       >
-                        <button
-                          onClick={() => setFontMenuOpen((v) => !v)}
-                          className="w-full flex items-center justify-between px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:bg-neutral-100 transition-all cursor-pointer"
-                          style={{ fontFamily: currentFontObj.css }}
-                        >
-                          <span className="text-sm text-neutral-800 dark:text-neutral-200">
-                            {currentFontObj.label}
-                          </span>
-                          <span className="text-xs text-neutral-400">▼</span>
-                        </button>
-
-                        <AnimatePresence>
-                          {fontMenuOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute top-full mt-1.5 left-0 right-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden z-40 shadow-lg"
-                              style={{ maxHeight: 220, overflowY: "auto" }}
-                            >
-                              {FONTS.map((f) => (
-                                <button
-                                  key={f.id}
-                                  onClick={() => {
-                                    setFont(f.id);
-                                    setFontMenuOpen(false);
-                                  }}
-                                  className={`w-full px-3 py-2 text-left text-xs sm:text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all border-b border-neutral-100 dark:border-neutral-800 last:border-0 ${
-                                    font === f.id
-                                      ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold"
-                                      : "text-neutral-700 dark:text-neutral-300"
-                                  }`}
-                                  style={{
-                                    fontFamily: f.css,
-                                    fontWeight: f.weight || "400",
-                                  }}
-                                >
-                                  {f.label}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        <Type className="w-3.5 h-3.5" />
                       </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold leading-tight">Name</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {rect ? "Placed" : "Draw box"}
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Roll Number Pill */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveElement("rollNo")}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        activeElement === "rollNo"
+                          ? "border-emerald-500 bg-emerald-500/5 text-foreground ring-1 ring-emerald-500/30 shadow-xs"
+                          : "border-border bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          activeElement === "rollNo"
+                            ? "bg-emerald-600 text-white"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Hash className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold leading-tight">Roll No</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {showRollNo ? (rollNoRect ? "Active" : "Enabled") : "Off"}
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Award Position Pill */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveElement("position")}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        activeElement === "position"
+                          ? "border-amber-500 bg-amber-500/5 text-foreground ring-1 ring-amber-500/30 shadow-xs"
+                          : "border-border bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          activeElement === "position"
+                            ? "bg-amber-600 text-white"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Trophy className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold leading-tight">Award</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {showPosition ? (positionRect ? "Active" : "Enabled") : "Off"}
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* QR Code Pill */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveElement("qr")}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        activeElement === "qr"
+                          ? "border-purple-500 bg-purple-500/5 text-foreground ring-1 ring-purple-500/30 shadow-xs"
+                          : "border-border bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          activeElement === "qr"
+                            ? "bg-purple-600 text-white"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <QrIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold leading-tight">QR Code</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {showQr ? (qrRect ? "Active" : "Enabled") : "Off"}
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 3. Contextual Element Customization Panel */}
+              <Card className="border-border shadow-xs bg-card">
+                <CardHeader className="pb-3 pt-4 px-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs font-semibold text-foreground">
+                        {activeElement === "name" && "Student Name Settings"}
+                        {activeElement === "rollNo" && "Roll Number Settings"}
+                        {activeElement === "position" && "Award Position Settings"}
+                        {activeElement === "qr" && "QR Verification Settings"}
+                      </span>
                     </div>
 
-                    {/* Size + Color */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-xs text-neutral-500 font-medium">
-                          Font Size
-                        </label>
+                    {/* Enable/Disable Toggle for Optional Elements */}
+                    {activeElement === "rollNo" && (
+                      <label className="relative inline-flex items-center cursor-pointer">
                         <input
-                          type="number"
-                          value={fontSize}
-                          onChange={(e) =>
-                            setFontSize(Number(e.target.value) || 32)
-                          }
-                          min={12}
-                          max={120}
-                          className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
+                          type="checkbox"
+                          checked={showRollNo}
+                          onChange={(e) => setShowRollNo(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600" />
+                      </label>
+                    )}
+                    {activeElement === "position" && (
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showPosition}
+                          onChange={(e) => setShowPosition(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-600" />
+                      </label>
+                    )}
+                    {activeElement === "qr" && (
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showQr}
+                          onChange={(e) => setShowQr(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600" />
+                      </label>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="px-4 pb-4 space-y-4">
+                  {/* NAME SETTINGS */}
+                  {activeElement === "name" && (
+                    <div className="space-y-4">
+                      {/* Font */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-muted-foreground font-medium">
+                          Font Typography
+                        </label>
+                        <div
+                          className="relative"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setFontMenuOpen((v) => !v)}
+                            className="w-full flex items-center justify-between px-3 py-2 bg-muted/30 border border-input rounded-md hover:bg-muted/50 transition-all text-foreground text-left"
+                            style={{ fontFamily: currentFontObj.css }}
+                          >
+                            <span className="text-sm">
+                              {currentFontObj.label}
+                            </span>
+                            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+
+                          <AnimatePresence>
+                            {fontMenuOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full mt-1.5 left-0 right-0 bg-popover border border-border rounded-lg overflow-hidden z-40 shadow-md max-h-56 overflow-y-auto"
+                              >
+                                {FONTS.map((f) => (
+                                  <button
+                                    key={f.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setFont(f.id);
+                                      setFontMenuOpen(false);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left text-xs sm:text-sm hover:bg-muted/60 transition-all border-b border-border/50 last:border-0 ${
+                                      font === f.id
+                                        ? "bg-primary/10 text-primary font-semibold"
+                                        : "text-foreground"
+                                    }`}
+                                    style={{
+                                      fontFamily: f.css,
+                                      fontWeight: f.weight || "400",
+                                    }}
+                                  >
+                                    {f.label}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+
+                      {/* Size + Color */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-muted-foreground font-medium">
+                            Font Size (px)
+                          </label>
+                          <Input
+                            type="number"
+                            value={fontSize}
+                            onChange={(e) =>
+                              setFontSize(Number(e.target.value) || 32)
+                            }
+                            min={12}
+                            max={120}
+                            className="h-9 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-muted-foreground font-medium">
+                            Text Color
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="color"
+                              value={color}
+                              onChange={(e) => setColor(e.target.value)}
+                              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            />
+                            <div className="w-full h-9 rounded-md border border-input flex items-center gap-2 px-2.5 bg-background cursor-pointer">
+                              <div
+                                className="w-4 h-4 rounded-full border border-border shrink-0"
+                                style={{ backgroundColor: color }}
+                              />
+                              <span className="text-xs font-mono text-muted-foreground truncate">
+                                {color}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Alignment */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-muted-foreground font-medium">
+                          Alignment
+                        </label>
+                        <div className="grid grid-cols-3 gap-1 bg-muted/40 p-1 rounded-lg border border-border">
+                          {["left", "center", "right"].map((a) => (
+                            <button
+                              key={a}
+                              type="button"
+                              onClick={() => setAlign(a)}
+                              className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
+                                align === a
+                                  ? "bg-card text-foreground shadow-xs font-semibold"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {a}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Preview Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-muted-foreground font-medium">
+                          Preview Name
+                        </label>
+                        <Input
+                          type="text"
+                          value={previewName}
+                          onChange={(e) => setPreviewName(e.target.value)}
+                          placeholder="e.g. Himanshu Yadav"
+                          className="h-9 text-xs"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-neutral-500 font-medium">
-                          Color
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="color"
-                            value={color}
-                            onChange={(e) => setColor(e.target.value)}
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                          />
-                          <div className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 flex items-center gap-2 px-2.5 bg-neutral-50 dark:bg-neutral-800 cursor-pointer">
-                            <div
-                              className="w-4 h-4 rounded-full border border-neutral-300"
-                              style={{ backgroundColor: color }}
-                            />
-                            <span className="text-xs font-mono text-neutral-600 dark:text-neutral-300">
-                              {color}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
                     </div>
+                  )}
 
-                    {/* Alignment */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-500 font-medium">
-                        Alignment
-                      </label>
-                      <div className="grid grid-cols-3 gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
-                        {["left", "center", "right"].map((a) => (
-                          <button
-                            key={a}
+                  {/* ROLL NUMBER SETTINGS */}
+                  {activeElement === "rollNo" && (
+                    <div className="space-y-4">
+                      {!showRollNo ? (
+                        <div className="p-3 bg-muted/30 border border-dashed border-border rounded-lg text-center space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            Roll number is currently hidden on this certificate.
+                          </p>
+                          <Button
                             type="button"
-                            onClick={() => setAlign(a)}
-                            className={`py-1 text-xs font-semibold rounded-lg capitalize transition-all cursor-pointer ${
-                              align === a
-                                ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs"
-                                : "text-neutral-500 hover:text-neutral-800"
-                            }`}
+                            size="sm"
+                            onClick={() => {
+                              setShowRollNo(true);
+                              if (!rollNoRect) handleQuickPlaceRollNo();
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8"
                           >
-                            {a}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Preview Name */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-500 font-medium">
-                        Preview Name
-                      </label>
-                      <input
-                        type="text"
-                        value={previewName}
-                        onChange={(e) => setPreviewName(e.target.value)}
-                        placeholder="e.g. Himanshu Yadav"
-                        className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* ROLL NUMBER SETTINGS */}
-                {activeElement === "rollNo" && (
-                  <div className="space-y-4">
-                    {!showRollNo ? (
-                      <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-center space-y-2">
-                        <p className="text-xs text-neutral-500">
-                          Roll number is currently hidden from this certificate.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowRollNo(true);
-                            if (!rollNoRect) handleQuickPlaceRollNo();
-                          }}
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                        >
-                          Enable Roll Number
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        {!rollNoRect && (
-                          <button
-                            type="button"
-                            onClick={handleQuickPlaceRollNo}
-                            className="w-full py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition-colors cursor-pointer"
-                          >
-                            <Sparkles className="w-3.5 h-3.5" /> Place Below Name
-                          </button>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-xs text-neutral-500 font-medium">
-                              Font Size
-                            </label>
-                            <input
-                              type="number"
-                              value={rollNoFontSize}
-                              onChange={(e) =>
-                                setRollNoFontSize(
-                                  Number(e.target.value) || 20
-                                )
-                              }
-                              min={10}
-                              max={60}
-                              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs text-neutral-500 font-medium">
-                              Color
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="color"
-                                value={rollNoColor}
-                                onChange={(e) => setRollNoColor(e.target.value)}
-                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                              />
-                              <div className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 flex items-center gap-2 px-2.5 bg-neutral-50 dark:bg-neutral-800 cursor-pointer">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-neutral-300"
-                                  style={{ backgroundColor: rollNoColor }}
-                                />
-                                <span className="text-xs font-mono text-neutral-600 dark:text-neutral-300">
-                                  {rollNoColor}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                            Enable Roll Number
+                          </Button>
                         </div>
-
-                        {/* Font */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Font
-                          </label>
-                          <select
-                            value={rollNoFont}
-                            onChange={(e) => setRollNoFont(e.target.value)}
-                            className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl cursor-pointer"
-                          >
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Helvetica-Bold">Helvetica Bold</option>
-                            <option value="Times-Roman">Times Roman</option>
-                            <option value="Times-Bold">Times Bold</option>
-                            <option value="DancingScript">Dancing Script</option>
-                          </select>
-                        </div>
-
-                        {/* Alignment */}
-                        <div className="grid grid-cols-3 gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
-                          {["left", "center", "right"].map((a) => (
-                            <button
-                              key={a}
+                      ) : (
+                        <>
+                          {!rollNoRect && (
+                            <Button
                               type="button"
-                              onClick={() => setRollNoAlign(a)}
-                              className={`py-1 text-xs font-semibold rounded-lg capitalize transition-all cursor-pointer ${
-                                rollNoAlign === a
-                                  ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs"
-                                  : "text-neutral-500 hover:text-neutral-800"
-                              }`}
+                              variant="outline"
+                              size="sm"
+                              onClick={handleQuickPlaceRollNo}
+                              className="w-full gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 h-8"
                             >
-                              {a}
-                            </button>
-                          ))}
-                        </div>
+                              <Sparkles className="w-3.5 h-3.5" /> Place Below Name
+                            </Button>
+                          )}
 
-                        {/* Display Format Style */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs text-neutral-500 font-medium">
-                              Format Style
-                            </label>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
-                              {formatRollNumber(previewRollNo || "24103042", rollNoFormat)}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {[
-                              { id: "parentheses", label: `(${previewRollNo || "24103042"})`, name: "Parentheses" },
-                              { id: "plain", label: `${previewRollNo || "24103042"}`, name: "Plain Number" },
-                              { id: "dash", label: `- ${previewRollNo || "24103042"}`, name: "Hyphen Prefix" },
-                              { id: "prefix", label: `Roll No. ${previewRollNo || "24103042"}`, name: "Text Prefix" },
-                            ].map((fmt) => (
-                              <button
-                                key={fmt.id}
-                                type="button"
-                                onClick={() => setRollNoFormat(fmt.id)}
-                                className={`p-2 text-left rounded-xl border transition-all cursor-pointer ${
-                                  rollNoFormat === fmt.id
-                                    ? "border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-semibold shadow-xs ring-1 ring-emerald-500/20"
-                                    : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800/60 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-                                }`}
-                              >
-                                <div className="text-[11px] font-mono truncate">{fmt.label}</div>
-                                <div className="text-[9px] text-neutral-400 dark:text-neutral-500 mt-0.5">{fmt.name}</div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Preview Roll No */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Sample Roll Number
-                          </label>
-                          <input
-                            type="text"
-                            value={previewRollNo}
-                            onChange={(e) => setPreviewRollNo(e.target.value)}
-                            placeholder="e.g. 21103042"
-                            className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
-                          />
-                        </div>
-
-                        {rollNoRect && (
-                          <button
-                            type="button"
-                            onClick={() => setRollNoRect(null)}
-                            className="w-full py-1.5 text-xs text-rose-500 hover:text-rose-600 flex items-center justify-center gap-1 cursor-pointer font-medium"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Clear Roll Box
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* AWARD POSITION SETTINGS */}
-                {activeElement === "position" && (
-                  <div className="space-y-4">
-                    {!showPosition ? (
-                      <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-center space-y-2">
-                        <p className="text-xs text-neutral-500">
-                          Standing / Position is hidden on this certificate.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowPosition(true);
-                            if (!positionRect) handleQuickPlacePosition();
-                          }}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                        >
-                          Enable Award Field
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        {!positionRect && (
-                          <button
-                            type="button"
-                            onClick={handleQuickPlacePosition}
-                            className="w-full py-2 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-amber-100 transition-colors cursor-pointer"
-                          >
-                            <Sparkles className="w-3.5 h-3.5" /> Place Below Name
-                          </button>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-xs text-neutral-500 font-medium">
-                              Font Size
-                            </label>
-                            <input
-                              type="number"
-                              value={positionFontSize}
-                              onChange={(e) =>
-                                setPositionFontSize(
-                                  Number(e.target.value) || 24
-                                )
-                              }
-                              min={12}
-                              max={60}
-                              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs text-neutral-500 font-medium">
-                              Color
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="color"
-                                value={positionColor}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-xs text-muted-foreground font-medium">
+                                Font Size (px)
+                              </label>
+                              <Input
+                                type="number"
+                                value={rollNoFontSize}
                                 onChange={(e) =>
-                                  setPositionColor(e.target.value)
+                                  setRollNoFontSize(
+                                    Number(e.target.value) || 20
+                                  )
                                 }
-                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                min={10}
+                                max={60}
+                                className="h-9 text-xs"
                               />
-                              <div className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 flex items-center gap-2 px-2.5 bg-neutral-50 dark:bg-neutral-800 cursor-pointer">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-neutral-300"
-                                  style={{ backgroundColor: positionColor }}
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs text-muted-foreground font-medium">
+                                Color
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="color"
+                                  value={rollNoColor}
+                                  onChange={(e) => setRollNoColor(e.target.value)}
+                                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                                 />
-                                <span className="text-xs font-mono text-neutral-600 dark:text-neutral-300">
-                                  {positionColor}
-                                </span>
+                                <div className="w-full h-9 rounded-md border border-input flex items-center gap-2 px-2.5 bg-background cursor-pointer">
+                                  <div
+                                    className="w-4 h-4 rounded-full border border-border shrink-0"
+                                    style={{ backgroundColor: rollNoColor }}
+                                  />
+                                  <span className="text-xs font-mono text-muted-foreground truncate">
+                                    {rollNoColor}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Font */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Font
-                          </label>
-                          <select
-                            value={positionFont}
-                            onChange={(e) => setPositionFont(e.target.value)}
-                            className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl cursor-pointer"
-                          >
-                            <option value="Helvetica-Bold">Helvetica Bold</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Times-Bold">Times Bold</option>
-                            <option value="Times-Roman">Times Roman</option>
-                            <option value="GreatVibes">Great Vibes</option>
-                          </select>
-                        </div>
-
-                        {/* Alignment */}
-                        <div className="grid grid-cols-3 gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
-                          {["left", "center", "right"].map((a) => (
-                            <button
-                              key={a}
-                              type="button"
-                              onClick={() => setPositionAlign(a)}
-                              className={`py-1 text-xs font-semibold rounded-lg capitalize transition-all cursor-pointer ${
-                                positionAlign === a
-                                  ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs"
-                                  : "text-neutral-500 hover:text-neutral-800"
-                              }`}
+                          {/* Font */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Font Typography
+                            </label>
+                            <select
+                              value={rollNoFont}
+                              onChange={(e) => setRollNoFont(e.target.value)}
+                              className="w-full px-3 py-2 text-xs bg-background border border-input rounded-md text-foreground cursor-pointer"
                             >
-                              {a}
-                            </button>
-                          ))}
-                        </div>
+                              <option value="Helvetica">Helvetica</option>
+                              <option value="Helvetica-Bold">Helvetica Bold</option>
+                              <option value="Times-Roman">Times Roman</option>
+                              <option value="Times-Bold">Times Bold</option>
+                              <option value="DancingScript">Dancing Script</option>
+                            </select>
+                          </div>
 
-                        {/* Preview Standing */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Preview Standing Value
-                          </label>
-                          <div className="grid grid-cols-3 gap-1">
-                            {["Winner", "Runner-Up", "Participant"].map(
-                              (pos) => (
+                          {/* Alignment */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Alignment
+                            </label>
+                            <div className="grid grid-cols-3 gap-1 bg-muted/40 p-1 rounded-lg border border-border">
+                              {["left", "center", "right"].map((a) => (
                                 <button
-                                  key={pos}
+                                  key={a}
                                   type="button"
-                                  onClick={() => setPreviewPosition(pos)}
-                                  className={`py-1.5 px-2 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
-                                    previewPosition === pos
-                                      ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"
-                                      : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
+                                  onClick={() => setRollNoAlign(a)}
+                                  className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
+                                    rollNoAlign === a
+                                      ? "bg-card text-foreground shadow-xs font-semibold"
+                                      : "text-muted-foreground hover:text-foreground"
                                   }`}
                                 >
-                                  {pos}
+                                  {a}
                                 </button>
-                              )
-                            )}
+                              ))}
+                            </div>
                           </div>
-                          <p className="text-[10px] text-neutral-400 mt-1">
-                            *Automatically mapped from event winner records on
-                            issuance.
+
+                          {/* Display Format Style */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs text-muted-foreground font-medium">
+                                Format Style
+                              </label>
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+                                {formatRollNumber(previewRollNo || "24103042", rollNoFormat)}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {[
+                                { id: "parentheses", label: `(${previewRollNo || "24103042"})`, name: "Parentheses" },
+                                { id: "plain", label: `${previewRollNo || "24103042"}`, name: "Plain Number" },
+                                { id: "dash", label: `- ${previewRollNo || "24103042"}`, name: "Hyphen Prefix" },
+                                { id: "prefix", label: `Roll No. ${previewRollNo || "24103042"}`, name: "Text Prefix" },
+                              ].map((fmt) => (
+                                <button
+                                  key={fmt.id}
+                                  type="button"
+                                  onClick={() => setRollNoFormat(fmt.id)}
+                                  className={`p-2 text-left rounded-lg border transition-all cursor-pointer ${
+                                    rollNoFormat === fmt.id
+                                      ? "border-emerald-500 bg-emerald-500/10 text-foreground font-medium shadow-xs ring-1 ring-emerald-500/20"
+                                      : "border-border bg-card hover:bg-muted/40 text-muted-foreground"
+                                  }`}
+                                >
+                                  <div className="text-[11px] font-mono truncate">{fmt.label}</div>
+                                  <div className="text-[9px] text-muted-foreground mt-0.5">{fmt.name}</div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Preview Roll No */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Sample Roll Number
+                            </label>
+                            <Input
+                              type="text"
+                              value={previewRollNo}
+                              onChange={(e) => setPreviewRollNo(e.target.value)}
+                              placeholder="e.g. 21103042"
+                              className="h-9 text-xs"
+                            />
+                          </div>
+
+                          {rollNoRect && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setRollNoRect(null)}
+                              className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Clear Roll Box
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AWARD POSITION SETTINGS */}
+                  {activeElement === "position" && (
+                    <div className="space-y-4">
+                      {!showPosition ? (
+                        <div className="p-3 bg-muted/30 border border-dashed border-border rounded-lg text-center space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            Standing / Position is hidden on this certificate.
                           </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              setShowPosition(true);
+                              if (!positionRect) handleQuickPlacePosition();
+                            }}
+                            className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-8"
+                          >
+                            Enable Award Field
+                          </Button>
                         </div>
+                      ) : (
+                        <>
+                          {!positionRect && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleQuickPlacePosition}
+                              className="w-full gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 h-8"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" /> Place Below Name
+                            </Button>
+                          )}
 
-                        {positionRect && (
-                          <button
-                            type="button"
-                            onClick={() => setPositionRect(null)}
-                            className="w-full py-1.5 text-xs text-rose-500 hover:text-rose-600 flex items-center justify-center gap-1 cursor-pointer font-medium"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Clear Award Box
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* QR VERIFICATION SETTINGS */}
-                {activeElement === "qr" && (
-                  <div className="space-y-4">
-                    {!showQr ? (
-                      <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-center space-y-2">
-                        <p className="text-xs text-neutral-500">
-                          QR verification code is currently disabled.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowQr(true);
-                            if (!qrRect) handleQuickPlaceQr();
-                          }}
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                        >
-                          Enable QR Verification
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        {!qrRect && (
-                          <button
-                            type="button"
-                            onClick={handleQuickPlaceQr}
-                            className="w-full py-2 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-purple-100 transition-colors cursor-pointer"
-                          >
-                            <Sparkles className="w-3.5 h-3.5" /> Place at Bottom
-                            Right
-                          </button>
-                        )}
-
-                        {/* Size Presets */}
-                        <div className="space-y-1.5">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Dimensions Preset
-                          </label>
-                          <div className="grid grid-cols-3 gap-1">
-                            {[
-                              { label: "Compact", size: 70 },
-                              { label: "Standard", size: 100 },
-                              { label: "Prominent", size: 130 },
-                            ].map((preset) => (
-                              <button
-                                key={preset.label}
-                                type="button"
-                                onClick={() => {
-                                  if (qrRect) {
-                                    setQrRect({
-                                      ...qrRect,
-                                      w: preset.size,
-                                      h: preset.size,
-                                    });
-                                  } else {
-                                    handleQuickPlaceQr();
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-xs text-muted-foreground font-medium">
+                                Font Size (px)
+                              </label>
+                              <Input
+                                type="number"
+                                value={positionFontSize}
+                                onChange={(e) =>
+                                  setPositionFontSize(
+                                    Number(e.target.value) || 24
+                                  )
+                                }
+                                min={12}
+                                max={60}
+                                className="h-9 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs text-muted-foreground font-medium">
+                                Color
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="color"
+                                  value={positionColor}
+                                  onChange={(e) =>
+                                    setPositionColor(e.target.value)
                                   }
-                                }}
-                                className="py-1.5 px-2 text-[11px] font-medium rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 cursor-pointer"
-                              >
-                                {preset.label}
-                              </button>
-                            ))}
+                                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <div className="w-full h-9 rounded-md border border-input flex items-center gap-2 px-2.5 bg-background cursor-pointer">
+                                  <div
+                                    className="w-4 h-4 rounded-full border border-border shrink-0"
+                                    style={{ backgroundColor: positionColor }}
+                                  />
+                                  <span className="text-xs font-mono text-muted-foreground truncate">
+                                    {positionColor}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Error Correction Level */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-neutral-500 font-medium">
-                            Error Correction Level
-                          </label>
-                          <select
-                            value={qrErrorCorrectionLevel}
-                            onChange={(e) =>
-                              setQrErrorCorrectionLevel(e.target.value)
-                            }
-                            className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl cursor-pointer"
-                          >
-                            <option value="L">L — 7% Recovery (Crisp)</option>
-                            <option value="M">M — 15% Recovery (Recommended)</option>
-                            <option value="Q">Q — 25% Recovery (High)</option>
-                            <option value="H">H — 30% Recovery (Max)</option>
-                          </select>
-                        </div>
+                          {/* Font */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Font Typography
+                            </label>
+                            <select
+                              value={positionFont}
+                              onChange={(e) => setPositionFont(e.target.value)}
+                              className="w-full px-3 py-2 text-xs bg-background border border-input rounded-md text-foreground cursor-pointer"
+                            >
+                              <option value="Helvetica-Bold">Helvetica Bold</option>
+                              <option value="Helvetica">Helvetica</option>
+                              <option value="Times-Bold">Times Bold</option>
+                              <option value="Times-Roman">Times Roman</option>
+                              <option value="GreatVibes">Great Vibes</option>
+                            </select>
+                          </div>
 
-                        <div className="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 rounded-xl text-[11px] text-purple-700 dark:text-purple-300 leading-relaxed space-y-1">
-                          <p className="font-bold flex items-center gap-1">
-                            <QrIcon className="w-3.5 h-3.5 shrink-0" />
-                            Cryptographic Verification
+                          {/* Alignment */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Alignment
+                            </label>
+                            <div className="grid grid-cols-3 gap-1 bg-muted/40 p-1 rounded-lg border border-border">
+                              {["left", "center", "right"].map((a) => (
+                                <button
+                                  key={a}
+                                  type="button"
+                                  onClick={() => setPositionAlign(a)}
+                                  className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
+                                    positionAlign === a
+                                      ? "bg-card text-foreground shadow-xs font-semibold"
+                                      : "text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  {a}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Preview Standing */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Preview Standing Value
+                            </label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {["Winner", "Runner-Up", "Participant"].map(
+                                (pos) => (
+                                  <button
+                                    key={pos}
+                                    type="button"
+                                    onClick={() => setPreviewPosition(pos)}
+                                    className={`py-1.5 px-2 text-[11px] font-medium rounded-md border transition-all cursor-pointer ${
+                                      previewPosition === pos
+                                        ? "border-amber-500 bg-amber-500/10 text-foreground font-semibold"
+                                        : "border-border text-muted-foreground hover:text-foreground"
+                                    }`}
+                                  >
+                                    {pos}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              *Automatically mapped from event winner records on issuance.
+                            </p>
+                          </div>
+
+                          {positionRect && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setPositionRect(null)}
+                              className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Clear Award Box
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* QR VERIFICATION SETTINGS */}
+                  {activeElement === "qr" && (
+                    <div className="space-y-4">
+                      {!showQr ? (
+                        <div className="p-3 bg-muted/30 border border-dashed border-border rounded-lg text-center space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            QR verification code is currently disabled.
                           </p>
-                          <p className="opacity-90">
-                            Upon issuance, this QR code embeds an unguessable 256-bit slug pointing directly to CampusNode's public verification engine.
-                          </p>
-                        </div>
-
-                        {qrRect && (
-                          <button
+                          <Button
                             type="button"
-                            onClick={() => setQrRect(null)}
-                            className="w-full py-1.5 text-xs text-rose-500 hover:text-rose-600 flex items-center justify-center gap-1 cursor-pointer font-medium"
+                            size="sm"
+                            onClick={() => {
+                              setShowQr(true);
+                              if (!qrRect) handleQuickPlaceQr();
+                            }}
+                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-8"
                           >
-                            <Trash2 className="w-3.5 h-3.5" /> Remove QR Code
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
+                            Enable QR Verification
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          {!qrRect && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleQuickPlaceQr}
+                              className="w-full gap-1.5 border-purple-500/30 text-purple-700 dark:text-purple-400 hover:bg-purple-500/10 h-8"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" /> Place at Bottom Right
+                            </Button>
+                          )}
+
+                          {/* Size Presets */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Dimensions Preset
+                            </label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {[
+                                { label: "Compact", size: 70 },
+                                { label: "Standard", size: 100 },
+                                { label: "Prominent", size: 130 },
+                              ].map((preset) => (
+                                <button
+                                  key={preset.label}
+                                  type="button"
+                                  onClick={() => {
+                                    if (qrRect) {
+                                      setQrRect({
+                                        ...qrRect,
+                                        w: preset.size,
+                                        h: preset.size,
+                                      });
+                                    } else {
+                                      handleQuickPlaceQr();
+                                    }
+                                  }}
+                                  className="py-1.5 px-2 text-[11px] font-medium rounded-md border border-border hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
+                                >
+                                  {preset.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Error Correction Level */}
+                          <div className="space-y-1.5">
+                            <label className="text-xs text-muted-foreground font-medium">
+                              Error Correction Level
+                            </label>
+                            <select
+                              value={qrErrorCorrectionLevel}
+                              onChange={(e) =>
+                                setQrErrorCorrectionLevel(e.target.value)
+                              }
+                              className="w-full px-3 py-2 text-xs bg-background border border-input rounded-md text-foreground cursor-pointer"
+                            >
+                              <option value="L">L — 7% Recovery (Crisp)</option>
+                              <option value="M">M — 15% Recovery (Recommended)</option>
+                              <option value="Q">Q — 25% Recovery (High)</option>
+                              <option value="H">H — 30% Recovery (Max)</option>
+                            </select>
+                          </div>
+
+                          <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-[11px] text-purple-800 dark:text-purple-300 leading-relaxed space-y-1">
+                            <p className="font-semibold flex items-center gap-1.5">
+                              <QrIcon className="w-3.5 h-3.5 shrink-0" />
+                              Cryptographic Verification
+                            </p>
+                            <p className="text-muted-foreground">
+                              Upon issuance, this QR code embeds an unguessable 256-bit slug pointing directly to CampusNode's public verification engine.
+                            </p>
+                          </div>
+
+                          {qrRect && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setQrRect(null)}
+                              className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove QR Code
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Canvas Workspace */}
@@ -1762,13 +1811,13 @@ const CertificateDesigner = () => {
               transition={{ duration: 0.3, delay: 0.05 }}
               className="flex-1 min-w-0 w-full"
             >
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs">
+              <Card className="border-border shadow-xs bg-card overflow-hidden">
                 {/* Canvas Toolbar */}
-                <div className="flex flex-wrap items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 gap-2">
-                  <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                <div className="flex flex-wrap items-center justify-between px-4 py-3 border-b border-border gap-2 bg-card">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {!imageUrl ? (
                       <>
-                        <div className="w-2 h-2 rounded-full bg-neutral-300" />
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/40" />
                         <span>Upload a certificate template image to begin</span>
                       </>
                     ) : (
@@ -1776,42 +1825,44 @@ const CertificateDesigner = () => {
                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
                         <span>
                           Editing:{" "}
-                          <strong className="text-neutral-900 dark:text-white capitalize">
+                          <strong className="text-foreground capitalize font-semibold">
                             {activeElement === "name" && "Student Name"}
                             {activeElement === "rollNo" && "Roll Number"}
                             {activeElement === "position" && "Award Position"}
                             {activeElement === "qr" && "QR Verification Code"}
                           </strong>
                         </span>
-                        <span className="opacity-50">· Drag box or corner handle to adjust</span>
+                        <span className="text-muted-foreground/60 hidden sm:inline">· Drag box or bottom-right handle to adjust</span>
                       </>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2">
                     {getActiveRect() && (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setActiveRect(null)}
-                        className="text-xs text-rose-500 hover:text-rose-600 font-semibold cursor-pointer"
+                        className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2"
                       >
                         Clear active box
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
 
                 {/* Canvas Area */}
-                <div className="bg-neutral-100 dark:bg-neutral-950 flex items-center justify-center min-h-[500px] relative overflow-auto p-4 sm:p-6">
+                <div className="bg-muted/30 flex items-center justify-center min-h-[520px] relative overflow-auto p-4 sm:p-6">
                   {!imageUrl ? (
                     <div className="text-center py-20 px-8 max-w-sm">
-                      <div className="w-16 h-16 rounded-3xl bg-white dark:bg-neutral-800 shadow-sm border border-neutral-200 dark:border-neutral-700 flex items-center justify-center mx-auto mb-4 text-neutral-400">
+                      <div className="w-16 h-16 rounded-2xl bg-card shadow-xs border border-border flex items-center justify-center mx-auto mb-4 text-muted-foreground">
                         <Award className="w-8 h-8" />
                       </div>
-                      <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                      <p className="text-sm font-semibold text-foreground">
                         No Template Uploaded
                       </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                         Upload your high-resolution certificate artwork on the left to activate the placement canvas.
                       </p>
                     </div>
@@ -1824,14 +1875,14 @@ const CertificateDesigner = () => {
                       onTouchStart={handleMouseDown}
                       onTouchMove={handleMouseMove}
                       onTouchEnd={handleMouseUp}
-                      className="cursor-crosshair block rounded-xl shadow-lg border border-neutral-200/60 dark:border-neutral-800"
+                      className="cursor-crosshair block rounded-lg shadow-sm border border-border"
                       style={{ maxWidth: "100%" }}
                     />
                   )}
                 </div>
 
                 {/* Bottom Status Bar */}
-                <div className="px-4 py-2.5 border-t border-neutral-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500">
+                <div className="px-4 py-2.5 border-t border-border flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground bg-card">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-[11px]">
                       {getActiveRect()
@@ -1842,24 +1893,24 @@ const CertificateDesigner = () => {
 
                   <div className="flex items-center gap-3">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${rect ? "bg-blue-500" : "bg-neutral-300"}`} />
+                      <span className={`w-2 h-2 rounded-full ${rect ? "bg-primary" : "bg-muted-foreground/30"}`} />
                       Name
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${showRollNo && rollNoRect ? "bg-emerald-500" : "bg-neutral-300"}`} />
+                      <span className={`w-2 h-2 rounded-full ${showRollNo && rollNoRect ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
                       Roll No
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${showPosition && positionRect ? "bg-amber-500" : "bg-neutral-300"}`} />
+                      <span className={`w-2 h-2 rounded-full ${showPosition && positionRect ? "bg-amber-500" : "bg-muted-foreground/30"}`} />
                       Award
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${showQr && qrRect ? "bg-purple-500" : "bg-neutral-300"}`} />
+                      <span className={`w-2 h-2 rounded-full ${showQr && qrRect ? "bg-purple-500" : "bg-muted-foreground/30"}`} />
                       QR
                     </span>
                   </div>
                 </div>
-              </div>
+              </Card>
             </motion.div>
           </div>
         </div>

@@ -47,3 +47,13 @@ KEY_ROTATION.md
 STRUCTURE.md
 central_event_role.md
 central_org.md
+SELFGUIDE.md
+LINKS.md
+
+*.md
+!BACKEND_SCHEMA.md
+!API_ENDPOINTS.md
+!README.md
+!CAMPUSNODE_TECHNICAL_SPECIFICATION.md
+
+.agents/*

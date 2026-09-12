@@ -8,13 +8,41 @@ import {
   cancelRegistration,
 } from '../services/eventService';
 import { searchUsers } from '../services/userService';
-import { Clock, MapPin, Users, QrCode, Shield, Download, FileText, Award, X, Star, MessageSquare, Check } from 'lucide-react';
+import {
+  Clock,
+  MapPin,
+  Users,
+  QrCode,
+  Shield,
+  Download,
+  FileText,
+  Award,
+  X,
+  Star,
+  MessageSquare,
+  Check,
+  ArrowLeft,
+  AlertTriangle,
+  Edit2,
+  Info,
+  Loader2,
+  Calendar,
+  Ticket,
+  CheckCircle2,
+  Search
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
 import QRCode from 'qrcode';
 import { invalidateCache } from '../lib/cacheManager';
 import { getMyFeedbackHistory } from '../services/feedbackService';
 import { EventFeedbackModal } from '../components/EventFeedbackModal';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import ShimmerText from '../components/ShimmerText';
 
 const MyRegisteredEventCard = ({
   reg,
@@ -65,7 +93,8 @@ const MyRegisteredEventCard = ({
   const isPaymentSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
   const isPaymentRejected = reg.paymentStatus === 'REJECTED';
   const isPaymentPending = isPaidEvent && reg.paymentStatus === 'PENDING';
-  const canShowTicket = !isPaidEvent || isTeamMember || isPaymentSuccess;
+  const isWaitlisted = reg.status === 'WAITLISTED';
+  const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted;
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
 
   // Certificate download is only available if added or selected to provide, event is past, and user attended
@@ -77,20 +106,20 @@ const MyRegisteredEventCard = ({
         : (event.certificateTemplate.imageUrl || Object.keys(event.certificateTemplate).length > 0)))
   );
 
-  const clubName = event.club?.clubName || event.createdBy?.clubName;
-  const clubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
+  const clubName = event.club?.clubName || event.organizers?.[0]?.club?.clubName || event.createdBy?.clubName;
+  const clubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
 
   return (
-    <div
+    <Card
       id={`reg-card-${regId}`}
-      className={`border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full bg-white dark:bg-neutral-900 shadow-xs hover:shadow-md ${
+      className={`overflow-hidden flex flex-col h-full transition-all duration-200 ${
         isHighlighted
-          ? 'border-brand-500 ring-2 ring-brand-500/20 bg-brand-50/20 dark:bg-brand-950/10'
-          : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
+          ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+          : 'hover:border-border/80 hover:shadow-sm'
       }`}
     >
-      {/* Top Poster / Banner */}
-      <div className="relative w-full aspect-[21/9] overflow-hidden bg-neutral-100 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+      {/* Top Poster Banner */}
+      <div className="relative w-full aspect-[21/9] overflow-hidden bg-muted border-b border-border">
         <img
           src={posterImage}
           alt={event.title}
@@ -102,47 +131,45 @@ const MyRegisteredEventCard = ({
         />
 
         {/* Top-Left: Timing Status Badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
           {isLive && (
-            <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md animate-pulse shadow-sm">
+            <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 gap-1.5 animate-pulse border-none">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
               Live
-            </span>
+            </Badge>
           )}
           {isUpcoming && (
-            <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
+            <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md bg-background/80">
               Upcoming
-            </span>
+            </Badge>
           )}
           {isPast && (
-            <span className="inline-flex items-center bg-neutral-100/95 dark:bg-neutral-800/95 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs backdrop-blur-xs">
+            <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md bg-background/80 text-muted-foreground">
               Ended
-            </span>
+            </Badge>
           )}
         </div>
 
         {/* Top-Right: Registration Status Badge */}
-        <div className="absolute top-2 right-2 flex items-center gap-1">
-          <span
-            className={`inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs ${
-              reg.status === 'ATTENDED' || reg.attended
-                ? 'bg-blue-600 text-white'
-                : reg.status === 'WAITLISTED'
-                ? 'bg-amber-500 text-white'
-                : 'bg-emerald-600 text-white'
-            }`}
-          >
-            {reg.status === 'ATTENDED' || reg.attended
-              ? '✓ Attended'
-              : reg.status === 'WAITLISTED'
-              ? 'Waitlisted'
-              : '✓ Registered'}
-          </span>
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+          {isAttended ? (
+            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 border-none">
+              ✓ Attended
+            </Badge>
+          ) : isWaitlisted ? (
+            <Badge variant="outline" className="bg-amber-500/90 text-white border-none text-[10px] font-bold px-2 py-0.5">
+              Waitlisted
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="text-[10px] font-bold px-2 py-0.5 backdrop-blur-md bg-background/90 text-foreground">
+              ✓ Registered
+            </Badge>
+          )}
         </div>
       </div>
 
       {/* Card Content */}
-      <div className="p-4 sm:p-3 flex flex-col flex-1 gap-2.5">
+      <CardContent className="p-4 flex flex-col flex-1 gap-2.5">
         {/* Club line */}
         {clubName && (
           <div className="flex items-center min-w-0">
@@ -150,24 +177,24 @@ const MyRegisteredEventCard = ({
               <img
                 src={clubLogo}
                 alt={clubName}
-                className="w-4 h-4 rounded-full object-cover mr-1.5 border border-neutral-200 dark:border-neutral-700"
+                className="w-4 h-4 rounded-full object-cover mr-1.5 border border-border"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = '/lightthemelogo.png';
                 }}
               />
             ) : (
-              <div className="w-4 h-4 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center mr-1.5 text-brand-600 text-[9px] font-bold">
-                <i className="ri-team-line" />
+              <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center mr-1.5 text-primary text-[9px] font-bold">
+                <Users className="w-2.5 h-2.5" />
               </div>
             )}
-            <span className="text-[11px] font-bold text-brand-600 truncate">{clubName}</span>
+            <span className="text-xs font-semibold text-primary truncate">{clubName}</span>
           </div>
         )}
 
         {/* Event Title */}
-        <h3 className="text-base font-bold text-neutral-900 dark:text-white leading-snug line-clamp-2">
-          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-brand-600 transition-colors">
+        <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug line-clamp-2">
+          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-primary transition-colors">
             {event.title}
           </Link>
         </h3>
@@ -175,31 +202,32 @@ const MyRegisteredEventCard = ({
         {/* Middle Info & Calendar Date Box */}
         <div className="flex items-center justify-between gap-3 pt-1">
           {/* Left Info Column */}
-          <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
-            <div className="flex items-center gap-1.5 min-w-0 font-medium text-neutral-700 dark:text-neutral-300">
-              <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+          <div className="flex-1 min-w-0 space-y-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 min-w-0 font-medium text-foreground">
+              <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="truncate">{event.venue || 'Campus Venue'}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 min-w-0 text-neutral-500 dark:text-neutral-400">
-              <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground">
+              <Clock className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">{formattedTime}</span>
             </div>
 
             {/* Payment badge if paid event */}
             {isPaidEvent && (
               <div className="pt-0.5">
-                <span
-                  className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                <Badge
+                  variant={isPaymentSuccess ? 'default' : isPaymentRejected ? 'destructive' : 'outline'}
+                  className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0 ${
                     isPaymentSuccess
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                       : isPaymentRejected
-                      ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800'
-                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
+                      ? ''
+                      : 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
                   }`}
                 >
                   {isPaymentSuccess ? 'Payment: Paid' : `Payment: ${reg.paymentStatus || 'Pending'}`}
-                </span>
+                </Badge>
               </div>
             )}
           </div>
@@ -207,14 +235,14 @@ const MyRegisteredEventCard = ({
           {/* Right Calendar Date Box */}
           {isValidDate && (
             <div className="shrink-0 self-center">
-              <div className="flex flex-col items-center justify-center min-w-[50px] bg-neutral-50 dark:bg-neutral-800/80 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[9px] font-black uppercase tracking-wider text-center py-0.5 px-1.5 leading-none">
+              <div className="flex flex-col items-center justify-center min-w-[48px] bg-muted/50 rounded-lg overflow-hidden border border-border">
+                <div className="w-full bg-destructive text-destructive-foreground text-[8px] font-bold uppercase tracking-wider text-center py-0.5 px-1 leading-none">
                   {monthName}
                 </div>
-                <div className="text-base font-black text-neutral-900 dark:text-white leading-tight px-2 pt-0.5">
+                <div className="text-sm font-black leading-tight px-2 pt-0.5 font-mono">
                   {dayNumber}
                 </div>
-                <div className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider pb-1">
+                <div className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider pb-1">
                   {dayName}
                 </div>
               </div>
@@ -224,27 +252,29 @@ const MyRegisteredEventCard = ({
 
         {/* Team Details (if team registration) */}
         {reg.team && (
-          <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800/80 rounded-xl text-xs space-y-1 text-left">
+          <div className="p-2.5 bg-muted/40 border border-border rounded-lg text-xs space-y-1">
             <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-              <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200">
-                <Users className="w-3.5 h-3.5 text-brand-600" />
-                <span>Team: <span className="text-brand-600 dark:text-brand-500 font-extrabold">{reg.team.teamName}</span></span>
+              <div className="flex items-center gap-1.5 font-bold">
+                <Users className="w-3.5 h-3.5 text-primary" />
+                <span>Team: <span className="text-primary font-bold">{reg.team.teamName}</span></span>
               </div>
               {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => onUpdateTeam(reg)}
-                  className="px-2 py-0.5 text-[10px] font-bold text-brand-600 hover:text-white hover:bg-brand-600 border border-brand-200 hover:border-brand-600 rounded-lg transition-all cursor-pointer bg-transparent"
+                  className="h-6 text-[10px] font-semibold px-2 py-0"
                 >
                   Update
-                </button>
+                </Button>
               )}
             </div>
-            <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
-              Leader: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{reg.team.leader?.name}</span>
+            <div className="text-muted-foreground text-[11px]">
+              Leader: <span className="font-medium text-foreground">{reg.team.leader?.name}</span>
             </div>
-            <div className="text-neutral-500 dark:text-neutral-400 text-[11px] line-clamp-1">
-              Members: <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+            <div className="text-muted-foreground text-[11px] line-clamp-1">
+              Members: <span className="font-medium text-foreground">
                 {(reg.team.members || []).map(m => m.user?.name).filter(Boolean).join(', ')}
               </span>
             </div>
@@ -252,122 +282,136 @@ const MyRegisteredEventCard = ({
         )}
 
         {/* Action Buttons Footer */}
-        <div className="mt-auto pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-2">
+        <div className="mt-auto pt-3 border-t border-border flex flex-col gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             {(!reg.team || isTeamLeader) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => onEditPayment(reg)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-brand-100 hover:bg-brand-200 text-brand-700 dark:bg-brand-950/40 dark:hover:bg-brand-900/60 dark:text-brand-350 transition-colors shadow-2xs cursor-pointer border-0 outline-none whitespace-nowrap"
+                className="h-8 text-xs font-semibold gap-1.5"
               >
-                <i className="ri-edit-2-line mr-1" /> Edit Payment Info
-              </button>
+                <Edit2 className="w-3 h-3 text-primary" />
+                <span>Edit Payment Info</span>
+              </Button>
             )}
 
             {/* Upcoming or Live events: show ticket and deregulation */}
             {!isPast && (
               <>
                 {canShowTicket && (
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
                     onClick={() => onShowTicket(reg)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-black text-white hover:bg-brand-600 dark:bg-white dark:text-black dark:hover:bg-brand-600 dark:hover:text-white transition-all shadow-xs cursor-pointer"
+                    className="flex-1 h-8 text-xs font-semibold uppercase tracking-wider gap-1.5"
                   >
                     <QrCode className="w-3.5 h-3.5" />
                     <span>Show Ticket</span>
-                  </button>
+                  </Button>
+                )}
+
+                {isWaitlisted && (
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate">
+                    On Waitlist — Ticket available when cleared
+                  </span>
                 )}
 
                 {isPaidEvent && isPaymentPending && (
-                  <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 whitespace-nowrap">
-                    <i className="ri-time-line mr-1" /> Ticket after approval
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate">
+                    Ticket after approval
                   </span>
                 )}
 
                 {isPaidEvent && isPaymentRejected && (
-                  <span className="flex-1 text-center px-3 py-2 text-[10px] font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap">
-                    <i className="ri-close-circle-line mr-1" /> Payment rejected
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-destructive/10 text-destructive border border-destructive/20 truncate">
+                    Payment rejected
                   </span>
                 )}
 
                 {isPaidEvent ? (
-                  <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 rounded-xl cursor-not-allowed whitespace-nowrap">
-                    <i className="ri-lock-2-line mr-1" /> Paid
-                  </span>
+                  <Badge variant="secondary" className="h-8 px-2.5 text-xs font-medium text-muted-foreground shrink-0">
+                    Paid
+                  </Badge>
                 ) : isTeamMember ? (
-                  <span
-                    className="px-3 py-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl whitespace-nowrap"
-                    title="Only the team leader can cancel the team registration."
-                  >
+                  <Badge variant="secondary" className="h-8 px-2.5 text-xs font-medium text-muted-foreground shrink-0" title="Only the team leader can cancel the team registration.">
                     Team Member
-                  </span>
+                  </Badge>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onDeregister(reg)}
-                    className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer border-0 outline-none rounded-xl whitespace-nowrap"
+                    className="h-8 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
                   >
                     {isTeamLeader ? 'Deregister Team' : 'Deregister'}
-                  </button>
+                  </Button>
                 )}
               </>
             )}
 
-            {/* Completed events (isPast): Replace Show Ticket with Submit Feedback (only if attended) */}
+            {/* Completed events (isPast) */}
             {isPast && (
               <>
                 {isAttended ? (
                   hasSubmittedFeedback ? (
-                    <span className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <Badge variant="secondary" className="flex-1 h-8 justify-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <Check className="w-3.5 h-3.5" />
                       <span>Feedback Submitted</span>
-                    </span>
+                    </Badge>
                   ) : (
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={() => onOpenFeedback(event)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-xs transition-all cursor-pointer"
+                      className="flex-1 h-8 text-xs font-semibold uppercase tracking-wider gap-1.5 bg-primary"
                     >
                       <Star className="w-3.5 h-3.5 fill-current" />
                       <span>Submit Feedback</span>
-                    </button>
+                    </Button>
                   )
                 ) : (
-                  <span className="flex-1 text-center px-3 py-2 text-[11px] font-semibold rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                  <Badge variant="secondary" className="flex-1 h-8 justify-center text-xs font-medium text-muted-foreground">
                     Event Ended
-                  </span>
+                  </Badge>
                 )}
 
                 {/* Secondary pass view button for participants */}
                 {canShowTicket && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon"
                     onClick={() => onShowTicket(reg)}
                     title="View Digital Pass"
-                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer"
+                    className="h-8 w-8 shrink-0"
                   >
                     <QrCode className="w-4 h-4" />
-                  </button>
+                  </Button>
                 )}
               </>
             )}
           </div>
 
-          {/* Certificate Download Button: only shown when template added or option selected, event ended, and user attended */}
+          {/* Certificate Download Button */}
           {isPast && isAttended && isCertificateAvailable && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => onDownloadCertificate(event.id || event._id)}
               disabled={downloadingCert === (event.id || event._id)}
-              className="inline-flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 w-full px-4 py-2 text-neutral-800 dark:text-neutral-200 transition border border-neutral-200 dark:border-neutral-700 rounded-xl font-bold text-xs shadow-2xs cursor-pointer disabled:opacity-50"
+              className="w-full h-8 text-xs font-semibold gap-2"
             >
               <DownloadIcon size={14} />
-              {downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}
-            </button>
+              <span>{downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}</span>
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -524,12 +568,17 @@ const MyEvents = () => {
     ctx.fillText('CAMPUSNODE', 0, 0);
     ctx.restore();
 
-    ctx.fillStyle = '#0a0a0a';
+    const computedTheme = getComputedStyle(document.documentElement);
+    const brandColor = computedTheme.getPropertyValue('--cn-brand').trim() || '#0094FF';
+    const brandDark = computedTheme.getPropertyValue('--color-brand-800').trim() || '#064f89';
+    const textColor = computedTheme.getPropertyValue('--cn-primary').trim() || '#0a0a0a';
+
+    ctx.fillStyle = textColor;
     ctx.fillRect(700, 0, 300, canvas.height);
 
     const accentGrad = ctx.createLinearGradient(0, 0, 15, 400);
-    accentGrad.addColorStop(0, '#ea580c');
-    accentGrad.addColorStop(1, '#9a3412');
+    accentGrad.addColorStop(0, brandColor);
+    accentGrad.addColorStop(1, brandDark);
     ctx.fillStyle = accentGrad;
     ctx.fillRect(0, 0, 15, canvas.height);
 
@@ -546,16 +595,16 @@ const MyEvents = () => {
     const brandY = 65;
     ctx.letterSpacing = "4px"; 
     ctx.font = 'bold 30px "logofont"'; 
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = textColor;
     ctx.fillText('CAMPUS', brandX, brandY);
     const clubWidth = ctx.measureText('CAMPUS').width;
-    ctx.fillStyle = '#ea580c';
+    ctx.fillStyle = brandColor;
     ctx.fillText('NODE', brandX + clubWidth, brandY);
     ctx.letterSpacing = "0px";
 
     // Event Name
     ctx.font = 'bold 44px "myfont"';
-    ctx.fillStyle = '#171717';
+    ctx.fillStyle = textColor;
     const eventName = (selectedTicket.eventId?.title || 'EVENT TICKET');
     ctx.fillText(eventName.length > 20 ? eventName.substring(0, 20) + '...' : eventName, 60, 145);
 
@@ -564,7 +613,7 @@ const MyEvents = () => {
       ctx.fillStyle = '#a3a3a3';
       ctx.fillText(label.toUpperCase(), x, y);
       ctx.font = 'bold 22px "myfont"';
-      ctx.fillStyle = '#0a0a0a';
+      ctx.fillStyle = textColor;
       ctx.fillText(value, x, y + 28);
     };
 
@@ -582,7 +631,7 @@ const MyEvents = () => {
     const qrImage = new Image();
     qrImage.crossOrigin = "anonymous";
     qrImage.onload = () => {
-      ctx.fillStyle = '#ea580c';
+      ctx.fillStyle = brandColor;
       ctx.fillRect(748, 93, 204, 204);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(750, 95, 200, 200);
@@ -593,7 +642,7 @@ const MyEvents = () => {
       ctx.fillText('SERIAL NUMBER', 850, 325);
       
       ctx.font = 'bold 15px monospace';
-      ctx.fillStyle = '#ea580c';
+      ctx.fillStyle = brandColor;
       ctx.fillText(selectedTicket.qrCode, 850, 350);
 
       const dataUrl = canvas.toDataURL('image/png');
@@ -777,129 +826,136 @@ const MyEvents = () => {
     }
   };
 
-  if (!user) return <div className="text-center mt-10 text-sm text-neutral-500">Please login to view your events.</div>;
-  if (loading) return <div className="text-center mt-10 text-sm text-neutral-400">Loading your events...</div>;
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 text-center">
+        <Card className="p-8">
+          <p className="text-sm text-muted-foreground">Please log in to view your events.</p>
+        </Card>
+      </div>
+    );
+  }
 
-  // Dedicated Official Club Account Notice (Guiding to Club Management)
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <ShimmerText text="Loading your events..." className="text-sm font-semibold tracking-wider" />
+      </div>
+    );
+  }
+
+  // Dedicated Official Club Account Notice
   if (isClubAccount) {
     const clubTargetId = user.clubId || user.id || user._id;
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-10 shadow-sm max-w-lg mx-auto">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-500/10 text-brand-600 flex items-center justify-center">
+        <Card className="max-w-lg mx-auto p-8 shadow-sm">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Shield size={28} />
           </div>
-          <h2 className="text-xl font-black text-neutral-900 dark:text-white mb-2">Club Management Portal</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+          <CardTitle className="text-xl mb-2">Club Management Portal</CardTitle>
+          <CardDescription className="text-sm mb-6">
             You are currently signed in as an Official Club Account. To manage, create, and review events organized by your club, visit your Club Events dashboard.
-          </p>
-          <Link
-            to={`/club-events/${clubTargetId}`}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm"
-          >
-            Open Club Events
-          </Link>
-        </div>
+          </CardDescription>
+          <Button asChild className="font-semibold">
+            <Link to={`/club-events/${clubTargetId}`}>Open Club Events</Link>
+          </Button>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">My Events</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">My Events</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Track all events you have registered for, view digital tickets, and download participation certificates.
           </p>
         </div>
-        <Link
-          to="/profile"
-          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-brand-600 transition-colors"
-        >
-          <i className="ri-arrow-left-line text-sm" /> Back to Profile
-        </Link>
+        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+          <Link to="/profile">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Profile</span>
+          </Link>
+        </Button>
       </div>
 
-      <div className="flex items-center gap-2 mb-8 border-b border-neutral-200 dark:border-neutral-800 pb-3">
-        <button
+      {/* Tabs */}
+      <div className="flex items-center gap-2 mb-8 border-b border-border pb-3">
+        <Button
           type="button"
+          variant={activeTab === 'events' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => setActiveTab('events')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            activeTab === 'events'
-              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white bg-transparent'
-          }`}
+          className="gap-2 font-semibold"
         >
-          <i className="ri-ticket-line text-sm" />
+          <Ticket className="w-4 h-4" />
           <span>Tickets & Registrations ({registrations.length})</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant={activeTab === 'feedback' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => {
             setActiveTab('feedback');
             fetchFeedbackHistory();
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            activeTab === 'feedback'
-              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white bg-transparent'
-          }`}
+          className="gap-2 font-semibold"
         >
-          <Star className="w-3.5 h-3.5 text-amber-500" />
+          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
           <span>My Feedback</span>
-        </button>
+        </Button>
       </div>
 
+      {/* Feedback Tab Content */}
       {activeTab === 'feedback' && (
         <div>
           {loadingFeedbacks ? (
-            <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
-              <i className="ri-loader-4-line animate-spin text-3xl mb-2 text-brand-500" />
-              <p className="text-xs font-semibold uppercase tracking-wider">Loading your feedback history...</p>
+            <div className="flex flex-col items-center justify-center py-16 gap-2">
+              <ShimmerText text="Loading your feedback history..." className="text-xs font-semibold tracking-wider" />
             </div>
           ) : feedbacks.length === 0 ? (
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-12 text-center shadow-2xs">
-              <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
+            <Card className="p-12 text-center">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
                 <Star className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-1">No Feedback Submitted Yet</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
+              <CardTitle className="text-base mb-1">No Feedback Submitted Yet</CardTitle>
+              <CardDescription className="text-xs max-w-md mx-auto">
                 After attending events, you'll be automatically invited to share your ratings and reviews here.
-              </p>
-            </div>
+              </CardDescription>
+            </Card>
           ) : (
             <div className="space-y-4">
               {feedbacks.map((fb) => (
-                <div
-                  key={fb.id}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-2xs hover:shadow-sm transition-all space-y-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 dark:border-neutral-800/80 pb-3">
+                <Card key={fb.id} className="p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        {fb.event?.club?.clubName && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-200/50 dark:border-brand-900/30">
-                            {fb.event.club.clubName}
-                          </span>
+                        {(fb.event?.club?.clubName || fb.event?.organizers?.[0]?.club?.clubName) && (
+                          <Badge variant="outline" className="text-[10px] font-semibold text-primary">
+                            {fb.event?.club?.clubName || fb.event?.organizers?.[0]?.club?.clubName}
+                          </Badge>
                         )}
-                        <span className="text-[11px] text-neutral-400">
+                        <span className="text-[11px] text-muted-foreground">
                           Submitted on {new Date(fb.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-brand-600 transition-colors">
+                      <h3 className="text-base font-bold">
+                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-primary transition-colors">
                           {fb.event?.title || 'Campus Event'}
                         </Link>
                       </h3>
                     </div>
 
                     {/* Overall Rating Badge */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 shrink-0">
+                    <Badge variant="outline" className="px-3 py-1.5 gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 self-start sm:self-auto">
                       <Star className="w-4 h-4 fill-amber-400 stroke-amber-500" />
-                      <span className="text-sm font-black">{fb.overallRating} / 5</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">Overall</span>
-                    </div>
+                      <span className="text-sm font-bold font-mono">{fb.overallRating} / 5</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider">Overall</span>
+                    </Badge>
                   </div>
 
                   {/* 6 Metric Breakdown Badges */}
@@ -912,417 +968,274 @@ const MyEvents = () => {
                       { label: 'Venue', val: fb.venueRating },
                       { label: 'Timing', val: fb.timingRating },
                     ].map((item, i) => (
-                      <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-center">
-                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium truncate">{item.label}</p>
-                        <p className="font-bold text-neutral-900 dark:text-white mt-0.5 flex items-center justify-center gap-1">
-                          <span>{item.val}</span>
+                      <div key={i} className="p-2 rounded-lg bg-muted/40 border border-border text-center">
+                        <p className="text-[10px] text-muted-foreground font-medium truncate">{item.label}</p>
+                        <p className="font-bold mt-0.5 flex items-center justify-center gap-1">
+                          <span className="font-mono">{item.val}</span>
                           <Star className="w-3 h-3 fill-amber-400 stroke-amber-500" />
                         </p>
                       </div>
                     ))}
                   </div>
 
-                  {/* Recommendation & Written Responses */}
+                  {/* Recommendation & Comments */}
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">Would attend again:</span>
-                      <span className={`font-bold px-2 py-0.5 rounded-md text-[11px] ${
-                        fb.attendSimilar === 'YES' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300' :
-                        fb.attendSimilar === 'MAYBE' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' :
-                        'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
-                      }`}>
+                      <span className="text-muted-foreground font-medium">Would attend again:</span>
+                      <Badge variant={fb.attendSimilar === 'YES' ? 'default' : fb.attendSimilar === 'MAYBE' ? 'outline' : 'destructive'} className="text-[11px]">
                         {fb.attendSimilar === 'YES' ? 'Yes' : fb.attendSimilar === 'MAYBE' ? 'Maybe' : 'No'}
-                      </span>
+                      </Badge>
                     </div>
 
                     {(fb.liked || fb.improvements || fb.comments) && (
-                      <div className="mt-2 p-3 bg-neutral-50 dark:bg-neutral-800/30 rounded-xl space-y-1.5 border border-neutral-100 dark:border-neutral-800">
+                      <div className="p-3 bg-muted/30 rounded-lg space-y-1.5 border border-border">
                         {fb.liked && (
-                          <p><strong className="text-neutral-700 dark:text-neutral-300">Liked:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.liked}</span></p>
+                          <p><strong className="text-foreground">Liked:</strong> <span className="text-muted-foreground">{fb.liked}</span></p>
                         )}
                         {fb.improvements && (
-                          <p><strong className="text-neutral-700 dark:text-neutral-300">Improvements:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.improvements}</span></p>
+                          <p><strong className="text-foreground">Improvements:</strong> <span className="text-muted-foreground">{fb.improvements}</span></p>
                         )}
                         {fb.comments && (
-                          <p><strong className="text-neutral-700 dark:text-neutral-300">Comments:</strong> <span className="text-neutral-600 dark:text-neutral-400">{fb.comments}</span></p>
+                          <p><strong className="text-foreground">Comments:</strong> <span className="text-muted-foreground">{fb.comments}</span></p>
                         )}
                       </div>
                     )}
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
         </div>
       )}
 
+      {/* Events Tab Content */}
       {activeTab === 'events' && (
-      <div>
-        {registrations.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-12 text-center shadow-2xs">
-            <i className="ri-calendar-line text-5xl text-neutral-300 dark:text-neutral-700 mb-4 inline-block" />
-            <h3 className="text-base font-bold text-neutral-800 dark:text-neutral-200 mb-1">No Registered Events Found</h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">
-              You haven't registered for any campus events yet. Explore upcoming hackathons, workshops, and fests!
-            </p>
-            <Link
-              to="/events"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
-            >
-              Browse Events
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {registrations.map(reg => {
-              const event = reg.eventId;
-              if (!event) return null;
-              const regId = reg.id || reg._id;
-              const isHighlighted = highlightedRegId === regId;
+        <div>
+          {registrations.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <CardTitle className="text-base mb-1">No Registered Events Found</CardTitle>
+              <CardDescription className="text-xs mb-6 max-w-md mx-auto">
+                You haven't registered for any campus events yet. Explore upcoming hackathons, workshops, and fests!
+              </CardDescription>
+              <Button asChild className="font-semibold">
+                <Link to="/events">Browse Events</Link>
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {registrations.map(reg => {
+                const event = reg.eventId;
+                if (!event) return null;
+                const regId = reg.id || reg._id;
+                const isHighlighted = highlightedRegId === regId;
 
-              return (
-                <MyRegisteredEventCard
-                  key={regId}
-                  reg={reg}
-                  user={user}
-                  isHighlighted={isHighlighted}
-                  onShowTicket={handleShowTicket}
-                  onDeregister={handleDeregister}
-                  onEditPayment={openEditPaymentModal}
-                  onUpdateTeam={(r) => {
-                    setTeamToUpdate(r);
-                    setUpdateTeamModalOpen(true);
-                  }}
-                  onDownloadCertificate={handleDownloadCertificate}
-                  downloadingCert={downloadingCert}
-                  onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
-                  hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
+                return (
+                  <MyRegisteredEventCard
+                    key={regId}
+                    reg={reg}
+                    user={user}
+                    isHighlighted={isHighlighted}
+                    onShowTicket={handleShowTicket}
+                    onDeregister={handleDeregister}
+                    onEditPayment={openEditPaymentModal}
+                    onUpdateTeam={(r) => {
+                      setTeamToUpdate(r);
+                      setUpdateTeamModalOpen(true);
+                    }}
+                    onDownloadCertificate={handleDownloadCertificate}
+                    downloadingCert={downloadingCert}
+                    onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
+                    hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
-     <AnimatePresence>
-  {ticketModalOpen &&
-    selectedTicket &&
-    (() => {
-      const ev = selectedTicket.eventId || selectedTicket.event || {};
+      {/* Ticket Modal */}
+      <AnimatePresence>
+        {ticketModalOpen && selectedTicket && (() => {
+          const ev = selectedTicket.eventId || selectedTicket.event || {};
+          const organizerName =
+            ev.club?.clubName ||
+            ev.club?.name ||
+            ev.organizers?.[0]?.club?.clubName ||
+            ev.centralOrganizer?.name ||
+            (ev.organizerType === "CENTRAL_ORGANIZATION"
+              ? "Central Student Body"
+              : null) ||
+            ev.createdBy?.name ||
+            "CampusNode";
 
-      const organizerName =
-        ev.club?.clubName ||
-        ev.club?.name ||
-        ev.centralOrganizer?.name ||
-        (ev.organizerType === "CENTRAL_ORGANIZATION"
-          ? "Central Student Body"
-          : null) ||
-        ev.createdBy?.name ||
-        "CampusNode";
+          const formattedDate = ev.startTime
+            ? new Date(ev.startTime).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "—";
 
-      const formattedDate = ev.startTime
-        ? new Date(ev.startTime).toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-        : "—";
+          const formattedTime = ev.startTime
+            ? `${new Date(ev.startTime).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              })}${
+                ev.endTime
+                  ? ` - ${new Date(ev.endTime).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}`
+                  : ""
+              }`
+            : "—";
 
-      const formattedTime = ev.startTime
-        ? `${new Date(ev.startTime).toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          })}${
-            ev.endTime
-              ? ` - ${new Date(ev.endTime).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })}`
-              : ""
-          }`
-        : "—";
+          const attendeeName =
+            selectedTicket.student?.name ||
+            user?.name ||
+            "Participant";
 
-      const attendeeName =
-        selectedTicket.student?.name ||
-        selectedTicket.externalName ||
-        user?.name ||
-        "Participant";
+          const attendeeRoll =
+            selectedTicket.student?.rollNo ||
+            user?.rollNo ||
+            null;
 
-      const attendeeRoll =
-        selectedTicket.student?.rollNo ||
-        user?.rollNo ||
-        null;
+          const passId = selectedTicket.qrCode || selectedTicket.id;
 
-      const passId = selectedTicket.qrCode || selectedTicket.id;
-
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setTicketModalOpen(false)}
-            className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.93, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.93, y: 16 }}
-            transition={{
-              duration: 0.24,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className="
-              relative z-10
-              bg-white dark:bg-[#181818]
-              border border-[#E5E5E5] dark:border-[#303030]
-              rounded-2xl
-              max-w-sm w-full
-              p-5
-              shadow-2xl
-              transition-colors
-            "
-          >
-            <div className="mb-4">
-              <div className="flex items-center justify-between gap-2 mb-2 pr-8">
-                <span
-                  className="
-                    text-[10px] font-bold uppercase tracking-wider
-                    text-[#F97316] dark:text-[#FB923C]
-                    bg-[#FFF7ED] dark:bg-[#2A1A0F]
-                    border border-brand-200/60 dark:border-brand-900/40
-                    px-2.5 py-1
-                    rounded-full
-                    shrink-0
-                  "
-                >
-                  Digital Event Pass
-                </span>
-
-                {selectedTicket.team?.teamName && (
-                  <span
-                    className="
-                      text-[10px] font-bold
-                      text-[#555555] dark:text-[#B5B5B5]
-                      bg-[#FAFAFA] dark:bg-[#222222]
-                      border border-[#E5E5E5] dark:border-[#303030]
-                      px-2.5 py-1
-                      rounded-full
-                      truncate
-                    "
-                  >
-                    Team: {selectedTicket.team.teamName}
-                  </span>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setTicketModalOpen(false)}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
-                  aria-label="Close ticket modal"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Event title */}
-              <h3
-                className="
-                  text-lg font-extrabold
-                  leading-tight
-                  text-neutral-900 dark:text-white
-                  line-clamp-2
-                "
-              >
-                {ev.title || "Event Pass"}
-              </h3>
-
-              {/* Organizer */}
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
-                Organized by{" "}
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                  {organizerName}
-                </span>
-              </p>
-            </div>
-
-            <div
-              className="
-                rounded-2xl
-                border border-neutral-200 dark:border-neutral-800
-                bg-neutral-50 dark:bg-neutral-800/50
-                overflow-hidden
-                mb-4
-              "
-            >
-              <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-700">
-                {/* Date */}
-                <div className="px-3 py-2.5">
-                  <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400">
-                    Date
-                  </p>
-
-                  <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                    {formattedDate}
-                  </p>
-                </div>
-
-                {/* Time */}
-                <div className="px-3 py-2.5">
-                  <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400">
-                    Time
-                  </p>
-
-                  <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                    {formattedTime}
-                  </p>
-                </div>
-              </div>
-
-              {/* Venue */}
-              <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-2.5">
-                <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400">
-                  Venue
-                </p>
-
-                <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 truncate">
-                  {ev.venue || "Venue not specified"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center">
-              {/* QR */}
-              <div
-                className="
-                  bg-white
-                  p-3
-                  rounded-2xl
-                  border border-neutral-200
-                  shadow-sm
-                "
-              >
-                {qrDataUrl ? (
-                  <img
-                    src={qrDataUrl}
-                    alt="Ticket QR"
-                    className="w-48 h-48"
-                  />
-                ) : (
-                  <div
-                    className="
-                      w-48 h-48
-                      flex items-center justify-center
-                      text-xs text-neutral-400
-                    "
-                  >
-                    Loading QR...
-                  </div>
-                )}
-              </div>
-
-              <div className="w-full mt-3">
-                <div
-                  className="
-                    flex items-center
-                    justify-between
-                    gap-3
-                    px-3 py-2.5
-                    rounded-xl
-                    bg-neutral-50 dark:bg-neutral-800/60
-                    border border-neutral-100 dark:border-neutral-800
-                  "
-                >
-                  {/* Name */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400">
-                      Participant
-                    </p>
-
-                    <p className="text-xs font-extrabold text-brand-600 dark:text-brand-400 truncate mt-0.5">
-                      {attendeeName} <span className="text-neutral-900 dark:text-white">({authUser.branch}, {authUser.year})</span>
-                    </p>
-                  </div>
-
-                  {/* Roll Number */}
-                  {attendeeRoll && (
-                    <>
-                      <div className="w-px h-7 bg-neutral-200 dark:bg-neutral-700" />
-
-                      <div className="shrink-0 text-right">
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400">
-                          Roll No.
-                        </p>
-
-                        <p className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
-                          {attendeeRoll}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 mb-4 text-center">
-              <p className="text-[9px] uppercase tracking-wider font-bold text-neutral-400 mb-1">
-                Pass ID : <span className=' text-brand-600 dark:text-brand-400'>{passId}</span>
-              </p>
-
-              
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 onClick={() => setTicketModalOpen(false)}
-                className="
-                  flex-1
-                  px-4 py-2.5
-                  bg-neutral-100 hover:bg-neutral-200
-                  dark:bg-neutral-800 dark:hover:bg-neutral-700
-                  text-neutral-700 dark:text-neutral-300
-                  font-semibold text-xs
-                  rounded-xl
-                  transition-colors
-                  cursor-pointer
-                  border-0
-                "
-              >
-                Close
-              </button>
+                className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
+              />
 
-              <button
-                type="button"
-                onClick={handleDownloadTicket}
-                className="
-                  flex-1
-                  px-4 py-2.5
-                  bg-brand-600 hover:bg-brand-700
-                  text-white
-                  font-bold text-xs
-                  rounded-xl
-                  transition-colors
-                  cursor-pointer
-                  border-0
-                  shadow-sm
-                "
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10 max-w-sm w-full"
               >
-                Save Ticket
-              </button>
+                <Card className="p-5 shadow-2xl">
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between gap-2 mb-2 pr-8">
+                      <Badge className="text-[10px] font-bold uppercase tracking-wider">
+                        Digital Event Pass
+                      </Badge>
+
+                      {selectedTicket.team?.teamName && (
+                        <Badge variant="secondary" className="text-[10px] truncate">
+                          Team: {selectedTicket.team.teamName}
+                        </Badge>
+                      )}
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setTicketModalOpen(false)}
+                        className="absolute top-4 right-4 h-7 w-7 text-muted-foreground"
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+
+                    <h3 className="text-base font-bold leading-tight line-clamp-2">
+                      {ev.title || "Event Pass"}
+                    </h3>
+
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Organized by <span className="font-semibold text-foreground">{organizerName}</span>
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-muted/40 overflow-hidden mb-4 divide-y divide-border">
+                    <div className="grid grid-cols-2 divide-x divide-border">
+                      <div className="p-2.5">
+                        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Date</p>
+                        <p className="text-xs font-semibold mt-0.5">{formattedDate}</p>
+                      </div>
+                      <div className="p-2.5">
+                        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Time</p>
+                        <p className="text-xs font-semibold mt-0.5">{formattedTime}</p>
+                      </div>
+                    </div>
+                    <div className="p-2.5">
+                      <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Venue</p>
+                      <p className="text-xs font-semibold mt-0.5 truncate">{ev.venue || "Venue not specified"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="bg-white p-3 rounded-xl border border-border shadow-xs">
+                      {qrDataUrl ? (
+                        <img src={qrDataUrl} alt="Ticket QR" className="w-44 h-44" />
+                      ) : (
+                        <div className="w-44 h-44 flex items-center justify-center text-xs text-muted-foreground">
+                          Loading QR...
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="w-full mt-3">
+                      <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-muted/50 border border-border">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Participant</p>
+                          <p className="text-xs font-bold text-primary truncate mt-0.5">
+                            {attendeeName}
+                          </p>
+                        </div>
+                        {attendeeRoll && (
+                          <div className="shrink-0 text-right">
+                            <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Roll No.</p>
+                            <p className="text-xs font-mono font-bold mt-0.5">{attendeeRoll}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 mb-4 text-center">
+                    <p className="text-[10px] font-mono text-muted-foreground">
+                      Pass ID: <span className="font-bold text-primary">{passId}</span>
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTicketModalOpen(false)}
+                      className="flex-1"
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleDownloadTicket}
+                      className="flex-1 font-semibold"
+                    >
+                      Save Ticket
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
-      );
-    })()}
-</AnimatePresence>
+          );
+        })()}
+      </AnimatePresence>
 
+      {/* Deregister Confirmation Modal */}
       <AnimatePresence>
         {confirmModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1330,49 +1243,56 @@ const MyEvents = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
-              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.93, y: 16 }}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 16 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center transition-colors"
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 max-w-sm w-full"
             >
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                <i className="ri-alert-line text-2xl" />
-              </div>
-              <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                {regToDeregister?.team ? 'Cancel Team Registration?' : 'Cancel Registration?'}
-              </h3>
-              <p className="text-xs text-[#888888] dark:text-[#808080] mb-6 leading-relaxed">
-                {regToDeregister?.team
-                  ? `Are you sure you want to cancel the registration for team "${regToDeregister.team.teamName}"? As the team leader, cancelling will deregister all team members from this event. This action cannot be undone.`
-                  : 'Are you sure you want to cancel your registration for this event? This action cannot be undone.'}
-              </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
-                  className="flex-1 px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                >
-                  Keep Registration
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmDeregister}
-                  className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer"
-                >
-                  {regToDeregister?.team ? 'Yes, Deregister Team' : 'Yes, Deregister'}
-                </button>
-              </div>
+              <Card className="p-6 text-center shadow-2xl">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <CardTitle className="text-base mb-1.5">
+                  {regToDeregister?.team ? 'Cancel Team Registration?' : 'Cancel Registration?'}
+                </CardTitle>
+                <CardDescription className="text-xs mb-6 leading-relaxed">
+                  {regToDeregister?.team
+                    ? `Are you sure you want to cancel the registration for team "${regToDeregister.team.teamName}"? As the team leader, cancelling will deregister all team members from this event. This action cannot be undone.`
+                    : 'Are you sure you want to cancel your registration for this event? This action cannot be undone.'}
+                </CardDescription>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setConfirmModalOpen(false); setEventToDeregister(null); setRegToDeregister(null); }}
+                    className="flex-1"
+                  >
+                    Keep Registration
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={confirmDeregister}
+                    className="flex-1 font-semibold"
+                  >
+                    {regToDeregister?.team ? 'Yes, Deregister Team' : 'Yes, Deregister'}
+                  </Button>
+                </div>
+              </Card>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
+      {/* Update Team Modal */}
       <AnimatePresence>
         {updateTeamModalOpen && teamToUpdate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1380,138 +1300,141 @@ const MyEvents = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.93, y: 16 }}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 16 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-colors"
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 max-w-md w-full"
             >
-              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
-                    <Users size={18} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
-                      Manage Team
-                    </h3>
-                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal truncate max-w-xs mt-0.5">
-                      {teamToUpdate.team?.teamName}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
-                  title="Close"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-4 text-left overflow-y-auto flex-1 text-[#555555] dark:text-[#B5B5B5]">
-                <div>
-                  <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] uppercase tracking-wider mb-2">
-                    Current Team Members
-                  </label>
-                  <div className="divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A] text-xs">
-                    <div className="py-2.5 flex justify-between items-center">
-                      <div>
-                        <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{teamToUpdate.team?.leader?.name} <span className="text-[#F97316] dark:text-[#FB923C] font-bold">(Leader)</span></p>
-                        <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
-                      </div>
+              <Card className="shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <CardHeader className="py-4 px-5 border-b border-border flex flex-row items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Users size={16} />
                     </div>
-                    {(teamToUpdate.team?.members || [])
-                      .filter(m => m.userId !== teamToUpdate.team?.leaderId)
-                      .map(m => (
-                        <div key={m.id || m.userId} className="py-2.5 flex justify-between items-center">
-                          <div>
-                            <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">
-                              {m.user?.name || "Pending Invitation"}
-                            </p>
-                            <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
-                          </div>
-                        </div>
-                      ))}
+                    <div>
+                      <CardTitle className="text-base">Manage Team</CardTitle>
+                      <CardDescription className="text-xs truncate max-w-[240px]">
+                        {teamToUpdate.team?.teamName}
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
+                    className="h-7 w-7 text-muted-foreground"
+                  >
+                    <X size={16} />
+                  </Button>
+                </CardHeader>
 
-                {/* Add Teammate Selector */}
-                {(() => {
-                  const currentCount = teamToUpdate.team?.members?.length || 1;
-                  const maxLimit = teamToUpdate.eventId?.maxTeamSize || 1;
-                  
-                  if (currentCount >= maxLimit) {
-                    return (
-                      <div className="bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/80 dark:border-brand-900/40 p-4 rounded-xl text-xs text-[#F97316] dark:text-[#FB923C] font-semibold">
-                        <i className="ri-information-fill mr-1" />
-                        Your team has reached the maximum size of {maxLimit} members.
+                <CardContent className="p-5 space-y-4 overflow-y-auto flex-1">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Current Team Members
+                    </label>
+                    <div className="divide-y divide-border text-xs border border-border rounded-lg overflow-hidden">
+                      <div className="p-2.5 flex justify-between items-center bg-muted/20">
+                        <div>
+                          <p className="font-semibold">{teamToUpdate.team?.leader?.name} <span className="text-primary font-bold">(Leader)</span></p>
+                          <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
+                        </div>
                       </div>
-                    );
-                  }
+                      {(teamToUpdate.team?.members || [])
+                        .filter(m => m.userId !== teamToUpdate.team?.leaderId)
+                        .map(m => (
+                          <div key={m.id || m.userId} className="p-2.5 flex justify-between items-center">
+                            <div>
+                              <p className="font-semibold">{m.user?.name || "Pending Invitation"}</p>
+                              <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
 
-                  return (
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5]">
-                        Invite Teammate <span className="text-xs text-[#888888] dark:text-[#808080] font-normal">(Size: {currentCount} / max {maxLimit})</span>
-                      </label>
-                      <div className="relative">
-                        <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-[#888888] dark:text-[#808080]" />
-                        <input
-                          type="text"
-                          placeholder="Search by Email or Roll Number..."
-                          value={updateTeamSearchQuery}
-                          onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl text-xs sm:text-[13px] focus:border-[#F97316] dark:focus:border-[#FB923C] focus:outline-none bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] transition-colors"
-                        />
-                        {updateTeamSearching && (
-                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                            <i className="ri-loader-4-line animate-spin text-[#F97316]" />
+                  {/* Add Teammate Selector */}
+                  {(() => {
+                    const currentCount = teamToUpdate.team?.members?.length || 1;
+                    const maxLimit = teamToUpdate.eventId?.maxTeamSize || 1;
+                    
+                    if (currentCount >= maxLimit) {
+                      return (
+                        <div className="bg-muted/50 border border-border p-3 rounded-lg text-xs text-muted-foreground font-medium flex items-center gap-2">
+                          <Info className="w-4 h-4 text-primary shrink-0" />
+                          <span>Your team has reached the maximum size of {maxLimit} members.</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-semibold">
+                          Invite Teammate <span className="text-muted-foreground font-normal">(Size: {currentCount} / max {maxLimit})</span>
+                        </label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                          <Input
+                            type="text"
+                            placeholder="Search by Email or Roll Number..."
+                            value={updateTeamSearchQuery}
+                            onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
+                            className="pl-9 pr-9 text-xs"
+                          />
+                          {updateTeamSearching && (
+                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                          )}
+                        </div>
+
+                        {updateTeamSearchResults.length > 0 && (
+                          <div className="mt-1 max-h-44 overflow-y-auto border border-border rounded-lg shadow-sm divide-y divide-border">
+                            {updateTeamSearchResults.map((s) => (
+                              <div
+                                key={s.id}
+                                onClick={() => handleInviteTeammate(s)}
+                                className="p-2.5 text-xs hover:bg-muted/50 cursor-pointer flex justify-between items-center transition-colors"
+                              >
+                                <div className="min-w-0 pr-2">
+                                  <p className="font-semibold truncate">{s.name}</p>
+                                  <p className="text-muted-foreground font-mono text-[11px] truncate">{s.rollNo} • {s.email}</p>
+                                </div>
+                                <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-primary border-primary/30 shrink-0">
+                                  Invite
+                                </Badge>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
+                    );
+                  })()}
+                </CardContent>
 
-                      {updateTeamSearchResults.length > 0 && (
-                        <div className="mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-xl shadow-lg divide-y divide-[#F0F0F0] dark:divide-[#2A2A2A]">
-                          {updateTeamSearchResults.map((s) => (
-                            <div
-                              key={s.id}
-                              onClick={() => handleInviteTeammate(s)}
-                              className="p-3 text-xs hover:bg-[#FFF7ED] dark:hover:bg-[#2A1A0F] cursor-pointer flex justify-between items-center transition-colors"
-                            >
-                              <div className="text-left">
-                                <p className="font-bold text-[#111111] dark:text-[#F5F5F5]">{s.name}</p>
-                                <p className="text-[#888888] dark:text-[#808080] font-mono mt-0.5">{s.rollNo} • {s.email}</p>
-                              </div>
-                              <span className="text-[#F97316] dark:text-[#FB923C] font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-[#FFF7ED] dark:bg-[#2A1A0F] border border-brand-200/60 dark:border-brand-900/40 rounded-lg cursor-pointer">Invite</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-              <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] shrink-0">
-                <button
-                  type="button"
-                  onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                  className="w-full px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] text-[#111111] dark:text-[#F5F5F5] border border-[#E5E5E5] dark:border-[#303030] font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
+                <CardFooter className="py-3 px-5 border-t border-border bg-muted/20">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
+                    className="w-full"
+                  >
+                    Close
+                  </Button>
+                </CardFooter>
+              </Card>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
+      {/* Edit Payment Modal */}
       <AnimatePresence>
         {editPaymentModalOpen && editingReg && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1519,111 +1442,114 @@ const MyEvents = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-              className="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.93, y: 16 }}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 16 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transition-colors"
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 max-w-md w-full"
             >
-              <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center shrink-0">
-                    <i className="ri-edit-box-line text-lg" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base sm:text-lg text-[#111111] dark:text-[#F5F5F5] leading-tight">
-                      Edit Payment Information
-                    </h3>
-                    <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">
-                      Update your transaction details for verification.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
-                  title="Close"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              
-              <form onSubmit={submitPaymentEdit}>
-                <div className="p-6 space-y-4 text-left text-[#555555] dark:text-[#B5B5B5]">
-                  <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      UTR / Transaction ID <span className="text-[#F97316]">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editTxId}
-                      onChange={(e) => setEditTxId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] font-mono transition-colors"
-                      placeholder="Enter 12-digit UPI/UTR Transaction ID"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      Payer Name
-                    </label>
-                    <input
-                      type="text"
-                      value={editPayerName}
-                      onChange={(e) => setEditPayerName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] transition-colors"
-                      placeholder="Name of account owner"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-[#111111] dark:text-[#F5F5F5] mb-1.5">
-                      Payment Remarks
-                    </label>
-                    <textarea
-                      value={editRemarks}
-                      onChange={(e) => setEditRemarks(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] bg-white dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#3A3A3A] rounded-xl focus:outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] resize-none h-20 transition-colors"
-                      placeholder="Add remarks or notes..."
-                    />
-                  </div>
-
-                  {editingReg.paymentReviewMessage && (
-                    <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-xl">
-                      <p className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider mb-1">
-                        Reviewer Message
-                      </p>
-                      <p className="text-xs text-rose-600 dark:text-rose-400 leading-relaxed font-semibold">
-                        {editingReg.paymentReviewMessage}
-                      </p>
+              <Card className="shadow-2xl overflow-hidden">
+                <CardHeader className="py-4 px-5 border-b border-border flex flex-row items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Edit2 size={16} />
                     </div>
-                  )}
-                </div>
-                
-                <div className="px-6 py-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A] bg-transparent dark:bg-[#181818] flex items-center justify-end gap-3 shrink-0">
-                  <button
+                    <div>
+                      <CardTitle className="text-base">Edit Payment Information</CardTitle>
+                      <CardDescription className="text-xs">
+                        Update transaction details for review.
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
-                    className="px-4 py-2.5 bg-transparent hover:bg-[#F5F5F5] dark:bg-[#222222] dark:hover:bg-[#2A2A2A] border border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    className="h-7 w-7 text-muted-foreground"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingEdit}
-                    className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
-                  >
-                    {submittingEdit ? 'Submitting...' : 'Update Details'}
-                  </button>
-                </div>
-              </form>
+                    <X size={16} />
+                  </Button>
+                </CardHeader>
+                
+                <form onSubmit={submitPaymentEdit}>
+                  <CardContent className="p-5 space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5">
+                        UTR / Transaction ID <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        type="text"
+                        required
+                        value={editTxId}
+                        onChange={(e) => setEditTxId(e.target.value)}
+                        className="font-mono text-xs"
+                        placeholder="Enter 12-digit UPI/UTR Transaction ID"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5">
+                        Payer Name
+                      </label>
+                      <Input
+                        type="text"
+                        value={editPayerName}
+                        onChange={(e) => setEditPayerName(e.target.value)}
+                        className="text-xs"
+                        placeholder="Name of account owner"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5">
+                        Payment Remarks
+                      </label>
+                      <Textarea
+                        value={editRemarks}
+                        onChange={(e) => setEditRemarks(e.target.value)}
+                        className="text-xs resize-none h-20"
+                        placeholder="Add remarks or notes..."
+                      />
+                    </div>
+
+                    {editingReg.paymentReviewMessage && (
+                      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                        <p className="text-[11px] font-bold text-destructive uppercase tracking-wider mb-1">
+                          Reviewer Note
+                        </p>
+                        <p className="text-xs text-destructive leading-relaxed font-medium">
+                          {editingReg.paymentReviewMessage}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                  
+                  <CardFooter className="py-3 px-5 border-t border-border bg-muted/20 flex items-center justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setEditPaymentModalOpen(false); setEditingReg(null); }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={submittingEdit}
+                      className="font-semibold"
+                    >
+                      {submittingEdit ? 'Submitting...' : 'Update Details'}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
             </motion.div>
           </div>
         )}

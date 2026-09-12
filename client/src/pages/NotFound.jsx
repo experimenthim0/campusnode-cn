@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Home, CalendarDays, Compass } from "lucide-react";
 
 const timeBasedMessages = {
   earlyMorning: [
@@ -121,71 +125,73 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center px-6 py-12 transition-colors duration-300 relative overflow-hidden">
-      
-      {/* Background dot pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
-        style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}
-      />
-
-      <div className="relative z-10 max-w-md w-full text-center">
-
-        {/* Giant 404 */}
-        <div className="relative mb-6">
-          <h1
-            className="text-[130px] md:text-[160px] font-black leading-none tracking-tighter text-neutral-900 dark:text-white select-none transition-all duration-100"
-            style={{
-              textShadow: '4px 4px 0px #EA580C',
-            }}
-          >
-            404
-          </h1>
+    <div className="min-h-[85vh] bg-cn-bg text-cn-text flex items-center justify-center px-4 py-12 transition-colors duration-200">
+      <div className="max-w-md w-full text-center space-y-6">
+        
+        {/* Subtle Brand Tag */}
+        <div className="inline-flex items-center gap-2">
+          <Badge variant="outline" className="border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px] px-2.5 py-0.5">
+            <Compass className="size-3 text-primary mr-1" />
+            Error 404 • Destination Unknown
+          </Badge>
         </div>
 
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 mb-6 shadow-sm">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-brand-600">
-              Page Not Found
-            </p>
-            {/* <span className="flex items-center gap-1 text-[9px] font-medium text-neutral-400 dark:text-neutral-500">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
-              Live Campus Humor
-            </span> */}
-          </div>
-          <p className={`text-sm md:text-base text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium min-h-[48px] flex items-center justify-center transition-opacity duration-200 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-            {message}
+        {/* Clean Institutional 404 Heading */}
+        <div className="space-y-1">
+          <h1 className="text-7xl md:text-8xl font-black tracking-tight text-foreground select-none font-mono">
+            404
+          </h1>
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+            Page Not Found
           </p>
         </div>
 
-        <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium mb-6 tracking-wide flex items-center justify-center gap-1.5">
-          Auto-redirecting to home in{' '}
-          <span className="inline-flex items-center justify-center w-7 h-7 bg-brand-600 text-white text-[11px] font-extrabold rounded-full shadow-sm">
-            {countdown}
-          </span>{' '}
-          seconds
+        {/* Humorous Campus Quote Card */}
+        <Card className="border-border bg-card shadow-xs text-left">
+          <CardContent className="p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                Campus Dispatch
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                Live Status
+              </span>
+            </div>
+            <p className={`text-sm text-foreground/90 leading-relaxed font-medium min-h-[44px] flex items-center transition-opacity duration-200 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+              {message}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Auto Redirect Notice */}
+        <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1.5">
+          Redirecting to home in{' '}
+          <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 font-bold">
+            {countdown}s
+          </Badge>
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <Button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm"
+            className="gap-2 cursor-pointer font-semibold shadow-xs"
           >
-            <i className="ri-home-4-line mr-2" />
+            <Home className="size-4" />
             Take Me Home
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => navigate('/events')}
-            className="px-6 py-3 bg-white dark:bg-neutral-900 text-neutral-850 dark:text-neutral-200 text-xs font-bold uppercase tracking-wider border border-neutral-200 dark:border-neutral-850 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all cursor-pointer shadow-sm"
+            className="gap-2 cursor-pointer font-semibold"
           >
-            <i className="ri-calendar-event-line mr-2" />
+            <CalendarDays className="size-4" />
             Browse Events
-          </button>
+          </Button>
         </div>
 
-        <p className="mt-10 text-[10px] text-neutral-300 dark:text-neutral-700 tracking-widest font-bold uppercase flex items-center justify-center gap-1.5 flex-wrap">
-          Error 404 • <span className="logofont font-light normal-case text-neutral-400 dark:text-neutral-500">Campus<span className="text-brand-600 dark:text-brand-500">Node</span></span> • You're off the map 🗺️
+        <p className="pt-6 text-[10px] text-muted-foreground tracking-wider uppercase font-medium">
+          CampusNode Platform • National Institute of Technology Jalandhar
         </p>
       </div>
     </div>

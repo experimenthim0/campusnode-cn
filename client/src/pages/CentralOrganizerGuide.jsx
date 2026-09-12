@@ -21,7 +21,7 @@ import {
 
 const CentralOrganizerGuide = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] py-12 px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg py-12 px-4 transition-colors duration-300">
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
           <Link

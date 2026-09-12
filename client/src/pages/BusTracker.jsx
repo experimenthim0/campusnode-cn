@@ -32,20 +32,20 @@ function nowM(d) { return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 
 function isWE(d) { const dw = d.getDay(); return dw === 0 || dw === 6; }
 
 const LEGS = [
-  { id: "R1a", days: "weekend", label: "Batch 1", color: "#f59e0b", from: "campus", to: "bidhipur", dep: toM(14, 0), arr: toM(14, 5) },
-  { id: "R1a", days: "weekend", label: "Batch 1", color: "#f59e0b", from: "bidhipur", to: "campus", dep: toM(14, 15), arr: toM(14, 20) },
-  { id: "R1a", days: "weekend", label: "Batch 1", color: "#f59e0b", from: "campus", to: "patelchowk", dep: toM(14, 30), arr: toM(15, 15) },
-  { id: "R1a", days: "weekend", label: "Batch 1", color: "#f59e0b", from: "patelchowk", to: "campus", dep: toM(15, 35), arr: toM(16, 20) },
+  { id: "R1a", days: "weekend", label: "Batch 1", color: "var(--color-warning-500, #f59e0b)", from: "campus", to: "bidhipur", dep: toM(14, 0), arr: toM(14, 5) },
+  { id: "R1a", days: "weekend", label: "Batch 1", color: "var(--color-warning-500, #f59e0b)", from: "bidhipur", to: "campus", dep: toM(14, 15), arr: toM(14, 20) },
+  { id: "R1a", days: "weekend", label: "Batch 1", color: "var(--color-warning-500, #f59e0b)", from: "campus", to: "patelchowk", dep: toM(14, 30), arr: toM(15, 15) },
+  { id: "R1a", days: "weekend", label: "Batch 1", color: "var(--color-warning-500, #f59e0b)", from: "patelchowk", to: "campus", dep: toM(15, 35), arr: toM(16, 20) },
   
-  { id: "R1b", days: "weekend", label: "Batch 2", color: "#10b981", from: "campus", to: "bidhipur", dep: toM(16, 45), arr: toM(16, 50) },
-  { id: "R1b", days: "weekend", label: "Batch 2", color: "#10b981", from: "bidhipur", to: "campus", dep: toM(17, 0), arr: toM(17, 5) },
-  { id: "R1b", days: "weekend", label: "Batch 2", color: "#10b981", from: "campus", to: "maqsudan", dep: toM(17, 15), arr: toM(17, 35) },
-  { id: "R1b", days: "weekend", label: "Batch 2", color: "#10b981", from: "maqsudan", to: "campus", dep: toM(17, 45), arr: toM(18, 10) },
+  { id: "R1b", days: "weekend", label: "Batch 2", color: "var(--color-success-500, #10b981)", from: "campus", to: "bidhipur", dep: toM(16, 45), arr: toM(16, 50) },
+  { id: "R1b", days: "weekend", label: "Batch 2", color: "var(--color-success-500, #10b981)", from: "bidhipur", to: "campus", dep: toM(17, 0), arr: toM(17, 5) },
+  { id: "R1b", days: "weekend", label: "Batch 2", color: "var(--color-success-500, #10b981)", from: "campus", to: "maqsudan", dep: toM(17, 15), arr: toM(17, 35) },
+  { id: "R1b", days: "weekend", label: "Batch 2", color: "var(--color-success-500, #10b981)", from: "maqsudan", to: "campus", dep: toM(17, 45), arr: toM(18, 10) },
   
-  { id: "R2",  days: "all",     label: "Evening", color: "#ef4444", from: "campus", to: "bidhipur", dep: toM(18, 30), arr: toM(18, 35) },
-  { id: "R2",  days: "all",     label: "Evening", color: "#ef4444", from: "bidhipur", to: "campus", dep: toM(18, 45), arr: toM(18, 50) },
-  { id: "R2",  days: "all",     label: "Evening", color: "#ef4444", from: "campus", to: "patelchowk", dep: toM(19, 0), arr: toM(19, 45) },
-  { id: "R2",  days: "all",     label: "Evening", color: "#ef4444", from: "patelchowk", to: "campus", dep: toM(20, 0), arr: toM(20, 45) }
+  { id: "R2",  days: "all",     label: "Evening", color: "var(--color-danger-500, #ef4444)", from: "campus", to: "bidhipur", dep: toM(18, 30), arr: toM(18, 35) },
+  { id: "R2",  days: "all",     label: "Evening", color: "var(--color-danger-500, #ef4444)", from: "bidhipur", to: "campus", dep: toM(18, 45), arr: toM(18, 50) },
+  { id: "R2",  days: "all",     label: "Evening", color: "var(--color-danger-500, #ef4444)", from: "campus", to: "patelchowk", dep: toM(19, 0), arr: toM(19, 45) },
+  { id: "R2",  days: "all",     label: "Evening", color: "var(--color-danger-500, #ef4444)", from: "patelchowk", to: "campus", dep: toM(20, 0), arr: toM(20, 45) }
 ];
 
 function legActive(leg, now) {
@@ -100,7 +100,7 @@ function getBusSpeed(leg) {
 function busSVG(color, deg) {
   return `<div style="position:relative;width:42px;height:42px;display:flex;align-items:center;justify-content:center">
     <div style="position:absolute;width:42px;height:42px;border-radius:50%;background:${color}44;animation:pulse 1.8s infinite"></div>
-    <div class="bus-inner-icon" style="position:relative;width:34px;height:34px;border-radius:50%;background:#ffffff;border:2.5px solid ${color};box-shadow:0 4px 12px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;transform:rotate(${deg}deg);transition:transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)">
+    <div class="bus-inner-icon" style="position:relative;width:34px;height:34px;border-radius:50%;background:var(--cn-surface, #ffffff);border:2.5px solid ${color};box-shadow:0 4px 12px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;transform:rotate(${deg}deg);transition:transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)">
       <div style="position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;border-bottom:7px solid ${color}"></div>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="${color}">
         <path d="M18 4H6C4.34 4 3 5.34 3 7v10c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1V7c0-1.66-1.34-3-3-3zm-11 3h10v3H7V7zm1.5 9c-.83 0-1.5-.67-1.5-1.5S7.67 13 8.5 13s1.5.67 1.5 1.5S9.33 16 8.5 16zm7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
@@ -234,13 +234,13 @@ const BusTracker = () => {
     // Stop markers
     const stopIcon = L.divIcon({
       className: "",
-      html: `<div style="width:14px;height:14px;background:#ea580c;border:2.5px solid #ffffff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
+      html: `<div style="width:14px;height:14px;background:var(--cn-brand, #ea580c);border:2.5px solid var(--cn-surface, #ffffff);border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
       iconAnchor: [7, 7]
     });
 
     Object.entries(STOPS).forEach(([k, s]) => {
       L.marker([s.lat, s.lng], { icon: stopIcon }).addTo(map)
-        .bindPopup(`<div style="font-family:sans-serif;padding:2px"><strong style="color:#111">${s.name}</strong></div>`);
+        .bindPopup(`<div style="font-family:sans-serif;padding:2px"><strong style="color:var(--cn-text, #111)">${s.name}</strong></div>`);
       
       L.tooltip({ permanent: true, direction: "top", offset: [0, -10] })
         .setContent(s.short)
@@ -249,10 +249,11 @@ const BusTracker = () => {
     });
 
     // Draw route lines
+    const routeColor = getComputedStyle(document.documentElement).getPropertyValue('--cn-brand').trim() || "#ea580c";
     routePairs.forEach(async ([a, b]) => {
       const key = `${a}-${b}`;
       const coords = await fetchRoute(a, b);
-      L.polyline(coords, { color: "#ea580c", weight: 3, opacity: 0.45, dashArray: "6 6" }).addTo(map);
+      L.polyline(coords, { color: routeColor, weight: 3, opacity: 0.45, dashArray: "6 6" }).addTo(map);
     });
 
     mapInstanceRef.current = map;
@@ -382,7 +383,7 @@ const BusTracker = () => {
   };
 
   return (
-    <div className="min-h-screen myfont bg-white dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300 pb-20">
+    <div className="min-h-screen myfont bg-cn-bg text-neutral-900 dark:text-neutral-100 transition-colors duration-300 pb-20">
       
       <div className="bg-white/80 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">

@@ -41,9 +41,11 @@ describe('CreateEvent — Property 7: sponsor/media array length', () => {
         ),
         (ops) => {
           const arr = simulateArrayOps(ops);
-          const adds = ops.filter(o => o === 'add').length;
-          const removes = ops.filter(o => o === 'remove').length;
-          const expected = Math.max(0, adds - removes);
+          let expected = 0;
+          for (const op of ops) {
+            if (op === 'add') expected++;
+            else if (op === 'remove' && expected > 0) expected--;
+          }
           return arr.length === expected;
         }
       ),
@@ -169,8 +171,8 @@ describe('CreateEvent — Property 8: submission payload', () => {
  */
 describe('CreateEvent — Property 10: slug redirect', () => {
   it('navigates to /event/${slug} for any slug string', async () => {
-    fc.assert(
-      fc.property(
+    await fc.assert(
+      fc.asyncProperty(
         fc.string({ minLength: 1, maxLength: 100 }),
         async (slug) => {
           const navigateMock = vi.fn();
@@ -189,8 +191,8 @@ describe('CreateEvent — Property 10: slug redirect', () => {
   });
 
   it('never navigates to / or an ID-based URL', async () => {
-    fc.assert(
-      fc.property(
+    await fc.assert(
+      fc.asyncProperty(
         fc.string({ minLength: 1, maxLength: 100 }),
         async (slug) => {
           const navigateMock = vi.fn();

@@ -43,52 +43,53 @@ const MemberSocials = ({ student }) => {
   if (student.githubProfile)
     links.push({
       url: formatUrl(student.githubProfile),
-      icon: <GithubIcon className="w-4 h-4" />,
+      icon: <GithubIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "GitHub",
     });
   if (student.linkedinProfile)
     links.push({
       url: formatUrl(student.linkedinProfile),
-      icon: <LinkedinIcon className="w-4 h-4" />,
+      icon: <LinkedinIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "LinkedIn",
     });
   if (student.xProfile)
     links.push({
       url: formatUrl(student.xProfile),
-      icon: <TwitterIcon className="w-4 h-4" />,
+      icon: <TwitterIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "X",
     });
   if (student.instagramProfile)
     links.push({
       url: formatUrl(student.instagramProfile),
-      icon: <InstagramIcon className="w-4 h-4" />,
+      icon: <InstagramIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "Instagram",
     });
   if (student.whatsappNumber)
     links.push({
       url: `https://wa.me/${student.whatsappNumber.replace(/[^\d+]/g, "")}`,
-      icon: <MessageCircleIcon className="w-4 h-4" />,
+      icon: <MessageCircleIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "WhatsApp",
     });
   if (student.portfolioUrl)
     links.push({
       url: formatUrl(student.portfolioUrl),
-      icon: <EarthIcon className="w-4 h-4" />,
+      icon: <EarthIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "Portfolio",
     });
 
   if (links.length === 0) return null;
 
   return (
-    <div className="flex items-center flex-wrap gap-1 w-full">
+    <div className="flex items-center flex-wrap gap-1 w-full justify-start -ml-1">
       {links.map((l, idx) => (
         <a
           key={idx}
           href={l.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0"
           title={l.title}
+          aria-label={l.title}
         >
           {l.icon}
         </a>
@@ -220,10 +221,10 @@ const ClubCalendarView = ({ events }) => {
                 }
               }}
               className={`h-12 sm:h-20 p-1 sm:p-2 rounded-xl border transition-all flex flex-col justify-between ${
-                hasEvents ? "cursor-pointer hover:border-brand-500 hover:shadow-xs" : ""
+                hasEvents ? "cursor-pointer hover:border-cn-blue-500 hover:shadow-xs" : ""
               } ${
                 isToday
-                  ? "border-brand-500 bg-brand-500/5 dark:bg-brand-500/10 font-bold"
+                  ? "border-cn-blue-500 bg-cn-blue-500/5 dark:bg-cn-blue-500/10 font-bold"
                   : hasEvents
                   ? "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
                   : "bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800/60"
@@ -233,19 +234,19 @@ const ClubCalendarView = ({ events }) => {
                 <span
                   className={`text-xs ${
                     isToday
-                      ? "text-brand-600 dark:text-brand-400 font-bold"
+                      ? "text-cn-blue-600 dark:text-cn-blue-400 font-bold"
                       : "text-neutral-700 dark:text-neutral-300"
                   }`}
                 >
                   {day}
                 </span>
                 {hasEvents && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-600 animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cn-blue-600 animate-pulse" />
                 )}
               </div>
               {hasEvents && (
                 <div className="hidden sm:block truncate">
-                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-1.5 py-0.5 rounded truncate block">
+                  <span className="text-[10px] font-semibold text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-50 dark:bg-cn-blue-950/40 px-1.5 py-0.5 rounded truncate block">
                     {dayEvents[0].title}
                   </span>
                   {dayEvents.length > 1 && (
@@ -375,7 +376,15 @@ const TeamMemberCard = ({
         </div>
 
         {/* Email or Social Links */}
-        {(email || student) && (
+        {(email ||
+          Boolean(
+            student?.githubProfile ||
+              student?.linkedinProfile ||
+              student?.xProfile ||
+              student?.instagramProfile ||
+              student?.whatsappNumber ||
+              student?.portfolioUrl
+          )) && (
           <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80">
             {email ? (
               <a
@@ -414,10 +423,14 @@ const ClubDetails = () => {
   const [isHead, setIsHead] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  // Section Expansion States (capped at 6 items initially)
+  // Section Expansion States
   const [isAnnouncementsExpanded, setIsAnnouncementsExpanded] = useState(false);
+  const [isLiveEventsExpanded, setIsLiveEventsExpanded] = useState(false);
   const [isUpcomingEventsExpanded, setIsUpcomingEventsExpanded] = useState(false);
   const [isPastEventsExpanded, setIsPastEventsExpanded] = useState(false);
+  const [isCoordinatorsExpanded, setIsCoordinatorsExpanded] = useState(false);
+  const [isMembersExpanded, setIsMembersExpanded] = useState(false);
+  const [isAchievementsExpanded, setIsAchievementsExpanded] = useState(false);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
 
   // Active sub-views
@@ -798,7 +811,7 @@ const ClubDetails = () => {
               {/* Left Column: Category Badges, Club Title, Motto */}
               <div className="space-y-1.5 min-w-0 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-500/10 px-2.5 py-0.5 rounded-full">
                     {club.category || "Student Club"}
                   </span>
                   
@@ -1229,14 +1242,33 @@ const ClubDetails = () => {
                       Live Now
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {liveEvents.map((e) => (
-                      <EventCard
-                        key={e._id || e.id}
-                        event={getFullEvent(e)}
-                        isRegistered={registeredEvents.includes(e._id || e.id)}
-                      />
-                    ))}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(isLiveEventsExpanded ? liveEvents : liveEvents.slice(0, 3)).map((e) => (
+                        <EventCard
+                          key={e._id || e.id}
+                          event={getFullEvent(e)}
+                          isRegistered={registeredEvents.includes(e._id || e.id)}
+                        />
+                      ))}
+                    </div>
+
+                    {liveEvents.length > 3 && (
+                      <div className="flex justify-center pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsLiveEventsExpanded((prev) => !prev)}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                        >
+                          <span>
+                            {isLiveEventsExpanded
+                              ? "Show Less"
+                              : `View All Live Events (${liveEvents.length})`}
+                          </span>
+                          <i className={isLiveEventsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1248,7 +1280,7 @@ const ClubDetails = () => {
                 {upcomingEvents.length > 0 ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(isUpcomingEventsExpanded ? upcomingEvents : upcomingEvents.slice(0, 6)).map((e) => (
+                      {(isUpcomingEventsExpanded ? upcomingEvents : upcomingEvents.slice(0, 3)).map((e) => (
                         <EventCard
                           key={e._id || e.id}
                           event={getFullEvent(e)}
@@ -1257,7 +1289,7 @@ const ClubDetails = () => {
                       ))}
                     </div>
 
-                    {upcomingEvents.length > 6 && (
+                    {upcomingEvents.length > 3 && (
                       <div className="flex justify-center pt-2">
                         <button
                           type="button"
@@ -1290,7 +1322,7 @@ const ClubDetails = () => {
                   </h3>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(isPastEventsExpanded ? pastEvents : pastEvents.slice(0, 6)).map((e) => (
+                      {(isPastEventsExpanded ? pastEvents : pastEvents.slice(0, 3)).map((e) => (
                         <EventCard
                           key={e._id || e.id}
                           event={getFullEvent(e)}
@@ -1299,7 +1331,7 @@ const ClubDetails = () => {
                       ))}
                     </div>
 
-                    {pastEvents.length > 6 && (
+                    {pastEvents.length > 3 && (
                       <div className="flex justify-center pt-2">
                         <button
                           type="button"
@@ -1389,7 +1421,7 @@ const ClubDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {studentCoordinators.map((m) => (
+                    {(isCoordinatorsExpanded ? studentCoordinators : studentCoordinators.slice(0, 8)).map((m) => (
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
@@ -1400,6 +1432,23 @@ const ClubDetails = () => {
                       />
                     ))}
                   </div>
+
+                  {studentCoordinators.length > 8 && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsCoordinatorsExpanded((prev) => !prev)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>
+                          {isCoordinatorsExpanded
+                            ? "Show Less"
+                            : `View All Coordinators (${studentCoordinators.length})`}
+                        </span>
+                        <i className={isCoordinatorsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1415,7 +1464,7 @@ const ClubDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {regularMembers.map((m) => (
+                    {(isMembersExpanded ? regularMembers : regularMembers.slice(0, 8)).map((m) => (
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
@@ -1426,6 +1475,23 @@ const ClubDetails = () => {
                       />
                     ))}
                   </div>
+
+                  {regularMembers.length > 8 && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsMembersExpanded((prev) => !prev)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>
+                          {isMembersExpanded
+                            ? "Show Less"
+                            : `View All Members (${regularMembers.length})`}
+                        </span>
+                        <i className={isMembersExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1442,40 +1508,59 @@ const ClubDetails = () => {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
-                        {item.date || "Milestone"}
-                      </span>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(isAchievementsExpanded ? achievements : achievements.slice(0, 4)).map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
+                          {item.date || "Milestone"}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                        {item.title}
+                      </h3>
+                      {item.description && (
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                          {item.description}
+                        </p>
+                      )}
                     </div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                      {item.title}
-                    </h3>
-                    {item.description && (
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                        {item.description}
-                      </p>
+
+                    {item.externalUrl && (
+                      <a
+                        href={item.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        Read more <i className="ri-external-link-line text-xs" />
+                      </a>
                     )}
                   </div>
+                ))}
+              </div>
 
-                  {item.externalUrl && (
-                    <a
-                      href={item.externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
-                    >
-                      Read more <i className="ri-external-link-line text-xs" />
-                    </a>
-                  )}
+              {achievements.length > 4 && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAchievementsExpanded((prev) => !prev)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                  >
+                    <span>
+                      {isAchievementsExpanded
+                        ? "Show Less"
+                        : `View All Achievements (${achievements.length})`}
+                    </span>
+                    <i className={isAchievementsExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </section>
         )}
@@ -1496,7 +1581,7 @@ const ClubDetails = () => {
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                {(isGalleryExpanded ? galleryMedia : galleryMedia.slice(0, 6)).map((m, idx) => {
+                {(isGalleryExpanded ? galleryMedia : galleryMedia.slice(0, 8)).map((m, idx) => {
                   const imgUrl = typeof m === "string" ? m : m.url;
                   const caption = typeof m === "object" ? m.caption : null;
                   return (
@@ -1520,7 +1605,7 @@ const ClubDetails = () => {
                 })}
               </div>
 
-              {galleryMedia.length > 6 && (
+              {galleryMedia.length > 8 && (
                 <div className="flex justify-center pt-2">
                   <button
                     type="button"
@@ -1536,43 +1621,6 @@ const ClubDetails = () => {
                   </button>
                 </div>
               )}
-            </div>
-          </section>
-        )}
-
-        {((club.sponsors && club.sponsors.length > 0) || (club.clubSponsors && club.clubSponsors.length > 0)) && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            Sponsors & Partners
-              </h2>
-            </div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-              {(club.sponsors || club.clubSponsors || []).map((s, idx) => {
-                const logoUrl = typeof s === "string" ? s : s.logoUrl;
-                const name = typeof s === "object" ? s.name : "Sponsor";
-                const website = typeof s === "object" ? s.websiteUrl : null;
-                return website ? (
-                  <a
-                    key={idx}
-                    href={website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="h-12 max-w-[140px] transition opacity-100 flex items-center justify-center"
-                    title={name}
-                  >
-                    <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                  </a>
-                ) : (
-                  <div
-                    key={idx}
-                    className="h-12 max-w-[140px] transition  flex items-center justify-center"
-                    title={name}
-                  >
-                    <img src={logoUrl} alt={name} className="h-full max-h-12 object-contain" />
-                  </div>
-                );
-              })}
             </div>
           </section>
         )}
@@ -1603,29 +1651,29 @@ const ClubDetails = () => {
 
       {adminHubOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl transition-colors">
-            <div className="px-6 py-4 border-b border-[#F0F0F0] dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+          <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl transition-colors">
+            <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] dark:bg-[#2A1A0F] text-[#F97316] dark:text-[#FB923C] flex items-center justify-center text-lg shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center text-lg shrink-0">
                   <i className="ri-settings-3-line" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#111111] dark:text-[#F5F5F5] leading-tight">
+                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
                     Club Management Hub
                   </h3>
-                  <p className="text-xs text-[#888888] dark:text-[#808080] font-normal mt-0.5">Post updates, achievements, and curate gallery</p>
+                  <p className="text-xs text-cn-text-muted font-normal mt-0.5">Post updates, achievements, and curate gallery</p>
                 </div>
               </div>
               <button
                 onClick={() => setAdminHubOpen(false)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#555555] dark:text-[#B5B5B5] hover:text-[#111111] dark:hover:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer"
                 title="Close"
               >
                 <i className="ri-close-line text-lg" />
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 px-6 pt-4 pb-3 border-b border-[#F0F0F0] dark:border-[#2A2A2A] shrink-0">
+            <div className="flex flex-wrap gap-2 px-6 pt-4 pb-3 border-b border-cn-border-subtle shrink-0">
               {[
                 { id: "announcements", label: "Announcements", icon: "ri-megaphone-line" },
                 { id: "achievements", label: "Achievements", icon: "ri-trophy-line" },
@@ -1637,8 +1685,8 @@ const ClubDetails = () => {
                   onClick={() => setAdminTab(tab.id)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
                     adminTab === tab.id
-                      ? "bg-[#FFF7ED] text-[#F97316] border border-brand-200/80 dark:bg-[#2A1A0F] dark:text-[#FB923C] dark:border-brand-900/60"
-                      : "bg-transparent text-[#555555] dark:text-[#B5B5B5] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] border border-transparent"
+                      ? "bg-brand-50 text-brand-600 border border-brand-200 dark:bg-brand-950/40 dark:text-brand-400 dark:border-brand-900/60"
+                      : "bg-transparent text-cn-text-secondary hover:bg-cn-surface-muted border border-transparent"
                   }`}
                 >
                   <i className={tab.icon} /> {tab.label}
@@ -1646,12 +1694,12 @@ const ClubDetails = () => {
               ))}
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-6 text-[#555555] dark:text-[#B5B5B5]">
+            <div className="p-6 overflow-y-auto space-y-6 text-cn-text-secondary">
               {/* TAB: ANNOUNCEMENTS */}
               {adminTab === "announcements" && (
                 <div className="space-y-6">
                   <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Publish New Announcement
                     </h4>
                     <input
@@ -1661,7 +1709,7 @@ const ClubDetails = () => {
                       onChange={(e) =>
                         setAnnouncementForm({ ...announcementForm, title: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                       required
                     />
                     <textarea
@@ -1671,53 +1719,53 @@ const ClubDetails = () => {
                       onChange={(e) =>
                         setAnnouncementForm({ ...announcementForm, content: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors resize-none"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors resize-none"
                       required
                     />
                     <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-xs font-semibold text-[#555555] dark:text-[#B5B5B5] cursor-pointer">
+                      <label className="inline-flex items-center gap-2 text-xs font-semibold text-cn-text-secondary cursor-pointer">
                         <input
                           type="checkbox"
                           checked={announcementForm.isPinned}
                           onChange={(e) =>
                             setAnnouncementForm({ ...announcementForm, isPinned: e.target.checked })
                           }
-                          className="rounded accent-[#F97316]"
+                          className="rounded accent-brand-500"
                         />
                         Pin to top
                       </label>
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Publishing..." : "Post Announcement"}
                       </button>
                     </div>
                   </form>
 
-                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                  <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Existing Announcements
                     </h4>
                     {announcements.map((a) => (
                       <div
                         key={a.id}
-                        className="p-3.5 rounded-xl border border-[#E5E5E5] dark:border-[#303030] flex items-center justify-between gap-3 bg-[#FAFAFA] dark:bg-[#222222]"
+                        className="p-3.5 rounded-xl border border-cn-border flex items-center justify-between gap-3 bg-cn-surface-muted"
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                          <h5 className="text-xs font-bold text-cn-text truncate">
                             {a.title}
                           </h5>
-                          <p className="text-[11px] text-[#888888] dark:text-[#808080] truncate">{a.content}</p>
+                          <p className="text-[11px] text-cn-text-muted truncate">{a.content}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleTogglePinAnnouncement(a.id)}
                             className={`p-1.5 rounded-lg border text-xs cursor-pointer ${
                               a.isPinned
-                                ? "bg-[#FFF7ED] border-brand-200/80 text-[#F97316] dark:bg-[#2A1A0F] dark:border-brand-900/60 dark:text-[#FB923C]"
-                                : "border-[#E5E5E5] dark:border-[#3A3A3A] text-[#888888] dark:text-[#808080]"
+                                ? "bg-brand-50 border-brand-200 text-brand-600 dark:bg-brand-950/40 dark:border-brand-900/60 dark:text-brand-400"
+                                : "border-cn-border text-cn-text-muted"
                             }`}
                             title={a.isPinned ? "Unpin" : "Pin"}
                           >
@@ -1725,7 +1773,7 @@ const ClubDetails = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteAnnouncement(a.id)}
-                            className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
+                            className="p-1.5 rounded-lg border border-danger-200 dark:border-danger-900/60 text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-950/40 text-xs cursor-pointer"
                             title="Delete"
                           >
                             <i className="ri-delete-bin-line" />
@@ -1741,7 +1789,7 @@ const ClubDetails = () => {
               {adminTab === "achievements" && (
                 <div className="space-y-6">
                   <form onSubmit={handleCreateAchievement} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Add Club Achievement / Award
                     </h4>
                     <input
@@ -1751,7 +1799,7 @@ const ClubDetails = () => {
                       onChange={(e) =>
                         setAchievementForm({ ...achievementForm, title: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                       required
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1762,7 +1810,7 @@ const ClubDetails = () => {
                         onChange={(e) =>
                           setAchievementForm({ ...achievementForm, date: e.target.value })
                         }
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                       />
                       <input
                         type="url"
@@ -1771,7 +1819,7 @@ const ClubDetails = () => {
                         onChange={(e) =>
                           setAchievementForm({ ...achievementForm, externalUrl: e.target.value })
                         }
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                       />
                     </div>
                     <textarea
@@ -1781,39 +1829,39 @@ const ClubDetails = () => {
                       onChange={(e) =>
                         setAchievementForm({ ...achievementForm, description: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors resize-none"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors resize-none"
                     />
                     <div className="flex justify-end">
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Adding..." : "Add Achievement"}
                       </button>
                     </div>
                   </form>
 
-                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                  <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Existing Achievements
                     </h4>
                     {achievements.map((item) => (
                       <div
                         key={item.id}
-                        className="p-3.5 rounded-xl border border-[#E5E5E5] dark:border-[#303030] flex items-center justify-between gap-3 bg-[#FAFAFA] dark:bg-[#222222]"
+                        className="p-3.5 rounded-xl border border-cn-border flex items-center justify-between gap-3 bg-cn-surface-muted"
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                          <h5 className="text-xs font-bold text-cn-text truncate">
                             {item.title}
                           </h5>
-                          <p className="text-[11px] text-[#888888] dark:text-[#808080] truncate">
+                          <p className="text-[11px] text-cn-text-muted truncate">
                             {item.date} · {item.description}
                           </p>
                         </div>
                         <button
                           onClick={() => handleDeleteAchievement(item.id)}
-                          className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
+                          className="p-1.5 rounded-lg border border-danger-200 dark:border-danger-900/60 text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-950/40 text-xs cursor-pointer"
                           title="Delete"
                         >
                           <i className="ri-delete-bin-line" />
@@ -1828,7 +1876,7 @@ const ClubDetails = () => {
               {adminTab === "gallery" && (
                 <div className="space-y-6">
                   <form onSubmit={handleAddGalleryMedia} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Add Photo to Club Gallery
                     </h4>
                     <input
@@ -1836,7 +1884,7 @@ const ClubDetails = () => {
                       placeholder="Image URL (Direct Cloudinary / Web link)"
                       value={galleryForm.url}
                       onChange={(e) => setGalleryForm({ ...galleryForm, url: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                       required
                     />
                     <input
@@ -1844,13 +1892,13 @@ const ClubDetails = () => {
                       placeholder="Photo caption / Event name (Optional)"
                       value={galleryForm.caption}
                       onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-[#E5E5E5] dark:border-[#3A3A3A] bg-white dark:bg-[#222222] text-[#111111] dark:text-[#F5F5F5] placeholder-[#888888] dark:placeholder-[#808080] outline-none focus:border-[#F97316] dark:focus:border-[#FB923C] transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-[13px] rounded-xl border border-cn-border bg-cn-surface text-cn-text placeholder-cn-text-muted outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
                     />
                     <div className="flex justify-end">
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] dark:bg-[#FB923C] dark:hover:bg-[#F97316] dark:text-[#111111] text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Adding..." : "Add to Gallery"}
                       </button>
@@ -1858,8 +1906,8 @@ const ClubDetails = () => {
                   </form>
 
                   {/* Existing media items */}
-                  <div className="space-y-3 pt-4 border-t border-[#F0F0F0] dark:border-[#2A2A2A]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                  <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Gallery Items
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
@@ -1869,13 +1917,13 @@ const ClubDetails = () => {
                         return (
                           <div
                             key={i}
-                            className="relative aspect-square rounded-xl overflow-hidden bg-[#FAFAFA] dark:bg-[#222222] border border-[#E5E5E5] dark:border-[#303030] group"
+                            className="relative aspect-square rounded-xl overflow-hidden bg-cn-surface-muted border border-cn-border group"
                           >
                             <img src={imgUrl} alt="" className="w-full h-full object-cover" />
                             {mediaId && (
                               <button
                                 onClick={() => handleDeleteGalleryMedia(mediaId)}
-                                className="absolute top-1.5 right-1.5 p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs shadow-xs"
+                                className="absolute top-1.5 right-1.5 p-1 bg-danger-600 hover:bg-danger-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs shadow-xs"
                                 title="Delete photo"
                               >
                                 <i className="ri-delete-bin-line" />
@@ -1893,10 +1941,10 @@ const ClubDetails = () => {
               {adminTab === "featured" && (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] dark:text-[#808080]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
                       Select Spotlight / Featured Event
                     </h4>
-                    <p className="text-xs text-[#888888] dark:text-[#808080] mt-0.5">
+                    <p className="text-xs text-cn-text-muted mt-0.5">
                       Choose an event to feature prominently at the top banner of the Club Page.
                     </p>
                   </div>
@@ -1906,15 +1954,15 @@ const ClubDetails = () => {
                         key={ev._id || ev.id}
                         className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${
                           ev.isFeatured
-                            ? "bg-[#FFF7ED] border-brand-200/80 dark:bg-[#2A1A0F] dark:border-brand-900/60"
-                            : "bg-[#FAFAFA] dark:bg-[#222222] border-[#E5E5E5] dark:border-[#303030]"
+                            ? "bg-brand-50 border-brand-200 dark:bg-brand-950/40 dark:border-brand-900/60"
+                            : "bg-cn-surface-muted border-cn-border"
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-[#111111] dark:text-[#F5F5F5] truncate">
+                          <h5 className="text-xs font-bold text-cn-text truncate">
                             {ev.title}
                           </h5>
-                          <p className="text-[11px] text-[#888888] dark:text-[#808080]">
+                          <p className="text-[11px] text-cn-text-muted">
                             {new Date(ev.startTime).toLocaleDateString()} · {ev.venue}
                           </p>
                         </div>
@@ -1922,8 +1970,8 @@ const ClubDetails = () => {
                           onClick={() => handleToggleFeatureEvent(ev._id || ev.id)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs ${
                             ev.isFeatured
-                              ? "bg-[#F97316] text-white hover:bg-[#EA580C] dark:bg-[#FB923C] dark:text-[#111111] dark:hover:bg-[#F97316]"
-                              : "bg-white dark:bg-[#181818] border border-[#E5E5E5] dark:border-[#303030] text-[#111111] dark:text-[#F5F5F5] hover:bg-[#F5F5F5] dark:hover:bg-[#2A2A2A]"
+                              ? "bg-brand-500 text-white hover:bg-brand-600 dark:bg-brand-400 dark:text-cn-bg dark:hover:bg-brand-500"
+                              : "bg-cn-surface border border-cn-border text-cn-text hover:bg-cn-surface-muted"
                           }`}
                         >
                           {ev.isFeatured ? "Featured ✓" : "Feature"}
@@ -1934,9 +1982,11 @@ const ClubDetails = () => {
                 </div>
               )}
             </div>
+      
           </div>
         </div>
       )}
+      
 
       <BannerCropModal
         isOpen={bannerModalOpen}
@@ -1950,7 +2000,7 @@ const ClubDetails = () => {
           fetchClubDetails();
         }}
       />
-    </div>
+   </div>
   );
 };
 

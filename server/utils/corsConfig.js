@@ -52,6 +52,8 @@ export const corsOptions = {
     "X-Request-Id",
     "Cache-Control",
     "Pragma",
+    "Expires",
+    "expires",
     "Range"
   ],
   exposedHeaders: [

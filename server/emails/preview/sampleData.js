@@ -26,6 +26,13 @@ export const samplePreviewData = {
     ipAddress: "192.168.1.42",
     time: "Feb 9, 10:34 AM IST",
   },
+  "clubs:student-head-assigned": {
+    studentName: "Rahul Sharma",
+    studentEmail: "rahul.sharma.cs22@nitj.ac.in",
+    rollNo: "22103045",
+    clubName: "Coding Club NITJ",
+    dashboardUrl: "http://localhost:5173/profile",
+  },
   "clubs:credentials": {
     clubName: "Coding Club NITJ",
     clubEmail: "codingclub@nitj.ac.in",

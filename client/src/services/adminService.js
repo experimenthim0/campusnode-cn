@@ -80,3 +80,16 @@ export const removeCentralOrganizer = (id) =>
 
 export const searchStudentsForCO = (query) =>
   api.get(`/api/admin/students/search?q=${encodeURIComponent(query)}`);
+
+// Club Head (Student Lead) Assignment
+export const getClubHead = (clubId) =>
+  api.get(`/api/admin/clubs/${clubId}/club-head`);
+
+export const assignClubHead = (clubId, data) =>
+  api.post(`/api/admin/clubs/${clubId}/club-head`, data);
+
+export const removeClubHead = (clubId) =>
+  api.delete(`/api/admin/clubs/${clubId}/club-head`);
+
+export const searchStudents = (query) =>
+  api.get(`/api/admin/students/search?q=${encodeURIComponent(query)}`);

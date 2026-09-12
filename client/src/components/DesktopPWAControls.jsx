@@ -77,7 +77,7 @@ const DesktopPWAControls = () => {
   if (!isStandalone || !isDesktop) return null;
 
   const btnClass =
-    "p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 transition-all duration-200 cursor-pointer active:scale-90";
+    "p-1.5 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs";
 
   return (
     <div className="flex items-center gap-0.5 mr-2">

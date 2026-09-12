@@ -39,56 +39,28 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg text-cn-text flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-medium tracking-wider text-black dark:text-white logofont">
+          <h1 className="text-2xl font-medium tracking-wider text-cn-text logofont">
             Campus<span className="text-brand-600">Node</span>
           </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-sm text-cn-text-muted mt-1">
             Reset your password
           </p>
         </div>
 
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-black dark:text-white text-center">
+        <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
+          <h2 className="text-lg font-bold text-cn-text text-center">
             Set New Password
           </h2>
-          <p className="mt-1 text-center text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-1 text-center text-sm text-cn-text-muted">
             Please enter your new password below
           </p>
 
-          {/* Role Toggle */}
-          {/* <div className="flex justify-center mt-6 mb-6">
-            <div className="inline-flex rounded-full border border-neutral-200 dark:border-neutral-800 overflow-hidden p-1 bg-neutral-50 dark:bg-neutral-950">
-              <button
-                type="button"
-                onClick={() => setRole('student')}
-                className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                  role === 'student'
-                    ? 'bg-brand-600 text-white shadow-sm'
-                    : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                Student
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('club')}
-                className={`px-5 py-2 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                  role === 'club'
-                    ? 'bg-brand-600 text-white shadow-sm'
-                    : 'bg-transparent text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                Club Head
-              </button>
-            </div>
-          </div> */}
-
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
             <div>
-              <label className="block text-[13px] font-semibold  tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
+              <label className="block text-[13px] font-semibold  tracking-wider text-cn-text-muted mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -97,7 +69,7 @@ const ResetPassword = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
+                  className="w-full px-4 py-3 pr-10 border border-cn-border rounded-xl bg-cn-surface text-cn-text text-sm font-medium outline-none focus:border-cn-blue-500 focus:ring-1 focus:ring-cn-blue-500/20 transition-all placeholder:text-neutral-400"
                   placeholder="Enter new password"
                 />
                 <button
@@ -112,7 +84,7 @@ const ResetPassword = () => {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold  tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
+              <label className="block text-[13px] font-semibold  tracking-wider text-cn-text-muted mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
@@ -121,7 +93,7 @@ const ResetPassword = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-black dark:text-white text-sm font-medium outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400"
+                  className="w-full px-4 py-3 pr-10 border border-cn-border rounded-xl bg-cn-surface text-cn-text text-sm font-medium outline-none focus:border-cn-blue-500 focus:ring-1 focus:ring-cn-blue-500/20 transition-all placeholder:text-neutral-400"
                   placeholder="Confirm new password"
                 />
                 <button
@@ -147,10 +119,10 @@ const ResetPassword = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-neutral-100 dark:border-neutral-800 text-center">
+          <div className="mt-6 pt-5 border-t border-cn-border-subtle text-center">
             <Link
               to="/login"
-              className="text-sm font-semibold text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-500 transition-colors"
+              className="text-sm font-semibold text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
             >
               ← Back to Sign In
             </Link>

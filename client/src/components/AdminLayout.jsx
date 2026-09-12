@@ -15,7 +15,7 @@ import DashboardFooter from "./DashboardFooter";
 const AdminLayout = () => {
 
   return (
-    <div className="cn-app-height flex min-w-0 flex-col bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+    <div className="cn-app-height flex min-w-0 flex-col bg-cn-bg text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       {/* Admin Navbar — always pinned at top, full width */}
       <AdminNavbar />
 

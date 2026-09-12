@@ -140,7 +140,11 @@ const EventFeedbackAnalytics = () => {
 
       setEventData(eventRes.data);
       setAnalytics(analyticsRes.data);
-      setError('');
+      if (eventRes.data?.feedbackEnabled === false) {
+        setError('Post-event feedback is not enabled for this event. You can enable it in Edit Event (Step 4).');
+      } else {
+        setError('');
+      }
     } catch (err) {
       console.error('Failed to load feedback analytics:', err);
       setError(err.response?.data?.message || 'Failed to load feedback analytics.');
@@ -157,7 +161,7 @@ const EventFeedbackAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-neutral-50 dark:bg-[#0a0a0a]">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-cn-bg">
         <ShimmerText text="Loading event feedback analytics..." className="text-sm font-semibold tracking-wide" />
       </div>
     );
@@ -165,7 +169,7 @@ const EventFeedbackAnalytics = () => {
 
   if (error && !analytics) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-[#0a0a0a] px-4">
+      <div className="min-h-[70vh] flex items-center justify-center bg-cn-surface px-4">
         <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 p-8 rounded-3xl text-center text-rose-700 dark:text-rose-300 font-bold max-w-md space-y-4">
           <i className="ri-error-warning-line text-4xl block text-rose-500" aria-hidden="true" />
           <p className="text-sm">{error}</p>
@@ -187,7 +191,7 @@ const EventFeedbackAnalytics = () => {
   const overallScore = analytics?.averageRatings?.overall || 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg transition-colors duration-300">
       <main className="max-w-[95vw] xl:max-w-[1300px] mx-auto px-4 md:px-6 py-10">
         
         <EventHeader
