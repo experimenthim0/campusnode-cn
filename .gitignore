@@ -56,4 +56,4 @@ LINKS.md
 !README.md
 !CAMPUSNODE_TECHNICAL_SPECIFICATION.md
 
-.agents/
+.agents/*
