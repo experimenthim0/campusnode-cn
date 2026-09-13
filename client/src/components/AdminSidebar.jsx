@@ -213,6 +213,7 @@ const AdminSidebar = () => {
       items: [
         { label: "Export Center", tab: "export-center" },
         { label: "Venues", tab: "venues" },
+        { label: "Featured Events", tab: "featured-events" },
       ]
     }
   ];

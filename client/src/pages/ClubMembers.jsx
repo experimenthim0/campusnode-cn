@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+
 import { useParams, Link } from "react-router-dom";
 import {
   getClubMembers,
@@ -26,6 +27,7 @@ import {
   X,
   Loader2,
   ShieldAlert,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Table,
@@ -163,6 +165,18 @@ const ClubMembers = () => {
   const coordinatorCount = members.filter((m) => m.role === ClubMemberRole.COORDINATOR && !m.isClubAccount).length;
   const isCoordinatorLimitReached = coordinatorCount >= 5;
 
+  const ROLE_ORDER = { CLUB_HEAD: 0, COORDINATOR: 1, MEMBER: 2 };
+  const sortedMembers = useMemo(() =>
+    [...members].sort((a, b) => {
+      const ra = ROLE_ORDER[a.role] ?? 3;
+      const rb = ROLE_ORDER[b.role] ?? 3;
+      if (ra !== rb) return ra - rb;
+      // secondary: alphabetical by name within same role
+      return (a.student?.name || "").localeCompare(b.student?.name || "");
+    }),
+    [members]
+  );
+
   const handleInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail.endsWith("@nitj.ac.in")) {
@@ -180,6 +194,10 @@ const ClubMembers = () => {
       }
       if (activeStudentLead) {
         toast.error("This club already has an active Student Lead.");
+        return;
+      }
+      if (selectedStudent?.currentHeadClub) {
+        toast.error(`${selectedStudent.name} is already a lead of another club ("${selectedStudent.currentHeadClub.clubName}"). A student can be the Student Lead of only one club or society at a time.`);
         return;
       }
     }
@@ -209,6 +227,10 @@ const ClubMembers = () => {
       return;
     }
     const targetMember = members.find((m) => (m.id || m._id) === selectedNewLeadId);
+    if (targetMember?.currentHeadClub) {
+      toast.error(`${targetMember.student?.name || "Member"} is already a lead of another club ("${targetMember.currentHeadClub.clubName}"). A student can be the Student Lead of only one club or society at a time.`);
+      return;
+    }
     const toastId = toast.loading(`Transferring leadership to ${targetMember?.student?.name || "selected member"}...`);
     try {
       setTransferring(true);
@@ -295,6 +317,10 @@ const ClubMembers = () => {
     if (newRole === ClubMemberRole.CLUB_HEAD) {
       if (!isAdmin) {
         toast.error("Only administrators can assign the Student Lead role.");
+        return;
+      }
+      if (member.currentHeadClub) {
+        toast.error(`${member.student?.name || "Member"} is already a lead of another club ("${member.currentHeadClub.clubName}"). A student can be the Student Lead of only one club or society at a time.`);
         return;
       }
       if (activeStudentLead && (activeStudentLead.id || activeStudentLead._id) !== membershipId) {
@@ -560,8 +586,13 @@ const ClubMembers = () => {
                         <p className="text-[11px] text-muted-foreground">
                           {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {st.branch || "Branch N/A"} • Year {st.year || "N/A"}
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                          <span>{st.branch || "Branch N/A"} • Year {st.year || "N/A"}</span>
+                          {st.currentHeadClub && (
+                            <span className="font-medium text-amber-600 dark:text-amber-400">
+                              • Lead of {st.currentHeadClub.clubName}
+                            </span>
+                          )}
                         </p>
                       </div>
                       {st.isAlreadyMember ? (
@@ -597,8 +628,8 @@ const ClubMembers = () => {
 
             <Button
               type="submit"
-              disabled={inviting}
-              className="h-10 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer"
+              disabled={inviting || (selectedRole === ClubMemberRole.CLUB_HEAD && !!selectedStudent?.currentHeadClub)}
+              className="h-10 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {inviting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {inviting ? "Adding…" : "Add Member"}
@@ -607,20 +638,35 @@ const ClubMembers = () => {
 
           {/* Selected Student Confirmation Pill */}
           {selectedStudent && (
-            <div className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs">
-              <span className="font-semibold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
-              <span className="text-foreground font-medium">{selectedStudent.name}</span>
-              <span className="text-muted-foreground">({selectedStudent.email})</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedStudent(null);
-                  setInviteEmail("");
-                }}
-                className="ml-auto text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
-              >
-                Clear
-              </button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs">
+                <span className="font-semibold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
+                <span className="text-foreground font-medium">{selectedStudent.name}</span>
+                <span className="text-muted-foreground">({selectedStudent.email})</span>
+                {selectedStudent.currentHeadClub && (
+                  <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-300">
+                    Lead of {selectedStudent.currentHeadClub.clubName}
+                  </Badge>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStudent(null);
+                    setInviteEmail("");
+                  }}
+                  className="ml-auto text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
+              {selectedStudent.currentHeadClub && selectedRole === ClubMemberRole.CLUB_HEAD && (
+                <div className="p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/30 text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>
+                    <strong>{selectedStudent.name}</strong> is already a lead of another club (&ldquo;{selectedStudent.currentHeadClub.clubName}&rdquo;). A student can be the Student Lead of only one club or society at a time.
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </form>
@@ -672,9 +718,11 @@ const ClubMembers = () => {
                       .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
                       .map((m) => {
                         const id = m.id || m._id;
+                        const isLeadElsewhere = !!m.currentHeadClub;
                         return (
-                          <option key={id} value={id}>
+                          <option key={id} value={id} disabled={isLeadElsewhere}>
                             {m.student?.name} ({m.student?.email}) — [{m.role}]
+                            {isLeadElsewhere ? ` (Already Lead of ${m.currentHeadClub.clubName})` : ""}
                           </option>
                         );
                       })}
@@ -727,7 +775,7 @@ const ClubMembers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members.map((member) => {
+              {sortedMembers.map((member) => {
                 const id = member._id || member.id;
                 const updatingType = updatingIds[id];
                 const isUpdating = Boolean(updatingType);
@@ -749,6 +797,11 @@ const ClubMembers = () => {
                             <span className="text-xs sm:text-sm font-semibold text-foreground">
                               {member.student?.name}
                             </span>
+                            {member.currentHeadClub && (
+                              <Badge variant="outline" className="text-[10px] font-medium py-0 px-1.5 text-amber-600 border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
+                                Lead of {member.currentHeadClub.clubName}
+                              </Badge>
+                            )}
                             {isSelf && (
                               <Badge variant="secondary" className="text-[10px] font-semibold py-0 px-1.5">
                                 You
@@ -806,7 +859,12 @@ const ClubMembers = () => {
                             <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
                             <option value={ClubMemberRole.MEMBER}>Member</option>
                             {isAdmin && (
-                              <option value={ClubMemberRole.CLUB_HEAD}>Student Lead (Head)</option>
+                              <option
+                                value={ClubMemberRole.CLUB_HEAD}
+                                disabled={!!member.currentHeadClub}
+                              >
+                                Student Lead (Head) {member.currentHeadClub ? `(Lead of ${member.currentHeadClub.clubName})` : ""}
+                              </option>
                             )}
                           </select>
                           {updatingType === "role" && (

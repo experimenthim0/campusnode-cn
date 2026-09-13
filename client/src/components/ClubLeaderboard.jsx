@@ -8,6 +8,7 @@ const ClubLeaderboard = () => {
   const [clubs, setClubs] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -183,7 +184,7 @@ const ClubLeaderboard = () => {
         </div>
 
         <div className="space-y-2.5">
-          {leaderboard.map((club, index) => {
+          {leaderboard.slice(0, showAll ? 10 : 3).map((club, index) => {
             const isTop3 = index < 3;
             const rankStyles = [
               { bg: 'bg-tier-gold/30 dark:bg-tier-gold/15', border: 'border-tier-gold/40 dark:border-tier-gold/30', text: 'text-tier-gold dark:text-tier-gold', icon: 'ri-vip-crown-fill', label: 'Champion' },
@@ -243,7 +244,21 @@ const ClubLeaderboard = () => {
           })}
         </div>
 
-       
+        {leaderboard.length > 3 && (
+          <div className="flex justify-center pt-3">
+            <button
+              type="button"
+              onClick={() => setShowAll((prev) => !prev)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white transition-all cursor-pointer"
+            >
+              {showAll ? (
+                <><i className="ri-arrow-up-s-line text-sm" /> Show Top 3</>
+              ) : (
+                <><i className="ri-trophy-line text-sm text-brand-500" /> View Top {Math.min(leaderboard.length, 10)}</>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

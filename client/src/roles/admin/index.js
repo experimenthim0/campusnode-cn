@@ -6,6 +6,7 @@ export { default as CoordinatorsTab } from './tabs/CoordinatorsTab';
 export { default as ManualPaymentsTab } from './tabs/ManualPaymentsTab';
 export { default as BroadcastsTab } from './tabs/BroadcastsTab';
 export { default as NotificationsTab } from './tabs/NotificationsTab';
+export { default as FeaturedEventsTab } from './tabs/FeaturedEventsTab';
 export { default as ProfileTab } from './tabs/ProfileTab';
 
 export {

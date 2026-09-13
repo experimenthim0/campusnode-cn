@@ -58,7 +58,16 @@ const SendNotification = () => {
     setSearchParams(params);
   };
 
-  const [targetType, setTargetType] = useState("ALL_STUDENTS");
+  const canBroadcastAll =
+    role === "admin" ||
+    role === "SUPER_ADMIN" ||
+    user?.userType === "admin" ||
+    user?.principalType === "ADMIN" ||
+    role === "facultyCoordinator" ||
+    user?.principalType === "FACULTY" ||
+    (user?.memberships || []).some((m) => m.role === "CLUB_HEAD" || m.role === "STUDENT_LEAD");
+
+  const [targetType, setTargetType] = useState(canBroadcastAll ? "ALL_STUDENTS" : "REGISTERED_STUDENTS");
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState("");
   const [title, setTitle] = useState("");
@@ -80,17 +89,25 @@ const SendNotification = () => {
   }, [urlClubId]);
 
   useEffect(() => {
+    if (!canBroadcastAll && targetType === "ALL_STUDENTS") {
+      setTargetType("REGISTERED_STUDENTS");
+    }
+  }, [canBroadcastAll, targetType]);
+
+  useEffect(() => {
     if (user) {
       const clubs = [];
-      if (user.clubId) {
+      const isAdminOrFaculty =
+        role === "admin" ||
+        role === "SUPER_ADMIN" ||
+        user?.userType === "admin" ||
+        user?.principalType === "ADMIN" ||
+        role === "facultyCoordinator" ||
+        user?.principalType === "FACULTY";
+
+      if (role === "club") {
         clubs.push({
-          id: user.clubId,
-          name: user.name || "Club",
-          logo: user.clubLogo || user.profileImage,
-        });
-      } else if (role === "club") {
-        clubs.push({
-          id: user.id || user._id,
+          id: user.clubId || user.id || user._id,
           name: user.name || "Club",
           logo: user.clubLogo || user.profileImage,
         });
@@ -98,8 +115,10 @@ const SendNotification = () => {
 
       if (user.memberships && Array.isArray(user.memberships)) {
         user.memberships.forEach((m) => {
+          const isLead = m.role === "CLUB_HEAD" || m.role === "STUDENT_LEAD";
+          const isCoord = m.role === "COORDINATOR";
           if (
-            (m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.role === "facultyCoordinator" || m.canEditEvents) &&
+            (isLead || isCoord || m.role === "facultyCoordinator") &&
             m.clubId &&
             !clubs.some((c) => c.id === m.clubId)
           ) {
@@ -109,6 +128,12 @@ const SendNotification = () => {
               logo: m.clubLogo,
             });
           }
+        });
+      } else if (isAdminOrFaculty && user.clubId) {
+        clubs.push({
+          id: user.clubId,
+          name: user.name || "Club",
+          logo: user.clubLogo || user.profileImage,
         });
       }
 
@@ -374,26 +399,30 @@ const SendNotification = () => {
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {[
-                    { value: "ALL_STUDENTS", label: "All Students" },
-                    { value: "REGISTERED_STUDENTS", label: "Registered Students" },
+                    { value: "ALL_STUDENTS", label: "All Students", disabled: !canBroadcastAll, hint: !canBroadcastAll ? "(Student Lead / Admin only)" : null },
+                    { value: "REGISTERED_STUDENTS", label: "Registered Students", disabled: false },
                   ].map((opt) => (
                     <label
                       key={opt.value}
-                      className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border cursor-pointer transition-all flex-1 ${
-                        targetType === opt.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-border/80"
+                      className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border transition-all flex-1 ${
+                        opt.disabled
+                          ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
+                          : targetType === opt.value
+                          ? "border-primary bg-primary/5 cursor-pointer"
+                          : "border-border hover:border-border/80 cursor-pointer"
                       }`}
                     >
                       <input
                         type="radio"
                         name="targetType"
                         value={opt.value}
+                        disabled={opt.disabled}
                         checked={targetType === opt.value}
-                        onChange={() => setTargetType(opt.value)}
+                        onChange={() => !opt.disabled && setTargetType(opt.value)}
                         className="accent-primary"
                       />
                       <span className="text-xs sm:text-sm font-medium">{opt.label}</span>
+                      {opt.hint && <span className="text-[10px] text-muted-foreground ml-auto">{opt.hint}</span>}
                     </label>
                   ))}
                 </div>

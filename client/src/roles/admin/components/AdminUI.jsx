@@ -138,13 +138,14 @@ export const ModalField = ({ label, value, mono, accent }) => (
     </div>
 );
 
-export const ModalFormField = ({ label, name, type = "text", defaultValue, placeholder, required }) => (
+export const ModalFormField = ({ label, name, type = "text", defaultValue, value, onChange, placeholder, required }) => (
     <div>
         <label className="block text-xs font-bold text-cn-text mb-1.5">{label}</label>
         <input 
             name={name} 
             type={type} 
-            defaultValue={defaultValue} 
+            {...(value !== undefined ? { value } : { defaultValue })}
+            onChange={onChange}
             placeholder={placeholder} 
             required={required} 
             className="w-full px-3.5 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors" 

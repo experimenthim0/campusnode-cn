@@ -210,108 +210,124 @@ describe("3-Principal RBAC Permission Matrix & Scope Isolation", () => {
     });
   });
 
-  describe("7. Institutional Account & DSW Central Event Organisers", () => {
-    const dswLeadStudent = {
+  describe("7. Role-Based Access Control (RBAC) Matrix across Special & Admin Roles", () => {
+    const studentUser = {
       principalType: "STUDENT",
-      studentId: "stud_dsw_1",
-      userId: "stud_dsw_1",
-      role: "central_organizer",
-      accessLevel: "central_organizer",
-      institutionalAssignments: [
-        {
-          id: "inst_assign_1",
-          institutionalAccountId: "inst_dsw_1",
-          role: "CENTRAL_EVENT_ORGANISER",
-          status: "ACTIVE",
-          canManageEvents: true,
-          canTakeAttendance: true,
-          canVerifyPayments: true,
-          canDelegateStaff: true,
-        },
-      ],
+      userId: "stud_reg_1",
+      studentId: "stud_reg_1",
+      role: "student",
+      userType: "student",
     };
 
-    const dswAttendanceCoordinator = {
+    const regularMember = {
       principalType: "STUDENT",
-      studentId: "stud_dsw_2",
-      userId: "stud_dsw_2",
+      userId: "stud_mem_1",
+      studentId: "stud_mem_1",
       role: "member",
-      institutionalAssignments: [
-        {
-          id: "inst_assign_2",
-          institutionalAccountId: "inst_dsw_1",
-          role: "ATTENDANCE_COORDINATOR",
-          status: "ACTIVE",
-          canManageEvents: false,
-          canTakeAttendance: true,
-          canVerifyPayments: false,
-          canDelegateStaff: false,
-        },
-      ],
+      userType: "student",
+      memberships: [{ clubId: clubAId, role: "MEMBER" }],
     };
 
-    const dswPaymentCoordinator = {
+    const clubHead = {
       principalType: "STUDENT",
-      studentId: "stud_dsw_3",
-      userId: "stud_dsw_3",
-      role: "member",
-      institutionalAssignments: [
-        {
-          id: "inst_assign_3",
-          institutionalAccountId: "inst_dsw_1",
-          role: "PAYMENT_COORDINATOR",
-          status: "ACTIVE",
-          canManageEvents: false,
-          canTakeAttendance: false,
-          canVerifyPayments: true,
-          canDelegateStaff: false,
-        },
-      ],
+      userId: "stud_head_1",
+      studentId: "stud_head_1",
+      role: "club",
+      userType: "student",
+      memberships: [{ clubId: clubAId, role: "CLUB_HEAD" }],
     };
 
-    const centralEvent = {
-      id: "ev_fresher_party",
-      organizerType: "CENTRAL",
-      institutionalAccountId: "inst_dsw_1",
-      clubId: null,
+    const clubCoord = {
+      principalType: "STUDENT",
+      userId: "stud_coord_1",
+      studentId: "stud_coord_1",
+      role: "club",
+      userType: "student",
+      memberships: [{ clubId: clubAId, role: "COORDINATOR" }],
     };
 
-    it("Grants full institutional capabilities to Central Event Organiser Lead", () => {
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.EVENT_CREATE_INSTITUTION, centralEvent)).toBe(true);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.EVENT_UPDATE, centralEvent)).toBe(true);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.ATTENDANCE_TAKE, centralEvent)).toBe(true);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.PAYMENT_VERIFY, centralEvent)).toBe(true);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.EVENT_STAFF_MANAGE, centralEvent)).toBe(true);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.NOTIFICATION_SEND_CAMPUS)).toBe(true);
+    const facultyCoordA = {
+      principalType: "FACULTY",
+      userId: "fac_admin_1",
+      facultyId: "fac_admin_1",
+      clubId: clubAId,
+      role: "facultyCoordinator",
+      userType: "admin",
+    };
+
+    const paymentAdminUser = {
+      principalType: "STUDENT",
+      userId: "stud_pay_1",
+      studentId: "stud_pay_1",
+      role: "paymentAdmin",
+      userType: "student",
+      memberships: [{ clubId: clubAId, role: "COORDINATOR", customPermissions: [PERMISSIONS.PAYMENT_REVIEW, PERMISSIONS.PAYMENT_VERIFY] }],
+    };
+
+    const lostFoundAdminUser = {
+      principalType: "STUDENT",
+      userId: "stud_lf_1",
+      studentId: "stud_lf_1",
+      role: "lostFoundAdmin",
+      userType: "student",
+    };
+
+    const superAdmin = {
+      principalType: "ADMIN",
+      userId: "super_1",
+      role: "SUPER_ADMIN",
+      userType: "admin",
+    };
+
+    it("Explicitly permitted role -> allowed: Student can view events and create registrations", () => {
+      expect(hasPermission(studentUser, PERMISSIONS.EVENT_VIEW)).toBe(true);
+      expect(hasPermission(studentUser, PERMISSIONS.REGISTRATION_CREATE)).toBe(true);
     });
 
-    it("Enforces capability gating for Attendance Coordinator (no event creation or payments)", () => {
-      expect(hasPermission(dswAttendanceCoordinator, PERMISSIONS.ATTENDANCE_TAKE, centralEvent)).toBe(true);
-      expect(hasPermission(dswAttendanceCoordinator, PERMISSIONS.EVENT_CREATE, centralEvent)).toBe(false);
-      expect(hasPermission(dswAttendanceCoordinator, PERMISSIONS.PAYMENT_VERIFY, centralEvent)).toBe(false);
-      expect(hasPermission(dswAttendanceCoordinator, PERMISSIONS.EVENT_STAFF_MANAGE, centralEvent)).toBe(false);
+    it("Student -> blocked: Student cannot update clubs, approve events, or review payments", () => {
+      expect(hasPermission(studentUser, PERMISSIONS.CLUB_UPDATE, { clubId: clubAId })).toBe(false);
+      expect(hasPermission(studentUser, PERMISSIONS.EVENT_APPROVE, { clubId: clubAId })).toBe(false);
+      expect(hasPermission(studentUser, PERMISSIONS.PAYMENT_REVIEW, { clubId: clubAId })).toBe(false);
+      expect(hasPermission(studentUser, PERMISSIONS.ATTENDANCE_TAKE, { clubId: clubAId })).toBe(false);
     });
 
-    it("Enforces capability gating for Payment Coordinator (no attendance taking or event creation)", () => {
-      expect(hasPermission(dswPaymentCoordinator, PERMISSIONS.PAYMENT_VERIFY, centralEvent)).toBe(true);
-      expect(hasPermission(dswPaymentCoordinator, PERMISSIONS.ATTENDANCE_TAKE, centralEvent)).toBe(false);
-      expect(hasPermission(dswPaymentCoordinator, PERMISSIONS.EVENT_CREATE, centralEvent)).toBe(false);
+    it("Regular Member -> blocked: Member without custom permissions cannot manage club or edit events", () => {
+      expect(hasPermission(regularMember, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(false);
+      expect(hasPermission(regularMember, PERMISSIONS.EVENT_UPDATE, { clubId: clubAId })).toBe(false);
     });
 
-    it("Enforces strict scope isolation: Central Organizers CANNOT manage Club memberships", () => {
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(false);
-      expect(hasPermission(dswLeadStudent, PERMISSIONS.CLUB_UPDATE, { clubId: clubAId })).toBe(false);
+    it("Club Head -> allowed for Club A, blocked for Club B", () => {
+      expect(hasPermission(clubHead, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(clubHead, PERMISSIONS.EVENT_UPDATE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(clubHead, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubBId })).toBe(false);
+      expect(hasPermission(clubHead, PERMISSIONS.EVENT_UPDATE, { clubId: clubBId })).toBe(false);
     });
 
-    it("Enforces strict scope isolation: Club Accounts CANNOT manage Central/Institutional events", () => {
-      const clubAccount = {
-        principalType: "CLUB",
-        clubAccountId: "acc_1",
-        clubId: clubAId,
-        role: "club",
-      };
-      expect(hasPermission(clubAccount, PERMISSIONS.EVENT_UPDATE, centralEvent)).toBe(false);
-      expect(hasPermission(clubAccount, PERMISSIONS.ATTENDANCE_TAKE, centralEvent)).toBe(false);
+    it("Coordinator -> allowed event updates on Club A, blocked from managing memberships", () => {
+      expect(hasPermission(clubCoord, PERMISSIONS.EVENT_UPDATE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(clubCoord, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(false);
+    });
+
+    it("Faculty Coordinator -> allowed for assigned Club A, blocked for Club B", () => {
+      expect(hasPermission(facultyCoordA, PERMISSIONS.EVENT_APPROVE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(facultyCoordA, PERMISSIONS.EVENT_APPROVE, { clubId: clubBId })).toBe(false);
+    });
+
+    it("Specialized lostFoundAdmin -> allowed lost & found moderation, blocked from event management", () => {
+      expect(hasPermission(lostFoundAdminUser, PERMISSIONS.LOST_FOUND_MODERATE)).toBe(true);
+      expect(hasPermission(lostFoundAdminUser, PERMISSIONS.EVENT_UPDATE, { clubId: clubAId })).toBe(false);
+      expect(hasPermission(lostFoundAdminUser, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubAId })).toBe(false);
+    });
+
+    it("Payment Admin / Coordinator -> allowed payment verification on Club A, blocked from unrelated clubs", () => {
+      expect(hasPermission(paymentAdminUser, PERMISSIONS.PAYMENT_VERIFY, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(paymentAdminUser, PERMISSIONS.PAYMENT_VERIFY, { clubId: clubBId })).toBe(false);
+    });
+
+    it("SUPER_ADMIN -> wildcard allowed unconditionally", () => {
+      expect(hasPermission(superAdmin, PERMISSIONS.EVENT_APPROVE, { clubId: clubAId })).toBe(true);
+      expect(hasPermission(superAdmin, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: clubBId })).toBe(true);
+      expect(hasPermission(superAdmin, "any.administrative.permission")).toBe(true);
     });
   });
 

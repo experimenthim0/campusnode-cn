@@ -314,21 +314,25 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
       const fetchData = async () => {
         setLoading(true);
         try {
-          const [eventsRes, clubsRes] = await Promise.all([
-            getPublicJson("/api/events/public", { cacheDurationMs: 60000 }).catch(() => ({ data: [] })),
-            getPublicJson("/api/clubs/public", { cacheDurationMs: 60000 }).catch(() => ({ data: [] })),
+          // cachedFetch (via getPublicJson) returns raw data, not an axios {data} wrapper
+          const [eventsRaw, clubsRaw] = await Promise.all([
+            getPublicJson("/api/events").catch(() => []),
+            getPublicJson("/api/clubs").catch(() => []),
           ]);
 
-          const eventsData = Array.isArray(eventsRes.data)
-            ? eventsRes.data
-            : eventsRes.data?.events || [];
-          const clubsData = Array.isArray(clubsRes.data)
-            ? clubsRes.data
-            : clubsRes.data?.clubs || [];
+          const eventsData = Array.isArray(eventsRaw)
+            ? eventsRaw
+            : eventsRaw?.events || [];
+          const clubsData = Array.isArray(clubsRaw)
+            ? clubsRaw
+            : clubsRaw?.clubs || [];
 
           setEvents(eventsData);
           setClubs(clubsData);
-          setHasFetched(true);
+          // Only mark as fetched if we actually got data — retry if empty
+          if (eventsData.length > 0 || clubsData.length > 0) {
+            setHasFetched(true);
+          }
         } catch (err) {
           console.error("Search data fetch error:", err);
         } finally {

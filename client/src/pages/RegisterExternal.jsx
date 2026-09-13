@@ -187,12 +187,19 @@ const RegisterExternal = () => {
             </div>
 
             {/* Switch to Student Registration Link */}
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col gap-1.5">
               <Link
                 to="/register"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
               >
-                <span>Are you an NITJ student? Register as student</span>
+                <span>Are you an NITJ student? Register as Student</span>
+                <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/register/faculty"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
+              >
+                <span>Are you an NITJ faculty member? Register as Faculty</span>
                 <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>

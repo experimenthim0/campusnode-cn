@@ -128,11 +128,11 @@ const EventRegistrations = () => {
             { key: 'teamRole', label: 'Role in Team', getValue: row => row.role },
         ] : []),
         { key: 'name', label: 'Name', getValue: row => row.reg.student?.name || 'N/A' },
-        { key: 'rollNo', label: 'Roll Number', getValue: row => row.reg.student?.rollNo || (row.reg.student?.isExternal ? row.reg.student?.collegeName : '-') },
+        { key: 'rollNo', label: 'Roll Number', getValue: row => (row.reg.student?.isFaculty || row.reg.student?.isExternal) ? '-' : (row.reg.student?.rollNo || '-') },
         { key: 'email', label: 'Email', getValue: row => row.reg.student?.email || '-' },
-        { key: 'branch', label: 'Branch', getValue: row => row.reg.student?.branch || (row.reg.student?.isExternal ? 'External' : '-') },
-        { key: 'year', label: 'Year', getValue: row => row.reg.student?.year || row.reg.student?.academicYearLabel || '' },
-        { key: 'program', label: 'Program', getValue: row => row.reg.student?.program || '-' },
+        { key: 'branch', label: 'Branch / Department', getValue: row => row.reg.student?.department || row.reg.student?.branch || (row.reg.student?.isExternal ? (row.reg.student?.collegeName || 'External') : '-') },
+        { key: 'year', label: 'Year', getValue: row => row.reg.student?.isFaculty ? 'Faculty' : (row.reg.student?.year || row.reg.student?.academicYearLabel || '-') },
+        { key: 'program', label: 'Program', getValue: row => row.reg.student?.isFaculty ? 'Faculty' : (row.reg.student?.isExternal ? (row.reg.student?.program || 'External') : (row.reg.student?.program || '-')) },
         { key: 'eventName', label: 'Event Name', getValue: () => eventData?.title },
         { key: 'status', label: 'Registration Status', getValue: row => row.reg.status },
         { key: 'attendanceStatus', label: 'Attendance Status', getValue: row => row.reg.attendedAt || row.reg.status === 'ATTENDED' ? 'Attended' : 'Not attended' },
@@ -628,7 +628,7 @@ const EventRegistrations = () => {
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Role</th>
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Name</th>
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Roll No</th>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Acaedmic Info</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Academic Info</th>
                                                         <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Status</th>
                                                         {customFields.map((cf, i) => (
                                                             <th
@@ -662,9 +662,13 @@ const EventRegistrations = () => {
                                                                         <span className="text-neutral-400 dark:text-neutral-500 text-[10px] font-mono mt-0.5">{m.student?.email}</span>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-5 py-3 font-mono text-left">{m.student?.rollNo || '-'}</td>
+                                                                <td className="px-5 py-3 font-mono text-left">{(m.student?.isFaculty || m.student?.isExternal) ? '-' : (m.student?.rollNo || '-')}</td>
                                                                 <td className="px-5 py-3 text-neutral-550 dark:text-neutral-400 text-left">
-                                                                    {m.student?.program || '-'} • {m.student?.branch || '-'} ({m.student?.year || m.student?.academicYearLabel || '-'})
+                                                                    {m.student?.isFaculty
+                                                                        ? `Faculty Member • ${m.student?.department || m.student?.branch || 'NITJ'}`
+                                                                        : m.student?.isExternal
+                                                                        ? `External (${m.student?.collegeName || 'Participant'})`
+                                                                        : `${m.student?.program || '-'} • ${m.student?.branch || '-'} (${m.student?.year || m.student?.academicYearLabel || '-'})`}
                                                                 </td>
                                                                 <td className="px-5 py-3 text-left">
                                                                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-405 border-0">
@@ -732,11 +736,14 @@ const EventRegistrations = () => {
                                 </thead>
                                 <tbody className="bg-white dark:bg-neutral-900 divide-y divide-neutral-100 dark:divide-neutral-800">
                                     {individualRegs.map((reg, idx) => {
-                                        const isInternal = !!reg.student && !reg.student.isExternal;
+                                        const isFaculty = Boolean(reg.isFaculty || reg.student?.isFaculty);
+                                        const isInternal = !!reg.student && !reg.student.isExternal && !isFaculty;
                                         const studentName = reg.student?.name || 'Unknown';
                                         const studentEmail = reg.student?.email || '-';
-                                        const rollNo = reg.student?.rollNo || '-';
-                                        const programInfo = isInternal
+                                        const rollNo = (isFaculty || reg.student?.isExternal) ? '-' : (reg.student?.rollNo || '-');
+                                        const programInfo = isFaculty
+                                            ? `Faculty Member • ${reg.student?.department || reg.student?.branch || 'NITJ'}`
+                                            : isInternal
                                             ? `${reg.student.program || '-'} • ${reg.student.branch || '-'} (${reg.student.year || reg.student.academicYearLabel || '-'})`
                                             : `External (${reg.student?.collegeName || 'Participant'})`;
 
@@ -750,9 +757,16 @@ const EventRegistrations = () => {
                                                 </td>
                                                 <td className="px-5 py-4 whitespace-nowrap">
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
-                                                            {studentName}
-                                                        </span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                                                                {studentName}
+                                                            </span>
+                                                            {isFaculty && (
+                                                                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300/40">
+                                                                    Faculty
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <span className="text-xs text-neutral-400 dark:text-neutral-500">
                                                             {studentEmail}
                                                         </span>

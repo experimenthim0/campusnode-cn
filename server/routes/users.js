@@ -23,44 +23,113 @@ router.get("/me", verifyToken, async (req, res) => {
   const { userId, userType, principalType } = req.user;
 
   try {
-    if (userType === "admin" || principalType === "FACULTY" || principalType === "ADMIN") {
+    if (principalType === "FACULTY" || userType === "faculty" || req.user.role === "facultyCoordinator" || req.user.role === "faculty") {
+      const faculty = await prisma.facultyUser.findUnique({ where: { id: userId } });
+      if (faculty) {
+        const safeUser = sanitizeUser(faculty);
+        const clubInfo = await prisma.club.findFirst({
+          where: { facultyCoordinatorId: faculty.id },
+          select: { id: true, clubName: true, slug: true, clubLogo: true },
+        });
+        const isCoordinator = Boolean(clubInfo);
+        const role = isCoordinator ? "facultyCoordinator" : "faculty";
+
+        safeUser.principalType = "FACULTY";
+        safeUser.role = role;
+        safeUser.userType = "faculty";
+        safeUser.department = faculty.department;
+        safeUser.designation = faculty.designation;
+        safeUser.clubId = clubInfo?.id ?? null;
+        safeUser.clubName = clubInfo?.clubName ?? null;
+        safeUser.memberships = clubInfo ? [{
+          id: `fac_${clubInfo.id}`,
+          clubId: clubInfo.id,
+          clubName: clubInfo.clubName,
+          slug: clubInfo.slug,
+          clubLogo: clubInfo.clubLogo,
+          role: "facultyCoordinator",
+          status: "ACTIVE",
+          customPermissions: [],
+          canTakeAttendance: true,
+          canEditEvents: true,
+          permissions: {
+            canTakeAttendance: true,
+            canViewDashboard: true,
+            canCheckRegistration: true,
+            canEditEvents: true,
+          },
+        }] : [];
+
+        const effectivePermissions = getEffectivePermissions({ ...req.user, role, clubId: safeUser.clubId }, clubInfo?.id);
+
+        return res.json({
+          user: safeUser,
+          role,
+          userType: "faculty",
+          principalType: "FACULTY",
+          effectivePermissions,
+        });
+      }
+
+      const user = await prisma.adminRole.findUnique({ where: { id: userId } });
+      if (user) {
+        const safeUser = sanitizeUser(user);
+        const isFaculty = user.role === "facultyCoordinator";
+        safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
+
+        const clubInfo = isFaculty
+          ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } })
+          : null;
+        safeUser.clubId = clubInfo?.id ?? null;
+        safeUser.memberships = clubInfo ? [{
+          id: `fac_${clubInfo.id}`,
+          clubId: clubInfo.id,
+          clubName: clubInfo.clubName,
+          role: "facultyCoordinator",
+          status: "ACTIVE",
+          customPermissions: [],
+          canTakeAttendance: true,
+          canEditEvents: true,
+          permissions: {
+            canTakeAttendance: true,
+            canViewDashboard: true,
+            canCheckRegistration: true,
+            canEditEvents: true,
+          },
+        }] : [];
+
+        const effectivePermissions = getEffectivePermissions(req.user, clubInfo?.id);
+
+        return res.json({
+          user: safeUser,
+          role: user.role,
+          userType: "admin",
+          principalType: safeUser.principalType,
+          effectivePermissions,
+        });
+      }
+
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (userType === "admin" || principalType === "ADMIN") {
       const user = await prisma.adminRole.findUnique({ where: { id: userId } });
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
       const safeUser = sanitizeUser(user);
-      const isFaculty = user.role === "facultyCoordinator";
-      safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
+      safeUser.principalType = "ADMIN";
+      safeUser.clubId = null;
+      safeUser.memberships = [];
 
-      const clubInfo = isFaculty
-        ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } })
-        : null;
-      safeUser.clubId = clubInfo?.id ?? null;
-      safeUser.memberships = clubInfo ? [{
-        id: `fac_${clubInfo.id}`,
-        clubId: clubInfo.id,
-        clubName: clubInfo.clubName,
-        role: "facultyCoordinator",
-        status: "ACTIVE",
-        customPermissions: [],
-        canTakeAttendance: true,
-        canEditEvents: true,
-        permissions: {
-          canTakeAttendance: true,
-          canViewDashboard: true,
-          canCheckRegistration: true,
-          canEditEvents: true,
-        },
-      }] : [];
-
-      const effectivePermissions = getEffectivePermissions(req.user, clubInfo?.id);
+      const effectivePermissions = getEffectivePermissions(req.user, null);
 
       return res.json({
         user: safeUser,
         role: user.role,
         userType: "admin",
-        principalType: safeUser.principalType,
+        principalType: "ADMIN",
         effectivePermissions,
       });
     }
@@ -261,6 +330,58 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       safeUser.userType = "external";
       safeUser.principalType = "EXTERNAL";
       return res.json({ message: "Profile updated successfully", user: safeUser, role: "external", userType: "external", principalType: "EXTERNAL" });
+    }
+
+    if (userType === "faculty" || principalType === "FACULTY" || role === "faculty" || role === "facultyCoordinator") {
+      const facultyAllowedFields = ["name", "department", "designation", "isTwoStepEnabled", "profileImage"];
+      const updates = Object.fromEntries(
+        Object.entries(req.body).filter(([key]) => facultyAllowedFields.includes(key) && req.body[key] !== undefined),
+      );
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No allowed profile fields provided." });
+      }
+
+      const targetId = userId || id;
+      let updated = null;
+      try {
+        updated = await prisma.facultyUser.update({ where: { id: targetId }, data: updates });
+      } catch {
+        updated = await prisma.adminRole.update({ where: { id: targetId }, data: updates });
+      }
+
+      const safeUser = sanitizeUser(updated);
+      const clubInfo = await prisma.club.findFirst({ where: { facultyCoordinatorId: updated.id } });
+      const isCoordinator = Boolean(clubInfo);
+      const userRole = isCoordinator ? "facultyCoordinator" : "faculty";
+
+      safeUser.principalType = "FACULTY";
+      safeUser.role = userRole;
+      safeUser.userType = "faculty";
+      safeUser.department = updated.department;
+      safeUser.designation = updated.designation;
+      safeUser.clubId = clubInfo?.id ?? null;
+      safeUser.clubName = clubInfo?.clubName ?? null;
+      safeUser.memberships = clubInfo ? [{
+        id: `fac_${clubInfo.id}`,
+        clubId: clubInfo.id,
+        clubName: clubInfo.clubName,
+        role: "facultyCoordinator",
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true,
+        },
+      }] : [];
+
+      return res.json({
+        message: "Profile updated successfully",
+        user: safeUser,
+        role: userRole,
+        userType: "faculty",
+        principalType: "FACULTY",
+      });
     }
 
     if (userType === "admin") {

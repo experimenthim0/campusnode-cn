@@ -61,6 +61,8 @@ const EventCalendarPage = lazy(() => import('./pages/EventCalendarPage'));
 const FeedbackSurveyPreview = lazy(() => import('./pages/FeedbackSurveyPreview'));
 const LeaderboardGuide = lazy(() => import('./pages/LeaderboardGuide'));
 const RegisterExternal = lazy(() => import('./pages/RegisterExternal'));
+const RegisterFaculty = lazy(() => import('./pages/RegisterFaculty'));
+const RegisterLanding = lazy(() => import('./pages/RegisterLanding'));
 const FeaturedEventsPage = lazy(() => import('./pages/FeaturedEventsPage'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
@@ -132,6 +134,8 @@ function App() {
                    
                     <Route path="/ranking-guide" element={<LeaderboardGuide />} />
                     <Route path="/register/external" element={<RegisterExternal />} />
+                    <Route path="/register/faculty" element={<RegisterFaculty />} />
+                    <Route path="/register/options" element={<RegisterLanding />} />
                     <Route path="/verify/certificate/:token" element={<VerifyCertificate />} />
                     <Route path="/verify/certificate" element={<VerifyCertificate />} />
                     {/* Protected routes (require login) */}

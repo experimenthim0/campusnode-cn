@@ -16,6 +16,11 @@ const notificationLimiter = rateLimit({
   message: { message: "Too many notifications sent. Please slow down." },
 });
 
+const internalNotificationError = (res, error, message) => {
+  console.error(`[Notifications] ${message}:`, error);
+  return res.status(500).json({ message });
+};
+
 router.use(verifyToken);
 
 const senderInclude = {
@@ -109,12 +114,7 @@ router.post(
           where: {
             studentId: sender,
             clubId: targetClubId,
-            status: { not: "INACTIVE" },
-            OR: [
-              { role: "CLUB_HEAD" },
-              { role: "COORDINATOR" },
-              { canEditEvents: true },
-            ],
+            role: { in: ["CLUB_HEAD", "COORDINATOR"] },
           },
           include: {
             club: { select: { id: true, clubName: true, clubLogo: true, slug: true } },
@@ -180,7 +180,7 @@ router.post(
             where: {
               studentId: sender,
               clubId: { in: organizerClubIds },
-              OR: [{ role: "CLUB_HEAD" }, { role: "COORDINATOR" }, { canEditEvents: true }],
+              role: { in: ["CLUB_HEAD", "COORDINATOR"] },
             },
           });
           if (!membership && String(event.createdById) !== String(sender)) {
@@ -200,7 +200,7 @@ router.post(
           req.user.role === "facultyCoordinator";
 
         const hasClubHeadRole = (req.user.memberships || []).some(
-          (m) => m.role === "CLUB_HEAD" && m.status !== "INACTIVE"
+          (m) => m.role === "CLUB_HEAD"
         );
 
         if (!isAllowedAll && !hasClubHeadRole) {
@@ -271,10 +271,33 @@ router.post(
         recipientCount: recipientStudentIds.length,
       });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      internalNotificationError(res, err, "Failed to send notification.");
     }
   },
 );
+
+export function getNotificationRecipientFilter(user) {
+  const { userId, userType, role, clubId } = user;
+  if (userType === "admin") {
+    const isFaculty = role === "facultyCoordinator";
+    return isFaculty && clubId
+      ? {
+          OR: [
+            { recipientStudentId: userId },
+            { clubId, recipientStudentId: null },
+            { clubId, type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] } },
+          ],
+        }
+      : {
+          OR: [
+            { senderAdminId: userId },
+            { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } },
+            { recipientStudentId: userId },
+          ],
+        };
+  }
+  return { recipientStudentId: userId };
+}
 
 router.get(
   "/",
@@ -284,52 +307,35 @@ router.get(
     try {
       const { userId, userType } = req.user;
 
-      let notifications;
-      if (userType === "admin") {
-        // Admin incoming notifications: show all incoming club announcements and alerts
-        const rawNotifications = await prisma.notification.findMany({
-          where: {
-            OR: [
-              { clubId: { not: null } },
-              { senderStudentId: { not: null } },
-              { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] } },
-            ],
-          },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-          take: 300,
-        });
+      const scope = getNotificationRecipientFilter(req.user);
+      const rawNotifications = await prisma.notification.findMany({
+        where: scope,
+        include: senderInclude,
+        orderBy: { createdAt: "desc" },
+        take: userType === "admin" ? 300 : 100,
+      });
 
-        // Deduplicate broadcast copies by (title, club/sender, minute) so admin sees 1 card per broadcast
-        const seen = new Set();
-        const deduplicated = [];
-        for (const n of rawNotifications) {
-          const senderKey = n.clubId || n.senderStudentId || n.senderAdminId || "unknown";
-          const dedupeKey = `${n.title}_${senderKey}_${Math.floor(new Date(n.createdAt).getTime() / 60000)}`;
-          if (!seen.has(dedupeKey)) {
-            seen.add(dedupeKey);
-            deduplicated.push(n);
-          }
+      // Deduplicate broadcast copies by (title, club/sender, minute) so admin sees 1 card per broadcast
+      const seen = new Set();
+      const deduplicated = [];
+      for (const n of rawNotifications) {
+        const senderKey = n.clubId || n.senderStudentId || n.senderAdminId || "unknown";
+        const dedupeKey = `${n.title}_${senderKey}_${Math.floor(new Date(n.createdAt).getTime() / 60000)}`;
+        if (!seen.has(dedupeKey)) {
+          seen.add(dedupeKey);
+          deduplicated.push(n);
         }
-        notifications = deduplicated;
-      } else {
-        notifications = await prisma.notification.findMany({
-          where: { recipientStudentId: userId },
-          include: senderInclude,
-          orderBy: { createdAt: "desc" },
-          take: 100,
-        });
       }
 
       res.json(
-        notifications.map((n) => ({
+        deduplicated.map((n) => ({
           ...n,
           _id: n.id,
           sender: formatSender(n),
         })),
       );
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      internalNotificationError(res, err, "Failed to fetch notifications.");
     }
   },
 );
@@ -339,11 +345,17 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
     const { userId, userType } = req.user;
     const { clubId } = req.query;
 
-    let where;
-    if (userType === "admin") {
-      where = clubId ? { clubId } : { senderAdminId: userId };
-    } else {
-      where = clubId ? { clubId } : { senderStudentId: userId };
+     let where;
+     if (userType === "admin") {
+       const isFaculty = req.user.role === "facultyCoordinator";
+       where = clubId
+         ? (isFaculty && String(clubId) !== String(req.user.clubId)
+             ? { id: "__unauthorized__" }
+             : { clubId })
+         : { senderAdminId: userId };
+     } else {
+       const ownsClub = !clubId || (req.user.memberships || []).some((m) => String(m.clubId) === String(clubId));
+       where = ownsClub ? (clubId ? { clubId } : { senderStudentId: userId }) : { id: "__unauthorized__" };
     }
 
     const rawNotifications = await prisma.notification.findMany({
@@ -373,7 +385,7 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
       })),
     );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalNotificationError(res, err, "Failed to fetch sent notifications.");
   }
 });
 
@@ -406,7 +418,7 @@ router.put(
 
       res.json({ message: "All notifications marked as read" });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      internalNotificationError(res, err, "Failed to mark notifications as read.");
     }
   },
 );
@@ -419,9 +431,24 @@ router.put(
     try {
       const { userId } = req.user;
 
-      const notif = await prisma.notification.findUnique({
-        where: { id: req.params.id },
-      });
+       const isFaculty = req.user.role === "facultyCoordinator";
+       const authorizedWhere = userId && req.user.userType === "admin"
+         ? (isFaculty
+             ? {
+                 id: req.params.id,
+                 OR: [
+                   { recipientStudentId: userId },
+                   { clubId: req.user.clubId, recipientStudentId: null },
+                   {
+                     clubId: req.user.clubId,
+                     type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] },
+                   },
+                 ],
+               }
+             : { id: req.params.id, OR: [{ recipientStudentId: userId }, { senderAdminId: userId }, { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } }] })
+         : { id: req.params.id, recipientStudentId: userId };
+
+       const notif = await prisma.notification.findFirst({ where: authorizedWhere });
 
       if (!notif) {
         return res.status(404).json({ message: "Notification not found." });
@@ -432,18 +459,18 @@ router.put(
         return res.json({ ...notif, _id: notif.id });
       }
 
-      const updated = await prisma.notification.update({
-        where: { id: req.params.id },
-        data: {
-          readBy: {
-            push: userId,
-          },
-        },
-      });
+      const updatedRows = await prisma.$queryRaw`
+        UPDATE "Notification"
+        SET "readBy" = array_append("readBy", ${userId})
+        WHERE "id" = ${req.params.id}
+          AND NOT (${userId} = ANY("readBy"))
+        RETURNING *
+      `;
+      const updated = updatedRows[0] || notif;
 
       res.json({ ...updated, _id: updated.id });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      internalNotificationError(res, err, "Failed to mark notification as read.");
     }
   },
 );

@@ -31,9 +31,9 @@ export function determineAwardPosition(event, participation, studentUser) {
   }
 
   const rollNo = (studentUser?.rollNo || participation?.student?.rollNo || "").trim().toLowerCase();
-  const studentId = String(studentUser?.id || participation?.studentId || "");
-  const email = (studentUser?.email || participation?.student?.email || participation?.externalUser?.email || "").trim().toLowerCase();
-  const name = (studentUser?.name || participation?.student?.name || participation?.externalUser?.name || "").trim().toLowerCase();
+  const studentId = String(studentUser?.id || participation?.studentId || participation?.facultyId || "");
+  const email = (studentUser?.email || participation?.student?.email || participation?.faculty?.email || participation?.externalUser?.email || "").trim().toLowerCase();
+  const name = (studentUser?.name || participation?.student?.name || participation?.faculty?.name || participation?.externalUser?.name || "").trim().toLowerCase();
   const teamId = participation?.teamId ? String(participation.teamId) : "";
 
   for (const w of event.winners) {
@@ -122,6 +122,7 @@ export const downloadCertificate = async (req, res) => {
         OR: [
           { studentId },
           { externalUserId: studentId },
+          { facultyId: studentId },
           { userId: studentId },
         ],
         paymentStatus: "SUCCESS",
@@ -135,6 +136,15 @@ export const downloadCertificate = async (req, res) => {
             email: true,
             branch: true,
             program: true,
+          },
+        },
+        faculty: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true,
+            designation: true,
           },
         },
         externalUser: {
@@ -162,6 +172,7 @@ export const downloadCertificate = async (req, res) => {
 
     const userName =
       participation.student?.name ||
+      participation.faculty?.name ||
       participation.externalUser?.name;
     if (!userName) {
       return res.status(422).json({ message: "Participant name is missing." });
@@ -176,16 +187,17 @@ export const downloadCertificate = async (req, res) => {
       const awardPosition = determineAwardPosition(
         event,
         participation,
-        participation.student || participation.externalUser
+        participation.student || participation.faculty || participation.externalUser
       );
       const verificationToken = crypto.randomBytes(24).toString("base64url");
       const randomSuffix = crypto.randomBytes(3).toString("hex").toUpperCase();
       const year = new Date().getFullYear();
       const certificateNumber = `CN-${year}-${randomSuffix}`;
 
-      const recipientRollNo = participation.student?.rollNo || null;
+      const recipientRollNo = participation.student?.rollNo || (participation.faculty ? "Faculty" : null);
       const recipientEmail =
         participation.student?.email ||
+        participation.faculty?.email ||
         participation.externalUser?.email ||
         null;
 
@@ -194,9 +206,10 @@ export const downloadCertificate = async (req, res) => {
           id: createObjectId(),
           eventId: event.id,
           participationId: participation.id,
-          userId: participation.userId || participation.studentId || participation.externalUserId,
+          userId: participation.userId || participation.studentId || participation.facultyId || participation.externalUserId,
           studentId: participation.studentId || null,
           externalUserId: participation.externalUserId || null,
+          facultyId: participation.facultyId || null,
           recipientName: userName,
           recipientRollNo,
           recipientEmail,

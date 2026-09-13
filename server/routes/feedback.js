@@ -39,7 +39,7 @@ async function canAccessEventAnalytics(user, event) {
   if (user.role === "facultyCoordinator" && user.clubId && organizerClubIds.includes(user.clubId)) return true;
 
   const membership = (user.memberships || []).find(
-    (m) => organizerClubIds.includes(m.clubId) && m.status !== "INACTIVE"
+    (m) => organizerClubIds.includes(m.clubId)
   );
   if (membership && ["CLUB_HEAD", "COORDINATOR"].includes(membership.role)) return true;
 

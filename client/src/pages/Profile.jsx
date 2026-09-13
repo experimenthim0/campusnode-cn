@@ -1,20 +1,17 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { cachedFetch, invalidateCache } from '../lib/cacheManager';
+import { cachedFetch } from '../lib/cacheManager';
 import { markdownToHtml } from '../utils/htmlMarkdownConverter';
 import '../components/WysiwygMarkdownEditor.css';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
-import { getMe, uploadProfilePhoto } from '../services/userService';
-import { getUserEvents, getClubManagedEvents } from '../services/eventService';
-import { getClubById, getClubMembers } from '../services/clubService';
+import { getUserEvents } from '../services/eventService';
+import { getClubById } from '../services/clubService';
 import { calculateAcademicProgress } from '../utils/academicProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Edit, Calendar, Trophy, Users, Shield, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { Edit, Calendar, Trophy, Users } from 'lucide-react';
 import { isClubManagementRole, isStudentLeadRole } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
 
@@ -22,24 +19,18 @@ import ShimmerText from '../components/ShimmerText';
 const ClubLogoImage = ({ clubLogo, clubName }) => {
   const { isDark } = useTheme();
   const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
-  const [logoSrc, setLogoSrc] = useState(() => clubLogo || fallbackLogo);
+  const [failedSrc, setFailedSrc] = useState(null);
 
-  useEffect(() => {
-    if (clubLogo) {
-      setLogoSrc(clubLogo);
-    } else {
-      setLogoSrc(fallbackLogo);
-    }
-  }, [clubLogo, fallbackLogo]);
+  const effectiveSrc = (clubLogo && clubLogo !== failedSrc) ? clubLogo : fallbackLogo;
 
   return (
     <img
-      src={logoSrc}
+      src={effectiveSrc}
       alt={clubName || 'Club Logo'}
       className="w-full h-full object-cover"
       onError={() => {
-        if (logoSrc !== fallbackLogo) {
-          setLogoSrc(fallbackLogo);
+        if (clubLogo) {
+          setFailedSrc(clubLogo);
         }
       }}
     />
@@ -355,58 +346,12 @@ const ClubsSection = ({ user, clubsMap }) => {
 };
 
 const Profile = () => {
-  const { user: authUser, role: authRole, setSession } = useAuth();
-  const { showNotification } = useNotification();
+  const { user, role } = useAuth();
   const location = useLocation();
-  const [user, setUser] = useState(authUser);
-  const [role, setRole] = useState(authRole);
-  const [loading, setLoading] = useState(true);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const logoInputRef = useRef(null);
 
   const [winnings, setWinnings] = useState([]);
   const [clubsMap, setClubsMap] = useState({});
-
   const [clubData, setClubData] = useState(null);
-  const [clubMembers, setClubMembers] = useState([]);
-  const [clubEvents, setClubEvents] = useState([]);
-
-  const fetchClubInfo = useCallback(async (customClubId) => {
-    const effectiveClubId =
-      customClubId ||
-      authUser?.clubId ||
-      user?.clubId ||
-      authUser?.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'FACULTY_COORDINATOR' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
-      user?.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'FACULTY_COORDINATOR' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
-      authUser?.memberships?.[0]?.clubId ||
-      user?.memberships?.[0]?.clubId;
-
-    if (effectiveClubId) {
-      try {
-        const res = await getClubById(effectiveClubId);
-        const fetchedClub = res.data?.club || res.data;
-        if (fetchedClub) setClubData(fetchedClub);
-      } catch (err) {
-        console.debug("Error fetching club details in Profile.jsx:", err);
-      }
-
-      try {
-        const membersRes = await getClubMembers(effectiveClubId);
-        const members = Array.isArray(membersRes.data) ? membersRes.data : (membersRes.data?.members || []);
-        setClubMembers(members);
-      } catch (err) {
-        console.debug("Error fetching club members in Profile.jsx:", err);
-      }
-
-      try {
-        const eventsRes = await getClubManagedEvents(effectiveClubId);
-        const events = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-        setClubEvents(events);
-      } catch (err) {
-        console.debug("Error fetching club events in Profile.jsx:", err);
-      }
-    }
-  }, [authUser, authRole, user?.clubId, user?.memberships]);
 
   useEffect(() => {
     cachedFetch('/api/clubs', { ttlMs: 15 * 60 * 1000 })
@@ -427,7 +372,6 @@ const Profile = () => {
 
   const isExternalAccount = Boolean(
     role === 'external' ||
-    authRole === 'external' ||
     user?.role === 'external' ||
     user?.isExternal ||
     user?.principalType === 'EXTERNAL' ||
@@ -436,7 +380,6 @@ const Profile = () => {
 
   const isFacultyCoordinator = !isExternalAccount && Boolean(
     role === 'facultyCoordinator' ||
-    authRole === 'facultyCoordinator' ||
     user?.principalType === 'FACULTY' ||
     user?.role === 'facultyCoordinator' ||
     (user?.userType === 'admin' && user?.role === 'facultyCoordinator') ||
@@ -457,56 +400,76 @@ const Profile = () => {
   );
 
   useEffect(() => {
-    if (authUser) {
-      setUser(authUser);
-      setRole(authRole);
-      fetchClubInfo();
+    if (!user) return;
 
-      const canFetchEvents = Boolean(
-        isFacultyCoordinator ||
-        authUser?.rollNo ||
-        authUser?.branch ||
-        authUser?.collegeName ||
-        authRole === 'member' ||
-        authRole === 'student' ||
-        authRole === 'external' ||
-        authRole === 'facultyCoordinator' ||
-        authUser?.principalType === 'FACULTY'
-      );
-      if (canFetchEvents) {
-        getUserEvents(authUser.id || authUser._id)
-          .then(res => {
-            const participations = res.data || [];
-            const winningsList = [];
-            participations.forEach(p => {
-              const ev = p.eventId || p.event;
-              if (ev && ev.winners && Array.isArray(ev.winners)) {
-                const match = ev.winners.find(w =>
-                  (w.studentId && String(w.studentId) === String(authUser.id || authUser._id)) ||
-                  (w.rollNo && authUser.rollNo && String(w.rollNo).trim().toLowerCase() === authUser.rollNo.trim().toLowerCase()) ||
-                  (w.email && authUser.email && String(w.email).trim().toLowerCase() === authUser.email.trim().toLowerCase()) ||
-                  (w.name && authUser.name && String(w.name).toLowerCase().includes(authUser.name.toLowerCase()))
-                );
-                if (match) {
-                  winningsList.push({
-                    eventTitle: ev.title,
-                    eventSlug: ev.slug || ev.id || ev._id,
-                    rank: match.rank,
-                    date: ev.startTime,
-                    clubName: ev.club?.clubName
-                  });
-                }
-              }
-            });
-            setWinnings(winningsList);
-          })
-          .catch(err => {
-            console.error("Error fetching winnings in Profile.jsx:", err);
-          });
-      }
+    let isMounted = true;
+
+    const effectiveClubId =
+      user.clubId ||
+      user.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'FACULTY_COORDINATOR' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
+      user.memberships?.[0]?.clubId;
+
+    if (effectiveClubId) {
+      getClubById(effectiveClubId)
+        .then(res => {
+          if (!isMounted) return;
+          const fetchedClub = res.data?.club || res.data;
+          if (fetchedClub) setClubData(fetchedClub);
+        })
+        .catch(err => {
+          console.debug("Error fetching club details in Profile.jsx:", err);
+        });
     }
-    setLoading(false);
-  }, [authUser?.id, authUser?.rollNo, authRole, fetchClubInfo, isFacultyCoordinator]);
+
+    const canFetchEvents = Boolean(
+      isFacultyCoordinator ||
+      user.rollNo ||
+      user.branch ||
+      user.collegeName ||
+      role === 'member' ||
+      role === 'student' ||
+      role === 'external' ||
+      role === 'facultyCoordinator' ||
+      user.principalType === 'FACULTY'
+    );
+
+    if (canFetchEvents) {
+      getUserEvents(user.id || user._id)
+        .then(res => {
+          if (!isMounted) return;
+          const participations = res.data || [];
+          const winningsList = [];
+          participations.forEach(p => {
+            const ev = p.eventId || p.event;
+            if (ev && ev.winners && Array.isArray(ev.winners)) {
+              const match = ev.winners.find(w =>
+                (w.studentId && String(w.studentId) === String(user.id || user._id)) ||
+                (w.rollNo && user.rollNo && String(w.rollNo).trim().toLowerCase() === user.rollNo.trim().toLowerCase()) ||
+                (w.email && user.email && String(w.email).trim().toLowerCase() === user.email.trim().toLowerCase()) ||
+                (w.name && user.name && String(w.name).toLowerCase().includes(user.name.toLowerCase()))
+              );
+              if (match) {
+                winningsList.push({
+                  eventTitle: ev.title,
+                  eventSlug: ev.slug || ev.id || ev._id,
+                  rank: match.rank,
+                  date: ev.startTime,
+                  clubName: ev.club?.clubName
+                });
+              }
+            }
+          });
+          setWinnings(winningsList);
+        })
+        .catch(err => {
+          console.error("Error fetching winnings in Profile.jsx:", err);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, role, isFacultyCoordinator]);
 
   // Handle hash scrolling (e.g. #announcements)
   useEffect(() => {
@@ -524,13 +487,6 @@ const Profile = () => {
   }, [location.hash, clubData]);
 
   if (!user) return <div className="text-center mt-10">Please login to view profile.</div>;
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <ShimmerText text="Loading profile..." className="text-sm font-semibold tracking-wider" />
-      </div>
-    );
-  }
 
   // Dynamic Academic Progress for Students / Student Leads
   const studentProgress = isStudentAccount ? calculateAcademicProgress(user) : null;
@@ -538,72 +494,6 @@ const Profile = () => {
   const displaySemester = user?.semesterLabel || studentProgress?.semesterLabel;
   const displayAcademicStanding = [displayAcademicYear, displaySemester].filter(Boolean).join(" • ");
   const displayGraduationYear = user?.expectedGraduationYear || studentProgress?.expectedGraduationYear;
-
-  // Statistics calculations for Club Profile
-  const totalMembersCount = clubMembers.filter(m => !m.isClubAccount).length;
-  const totalEventsCount = clubEvents.length;
-  const totalRegistrationsCount = clubEvents.reduce((sum, ev) => sum + (Number(ev.registeredCount) || 0), 0);
-
-  const isClubSelf = (m) => {
-    if (m.isClubAccount) return true;
-    const studentEmail = (m.student?.email || m.email || '').trim().toLowerCase();
-    const clubEmail = (clubData?.clubEmail || user?.email || '').trim().toLowerCase();
-    if (studentEmail && clubEmail && studentEmail === clubEmail) return true;
-    if (clubData?.slug && studentEmail.startsWith(clubData.slug.toLowerCase())) return true;
-    const studentName = (m.student?.name || m.name || '').trim().toLowerCase();
-    const clubName = (clubData?.clubName || user?.name || '').trim().toLowerCase();
-    if (studentName && clubName && studentName === clubName) return true;
-    if (!m.student?.rollNo && !m.rollNo) return true;
-    return false;
-  };
-
-  // Leadership groupings (Student Leads, Coordinators, Faculty Coordinator only - strictly no generic members or club itself)
-  const facultyCoordinator = clubData?.facultyCoordinator || (clubData?.facultyName ? { name: clubData.facultyName, email: clubData.facultyEmail } : null);
-  const studentLeads = clubMembers.filter(m => {
-    if (isClubSelf(m)) return false;
-    const r = (m.role || '').toUpperCase();
-    return r === 'CLUB_HEAD' || r === 'STUDENT_LEAD' || (m.role || '').toLowerCase() === 'clubhead';
-  });
-  const clubCoordinators = clubMembers.filter(m => {
-    if (isClubSelf(m)) return false;
-    const r = (m.role || '').toUpperCase();
-    return r === 'COORDINATOR' || (m.role || '').toLowerCase() === 'coordinator';
-  });
-
-  const roleCoordinatorNames = clubCoordinators.map(c => c.student?.name || c.name).filter(Boolean);
-  const roleLeadNames = studentLeads.map(l => l.student?.name || l.name).filter(Boolean);
-  const savedCoordinators = Array.isArray(clubData?.studentCoordinators)
-    ? clubData.studentCoordinators.filter(Boolean)
-    : (typeof clubData?.studentCoordinators === 'string' && clubData.studentCoordinators
-      ? clubData.studentCoordinators.split(',').map(s => s.trim()).filter(Boolean)
-      : []);
-
-  const displayStudentLead = roleLeadNames.length > 0
-    ? roleLeadNames.join(', ')
-    : (savedCoordinators.length > 0 ? savedCoordinators[0] : 'Not Assigned');
-
-  const displayStudentCoordinators = roleCoordinatorNames.length > 0
-    ? roleCoordinatorNames.join(', ')
-    : (savedCoordinators.length > 0
-      ? savedCoordinators.join(', ')
-      : (roleLeadNames.length > 0 ? roleLeadNames.join(', ') : 'Not Assigned'));
-
-  const getSocialLink = (platformQuery) => {
-    if (Array.isArray(clubData?.socialLinks) && clubData.socialLinks.length > 0) {
-      return clubData.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
-    }
-    if (Array.isArray(user?.socialLinks) && user.socialLinks.length > 0) {
-      return user.socialLinks.find(l => (l.platform || '').toLowerCase().includes(platformQuery))?.url || null;
-    }
-    return null;
-  };
-
-  const instagramUrl = getSocialLink('instagram') || user.instagramProfile;
-  const githubUrl = getSocialLink('github') || user.githubProfile;
-  const linkedinUrl = getSocialLink('linkedin') || user.linkedinProfile;
-  const twitterUrl = getSocialLink('twitter') || getSocialLink('x') || user.xProfile;
-  const whatsappUrl = getSocialLink('whatsapp') || user.whatsappNumber;
-  const websiteUrl = getSocialLink('website') || user.portfolioUrl;
 
   // Initials for fallback avatar
   const profileInitials = (user?.name || 'U').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -934,16 +824,10 @@ const Profile = () => {
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
                   </div>
                 )}
-                {user.program && (
+                {(user.program || user.branch) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.program}</p>
-                  </div>
-                )}
-                {user.branch && (
-                  <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Branch</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
+                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
                   </div>
                 )}
                 {displayAcademicStanding && (

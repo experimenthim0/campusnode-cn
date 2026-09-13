@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   deleteClub,
   getClubMembers,
+  getMyClubMembership,
   createClubAnnouncement,
   deleteClubAnnouncement,
   togglePinClubAnnouncement,
@@ -416,8 +417,14 @@ const ClubDetails = () => {
   const [events, setEvents] = useState([]);
   const [featuredEvent, setFeaturedEvent] = useState(null);
   const [registeredEvents, setRegisteredEvents] = useState([]);
-  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Paginated regular members (role = MEMBER)
+  const [regularMembers, setRegularMembers] = useState([]);
+  const [regularMembersTotal, setRegularMembersTotal] = useState(0);
+  const [regularMembersHasMore, setRegularMembersHasMore] = useState(false);
+  const [loadingMoreMembers, setLoadingMoreMembers] = useState(false);
+  const [membersInitialLoading, setMembersInitialLoading] = useState(true);
 
   const [canEdit, setCanEdit] = useState(false);
   const [isHead, setIsHead] = useState(false);
@@ -429,7 +436,6 @@ const ClubDetails = () => {
   const [isUpcomingEventsExpanded, setIsUpcomingEventsExpanded] = useState(false);
   const [isPastEventsExpanded, setIsPastEventsExpanded] = useState(false);
   const [isCoordinatorsExpanded, setIsCoordinatorsExpanded] = useState(false);
-  const [isMembersExpanded, setIsMembersExpanded] = useState(false);
   const [isAchievementsExpanded, setIsAchievementsExpanded] = useState(false);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
 
@@ -462,61 +468,116 @@ const ClubDetails = () => {
     img.onerror = () => setHeroLogoSrc(fallbackLogo);
   }, [club?.clubLogo, club?._id, club?.id, authUser?.role, authUser?.clubId, authUser?.clubLogo, authUser?.profileImage, fallbackLogo]);
 
+  const MEMBERS_PAGE_SIZE = 10;
+
+  // ── Load initial 10 regular members for a given club id ──────────────────
+  const fetchRegularMembers = async (clubId, offset = 0, append = false) => {
+    try {
+      if (append) setLoadingMoreMembers(true);
+      else setMembersInitialLoading(true);
+      const res = await getClubMembers(clubId, {
+        role: "MEMBER",
+        limit: MEMBERS_PAGE_SIZE,
+        offset,
+        format: "paginated",
+      });
+      const payload = res.data;
+      const newMembers = payload.members || [];
+      setRegularMembers((prev) => append ? [...prev, ...newMembers] : newMembers);
+      setRegularMembersTotal(payload.total ?? 0);
+      setRegularMembersHasMore(payload.hasMore ?? false);
+    } catch {
+      // silently ignore — members section just shows empty
+    } finally {
+      setLoadingMoreMembers(false);
+      setMembersInitialLoading(false);
+    }
+  };
+
+  const handleLoadMoreMembers = () => {
+    if (!club || loadingMoreMembers || !regularMembersHasMore) return;
+    const clubId = club._id || club.id;
+    fetchRegularMembers(clubId, regularMembers.length, true);
+  };
+
   const fetchClubDetails = async () => {
     try {
       const clubData = await getPublicJson(`/api/clubs/${slug}`);
       setClub(clubData.club);
       setEvents(clubData.events || []);
       setFeaturedEvent(clubData.featuredEvent || null);
+      // ✅ Page renders immediately — no member blocking
+      setLoading(false);
 
-      if (authUser && (authRole === "member" || authRole === "student")) {
-        try {
-          const regRes = await getUserEvents(authUser.id || authUser._id);
-          setRegisteredEvents(
-            regRes.data.filter((r) => r.eventId).map((r) => r.eventId.id || r.eventId._id)
-          );
-        } catch (regErr) {
-          console.error("Error fetching user registrations:", regErr);
-        }
-      }
-
-      if (clubData?.club) {
+      // Derive auth state from club data (leadership included in clubData.club.memberships)
+      if (authUser && clubData?.club) {
         const clubId = clubData.club._id || clubData.club.id;
-        try {
-          const membersRes = await getClubMembers(clubId);
-          const memberList = membersRes.data || [];
-          setMembers(memberList);
-          if (authUser) {
-            const isGlobalAdmin = authRole === "admin" || authRole === "SUPER_ADMIN";
-            const isFacultyCoord =
-              (authRole === "faculty" || authRole === "facultyCoordinator") &&
-              (clubData.club.facultyCoordinatorId === authUser.id ||
-                clubData.club.facultyCoordinator?.id === authUser.id);
-            const isClubAcct =
-              (authRole === "club" || authRole === "CLUB") &&
-              String(authUser.clubId) === String(clubId);
+        const isGlobalAdmin = authRole === "admin" || authRole === "SUPER_ADMIN";
+        const isFacultyCoord =
+          (authRole === "faculty" || authRole === "facultyCoordinator") &&
+          (clubData.club.facultyCoordinatorId === authUser.id ||
+            clubData.club.facultyCoordinator?.id === authUser.id);
+        const isClubAcct =
+          (authRole === "club" || authRole === "CLUB") &&
+          String(authUser.clubId) === String(clubId);
 
-            const membership = memberList.find(
-              (m) => m.studentId === authUser.id || m.student?.id === authUser.id
-            );
-            const isClubHeadRole = membership?.role === ClubMemberRole.CLUB_HEAD;
-            const isCoordinatorRole = membership?.role === ClubMemberRole.COORDINATOR;
+        // Fast auth from embedded memberships (only heads+coordinators are in clubData.club.memberships)
+        const leadershipMembership = (clubData.club.memberships || []).find(
+          (m) => m.studentId === authUser.id || m.student?.id === authUser.id
+        );
+        const isClubHeadRole = leadershipMembership?.role === ClubMemberRole.CLUB_HEAD;
+        const isCoordinatorRole = leadershipMembership?.role === ClubMemberRole.COORDINATOR;
 
-            setIsHead(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole);
-            setCanEdit(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole || isCoordinatorRole || (membership?.canEditEvents ?? false));
+        // Set immediately from known data
+        setIsHead(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole);
+        setCanEdit(isGlobalAdmin || isFacultyCoord || isClubAcct || isClubHeadRole || isCoordinatorRole);
+
+        // For regular members: check if they have custom canEditEvents permission
+        if (!isGlobalAdmin && !isFacultyCoord && !isClubAcct && !isClubHeadRole && !isCoordinatorRole &&
+            (authRole === "member" || authRole === "student" || authRole === "faculty")) {
+          try {
+            const myMembership = await getMyClubMembership(clubId);
+            if (myMembership?.data?.canEditEvents) {
+              setCanEdit(true);
+            }
+          } catch {
+            // Not a member — permissions stay as-is
           }
-        } catch {
-          // fetch members failed
+        }
+
+        // Async: fetch registered events in the background
+        if (authRole === "member" || authRole === "student" || authRole === "faculty") {
+          try {
+            const regRes = await getUserEvents(authUser.id || authUser._id);
+            setRegisteredEvents(
+              regRes.data.filter((r) => r.eventId).map((r) => r.eventId.id || r.eventId._id)
+            );
+          } catch (regErr) {
+            console.error("Error fetching user registrations:", regErr);
+          }
+        }
+
+        // Async: load first page of regular members
+        fetchRegularMembers(clubId, 0, false);
+      } else {
+        // No auth user — still load members
+        if (clubData?.club) {
+          const clubId = clubData.club._id || clubData.club.id;
+          fetchRegularMembers(clubId, 0, false);
         }
       }
     } catch (err) {
       console.error("Error fetching club details:", err);
-    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    // Reset paginated member state on slug change
+    setRegularMembers([]);
+    setRegularMembersTotal(0);
+    setRegularMembersHasMore(false);
+    setMembersInitialLoading(true);
     fetchClubDetails();
   }, [slug, authUser?.id, authRole]);
 
@@ -526,42 +587,23 @@ const ClubDetails = () => {
     }
   }, [club]);
 
-  // Derived people grouping
-  const studentMembers = useMemo(() => {
-    return members.filter((m) => {
-      if (!m.student || !m.student.id || !m.student.name) return false;
-      const sName = m.student.name.toLowerCase().trim();
-      const cName = (club?.clubName || "").toLowerCase().trim();
-      const sEmail = (m.student.email || "").toLowerCase().trim();
-      const cEmail = (club?.clubEmail || "").toLowerCase().trim();
-
-      if (cName && sName === cName) return false;
-      if (cEmail && sEmail === cEmail) return false;
-      return true;
-    });
-  }, [members, club]);
-
+  // ── Derived leadership from club.memberships (loaded instantly with clubData) ──
   const studentHeads = useMemo(() => {
-    return studentMembers.filter(
-      (m) => m.role === ClubMemberRole.CLUB_HEAD || m.role === "CLUB_HEAD"
+    return (club?.memberships || []).filter(
+      (m) => (m.role === ClubMemberRole.CLUB_HEAD || m.role === "CLUB_HEAD") &&
+             m.student?.id && m.student?.name &&
+             m.student.name.toLowerCase().trim() !== (club?.clubName || "").toLowerCase().trim()
     );
-  }, [studentMembers]);
+  }, [club?.memberships, club?.clubName]);
 
   const studentCoordinators = useMemo(() => {
-    return studentMembers.filter(
-      (m) => m.role === ClubMemberRole.COORDINATOR || m.role === "COORDINATOR"
+    return (club?.memberships || []).filter(
+      (m) => (m.role === ClubMemberRole.COORDINATOR || m.role === "COORDINATOR") &&
+             m.student?.id && m.student?.name
     );
-  }, [studentMembers]);
+  }, [club?.memberships]);
 
-  const regularMembers = useMemo(() => {
-    return studentMembers.filter(
-      (m) =>
-        m.role !== ClubMemberRole.CLUB_HEAD &&
-        m.role !== "CLUB_HEAD" &&
-        m.role !== ClubMemberRole.COORDINATOR &&
-        m.role !== "COORDINATOR"
-    );
-  }, [studentMembers]);
+  // regularMembers comes directly from paginated state (setRegularMembers)
 
   const now = new Date();
   const liveEvents = events.filter(
@@ -843,7 +885,7 @@ const ClubDetails = () => {
               <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0">
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
                   <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
-                    {studentMembers.length}
+                    {club?.stats?.membersCount ?? (regularMembersTotal + studentHeads.length + studentCoordinators.length)}
                   </div>
                   <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Members
@@ -1359,7 +1401,8 @@ const ClubDetails = () => {
         {((club.facultyName || club.facultyCoordinator?.name) ||
           studentHeads.length > 0 ||
           studentCoordinators.length > 0 ||
-          regularMembers.length > 0) && (
+          membersInitialLoading ||
+          regularMembersTotal > 0) && (
           <section className="w-full space-y-6 sm:space-y-8">
             <div className="flex items-center justify-between pb-2">
               <div>
@@ -1452,52 +1495,79 @@ const ClubDetails = () => {
                 </div>
               )}
 
-              {/* Members Grid */}
-              {regularMembers.length > 0 && (
+              {/* Members Grid — paginated, 10 at a time */}
+              {(membersInitialLoading || regularMembers.length > 0 || regularMembersTotal > 0) && (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
-                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
                     <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
-                      Club Members ({regularMembers.length})
+                      Club Members
                     </h3>
-                    {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
+                    {!membersInitialLoading && regularMembersTotal > 0 && (
+                      <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                        Showing {regularMembers.length} of {regularMembersTotal}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {(isMembersExpanded ? regularMembers : regularMembers.slice(0, 8)).map((m) => (
-                      <TeamMemberCard
-                        key={m.id}
-                        name={m.student?.name}
-                        role="Member"
-                        image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
-                        subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
-                        student={m.student}
-                      />
-                    ))}
-                  </div>
-
-                  {regularMembers.length > 8 && (
-                    <div className="flex justify-center pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsMembersExpanded((prev) => !prev)}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
-                      >
-                        <span>
-                          {isMembersExpanded
-                            ? "Show Less"
-                            : `View All Members (${regularMembers.length})`}
-                        </span>
-                        <i className={isMembersExpanded ? "ri-arrow-up-s-line text-sm" : "ri-arrow-down-s-line text-sm"} />
-                      </button>
+                  {membersInitialLoading ? (
+                    // Skeleton while loading first 10 members
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div key={i} className="flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs animate-pulse">
+                          <div className="aspect-[4/4.6] bg-neutral-200 dark:bg-neutral-800" />
+                          <div className="p-3 space-y-2">
+                            <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4" />
+                            <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-1/2" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-5">
+                        {regularMembers.map((m) => (
+                          <TeamMemberCard
+                            key={m.id}
+                            name={m.student?.name}
+                            role="Member"
+                            image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
+                            subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
+                            student={m.student}
+                          />
+                        ))}
+                      </div>
+
+                      {regularMembersHasMore && (
+                        <div className="flex justify-center pt-2">
+                          <button
+                            type="button"
+                            onClick={handleLoadMoreMembers}
+                            disabled={loadingMoreMembers}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            {loadingMoreMembers ? (
+                              <>
+                                <i className="ri-loader-4-line animate-spin text-sm" /> Loading...
+                              </>
+                            ) : (
+                              <>
+                                <i className="ri-add-line text-sm" />
+                                Load More Members (+10)
+                                <span className="text-neutral-400 font-normal">
+                                  ({regularMembersTotal - regularMembers.length} remaining)
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
             </div>
           </section>
         )}
-
 
 
         {achievements.length > 0 && (

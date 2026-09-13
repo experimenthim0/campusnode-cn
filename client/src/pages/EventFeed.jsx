@@ -43,6 +43,9 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
   const { user, role } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = React.useRef(null);
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [filterStatus, setFilterStatus] = useState(initialStatus);
   const [filterClub, setFilterClub] = useState(initialClub);
@@ -71,9 +74,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
   const fetchEvents = async () => {
     try {
-      // Uses cacheManager: 10-minute TTL, SWR pattern, IndexedDB persistence
-      const eventData = await getPublicJson(eventsUrl);
-      setEvents(Array.isArray(eventData) ? eventData : []);
+      const initialLimit = limit || 50;
+      const initialUrl = `${eventsUrl}?limit=${initialLimit}&offset=0`;
+      const eventData = await getPublicJson(initialUrl);
+      const dataList = Array.isArray(eventData) ? eventData : [];
+      setEvents(dataList);
+      setHasMore(dataList.length >= initialLimit);
+
       if (user) {
         const regRes = await getUserEvents(user.id || user._id);
         setRegisteredEvents(regRes.data.map(item => item.eventId?._id || item.eventId));
@@ -85,18 +92,52 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     }
   };
 
+  const loadMoreEvents = useCallback(async () => {
+    if (loadingMore || !hasMore || limit) return;
+    setLoadingMore(true);
+    try {
+      const nextOffset = events.length;
+      const nextUrl = `${eventsUrl}?limit=10&offset=${nextOffset}`;
+      const nextBatch = await getPublicJson(nextUrl);
+
+      if (Array.isArray(nextBatch) && nextBatch.length > 0) {
+        setEvents((prev) => {
+          const seen = new Set(prev.map((e) => e.id || e._id));
+          const fresh = nextBatch.filter((e) => !seen.has(e.id || e._id));
+          return [...prev, ...fresh];
+        });
+        if (nextBatch.length < 10) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Failed to load more events:', err);
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, limit, events.length]);
+
   // SWR: auto-update UI when background revalidation finds new data
   const handleBackgroundUpdate = useCallback((newData) => {
     if (newData && Array.isArray(newData)) {
-      setEvents(newData);
+      setEvents((prev) => {
+        // If we only loaded first page, replace; otherwise merge updates
+        if (prev.length <= 50) return newData;
+        const newMap = new Map(newData.map(e => [e.id || e._id, e]));
+        return prev.map(e => newMap.get(e.id || e._id) || e);
+      });
     }
   }, []);
 
   useEffect(() => {
     fetchEvents();
 
-    // Register for background SWR updates (e.g., cache invalidated from another tab)
-    registerUpdateCallback(eventsUrl, handleBackgroundUpdate);
+    // Register for background SWR updates
+    const initialUrl = `${eventsUrl}?limit=${limit || 50}&offset=0`;
+    registerUpdateCallback(initialUrl, handleBackgroundUpdate);
 
     const interval = setInterval(() => {
       if (!document.hidden) {
@@ -105,9 +146,34 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     }, 60000);
     return () => {
       clearInterval(interval);
-      unregisterUpdateCallback(eventsUrl, handleBackgroundUpdate);
+      unregisterUpdateCallback(initialUrl, handleBackgroundUpdate);
     };
-  }, []);
+  }, [limit]);
+
+  // Infinite scroll intersection observer
+  useEffect(() => {
+    if (limit || !hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMoreEvents();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    const currentSentinel = sentinelRef.current;
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+    };
+  }, [limit, hasMore, loading, loadingMore, loadMoreEvents]);
 
   const clubNames = useMemo(() => {
     const names = new Set();
@@ -599,6 +665,39 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Infinite Scroll Sentinel and Status */}
+      {!limit && (
+        <div className="mt-10 mb-6 flex flex-col items-center justify-center min-h-[64px] gap-3">
+          {loadingMore && (
+            <div className="flex items-center gap-2.5 py-3.5 px-6 rounded-full bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-sm text-xs font-semibold text-neutral-800 dark:text-neutral-200 animate-pulse">
+              <i className="ri-loader-4-line animate-spin text-brand-600 dark:text-brand-400 text-base" />
+              <span>Loading more events...</span>
+            </div>
+          )}
+
+          {hasMore && !loadingMore && !loading && (
+            <button
+              type="button"
+              onClick={loadMoreEvents}
+              className="mysans inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-zinc-750 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <i className="ri-arrow-down-line text-sm" />
+              <span>Load More (+10 Events)</span>
+            </button>
+          )}
+
+          {!hasMore && events.length > 0 && (
+            <div className="flex items-center gap-2 py-2.5 px-5 rounded-full bg-neutral-100/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/60 text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              <i className="ri-check-double-line text-brand-600 dark:text-brand-400 text-sm" />
+              <span>You've reached the end • All {events.length} events loaded</span>
+            </div>
+          )}
+
+          {/* Invisible sentinel element observed by IntersectionObserver */}
+          <div ref={sentinelRef} className="h-6 w-full pointer-events-none" aria-hidden="true" />
         </div>
       )}
 

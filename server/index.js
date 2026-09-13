@@ -36,14 +36,46 @@ import http from "http";
 import { Server } from "socket.io";
 import { apiCompression, etagSupport, getPerformanceStats, overloadProtection, publicReadCache, requestMetrics } from "./middleware/performance.js";
 import { seedPermissions } from "./utils/rbac.js";
+import { authenticateSocketToken } from "./middleware/auth.js";
 
 const app = express();
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 
+if (process.env.NODE_ENV === "production") {
+  const requiredProductionEnv = ["DATABASE_URL", "JWT_SECRET", "CLIENT_URL"];
+  const missing = requiredProductionEnv.filter((name) => !process.env[name]);
+  if (!process.env.REDIS_URL && !process.env.REDIS_HOST) missing.push("REDIS_URL or REDIS_HOST");
+  if (missing.length > 0) {
+    throw new Error(`Missing required production configuration: ${missing.join(", ")}`);
+  }
+  if (process.env.SKIP_VERIFICATION === "true") {
+    throw new Error("SKIP_VERIFICATION must not be enabled in production.");
+  }
+}
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: corsOptions,
+});
+
+const getSocketToken = (socket) => {
+  const authToken = socket.handshake.auth?.token;
+  if (authToken) return authToken;
+  const cookieHeader = socket.handshake.headers?.cookie || "";
+  const tokenCookie = cookieHeader.split(";").map((part) => part.trim()).find((part) => part.startsWith("token="));
+  return tokenCookie ? decodeURIComponent(tokenCookie.slice("token=".length)) : null;
+};
+
+io.use(async (socket, next) => {
+  try {
+    const principal = await authenticateSocketToken(getSocketToken(socket));
+    if (!principal) return next(new Error("Unauthorized socket connection"));
+    socket.data.principal = principal;
+    next();
+  } catch {
+    next(new Error("Unauthorized socket connection"));
+  }
 });
 
 app.use((req, res, next) => {
@@ -54,11 +86,12 @@ app.use(compression());
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
+  const userId = String(socket.data.principal.userId);
+  socket.join(userId);
+  console.log(`User ${userId} joined their personal room`);
 
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined their personal room`);
-  });
+  // Kept for client compatibility. The supplied ID is intentionally ignored.
+  socket.on("join", () => socket.join(userId));
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });

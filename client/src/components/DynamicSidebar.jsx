@@ -400,7 +400,7 @@ const DynamicSidebar = ({ user }) => {
                 const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
                 const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
                 const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
-                return canManageTeam || canReviewPayments || canUpdateClub || canBroadcast || m.canEditEvents || m.canTakeAttendance;
+                return canManageTeam || canReviewPayments || canUpdateClub || canBroadcast || m.canEditEvents;
               });
 
               if (eligibleMemberships.length === 0) return null;

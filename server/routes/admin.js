@@ -11,6 +11,7 @@ import { sendEmail } from "../emails/emailService.js";
 import { getStudentRoleAndClub } from "./auth.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import { deleteImage, extractCloudinaryPublicId } from "../utils/cloudinary.js";
 
 const router = express.Router();
 
@@ -345,24 +346,24 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
     let isNewFaculty = false;
 
     const result = await prisma.$transaction(async (tx) => {
-      let facultyUser = await tx.adminRole.findUnique({ where: { email: trimmedFacultyEmail } });
+      let facultyUser = await tx.facultyUser.findFirst({
+        where: { email: { equals: trimmedFacultyEmail, mode: "insensitive" } },
+      });
       if (!facultyUser) {
         isNewFaculty = true;
-        facultyUser = await tx.adminRole.create({
+        facultyUser = await tx.facultyUser.create({
           data: {
-            id: createObjectId(),
+            id: `fac_${createObjectId().slice(0, 20)}`,
             name: trimmedFacultyName,
             email: trimmedFacultyEmail,
+            department: "General",
             password: passwordHash,
-            role: "facultyCoordinator",
+            isVerified: true,
           },
         });
       } else {
-        if (facultyUser.role !== "facultyCoordinator" && facultyUser.role !== "admin" && facultyUser.role !== "SUPER_ADMIN") {
-          throw new Error(`The account "${trimmedFacultyEmail}" has role "${facultyUser.role}" and cannot be assigned as faculty coordinator.`);
-        }
         if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
-          facultyUser = await tx.adminRole.update({
+          facultyUser = await tx.facultyUser.update({
             where: { id: facultyUser.id },
             data: { name: trimmedFacultyName },
           });
@@ -419,9 +420,8 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
 
 router.get("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_VIEW), async (req, res) => {
   try {
-    const coordinators = await prisma.adminRole.findMany({
-      where: { role: "facultyCoordinator" },
-      select: { id: true, name: true, email: true },
+    const coordinators = await prisma.facultyUser.findMany({
+      select: { id: true, name: true, email: true, department: true },
       orderBy: { name: "asc" },
     });
 
@@ -448,20 +448,21 @@ router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASS
       });
     }
 
-    const existingAdmin = await prisma.adminRole.findUnique({ where: { email: trimmedEmail } });
-    if (existingAdmin) {
+    const existingFaculty = await prisma.facultyUser.findUnique({ where: { email: trimmedEmail } });
+    if (existingFaculty) {
       return res.status(400).json({ message: `An account with email "${trimmedEmail}" already exists.` });
     }
 
     const passwordHash = await bcrypt.hash(password || "coordinator123", 10);
 
-    const coordinator = await prisma.adminRole.create({
+    const coordinator = await prisma.facultyUser.create({
       data: {
-        id: createObjectId(),
+        id: `fac_${createObjectId().slice(0, 20)}`,
         name: trimmedName,
         email: trimmedEmail,
+        department: req.body.department ? String(req.body.department).trim() : "General",
         password: passwordHash,
-        role: "facultyCoordinator",
+        isVerified: true,
       },
     });
 
@@ -505,10 +506,10 @@ router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_
           message: `The email "${trimmedEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
         });
       }
-      const existingAdmin = await prisma.adminRole.findFirst({
+      const existingFaculty = await prisma.facultyUser.findFirst({
         where: { email: trimmedEmail, id: { not: req.params.id } }
       });
-      if (existingAdmin) {
+      if (existingFaculty) {
         return res.status(400).json({ message: `An account with email "${trimmedEmail}" already exists.` });
       }
       data.email = trimmedEmail;
@@ -516,8 +517,11 @@ router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_
     if (password) {
       data.password = await bcrypt.hash(password, 10);
     }
+    if (req.body.department) {
+      data.department = String(req.body.department).trim();
+    }
 
-    const coordinator = await prisma.adminRole.update({
+    const coordinator = await prisma.facultyUser.update({
       where: { id: req.params.id },
       data,
     });
@@ -545,7 +549,7 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
     const targetClubId = req.params.id;
     const existingClub = await prisma.club.findUnique({
       where: { id: targetClubId },
-      include: { facultyCoordinator: true, account: true }
+      include: { facultyCoordinator: true }
     });
 
     if (!existingClub) {
@@ -581,17 +585,14 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
           });
         }
 
-        let facultyUser = await prisma.adminRole.findUnique({ where: { email: trimmedFacultyEmail } });
+        let facultyUser = await prisma.facultyUser.findFirst({
+          where: { email: { equals: trimmedFacultyEmail, mode: "insensitive" } },
+        });
         let isNewFaculty = false;
 
         if (facultyUser) {
-          if (facultyUser.role !== "facultyCoordinator" && facultyUser.role !== "admin" && facultyUser.role !== "SUPER_ADMIN") {
-            return res.status(400).json({
-              message: `The account "${trimmedFacultyEmail}" has role "${facultyUser.role}" and cannot be assigned as faculty coordinator.`
-            });
-          }
           if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
-            facultyUser = await prisma.adminRole.update({
+            facultyUser = await prisma.facultyUser.update({
               where: { id: facultyUser.id },
               data: { name: trimmedFacultyName }
             });
@@ -601,13 +602,14 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
           const slug = updates.slug || existingClub.slug || "club";
           const defaultPassword = `${slug}@him0148`;
           const passwordHash = await bcrypt.hash(defaultPassword, 10);
-          facultyUser = await prisma.adminRole.create({
+          facultyUser = await prisma.facultyUser.create({
             data: {
-              id: createObjectId(),
+              id: `fac_${createObjectId().slice(0, 20)}`,
               name: trimmedFacultyName,
               email: trimmedFacultyEmail,
+              department: "General",
               password: passwordHash,
-              role: "facultyCoordinator"
+              isVerified: true,
             }
           });
 
@@ -633,7 +635,7 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
         updates.facultyEmail = trimmedFacultyEmail;
         updates.facultyName = trimmedFacultyName;
       } else if (facultyCoordinatorId) {
-        const facultyUser = await prisma.adminRole.findUnique({ where: { id: facultyCoordinatorId } });
+        const facultyUser = await prisma.facultyUser.findUnique({ where: { id: facultyCoordinatorId } });
         if (!facultyUser) {
           return res.status(400).json({ message: "Faculty coordinator account not found." });
         }
@@ -696,6 +698,9 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
     }
 
     const eventIds = club.organizedEvents.map((oe) => oe.eventId);
+    const imagesToDelete = [];
+    if (club.bannerImage) imagesToDelete.push(club.bannerImage);
+    if (club.clubLogo) imagesToDelete.push(club.clubLogo);
 
     await prisma.$transaction(async (tx) => {
       // 1. Delete notifications related to club events
@@ -731,6 +736,9 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
         for (const eventId of eventIds) {
           const remaining = await tx.eventOrganizer.count({ where: { eventId } });
           if (remaining === 0) {
+            const ev = await tx.event.findUnique({ where: { id: eventId }, select: { imageUrl: true } });
+            if (ev?.imageUrl) imagesToDelete.push(ev.imageUrl);
+
             await tx.attendanceRecord.deleteMany({ where: { eventId } });
             await tx.eventFeedback.deleteMany({ where: { eventId } });
             await tx.participation.deleteMany({ where: { eventId } });
@@ -754,6 +762,18 @@ router.delete("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_DELE
         where: { id: clubId }
       });
     });
+
+    // Clean up Cloudinary assets
+    for (const imgUrl of imagesToDelete) {
+      const publicId = extractCloudinaryPublicId(imgUrl);
+      if (publicId) {
+        try {
+          await deleteImage(publicId);
+        } catch (delErr) {
+          console.warn("Failed to delete Cloudinary asset during club deletion:", delErr.message);
+        }
+      }
+    }
 
     invalidatePublicResponses(["clubs*", "events*"]);
 
@@ -988,7 +1008,7 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
 
     if (existingOtherHead) {
       return res.status(409).json({
-        message: `${student.name} is already the Club Head of "${existingOtherHead.club.clubName}". A student can be the Head of only one club at a time. They can still be a Coordinator of other clubs.`,
+        message: `${student.name} is already a lead of another club ("${existingOtherHead.club.clubName}"). A student can be the Student Lead of only one club or society at a time.`,
       });
     }
 
@@ -1127,6 +1147,42 @@ router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), 
     );
 
     res.json({ students: enriched });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/faculty/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+  try {
+    const rawQuery = req.query.q || req.query.query;
+    if (!rawQuery || String(rawQuery).trim().length < 1) {
+      return res.json({ faculty: [] });
+    }
+
+    const query = String(rawQuery).trim();
+
+    const facultyList = await prisma.facultyUser.findMany({
+      where: {
+        OR: [
+          { email: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+          { department: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        department: true,
+        designation: true,
+        coordinatedClubs: {
+          select: { id: true, clubName: true },
+        },
+      },
+      take: 15,
+    });
+
+    res.json({ faculty: facultyList });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

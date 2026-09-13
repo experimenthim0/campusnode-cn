@@ -70,7 +70,7 @@ export function serializeParticipation(participation) {
       name: rawExternal?.name || "External Participant",
       email: rawExternal?.email || "",
       collegeName: rawExternal?.collegeName || "External College",
-      rollNo: rawExternal?.collegeName || "External",
+      rollNo: null,
       profileImage: rawExternal?.profileImage || null,
       phone: rawExternal?.phone || null,
       isExternal: true,

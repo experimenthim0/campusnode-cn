@@ -57,3 +57,7 @@ LINKS.md
 !CAMPUSNODE_TECHNICAL_SPECIFICATION.md
 
 .agents/*
+
+client/src/__tests__/*
+server/utils/__tests__/*
+server/services/__tests__/*

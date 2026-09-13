@@ -34,22 +34,7 @@ export async function ensureVenuesTableAndSeed() {
 
   tableInitPromise = (async () => {
     try {
-      await prisma.$executeRaw`
-        CREATE TABLE IF NOT EXISTS "Venue" (
-          "id" VARCHAR(24) NOT NULL,
-          "name" TEXT NOT NULL,
-          "isOpen" BOOLEAN NOT NULL DEFAULT true,
-          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          CONSTRAINT "Venue_pkey" PRIMARY KEY ("id")
-        );
-      `;
-      await prisma.$executeRaw`
-        CREATE UNIQUE INDEX IF NOT EXISTS "Venue_name_key" ON "Venue"("name");
-      `;
-
-      const countResult = await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM "Venue"`;
-      const count = Number(countResult[0]?.count || 0);
+      const count = await prisma.venue.count();
 
       if (count === 0) {
         console.log("Seeding default campus venues into database...");

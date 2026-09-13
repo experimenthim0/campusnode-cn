@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFeedbackPrompt } from '../context/FeedbackPromptContext';
 import { getUserEvents } from '../services/eventService';
-import { isClubManagementRole, isStudentLeadRole } from '../utils/rbac';
+import { isStudentLeadRole, isCoordinatorRole, hasPermission, PERMISSIONS } from '../utils/rbac';
 
 import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search } from 'lucide-react';
 import EventFeed from './EventFeed';
@@ -23,11 +23,6 @@ import { AtSignIcon } from '@/components/ui/at-sign';
 import { EarthIcon } from '@/components/ui/earth';
 import { ZapIcon } from '@/components/ui/zap';
 import { InsetModernTeamCard, TEAM_MEMBERS } from './Team';
-// Ticker items
-const tickerItems = [
-  'Workshops', 'Hackathons', 'Cultural Fests', 'Sports Meets',
-  'Guest Lectures', 'Club Recruitments', 'Tech Talks', 'Campus Events',
-];
 
 
 
@@ -130,7 +125,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
   );
 };
 
-const SectionLabel = ({ children, light = false }) => (
+const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-2 mb-5 text-brand-600 dark:text-brand-500">
     <span className="text-[11px] font-bold uppercase tracking-[0.15em]">{children}</span>
   </div>
@@ -234,29 +229,25 @@ const Home = () => {
     }
   };
 
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    e.currentTarget.style.setProperty("--x-px", `${x}px`);
-    e.currentTarget.style.setProperty("--y-px", `${y}px`);
-  };
-
-
-
-
-  // ── Role resolution (simplified, no paymentAdmin / lostFoundAdmin) ──────────
+  // ── Role resolution ────────────────────────────────────────────────────────
   const studentName = user?.name || 'Student';
   const firstName = studentName.split(' ')[0];
 
-  // Management memberships: CLUB_HEAD = STUDENT_LEAD (same role)
-  const leadMemberships = (user?.memberships || []).filter(
-    m => isClubManagementRole(m.role) || m.canEditEvents || m.canTakeAttendance
+  // Specific membership role groups
+  const studentLeadMemberships = (user?.memberships || []).filter(
+    (m) => isStudentLeadRole(m.role)
   );
-  const isStudentLead = leadMemberships.length > 0;
+  const coordinatorMemberships = (user?.memberships || []).filter(
+    (m) => isCoordinatorRole(m.role)
+  );
+  const operationalMemberships = (user?.memberships || []).filter(
+    (m) => isStudentLeadRole(m.role) || isCoordinatorRole(m.role) || m.canEditEvents
+  );
+
+  const isStudentLead = studentLeadMemberships.length > 0;
+  const isCoordinator = !isStudentLead && coordinatorMemberships.length > 0;
   const isFaculty = role === 'facultyCoordinator';
   const isAdmin = role === 'admin';
-  // A student lead is still a student — both sections are shown
   const isStudent = !isFaculty && !isAdmin;
 
   // External user detection
@@ -269,11 +260,13 @@ const Home = () => {
     ? 'Faculty Coordinator'
     : isStudentLead
     ? 'Student Lead'
+    : isCoordinator
+    ? 'Club Coordinator'
     : isExternal
     ? 'External Participant'
     : 'NITJ Student';
 
-  // Quick action shortcuts depend on highest-privilege role context
+  // Quick action shortcuts depend on role context
   const quickActions = isAdmin
     ? [
         { to: '/admin-dashboard', label: 'Admin Panel', icon: LayoutDashboard },
@@ -291,7 +284,14 @@ const Home = () => {
     : isStudentLead
     ? [
         { to: '/create', label: 'Create Event', icon: Plus },
-        { to: `/club-events/${leadMemberships[0]?.clubId || ''}`, label: 'Club Events', icon: Calendar },
+        { to: `/club-events/${studentLeadMemberships[0]?.clubId || ''}`, label: 'Club Events', icon: Calendar },
+        { to: '/my-events', label: 'My Tickets', icon: Bookmark },
+        { to: '/profile', label: 'Profile', icon: User, primary: true },
+      ]
+    : isCoordinator
+    ? [
+        { to: `/club-events/${coordinatorMemberships[0]?.clubId || ''}`, label: 'Club Events', icon: Calendar },
+        { to: `/send-notification?clubId=${coordinatorMemberships[0]?.clubId || ''}`, label: 'Broadcast', icon: Bell },
         { to: '/my-events', label: 'My Tickets', icon: Bookmark },
         { to: '/profile', label: 'Profile', icon: User, primary: true },
       ]
@@ -320,9 +320,11 @@ const Home = () => {
                     isAdmin
                       ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/60'
                       : isFaculty
-                      ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/60'
+                      ? 'bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-700 dark:text-cn-blue-400 border-cn-blue-200 dark:border-cn-blue-800/60'
                       : isStudentLead
                       ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                      : isCoordinator
+                      ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60'
                       : isExternal
                       ? 'bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800/60'
                       : 'bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-700 dark:text-cn-blue-400 border-cn-blue-200 dark:border-cn-blue-800/60'
@@ -341,7 +343,9 @@ const Home = () => {
                       : isAdmin
                       ? 'Oversee campus events, manage clubs, and broadcast platform-wide announcements.'
                       : isStudentLead
-                      ? `You're managing ${leadMemberships.length > 1 ? `${leadMemberships.length} clubs` : leadMemberships[0]?.clubName || 'your club'}. Check your dashboard below.`
+                      ? `You're leading ${studentLeadMemberships.length > 1 ? `${studentLeadMemberships.length} clubs` : studentLeadMemberships[0]?.clubName || 'your club'}. Manage events, teams, and operations below.`
+                      : isCoordinator
+                      ? `You're coordinating ${coordinatorMemberships.length > 1 ? `${coordinatorMemberships.length} clubs` : coordinatorMemberships[0]?.clubName || 'your club'}. Coordinate events and announcements below.`
                       : isExternal
                       ? 'Welcome! Browse campus events and register for open fests hosted by NITJ clubs.'
                       : 'Explore active club fests, technical hackathons, and sports events!'}
@@ -517,111 +521,134 @@ const Home = () => {
             </section>
           )}
 
-          {/* ── Section B: Club Operations Desk (Student Leads/Club Heads only) ── */}
-          {isStudent && isStudentLead && (
+          {/* ── Section B: Club Operations Desk (Student Leads & Coordinators only) ── */}
+          {isStudent && (isStudentLead || isCoordinator || operationalMemberships.length > 0) && (
             <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
               <Section>
                 <div className="mb-8 sm:mb-10">
                   {/* Section identity */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 mb-4">
                     <i className="ri-shield-star-line text-amber-600 dark:text-amber-400 text-sm" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">Club Operations Desk</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                      {isStudentLead ? 'Club Operations Desk' : 'Coordinator Desk'}
+                    </span>
                   </div>
                   <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
-                    Your Clubs & Leadership
+                    {isStudentLead ? 'Your Clubs & Leadership' : 'Your Clubs & Coordination'}
                   </h2>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                    Manage events, teams, and communications for the clubs you lead.
+                    {isStudentLead
+                      ? 'Manage events, teams, and communications for the clubs you lead.'
+                      : 'Coordinate events and announcements for the clubs you support.'}
                   </p>
                 </div>
 
                 {/* Per-club operation cards */}
                 <div className="space-y-8">
-                  {leadMemberships.map((m) => (
-                    <div key={m.clubId} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
-                      {/* Club header */}
-                      <div className="flex items-center gap-3 px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/30">
-                        {m.clubLogo ? (
-                          <img src={m.clubLogo} alt={m.clubName} className="w-9 h-9 rounded-xl object-cover border border-neutral-200 dark:border-neutral-700 shrink-0" />
-                        ) : (
-                          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 text-base font-black">
-                            {(m.clubName || 'C').charAt(0)}
+                  {operationalMemberships.map((m) => {
+                    const isLead = isStudentLeadRole(m.role);
+                    const isCoord = isCoordinatorRole(m.role);
+                    const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
+                    const canReviewPayments = isLead || hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
+                    const canBroadcast = isLead || isCoord || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
+                    const canManageEvents = isLead || isCoord || m.canEditEvents || m.canTakeAttendance;
+
+                    return (
+                      <div key={m.clubId} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+                        {/* Club header */}
+                        <div className="flex items-center gap-3 px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/30">
+                          {m.clubLogo ? (
+                            <img src={m.clubLogo} alt={m.clubName} className="w-9 h-9 rounded-xl object-cover border border-neutral-200 dark:border-neutral-700 shrink-0" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 text-base font-black">
+                              {(m.clubName || 'C').charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-bold text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-amber-600 dark:text-amber-400">
+                              {isLead ? 'Student Lead' : isCoord ? 'Club Coordinator' : 'Team Member'}
+                            </p>
                           </div>
-                        )}
-                        <div>
-                          <p className="font-bold text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
-                          <p className="text-[10px] uppercase tracking-widest font-bold text-amber-600 dark:text-amber-400">
-                            {isStudentLeadRole(m.role) ? 'Student Lead' : 'Club Coordinator'}
-                          </p>
+                          <Link
+                            to={`/club-events/${m.clubId}`}
+                            className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
+                          >
+                            View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
+                          </Link>
                         </div>
-                        <Link
-                          to={`/club-events/${m.clubId}`}
-                          className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
-                        >
-                          View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
-                        </Link>
+
+                        {/* Operation tiles */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-neutral-100 dark:divide-neutral-800">
+                          {/* Events & Attendance */}
+                          {canManageEvents && (
+                            <Link
+                              to={`/club-events/${m.clubId}`}
+                              className="flex flex-col gap-3 p-5 group hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors">
+                                <Calendar className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">
+                                  {isLead || isCoord || m.canEditEvents ? 'Create & manage events, scan QR tickets' : 'Scan QR tickets and check-in attendees'}
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {/* Team Management - strictly restricted to Student Leads / club.manage_members */}
+                          {canManageTeam && (
+                            <Link
+                              to={`/club/${m.clubId}/team`}
+                              className="flex flex-col gap-3 p-5 group hover:bg-cn-blue-50/50 dark:hover:bg-cn-blue-950/20 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center transition-colors">
+                                <Users className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-neutral-900 dark:text-white">Team & Members</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {/* Payments - strictly restricted to Student Leads / payment.review */}
+                          {canReviewPayments && (
+                            <Link
+                              to="/payments"
+                              className="flex flex-col gap-3 p-5 group hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-colors">
+                                <Wallet className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {/* Broadcasts - strictly restricted to Student Leads / Coordinators / notification.create */}
+                          {canBroadcast && (
+                            <Link
+                              to={`/send-notification?clubId=${m.clubId}`}
+                              className="flex flex-col gap-3 p-5 group hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-colors">
+                                <Bell className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-neutral-900 dark:text-white">Announcements</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
+                              </div>
+                            </Link>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Operation tiles */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-neutral-100 dark:divide-neutral-800">
-                        {/* Events & Attendance */}
-                        <Link
-                          to={`/club-events/${m.clubId}`}
-                          className="flex flex-col gap-3 p-5 group hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 flex items-center justify-center   transition-colors">
-                            <Calendar className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Create & manage events, scan QR tickets</p>
-                          </div>
-                        </Link>
-
-                        {/* Team Management */}
-                        <Link
-                          to={`/club/${m.clubId}/team`}
-                          className="flex flex-col gap-3 p-5 group hover:bg-cn-blue-50/50 dark:hover:bg-cn-blue-950/20 transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center  transition-colors">
-                            <Users className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm text-neutral-900 dark:text-white">Team & Members</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
-                          </div>
-                        </Link>
-
-                        {/* Payments */}
-                        <Link
-                          to="/payments"
-                          className="flex flex-col gap-3 p-5 group hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center  transition-colors">
-                            <Wallet className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
-                          </div>
-                        </Link>
-
-                        {/* Broadcasts */}
-                        <Link
-                          to={`/send-notification?clubId=${m.clubId}`}
-                          className="flex flex-col gap-3 p-5 group hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-colors">
-                            <Bell className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm text-neutral-900 dark:text-white">Announcements</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Section>
             </section>
@@ -632,9 +659,9 @@ const Home = () => {
             <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
               <Section>
                 <div className="mb-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 mb-4">
-                    <i className="ri-government-line text-purple-600 dark:text-purple-400 text-sm" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-purple-700 dark:text-purple-400">Faculty Coordinator Desk</span>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-200 dark:border-cn-blue-800/50 mb-4">
+                    <i className="ri-government-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-cn-blue-700 dark:text-cn-blue-400">Faculty Coordinator Desk</span>
                   </div>
                   <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     Approvals & Oversight
@@ -643,7 +670,7 @@ const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
                   <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                         <Calendar className="w-6 h-6" />
                       </div>
                       <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Event Proposals</h3>
@@ -651,13 +678,13 @@ const Home = () => {
                         Review detailed proposals for upcoming club events. Approve for public release or return with comments.
                       </p>
                     </div>
-                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-200 group">
+                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 group">
                       Review Proposals <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
                   <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/20 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mb-4">
                         <Users className="w-6 h-6" />
                       </div>
                       <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
@@ -665,7 +692,7 @@ const Home = () => {
                         Oversee student memberships, coordinate schedules, and send urgent notifications.
                       </p>
                     </div>
-                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-200 group">
+                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-neutral-900 dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-all duration-200 group">
                       View Club Directory <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>

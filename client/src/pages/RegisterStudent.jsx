@@ -231,8 +231,15 @@ const RegisterStudent = () => {
               </span>
             </div>
 
-            {/* Secondary External Link */}
-            <div className="pt-2">
+            {/* Secondary Links for Faculty & External */}
+            <div className="pt-2 flex flex-col gap-1.5">
+              <Link
+                to="/register/faculty"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
+              >
+                <span>Are you a faculty or staff member? Register as Faculty</span>
+                <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
               <Link
                 to="/register/external"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"

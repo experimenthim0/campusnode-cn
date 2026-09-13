@@ -60,4 +60,21 @@ export const deleteImage = (publicId) => {
   });
 };
 
+/**
+ * Extracts Cloudinary public ID from a Cloudinary URL (handles folders, versions, extensions)
+ * @param {string} url
+ * @returns {string|null}
+ */
+export function extractCloudinaryPublicId(url) {
+  if (!url || typeof url !== 'string') return null;
+  if (!url.includes('res.cloudinary.com')) return null;
+  try {
+    const clean = url.split('?')[0];
+    const match = clean.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-z0-9]+)?$/i);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 export default cloudinary;

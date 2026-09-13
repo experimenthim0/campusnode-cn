@@ -23,6 +23,7 @@ const normalizeClubId = (clubId) => {
  */
 export const generateToken = (user, role, userType = "student", clubId = null, principalType = null) => {
   const resolvedPrincipal = principalType || (
+    userType === "faculty" || role === "faculty" || role === "facultyCoordinator" ? "FACULTY" :
     userType === "admin" && role === "facultyCoordinator" ? "FACULTY" :
     userType === "admin" ? "ADMIN" :
     userType === "external" ? "EXTERNAL" : "STUDENT"
@@ -75,31 +76,82 @@ export const verifyToken = async (req, res, next) => {
     if (!decoded) return res.status(401).json({ message: "Invalid or expired token." });
 
     const principalType = decoded.principalType || (
+      decoded.userType === "faculty" || decoded.role === "faculty" || decoded.role === "facultyCoordinator" ? "FACULTY" :
       decoded.userType === "admin" ? (decoded.role === "facultyCoordinator" ? "FACULTY" : "ADMIN") :
       decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
     );
 
-    if (principalType === "ADMIN" || principalType === "FACULTY" || decoded.userType === "admin") {
+    if (principalType === "FACULTY" || decoded.userType === "faculty") {
+      const faculty = await prisma.facultyUser.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, name: true, department: true, designation: true },
+      });
+
+      if (faculty) {
+        const facultyClub = await prisma.club.findFirst({
+          where: { facultyCoordinatorId: faculty.id },
+          select: { id: true, clubName: true },
+        });
+        const isCoordinator = Boolean(facultyClub);
+
+        req.user = {
+          principalType: "FACULTY",
+          facultyId: faculty.id,
+          userId: faculty.id,
+          id: faculty.id,
+          name: faculty.name,
+          email: faculty.email,
+          department: faculty.department,
+          designation: faculty.designation,
+          role: isCoordinator ? "facultyCoordinator" : (decoded.role || "faculty"),
+          userType: "faculty",
+          clubId: facultyClub?.id ?? null,
+          clubName: facultyClub?.clubName ?? null,
+        };
+        return next();
+      }
+
+      // Fallback to AdminRole for backward compatibility
+      const admin = await prisma.adminRole.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, name: true, role: true },
+      });
+      if (admin) {
+        const facultyClub = admin.role === "facultyCoordinator" ? await getFacultyClub(admin.id) : null;
+        req.user = {
+          principalType: "FACULTY",
+          facultyId: admin.id,
+          userId: admin.id,
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          role: admin.role,
+          userType: "faculty",
+          clubId: facultyClub?.id ?? null,
+          clubName: facultyClub?.clubName ?? null,
+        };
+        return next();
+      }
+
+      return res.status(401).json({ message: "Invalid or expired token." });
+    }
+
+    if (principalType === "ADMIN" || decoded.userType === "admin") {
       const admin = await prisma.adminRole.findUnique({
         where: { id: decoded.userId },
         select: { id: true, email: true, name: true, role: true },
       });
       if (!admin) return res.status(401).json({ message: "Invalid or expired token." });
 
-      const facultyClub = admin.role === "facultyCoordinator" ? await getFacultyClub(admin.id) : null;
-      const isFaculty = admin.role === "facultyCoordinator";
-
       req.user = {
-        principalType: isFaculty ? "FACULTY" : "ADMIN",
-        facultyId: isFaculty ? admin.id : undefined,
+        principalType: "ADMIN",
         userId: admin.id,
         id: admin.id,
         name: admin.name,
         email: admin.email,
         role: admin.role,
         userType: "admin",
-        clubId: facultyClub?.id ?? null,
-        clubName: facultyClub?.clubName ?? null,
+        clubId: null,
       };
       return next();
     }
@@ -159,7 +211,7 @@ export const verifyToken = async (req, res, next) => {
     const managementMembership = memberships.find((m) =>
       ["CLUB_HEAD", "COORDINATOR"].includes(m.role),
     );
-    const primary = managementMembership ?? memberships[0] ?? null;
+    const primary = managementMembership ?? null;
 
     const mappedMemberships = memberships.map((m) => ({
       id: m.id,
@@ -196,6 +248,40 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
+// Socket.IO cannot use Express' req/res middleware directly. This helper
+// validates the same JWT and confirms that its principal still exists before
+// allowing a socket to receive private notifications.
+export const authenticateSocketToken = async (token) => {
+  if (!token) return null;
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch {
+    return null;
+  }
+
+  const principalType = decoded.principalType || (
+    decoded.userType === "faculty" || decoded.role === "faculty" || decoded.role === "facultyCoordinator" ? "FACULTY" :
+    decoded.userType === "admin" ? (decoded.role === "facultyCoordinator" ? "FACULTY" : "ADMIN") :
+    decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
+  );
+
+  let exists = false;
+  if (principalType === "FACULTY" || decoded.userType === "faculty") {
+    exists = Boolean(await prisma.facultyUser.findUnique({ where: { id: decoded.userId }, select: { id: true } })) ||
+             Boolean(await prisma.adminRole.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
+  } else if (principalType === "ADMIN" || decoded.userType === "admin") {
+    exists = Boolean(await prisma.adminRole.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
+  } else if (principalType === "EXTERNAL" || decoded.userType === "external" || decoded.role === "external") {
+    exists = Boolean(await prisma.externalUser.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
+  } else {
+    exists = Boolean(await prisma.studentUser.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
+  }
+
+  return exists ? { userId: decoded.userId, principalType } : null;
+};
+
 import { hasPermission } from "../utils/rbac.js";
 
 export const requirePermission = (permission, resourceExtractor = null) => {
@@ -210,6 +296,10 @@ export const requirePermission = (permission, resourceExtractor = null) => {
       resource = { clubId: req.params.clubId };
     } else if (req.body && req.body.clubId) {
       resource = { clubId: req.body.clubId };
+    } else if (req.query && req.query.clubId) {
+      resource = { clubId: req.query.clubId };
+    } else if (req.body && req.body.targetClubId) {
+      resource = { clubId: req.body.targetClubId };
     } else if (req.baseUrl && req.baseUrl.includes("/clubs") && req.params.id) {
       resource = { clubId: req.params.id };
     } else if (req.params.eventId || (req.baseUrl && req.baseUrl.includes("/events") && req.params.id)) {
@@ -255,9 +345,6 @@ export const allowRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ message: "No token provided." });
-    }
-    if (req.user.role === "admin" || req.user.role === "SUPER_ADMIN" || req.user.principalType === "ADMIN") {
-      return next();
     }
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ message: "Access denied." });

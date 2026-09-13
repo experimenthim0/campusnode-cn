@@ -24,9 +24,12 @@ export const SocketProvider = ({ children }) => {
 
   const userId = user?.id || user?._id || null;
   const userRef = useRef(user);
-  userRef.current = user;
   const userRoleRef = useRef(userRole);
-  userRoleRef.current = userRole;
+
+  useEffect(() => {
+    userRef.current = user;
+    userRoleRef.current = userRole;
+  }, [user, userRole]);
 
   const { showRealtimeToast } = useNotification() || {};
   const mountTimeRef = useRef(new Date());
@@ -97,7 +100,9 @@ export const SocketProvider = ({ children }) => {
     registerPushSubscription().catch(() => { });
 
     // Initial sync
-    syncNotifications(true);
+    Promise.resolve().then(() => {
+      syncNotifications(true);
+    });
 
     // Socket.io connection setup
     const socketServerUrl = API_URL.replace("/api", "");
@@ -106,10 +111,9 @@ export const SocketProvider = ({ children }) => {
       reconnectionDelay: 2000,
     });
 
-    setSocket(newSocket);
-
     const handleConnect = () => {
       console.log("[SocketContext] Socket connected:", newSocket.id);
+      setSocket(newSocket);
       newSocket.emit("join", String(userId));
       syncNotifications(false);
     };

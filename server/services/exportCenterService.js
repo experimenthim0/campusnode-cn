@@ -279,6 +279,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
         where,
         include: {
           student: { select: { name: true, rollNo: true, email: true } },
+          faculty: { select: { name: true, email: true, department: true } },
           externalUser: { select: { name: true, email: true, collegeName: true } },
           event: {
             select: {
@@ -299,9 +300,9 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
         const amountPaid = (p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED") ? fee : 0;
         return {
           id: p.id,
-          studentName: p.student?.name || p.externalUser?.name || "N/A",
-          rollNo: p.student?.rollNo || p.externalUser?.collegeName || "N/A",
-          email: p.student?.email || p.externalUser?.email || "N/A",
+          studentName: p.student?.name || p.faculty?.name || p.externalUser?.name || "N/A",
+          rollNo: p.student?.rollNo || "-",
+          email: p.student?.email || p.faculty?.email || p.externalUser?.email || "N/A",
           eventName: p.event?.title || "N/A",
           clubName: clubNames,
           status: p.status,
@@ -430,9 +431,9 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
 
       totalCount = await prisma.participation.count({ where });
       const rawTxns = await prisma.participation.findMany({
-        where,
-        include: {
+             include: {
           student: { select: { name: true, rollNo: true, email: true } },
+          faculty: { select: { name: true, email: true, department: true } },
           externalUser: { select: { name: true, email: true, collegeName: true } },
           event: {
             select: {
@@ -453,9 +454,9 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
         const amountPaid = (t.paymentStatus === "SUCCESS" || t.paymentStatus === "APPROVED") ? fee : 0;
         return {
           transactionId: t.transactionId || "N/A",
-          studentName: t.student?.name || t.externalUser?.name || "N/A",
-          rollNo: t.student?.rollNo || t.externalUser?.collegeName || "N/A",
-          email: t.student?.email || t.externalUser?.email || "N/A",
+          studentName: t.student?.name || t.faculty?.name || t.externalUser?.name || "N/A",
+          rollNo: t.student?.rollNo || "-",
+          email: t.student?.email || t.faculty?.email || t.externalUser?.email || "N/A",
           eventName: t.event?.title || "N/A",
           clubName: clubNames,
           payerName: t.payerName || "N/A",

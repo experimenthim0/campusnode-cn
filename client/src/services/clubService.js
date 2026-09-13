@@ -44,8 +44,11 @@ export const uploadClubImage = (clubId, formData, folder = "club-gallery") =>
 export const deleteClub = (id) =>
   api.delete(`/api/clubs/${id}`);
 
-export const getClubMembers = (clubId) =>
-  api.get(`/api/club-members/${clubId}/members`);
+export const getClubMembers = (clubId, params = {}) =>
+  api.get(`/api/club-members/${clubId}/members`, { params });
+
+export const getMyClubMembership = (clubId) =>
+  api.get(`/api/club-members/${clubId}/my-membership`);
 
 export const addClubMember = (clubId, data) =>
   api.post(`/api/club-members/${clubId}/members`, data);

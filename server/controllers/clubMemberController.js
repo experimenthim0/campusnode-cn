@@ -7,6 +7,7 @@ import { sendEmail } from "../emails/emailService.js";
 
 export const MAX_CLUB_STUDENT_LEADS = 1;
 export const MAX_CLUB_COORDINATORS = 5;
+export const MAX_CLUB_OFFICIAL_ACCOUNTS = 1;
 
 const VALID_ROLES = ["CLUB_HEAD", "COORDINATOR", "MEMBER"];
 
@@ -88,7 +89,7 @@ export const addClubMember = async (req, res) => {
       });
       if (activeHeads >= MAX_CLUB_STUDENT_LEADS) {
         return res.status(409).json({
-          message: "This club already has an active Club Head.",
+          message: "This club already has an active Student Lead.",
         });
       }
     } else if (role === "COORDINATOR") {
@@ -100,6 +101,17 @@ export const addClubMember = async (req, res) => {
           message: `Maximum of ${MAX_CLUB_COORDINATORS} active coordinators is allowed for this club.`,
         });
       }
+    }
+
+    // Ensure this email does not belong to a Club's own account (club email = the club itself)
+    const clubAccount = await prisma.club.findFirst({
+      where: { clubEmail: { equals: email.trim(), mode: "insensitive" } },
+    });
+
+    if (clubAccount) {
+      return res.status(400).json({
+        message: "Club organizational accounts cannot be added as club members. Only individual students are allowed.",
+      });
     }
 
     // Ensure this email does not belong to an AdminRole
@@ -134,7 +146,7 @@ export const addClubMember = async (req, res) => {
       });
       if (studentOtherHeadship) {
         return res.status(409).json({
-          message: `This student is already the Club Head of "${studentOtherHeadship.club.clubName}". A student can be the Head of only one club at a time. They can still be added as a Coordinator.`,
+          message: `${student.name} is already a lead of another club ("${studentOtherHeadship.club.clubName}"). A student can be the Student Lead of only one club or society at a time.`,
         });
       }
     }
@@ -209,6 +221,7 @@ export const addClubMember = async (req, res) => {
 export const getClubMembers = async (req, res) => {
   try {
     const { clubId } = req.params;
+    const { limit, offset, role, format } = req.query;
 
     const club = await prisma.club.findUnique({
       where: { id: clubId },
@@ -220,8 +233,15 @@ export const getClubMembers = async (req, res) => {
       },
     });
 
-    const members = await prisma.clubMembership.findMany({
-      where: { clubId },
+    const whereClause = { clubId };
+    if (role) {
+      whereClause.role = role;
+    }
+
+    const hasPaginationParams = limit !== undefined || offset !== undefined || role !== undefined || format === "paginated";
+
+    const queryOptions = {
+      where: whereClause,
       include: {
         student: {
           select: {
@@ -238,6 +258,33 @@ export const getClubMembers = async (req, res) => {
         },
       },
       orderBy: { id: "asc" },
+    };
+
+    let totalCount = null;
+    if (hasPaginationParams) {
+      totalCount = await prisma.clubMembership.count({ where: whereClause });
+      if (limit !== undefined) {
+        queryOptions.take = parseInt(limit, 10) || 50;
+      }
+      if (offset !== undefined) {
+        queryOptions.skip = parseInt(offset, 10) || 0;
+      }
+    }
+
+    const members = await prisma.clubMembership.findMany(queryOptions);
+
+    const studentIds = members.map((m) => m.studentId).filter(Boolean);
+    const otherHeadships = await prisma.clubMembership.findMany({
+      where: {
+        studentId: { in: studentIds },
+        role: "CLUB_HEAD",
+        clubId: { not: clubId },
+      },
+      include: { club: { select: { id: true, clubName: true } } },
+    });
+    const headshipMap = new Map();
+    otherHeadships.forEach((h) => {
+      headshipMap.set(h.studentId, h.club);
     });
 
     const normalizedMembers = members.map((m) => {
@@ -271,8 +318,24 @@ export const getClubMembers = async (req, res) => {
         student,
         isClubAccount: false,
         clubName: club?.clubName,
+        currentHeadClub: headshipMap.get(m.studentId) || null,
       };
     });
+
+    if (hasPaginationParams) {
+      const parsedLimit  = limit  !== undefined ? parseInt(limit,  10) : normalizedMembers.length;
+      const parsedOffset = offset !== undefined ? parseInt(offset, 10) : 0;
+      const hasMore      = totalCount !== null ? (parsedOffset + normalizedMembers.length) < totalCount : false;
+      res.set("X-Total-Count", String(totalCount ?? normalizedMembers.length));
+      res.set("X-Has-More",    String(hasMore));
+      return res.json({
+        members: normalizedMembers,
+        total:   totalCount ?? normalizedMembers.length,
+        hasMore,
+        limit:   parsedLimit,
+        offset:  parsedOffset,
+      });
+    }
 
     res.json(normalizedMembers);
   } catch (err) {
@@ -330,7 +393,7 @@ export const updateMemberPermissions = async (req, res) => {
         });
         if (activeHeads >= MAX_CLUB_STUDENT_LEADS) {
           return res.status(409).json({
-            message: "This club already has an active Club Head.",
+            message: "This club already has an active Student Lead.",
           });
         }
 
@@ -344,7 +407,7 @@ export const updateMemberPermissions = async (req, res) => {
         });
         if (studentOtherHeadship) {
           return res.status(409).json({
-            message: `This student is already the Club Head of "${studentOtherHeadship.club.clubName}". A student can be the Head of only one club at a time. They may still be appointed as Coordinator.`,
+            message: `This student is already a lead of another club ("${studentOtherHeadship.club.clubName}"). A student can be the Student Lead of only one club or society at a time.`,
           });
         }
       } else if (role === "COORDINATOR" && existing.role !== "COORDINATOR") {
@@ -460,7 +523,7 @@ export const transferStudentLead = async (req, res) => {
     }
 
     if (targetMembership.role === "CLUB_HEAD") {
-      return res.status(400).json({ message: "Target member is already the active Club Head." });
+      return res.status(400).json({ message: "Target member is already the active Student Lead." });
     }
 
     const studentOtherHeadship = await prisma.clubMembership.findFirst({
@@ -473,7 +536,7 @@ export const transferStudentLead = async (req, res) => {
     });
     if (studentOtherHeadship) {
       return res.status(409).json({
-        message: `${targetMembership.student?.name || "This student"} is already the Club Head of "${studentOtherHeadship.club.clubName}". A student can lead only one club at a time.`,
+        message: `${targetMembership.student?.name || "This student"} is already a lead of another club ("${studentOtherHeadship.club.clubName}"). A student can lead only one club or society at a time.`,
       });
     }
 

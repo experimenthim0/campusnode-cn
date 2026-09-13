@@ -30,6 +30,7 @@
   "devDependencies": {
     "fast-check": "^4.6.0",
     "nodemon": "^3.1.11",
+    "socket.io-client": "^4.8.3",
     "vitest": "^4.1.4"
   },
   "name": "clubsetu-server",
@@ -45,6 +46,9 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "db:verify": "node scripts/db-safety-guard.js",
+    "seed": "node scripts/seed-synthetic-data.js",
+    "seed:synthetic": "node scripts/seed-synthetic-data.js",
+    "test:load": "node load-tests/run-full-load-test.js",
     "secrets:staging": "node scripts/generate-staging-secrets.js",
     "rotate:key": "node scripts/rotate-key.js",
     "db:create:postgres": "docker compose -f docker-compose.postgres.yml up -d"

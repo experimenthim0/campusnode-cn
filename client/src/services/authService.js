@@ -20,6 +20,9 @@ export const registerStudent = (formData) =>
 export const registerExternal = (formData) =>
   api.post('/api/auth/register/external', formData);
 
+export const registerFaculty = (formData) =>
+  api.post('/api/auth/register/faculty', formData);
+
 export const forgotPassword = (email) =>
   api.post('/api/auth/forgot-password', { email });
 

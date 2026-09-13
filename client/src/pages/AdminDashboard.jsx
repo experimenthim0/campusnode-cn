@@ -28,6 +28,7 @@ import {
     ManualPaymentsTab,
     BroadcastsTab,
     NotificationsTab,
+    FeaturedEventsTab,
     ProfileTab
 } from '../roles/admin';
 
@@ -276,6 +277,7 @@ const AdminDashboard = () => {
         broadcasts: { title: 'Outgoing Broadcasts', subtitle: 'Dispatch real-time broadcast announcements to all students or event participants' },
         notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
         'export-center': { title: 'Export Center', subtitle: 'Export & download structured administrative data' },
+        'featured-events': { title: 'Featured Events Spotlight', subtitle: 'Manage homepage hero spotlights, custom display ordering, and automatic rotation' },
         profile: { title: 'Settings & Profile', subtitle: 'Update display name, password, and two-step verification' },
     };
 
@@ -458,6 +460,10 @@ const AdminDashboard = () => {
 
                 {activeTab === 'export-center' && (
                     <ExportCenter />
+                )}
+
+                {activeTab === 'featured-events' && (
+                    <FeaturedEventsTab />
                 )}
 
                 {activeTab === 'profile' && (

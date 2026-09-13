@@ -43,6 +43,25 @@ router.get("/:clubId/members", validate(clubIdParamSchema), getClubMembers);
 
 router.use(verifyToken);
 
+// Fast endpoint: returns only the authenticated user's membership in this club
+router.get("/:clubId/my-membership", validate(clubIdParamSchema), async (req, res) => {
+  try {
+    const { clubId } = req.params;
+    const userId = req.user?.id || req.user?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const membership = await prisma.clubMembership.findFirst({
+      where: { clubId, studentId: userId },
+      select: { id: true, role: true, canEditEvents: true, canTakeAttendance: true },
+    });
+
+    if (!membership) return res.status(404).json({ message: "Not a member" });
+    res.json(membership);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.get(
   "/:clubId/search-students",
   validate(clubIdParamSchema),

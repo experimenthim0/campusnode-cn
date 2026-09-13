@@ -11,9 +11,34 @@ import { createObjectId } from "../utils/objectId.js";
 import { PROGRAM_OPTIONS, isValidBranchForProgram } from "../constants/academicConstants.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import redis from "../lib/redis.js";
+import { z } from "zod";
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
+const studentRegistrationSchema = z.object({
+  name: z.string().trim().min(3).max(120),
+  rollNo: z.string().trim().min(1).max(40),
+  branch: z.string().trim().min(1).max(120),
+  year: z.union([z.string(), z.number()]).optional(),
+  expectedGraduationYear: z.union([z.string(), z.number()]).optional(),
+  program: z.string().trim().min(1).max(40),
+  email: z.string().trim().email().max(254),
+  password: z.string().min(6).max(128),
+}).refine((value) => Boolean(value.year || value.expectedGraduationYear), {
+  message: "Roll number, branch, and graduation year are required.",
+});
+
+const facultyRegistrationSchema = z.object({
+  name: z.string().trim().min(3).max(120),
+  email: z.string().trim().email().max(254),
+  department: z.string().trim().min(2).max(120),
+  password: z.string().min(6).max(128),
+});
+
+const internalAuthError = (res, error, message = "Authentication request failed.") => {
+  console.error(`[Auth] ${message}:`, error);
+  return res.status(500).json({ message });
+};
 
 const isProduction = process.env.NODE_ENV === "production";
 const getCookieOptions = (maxAge = 7 * 24 * 60 * 60 * 1000) => ({
@@ -113,9 +138,14 @@ export async function getAdminClubId(adminId) {
 
 router.post("/register/student", async (req, res) => {
   try {
-    const { name, rollNo, branch, year, expectedGraduationYear, program, email, password } = req.body;
+    const parsed = studentRegistrationSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0]?.message || "Invalid registration details." });
+    }
+    const { name, rollNo, branch, year, expectedGraduationYear, program, email, password } = parsed.data;
+    const cleanEmail = email.toLowerCase();
 
-    if (!email.endsWith("@nitj.ac.in")) {
+    if (!cleanEmail.endsWith("@nitj.ac.in")) {
       return res.status(400).json({
         message: "Email must be a valid NITJ email (ending in @nitj.ac.in).",
       });
@@ -143,7 +173,7 @@ router.post("/register/student", async (req, res) => {
       }
     }
 
-    const orFilters = [{ email }];
+    const orFilters = [{ email: cleanEmail }];
     if (rollNo) orFilters.push({ rollNo });
 
     const existingUser = await prisma.studentUser.findFirst({ where: { OR: orFilters } });
@@ -169,7 +199,7 @@ router.post("/register/student", async (req, res) => {
         branch,
         expectedGraduationYear: progress.expectedGraduationYear,
         program,
-        email,
+         email: cleanEmail,
         password: await bcrypt.hash(password, 10),
         isVerified: shouldSkipVerification,
       },
@@ -229,7 +259,77 @@ router.post("/register/student", async (req, res) => {
       message: "Registration successful! A verification link has been sent to your NITJ email. Please verify your email before logging in.",
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (err?.code === "P2002") {
+      return res.status(409).json({ message: "User already exists with this email or roll number." });
+    }
+    console.error("Student registration error:", err);
+    res.status(500).json({ message: "Unable to complete registration." });
+  }
+});
+
+router.post("/register/faculty", async (req, res) => {
+  try {
+    const parsed = facultyRegistrationSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0]?.message || "Invalid registration details." });
+    }
+    const { name, email, department, password } = parsed.data;
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check if email already registered in any user table
+    const [existingStudent, existingAdmin, existingExternal, existingFaculty] = await Promise.all([
+      prisma.studentUser.findFirst({ where: { email: { equals: cleanEmail, mode: "insensitive" } } }),
+      prisma.adminRole.findFirst({ where: { email: { equals: cleanEmail, mode: "insensitive" } } }),
+      prisma.externalUser.findFirst({ where: { email: { equals: cleanEmail, mode: "insensitive" } } }),
+      prisma.facultyUser.findFirst({ where: { email: { equals: cleanEmail, mode: "insensitive" } } }),
+    ]);
+
+    if (existingStudent || existingAdmin || existingExternal || existingFaculty) {
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
+
+    const facultyId = `fac_${createObjectId().slice(0, 20)}`;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newFaculty = await prisma.facultyUser.create({
+      data: {
+        id: facultyId,
+        name: name.trim(),
+        email: cleanEmail,
+        department: department.trim(),
+        password: hashedPassword,
+        isVerified: true,
+      },
+    });
+
+    const role = "faculty";
+    const token = generateToken(newFaculty, role, "faculty", null, "FACULTY");
+    const userObj = {
+      ...sanitizeUser(newFaculty),
+      department: newFaculty.department,
+      role,
+      userType: "faculty",
+      principalType: "FACULTY",
+      clubId: null,
+      memberships: [],
+    };
+
+    res.cookie("token", token, getCookieOptions());
+    return res.status(201).json({
+      success: true,
+      message: "Faculty registered successfully",
+      user: userObj,
+      role,
+      userType: "faculty",
+      principalType: "FACULTY",
+      token,
+    });
+  } catch (err) {
+    if (err?.code === "P2002") {
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
+    console.error("Faculty registration error:", err);
+    res.status(500).json({ message: "Unable to complete faculty registration." });
   }
 });
 
@@ -295,7 +395,93 @@ router.post(["/login", "/login/student"], async (req, res) => {
       });
     }
 
-    // 2. Admin / Faculty Coordinator User (AdminRole table)
+    // 2. Faculty User (FacultyUser table)
+    const faculty = await prisma.facultyUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    });
+
+    if (faculty) {
+      const isMatch = await bcrypt.compare(password, faculty.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (!faculty.isVerified && process.env.SKIP_VERIFICATION !== "true") {
+        return res.status(403).json({
+          success: false,
+          requiresVerification: true,
+          email: faculty.email,
+          message: "Please verify your email address before logging in.",
+        });
+      }
+
+      if (faculty.isTwoStepEnabled) {
+        const result = await generateAndSendLoginOtp(req, faculty, "faculty", "Faculty");
+        return res.json(result);
+      }
+
+      const coordinatedClub = await prisma.club.findFirst({
+        where: { facultyCoordinatorId: faculty.id },
+        select: {
+          id: true,
+          clubName: true,
+          slug: true,
+          clubLogo: true,
+        },
+      });
+
+      const isCoordinator = Boolean(coordinatedClub);
+      const role = isCoordinator ? "facultyCoordinator" : "faculty";
+      const clubId = coordinatedClub?.id ?? null;
+      const principalType = "FACULTY";
+
+      const memberships = coordinatedClub ? [{
+        id: `fac_${coordinatedClub.id}`,
+        clubId: coordinatedClub.id,
+        clubName: coordinatedClub.clubName,
+        slug: coordinatedClub.slug,
+        clubLogo: coordinatedClub.clubLogo,
+        role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
+        canCheckRegistration: true,
+        canViewDashboard: true,
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true,
+        },
+      }] : [];
+
+      const token = generateToken(faculty, role, "faculty", clubId, principalType);
+      const userObj = {
+        ...sanitizeUser(faculty),
+        principalType,
+        clubId,
+        clubName: coordinatedClub?.clubName ?? null,
+        department: faculty.department,
+        designation: faculty.designation,
+        role,
+        userType: "faculty",
+        memberships,
+      };
+
+      res.cookie("token", token, getCookieOptions());
+      return res.json({
+        success: true,
+        message: "Login successful",
+        user: userObj,
+        role,
+        userType: "faculty",
+        principalType,
+        token,
+      });
+    }
+
+    // 3. Admin / Faculty Coordinator User (AdminRole table)
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
@@ -414,7 +600,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
 
     return res.status(401).json({ message: "Invalid credentials" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -429,6 +615,79 @@ router.post("/login/admin", async (req, res) => {
     });
 
     if (!admin) {
+      // Fallback: check FacultyUser table
+      const faculty = await prisma.facultyUser.findFirst({
+        where: { email: { equals: cleanEmail, mode: "insensitive" } },
+      });
+
+      if (faculty) {
+        const isMatch = await bcrypt.compare(password, faculty.password);
+        if (!isMatch) {
+          return res.status(401).json({ message: "Invalid admin credentials" });
+        }
+
+        if (faculty.isTwoStepEnabled) {
+          const result = await generateAndSendLoginOtp(req, faculty, "faculty", "Faculty");
+          return res.json(result);
+        }
+
+        const club = await prisma.club.findFirst({
+          where: { facultyCoordinatorId: faculty.id },
+          select: { id: true, clubName: true, slug: true, clubLogo: true },
+        });
+
+        const isCoordinator = Boolean(club);
+        const role = isCoordinator ? "facultyCoordinator" : "faculty";
+        const clubId = club?.id ?? null;
+        const principalType = "FACULTY";
+
+        const memberships = club ? [{
+          id: `fac_${club.id}`,
+          clubId: club.id,
+          clubName: club.clubName,
+          slug: club.slug,
+          clubLogo: club.clubLogo,
+          role: "facultyCoordinator",
+          status: "ACTIVE",
+          customPermissions: [],
+          canTakeAttendance: true,
+          canEditEvents: true,
+          canCheckRegistration: true,
+          canViewDashboard: true,
+          permissions: {
+            canTakeAttendance: true,
+            canViewDashboard: true,
+            canCheckRegistration: true,
+            canEditEvents: true,
+          },
+        }] : [];
+
+        const token = generateToken(faculty, role, "faculty", clubId, principalType);
+        const userObj = {
+          ...sanitizeUser(faculty),
+          principalType,
+          clubId,
+          clubName: club?.clubName ?? null,
+          department: faculty.department,
+          designation: faculty.designation,
+          role,
+          userType: "faculty",
+          memberships,
+        };
+
+        res.cookie("token", token, getCookieOptions());
+        return res.json({
+          success: true,
+          message: "Faculty login successful",
+          user: userObj,
+          admin: userObj,
+          role,
+          userType: "faculty",
+          principalType,
+          token,
+        });
+      }
+
       return res.status(401).json({ message: "Invalid admin credentials" });
     }
 
@@ -490,7 +749,7 @@ router.post("/login/admin", async (req, res) => {
       token,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -613,7 +872,7 @@ router.post("/register/external", async (req, res) => {
     });
   } catch (err) {
     console.error("External user registration error:", err);
-    res.status(500).json({ message: err.message || "Failed to register external participant." });
+    internalAuthError(res, err, "Failed to register external participant.");
   }
 });
 
@@ -687,7 +946,7 @@ router.post("/login/external", async (req, res) => {
     });
   } catch (err) {
     console.error("External login error:", err);
-    res.status(500).json({ message: err.message || "Failed to log in." });
+    internalAuthError(res, err, "Failed to log in.");
   }
 });
 
@@ -772,7 +1031,68 @@ router.post("/verify-2fa", async (req, res) => {
       });
     }
 
-    // 2. Admin / Faculty
+    // 2. Faculty User
+    const faculty = await prisma.facultyUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    });
+
+    if (faculty) {
+      const coordinatedClub = await prisma.club.findFirst({
+        where: { facultyCoordinatorId: faculty.id },
+        select: { id: true, clubName: true, slug: true, clubLogo: true },
+      });
+      const isCoordinator = Boolean(coordinatedClub);
+      const role = isCoordinator ? "facultyCoordinator" : "faculty";
+      const clubId = coordinatedClub?.id ?? null;
+      const principalType = "FACULTY";
+
+      const memberships = coordinatedClub ? [{
+        id: `fac_${coordinatedClub.id}`,
+        clubId: coordinatedClub.id,
+        clubName: coordinatedClub.clubName,
+        slug: coordinatedClub.slug,
+        clubLogo: coordinatedClub.clubLogo,
+        role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
+        canCheckRegistration: true,
+        canViewDashboard: true,
+        permissions: {
+          canTakeAttendance: true,
+          canViewDashboard: true,
+          canCheckRegistration: true,
+          canEditEvents: true,
+        },
+      }] : [];
+
+      const token = generateToken(faculty, role, "faculty", clubId, principalType);
+      const userObj = {
+        ...sanitizeUser(faculty),
+        principalType,
+        clubId,
+        clubName: coordinatedClub?.clubName ?? null,
+        department: faculty.department,
+        designation: faculty.designation,
+        role,
+        userType: "faculty",
+        memberships,
+      };
+
+      res.cookie("token", token, getCookieOptions());
+      return res.json({
+        success: true,
+        message: "Verification successful",
+        user: userObj,
+        role,
+        userType: "faculty",
+        principalType,
+        token,
+      });
+    }
+
+    // 3. Admin / Faculty
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
@@ -863,7 +1183,7 @@ router.post("/verify-2fa", async (req, res) => {
 
     return res.status(404).json({ message: "User account not found." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -881,20 +1201,23 @@ router.post("/forgot-password", async (req, res) => {
     const student = await prisma.studentUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
-    const admin = !student ? await prisma.adminRole.findFirst({
+    const faculty = !student ? await prisma.facultyUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     }) : null;
-    const externalUser = (!student && !admin) ? await prisma.externalUser.findFirst({
+    const admin = (!student && !faculty) ? await prisma.adminRole.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    }) : null;
+    const externalUser = (!student && !faculty && !admin) ? await prisma.externalUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     }) : null;
 
-    const user = student || admin || externalUser;
+    const user = student || faculty || admin || externalUser;
 
     if (!user) {
       return res.json({ message: "If an account exists, a reset link has been sent." });
     }
 
-    const userType = student ? "student" : admin ? "admin" : "external";
+    const userType = student ? "student" : faculty ? "faculty" : admin ? "admin" : "external";
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
     const resetKey = `pwd_reset:${hashedToken}`;
@@ -929,7 +1252,7 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(500).json({ message: "Email could not be sent." });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -969,6 +1292,11 @@ router.post("/reset-password/:token", async (req, res) => {
         where: { id: userId },
         data: { password: hashedPassword },
       });
+    } else if (userType === "faculty") {
+      await prisma.facultyUser.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
     } else if (userType === "external") {
       await prisma.externalUser.update({
         where: { id: userId },
@@ -989,7 +1317,7 @@ router.post("/reset-password/:token", async (req, res) => {
       message: "Password reset successfully. You may now log in with your new password.",
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -1038,7 +1366,7 @@ router.get("/verify-email/:token", async (req, res) => {
       message: "Your email address has been successfully verified! You can now sign in.",
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -1096,7 +1424,7 @@ router.post(["/send-verification-email", "/resend-verification"], async (req, re
       message: "Verification email sent successfully.",
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 
@@ -1109,6 +1437,8 @@ router.post("/change-password", verifyToken, async (req, res) => {
     let user;
     if (userType === "admin") {
       user = await prisma.adminRole.findUnique({ where: { id: userId } });
+    } else if (userType === "faculty" || req.user.principalType === "FACULTY") {
+      user = await prisma.facultyUser.findUnique({ where: { id: userId } });
     } else if (userType === "external") {
       user = await prisma.externalUser.findUnique({ where: { id: userId } });
     } else {
@@ -1131,6 +1461,11 @@ router.post("/change-password", verifyToken, async (req, res) => {
         where: { id: user.id },
         data: { password: hashedPassword },
       });
+    } else if (userType === "faculty" || req.user.principalType === "FACULTY") {
+      await prisma.facultyUser.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
     } else if (userType === "external") {
       await prisma.externalUser.update({
         where: { id: user.id },
@@ -1145,7 +1480,7 @@ router.post("/change-password", verifyToken, async (req, res) => {
 
     res.json({ message: "Password changed successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    internalAuthError(res, err);
   }
 });
 

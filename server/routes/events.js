@@ -10,7 +10,7 @@ import { z } from "zod";
 import { validate, objectIdSchema } from "../middleware/validate.js";
 import multer from "multer";
 import crypto from "crypto";
-import { uploadImage } from "../utils/cloudinary.js";
+import { uploadImage, deleteImage, extractCloudinaryPublicId } from "../utils/cloudinary.js";
 import { getPublicResponse, setPublicResponse, invalidatePublicResponses } from "../utils/publicResponseCache.js";
 import redis from "../lib/redis.js";
 import { validateBooking, checkEventConflict } from "../services/conflictService.js";
@@ -139,7 +139,6 @@ async function checkEventAccess(req, eventOrClubId, requiredPermission = null) {
         where: {
           clubId: { in: clubIds },
           studentId: userId,
-          status: { not: "INACTIVE" }
         }
       });
       for (const membership of memberships) {
@@ -313,14 +312,24 @@ const getEventByIdOrSlug = async (id) =>
 
 router.get("/", async (req, res) => {
   try {
-    const requestedPage = Number.parseInt(req.query.page, 10)
-    const requestedLimit = Number.parseInt(req.query.limit, 10)
-    const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1
+    const requestedPage = Number.parseInt(req.query.page, 10);
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
+    const requestedOffset = Number.parseInt(req.query.offset, 10);
+    const statusFilter = typeof req.query.status === "string" ? req.query.status.trim().toUpperCase() : "ALL";
+
     const limit = Number.isFinite(requestedLimit)
-      ? Math.min(Math.max(requestedLimit, 1), 50)
-      : 50
-    const skip = (page - 1) * limit;
-    const cacheKey = "events:public:" + page + ":" + limit;
+      ? Math.min(Math.max(requestedLimit, 1), 100)
+      : 50;
+
+    let skip = 0;
+    if (Number.isFinite(requestedOffset) && requestedOffset >= 0) {
+      skip = requestedOffset;
+    } else {
+      const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+      skip = (page - 1) * limit;
+    }
+
+    const cacheKey = "events:public:" + statusFilter + ":" + skip + ":" + limit;
     const cachedEvents = await getPublicResponse(cacheKey);
 
     if (cachedEvents) {
@@ -329,15 +338,87 @@ router.get("/", async (req, res) => {
       return res.json(cachedEvents);
     }
 
+    const now = new Date();
+    let orderedRows = [];
+
+    try {
+      if (statusFilter === "LIVE") {
+        orderedRows = await prisma.$queryRaw`
+          SELECT id FROM "Event"
+          WHERE "reviewStatus" = 'PUBLISHED'
+            AND "startTime" <= ${now} AND "endTime" >= ${now}
+          ORDER BY "startTime" ASC, id ASC
+          LIMIT ${limit} OFFSET ${skip}
+        `;
+      } else if (statusFilter === "UPCOMING") {
+        orderedRows = await prisma.$queryRaw`
+          SELECT id FROM "Event"
+          WHERE "reviewStatus" = 'PUBLISHED'
+            AND "startTime" > ${now}
+          ORDER BY "startTime" ASC, id ASC
+          LIMIT ${limit} OFFSET ${skip}
+        `;
+      } else if (statusFilter === "ENDED") {
+        orderedRows = await prisma.$queryRaw`
+          SELECT id FROM "Event"
+          WHERE "reviewStatus" = 'PUBLISHED'
+            AND "endTime" < ${now}
+          ORDER BY "endTime" DESC, id ASC
+          LIMIT ${limit} OFFSET ${skip}
+        `;
+      } else {
+        // Priority 1: LIVE (now >= startTime AND now <= endTime) -> soonest start first
+        // Priority 2: UPCOMING (now < startTime) -> soonest start first
+        // Priority 3: ENDED (now > endTime) -> most recently ended first
+        orderedRows = await prisma.$queryRaw`
+          SELECT id FROM "Event"
+          WHERE "reviewStatus" = 'PUBLISHED'
+          ORDER BY
+            CASE
+              WHEN "startTime" <= ${now} AND "endTime" >= ${now} THEN 1
+              WHEN "startTime" > ${now} THEN 2
+              ELSE 3
+            END ASC,
+            CASE
+              WHEN "endTime" >= ${now} THEN "startTime"
+              ELSE NULL
+            END ASC,
+            "endTime" DESC,
+            id ASC
+          LIMIT ${limit} OFFSET ${skip}
+        `;
+      }
+    } catch (queryErr) {
+      console.error("Priority queryRaw error, falling back to standard Prisma query:", queryErr.message);
+      // Resilient fallback
+      const fallbackEvents = await prisma.event.findMany({
+        where: { reviewStatus: "PUBLISHED" },
+        select: publicEventSelect,
+        orderBy: { startTime: "desc" },
+        skip,
+        take: limit,
+      });
+      const response = fallbackEvents.map(serializeEvent);
+      return res.json(response);
+    }
+
+    const ids = orderedRows.map((r) => r.id);
+    if (ids.length === 0) {
+      res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
+      res.set("X-Public-Cache", "MISS");
+      return res.json([]);
+    }
+
     const events = await prisma.event.findMany({
-      where: { reviewStatus: "PUBLISHED" },
+      where: { id: { in: ids } },
       select: publicEventSelect,
-      orderBy: { startTime: "asc" },
-      skip,
-      take: limit,
     });
 
-    const response = events.map(serializeEvent);
+    // Preserve the exact priority ordering from orderedRows
+    const idMap = new Map(events.map((e) => [e.id, e]));
+    const orderedEvents = ids.map((id) => idMap.get(id)).filter(Boolean);
+
+    const response = orderedEvents.map(serializeEvent);
     await setPublicResponse(cacheKey, response, 60_000);
     res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
     res.set("X-Public-Cache", "MISS");
@@ -755,14 +836,22 @@ router.get(
       const { userId } = req.params;
       const { userId: authUserId, userType, role, email: authEmail } = req.user;
 
-      if (authUserId !== userId && authEmail !== userId && role !== "admin" && role !== "facultyCoordinator" && role !== "club") {
+      if (authUserId !== userId && authEmail !== userId && role !== "admin" && role !== "facultyCoordinator" && role !== "faculty" && role !== "club") {
         return res.status(403).json({ message: "Access denied." });
       }
 
       const isExternal = userType === "external" || role === "external" || req.user.principalType === "EXTERNAL";
+      const isFaculty = userType === "faculty" || role === "faculty" || req.user.principalType === "FACULTY";
 
       const participations = await prisma.participation.findMany({
-        where: isExternal
+        where: isFaculty
+          ? {
+            OR: [
+              { facultyId: userId },
+              { facultyId: authUserId },
+            ],
+          }
+          : isExternal
           ? {
             OR: [
               { externalUserId: userId },
@@ -776,6 +865,7 @@ router.get(
           eventId: true,
           studentId: true,
           externalUserId: true,
+          facultyId: true,
           status: true,
           qrCode: true,
           qrVersion: true,
@@ -801,6 +891,16 @@ router.get(
               collegePaymentUrl: true,
               accountHolderName: true,
               certificateTemplate: true,
+            },
+          },
+          faculty: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              department: true,
+              designation: true,
+              profileImage: true,
             },
           },
           student: {
@@ -845,7 +945,7 @@ router.get(
         orderBy: { createdAt: "desc" },
       });
 
-      if (!isExternal) {
+      if (!isExternal && !isFaculty) {
         const registeredEventIds = new Set(participations.map((p) => p.eventId));
         const studentInfo = await prisma.studentUser.findUnique({
           where: { id: userId },
@@ -1043,7 +1143,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
         imageUrl: imageUrl || "",
         requiredFields: requiredFields || [],
         customFields: customFields || [],
-        createdById: studentUserRecord?.id || null,
+        createdById: isStudentCreator ? (req.user.userId || req.user.id) : null,
         allowedPrograms: allowedPrograms || ["BTECH", "MTECH", "OTHER"],
         allowedYears: allowedYears || [],
         allowedBranches: allowedBranches || [],
@@ -1092,9 +1192,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
             const notif = await prisma.notification.create({
               data: {
                 id: createObjectId(),
-                targetScope: "FACULTY_COORDINATOR",
                 clubId: club.id,
-                recipientUserId: club.facultyCoordinatorId,
                 eventId: savedEvent.id,
                 type: "EVENT_REVIEW_REQUEST",
                 title: `New Event Pending Approval: ${savedEvent.title}`,
@@ -1302,9 +1400,7 @@ router.post(
               const notif = await prisma.notification.create({
                 data: {
                   id: createObjectId(),
-                  targetScope: "FACULTY_COORDINATOR",
                   clubId: club.id,
-                  recipientUserId: club.facultyCoordinatorId,
                   eventId: updated.id,
                   type: "EVENT_REVIEW_REQUEST",
                   title: `New Event Pending Approval: ${updated.title}`,
@@ -1425,7 +1521,6 @@ router.get("/:id", async (req, res) => {
             where: {
               studentId: decoded.userId,
               clubId: { in: eventClubIds },
-              status: { not: "INACTIVE" },
             },
           });
           if (membership) {
@@ -1508,6 +1603,7 @@ router.post(
 
       const { transactionId, payerName, paymentRemarks, formResponses } = req.body;
       const isExternal = req.user.userType === "external" || req.user.role === "external" || req.user.principalType === "EXTERNAL";
+      const isFaculty = req.user.userType === "faculty" || req.user.principalType === "FACULTY";
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: "Event not found" });
@@ -1537,7 +1633,7 @@ router.post(
 
       if (isExternal && event.allowExternal === false) {
         return res.status(403).json({
-          message: "This event is exclusive to internal NITJ students only. External participation is not allowed for this event.",
+          message: "This event is exclusive to internal NITJ students and members only. External participation is not allowed for this event.",
         });
       }
 
@@ -1569,6 +1665,15 @@ router.post(
             eventId,
             externalUserId: extUserId,
           },
+        });
+        if (existing) return res.status(400).json({ message: "Already registered for this event." });
+      } else if (isFaculty) {
+        const facultyId = req.user.userId;
+        const faculty = await prisma.facultyUser.findUnique({ where: { id: facultyId } });
+        if (!faculty) return res.status(404).json({ message: "Faculty account not found." });
+
+        const existing = await prisma.participation.findFirst({
+          where: { eventId, facultyId },
         });
         if (existing) return res.status(400).json({ message: "Already registered for this event." });
       } else {
@@ -1653,6 +1758,26 @@ router.post(
           userId: unifiedUserId,
           studentId: null,
           externalUserId: req.user.userId,
+          facultyId: null,
+          qrCode: ticketId,
+          qrPayload,
+          qrVersion,
+          qrKeyId,
+          status,
+          transactionId: transactionId || null,
+          payerName: payerName || null,
+          paymentRemarks: paymentRemarks || null,
+          formResponses: validatedResponses,
+          paymentStatus: initialPaymentStatus,
+        }
+        : isFaculty
+        ? {
+          id: createObjectId(),
+          eventId,
+          userId: unifiedUserId,
+          studentId: null,
+          externalUserId: null,
+          facultyId: req.user.userId,
           qrCode: ticketId,
           qrPayload,
           qrVersion,
@@ -1670,6 +1795,7 @@ router.post(
           userId: unifiedUserId,
           studentId: req.user.userId,
           externalUserId: null,
+          facultyId: null,
           qrCode: ticketId,
           qrPayload,
           qrVersion,
@@ -1727,6 +1853,9 @@ router.post(
         }
 
         return created;
+      }, {
+        maxWait: 20000,
+        timeout: 30000,
       });
 
       invalidatePublicResponses(["events:public:*"]);
@@ -1791,6 +1920,15 @@ router.get(
               program: true,
             },
           },
+          faculty: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              department: true,
+              designation: true,
+            },
+          },
           externalUser: {
             select: {
               id: true,
@@ -1846,6 +1984,23 @@ router.get(
               semester: calculateAcademicProgress(p.student).semester,
               semesterLabel: calculateAcademicProgress(p.student).semesterLabel,
               isExternal: false,
+              isFaculty: false,
+            }
+            : p.faculty
+            ? {
+              id: p.facultyId || p.faculty.id,
+              _id: p.facultyId || p.faculty.id,
+              name: p.faculty.name || "Faculty Member",
+              email: p.faculty.email || "",
+              department: p.faculty.department || "N/A",
+              collegeName: "NIT Jalandhar",
+              rollNo: null,
+              program: "Faculty",
+              year: "Faculty",
+              academicYearLabel: "Faculty Member",
+              designation: p.faculty.designation || "Faculty",
+              isExternal: false,
+              isFaculty: true,
             }
             : p.externalUser
               ? {
@@ -1854,12 +2009,13 @@ router.get(
                 name: p.externalUser.name || "External Participant",
                 email: p.externalUser.email || "",
                 collegeName: p.externalUser.collegeName || "External College",
-                rollNo: p.externalUser.collegeName || "External",
+                rollNo: null,
                 program: p.externalUser.program || "N/A",
                 year: p.externalUser.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'External Student',
                 academicYearLabel: p.externalUser.graduationYear ? `Class of ${p.externalUser.graduationYear}` : 'External Student',
                 phone: p.externalUser.phone || null,
                 isExternal: true,
+                isFaculty: false,
               }
               : null;
 
@@ -1926,6 +2082,215 @@ router.get(
   },
 );
 
+router.get(
+  "/:id/winner-candidates",
+  verifyToken,
+  validate(registrationsParamSchema),
+  async (req, res) => {
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        include: { organizers: true },
+      });
+      if (!event) return res.status(404).json({ message: "Event not found" });
+
+      const hasAccess = await checkEventAccess(req, event);
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied. You don't have permission to manage winners for this event." });
+      }
+
+      const isTeamEvent = event.registrationType === "team" || event.registrationType === "both";
+      const rawQuery = String(req.query.query || req.query.q || "").trim();
+
+      if (isTeamEvent) {
+        const totalTeams = await prisma.team.count({
+          where: { eventId: req.params.id, status: "active" },
+        });
+
+        if (totalTeams === 0) {
+          return res.json({
+            isTeamEvent: true,
+            totalParticipants: 0,
+            candidates: [],
+            message: "This event has zero registered teams.",
+          });
+        }
+
+        const teamWhere = {
+          eventId: req.params.id,
+          status: "active",
+        };
+
+        if (rawQuery) {
+          teamWhere.OR = [
+            { teamName: { contains: rawQuery, mode: "insensitive" } },
+            { leaderStudent: { rollNo: { contains: rawQuery, mode: "insensitive" } } },
+            { leaderStudent: { name: { contains: rawQuery, mode: "insensitive" } } },
+            { leaderStudent: { email: { contains: rawQuery, mode: "insensitive" } } },
+            {
+              members: {
+                some: {
+                  student: {
+                    OR: [
+                      { rollNo: { contains: rawQuery, mode: "insensitive" } },
+                      { name: { contains: rawQuery, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              },
+            },
+          ];
+        }
+
+        const teams = await prisma.team.findMany({
+          where: teamWhere,
+          include: {
+            leaderStudent: {
+              select: { id: true, name: true, rollNo: true, branch: true, email: true },
+            },
+            members: {
+              include: {
+                student: {
+                  select: { id: true, name: true, rollNo: true, branch: true, email: true },
+                },
+              },
+            },
+          },
+          take: rawQuery ? 20 : 50,
+          orderBy: { createdAt: "desc" },
+        });
+
+        const candidates = teams.map((t) => {
+          const rawMembers = [
+            t.leaderStudent?.name,
+            ...(t.members || []).map((m) => m.student?.name),
+          ].filter(Boolean);
+          const memberNames = Array.from(new Set(rawMembers));
+
+          return {
+            id: t.id,
+            type: "team",
+            teamId: t.id,
+            name: t.teamName,
+            rollNo: t.leaderStudent?.rollNo || "",
+            leaderName: t.leaderStudent?.name || "",
+            leaderRollNo: t.leaderStudent?.rollNo || "",
+            leaderEmail: t.leaderStudent?.email || "",
+            branch: t.leaderStudent?.branch || "",
+            members: memberNames,
+          };
+        });
+
+        return res.json({
+          isTeamEvent: true,
+          totalParticipants: totalTeams,
+          candidates,
+        });
+      }
+
+      // Individual Event
+      const totalParticipants = await prisma.participation.count({
+        where: {
+          eventId: req.params.id,
+          status: { in: ["REGISTERED", "ATTENDED"] },
+        },
+      });
+
+      if (totalParticipants === 0) {
+        return res.json({
+          isTeamEvent: false,
+          totalParticipants: 0,
+          candidates: [],
+          message: "This event has zero participants.",
+        });
+      }
+
+      const partWhere = {
+        eventId: req.params.id,
+        status: { in: ["REGISTERED", "ATTENDED"] },
+      };
+
+      if (rawQuery) {
+        partWhere.OR = [
+          { student: { rollNo: { contains: rawQuery, mode: "insensitive" } } },
+          { student: { name: { contains: rawQuery, mode: "insensitive" } } },
+          { student: { email: { contains: rawQuery, mode: "insensitive" } } },
+          { faculty: { name: { contains: rawQuery, mode: "insensitive" } } },
+          { faculty: { email: { contains: rawQuery, mode: "insensitive" } } },
+          { faculty: { department: { contains: rawQuery, mode: "insensitive" } } },
+          { externalUser: { name: { contains: rawQuery, mode: "insensitive" } } },
+          { externalUser: { email: { contains: rawQuery, mode: "insensitive" } } },
+        ];
+      }
+
+      const participations = await prisma.participation.findMany({
+        where: partWhere,
+        include: {
+          student: {
+            select: { id: true, name: true, rollNo: true, branch: true, email: true },
+          },
+          faculty: {
+            select: { id: true, name: true, email: true, department: true },
+          },
+          externalUser: {
+            select: { id: true, name: true, collegeName: true, email: true },
+          },
+        },
+        take: rawQuery ? 20 : 50,
+        orderBy: { createdAt: "desc" },
+      });
+
+      const candidates = participations.map((p) => {
+        const student = p.student;
+        const faculty = p.faculty;
+        const ext = p.externalUser;
+
+        if (faculty) {
+          return {
+            id: faculty.id,
+            participationId: p.id,
+            type: "faculty",
+            studentId: null,
+            facultyId: faculty.id,
+            name: faculty.name,
+            rollNo: "-",
+            branch: faculty.department || "",
+            email: faculty.email || "",
+            isExternal: false,
+            isFaculty: true,
+            status: p.status,
+          };
+        }
+
+        const isExt = Boolean(ext && !student);
+
+        return {
+          id: student?.id || ext?.id || p.id,
+          participationId: p.id,
+          type: "individual",
+          studentId: student?.id || null,
+          facultyId: null,
+          name: student?.name || ext?.name || "Unknown Attendee",
+          rollNo: student?.rollNo || "-",
+          branch: student?.branch || ext?.collegeName || "",
+          email: student?.email || ext?.email || "",
+          isExternal: isExt,
+          isFaculty: false,
+          status: p.status,
+        };
+      });
+
+      return res.json({
+        isTeamEvent: false,
+        totalParticipants,
+        candidates,
+      });
+    } catch (err) {
+      console.error("Error fetching winner candidates:", err);
+      res.status(500).json({ message: err.message });
+    }
+  },
+);
 
 router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), validate(eventUpdateSchema), async (req, res) => {
   try {
@@ -2114,6 +2479,107 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
     if (updates.accountHolderName !== undefined) updates.accountHolderName = updates.accountHolderName || null;
     if (updates.postRegistrationMessage !== undefined) updates.postRegistrationMessage = updates.postRegistrationMessage || null;
 
+    // Strict Winner Announcement Validation
+    if (updates.winners !== undefined && Array.isArray(updates.winners)) {
+      const declaredWinners = updates.winners.filter(
+        (w) => w && (w.name || w.rollNo || w.studentId || w.teamId)
+      );
+
+      if (declaredWinners.length > 0) {
+        const isTeamEvent = (updates.registrationType || event.registrationType) === "team";
+
+        if (isTeamEvent) {
+          const totalTeams = await prisma.team.count({
+            where: { eventId: req.params.id, status: "active" },
+          });
+          if (totalTeams === 0) {
+            return res.status(400).json({
+              message: "Cannot announce winners: This event has zero registered teams.",
+            });
+          }
+
+          const validTeams = await prisma.team.findMany({
+            where: { eventId: req.params.id, status: "active" },
+            include: {
+              leaderStudent: { select: { id: true, rollNo: true, email: true, name: true } },
+            },
+          });
+
+          for (const winner of declaredWinners) {
+            const wName = String(winner.name || "").trim().toLowerCase();
+            const wRollNo = String(winner.rollNo || winner.leaderRollNo || "").trim().toLowerCase();
+            const wTeamId = String(winner.teamId || winner.id || "").trim();
+
+            const matchedTeam = validTeams.find((vt) => {
+              if (wTeamId && vt.id === wTeamId) return true;
+              if (wName && vt.teamName.trim().toLowerCase() === wName) return true;
+              if (wRollNo && vt.leaderStudent?.rollNo?.trim().toLowerCase() === wRollNo) return true;
+              return false;
+            });
+
+            if (!matchedTeam) {
+              return res.status(400).json({
+                message: `Team "${winner.name || winner.rollNo || "Unknown"}" is not registered for this event.`,
+              });
+            }
+          }
+        } else {
+          // Individual Event
+          const totalParticipants = await prisma.participation.count({
+            where: {
+              eventId: req.params.id,
+              status: { in: ["REGISTERED", "ATTENDED"] },
+            },
+          });
+          if (totalParticipants === 0) {
+            return res.status(400).json({
+              message: "Cannot announce winners: This event has zero participants.",
+            });
+          }
+
+          const validParticipants = await prisma.participation.findMany({
+            where: {
+              eventId: req.params.id,
+              status: { in: ["REGISTERED", "ATTENDED"] },
+            },
+            include: {
+              student: { select: { id: true, rollNo: true, email: true, name: true } },
+              externalUser: { select: { id: true, email: true, name: true } },
+            },
+          });
+
+          for (const winner of declaredWinners) {
+            const wStudentId = String(winner.studentId || winner.id || "").trim();
+            const wRollNo = String(winner.rollNo || "").trim().toLowerCase();
+            const wEmail = String(winner.email || "").trim().toLowerCase();
+            const wName = String(winner.name || "").trim().toLowerCase();
+
+            const matchedParticipant = validParticipants.find((vp) => {
+              if (wStudentId && (vp.studentId === wStudentId || vp.externalUserId === wStudentId || vp.id === wStudentId)) {
+                return true;
+              }
+              if (wRollNo && vp.student?.rollNo && vp.student.rollNo.trim().toLowerCase() === wRollNo) {
+                return true;
+              }
+              if (wEmail && (vp.student?.email?.trim().toLowerCase() === wEmail || vp.externalUser?.email?.trim().toLowerCase() === wEmail)) {
+                return true;
+              }
+              if (wName && (vp.student?.name?.trim().toLowerCase() === wName || vp.externalUser?.name?.trim().toLowerCase() === wName)) {
+                return true;
+              }
+              return false;
+            });
+
+            if (!matchedParticipant) {
+              return res.status(400).json({
+                message: `Student "${winner.name || winner.rollNo || "Unknown"}" did not participate in this event.`,
+              });
+            }
+          }
+        }
+      }
+    }
+
     let promotedCandidates = [];
     const updatedEvent = await prisma.$transaction(async (tx) => {
       if (sponsors !== undefined) {
@@ -2194,6 +2660,18 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       });
     }
 
+    // Clean up old Cloudinary image if imageUrl was updated/removed
+    if (updates.imageUrl !== undefined && event.imageUrl && event.imageUrl !== updates.imageUrl) {
+      const oldPublicId = extractCloudinaryPublicId(event.imageUrl);
+      if (oldPublicId) {
+        try {
+          await deleteImage(oldPublicId);
+        } catch (delErr) {
+          console.warn("Failed to delete previous event poster from Cloudinary:", delErr.message);
+        }
+      }
+    }
+
     res.json(serializeEvent(updatedEvent));
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -2233,6 +2711,18 @@ router.delete("/:id", verifyToken, requirePermission([PERMISSIONS.EVENT_DELETE, 
 
       await prisma.featuredEvent.deleteMany({ where: { eventId: req.params.id } });
       await prisma.event.delete({ where: { id: req.params.id } });
+
+      if (event.imageUrl) {
+        const oldPublicId = extractCloudinaryPublicId(event.imageUrl);
+        if (oldPublicId) {
+          try {
+            await deleteImage(oldPublicId);
+          } catch (delErr) {
+            console.warn("Failed to delete event poster from Cloudinary on event deletion:", delErr.message);
+          }
+        }
+      }
+
       return res.json({ message: "Event deleted successfully." });
     }
 
@@ -2248,9 +2738,7 @@ router.delete("/:id", verifyToken, requirePermission([PERMISSIONS.EVENT_DELETE, 
           const notif = await prisma.notification.create({
             data: {
               id: createObjectId(),
-              targetScope: "FACULTY_COORDINATOR",
               clubId: org.clubId,
-              recipientUserId: org.club.facultyCoordinatorId,
               eventId: req.params.id,
               type: "EVENT_DELETION_REQUEST",
               title: `Deletion Requested: ${event.title}`,
@@ -2282,8 +2770,6 @@ async function notifyMemberDeregistered(io, recipientId, title, message) {
       data: {
         id: createObjectId(),
         recipientStudentId: recipientId,
-        recipientUserId: recipientId,
-        targetScope: "USER",
         type: "REGISTRATION_CANCELLED",
         title,
         message,
@@ -2364,6 +2850,51 @@ router.delete(
             return res.json({ message: "Team and all member registrations cancelled successfully." });
           }
         }
+
+        let promotedCandidates = [];
+        await prisma.$transaction(async (tx) => {
+          await tx.participation.delete({ where: { id: p.id } });
+          if (p.status === "REGISTERED") {
+            await tx.event.update({
+              where: { id: eventId },
+              data: { registeredCount: { decrement: 1 } },
+            });
+            const promo = await promoteWaitlistCandidates(tx, eventId, 1);
+            promotedCandidates = promo.promotedCandidates;
+          } else {
+            const latestEvent = await tx.event.findUnique({ where: { id: eventId } });
+            await tx.event.update({
+              where: { id: eventId },
+              data: {
+                waitingListIds: (latestEvent?.waitingListIds || []).filter(
+                  (id) => id !== p.id,
+                ),
+              },
+            });
+          }
+        });
+
+        invalidatePublicResponses(["events:public:*"]);
+        if (promotedCandidates.length > 0) {
+          notifyWaitlistCleared(req.io, promotedCandidates, p.event || { id: eventId }).catch(console.error);
+        }
+
+        return res.json({ message: "Deregistered successfully." });
+      }
+
+      const isFaculty = userType === "faculty" || req.user.role === "faculty" || req.user.principalType === "FACULTY";
+      if (isFaculty) {
+        const p = await prisma.participation.findFirst({
+          where: {
+            eventId,
+            OR: [
+              { facultyId: userId },
+              { facultyId: studentId },
+            ],
+          },
+          include: { event: true },
+        });
+        if (!p) return res.status(404).json({ message: "Registration not found." });
 
         let promotedCandidates = [];
         await prisma.$transaction(async (tx) => {

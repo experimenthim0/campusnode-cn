@@ -291,13 +291,13 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
                 <button
                   key={cat.key}
                   onClick={() => setFilterCategory(cat.key)}
-                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                  className={` inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 text-[10px] sm:text-[11px] font-bold tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
                     isSelected
                       ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
                   }`}
                 >
-                  <i className={`${cat.icon} text-xs`} />
+                  <i className={`${cat.icon} text-xs font-light`} />
                   <span>{cat.label}</span>
                 </button>
               );

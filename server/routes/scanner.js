@@ -37,26 +37,63 @@ router.post("/login", validate(loginSchema), async (req, res) => {
     const { email, password } = req.body;
     const cleanEmail = (email || "").trim().toLowerCase();
 
-    // 1. Check Admin / Faculty Coordinator
+    // 1. Check Faculty Coordinator (FacultyUser table)
+    const faculty = await prisma.facultyUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        department: true,
+        coordinatedClubs: { select: { id: true, clubName: true } },
+      },
+    });
+
+    if (faculty) {
+      const match = await bcrypt.compare(password, faculty.password);
+      if (!match) return res.status(401).json({ message: "Invalid credentials." });
+
+      const clubs = faculty.coordinatedClubs || [];
+      if (clubs.length === 0) {
+        return res.status(403).json({ message: "Scanner access requires assigned club coordinator role." });
+      }
+
+      const token = generateToken(faculty, "facultyCoordinator", "faculty", clubs[0]?.id || null, "FACULTY");
+
+      return res.json({
+        token,
+        user: {
+          id: faculty.id,
+          name: faculty.name,
+          email: faculty.email,
+          role: "facultyCoordinator",
+          userType: "faculty",
+          clubs: clubs.map((c) => ({
+            id: c.id,
+            name: c.clubName,
+            role: "COORDINATOR",
+            canTakeAttendance: true,
+          })),
+        },
+      });
+    }
+
+    // 2. Check Admin Role (AdminRole table)
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
-      select: { id: true, email: true, password: true, role: true, name: true, coordinatedClubs: { select: { id: true, clubName: true } } },
+      select: { id: true, email: true, password: true, role: true, name: true },
     });
 
     if (admin) {
       const match = await bcrypt.compare(password, admin.password);
       if (!match) return res.status(401).json({ message: "Invalid credentials." });
 
-      if (admin.role !== "facultyCoordinator" && admin.role !== "admin") {
-        return res.status(403).json({ message: "Scanner access requires club management role." });
+      if (admin.role !== "admin" && admin.role !== "SUPER_ADMIN") {
+        return res.status(403).json({ message: "Scanner access requires admin role." });
       }
 
-      const clubs = admin.coordinatedClubs || [];
-      if (clubs.length === 0 && admin.role !== "admin") {
-        return res.status(403).json({ message: "No clubs assigned." });
-      }
-
-      const token = generateToken(admin, admin.role, "admin", clubs[0]?.id || null);
+      const token = generateToken(admin, admin.role, "admin", null, "ADMIN");
 
       return res.json({
         token,
@@ -66,12 +103,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
           email: admin.email,
           role: admin.role,
           userType: "admin",
-          clubs: clubs.map((c) => ({
-            id: c.id,
-            name: c.clubName,
-            role: "COORDINATOR",
-            canTakeAttendance: true,
-          })),
+          clubs: [],
         },
       });
     }
@@ -283,6 +315,7 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         qrVersion: true,
         status: true,
         student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, program: true } },
+        faculty: { select: { name: true, department: true, email: true } },
         externalUser: { select: { name: true, collegeName: true, email: true } },
       },
     });
@@ -332,12 +365,12 @@ router.get("/events/:eventId/offline-package", verifyToken, async (req, res) => 
         qrPayload: p.qrPayload,
         qrVersion: p.qrVersion,
         status: p.status,
-        studentName: p.student?.name || p.externalUser?.name || "Unknown",
-        branch: p.student?.branch || (p.externalUser ? p.externalUser.collegeName : null),
-        rollNo: p.student?.rollNo || (p.externalUser ? "External" : null),
-        year: p.student ? calculateAcademicProgress(p.student).academicYearLabel : null,
-        externalEmail: p.externalUser?.email || null,
-        collegeName: p.externalUser?.collegeName || null,
+        studentName: p.faculty?.name || p.student?.name || p.externalUser?.name || "Unknown",
+        branch: p.faculty ? p.faculty.department : (p.student?.branch || (p.externalUser ? p.externalUser.collegeName : null)),
+        rollNo: p.faculty ? `Faculty (${p.faculty.department})` : (p.student?.rollNo || (p.externalUser ? "External" : null)),
+        year: p.faculty ? "Faculty" : (p.student ? calculateAcademicProgress(p.student).academicYearLabel : null),
+        externalEmail: p.externalUser?.email || p.faculty?.email || null,
+        collegeName: p.faculty ? "NIT Jalandhar" : (p.externalUser?.collegeName || null),
       })),
       publicKeys: [publicKeyInfo],
       existingAttendance: existingAttendance.map((a) => a.participationId),
@@ -426,11 +459,13 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
           OR: [
             { student: { rollNo: { equals: cleanInput, mode: "insensitive" } } },
             { student: { email: { equals: cleanInput, mode: "insensitive" } } },
+            { faculty: { email: { equals: cleanInput, mode: "insensitive" } } },
             { externalUser: { email: { equals: cleanInput, mode: "insensitive" } } },
           ],
         },
         include: {
           student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, program: true, email: true } },
+          faculty: { select: { name: true, department: true, email: true } },
           externalUser: { select: { name: true, collegeName: true, email: true } },
         },
       });
@@ -442,6 +477,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
         },
         include: {
           student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, program: true } },
+          faculty: { select: { name: true, department: true, email: true } },
           externalUser: { select: { name: true, collegeName: true, email: true } },
         },
       });
@@ -471,6 +507,7 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
         },
         include: {
           student: { select: { name: true, branch: true, rollNo: true, expectedGraduationYear: true, program: true } },
+          faculty: { select: { name: true, department: true, email: true } },
           externalUser: { select: { name: true, collegeName: true, email: true } },
         },
       });
@@ -506,11 +543,11 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
         status: "ALREADY_ATTENDED",
         message: "Participant already checked in.",
         participant: {
-          name: participation.student?.name || participation.externalUser?.name || "Unknown",
-          branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
-          rollNo: participation.student?.rollNo || (participation.externalUser ? "External" : null),
-          year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
-          collegeName: participation.externalUser?.collegeName || null,
+          name: participation.faculty?.name || participation.student?.name || participation.externalUser?.name || "Unknown",
+          branch: participation.faculty ? participation.faculty.department : (participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null)),
+          rollNo: participation.faculty ? `Faculty (${participation.faculty.department})` : (participation.student?.rollNo || (participation.externalUser ? "External" : null)),
+          year: participation.faculty ? "Faculty" : (participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null),
+          collegeName: participation.faculty ? "NIT Jalandhar" : (participation.externalUser?.collegeName || null),
         },
         attendedAt: existingAttendance.scannedAt,
       });
@@ -541,18 +578,18 @@ router.post("/attendance/check-in", verifyToken, validate(checkInSchema), async 
       targetId: participation.id,
       eventId,
       source: "ONLINE",
-      metadata: { participantName: participation.student?.name || participation.externalUser?.name },
+      metadata: { participantName: participation.faculty?.name || participation.student?.name || participation.externalUser?.name },
     });
 
     return res.json({
       status: "VALID",
       message: "Check-in successful!",
       participant: {
-        name: participation.student?.name || participation.externalUser?.name || "Unknown",
-        branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
-        rollNo: participation.student?.rollNo || (participation.externalUser ? "External" : null),
-        year: participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null,
-        collegeName: participation.externalUser?.collegeName || null,
+        name: participation.faculty?.name || participation.student?.name || participation.externalUser?.name || "Unknown",
+        branch: participation.faculty ? participation.faculty.department : (participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null)),
+        rollNo: participation.faculty ? `Faculty (${participation.faculty.department})` : (participation.student?.rollNo || (participation.externalUser ? "External" : null)),
+        year: participation.faculty ? "Faculty" : (participation.student ? calculateAcademicProgress(participation.student).academicYearLabel : null),
+        collegeName: participation.faculty ? "NIT Jalandhar" : (participation.externalUser?.collegeName || null),
       },
       attendedAt: new Date(),
     });
@@ -776,10 +813,14 @@ router.get("/events/:eventId/search-participants", verifyToken, async (req, res)
       where: {
         eventId,
         status: { in: ["REGISTERED", "ATTENDED"] },
-        studentId: { not: null },
         OR: [
           { student: { rollNo: { contains: query, mode: "insensitive" } } },
           { student: { name: { contains: query, mode: "insensitive" } } },
+          { faculty: { name: { contains: query, mode: "insensitive" } } },
+          { faculty: { email: { contains: query, mode: "insensitive" } } },
+          { faculty: { department: { contains: query, mode: "insensitive" } } },
+          { externalUser: { name: { contains: query, mode: "insensitive" } } },
+          { externalUser: { email: { contains: query, mode: "insensitive" } } },
         ],
       },
       select: {
@@ -797,11 +838,26 @@ router.get("/events/:eventId/search-participants", verifyToken, async (req, res)
             expectedGraduationYear: true,
           },
         },
+        faculty: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true,
+          },
+        },
+        externalUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            collegeName: true,
+          },
+        },
       },
       take: 15,
       orderBy: [
         { status: "asc" },
-        { student: { rollNo: "asc" } },
       ],
     });
 
@@ -811,7 +867,21 @@ router.get("/events/:eventId/search-participants", verifyToken, async (req, res)
         status: p.status,
         attendedAt: p.attendedAt,
         ticketId: p.qrCode,
-        student: p.student,
+        student: p.student || (p.faculty ? {
+          id: p.faculty.id,
+          name: p.faculty.name,
+          rollNo: `Faculty (${p.faculty.department})`,
+          branch: p.faculty.department,
+          program: "Faculty",
+          year: "Faculty",
+        } : (p.externalUser ? {
+          id: p.externalUser.id,
+          name: p.externalUser.name,
+          rollNo: "External",
+          branch: p.externalUser.collegeName,
+          program: "External",
+          year: "External",
+        } : null)),
       })),
     });
   } catch (err) {

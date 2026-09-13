@@ -164,6 +164,13 @@ const inMemoryFallback = new InMemoryRedis();
 let activeClient = inMemoryFallback;
 let nativeClient = null;
 let isConnected = false;
+const redisRequired = process.env.NODE_ENV === "production";
+
+const assertRedisAvailable = () => {
+  if (redisRequired && (!isConnected || activeClient !== nativeClient)) {
+    throw new Error("REDIS_UNAVAILABLE");
+  }
+};
 
 const redisUrl = process.env.REDIS_URL || (process.env.REDIS_HOST ? `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}` : null);
 
@@ -222,57 +229,71 @@ if (redisUrl) {
  */
 export const redis = {
   async get(key) {
+    assertRedisAvailable();
     try {
       return await activeClient.get(key);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.get(key);
     }
   },
 
   async set(key, value, ...args) {
+    assertRedisAvailable();
     try {
       return await activeClient.set(key, value, ...args);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.set(key, value, ...args);
     }
   },
 
   async setex(key, seconds, value) {
+    assertRedisAvailable();
     try {
       return await activeClient.setex(key, seconds, value);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.setex(key, seconds, value);
     }
   },
 
   async setnx(key, value) {
+    assertRedisAvailable();
     try {
       return await activeClient.setnx(key, value);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.setnx(key, value);
     }
   },
 
   async del(...keys) {
+    assertRedisAvailable();
     try {
       return await activeClient.del(...keys);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.del(...keys);
     }
   },
 
   async incr(key) {
+    assertRedisAvailable();
     try {
       return await activeClient.incr(key);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.incr(key);
     }
   },
 
   async expire(key, seconds) {
+    assertRedisAvailable();
     try {
       return await activeClient.expire(key, seconds);
     } catch {
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
       return await inMemoryFallback.expire(key, seconds);
     }
   },

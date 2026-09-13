@@ -803,9 +803,16 @@ const ClubEvents = () => {
                                       setOpenMenuEventId(null);
                                       setWinnerModalEvent(event);
                                     }}
-                                    className="w-full text-left flex items-center gap-2 px-3.5 py-2 hover:bg-muted text-foreground font-medium transition-colors cursor-pointer"
+                                    className="w-full text-left flex items-center justify-between px-3.5 py-2 hover:bg-muted text-foreground font-medium transition-colors cursor-pointer"
                                   >
-                                    <Trophy className="w-3.5 h-3.5 text-amber-500" /> Announce Winners
+                                    <span className="flex items-center gap-2">
+                                      <Trophy className="w-3.5 h-3.5 text-amber-500" /> Announce Winners
+                                    </span>
+                                    {Number(event.registeredCount || 0) === 0 && (
+                                      <span className="text-[10px] text-amber-500 font-semibold px-1.5 py-0.5 rounded bg-amber-500/10">
+                                        0 reg
+                                      </span>
+                                    )}
                                   </button>
                                 )}
 

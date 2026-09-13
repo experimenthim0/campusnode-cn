@@ -8,7 +8,6 @@ import {
   getClubMembers,
   uploadClubLogo,
   deleteClubLogo,
-  uploadClubBanner,
   deleteClubBanner,
   uploadClubImage,
 } from "../services/clubService";
@@ -47,13 +46,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-const slugifyClubName = (value = "") =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
 const EditClub = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -71,6 +63,7 @@ const EditClub = () => {
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [selectedBannerFileSrc, setSelectedBannerFileSrc] = useState(null);
 
   // Gallery List
   const [galleryList, setGalleryList] = useState([]);
@@ -350,7 +343,7 @@ const EditClub = () => {
   };
 
   // --- BANNER ACTIONS ---
-  const handleDirectBannerUpload = async (e) => {
+  const handleDirectBannerUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -363,26 +356,13 @@ const EditClub = () => {
       return;
     }
 
-    setIsUploadingBanner(true);
-    try {
-      const fd = new FormData();
-      fd.append("banner", file);
-      const res = await uploadClubBanner(clubId, fd);
-      const newBanner = res.data?.bannerImage || res.data?.club?.bannerImage;
-      if (newBanner) {
-        setFormData((prev) => ({ ...prev, bannerImage: newBanner }));
-        await invalidateCache(["/api/clubs/*"]);
-        showNotification("Cover banner updated successfully!", "success");
-      }
-    } catch (err) {
-      showNotification(
-        err.response?.data?.message || "Failed to upload banner",
-        "error",
-      );
-    } finally {
-      setIsUploadingBanner(false);
-      if (bannerInputRef.current) bannerInputRef.current.value = "";
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedBannerFileSrc(reader.result);
+      setBannerModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
   };
 
   const handleRemoveBanner = async () => {
@@ -537,9 +517,6 @@ const EditClub = () => {
     }
   };
 
-  const inputCls =
-    "w-full p-3 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-medium text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500";
-
   const clubInitials = (formData.clubName || "Club")
     .split(" ")
     .map((w) => w[0])
@@ -660,7 +637,10 @@ const EditClub = () => {
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => setBannerModalOpen(true)}
+                    onClick={() => {
+                      setSelectedBannerFileSrc(null);
+                      setBannerModalOpen(true);
+                    }}
                     className="h-8 gap-1.5 bg-black/70 hover:bg-black/90 text-white backdrop-blur-md text-xs font-semibold"
                     title="Open Canvas Crop & Position Editor"
                   >
@@ -1294,11 +1274,15 @@ const EditClub = () => {
         </Card>
       </form>
 
-      {/* LinkedIn-Style Banner Cropping Modal */}
+      {/* Banner Cropping Modal */}
       <BannerCropModal
         isOpen={bannerModalOpen}
-        onClose={() => setBannerModalOpen(false)}
+        onClose={() => {
+          setBannerModalOpen(false);
+          setSelectedBannerFileSrc(null);
+        }}
         clubId={clubId}
+        initialImageSrc={selectedBannerFileSrc}
         currentBannerUrl={formData.bannerImage || "/mainbuilding.jpeg"}
         onSuccess={(newBannerUrl) => {
           if (newBannerUrl) {

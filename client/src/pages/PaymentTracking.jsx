@@ -6,9 +6,7 @@ import { getPaymentStats } from '../services/paymentService';
 import ShimmerText from '../components/ShimmerText';
 
 const PaymentTracking = () => {
-  const { user: authUser, role: authRole } = useAuth();
-  const [user, setUser] = useState(authUser);
-  const [role, setRole] = useState(authRole);
+  const { user, role } = useAuth();
   const [events, setEvents] = useState([]);
   const [paymentStats, setPaymentStats] = useState({});
   const [loading, setLoading] = useState(true);
@@ -16,19 +14,19 @@ const PaymentTracking = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authUser || !(authRole === 'club-head' || authRole === 'club' || authRole === 'clubHead' || authRole === 'facultyCoordinator')) {
+    if (!user || !(role === 'club-head' || role === 'club' || role === 'clubHead' || role === 'facultyCoordinator')) {
       navigate('/login');
       return;
     }
 
-    setUser(authUser);
-    setRole(authRole);
+    let isMounted = true;
 
     const fetchData = async () => {
       try {
-        const targetClubId = authUser.clubId || authUser._id || authUser.id;
+        const targetClubId = user.clubId || user._id || user.id;
         const eventsRes = await getClubManagedEvents(targetClubId);
         const paidEvents = eventsRes.data.filter(e => (e.entryFee > 0) || (e.registrationFee > 0) || (e.paymentMethod && e.paymentMethod !== 'FREE'));
+        if (!isMounted) return;
         setEvents(paidEvents);
 
         const statsPromises = paidEvents.map(event =>
@@ -39,17 +37,22 @@ const PaymentTracking = () => {
         const allStats = await Promise.all(statsPromises);
         const statsMap = {};
         allStats.forEach(s => { statsMap[s.eventId] = s; });
+        if (!isMounted) return;
         setPaymentStats(statsMap);
 
         setLoading(false);
       } catch (err) {
         console.error('Failed to fetch payment data:', err);
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
-  }, [authUser, authRole, navigate]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, role, navigate]);
 
   if (loading) {
     return (

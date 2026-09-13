@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
@@ -707,7 +708,9 @@ const MyEvents = () => {
           const raw = err.response.data instanceof Blob ? await err.response.data.text() : JSON.stringify(err.response.data);
           const parsed = JSON.parse(raw);
           if (parsed.message) message = parsed.message;
-        } catch (e) {}
+        } catch {
+          // Ignore parsing error fallback
+        }
       }
       showNotification(message, 'error');
     } finally {

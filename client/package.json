@@ -29,6 +29,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-easy-crop": "^6.2.3",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.13.0",
     "remixicon-react": "^1.0.0",

@@ -1,54 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
 import { updateEvent } from '../services/eventService';
 import { useNotification } from '../context/NotificationContext';
-import { Trophy, Plus, Trash2, X, Check, Loader2, Award, Users } from 'lucide-react';
+import { Trophy, Plus, Trash2, X, Check, Loader2, Award, Users, AlertCircle, Search, CheckCircle2 } from 'lucide-react';
 
 const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
   const { showNotification } = useNotification();
   const [showWinner, setShowWinner] = useState(false);
   const [winners, setWinners] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [totalParticipants, setTotalParticipants] = useState(null);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [candidateSuggestions, setCandidateSuggestions] = useState({});
+  const [activeDropdownIndex, setActiveDropdownIndex] = useState(null);
+  const searchTimeoutRef = useRef({});
+
+  const eventId = event?.id || event?._id;
+  const isTeamEvent = event?.registrationType === 'team' || event?.registrationType === 'both';
+
+  // Fetch participant count and initial candidates from server
+  const fetchCandidatesSummary = useCallback(async () => {
+    if (!eventId) return;
+    try {
+      setLoadingCandidates(true);
+      const res = await api.get(`/api/events/${eventId}/winner-candidates`);
+      setTotalParticipants(res.data?.totalParticipants ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch winner candidates summary:', err);
+      // If error, fallback to event's registeredCount if available
+      setTotalParticipants(event?.registeredCount ?? 0);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  }, [eventId, event?.registeredCount]);
 
   useEffect(() => {
-    if (event) {
+    if (isOpen && event) {
       setShowWinner(event.showWinner ?? false);
       setWinners(
         Array.isArray(event.winners) && event.winners.length > 0
           ? event.winners.map((w, idx) => ({
               rank: w.rank || idx + 1,
-              rollNo: w.rollNo || '',
+              rollNo: w.rollNo || w.leaderRollNo || '',
               name: w.name || '',
+              studentId: w.studentId || '',
+              teamId: w.teamId || '',
               members: w.members || [],
               leaderName: w.leaderName || '',
-              error: null
+              error: null,
             }))
           : []
       );
+      fetchCandidatesSummary();
+    } else {
+      setCandidateSuggestions({});
+      setActiveDropdownIndex(null);
     }
-  }, [event]);
+  }, [isOpen, event, fetchCandidatesSummary]);
 
   if (!isOpen || !event) return null;
 
-  const eventId = event.id || event._id;
-  const isTeamEvent = event.registrationType === 'team' || event.registrationType === 'both';
+  const hasZeroParticipation = totalParticipants === 0;
 
   const addWinner = () => {
+    if (hasZeroParticipation) return;
     setWinners(prev => [
       ...prev,
       {
         rank: prev.length + 1,
         rollNo: '',
         name: '',
+        studentId: '',
+        teamId: '',
         members: [],
         leaderName: '',
-        error: null
+        error: null,
       }
     ]);
   };
 
   const removeWinner = (index) => {
     setWinners(prev => prev.filter((_, i) => i !== index));
+    setActiveDropdownIndex(null);
   };
 
   const updateWinner = (index, field, value) => {
@@ -59,73 +92,163 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
     });
   };
 
-  const handleWinnerLookup = async (index, queryVal) => {
-    if (!queryVal || !queryVal.trim()) return;
-    if (isTeamEvent) {
-      try {
-        const res = await api.get(
-          `/api/teams/event/${eventId}/lookup-leader?query=${encodeURIComponent(queryVal.trim())}`
-        );
-        const { teamName, members, leaderName } = res.data;
-
-        setWinners(prev => {
-          const updated = [...prev];
-          updated[index] = {
-            ...updated[index],
-            name: teamName,
-            members: members || [],
-            leaderName: leaderName || '',
-            error: null
-          };
-          return updated;
-        });
-        return;
-      } catch (err) {
-        // Fallback to student lookup
-      }
+  // Search candidates strictly for this event
+  const searchEventCandidates = async (index, queryVal) => {
+    if (!queryVal || !queryVal.trim()) {
+      setCandidateSuggestions(prev => ({ ...prev, [index]: [] }));
+      return;
     }
 
     try {
       const res = await api.get(
-        `/api/users/lookup/${encodeURIComponent(queryVal.trim())}`
+        `/api/events/${eventId}/winner-candidates?query=${encodeURIComponent(queryVal.trim())}`
       );
-      const { name, branch } = res.data;
-      const displayName = branch ? `${name} (${branch})` : name;
-
-      setWinners(prev => {
-        const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          name: displayName,
-          members: [],
-          leaderName: '',
-          error: null
-        };
-        return updated;
-      });
+      const matches = res.data?.candidates || [];
+      setCandidateSuggestions(prev => ({ ...prev, [index]: matches }));
+      setActiveDropdownIndex(index);
     } catch (err) {
-      setWinners(prev => {
-        const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          name: '',
-          members: [],
-          leaderName: '',
-          error: isTeamEvent ? 'No registered team or student found.' : 'Student not found.'
-        };
-        return updated;
-      });
+      setCandidateSuggestions(prev => ({ ...prev, [index]: [] }));
     }
   };
 
+  const handleInputChange = (index, val) => {
+    updateWinner(index, 'rollNo', val);
+
+    // Clear previous debounce timer
+    if (searchTimeoutRef.current[index]) {
+      clearTimeout(searchTimeoutRef.current[index]);
+    }
+
+    if (val.trim().length >= 1) {
+      searchTimeoutRef.current[index] = setTimeout(() => {
+        searchEventCandidates(index, val);
+      }, 250);
+    } else {
+      setCandidateSuggestions(prev => ({ ...prev, [index]: [] }));
+      setActiveDropdownIndex(null);
+    }
+  };
+
+  const handleSelectCandidate = (index, candidate) => {
+    setWinners(prev => {
+      const updated = [...prev];
+      if (candidate.type === 'team') {
+        updated[index] = {
+          ...updated[index],
+          teamId: candidate.teamId || candidate.id,
+          name: candidate.name,
+          rollNo: candidate.leaderRollNo || candidate.rollNo || '',
+          leaderName: candidate.leaderName || '',
+          members: candidate.members || [],
+          error: null,
+        };
+      } else {
+        updated[index] = {
+          ...updated[index],
+          studentId: candidate.studentId || candidate.id,
+          name: candidate.name,
+          rollNo: candidate.rollNo || '',
+          branch: candidate.branch || '',
+          members: [],
+          leaderName: '',
+          error: null,
+        };
+      }
+      return updated;
+    });
+
+    setActiveDropdownIndex(null);
+    setCandidateSuggestions(prev => ({ ...prev, [index]: [] }));
+  };
+
+  const handleInputBlur = async (index, queryVal) => {
+    // Delay hiding dropdown so clicks register
+    setTimeout(async () => {
+      setActiveDropdownIndex(null);
+
+      if (!queryVal || !queryVal.trim()) return;
+      const current = winners[index];
+      if (current?.name && (current?.studentId || current?.teamId)) return;
+
+      // Validate that the query matches an actual event participant
+      try {
+        const res = await api.get(
+          `/api/events/${eventId}/winner-candidates?query=${encodeURIComponent(queryVal.trim())}`
+        );
+        const candidates = res.data?.candidates || [];
+
+        const exactMatch = candidates.find(c => {
+          const qLower = queryVal.trim().toLowerCase();
+          if (c.type === 'team') {
+            return (
+              c.name?.toLowerCase() === qLower ||
+              c.leaderRollNo?.toLowerCase() === qLower ||
+              c.leaderEmail?.toLowerCase() === qLower
+            );
+          }
+          return (
+            c.rollNo?.toLowerCase() === qLower ||
+            c.email?.toLowerCase() === qLower ||
+            c.name?.toLowerCase() === qLower
+          );
+        });
+
+        if (exactMatch) {
+          handleSelectCandidate(index, exactMatch);
+        } else if (candidates.length === 1) {
+          handleSelectCandidate(index, candidates[0]);
+        } else {
+          setWinners(prev => {
+            const updated = [...prev];
+            updated[index] = {
+              ...updated[index],
+              name: '',
+              error: isTeamEvent
+                ? 'Team or leader is not registered for this event.'
+                : 'Student did not participate in this event.',
+            };
+            return updated;
+          });
+        }
+      } catch (err) {
+        setWinners(prev => {
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            name: '',
+            error: 'Failed to verify participant for this event.',
+          };
+          return updated;
+        });
+      }
+    }, 250);
+  };
+
   const handleSave = async () => {
+    if (hasZeroParticipation && winners.length > 0) {
+      showNotification('Cannot announce winners for an event with zero participants.', 'error');
+      return;
+    }
+
+    const hasErrors = winners.some(w => w.error);
+    if (hasErrors) {
+      showNotification('Please resolve invalid participant errors before saving.', 'error');
+      return;
+    }
+
+    const incomplete = winners.some(w => !w.name || !w.name.trim());
+    if (incomplete) {
+      showNotification('All declared winners must have a valid participant name.', 'error');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sanitizedWinners = winners.map(({ error, ...rest }) => rest);
+      const sanitizedWinners = winners.map(({ error, suggestions, showSuggestions, loadingLookup, ...rest }) => rest);
 
       const res = await updateEvent(eventId, {
         winners: sanitizedWinners,
-        showWinner
+        showWinner,
       });
 
       showNotification('Winners updated successfully!', 'success');
@@ -139,11 +262,18 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
     }
   };
 
+  const getMedalColor = (rank) => {
+    if (rank === 1) return 'text-amber-500 bg-amber-500/10 border-amber-500/30';
+    if (rank === 2) return 'text-neutral-400 bg-neutral-400/10 border-neutral-400/30';
+    if (rank === 3) return 'text-amber-700 bg-amber-700/10 border-amber-700/30';
+    return 'text-brand-500 bg-brand-500/10 border-brand-500/20';
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto">
       <div className="bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh] transition-colors">
         
-        {/* Clean Standard Header */}
+        {/* Header */}
         <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
@@ -168,6 +298,22 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
         </div>
 
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-cn-text-secondary">
+          
+          {/* Zero Participation Banner */}
+          {hasZeroParticipation && (
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <h5 className="text-xs font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wide">
+                  Zero Participation Warning
+                </h5>
+                <p className="text-xs text-amber-700 dark:text-amber-300/90 mt-0.5 leading-relaxed">
+                  This event has zero registered participants. Winners cannot be declared or published until students or teams register for this event.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Public Visibility Toggle */}
           <div className="flex items-center justify-between p-4 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-xl">
             <div className="flex items-center gap-3">
@@ -194,19 +340,25 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
 
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-cn-text">
-                Winners Leaderboard
+              <h4 className="text-sm font-bold text-cn-text flex items-center gap-2">
+                <span>Winners Leaderboard</span>
+                {totalParticipants !== null && (
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-cn-surface-muted dark:bg-cn-surface-elevated text-cn-text-muted border border-cn-border dark:border-cn-border-subtle">
+                    {totalParticipants} eligible {isTeamEvent ? 'teams' : 'participants'}
+                  </span>
+                )}
               </h4>
               <p className="text-xs text-cn-text-muted">
                 {isTeamEvent
-                  ? 'Enter Leader Roll No / Name to identify team'
-                  : 'Enter Student Roll No to auto-fill details'}
+                  ? 'Search registered teams by team name or leader roll number'
+                  : 'Search attendees by student roll number or name'}
               </p>
             </div>
             <button
               type="button"
               onClick={addWinner}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+              disabled={hasZeroParticipation}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" /> Add Winner
             </button>
@@ -229,48 +381,86 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
                 </button>
 
                 <div className="grid grid-cols-1 sm:grid-cols-[70px_1fr_1fr] gap-3 pr-8 sm:pr-0 items-start">
+                  {/* Rank */}
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
                       Rank
                     </label>
-                    <input
-                      type="number"
-                      value={winner.rank}
-                      onChange={e => updateWinner(index, 'rank', Number(e.target.value))}
-                      className="w-full px-3 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        value={winner.rank}
+                        onChange={e => updateWinner(index, 'rank', Number(e.target.value))}
+                        className="w-full px-3 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
-                      {isTeamEvent ? 'Leader Roll No / Name' : 'Roll Number'}
+                  {/* Search Candidate Input with Live Dropdown */}
+                  <div className="relative">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block flex items-center justify-between">
+                      <span>{isTeamEvent ? 'Leader Roll No / Team' : 'Participant Roll No / Name'}</span>
+                      <Search className="w-3 h-3 text-cn-text-muted" />
                     </label>
                     <input
                       type="text"
-                      placeholder={isTeamEvent ? 'Enter Leader Roll No / Name' : 'e.g. 21103001'}
+                      placeholder={isTeamEvent ? 'Search registered team / leader...' : 'Search participant roll no...'}
                       value={winner.rollNo || ''}
-                      onChange={e => {
-                        const val = e.target.value;
-                        updateWinner(index, 'rollNo', val);
-                        if (val.trim().length >= 3) {
-                          handleWinnerLookup(index, val);
+                      onChange={e => handleInputChange(index, e.target.value)}
+                      onFocus={() => {
+                        if (candidateSuggestions[index]?.length > 0) {
+                          setActiveDropdownIndex(index);
                         }
                       }}
-                      onBlur={e => handleWinnerLookup(index, e.target.value)}
-                      className="w-full px-3.5 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text placeholder-cn-text-muted text-xs font-medium outline-none focus:border-brand-500 transition-colors"
+                      onBlur={e => handleInputBlur(index, e.target.value)}
+                      className={`w-full px-3.5 py-2 border rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text placeholder-cn-text-muted text-xs font-medium outline-none transition-colors ${
+                        winner.error ? 'border-danger-500 focus:border-danger-500' : 'border-cn-border dark:border-cn-border-subtle focus:border-brand-500'
+                      }`}
                     />
+
+                    {/* Autocomplete Dropdown */}
+                    {activeDropdownIndex === index && candidateSuggestions[index]?.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-cn-border-subtle">
+                        {candidateSuggestions[index].map((candidate, cIdx) => (
+                          <div
+                            key={cIdx}
+                            onMouseDown={() => handleSelectCandidate(index, candidate)}
+                            className="p-2.5 hover:bg-brand-50 dark:hover:bg-brand-950/40 cursor-pointer transition-colors text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-cn-text">
+                                {candidate.name}
+                              </span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-100 dark:bg-brand-900/60 text-brand-600 dark:text-brand-300 font-semibold">
+                                {candidate.type === 'team' ? 'Team' : candidate.status || 'Verified'}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-cn-text-muted mt-0.5 truncate">
+                              {candidate.type === 'team'
+                                ? `Leader: ${candidate.leaderName || 'N/A'} (${candidate.leaderRollNo || 'N/A'})`
+                                : `Roll No: ${candidate.rollNo || 'External'} · ${candidate.branch || ''}`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
+                  {/* Confirmed Name Display */}
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block">
-                      {isTeamEvent ? 'Team Name' : 'Winner Name'}
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 block flex items-center gap-1">
+                      <span>{isTeamEvent ? 'Identified Team Name' : 'Verified Participant'}</span>
+                      {winner.name && !winner.error && (
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      )}
                     </label>
                     <input
                       type="text"
-                      placeholder={isTeamEvent ? 'Identified Team Name' : 'Identified Name'}
+                      readOnly
+                      placeholder={isTeamEvent ? 'Selected Team Name' : 'Verified Attendee Name'}
                       value={winner.name || ''}
-                      onChange={e => updateWinner(index, 'name', e.target.value)}
-                      className="w-full px-3.5 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface dark:bg-cn-surface-card text-cn-text placeholder-cn-text-muted text-xs font-medium outline-none focus:border-brand-500 transition-colors"
+                      className="w-full px-3.5 py-2 border border-cn-border dark:border-cn-border-subtle rounded-xl bg-cn-surface/60 dark:bg-cn-surface-card/60 text-cn-text placeholder-cn-text-muted text-xs font-semibold outline-none cursor-default"
                     />
 
                     {/* Team Members Tag Display */}
@@ -305,7 +495,9 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
               <div className="text-center py-8 px-4 border border-dashed border-cn-border dark:border-cn-border-subtle rounded-xl">
                 <Trophy className="w-8 h-8 text-cn-text-muted mx-auto mb-2 opacity-50" />
                 <p className="text-xs text-cn-text-muted font-medium">
-                  No winners added yet. Click "+ Add Winner" to declare results.
+                  {hasZeroParticipation
+                    ? 'No participants registered yet. Winner declaration will be available once attendees register.'
+                    : 'No winners added yet. Click "+ Add Winner" to declare results from event attendees.'}
                 </p>
               </div>
             )}
@@ -322,9 +514,9 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
           </button>
           <button
             type="button"
-            disabled={saving}
+            disabled={saving || (hasZeroParticipation && winners.length > 0)}
             onClick={handleSave}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-neutral-900 rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>

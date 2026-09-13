@@ -64,7 +64,7 @@ const EventCardSkeleton = ({ className }) => {
           <div className="shrink-0 self-center pl-1">
             <div className="flex flex-col items-center justify-center min-w-[50px] sm:min-w-[54px] bg-white dark:bg-neutral-900 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-xs">
               {/* Header bar (month placeholder) */}
-              <Skeleton className="w-full h-3.5 rounded-none bg-red-200 dark:bg-red-950/60" />
+              <Skeleton className="w-full h-3.5 rounded-none bg-neutral-200 dark:bg-neutral-700/80" />
               {/* Day number box */}
               <div className="w-full flex items-center justify-center py-1 sm:py-1.5 bg-neutral-50 dark:bg-neutral-900/90">
                 <Skeleton className="w-6 h-6 rounded" />

@@ -56,6 +56,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
           { student: { rollNo: { equals: rawInput, mode: 'insensitive' } } },
           { student: { email: { equals: rawInput, mode: 'insensitive' } } },
           { externalUser: { email: { equals: rawInput, mode: 'insensitive' } } },
+          { faculty: { email: { equals: rawInput, mode: 'insensitive' } } },
           { qrCode: targetTicketId },
           { qrPayload: rawInput },
           { qrCode: rawInput },
@@ -67,6 +68,7 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
         event: { include: { organizers: true } },
         student: true,
         externalUser: { select: { name: true, collegeName: true, email: true } },
+        faculty: { select: { id: true, name: true, email: true, department: true, designation: true } },
       },
     });
 
@@ -138,10 +140,10 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       return res.status(409).json({
         status: 'ALREADY_ATTENDED',
         message: 'Attendance already recorded for this attendee.',
-        participantName: participation.student?.name || participation.externalUser?.name || 'Unknown',
-        branch: participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null),
-        rollNo: participation.student?.rollNo || (participation.externalUser ? 'External' : null),
-        externalEmail: participation.externalUser?.email || null,
+        participantName: participation.student?.name || participation.faculty?.name || participation.externalUser?.name || 'Unknown',
+        branch: participation.student?.branch || participation.faculty?.department || (participation.externalUser ? participation.externalUser.collegeName : null),
+        rollNo: participation.student?.rollNo || (participation.faculty ? 'Faculty' : (participation.externalUser ? 'External' : null)),
+        externalEmail: participation.externalUser?.email || participation.faculty?.email || null,
         attendedAt: existingRecord?.scannedAt || participation.attendedAt || new Date(),
       });
     }
@@ -169,10 +171,10 @@ async function handleVerify(req, res, qrCodeInput, eventIdFromRequest) {
       }),
     ]);
 
-    const participantName = participation.student?.name || participation.externalUser?.name || 'Unknown';
-    const branch = participation.student?.branch || (participation.externalUser ? participation.externalUser.collegeName : null);
-    const rollNo = participation.student?.rollNo || (participation.externalUser ? 'External' : null);
-    const externalEmail = participation.externalUser?.email || null;
+    const participantName = participation.student?.name || participation.faculty?.name || participation.externalUser?.name || 'Unknown';
+    const branch = participation.student?.branch || participation.faculty?.department || (participation.externalUser ? participation.externalUser.collegeName : null);
+    const rollNo = participation.student?.rollNo || (participation.faculty ? 'Faculty' : (participation.externalUser ? 'External' : null));
+    const externalEmail = participation.externalUser?.email || participation.faculty?.email || null;
 
     return res.status(200).json({
       status: 'VALID',
@@ -233,6 +235,9 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
           { student: { rollNo: { contains: query, mode: 'insensitive' } } },
           { student: { name: { contains: query, mode: 'insensitive' } } },
           { student: { email: { contains: query, mode: 'insensitive' } } },
+          { faculty: { name: { contains: query, mode: 'insensitive' } } },
+          { faculty: { email: { contains: query, mode: 'insensitive' } } },
+          { faculty: { department: { contains: query, mode: 'insensitive' } } },
           { externalUser: { name: { contains: query, mode: 'insensitive' } } },
           { externalUser: { email: { contains: query, mode: 'insensitive' } } },
         ],
@@ -251,6 +256,15 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
             branch: true,
             program: true,
             expectedGraduationYear: true,
+          },
+        },
+        faculty: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true,
+            designation: true,
           },
         },
         externalUser: {
@@ -274,13 +288,24 @@ router.get('/event/:eventId/search-participants', verifyToken, async (req, res) 
         status: p.status,
         attendedAt: p.attendedAt,
         ticketId: p.qrCode,
-        student: p.student || (p.externalUser ? {
+        isFaculty: !!p.faculty,
+        faculty: p.faculty,
+        student: p.student || (p.faculty ? {
+          id: p.faculty.id,
+          name: p.faculty.name,
+          rollNo: 'Faculty',
+          email: p.faculty.email,
+          branch: p.faculty.department,
+          department: p.faculty.department,
+          designation: p.faculty.designation,
+          isFaculty: true,
+        } : (p.externalUser ? {
           id: p.externalUser.id,
           name: p.externalUser.name,
           rollNo: 'External',
           email: p.externalUser.email,
           branch: p.externalUser.collegeName,
-        } : null),
+        } : null)),
       })),
     });
   } catch (err) {

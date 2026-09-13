@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Linkedin, Instagram, Github, ExternalLink, Sparkles, Bell } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
-import InAppNotificationToast, { SAMPLE_TOAST_PRESETS } from '@/components/InAppNotificationToast';
-import { useNotification } from '../context/NotificationContext';
 
 
 // ── Verified Badge ────────────────────────────────────────────────────────────
@@ -70,7 +68,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
           alt={item.name}
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="absolute inset-0 w-full h-full object-contains object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           onError={(e) => {
             if (item.fallbackUrl && e.currentTarget.src !== item.fallbackUrl)
               e.currentTarget.src = item.fallbackUrl;
@@ -263,20 +261,6 @@ export const TEAM_MEMBERS = [
 // MAIN TEAM PAGE
 // ══════════════════════════════════════════════════════════════════════════════
 const Team = () => {
-  const [selectedPresetId, setSelectedPresetId] = useState(SAMPLE_TOAST_PRESETS[0].id);
-  const { showRealtimeToast } = useNotification() || {};
-
-  const currentPreset = SAMPLE_TOAST_PRESETS.find((p) => p.id === selectedPresetId) || SAMPLE_TOAST_PRESETS[0];
-
-  const handleTriggerFloatingToast = () => {
-    if (showRealtimeToast) {
-      showRealtimeToast({
-        ...currentPreset.data,
-        id: `live-toast-${Date.now()}`,
-      });
-    }
-  };
-
   return (
     <div className="w-full bg-cn-bg text-cn-text min-h-screen relative overflow-hidden transition-colors duration-300">
       {/* Subtle Background Radial Atmosphere */}

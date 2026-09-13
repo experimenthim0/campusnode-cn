@@ -1,4 +1,4 @@
-export const allowedOrigins = [
+const defaultOrigins = [
   "https://clubsetu.vercel.app",
   "https://www.clubsetu.vercel.app",
   "https://clubsetu.nikhim.me",
@@ -9,6 +9,17 @@ export const allowedOrigins = [
   "http://127.0.0.1:5173",
   "https://campusnode.vercel.app"
 ];
+
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+export const allowedOrigins = [...new Set([
+  ...defaultOrigins,
+  ...configuredOrigins,
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+])];
 
 if (process.env.CLIENT_URL && !allowedOrigins.includes(process.env.CLIENT_URL)) {
   allowedOrigins.push(process.env.CLIENT_URL);
@@ -24,13 +35,7 @@ export const corsOptions = {
 
     const isAllowed = allowedOrigins.includes(origin);
 
-    const isPreview = origin && (
-      /\.nikhim\.me$/.test(origin) ||
-      /\.vercel\.app$/.test(origin) ||
-      origin.startsWith("http://192.168.") // typical local network IPs
-    );
-
-    if (isAllowed || isPreview) {
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.warn(`[CORS Blocked] Origin missing from allowed list: ${origin}`);

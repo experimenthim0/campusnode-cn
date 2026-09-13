@@ -110,6 +110,8 @@ export const FACULTY_COORDINATOR_PERMISSIONS = [
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.NOTIFICATION_CREATE,
   PERMISSIONS.USER_VIEW,
+  PERMISSIONS.AUDIT_VIEW,
+  PERMISSIONS.AUDIT_EXPORT,
 ];
 
 export const STUDENT_CLUB_HEAD_PERMISSIONS = [
@@ -141,7 +143,6 @@ export const STUDENT_CLUB_HEAD_PERMISSIONS = [
   PERMISSIONS.PAYMENT_VIEW,
   PERMISSIONS.NOTIFICATION_VIEW,
   PERMISSIONS.NOTIFICATION_CREATE,
-  PERMISSIONS.AUDIT_VIEW,
   PERMISSIONS.TEAM_CREATE,
   PERMISSIONS.TEAM_MANAGE,
 ];
@@ -201,6 +202,7 @@ export const ROLE_PERMISSIONS_MAP = {
   SUPER_ADMIN: Object.values(PERMISSIONS),
   admin: Object.values(PERMISSIONS),
   FACULTY: FACULTY_COORDINATOR_PERMISSIONS,
+  faculty: FACULTY_COORDINATOR_PERMISSIONS,
   facultyCoordinator: FACULTY_COORDINATOR_PERMISSIONS,
   central_organizer: FACULTY_COORDINATOR_PERMISSIONS,
   club: STUDENT_CLUB_HEAD_PERMISSIONS,
@@ -220,7 +222,7 @@ export function roleHasPermission(role, permission) {
   if (role === "admin" || role === "SUPER_ADMIN") return true;
 
   const normalized = normalizePermission(permission);
-  if (role === "facultyCoordinator" || role === "FACULTY" || role === "central_organizer") {
+  if (role === "facultyCoordinator" || role === "faculty" || role === "FACULTY" || role === "central_organizer") {
     return FACULTY_COORDINATOR_PERMISSIONS.includes(permission) || FACULTY_COORDINATOR_PERMISSIONS.includes(normalized);
   }
   if (role === "club") {
@@ -257,7 +259,7 @@ export function hasPermission(user, permission, resource = null) {
   }
 
   const principalType = user.principalType || (
-    user.role === "facultyCoordinator" ? "FACULTY" :
+    user.role === "facultyCoordinator" || user.role === "faculty" || user.userType === "faculty" ? "FACULTY" :
     user.userType === "external" || user.role === "external" ? "EXTERNAL" :
     user.userType === "student" ? "STUDENT" : "STUDENT"
   );
@@ -276,10 +278,50 @@ export function hasPermission(user, permission, resource = null) {
     const hasBase = FACULTY_COORDINATOR_PERMISSIONS.includes(perm) || FACULTY_COORDINATOR_PERMISSIONS.includes(permission);
     if (!hasBase) return false;
 
+    // Personal user participation actions are never restricted to the coordinated club
+    if ([
+      PERMISSIONS.REGISTRATION_CREATE,
+      PERMISSIONS.REGISTRATION_CANCEL,
+      PERMISSIONS.REGISTRATION_VIEW,
+      PERMISSIONS.EVENT_VIEW,
+      PERMISSIONS.USER_VIEW,
+      PERMISSIONS.USER_UPDATE,
+    ].includes(perm)) {
+      return true;
+    }
+
+    // Club governance permissions require coordinator status on the target club
+    const clubGovernancePerms = [
+      PERMISSIONS.EVENT_APPROVE,
+      PERMISSIONS.EVENT_DELETE_APPROVE,
+      PERMISSIONS.CLUB_UPDATE,
+      PERMISSIONS.CLUB_MANAGE_MEMBERS,
+      PERMISSIONS.CLUB_INVITE_MEMBERS,
+      PERMISSIONS.CLUB_REMOVE_MEMBERS,
+      PERMISSIONS.CLUB_ASSIGN_ROLES,
+      PERMISSIONS.CLUB_TRANSFER_LEADERSHIP,
+      PERMISSIONS.PAYMENT_REVIEW,
+      PERMISSIONS.PAYMENT_VERIFY,
+    ];
+    if (clubGovernancePerms.includes(perm)) {
+      if (!user.clubId) return false;
+      if (targetClubId && String(user.clubId) !== String(targetClubId)) return false;
+    }
+
     if (targetClubId && user.clubId) {
       return String(user.clubId) === String(targetClubId);
     }
     return true;
+  }
+
+  if (user.role === "lostFoundAdmin") {
+    const lfPerms = [
+      PERMISSIONS.LOST_FOUND_MODERATE,
+      PERMISSIONS.LOST_FOUND_RESOLVE,
+      PERMISSIONS.LOST_FOUND_VIEW,
+      ...BASE_STUDENT_PERMISSIONS,
+    ];
+    return lfPerms.includes(perm) || lfPerms.includes(permission);
   }
 
   // Legacy club user context ({ role: "club", clubId: "..." }) without explicit memberships array

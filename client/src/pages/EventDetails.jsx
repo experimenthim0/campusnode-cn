@@ -175,7 +175,7 @@ const EventDetails = () => {
           prefetchClubDetail(eventData.club.slug || eventData.club.id);
         }
 
-        if (user && (role === 'member' || role === 'student')) {
+        if (user && (role === 'member' || role === 'student' || role === 'faculty' || role === 'facultyCoordinator' || role === 'external')) {
           try {
             const regRes = await getUserEvents(user.id || user._id);
             const eventId = eventData.id || eventData._id;
@@ -384,21 +384,22 @@ const EventDetails = () => {
       return;
     }
 
-    const isStudentOrExternal = role === 'member' || role === 'student' || role === 'external' || user?.role === 'external' || user?.isExternal || Boolean(user?.rollNo || user?.collegeName);
+    const isFacultyUser = role === 'faculty' || role === 'facultyCoordinator' || user?.role === 'faculty' || user?.isFaculty || user?.principalType === 'FACULTY';
+    const isStudentOrExternal = role === 'member' || role === 'student' || role === 'external' || user?.role === 'external' || user?.isExternal || isFacultyUser || Boolean(user?.rollNo || user?.collegeName || user?.department);
 
     if (!isStudentOrExternal) {
-      showNotification('Please login as a student or participant to register.', 'warning');
+      showNotification('Please login as a student, faculty member, or participant to register.', 'warning');
       navigate('/login');
       return;
     }
 
     const isExternalUser = role === 'external' || user?.role === 'external' || user?.isExternal || user?.principalType === 'EXTERNAL';
     if (isExternalUser && event.allowExternal === false) {
-      showNotification('This event is exclusive to internal NITJ students only. External participation is not allowed.', 'error');
+      showNotification('This event is exclusive to internal NITJ students and staff only. External participation is not allowed.', 'error');
       return;
     }
 
-    if (event.requiredFields && event.requiredFields.length > 0) {
+    if (!isFacultyUser && event.requiredFields && event.requiredFields.length > 0) {
       const missing = event.requiredFields.filter(field => !user[field]);
       if (missing.length > 0) {
         setMissingFields(missing);

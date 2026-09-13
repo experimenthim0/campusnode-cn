@@ -9,6 +9,7 @@ import multer from "multer";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { validateFileSignature, processBannerImage, processProfileImage } from "../utils/imageProcessor.js";
 import { getPublicResponse, setPublicResponse, invalidatePublicResponses } from "../utils/publicResponseCache.js";
+import { calculateAcademicProgress } from "../utils/academicProgress.js";
 
 function extractCloudinaryPublicId(url) {
   if (!url) return null;
@@ -77,6 +78,7 @@ const publicClubSelect = {
   facultyCoordinator: { select: { id: true, name: true, email: true } },
   socialLinks: true,
   memberships: {
+    where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
     include: {
       student: { select: { id: true, name: true, email: true, branch: true, profileImage: true } }
     }
@@ -336,7 +338,7 @@ router.get("/:id", async (req, res) => {
         ],
       },
       include: {
-        facultyCoordinator: { select: { id: true, name: true, email: true } },
+        facultyCoordinator: { select: { id: true, name: true, email: true, profileImage: true, department: true } },
         socialLinks: true,
         media: { where: { eventId: null }, orderBy: { id: "desc" } },
         announcements: {
@@ -349,7 +351,19 @@ router.get("/:id", async (req, res) => {
         memberships: {
           where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
           include: {
-            student: { select: { id: true, name: true, email: true, rollNo: true } },
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                rollNo: true,
+                branch: true,
+                expectedGraduationYear: true,
+                program: true,
+                profileImage: true,
+                socialLinks: { select: { platform: true, url: true } },
+              },
+            },
           },
         },
       },
@@ -404,10 +418,38 @@ router.get("/:id", async (req, res) => {
 
     const featuredEvent = events.find((e) => e.isFeatured) || upcomingEvents[0] || null;
 
+    // Normalize leadership memberships (heads + coordinators) with academic progress and social links
+    const normalizedMemberships = (club.memberships || []).map((m) => {
+      if (!m.student) return { ...m, _id: m.id };
+      const progress = calculateAcademicProgress(m.student);
+      const socialMap = {};
+      (m.student.socialLinks || []).forEach((l) => {
+        const plat = (l.platform || "").toUpperCase();
+        if (plat === "GITHUB")    socialMap.githubProfile    = l.url;
+        if (plat === "LINKEDIN")  socialMap.linkedinProfile  = l.url;
+        if (plat === "X")         socialMap.xProfile         = l.url;
+        if (plat === "INSTAGRAM") socialMap.instagramProfile = l.url;
+        if (plat === "WHATSAPP")  socialMap.whatsappNumber   = l.url;
+        if (plat === "PORTFOLIO") socialMap.portfolioUrl     = l.url;
+      });
+      return {
+        ...m,
+        _id: m.id,
+        student: {
+          ...m.student,
+          ...socialMap,
+          year: progress.academicYearLabel,
+          academicYear: progress.academicYear,
+          semester: progress.semester,
+        },
+      };
+    });
+
     const response = {
       club: {
         ...club,
         _id: club.id,
+        memberships: normalizedMemberships,
         studentCoordinators: resolvedStudentCoordinators,
         studentHeads: roleHeads,
         roleCoordinators: roleCoords,

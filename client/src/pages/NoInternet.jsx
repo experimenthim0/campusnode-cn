@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
-import { useTheme } from "../context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -209,7 +208,9 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
       const next = !prev;
       try {
         localStorage.setItem("campusnode_2048_sound", String(next));
-      } catch { }
+      } catch {
+        // Ignore localStorage error
+      }
       return next;
     });
   };
@@ -312,7 +313,9 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
           setBestScore(newScore);
           try {
             localStorage.setItem("campusnode_2048_best", String(newScore));
-          } catch { }
+          } catch {
+            // Ignore localStorage error
+          }
         }
 
         if (scoreToAdd > 0) {

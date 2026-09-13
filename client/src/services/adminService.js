@@ -93,3 +93,6 @@ export const removeClubHead = (clubId) =>
 
 export const searchStudents = (query) =>
   api.get(`/api/admin/students/search?q=${encodeURIComponent(query)}`);
+
+export const searchFaculty = (query) =>
+  api.get(`/api/admin/faculty/search?q=${encodeURIComponent(query)}`);

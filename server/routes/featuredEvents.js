@@ -128,9 +128,9 @@ async function getFeaturedEventSetting() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 1. PUBLIC: GET /api/featured-events (Homepage & Event Feed - top 3 or all)
+// 1. PUBLIC: GET /api/featured-events & /all (Homepage & Event Feed - top 3 or all)
 // ─────────────────────────────────────────────────────────────
-router.get("/", async (req, res) => {
+router.get(["/", "/all"], async (req, res) => {
   try {
     const setting = await getFeaturedEventSetting();
     const orderingMode = setting.orderingMode || "CUSTOM";
@@ -189,12 +189,13 @@ router.get("/", async (req, res) => {
       .filter((fe) => eventMap.has(fe.eventId))
       .map((fe) => formatFeaturedEvent(fe, eventMap.get(fe.eventId)));
 
-    if (orderingMode === "RANDOM") {
+    if (orderingMode === "RANDOM" || orderingMode === "AUTOMATIC") {
       validFeatured = shuffleArray(validFeatured);
     }
 
-    // Return max 3 for top banners, or all if requested with ?all=true
-    const result = req.query.all === "true" ? validFeatured : validFeatured.slice(0, 3);
+    // Return max 3 for top banners, or all if requested with ?all=true or /all
+    const returnAll = req.query.all === "true" || req.path === "/all";
+    const result = returnAll ? validFeatured : validFeatured.slice(0, 3);
 
     res.json({
       events: result,
@@ -508,7 +509,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANA
       where: { eventId },
     });
     if (existing) {
-      return res.status(409).json({ message: "This event is already in the featured list." });
+      return res.status(409).json({ message: "This event is already added to the featured list." });
     }
 
     // 4. Calculate next displayOrder (last)
@@ -582,14 +583,14 @@ router.patch("/reorder", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVE
 // 7. PROTECTED: PATCH /api/featured-events/settings
 // ─────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
-  orderingMode: z.enum(["CUSTOM", "RANDOM"]),
+  orderingMode: z.enum(["CUSTOM", "AUTOMATIC", "RANDOM"]).transform((v) => (v === "RANDOM" ? "AUTOMATIC" : v)),
 });
 
 router.patch("/settings", verifyToken, requirePermission(PERMISSIONS.FEATURED_EVENTS_MANAGE), async (req, res) => {
   try {
     const parsed = settingsSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid ordering mode. Must be 'CUSTOM' or 'RANDOM'." });
+      return res.status(400).json({ message: "Invalid ordering mode. Must be 'CUSTOM' or 'AUTOMATIC'." });
     }
 
     const updatedSetting = await prisma.featuredEventSetting.upsert({

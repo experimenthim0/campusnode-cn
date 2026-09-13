@@ -89,7 +89,6 @@ model AdminRole {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  coordinatedClubs Club[]          @relation("ClubFacultyCoordinator")
   reviewedEvents   Event[]         @relation("EventReviewedBy")
   notifications    Notification[]  @relation("NotificationSenderAdmin")
 }
@@ -155,6 +154,27 @@ model ExternalUser {
   @@index([email])
 }
 
+model FacultyUser {
+  id               String          @id @db.VarChar(24)
+  name             String          @db.VarChar
+  email            String          @unique @db.VarChar
+  password         String          @db.VarChar
+  department       String          @db.VarChar
+  profileImage     String?         @db.VarChar
+  designation      String?         @db.VarChar
+  isVerified       Boolean         @default(true)
+  isTwoStepEnabled Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  coordinatedClubs Club[]          @relation("ClubFacultyCoordinator")
+  participations   Participation[] @relation("FacultyParticipation")
+  certificates     Certificate[]   @relation("FacultyCertificate")
+
+  @@index([email])
+  @@index([department])
+}
+
 // ==========================================
 // CLUB DOMAIN
 // ==========================================
@@ -178,7 +198,7 @@ model Club {
   mission              String?            @db.VarChar
   establishedYear      String?            @db.VarChar
 
-  facultyCoordinator   AdminRole?         @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
+  facultyCoordinator   FacultyUser?       @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
   socialLinks          ClubSocialLink[]
   memberships          ClubMembership[]
   organizedEvents      EventOrganizer[]
@@ -299,6 +319,7 @@ model Participation {
   userId               String              @db.VarChar(24)
   studentId            String?             @db.VarChar(24)
   externalUserId       String?             @db.VarChar(24)
+  facultyId            String?             @db.VarChar(24)
   status               ParticipationStatus @default(REGISTERED)
   qrCode               String?             @unique @db.VarChar
   qrVersion            Int?
@@ -321,6 +342,7 @@ model Participation {
   event                Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   student              StudentUser?        @relation(fields: [studentId], references: [id])
   externalUser         ExternalUser?       @relation(fields: [externalUserId], references: [id], onDelete: Cascade)
+  faculty              FacultyUser?        @relation("FacultyParticipation", fields: [facultyId], references: [id], onDelete: Cascade)
   team                 Team?               @relation(fields: [teamId], references: [id])
   attendanceRecords    AttendanceRecord[]
   certificate          Certificate?
@@ -330,8 +352,12 @@ model Participation {
   @@index([userId, eventId])
   @@index([studentId, eventId])
   @@index([externalUserId])
+  @@index([facultyId])
   @@index([eventId, paymentStatus])
   @@index([eventId, status])
+  @@unique([eventId, studentId])
+  @@unique([eventId, externalUserId])
+  @@unique([eventId, facultyId])
 }
 
 model AttendanceRecord {
@@ -629,6 +655,7 @@ model Certificate {
   userId            String            @db.VarChar(24)
   studentId         String?           @db.VarChar(24)
   externalUserId    String?           @db.VarChar(24)
+  facultyId         String?           @db.VarChar(24)
   recipientName     String            @db.VarChar
   recipientRollNo   String?           @db.VarChar
   recipientEmail    String            @db.VarChar
@@ -645,10 +672,12 @@ model Certificate {
   participation     Participation     @relation(fields: [participationId], references: [id], onDelete: Cascade)
   student           StudentUser?      @relation(fields: [studentId], references: [id], onDelete: SetNull)
   externalUser      ExternalUser?     @relation(fields: [externalUserId], references: [id], onDelete: SetNull)
+  faculty           FacultyUser?      @relation("FacultyCertificate", fields: [facultyId], references: [id], onDelete: SetNull)
 
   @@index([verificationToken])
   @@index([eventId, status])
   @@index([userId])
   @@index([studentId])
   @@index([externalUserId])
+  @@index([facultyId])
 }

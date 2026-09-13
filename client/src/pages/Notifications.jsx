@@ -28,7 +28,6 @@ import {
 } from "../utils/pushNotifications";
 import {
   registerPushSubscription,
-  unsubscribePushSubscription,
   isPushSubscribed,
 } from "../utils/pushSubscription";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";

@@ -7,30 +7,8 @@ import { validateBooking } from "../services/conflictService.js";
 const router = express.Router();
 
 export async function ensureBlackoutTable() {
-  try {
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "VenueBlackout" (
-        "id" VARCHAR(24) NOT NULL,
-        "venue" TEXT NOT NULL,
-        "title" TEXT NOT NULL,
-        "reason" TEXT,
-        "startTime" TIMESTAMP(3) NOT NULL,
-        "endTime" TIMESTAMP(3) NOT NULL,
-        "createdById" VARCHAR(24),
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "VenueBlackout_pkey" PRIMARY KEY ("id")
-      );
-    `;
-    await prisma.$executeRaw`
-      CREATE INDEX IF NOT EXISTS "VenueBlackout_venue_startTime_idx" ON "VenueBlackout"("venue", "startTime");
-    `;
-    await prisma.$executeRaw`
-      CREATE INDEX IF NOT EXISTS "VenueBlackout_startTime_endTime_idx" ON "VenueBlackout"("startTime", "endTime");
-    `;
-  } catch (err) {
-    console.error("Error ensuring VenueBlackout table:", err.message);
-  }
+  // Schema and indexes are managed exclusively by Prisma migrations.
+  return;
 }
 
 router.get("/", async (req, res) => {

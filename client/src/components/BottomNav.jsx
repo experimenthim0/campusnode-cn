@@ -321,7 +321,7 @@ const BottomNav = () => {
                       const isLead = m.role === "CLUB_HEAD";
                       const isCoord = m.role === "COORDINATOR";
                       const canManageClub = isLead || isCoord;
-                      const hasOps = canManageClub || m.canEditEvents || m.canCheckRegistration || m.canTakeAttendance || m.permissions?.canEditEvents || m.permissions?.canCheckRegistration || m.permissions?.canTakeAttendance;
+                      const hasOps = canManageClub || m.canEditEvents || m.permissions?.canEditEvents;
                       return hasOps;
                     });
 
