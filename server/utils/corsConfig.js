@@ -7,7 +7,8 @@ const defaultOrigins = [
   "http://localhost:5174",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
-  "https://campusnode.vercel.app"
+  "https://campusnode.vercel.app",
+  "https://campusnode-stagging.vercel.app"
 ];
 
 const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
