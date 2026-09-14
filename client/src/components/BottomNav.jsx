@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Calendar, User, Shield, ShieldCheck, X, Sun, Moon, Package, Monitor, Download, Smartphone, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePwaInstall } from "../hooks/usePwaInstall";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -11,7 +12,7 @@ import { LogoutIcon } from "./ui/logout";
 import { CalendarCogIcon } from "./ui/calendar-cog";
 import { LayoutGridIcon } from "./ui/layout-grid";
 import LogInIcon from "./ui/login";
-import { hasPermission, PERMISSIONS, isStudentLeadRole, isClubManagementRole } from "../utils/rbac";
+import { hasPermission, PERMISSIONS, isStudentLeadRole, isCoordinatorRole, isClubManagementRole } from "../utils/rbac";
 
 const LostFoundIcon = ({ size = 24, ...props }) => (
   <svg 
@@ -37,6 +38,7 @@ const BottomNav = () => {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openClubId, setOpenClubId] = useState(null);
+  const [imageError, setImageError] = useState(false);
   const drawerRef = useRef(null);
   const { isInstallable, installApp } = usePwaInstall();
  const {
@@ -46,6 +48,12 @@ const BottomNav = () => {
 } = useTheme();
 
   const { user, role, logout } = useAuth();
+
+  const userImage = user?.profileImage || user?.picture || user?.clubLogo || user?.avatar || null;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [userImage]);
 
   useEffect(() => {
     setDrawerOpen(false);
@@ -102,7 +110,13 @@ const BottomNav = () => {
 
   navItems.push(
     user
-      ? { label: "Profile", icon: User, action: () => setDrawerOpen(true), isActiveCheck: drawerOpen }
+      ? {
+          label: "Profile",
+          icon: User,
+          image: userImage,
+          action: () => setDrawerOpen(true),
+          isActiveCheck: drawerOpen,
+        }
       : { label: "Login", icon: LogInIcon, path: "/login" }
   );
 
@@ -113,6 +127,7 @@ const BottomNav = () => {
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const active = item.isActiveCheck !== undefined ? item.isActiveCheck : isActive(item.path);
+            const hasImage = Boolean(item.image && !imageError);
 
             const content = (
               <div className="flex flex-col items-center justify-center w-full h-full space-y-1 relative pt-1">
@@ -120,16 +135,37 @@ const BottomNav = () => {
                   <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-brand-600 rounded-b-md transition-all duration-300" />
                 )}
                 <div
-                  className={`p-1.5 rounded-full transition-transform duration-300 ${
-                    active ? "scale-110 text-brand-600 dark:bg-brand-950/40" : "text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
+                  className={`flex items-center justify-center transition-transform duration-300 ${
+                    hasImage
+                      ? "p-0.5 rounded-full"
+                      : "p-1.5 rounded-full"
+                  } ${
+                    active
+                      ? hasImage
+                        ? "scale-110"
+                        : "scale-110 text-brand-600 dark:bg-brand-950/40"
+                      : "text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
                   }`}
                 >
-                  <Icon size={24} strokeWidth={active ? 2.5 : 2} />
+                  {hasImage ? (
+                    <img
+                      src={item.image}
+                      alt={user?.name || item.label}
+                      className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${
+                        active
+                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-[#121212]"
+                          : "border border-neutral-300 dark:border-neutral-700"
+                      }`}
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <Icon size={24} strokeWidth={active ? 2.5 : 2} />
+                  )}
                 </div>
                 <span
                   className={`text-[10px] tracking-wide transition-all duration-300 ${
                     active
-                      ? "font-bold text-black"
+                      ? "font-bold text-black dark:text-white"
                       : "font-medium text-cn-text-muted"
                   }`}
                 >
@@ -255,7 +291,7 @@ const BottomNav = () => {
                 </Link>
               )}
 
-              {(role === "club" || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
+              {(role === "club" || Boolean(user?.clubId) || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
                 <div className="mt-1.5 pt-1.5 border-t border-neutral-100 dark:border-neutral-800">
                   <p className="px-3 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Management
@@ -317,12 +353,19 @@ const BottomNav = () => {
                   )}
 
                   {(Boolean(user?.rollNo) || role !== "club") && (() => {
-                    const eligibleMemberships = (user?.memberships || []).filter((m) => {
-                      const isLead = m.role === "CLUB_HEAD";
-                      const isCoord = m.role === "COORDINATOR";
-                      const canManageClub = isLead || isCoord;
-                      const hasOps = canManageClub || m.canEditEvents || m.permissions?.canEditEvents;
-                      return hasOps;
+                    const rawMemberships = Array.isArray(user?.memberships) ? user.memberships : [];
+                    let allMemberships = [...rawMemberships];
+                    if (role !== "facultyCoordinator" && user?.clubId && !allMemberships.some((m) => String(m.clubId || m.club?.id || m.id) === String(user.clubId))) {
+                      allMemberships.push({
+                        clubId: user.clubId,
+                        clubName: user.clubName || "My Club",
+                        role: user.clubRole || "MEMBER",
+                      });
+                    }
+
+                    const eligibleMemberships = allMemberships.filter((m) => {
+                      const cid = m.clubId || m.club?.id || m.club?._id || m.id || m._id;
+                      return Boolean(cid);
                     });
 
                     if (eligibleMemberships.length === 0) return null;
@@ -332,20 +375,21 @@ const BottomNav = () => {
                       return (
                         <div className="space-y-2 mb-2">
                           {eligibleMemberships.map((m) => {
-                            const isLead = m.role === "CLUB_HEAD";
-                            const isCoord = m.role === "COORDINATOR";
-                            const canManageClub = isLead || isCoord;
-                            const isCurrentClubActive = location.pathname.includes(m.clubId);
-                            const isOpen = openClubId === m.clubId || (openClubId === null && isCurrentClubActive);
+                            const clubId = m.clubId || m.club?.id || m.club?._id || m.id;
+                            const isLead = isStudentLeadRole(m.role);
+                            const isCoord = isCoordinatorRole(m.role);
+                            const canManageClub = isClubManagementRole(m.role);
+                            const isCurrentClubActive = location.pathname.includes(String(clubId));
+                            const isOpen = openClubId === clubId || (openClubId === null && isCurrentClubActive);
 
                             return (
                               <div
-                                key={m.clubId}
+                                key={clubId}
                                 className="border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden bg-neutral-50/50 dark:bg-neutral-800/20"
                               >
                                 <button
                                   type="button"
-                                  onClick={() => setOpenClubId(isOpen ? "" : m.clubId)}
+                                  onClick={() => setOpenClubId(isOpen ? "" : clubId)}
                                   className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-bold transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
@@ -359,64 +403,75 @@ const BottomNav = () => {
                                   </div>
                                   <ChevronDown
                                     size={14}
-                                    className={`text-neutral-400 transition-transform duration-200 shrink-0 ${
+                                    className={`text-neutral-400 transition-transform duration-300 shrink-0 ${
                                       isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
                                     }`}
                                   />
                                 </button>
 
-                                {isOpen && (
-                                  <div className="p-1 space-y-0.5 border-t border-neutral-100 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/80">
-                                    <Link
-                                      to={`/club-events/${m.clubId}`}
-                                      onClick={() => setDrawerOpen(false)}
-                                      className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                <AnimatePresence initial={false}>
+                                  {isOpen && (
+                                    <motion.div
+                                      key={`club-dropdown-${clubId}`}
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: "auto", opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                                      className="overflow-hidden"
                                     >
-                                      <CalendarCogIcon size={16} className="text-neutral-500" />
-                                      Club Events
-                                    </Link>
+                                      <div className="p-1 space-y-0.5 border-t border-neutral-100 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/80">
+                                        <Link
+                                          to={`/club-events/${clubId}`}
+                                          onClick={() => setDrawerOpen(false)}
+                                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                        >
+                                          <CalendarCogIcon size={16} className="text-neutral-500 shrink-0" />
+                                          Club Events
+                                        </Link>
 
-                                    {(isStudentLeadRole(m.role) || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId })) && (
-                                      <Link
-                                        to={`/club/${m.clubId}/team`}
-                                        onClick={() => setDrawerOpen(false)}
-                                        className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                                      >
-                                        <User size={16} className="text-neutral-500" />
-                                        Team Management
-                                      </Link>
-                                    )}
+                                        {(isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId })) && (
+                                          <Link
+                                            to={`/club/${clubId}/team`}
+                                            onClick={() => setDrawerOpen(false)}
+                                            className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                          >
+                                            <User size={16} className="text-neutral-500 shrink-0" />
+                                            Team Management
+                                          </Link>
+                                        )}
 
-                                    {canManageClub && (
-                                      <>
-                                        <Link
-                                          to="/payments"
-                                          onClick={() => setDrawerOpen(false)}
-                                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                                        >
-                                          <IndianRupeeIcon size={16} className="text-neutral-500" />
-                                          Payments
-                                        </Link>
-                                        <Link
-                                          to={`/send-notification?clubId=${m.clubId}`}
-                                          onClick={() => setDrawerOpen(false)}
-                                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                                        >
-                                          <ConciergeBellIcon size={16} className="text-neutral-500" />
-                                          Notifications
-                                        </Link>
-                                        <Link
-                                          to={`/club/edit/${m.clubId}`}
-                                          onClick={() => setDrawerOpen(false)}
-                                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                                        >
-                                          <LayoutGridIcon size={16} className="text-neutral-500" />
-                                          Club Settings
-                                        </Link>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+                                        {canManageClub && (
+                                          <>
+                                            <Link
+                                              to="/payments"
+                                              onClick={() => setDrawerOpen(false)}
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                            >
+                                              <IndianRupeeIcon size={16} className="text-neutral-500 shrink-0" />
+                                              Payments
+                                            </Link>
+                                            <Link
+                                              to={`/send-notification?clubId=${clubId}`}
+                                              onClick={() => setDrawerOpen(false)}
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                            >
+                                              <ConciergeBellIcon size={16} className="text-neutral-500 shrink-0" />
+                                              Notifications
+                                            </Link>
+                                            <Link
+                                              to={`/club/edit/${clubId}`}
+                                              onClick={() => setDrawerOpen(false)}
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                            >
+                                              <LayoutGridIcon size={16} className="text-neutral-500 shrink-0" />
+                                              Club Settings
+                                            </Link>
+                                          </>
+                                        )}
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </div>
                             );
                           })}
@@ -426,16 +481,17 @@ const BottomNav = () => {
 
                     // Exactly 1 club: render flatly without dropdown
                     const m = eligibleMemberships[0];
+                    const clubId = m.clubId || m.club?.id || m.club?._id || m.id;
                     const isLead = isStudentLeadRole(m.role);
                     const canManageClub = isClubManagementRole(m.role);
 
                     return (
-                      <div key={m.clubId} className="space-y-0.5 mb-1.5 last:mb-0">
+                      <div key={clubId} className="space-y-0.5 mb-1.5 last:mb-0">
                         <p className="px-3 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                           {m.clubName || "Club"}
                         </p>
 
-                        <Link to={`/club-events/${m.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                        <Link to={`/club-events/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                           <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                             <CalendarCogIcon size={16} />
                           </div>
@@ -443,8 +499,8 @@ const BottomNav = () => {
                         </Link>
 
                         {/* Team Management - For student lead or with club.manage_members permission */}
-                        {(isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId })) && (
-                          <Link to={`/club/${m.clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                        {(isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId })) && (
+                          <Link to={`/club/${clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                             <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                               <User size={16} />
                             </div>
@@ -461,13 +517,13 @@ const BottomNav = () => {
                               </div>
                               Payments
                             </Link>
-                            <Link to={`/send-notification?clubId=${m.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/send-notification?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <ConciergeBellIcon size={16} />
                               </div>
                               Broadcasts
                             </Link>
-                            <Link to={`/club/edit/${m.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/club/edit/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <LayoutGridIcon size={16} />
                               </div>

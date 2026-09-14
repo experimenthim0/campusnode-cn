@@ -147,7 +147,7 @@ const ImageCropModal = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center text-base shrink-0">
-              <ImageIcon className="w-5 h-5" />
+              <ImageIcon className="w-5 h-5 shrink-0" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
@@ -159,10 +159,10 @@ const ImageCropModal = ({
           <button
             onClick={onClose}
             disabled={busy}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
             title="Close"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 shrink-0" />
           </button>
         </div>
 
@@ -187,7 +187,7 @@ const ImageCropModal = ({
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center px-4 text-neutral-400">
-              <ImageIcon className="w-12 h-12 mb-3 opacity-40 text-neutral-500" />
+              <ImageIcon className="w-12 h-12 mb-3 opacity-40 text-neutral-500 shrink-0" />
               <p className="text-sm font-medium mb-2">No image selected</p>
               <p className="text-xs text-neutral-500 max-w-xs mb-4">
                 Choose a photo to position, zoom, and crop.
@@ -198,9 +198,9 @@ const ImageCropModal = ({
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="gap-2 text-xs rounded-xl"
+                  className="gap-2 text-xs rounded-xl shrink-0"
                 >
-                  <Upload className="w-3.5 h-3.5" /> Select Image
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> Select Image
                 </Button>
               )}
             </div>
@@ -208,7 +208,7 @@ const ImageCropModal = ({
 
           {busy && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 backdrop-blur-xs text-white gap-2">
-              <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand-500 shrink-0" />
               <span className="text-xs font-semibold tracking-wide">
                 Processing & Uploading…
               </span>
@@ -225,10 +225,10 @@ const ImageCropModal = ({
                 type="button"
                 onClick={() => setZoom((z) => Math.max(1, z - 0.2))}
                 disabled={zoom <= 1 || busy}
-                className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
                 title="Zoom Out"
               >
-                <ZoomOut className="w-3.5 h-3.5" />
+                <ZoomOut className="w-3.5 h-3.5 shrink-0" />
               </button>
               <input
                 type="range"
@@ -245,10 +245,10 @@ const ImageCropModal = ({
                 type="button"
                 onClick={() => setZoom((z) => Math.min(3, z + 0.2))}
                 disabled={zoom >= 3 || busy}
-                className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
                 title="Zoom In"
               >
-                <ZoomIn className="w-3.5 h-3.5" />
+                <ZoomIn className="w-3.5 h-3.5 shrink-0" />
               </button>
               <span className="text-xs font-mono text-muted-foreground w-11 text-right">
                 {Math.round(zoom * 100)}%
@@ -263,10 +263,10 @@ const ImageCropModal = ({
                 size="sm"
                 onClick={handleRotate}
                 disabled={busy || !imageSrc}
-                className="h-8 gap-1.5 text-xs rounded-xl"
+                className="h-8 gap-1.5 text-xs rounded-xl shrink-0"
                 title="Rotate 90 degrees"
               >
-                <RotateCw className="w-3.5 h-3.5" />
+                <RotateCw className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">Rotate</span>
               </Button>
 
@@ -276,10 +276,10 @@ const ImageCropModal = ({
                 size="sm"
                 onClick={handleReset}
                 disabled={busy || !imageSrc}
-                className="h-8 gap-1.5 text-xs rounded-xl"
+                className="h-8 gap-1.5 text-xs rounded-xl shrink-0"
                 title="Reset crop and zoom"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">Reset</span>
               </Button>
 
@@ -291,10 +291,10 @@ const ImageCropModal = ({
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={busy}
-                    className="h-8 gap-1.5 text-xs rounded-xl"
+                    className="h-8 gap-1.5 text-xs rounded-xl shrink-0"
                     title="Choose a different image"
                   >
-                    <Upload className="w-3.5 h-3.5" />
+                    <Upload className="w-3.5 h-3.5 shrink-0" />
                     <span className="hidden sm:inline">Change File</span>
                   </Button>
                   <input
@@ -326,12 +326,12 @@ const ImageCropModal = ({
               size="sm"
               onClick={handleSave}
               disabled={busy || !imageSrc}
-              className="h-9 px-5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs gap-1.5 cursor-pointer disabled:opacity-50"
+              className="h-9 px-5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
             >
               {busy ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
               ) : (
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 shrink-0" />
               )}
               {busy ? "Saving…" : "Save & Apply"}
             </Button>

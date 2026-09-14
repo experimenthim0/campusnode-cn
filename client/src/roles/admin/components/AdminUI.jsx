@@ -107,22 +107,25 @@ export const FilterSelect = ({ children, value, onChange, className = "" }) => (
 );
 
 export const Modal = ({ onClose, title, subtitle, children }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-blur px-4" onClick={onClose}>
-        <div className="bg-cn-surface dark:bg-cn-surface-muted border border-cn-border rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transition-colors" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 flex justify-between items-center border-b border-cn-border-subtle">
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-blur px-4 py-4 sm:py-6" onClick={onClose}>
+        <div 
+            className="bg-cn-surface dark:bg-cn-surface-muted border border-cn-border rounded-2xl max-w-lg w-full max-h-[calc(100dvh-2rem)] sm:max-h-[88dvh] flex flex-col overflow-hidden shadow-2xl transition-colors" 
+            onClick={e => e.stopPropagation()}
+        >
+            <div className="px-6 py-4 flex justify-between items-center border-b border-cn-border-subtle shrink-0">
                 <div>
                     <h3 className="text-base sm:text-lg font-bold text-cn-text tracking-tight">{title}</h3>
                     {subtitle && <p className="text-xs text-cn-text-muted font-normal mt-0.5">{subtitle}</p>}
                 </div>
                 <button 
                     onClick={onClose} 
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted dark:hover:bg-cn-surface-elevated transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted dark:hover:bg-cn-surface-elevated transition-colors cursor-pointer shrink-0"
                     title="Close"
                 >
                     <X size={18} />
                 </button>
             </div>
-            <div className="px-6 py-5 text-cn-text-secondary">{children}</div>
+            <div className="px-6 py-5 text-cn-text-secondary overflow-y-auto min-h-0 flex-1">{children}</div>
         </div>
     </div>
 );

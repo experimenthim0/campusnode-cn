@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const ThemeContext = createContext();
 
@@ -25,49 +25,35 @@ export const ThemeProvider = ({ children }) => {
     theme === "dark" ||
     ((theme === "system" || !theme) && systemDark);
 
-  // Apply all theme side-effects whenever isDark changes
-  const applyTheme = useCallback((dark) => {
-    const root = document.documentElement;
+  // Apply theme whenever active theme changes
+  useEffect(() => {
+    const activeIsDark =
+      theme === "dark" ||
+      ((theme === "system" || !theme) && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-    // Tailwind dark class
-    root.classList.toggle("dark", dark);
-
-    // CSS color-scheme — controls native UI chrome (scrollbars, form controls, PWA status bar)
-    root.style.colorScheme = dark ? "dark" : "light";
-
-    // Single runtime-controlled theme-color meta tag
-    const metaThemeColor = document.getElementById("theme-color-meta");
-    if (metaThemeColor) {
-      const computedColor = getComputedStyle(root).getPropertyValue(dark ? "--cn-bg" : "--cn-surface").trim() || (dark ? "#0a0a0a" : "#ffffff");
-      metaThemeColor.setAttribute("content", computedColor);
+    if (typeof window.updateAppTheme === "function") {
+      window.updateAppTheme(activeIsDark);
     }
 
-    // Dynamic favicon
-    const faviconSrc = dark ? "/darkthemelogo.png" : "/lightthemelogo2.png";
-    if (window.setRoundedFavicon) {
-      window.setRoundedFavicon(faviconSrc);
-    } else {
-      const favicon = document.getElementById("dynamic-favicon");
-      if (favicon) favicon.href = faviconSrc;
-    }
-  }, []);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  }, [theme]);
 
-  // Apply theme whenever isDark or theme changes
+  // Listen for OS theme changes to automatically handle system preference
   useEffect(() => {
-    applyTheme(isDark);
-    localStorage.setItem("theme", theme);
-  }, [theme, isDark, applyTheme]);
-
-  // Listen for OS theme changes — update systemDark state so isDark recomputes
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handler = (e) => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
       setSystemDark(e.matches);
+      const savedTheme = localStorage.getItem("theme");
+      if (!savedTheme || savedTheme === "system") {
+        if (typeof window.updateAppTheme === "function") {
+          window.updateAppTheme(e.matches);
+        }
+      }
     };
-
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   const toggleTheme = () => {

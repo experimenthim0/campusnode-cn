@@ -558,157 +558,170 @@ const ClubsTab = ({
                         </div>
 
                         {/* Search & Select New Student Section */}
-                        <div className="space-y-3 pt-2 border-t border-cn-border-subtle">
-                            <label className="block text-xs font-bold uppercase tracking-wider text-cn-text-muted">
-                                {selectedClubForHead.memberships?.[0]?.student ? 'Transfer / Assign New Student Lead' : 'Search & Assign Student Lead'}
-                            </label>
+                        {!selectedStudentToAssign ? (
+                            <div className="space-y-3 pt-2 border-t border-cn-border-subtle">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                                    {selectedClubForHead.memberships?.[0]?.student ? 'Transfer / Assign New Student Lead' : 'Search & Assign Student Lead'}
+                                </label>
 
-                            {/* Search Input */}
-                            <div className="relative">
-                                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                                <input
-                                    type="text"
-                                    value={studentQuery}
-                                    onChange={(e) => handleSearchStudents(e.target.value)}
-                                    placeholder="Search by Name, Roll No (e.g. 22101001), or Email..."
-                                    className="w-full pl-9 pr-9 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
-                                />
-                                {studentQuery && (
-                                    <button
-                                        type="button"
-                                        onClick={() => { setStudentQuery(''); setStudentSearchResults([]); }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Search Results Dropdown / List */}
-                            {isSearchingStudents ? (
-                                <div className="py-4 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
-                                    <Loader2 size={14} className="animate-spin" />
-                                    <span>Searching registered students...</span>
-                                </div>
-                            ) : studentSearchResults.length > 0 ? (
-                                <div className="max-h-52 overflow-y-auto space-y-1.5 border border-cn-border rounded-xl p-2 bg-cn-surface-muted/50">
-                                    {studentSearchResults.map((student) => {
-                                        const isSelected = selectedStudentToAssign?.id === student.id;
-                                        return (
-                                            <div
-                                                key={student.id}
-                                                onClick={() => setSelectedStudentToAssign(student)}
-                                                className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                                                    isSelected
-                                                        ? 'bg-brand-50 dark:bg-brand-950/50 border-brand-500/60'
-                                                        : 'bg-cn-surface hover:bg-neutral-50 dark:hover:bg-zinc-800/60 border-cn-border'
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <div className="w-8 h-8 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold text-xs flex items-center justify-center border border-brand-500/20 shrink-0">
-                                                        {student.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="font-bold text-xs text-cn-text truncate">{student.name}</p>
-                                                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300">
-                                                                {student.rollNo}
-                                                            </span>
-                                                            {student.currentHeadClub && (
-                                                                <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/40">
-                                                                    Lead: {student.currentHeadClub.clubName}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-[11px] text-neutral-400 truncate">
-                                                            {student.branch || student.program || ''}{student.year ? ` • ${student.year}` : ''}
-                                                        </p>
-                                                        <p className="text-[10.5px] text-neutral-400 truncate">{student.email}</p>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => { e.stopPropagation(); setSelectedStudentToAssign(student); }}
-                                                    className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                                                        isSelected
-                                                            ? 'bg-brand-500 text-white dark:bg-brand-400 dark:text-black'
-                                                            : 'bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-cn-text'
-                                                    }`}
-                                                >
-                                                    {isSelected ? 'Selected' : 'Select'}
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : studentQuery.trim().length >= 2 ? (
-                                <p className="text-xs text-neutral-400 text-center py-3">
-                                    No students found matching "{studentQuery}".
-                                </p>
-                            ) : null}
-
-                            {/* Candidate Selection Confirmation Box */}
-                            {selectedStudentToAssign && (
-                                <div className="p-4 rounded-xl border border-brand-500/40 bg-brand-50/50 dark:bg-brand-950/30 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10.5px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
-                                            <Sparkles size={12} /> Designated Candidate
-                                        </span>
+                                {/* Search Input */}
+                                <div className="relative">
+                                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                                    <input
+                                        type="text"
+                                        value={studentQuery}
+                                        onChange={(e) => handleSearchStudents(e.target.value)}
+                                        placeholder="Search by Name, Roll No (e.g. 22101001), or Email..."
+                                        className="w-full pl-9 pr-9 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
+                                    />
+                                    {studentQuery && (
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedStudentToAssign(null)}
-                                            className="text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer font-medium"
+                                            onClick={() => { setStudentQuery(''); setStudentSearchResults([]); }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
                                         >
-                                            Change Selection
+                                            <X size={14} />
                                         </button>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-black text-sm flex items-center justify-center border border-brand-500/20 shrink-0">
-                                            {selectedStudentToAssign.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-xs sm:text-sm text-cn-text truncate">{selectedStudentToAssign.name}</p>
-                                            <p className="text-xs text-cn-text-muted font-mono">{selectedStudentToAssign.rollNo} • {selectedStudentToAssign.branch || selectedStudentToAssign.program || 'Student'}</p>
-                                            <p className="text-xs text-cn-text-secondary">{selectedStudentToAssign.email}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Position / Designation Input */}
-                                    <div className="space-y-1 pt-1">
-                                        <label className="block text-[11px] font-bold uppercase tracking-wider text-cn-text-muted">
-                                            Designation / Position (Display Only)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={headPosition}
-                                            onChange={(e) => setHeadPosition(e.target.value)}
-                                            placeholder="e.g. President, Student Lead, Convenor"
-                                            className="w-full px-3 py-2 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs text-cn-text placeholder:text-cn-text-muted outline-none focus:border-brand-500 transition-colors"
-                                            maxLength={100}
-                                        />
-                                        <p className="text-[10px] text-cn-text-muted">
-                                            Organizational title for frontend display. Does not alter backend permissions.
-                                        </p>
-                                    </div>
-                                    {selectedStudentToAssign.currentHeadClub && String(selectedStudentToAssign.currentHeadClub.id) !== String(selectedClubForHead._id || selectedClubForHead.id) && (
-                                        <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-700 dark:text-red-400 flex items-start gap-1.5">
-                                            <AlertTriangle size={13} className="shrink-0 mt-0.5" />
-                                            <span>
-                                                <strong>Cannot Assign:</strong> {selectedStudentToAssign.name} is already the active Club Head of <strong>{selectedStudentToAssign.currentHeadClub.clubName}</strong>. A student can lead only one club at a time.
-                                            </span>
-                                        </div>
-                                    )}
-                                    {selectedClubForHead.memberships?.[0]?.student && (!selectedStudentToAssign.currentHeadClub || String(selectedStudentToAssign.currentHeadClub.id) === String(selectedClubForHead._id || selectedClubForHead.id)) && (
-                                        <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
-                                            <AlertTriangle size={13} className="shrink-0 mt-0.5" />
-                                            <span>
-                                                Assigning will demote <strong>{selectedClubForHead.memberships[0].student.name}</strong> to member status and transfer Club Head leadership to <strong>{selectedStudentToAssign.name}</strong>.
-                                            </span>
-                                        </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
+
+                                {/* Search Results Dropdown / List */}
+                                {isSearchingStudents ? (
+                                    <div className="py-4 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
+                                        <Loader2 size={14} className="animate-spin" />
+                                        <span>Searching registered students...</span>
+                                    </div>
+                                ) : studentSearchResults.length > 0 ? (
+                                    <div className="max-h-52 overflow-y-auto space-y-1.5 border border-cn-border rounded-xl p-2 bg-cn-surface-muted/50">
+                                        {studentSearchResults.map((student) => {
+                                            const isSelected = selectedStudentToAssign?.id === student.id;
+                                            return (
+                                                <div
+                                                    key={student.id}
+                                                    onClick={() => {
+                                                        setSelectedStudentToAssign(student);
+                                                        setStudentSearchResults([]);
+                                                        setStudentQuery('');
+                                                    }}
+                                                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                                        isSelected
+                                                            ? 'bg-brand-50 dark:bg-brand-950/50 border-brand-500/60'
+                                                            : 'bg-cn-surface hover:bg-neutral-50 dark:hover:bg-zinc-800/60 border-cn-border'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <div className="w-8 h-8 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold text-xs flex items-center justify-center border border-brand-500/20 shrink-0">
+                                                            {student.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-bold text-xs text-cn-text truncate">{student.name}</p>
+                                                                <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300">
+                                                                    {student.rollNo}
+                                                                </span>
+                                                                {student.currentHeadClub && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/40">
+                                                                        Lead: {student.currentHeadClub.clubName}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-neutral-400 truncate">
+                                                                {student.branch || student.program || ''}{student.year ? ` • ${student.year}` : ''}
+                                                            </p>
+                                                            <p className="text-[10.5px] text-neutral-400 truncate">{student.email}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedStudentToAssign(student);
+                                                            setStudentSearchResults([]);
+                                                            setStudentQuery('');
+                                                        }}
+                                                        className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                                                            isSelected
+                                                                ? 'bg-brand-500 text-white dark:bg-brand-400 dark:text-black'
+                                                                : 'bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-cn-text'
+                                                        }`}
+                                                    >
+                                                        {isSelected ? 'Selected' : 'Select'}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : studentQuery.trim().length >= 2 ? (
+                                    <p className="text-xs text-neutral-400 text-center py-3">
+                                        No students found matching "{studentQuery}".
+                                    </p>
+                                ) : null}
+                            </div>
+                        ) : (
+                            /* Candidate Selection Confirmation Box */
+                            <div className="p-4 rounded-xl border border-brand-500/40 bg-brand-50/50 dark:bg-brand-950/30 space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10.5px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                                        <Sparkles size={12} /> Designated Candidate
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedStudentToAssign(null);
+                                            setStudentQuery('');
+                                            setStudentSearchResults([]);
+                                        }}
+                                        className="text-xs text-brand-600 dark:text-brand-400 hover:underline cursor-pointer font-medium"
+                                    >
+                                        Change Selection
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-black text-sm flex items-center justify-center border border-brand-500/20 shrink-0">
+                                        {selectedStudentToAssign.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-xs sm:text-sm text-cn-text truncate">{selectedStudentToAssign.name}</p>
+                                        <p className="text-xs text-cn-text-muted font-mono">{selectedStudentToAssign.rollNo} • {selectedStudentToAssign.branch || selectedStudentToAssign.program || 'Student'}</p>
+                                        <p className="text-xs text-cn-text-secondary">{selectedStudentToAssign.email}</p>
+                                    </div>
+                                </div>
+
+                                {/* Position / Designation Input */}
+                                <div className="space-y-1 pt-1">
+                                    <label className="block text-[11px] font-bold uppercase tracking-wider text-cn-text-muted">
+                                        Designation / Position (Display Only)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={headPosition}
+                                        onChange={(e) => setHeadPosition(e.target.value)}
+                                        placeholder="e.g. President, Student Lead, Convenor"
+                                        className="w-full px-3 py-2 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs text-cn-text placeholder:text-cn-text-muted outline-none focus:border-brand-500 transition-colors"
+                                        maxLength={100}
+                                    />
+                                    <p className="text-[10px] text-cn-text-muted">
+                                        Organizational title for frontend display. Does not alter backend permissions.
+                                    </p>
+                                </div>
+                                {selectedStudentToAssign.currentHeadClub && String(selectedStudentToAssign.currentHeadClub.id) !== String(selectedClubForHead._id || selectedClubForHead.id) && (
+                                    <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-700 dark:text-red-400 flex items-start gap-1.5">
+                                        <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+                                        <span>
+                                            <strong>Cannot Assign:</strong> {selectedStudentToAssign.name} is already the active Club Head of <strong>{selectedStudentToAssign.currentHeadClub.clubName}</strong>. A student can lead only one club at a time.
+                                        </span>
+                                    </div>
+                                )}
+                                {selectedClubForHead.memberships?.[0]?.student && (!selectedStudentToAssign.currentHeadClub || String(selectedStudentToAssign.currentHeadClub.id) === String(selectedClubForHead._id || selectedClubForHead.id)) && (
+                                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
+                                        <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+                                        <span>
+                                            Assigning will demote <strong>{selectedClubForHead.memberships[0].student.name}</strong> to member status and transfer Club Head leadership to <strong>{selectedStudentToAssign.name}</strong>.
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Modal Footer Actions */}
                         <div className="pt-3 flex justify-end gap-3 border-t border-cn-border-subtle">
@@ -805,124 +818,137 @@ const ClubsTab = ({
                         </div>
 
                         {/* Search Registered Faculty Section */}
-                        <div className="space-y-3">
-                            <label className="block text-xs font-bold uppercase tracking-wider text-cn-text-muted">
-                                Search Registered Faculty
-                            </label>
-                            <div className="relative">
-                                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                                <input
-                                    type="text"
-                                    value={facultyQuery}
-                                    onChange={(e) => handleSearchFaculty(e.target.value)}
-                                    placeholder="Search by faculty name, email, or department..."
-                                    className="w-full pl-9 pr-9 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
-                                />
-                                {facultyQuery && (
-                                    <button
-                                        type="button"
-                                        onClick={() => { setFacultyQuery(''); setFacultySearchResults([]); }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Search Results Dropdown / List */}
-                            {isSearchingFaculty ? (
-                                <div className="py-4 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
-                                    <Loader2 size={14} className="animate-spin" />
-                                    <span>Searching registered faculty table...</span>
-                                </div>
-                            ) : facultySearchResults.length > 0 ? (
-                                <div className="max-h-52 overflow-y-auto space-y-1.5 border border-cn-border rounded-xl p-2 bg-cn-surface-muted/50">
-                                    {facultySearchResults.map((fac) => {
-                                        const isSelected = selectedFacultyToAssign?.id === fac.id;
-                                        return (
-                                            <div
-                                                key={fac.id}
-                                                onClick={() => setSelectedFacultyToAssign(fac)}
-                                                className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                                                    isSelected
-                                                        ? 'bg-purple-50 dark:bg-purple-950/50 border-purple-500/60'
-                                                        : 'bg-cn-surface hover:bg-neutral-50 dark:hover:bg-zinc-800/60 border-cn-border'
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
-                                                        {fac.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="font-bold text-xs text-cn-text truncate">{fac.name}</p>
-                                                            <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
-                                                                {fac.department}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-[11px] text-neutral-400 font-mono truncate">{fac.email}</p>
-                                                        {fac.coordinatedClubs?.length > 0 && (
-                                                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
-                                                                Already coordinates: {fac.coordinatedClubs.map(c => c.clubName).join(', ')}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => { e.stopPropagation(); setSelectedFacultyToAssign(fac); }}
-                                                    className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                                                        isSelected
-                                                            ? 'bg-purple-600 text-white'
-                                                            : 'bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-cn-text'
-                                                    }`}
-                                                >
-                                                    {isSelected ? 'Selected' : 'Select'}
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : facultyQuery.trim().length >= 2 ? (
-                                <p className="text-xs text-neutral-400 text-center py-3">
-                                    No faculty members found matching "{facultyQuery}".
-                                </p>
-                            ) : null}
-
-                            {/* Candidate Selection Confirmation Box */}
-                            {selectedFacultyToAssign && (
-                                <div className="p-4 rounded-xl border border-purple-500/40 bg-purple-50/50 dark:bg-purple-950/30 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10.5px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                                            <Sparkles size={12} /> Designated Faculty Coordinator
-                                        </span>
+                        {!selectedFacultyToAssign ? (
+                            <div className="space-y-3">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                                    Search Registered Faculty
+                                </label>
+                                <div className="relative">
+                                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                                    <input
+                                        type="text"
+                                        value={facultyQuery}
+                                        onChange={(e) => handleSearchFaculty(e.target.value)}
+                                        placeholder="Search by faculty name, email, or department..."
+                                        className="w-full pl-9 pr-9 py-2.5 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs sm:text-[13px] text-cn-text placeholder:text-cn-text-muted focus:border-brand-500 dark:focus:border-brand-400 outline-none transition-colors"
+                                    />
+                                    {facultyQuery && (
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedFacultyToAssign(null)}
-                                            className="text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer font-medium"
+                                            onClick={() => { setFacultyQuery(''); setFacultySearchResults([]); }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
                                         >
-                                            Change Selection
+                                            <X size={14} />
                                         </button>
+                                    )}
+                                </div>
+
+                                {/* Search Results Dropdown / List */}
+                                {isSearchingFaculty ? (
+                                    <div className="py-4 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
+                                        <Loader2 size={14} className="animate-spin" />
+                                        <span>Searching registered faculty table...</span>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
-                                            {selectedFacultyToAssign.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-xs sm:text-sm text-cn-text truncate">{selectedFacultyToAssign.name}</p>
-                                            <p className="text-xs text-cn-text-muted">{selectedFacultyToAssign.department}{selectedFacultyToAssign.designation ? ` • ${selectedFacultyToAssign.designation}` : ''}</p>
-                                            <p className="text-xs text-cn-text-secondary font-mono">{selectedFacultyToAssign.email}</p>
-                                        </div>
+                                ) : facultySearchResults.length > 0 ? (
+                                    <div className="max-h-52 overflow-y-auto space-y-1.5 border border-cn-border rounded-xl p-2 bg-cn-surface-muted/50">
+                                        {facultySearchResults.map((fac) => {
+                                            const isSelected = selectedFacultyToAssign?.id === fac.id;
+                                            return (
+                                                <div
+                                                    key={fac.id}
+                                                    onClick={() => {
+                                                        setSelectedFacultyToAssign(fac);
+                                                        setFacultySearchResults([]);
+                                                        setFacultyQuery('');
+                                                    }}
+                                                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                                        isSelected
+                                                            ? 'bg-purple-50 dark:bg-purple-950/50 border-purple-500/60'
+                                                            : 'bg-cn-surface hover:bg-neutral-50 dark:hover:bg-zinc-800/60 border-cn-border'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <div className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
+                                                            {fac.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-bold text-xs text-cn-text truncate">{fac.name}</p>
+                                                                <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+                                                                    {fac.department}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-neutral-400 font-mono truncate">{fac.email}</p>
+                                                            {fac.coordinatedClubs?.length > 0 && (
+                                                                <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                                                                    Already coordinates: {fac.coordinatedClubs.map(c => c.clubName).join(', ')}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedFacultyToAssign(fac);
+                                                            setFacultySearchResults([]);
+                                                            setFacultyQuery('');
+                                                        }}
+                                                        className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                                                            isSelected
+                                                                ? 'bg-purple-600 text-white'
+                                                                : 'bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-cn-text'
+                                                        }`}
+                                                    >
+                                                        {isSelected ? 'Selected' : 'Select'}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                    <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-800 dark:text-purple-300 flex items-start gap-1.5">
-                                        <CheckCircle2 size={13} className="shrink-0 mt-0.5" />
-                                        <span>
-                                            Assigning will grant <strong>{selectedFacultyToAssign.name}</strong> full coordinator and review rights for <strong>{selectedClubForCoordinator.clubName}</strong>.
-                                        </span>
+                                ) : facultyQuery.trim().length >= 2 ? (
+                                    <p className="text-xs text-neutral-400 text-center py-3">
+                                        No faculty members found matching "{facultyQuery}".
+                                    </p>
+                                ) : null}
+                            </div>
+                        ) : (
+                            /* Candidate Selection Confirmation Box */
+                            <div className="p-4 rounded-xl border border-purple-500/40 bg-purple-50/50 dark:bg-purple-950/30 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10.5px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                                        <Sparkles size={12} /> Designated Faculty Coordinator
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedFacultyToAssign(null);
+                                            setFacultyQuery('');
+                                            setFacultySearchResults([]);
+                                        }}
+                                        className="text-xs text-purple-600 dark:text-purple-400 hover:underline cursor-pointer font-medium"
+                                    >
+                                        Change Selection
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
+                                        {selectedFacultyToAssign.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-xs sm:text-sm text-cn-text truncate">{selectedFacultyToAssign.name}</p>
+                                        <p className="text-xs text-cn-text-muted">{selectedFacultyToAssign.department}{selectedFacultyToAssign.designation ? ` • ${selectedFacultyToAssign.designation}` : ''}</p>
+                                        <p className="text-xs text-cn-text-secondary font-mono">{selectedFacultyToAssign.email}</p>
                                     </div>
                                 </div>
-                            )}
-                        </div>
+                                <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-800 dark:text-purple-300 flex items-start gap-1.5">
+                                    <CheckCircle2 size={13} className="shrink-0 mt-0.5" />
+                                    <span>
+                                        Assigning will grant <strong>{selectedFacultyToAssign.name}</strong> full coordinator and review rights for <strong>{selectedClubForCoordinator.clubName}</strong>.
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Modal Footer Actions */}
                         <div className="pt-3 flex justify-end gap-3 border-t border-cn-border-subtle">

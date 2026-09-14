@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <meta name="theme-color" id="theme-color-meta" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -27,19 +26,13 @@
             canvas.width = size;
             canvas.height = size;
             const ctx = canvas.getContext('2d');
-            
-            // Create circular clipping path
             ctx.beginPath();
             ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
-            
-            // Draw image centered and scaled
             ctx.drawImage(img, 0, 0, size, size);
-            
             favicon.href = canvas.toDataURL('image/png');
           } catch (e) {
-            // Fallback to unrounded image if canvas clipping fails
             favicon.href = src;
           }
         };
@@ -48,24 +41,38 @@
         };
       };
 
-      // FOUC prevention — apply dark class and set theme-color before React mounts
-      (function(){
+      // Expose global updater function so React can invoke it at runtime
+      window.updateAppTheme = function(isDark) {
+        const targetColor = isDark ? '#0a0a0a' : '#ffffff';
+
+        // Toggle document classes and scheme
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
+        // Force-replace the theme-color meta tag for PWA repaint
+        document.querySelectorAll("meta[name='theme-color']").forEach(el => el.remove());
+        const meta = document.createElement('meta');
+        meta.setAttribute('name', 'theme-color');
+        meta.setAttribute('content', targetColor);
+        document.head.appendChild(meta);
+
+        // Update dynamic favicon
+        if (typeof window.setRoundedFavicon === 'function') {
+          window.setRoundedFavicon(isDark ? '/darkthemelogo.png' : '/lightthemelogo2.png');
+        }
+      };
+
+      // Run immediately on page load to prevent FOUC
+      (function() {
         try {
           const theme = localStorage.getItem('theme');
           const isDark = theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if(isDark) document.documentElement.classList.add('dark');
-          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-
-          const targetColor = isDark ? '#0a0a0a' : '#ffffff';
-          const metas = document.querySelectorAll("meta[name='theme-color']");
-          metas.forEach(function(m) {
-            m.setAttribute('content', targetColor);
-          });
-
-          // Set initial rounded favicon
-          const faviconSrc = isDark ? '/darkthemelogo.png' : '/lightthemelogo2.png';
-          window.setRoundedFavicon(faviconSrc);
-        } catch(e){}
+          window.updateAppTheme(isDark);
+        } catch (e) {}
       })();
     </script>
     <link rel="preconnect" href="https://res.cloudinary.com" />

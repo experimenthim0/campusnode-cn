@@ -18,9 +18,8 @@ import ShimmerText from "../components/ShimmerText";
 import BannerCropModal from "../components/BannerCropModal";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Separator } from "../components/ui/separator";
 import {
   Palette,
   Image as ImageIcon,
@@ -31,14 +30,11 @@ import {
   ExternalLink,
   ZoomIn,
   Plus,
-  Handshake,
-  Info,
   Globe,
   Check,
   RefreshCw,
   X,
   Building2,
-  Mail,
   Instagram,
   Linkedin,
   Twitter,
@@ -541,7 +537,7 @@ const EditClub = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="secondary" className="font-semibold text-xs text-primary">
+            <Badge variant="secondary" className="font-semibold text-xs text-primary shrink-0">
               {formData.category || "Club Management"}
             </Badge>
             <span className="text-xs text-muted-foreground font-mono">
@@ -551,20 +547,17 @@ const EditClub = () => {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Club Settings & Brand Hub
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Manage your club's visual branding, cover photo, media gallery, and identity in one place.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto">
+        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
           <Button
             variant="outline"
             size="sm"
             asChild
-            className="gap-1.5"
+            className="gap-1.5 shrink-0"
           >
             <Link to={`/club/${clubSlug || clubId}`}>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               View Live Page
             </Link>
           </Button>
@@ -573,7 +566,7 @@ const EditClub = () => {
             size="sm"
             type="button"
             onClick={() => navigate(`/club/${clubSlug || clubId}`)}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground shrink-0"
           >
             Cancel
           </Button>
@@ -585,14 +578,11 @@ const EditClub = () => {
         {/* 1. VISUAL IDENTITY STUDIO (BANNER & LOGO) */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
-          <CardHeader className="border-b border-border pb-4">
+          <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
-              <Palette className="w-4 h-4 text-primary" />
+              <Palette className="w-4 h-4 text-primary shrink-0" />
               <CardTitle className="text-base font-semibold">Visual Identity & Branding</CardTitle>
             </div>
-            <CardDescription className="text-xs">
-              Upload your official club logo and wide cover banner. These appear on your club page, event badges, and search results.
-            </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-4 sm:pt-5 space-y-4 sm:space-y-5">
@@ -600,12 +590,12 @@ const EditClub = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-primary" />
-                  Cover Banner (1400×450 High-DPI Recommended)
+                  <ImageIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                  Cover Banner
                 </label>
                 {formData.bannerImage && (
-                  <Badge variant="outline" className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 gap-1">
-                    <Check className="w-3 h-3" /> Custom Banner Active
+                  <Badge variant="outline" className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 gap-1 shrink-0">
+                    <Check className="w-3 h-3 shrink-0" /> Custom Banner Active
                   </Badge>
                 )}
               </div>
@@ -627,13 +617,13 @@ const EditClub = () => {
                 {/* Uploading Banner Spinner */}
                 {isUploadingBanner && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white z-20">
-                    <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin mb-2" />
+                    <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin mb-2 shrink-0" />
                     <span className="text-xs font-semibold tracking-wide">Uploading banner…</span>
                   </div>
                 )}
 
                 {/* Banner Action Buttons Overlay */}
-                <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 sm:gap-2 z-10 max-w-[calc(100%-1rem)] justify-end">
                   <Button
                     type="button"
                     size="sm"
@@ -641,22 +631,22 @@ const EditClub = () => {
                       setSelectedBannerFileSrc(null);
                       setBannerModalOpen(true);
                     }}
-                    className="h-8 gap-1.5 bg-black/70 hover:bg-black/90 text-white backdrop-blur-md text-xs font-semibold"
+                    className="h-8 gap-1.5 bg-black/70 hover:bg-black/90 text-white backdrop-blur-md text-xs font-semibold shrink-0"
                     title="Open Canvas Crop & Position Editor"
                   >
-                    <Crop className="w-3.5 h-3.5" />
-                    Crop & Adjust
+                    <Crop className="w-3.5 h-3.5 shrink-0" />
+                    <span>Crop<span className="hidden sm:inline"> & Adjust</span></span>
                   </Button>
 
                   <Button
                     type="button"
                     size="sm"
                     onClick={() => bannerInputRef.current?.click()}
-                    className="h-8 gap-1.5 text-xs font-semibold shadow-xs"
+                    className="h-8 gap-1.5 text-xs font-semibold shadow-xs shrink-0"
                     title="Upload image directly"
                   >
-                    <Upload className="w-3.5 h-3.5" />
-                    Upload
+                    <Upload className="w-3.5 h-3.5 shrink-0" />
+                    <span>Upload</span>
                   </Button>
 
                   {formData.bannerImage && (
@@ -665,10 +655,10 @@ const EditClub = () => {
                       variant="destructive"
                       size="icon"
                       onClick={handleRemoveBanner}
-                      className="h-8 w-8 bg-destructive/80 hover:bg-destructive text-destructive-foreground backdrop-blur-md"
+                      className="h-8 w-8 bg-destructive/80 hover:bg-destructive text-destructive-foreground backdrop-blur-md shrink-0"
                       title="Remove custom banner"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
                     </Button>
                   )}
                 </div>
@@ -712,7 +702,7 @@ const EditClub = () => {
                     {/* Logo Hover Overlay */}
                     {!isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-1 text-center">
-                        <Camera className="w-4 h-4 mb-0.5" />
+                        <Camera className="w-4 h-4 mb-0.5 shrink-0" />
                         <span className="text-[10px] font-bold leading-tight">
                           Change
                         </span>
@@ -722,7 +712,7 @@ const EditClub = () => {
                     {/* Logo Uploading Spinner */}
                     {isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
                         <span className="text-[9px] font-bold mt-1">Uploading…</span>
                       </div>
                     )}
@@ -744,14 +734,11 @@ const EditClub = () => {
                         {formData.clubName || "Club Logo"}
                       </span>
                       {formData.clubLogo && (
-                        <Badge variant="secondary" className="text-[10px] bg-white/20 text-white backdrop-blur-xs font-normal">
+                        <Badge variant="secondary" className="text-[10px] bg-white/20 text-white backdrop-blur-xs font-normal shrink-0">
                           Custom
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[11px] text-neutral-200">
-                      Click avatar to upload official logo (JPG/PNG/WebP, max 5MB)
-                    </p>
                   </div>
                 </div>
               </div>
@@ -765,9 +752,9 @@ const EditClub = () => {
                     size="sm"
                     onClick={() => logoInputRef.current?.click()}
                     disabled={isUploadingLogo}
-                    className="gap-1.5 h-8 text-xs"
+                    className="gap-1.5 h-8 text-xs shrink-0"
                   >
-                    <Upload className="w-3.5 h-3.5" />
+                    <Upload className="w-3.5 h-3.5 shrink-0" />
                     {formData.clubLogo ? "Replace Logo" : "Upload Logo"}
                   </Button>
 
@@ -778,17 +765,13 @@ const EditClub = () => {
                       size="sm"
                       onClick={handleRemoveLogo}
                       disabled={isUploadingLogo}
-                      className="gap-1.5 h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="gap-1.5 h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
                       Remove Logo
                     </Button>
                   )}
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  You can also paste an external image URL below if preferred.
-                </p>
               </div>
             </div>
 
@@ -796,7 +779,7 @@ const EditClub = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Club Logo URL (Alternative)
+                  Club Logo URL
                 </label>
                 <Input
                   type="url"
@@ -809,7 +792,7 @@ const EditClub = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Cover Banner URL (Alternative)
+                  Cover Banner URL
                 </label>
                 <Input
                   type="url"
@@ -828,37 +811,32 @@ const EditClub = () => {
         {/* 2. MEDIA & PHOTO GALLERY MANAGER */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
-          <CardHeader className="border-b border-border pb-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-primary" />
-                  <CardTitle className="text-base font-semibold">Media Gallery</CardTitle>
-                  <Badge variant="secondary" className="text-xs">
-                    {galleryList.length} photo{galleryList.length === 1 ? "" : "s"}
-                  </Badge>
-                </div>
-                <CardDescription className="text-xs mt-0.5">
-                  Showcase your club's hackathons, flagship events, team photos, and workshops.
-                </CardDescription>
+          <CardHeader className="border-b border-border py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-primary shrink-0" />
+                <CardTitle className="text-base font-semibold">Media Gallery</CardTitle>
+                <Badge variant="secondary" className="text-xs shrink-0">
+                  {galleryList.length} photo{galleryList.length === 1 ? "" : "s"}
+                </Badge>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={isUploadingGallery}
-                  className="gap-1.5 h-8 text-xs font-semibold"
+                  className="gap-1.5 h-8 text-xs font-semibold shrink-0"
                 >
                   {isUploadingGallery ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin shrink-0" />
                       Uploading…
                     </>
                   ) : (
                     <>
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className="w-3.5 h-3.5 shrink-0" />
                       Upload Photos
                     </>
                   )}
@@ -932,20 +910,20 @@ const EditClub = () => {
                         size="icon"
                         variant="ghost"
                         onClick={() => setLightboxImage(url)}
-                        className="w-7 h-7 bg-black/60 hover:bg-black/90 text-white backdrop-blur-md rounded-lg"
+                        className="w-7 h-7 bg-black/60 hover:bg-black/90 text-white backdrop-blur-md rounded-lg shrink-0"
                         title="Preview full size"
                       >
-                        <ZoomIn className="w-3.5 h-3.5" />
+                        <ZoomIn className="w-3.5 h-3.5 shrink-0" />
                       </Button>
                       <Button
                         type="button"
                         size="icon"
                         variant="destructive"
                         onClick={() => handleRemoveGalleryImage(idx)}
-                        className="w-7 h-7 bg-destructive/80 hover:bg-destructive text-destructive-foreground backdrop-blur-md rounded-lg"
+                        className="w-7 h-7 bg-destructive/80 hover:bg-destructive text-destructive-foreground backdrop-blur-md rounded-lg shrink-0"
                         title="Remove from gallery"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5 shrink-0" />
                       </Button>
                     </div>
 
@@ -957,24 +935,21 @@ const EditClub = () => {
               </div>
             ) : (
               <div className="border border-dashed border-border rounded-xl p-8 text-center flex flex-col items-center justify-center bg-muted/20">
-                <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3">
-                  <ImageIcon className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3 shrink-0">
+                  <ImageIcon className="w-6 h-6 shrink-0" />
                 </div>
                 <h3 className="text-sm font-semibold text-foreground">
                   No Gallery Photos Uploaded
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                  Upload pictures from workshops, fests, and club activities to create an engaging visual story for prospective members.
-                </p>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => galleryInputRef.current?.click()}
-                  className="mt-4 gap-1.5 text-xs font-semibold"
+                  className="mt-4 gap-1.5 text-xs font-semibold shrink-0"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Upload First Photo
+                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                  Upload Photos
                 </Button>
               </div>
             )}
@@ -985,14 +960,11 @@ const EditClub = () => {
         {/* 3. BASIC INFORMATION & ACADEMIC LEADERSHIP */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
-          <CardHeader className="border-b border-border pb-4">
+          <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
+              <Building2 className="w-4 h-4 text-primary shrink-0" />
               <CardTitle className="text-base font-semibold">Club Information & Leadership</CardTitle>
             </div>
-            <CardDescription className="text-xs">
-              Core identification, category, coordinators, and foundational mission.
-            </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-4 sm:pt-5 space-y-4 sm:space-y-5">
@@ -1065,10 +1037,10 @@ const EditClub = () => {
                           studentCoordinators: roleStudentLeads.join(", "),
                         }))
                       }
-                      className="h-6 text-[11px] text-primary hover:text-primary gap-1 px-1.5"
+                      className="h-6 text-[11px] text-primary hover:text-primary gap-1 px-1.5 shrink-0"
                       title="Auto-fill with name from active Student Lead role"
                     >
-                      <RefreshCw className="w-3 h-3" /> Sync Role
+                      <RefreshCw className="w-3 h-3 shrink-0" /> Sync Role
                     </Button>
                   )}
                 </div>
@@ -1162,14 +1134,11 @@ const EditClub = () => {
         {/* 4. SOCIAL LINKS & PUBLIC PRESENCE */}
         {/* ========================================================= */}
         <Card className="border-border shadow-xs bg-card">
-          <CardHeader className="border-b border-border pb-4">
+          <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-primary" />
+              <Globe className="w-4 h-4 text-primary shrink-0" />
               <CardTitle className="text-base font-semibold">Social Media & Online Presence</CardTitle>
             </div>
-            <CardDescription className="text-xs">
-              Connect students directly with your social accounts, community groups, and repositories.
-            </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-4 sm:pt-5">
@@ -1216,7 +1185,7 @@ const EditClub = () => {
                 return (
                   <div key={field.name} className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <IconComponent className="w-3.5 h-3.5 text-primary" />
+                      <IconComponent className="w-3.5 h-3.5 text-primary shrink-0" />
                       {field.label}
                     </label>
                     <Input
@@ -1238,33 +1207,29 @@ const EditClub = () => {
         {/* BOTTOM ACTION BAR */}
         {/* ========================================================= */}
         <Card className="sticky bottom-4 z-20 border-border bg-card/90 backdrop-blur-md shadow-lg">
-          <CardContent className="p-4 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground text-center sm:text-left">
-              Changes will be reflected immediately on your public club page and event listings.
-            </p>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+          <CardContent className="p-4 sm:p-3 flex items-center justify-end">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/club/${clubSlug || clubId}`)}
-                className="flex-1 sm:flex-none text-xs font-semibold"
+                className="flex-1 sm:flex-none text-xs font-semibold shrink-0"
               >
                 Discard Changes
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1 sm:flex-none text-xs font-semibold gap-2 shadow-xs"
+                className="flex-1 sm:flex-none text-xs font-semibold gap-2 shadow-xs shrink-0"
               >
                 {isSaving ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin shrink-0" />
                     Saving Settings…
                   </>
                 ) : (
                   <>
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-3.5 h-3.5 shrink-0" />
                     Save Club Settings
                   </>
                 )}
@@ -1313,9 +1278,9 @@ const EditClub = () => {
               variant="ghost"
               size="sm"
               onClick={() => setLightboxImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-white/80 gap-1"
+              className="absolute -top-10 right-0 text-white hover:text-white/80 gap-1 shrink-0"
             >
-              <X className="w-4 h-4" /> Close
+              <X className="w-4 h-4 shrink-0" /> Close
             </Button>
           </div>
         </div>
