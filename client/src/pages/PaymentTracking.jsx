@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getClubManagedEvents } from '../services/eventService';
 import { getPaymentStats } from '../services/paymentService';
 import ShimmerText from '../components/ShimmerText';
+import TablePagination from '../components/TablePagination';
 
 const PaymentTracking = () => {
   const { user, role } = useAuth();
@@ -11,7 +12,13 @@ const PaymentTracking = () => {
   const [paymentStats, setPaymentStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [ledgerPage, setLedgerPage] = useState(1);
+  const [ledgerPageSize, setLedgerPageSize] = useState(25);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLedgerPage(1);
+  }, [selectedEvent]);
 
   useEffect(() => {
     if (!user || !(role === 'club-head' || role === 'club' || role === 'clubHead' || role === 'facultyCoordinator')) {
@@ -212,50 +219,73 @@ const PaymentTracking = () => {
                   <div className="p-12 text-center bg-white dark:bg-neutral-900">
                     <p className="text-neutral-400 dark:text-neutral-500 font-bold text-sm">No transaction records logged for this event.</p>
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800">
-                      <thead className="bg-neutral-50 dark:bg-neutral-950/20">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Student</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Payment ID / UTR</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Timestamp</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
-                        {paymentStats[selectedEvent].registrations.map((reg, idx) => (
-                          <tr key={idx} className="hover:bg-neutral-50/40 dark:hover:bg-neutral-850/20 transition-colors">
-                            <td className="px-6 py-3.5 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                              {reg.studentName || 'N/A'}
-                            </td>
-                            <td className="px-6 py-3.5 text-xs font-mono text-neutral-500 dark:text-neutral-405 select-all font-bold">
-                              {reg.paymentId || 'N/A'}
-                            </td>
-                            <td className="px-6 py-3.5 text-sm font-bold text-brand-655 dark:text-brand-500">
-                              ₹{reg.amountPaid || 0}
-                            </td>
-                            <td className="px-6 py-3.5">
-                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                                reg.paymentStatus === 'SUCCESS' || reg.paymentStatus === 'APPROVED'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50' 
-                                  : reg.paymentStatus === 'REJECTED'
-                                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/50'
-                                    : 'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50 animate-pulse'
-                              }`}>
-                                {reg.paymentStatus}
-                              </span>
-                            </td>
-                            <td className="px-6 py-3.5 text-xs text-neutral-450 dark:text-neutral-500 font-medium">
-                              {reg.paymentTimestamp ? new Date(reg.paymentTimestamp).toLocaleString() : 'N/A'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                ) : (() => {
+                  const currentRegistrations = paymentStats[selectedEvent]?.registrations || [];
+                  const totalLedger = currentRegistrations.length;
+                  const totalLedgerPages = Math.max(1, Math.ceil(totalLedger / ledgerPageSize));
+                  const safeLedgerPage = Math.min(Math.max(1, ledgerPage), totalLedgerPages);
+                  const ledgerStartIndex = (safeLedgerPage - 1) * ledgerPageSize;
+                  const ledgerEndIndex = Math.min(ledgerStartIndex + ledgerPageSize, totalLedger);
+                  const paginatedLedger = currentRegistrations.slice(ledgerStartIndex, ledgerEndIndex);
+
+                  return (
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800">
+                          <thead className="bg-neutral-50 dark:bg-neutral-950/20">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Student</th>
+                              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Payment ID / UTR</th>
+                              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Amount</th>
+                              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Timestamp</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+                            {paginatedLedger.map((reg, idx) => (
+                              <tr key={idx} className="hover:bg-neutral-50/40 dark:hover:bg-neutral-850/20 transition-colors">
+                                <td className="px-6 py-3.5 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                  {reg.studentName || 'N/A'}
+                                </td>
+                                <td className="px-6 py-3.5 text-xs font-mono text-neutral-500 dark:text-neutral-405 select-all font-bold">
+                                  {reg.paymentId || 'N/A'}
+                                </td>
+                                <td className="px-6 py-3.5 text-sm font-bold text-brand-655 dark:text-brand-500">
+                                  ₹{reg.amountPaid || 0}
+                                </td>
+                                <td className="px-6 py-3.5">
+                                  <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                                    reg.paymentStatus === 'SUCCESS' || reg.paymentStatus === 'APPROVED'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50' 
+                                      : reg.paymentStatus === 'REJECTED'
+                                        ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/50'
+                                        : 'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50 animate-pulse'
+                                  }`}>
+                                    {reg.paymentStatus}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-3.5 text-xs text-neutral-450 dark:text-neutral-500 font-medium">
+                                  {reg.paymentTimestamp ? new Date(reg.paymentTimestamp).toLocaleString() : 'N/A'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <TablePagination
+                        currentPage={safeLedgerPage}
+                        totalItems={totalLedger}
+                        pageSize={ledgerPageSize}
+                        onPageChange={setLedgerPage}
+                        onPageSizeChange={setLedgerPageSize}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        itemName="transactions"
+                        className="border-t border-neutral-200 dark:border-neutral-800 rounded-none"
+                      />
+                    </>
+                  );
+                })()}
               </div>
             )}
           </>

@@ -5,6 +5,7 @@ import { getPaymentStats, reviewPayment } from '../services/paymentService';
 import { toast } from 'react-hot-toast';
 import { ParticipationStatus } from '../types/index';
 import ShimmerText from '../components/ShimmerText';
+import TablePagination from '../components/TablePagination';
 
 const EventRegistrations = () => {
     const { id } = useParams();
@@ -21,6 +22,17 @@ const EventRegistrations = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState('');
     const exportModalRef = useRef(null);
+
+    // Pagination states
+    const [indivPage, setIndivPage] = useState(1);
+    const [indivPageSize, setIndivPageSize] = useState(50);
+    const [teamPage, setTeamPage] = useState(1);
+    const [teamPageSize, setTeamPageSize] = useState(25);
+
+    useEffect(() => {
+        setIndivPage(1);
+        setTeamPage(1);
+    }, [searchQuery]);
 
     // Review Payment States
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -255,6 +267,22 @@ const EventRegistrations = () => {
             (m.student?.branch || '').toLowerCase().includes(q)
         );
     });
+
+    // Individual registrations pagination
+    const totalIndiv = individualRegs.length;
+    const totalIndivPages = Math.max(1, Math.ceil(totalIndiv / indivPageSize));
+    const safeIndivPage = Math.min(Math.max(1, indivPage), totalIndivPages);
+    const indivStartIndex = (safeIndivPage - 1) * indivPageSize;
+    const indivEndIndex = Math.min(indivStartIndex + indivPageSize, totalIndiv);
+    const paginatedIndividualRegs = individualRegs.slice(indivStartIndex, indivEndIndex);
+
+    // Team registrations pagination
+    const totalTeams = teamRegs.length;
+    const totalTeamPages = Math.max(1, Math.ceil(totalTeams / teamPageSize));
+    const safeTeamPage = Math.min(Math.max(1, teamPage), totalTeamPages);
+    const teamStartIndex = (safeTeamPage - 1) * teamPageSize;
+    const teamEndIndex = Math.min(teamStartIndex + teamPageSize, totalTeams);
+    const paginatedTeamRegs = teamRegs.slice(teamStartIndex, teamEndIndex);
 
     const toggleTeam = (teamId) => {
         setExpandedTeams(prev => ({ ...prev, [teamId]: !prev[teamId] }));
@@ -506,9 +534,14 @@ const EventRegistrations = () => {
                     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-2xl text-center text-neutral-500">
                         No students registered yet.
                     </div>
-                                ) : activeTab === 'team' && (eventData?.registrationType === 'team' || eventData?.registrationType === 'both') ? (
+                ) : activeTab === 'team' && (eventData?.registrationType === 'team' || eventData?.registrationType === 'both') ? (
                     <div className="space-y-4">
-                        {teamRegs.map((team) => {
+                        {paginatedTeamRegs.length === 0 && (
+                            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-2xl text-center text-neutral-400 text-sm">
+                                No teams match your search.
+                            </div>
+                        )}
+                        {paginatedTeamRegs.map((team) => {
                             const isExpanded = !!expandedTeams[team.id];
                             return (
                                 <div key={team.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
@@ -701,10 +734,20 @@ const EventRegistrations = () => {
                                 </div>
                             );
                         })}
+                        <TablePagination
+                            currentPage={safeTeamPage}
+                            totalItems={totalTeams}
+                            pageSize={teamPageSize}
+                            onPageChange={setTeamPage}
+                            onPageSizeChange={setTeamPageSize}
+                            pageSizeOptions={[10, 25, 50, 100]}
+                            itemName="teams"
+                        />
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
+                    <div className="space-y-4">
+                        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800">
                                 <thead className="bg-neutral-50 dark:bg-neutral-950">
                                     <tr>
@@ -735,7 +778,14 @@ const EventRegistrations = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-neutral-900 divide-y divide-neutral-100 dark:divide-neutral-800">
-                                    {individualRegs.map((reg, idx) => {
+                                    {paginatedIndividualRegs.length === 0 && (
+                                        <tr>
+                                            <td colSpan={8 + customFields.length} className="px-5 py-12 text-center text-neutral-400 text-sm">
+                                                No registrations match your search.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {paginatedIndividualRegs.map((reg, idx) => {
                                         const isFaculty = Boolean(reg.isFaculty || reg.student?.isFaculty);
                                         const isInternal = !!reg.student && !reg.student.isExternal && !isFaculty;
                                         const studentName = reg.student?.name || 'Unknown';
@@ -753,7 +803,7 @@ const EventRegistrations = () => {
                                         return (
                                             <tr key={reg.id || reg._id} className="hover:bg-neutral-100/80 dark:hover:bg-neutral-900/40 transition-colors">
                                                 <td className="px-5 py-4 whitespace-nowrap text-xs font-bold text-neutral-400">
-                                                    {idx + 1}
+                                                    {indivStartIndex + idx + 1}
                                                 </td>
                                                 <td className="px-5 py-4 whitespace-nowrap">
                                                     <div className="flex flex-col">
@@ -884,7 +934,18 @@ const EventRegistrations = () => {
                             </table>
                         </div>
                     </div>
-                )}
+
+                    <TablePagination
+                        currentPage={safeIndivPage}
+                        totalItems={totalIndiv}
+                        pageSize={indivPageSize}
+                        onPageChange={setIndivPage}
+                        onPageSizeChange={setIndivPageSize}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        itemName="registrations"
+                    />
+                </div>
+            )}
 
                 {exportModalOpen && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 dark:bg-black/75 px-3 py-4 backdrop-blur-sm sm:px-4" role="presentation">

@@ -37,6 +37,7 @@ import { Server } from "socket.io";
 import { apiCompression, etagSupport, getPerformanceStats, overloadProtection, publicReadCache, requestMetrics } from "./middleware/performance.js";
 import { seedPermissions } from "./utils/rbac.js";
 import { authenticateSocketToken } from "./middleware/auth.js";
+import browserAccessGuard from "./middleware/browserAccessGuard.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -100,6 +101,7 @@ io.on("connection", (socket) => {
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
 app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "public")));
+app.use(browserAccessGuard);
 
 app.use(requestMetrics);
 app.use(overloadProtection);

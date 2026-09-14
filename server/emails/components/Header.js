@@ -31,11 +31,18 @@ export const Header = ({ badgeText, subtitle } = {}) => {
       <div style="display: inline-block; vertical-align: middle;">
         <a href="https://campusnode.vercel.app" target="_blank" style="text-decoration: none; display: inline-block; vertical-align: middle;">
           <!-- Light Mode Logo: Pure Black on Light Background -->
-         
-          <h2 style="font-weight:bold; color:black;">CampusNode</h2>
-          <!-- Dark Mode Logo: Pure White on Dark Background -->
-          
-         
+        <img
+  src="https://campusnode-stagging.vercel.app/logolight.png"
+  alt="CampusNode"
+  width="100"
+  style="
+    display: block;
+    width: 100px;
+    height: auto;
+    border: 0;
+    margin: 0 auto;
+  "
+>
           <!--<![endif]-->
         </a>
       

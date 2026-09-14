@@ -970,7 +970,7 @@ router.get("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN
 
 router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
   try {
-    const { studentId, studentEmail } = req.body;
+    const { studentId, studentEmail, position } = req.body;
     const clubId = req.params.id;
 
     const club = await prisma.club.findUnique({ where: { id: clubId } });
@@ -1012,10 +1012,14 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
       });
     }
 
+    const sanitizedPosition = typeof position === "string" && position.trim().length > 0
+      ? position.trim().slice(0, 100)
+      : (position === null ? null : undefined);
+
     const membership = await prisma.$transaction(async (tx) => {
       await tx.clubMembership.updateMany({
         where: { clubId, role: "CLUB_HEAD" },
-        data: { role: "MEMBER" },
+        data: { role: "MEMBER", position: null },
       });
 
       const existingMember = await tx.clubMembership.findUnique({
@@ -1028,13 +1032,17 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
       });
 
       if (existingMember) {
+        const updateData = {
+          role: "CLUB_HEAD",
+          canTakeAttendance: true,
+          canEditEvents: true,
+        };
+        if (sanitizedPosition !== undefined) {
+          updateData.position = sanitizedPosition;
+        }
         return await tx.clubMembership.update({
           where: { id: existingMember.id },
-          data: {
-            role: "CLUB_HEAD",
-            canTakeAttendance: true,
-            canEditEvents: true,
-          },
+          data: updateData,
         });
       } else {
         return await tx.clubMembership.create({
@@ -1043,6 +1051,7 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
             clubId,
             studentId: student.id,
             role: "CLUB_HEAD",
+            position: sanitizedPosition !== undefined ? sanitizedPosition : null,
             canTakeAttendance: true,
             canEditEvents: true,
           },
@@ -1084,7 +1093,7 @@ router.delete("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_AD
     const clubId = req.params.id;
     await prisma.clubMembership.updateMany({
       where: { clubId, role: "CLUB_HEAD" },
-      data: { role: "MEMBER" },
+      data: { role: "MEMBER", position: null },
     });
 
     invalidatePublicResponses(["clubs*"]);

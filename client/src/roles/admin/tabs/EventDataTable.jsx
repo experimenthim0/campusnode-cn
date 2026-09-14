@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Search, X, RotateCcw, Download, ExternalLink } from 'lucide-react';
-import { DataTable, Th, Td, TypeBadge, EntryBadge, FilterSelect } from '../components/AdminUI';
+import { DataTable, Th, Td, TypeBadge, EntryBadge, FilterSelect, TablePagination } from '../components/AdminUI';
 
 const EventDataTable = ({
     events = [],
@@ -13,6 +13,14 @@ const EventDataTable = ({
     setTypeFilter,
     onDownloadCSV
 }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(50);
+
+    // Reset pagination when any search or filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, typeFilter, filters?.clubId, filters?.month, filters?.year]);
+
     const filteredEventList = useMemo(() => {
         return (events || []).filter(e => {
             const title = e.eventName || e.title || '';
@@ -74,7 +82,21 @@ const EventDataTable = ({
         setSearchQuery('');
         setTypeFilter('all');
         setFilters({ month: 'all', year: 'all', clubId: 'all' });
+        setCurrentPage(1);
     };
+
+    // Pagination calculations
+    const totalEvents = filteredEventList.length;
+    const isAll = pageSize === 'all';
+    const effectivePageSize = isAll ? Math.max(1, totalEvents) : pageSize;
+    const totalPages = isAll ? 1 : Math.max(1, Math.ceil(totalEvents / effectivePageSize));
+    const safePage = Math.min(Math.max(1, currentPage), totalPages);
+    const startIndex = isAll ? 0 : (safePage - 1) * effectivePageSize;
+    const endIndex = isAll ? totalEvents : Math.min(startIndex + effectivePageSize, totalEvents);
+    const paginatedEvents = filteredEventList.slice(startIndex, endIndex);
+
+    const startRecord = totalEvents === 0 ? 0 : startIndex + 1;
+    const endRecord = totalEvents === 0 ? 0 : endIndex;
 
     const formatDateTime = (dateStr) => {
         if (!dateStr) return { date: 'N/A', time: '' };
@@ -204,7 +226,8 @@ const EventDataTable = ({
 
                     <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-zinc-800/80 shrink-0">
                         <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
-                            Showing <strong className="text-black dark:text-white">{filteredEventList.length}</strong> of {events.length}
+                            Showing <strong className="text-black dark:text-white">{startRecord}–{endRecord}</strong> of <strong className="text-black dark:text-white">{totalEvents}</strong>
+                            {isAnyFilterActive && ` (filtered from ${events.length})`}
                         </span>
 
                         <button
@@ -233,7 +256,7 @@ const EventDataTable = ({
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 dark:divide-zinc-800/50">
-                    {filteredEventList.map((item, idx) => {
+                    {paginatedEvents.map((item, idx) => {
                         const eventId = item.id || item.eventId;
                         const eventSlug = item.slug || eventId;
                         const eventUrl = `/event/${eventSlug}`;
@@ -250,9 +273,9 @@ const EventDataTable = ({
                         const { date, time } = formatDateTime(item.eventDate || item.startTime);
 
                         return (
-                            <tr key={idx} className="hover:bg-neutral-50/80 dark:hover:bg-zinc-900/50 transition-colors">
+                            <tr key={item.id || item._id || idx} className="hover:bg-neutral-50/80 dark:hover:bg-zinc-900/50 transition-colors">
                                 <Td className="text-center text-neutral-400 dark:text-neutral-500 font-mono text-xs">
-                                    {idx + 1}
+                                    {startIndex + idx + 1}
                                 </Td>
                                 <Td>
                                     <a
@@ -325,6 +348,17 @@ const EventDataTable = ({
                     )}
                 </tbody>
             </DataTable>
+
+            {/* Pagination */}
+            <TablePagination
+                currentPage={safePage}
+                totalItems={totalEvents}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[10, 25, 50, 100]}
+                itemName="events"
+            />
         </div>
     );
 };

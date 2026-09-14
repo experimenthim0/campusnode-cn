@@ -9,7 +9,7 @@ import { checkPasswordRateLimit } from "../utils/checkPasswordRateLimit.js";
 import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { PROGRAM_OPTIONS, isValidBranchForProgram } from "../constants/academicConstants.js";
-import { calculateAcademicProgress } from "../utils/academicProgress.js";
+import { calculateAcademicProgress, isStudentLoginDeactivated } from "../utils/academicProgress.js";
 import redis from "../lib/redis.js";
 import { z } from "zod";
 
@@ -349,6 +349,15 @@ router.post(["/login", "/login/student"], async (req, res) => {
       const isMatch = await bcrypt.compare(password, student.password);
       if (!isMatch) {
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const deactivation = isStudentLoginDeactivated(student);
+      if (deactivation.isDeactivated) {
+        return res.status(403).json({
+          success: false,
+          accountDeactivated: true,
+          message: deactivation.reason,
+        });
       }
 
       if (!student.isVerified && process.env.SKIP_VERIFICATION !== "true") {
@@ -1003,6 +1012,15 @@ router.post("/verify-2fa", async (req, res) => {
     });
 
     if (student) {
+      const deactivation = isStudentLoginDeactivated(student);
+      if (deactivation.isDeactivated) {
+        return res.status(403).json({
+          success: false,
+          accountDeactivated: true,
+          message: deactivation.reason,
+        });
+      }
+
       const { role, clubId, memberships } = await getStudentRoleAndClub(student.id);
       const progress = calculateAcademicProgress(student);
       const token = generateToken(student, role, "student", clubId, "STUDENT");

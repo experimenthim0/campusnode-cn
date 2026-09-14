@@ -86,7 +86,7 @@ const MyRegisteredEventCard = ({
     timeZone: 'Asia/Kolkata',
   });
 
-  const posterImage = event.imageUrl || '/CLUBSETU.png';
+  const posterImage = event.imageUrl || '/fallback-img.jpg';
   const isPaidEvent = event.paymentMethod && event.paymentMethod !== 'FREE';
   const isTeam = Boolean(reg.team || reg.teamId);
   const isTeamLeader = isTeam && (reg.team?.leaderId === (user?.id || user?._id));

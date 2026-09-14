@@ -118,6 +118,7 @@ model StudentUser {
   teamMemberships        TeamMember[]
   feedbacks              EventFeedback[]
   certificates           Certificate[]
+  clubHeadHistories      ClubHeadHistory[]
 }
 
 model StudentSocialLink {
@@ -206,6 +207,7 @@ model Club {
   announcements        ClubAnnouncement[]
   achievements         ClubAchievement[]
   notifications        Notification[]
+  headHistory          ClubHeadHistory[]
 }
 
 model ClubSocialLink {
@@ -224,6 +226,7 @@ model ClubMembership {
   studentId         String         @db.VarChar(24)
   clubId            String         @db.VarChar(24)
   role              ClubMemberRole @default(MEMBER)
+  position          String?        @db.VarChar(100)
   customPermissions String[]       @default([]) @db.VarChar
   canEditEvents     Boolean        @default(false)
   canTakeAttendance Boolean        @default(true)
@@ -235,6 +238,25 @@ model ClubMembership {
   @@unique([clubId, studentId])
   @@index([studentId])
   @@index([clubId, role])
+}
+
+model ClubHeadHistory {
+  id           String    @id @db.VarChar(24)
+  clubId       String    @db.VarChar(24)
+  studentId    String    @db.VarChar(24)
+  name         String    @db.VarChar
+  position     String?   @db.VarChar(100)
+  academicYear String?   @db.VarChar(20)
+  startedAt    DateTime?
+  endedAt      DateTime?
+  createdAt    DateTime  @default(now())
+
+  club         Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  student      StudentUser @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@index([clubId])
+  @@index([studentId])
+  @@index([clubId, endedAt])
 }
 
 // ==========================================

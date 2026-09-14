@@ -153,3 +153,5 @@ export const ModalFormField = ({ label, name, type = "text", defaultValue, value
     </div>
 );
 
+export { default as TablePagination } from '../../../components/TablePagination';
+

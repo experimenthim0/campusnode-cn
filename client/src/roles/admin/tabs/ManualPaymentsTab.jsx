@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, User, Search, X } from 'lucide-react';
-import { StatCard, DataTable, Th, Td, FilterSelect } from '../components/AdminUI';
+import { StatCard, DataTable, Th, Td, FilterSelect, TablePagination } from '../components/AdminUI';
 
 const ManualPaymentsTab = ({
     manualPayments = [],
@@ -10,6 +10,13 @@ const ManualPaymentsTab = ({
 }) => {
     const [formatFilter, setFormatFilter] = useState('all'); // all | team | individual
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(50);
+
+    // Reset page to 1 when filters or search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [paymentsSearch, formatFilter, statusFilter]);
 
     const filtered = manualPayments.filter(p => {
         if (paymentsSearch) {
@@ -47,8 +54,15 @@ const ManualPaymentsTab = ({
         return true;
     });
 
+    const totalPayments = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalPayments / pageSize));
+    const safePage = Math.min(Math.max(1, currentPage), totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalPayments);
+    const paginatedPayments = filtered.slice(startIndex, endIndex);
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Summary Stats */}
             {manualPaymentsSummary && (
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -123,7 +137,7 @@ const ManualPaymentsTab = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {filtered.map((p, idx) => {
+                    {paginatedPayments.map((p, idx) => {
                         const displayClubName = (p.clubName && p.clubName !== 'Unknown' && p.clubName !== 'Unknown Club')
                             ? p.clubName
                             : (p.club?.clubName || 'ODSW');
@@ -131,7 +145,7 @@ const ManualPaymentsTab = ({
 
                         return (
                             <tr key={p.id || idx} className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
-                                <Td className="text-neutral-300 dark:text-neutral-600">{idx + 1}</Td>
+                                <Td className="text-neutral-300 dark:text-neutral-600">{startIndex + idx + 1}</Td>
                                 
                                 <Td>
                                     <p className="font-bold text-black dark:text-white text-sm">{p.eventName}</p>
@@ -228,6 +242,16 @@ const ManualPaymentsTab = ({
                     )}
                 </tbody>
             </DataTable>
+
+            <TablePagination
+                currentPage={safePage}
+                totalItems={totalPayments}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[10, 25, 50, 100]}
+                itemName="transactions"
+            />
         </div>
     );
 };

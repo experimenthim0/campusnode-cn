@@ -55,6 +55,7 @@ const ClubsTab = ({
     const [selectedStudentToAssign, setSelectedStudentToAssign] = useState(null);
     const [isSubmittingHead, setIsSubmittingHead] = useState(false);
     const [isRevokingHead, setIsRevokingHead] = useState(false);
+    const [headPosition, setHeadPosition] = useState('President');
 
     // Faculty Coordinator Assignment State
     const [isCoordinatorModalOpen, setIsCoordinatorModalOpen] = useState(false);
@@ -183,7 +184,10 @@ const ClubsTab = ({
         setIsSubmittingHead(true);
         const clubId = selectedClubForHead._id || selectedClubForHead.id;
         try {
-            const res = await assignClubHead(clubId, { studentId: selectedStudentToAssign.id });
+            const res = await assignClubHead(clubId, {
+                studentId: selectedStudentToAssign.id,
+                position: headPosition.trim() || undefined,
+            });
             showNotification(res.data?.message || `Assigned ${selectedStudentToAssign.name} as Club Head`, 'success');
             
             // Refresh table list
@@ -199,6 +203,7 @@ const ClubsTab = ({
             setSelectedStudentToAssign(null);
             setStudentQuery('');
             setStudentSearchResults([]);
+            setHeadPosition('President');
         } catch (err) {
             showNotification(err.response?.data?.message || 'Failed to assign club head', 'error');
         } finally {
@@ -508,9 +513,11 @@ const ClubsTab = ({
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
                                                             <h4 className="font-bold text-sm text-cn-text truncate">{head.name}</h4>
-                                                            {/* <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
-                                                                <Crown size={10} /> Active Lead
-                                                            </span> */}
+                                                            {selectedClubForHead.memberships?.[0]?.position && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 shrink-0">
+                                                                    {selectedClubForHead.memberships[0].position}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <p className="text-xs text-cn-text-muted font-mono">{head.rollNo} • {head.branch || head.program || 'Student'}</p>
                                                         <p className="text-xs text-cn-text-secondary">{head.email}</p>
@@ -664,6 +671,24 @@ const ClubsTab = ({
                                             <p className="text-xs text-cn-text-muted font-mono">{selectedStudentToAssign.rollNo} • {selectedStudentToAssign.branch || selectedStudentToAssign.program || 'Student'}</p>
                                             <p className="text-xs text-cn-text-secondary">{selectedStudentToAssign.email}</p>
                                         </div>
+                                    </div>
+
+                                    {/* Position / Designation Input */}
+                                    <div className="space-y-1 pt-1">
+                                        <label className="block text-[11px] font-bold uppercase tracking-wider text-cn-text-muted">
+                                            Designation / Position (Display Only)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={headPosition}
+                                            onChange={(e) => setHeadPosition(e.target.value)}
+                                            placeholder="e.g. President, Student Lead, Convenor"
+                                            className="w-full px-3 py-2 bg-cn-surface dark:bg-cn-surface-elevated border border-cn-border rounded-xl text-xs text-cn-text placeholder:text-cn-text-muted outline-none focus:border-brand-500 transition-colors"
+                                            maxLength={100}
+                                        />
+                                        <p className="text-[10px] text-cn-text-muted">
+                                            Organizational title for frontend display. Does not alter backend permissions.
+                                        </p>
                                     </div>
                                     {selectedStudentToAssign.currentHeadClub && String(selectedStudentToAssign.currentHeadClub.id) !== String(selectedClubForHead._id || selectedClubForHead.id) && (
                                         <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-700 dark:text-red-400 flex items-start gap-1.5">

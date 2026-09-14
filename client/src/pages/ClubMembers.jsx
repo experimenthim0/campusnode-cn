@@ -26,6 +26,8 @@ import {
   ArrowRightLeft,
   X,
   Loader2,
+  Pencil,
+  Check,
   ShieldAlert,
   AlertTriangle,
 } from "lucide-react";
@@ -42,6 +44,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ShimmerText from "../components/ShimmerText";
+
+const POSITION_PRESETS = [
+  "President",
+  "Vice President",
+  "Secretary",
+  "Treasurer",
+  "Technical Head",
+  "Joint Technical Head",
+  "Event Coordinator",
+  "Design Head",
+  "Social Media Head",
+  "Content & PR Head",
+  "Logistics Head",
+  "Core Member",
+  "Executive Member",
+  "Volunteer",
+];
 
 const MemberAvatar = ({ name, image }) => {
   if (image) {
@@ -99,6 +118,10 @@ const ClubMembers = () => {
   const [inviting, setInviting] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState(ClubMemberRole.MEMBER);
+  const [invitePosition, setInvitePosition] = useState("");
+  const [editingPositionId, setEditingPositionId] = useState(null);
+  const [tempPosition, setTempPosition] = useState("");
+  const [savingPositionId, setSavingPositionId] = useState(null);
   const [updatingIds, setUpdatingIds] = useState({});
 
   // Student search / autocomplete state
@@ -207,9 +230,11 @@ const ClubMembers = () => {
       await addClubMember(clubId, {
         email: inviteEmail,
         role: selectedRole,
+        position: invitePosition.trim() || undefined,
       });
       toast.success("Member added successfully", { id: toastId });
       setInviteEmail("");
+      setInvitePosition("");
       setSelectedStudent(null);
       await invalidateCache(['/api/clubs*', '/api/users/*']);
       fetchMembers(true);
@@ -295,6 +320,27 @@ const ClubMembers = () => {
         delete next[membershipId];
         return next;
       });
+    }
+  };
+
+  const handleSavePosition = async (membershipId) => {
+    try {
+      setSavingPositionId(membershipId);
+      const trimmed = tempPosition.trim();
+      await updateClubMember(membershipId, { position: trimmed || null });
+      setMembers((prev) =>
+        prev.map((m) =>
+          (m.id || m._id) === membershipId ? { ...m, position: trimmed || null } : m
+        )
+      );
+      toast.success("Designation updated successfully");
+      setEditingPositionId(null);
+      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      fetchMembers(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update designation");
+    } finally {
+      setSavingPositionId(null);
     }
   };
 
@@ -610,6 +656,22 @@ const ClubMembers = () => {
               )}
             </div>
 
+            <div className="min-w-[180px] flex-1">
+              <Input
+                type="text"
+                placeholder="Designation (e.g. Technical Head)"
+                value={invitePosition}
+                onChange={(e) => setInvitePosition(e.target.value)}
+                list="club-position-presets"
+                className="h-10 text-xs sm:text-sm bg-background border-input focus-visible:ring-brand-500"
+              />
+              <datalist id="club-position-presets">
+                {POSITION_PRESETS.map((pos) => (
+                  <option key={pos} value={pos} />
+                ))}
+              </datalist>
+            </div>
+
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
@@ -769,6 +831,7 @@ const ClubMembers = () => {
               <TableRow className="border-b border-border bg-muted/30">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Member</TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Designation</TableHead>
                 <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Attendance</TableHead>
                 <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Events</TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
@@ -870,6 +933,79 @@ const ClubMembers = () => {
                           {updatingType === "role" && (
                             <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-600 shrink-0" />
                           )}
+                        </div>
+                      )}
+                    </TableCell>
+
+                    {/* Designation / Position */}
+                    <TableCell className="py-3.5">
+                      {member.isClubAccount ? (
+                        <span className="text-xs text-muted-foreground italic">—</span>
+                      ) : editingPositionId === id ? (
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="text"
+                            value={tempPosition}
+                            onChange={(e) => setTempPosition(e.target.value)}
+                            placeholder="e.g. Technical Head"
+                            list="club-position-presets"
+                            className="h-8 text-xs min-w-[130px] max-w-[190px] bg-background"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSavePosition(id);
+                              if (e.key === "Escape") setEditingPositionId(null);
+                            }}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 p-0 cursor-pointer"
+                            onClick={() => handleSavePosition(id)}
+                            disabled={savingPositionId === id}
+                            title="Save designation"
+                          >
+                            {savingPositionId === id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:bg-muted p-0 cursor-pointer"
+                            onClick={() => setEditingPositionId(null)}
+                            disabled={savingPositionId === id}
+                            title="Cancel"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 group">
+                          {member.position ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[11px] font-medium py-0.5 px-2 bg-muted/40 border-border text-foreground truncate max-w-[170px]"
+                              title={member.position}
+                            >
+                              {member.position}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">None</span>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground p-0 cursor-pointer"
+                            onClick={() => {
+                              setEditingPositionId(id);
+                              setTempPosition(member.position || "");
+                            }}
+                            title="Edit designation"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </Button>
                         </div>
                       )}
                     </TableCell>

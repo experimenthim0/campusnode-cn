@@ -1441,7 +1441,7 @@ const ClubDetails = () => {
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
-                        role="Student Lead"
+                        role={m.position || "Student Lead"}
                         image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
                         subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
                         student={m.student}
@@ -1468,7 +1468,7 @@ const ClubDetails = () => {
                       <TeamMemberCard
                         key={m.id}
                         name={m.student?.name}
-                        role="Coordinator"
+                        role={m.position || "Coordinator"}
                         image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
                         subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
                         student={m.student}
@@ -1529,7 +1529,7 @@ const ClubDetails = () => {
                           <TeamMemberCard
                             key={m.id}
                             name={m.student?.name}
-                            role="Member"
+                            role={m.position || "Member"}
                             image={m.student?.profileImage || m.student?.profilePicture || m.student?.picture}
                             subtitle={[m.student?.branch, m.student?.year].filter(Boolean).join(" · ")}
                             student={m.student}

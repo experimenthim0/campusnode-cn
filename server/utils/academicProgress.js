@@ -193,3 +193,42 @@ export function isStudentEligibleForEventYears(student, allowedYears, currentDat
 
   return normalizedAllowed.includes(progress.academicYear);
 }
+
+/**
+ * Determines whether a student's login capability is deactivated.
+ * Policy: Student authentication is disabled 4 months after graduation
+ * (November 1st of their expected graduation year), while preserving all
+ * historical database records, certificates, memberships, and participation permanently.
+ *
+ * @param {Object} student - StudentUser record
+ * @param {Date} [currentDate=new Date()] - Reference date
+ * @returns {{ isDeactivated: boolean, reason: string|null, cutoffDate: Date|null }}
+ */
+export function isStudentLoginDeactivated(student, currentDate = new Date()) {
+  const progress = calculateAcademicProgress(student, currentDate);
+  if (!progress.expectedGraduationYear) {
+    return { isDeactivated: false, reason: null, cutoffDate: null };
+  }
+
+  const gradYear = parseInt(progress.expectedGraduationYear, 10);
+  if (isNaN(gradYear)) {
+    return { isDeactivated: false, reason: null, cutoffDate: null };
+  }
+
+  // Academic year ends on June 30 of gradYear.
+  // 4 months grace period ends on October 31.
+  // Login deactivation activates on November 1st (month 10 in JS 0-based Date).
+  const cutoffDate = new Date(gradYear, 10, 1, 0, 0, 0);
+  const now = currentDate instanceof Date && !isNaN(currentDate) ? currentDate : new Date();
+
+  if (now >= cutoffDate) {
+    return {
+      isDeactivated: true,
+      reason: "Student account deactivated following graduation grace period (4 months post-graduation). All institutional records, certificates, and achievements remain permanently preserved on CampusNode.",
+      cutoffDate,
+    };
+  }
+
+  return { isDeactivated: false, reason: null, cutoffDate };
+}
+

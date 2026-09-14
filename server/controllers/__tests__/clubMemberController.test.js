@@ -11,7 +11,7 @@ import prisma from "../../lib/prisma.js";
 
 vi.mock("../../lib/prisma.js", () => {
   const mockPrisma = {
-    club: { findUnique: vi.fn() },
+    club: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
     clubAccount: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
     adminRole: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
     institutionalAccount: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
@@ -311,7 +311,7 @@ describe("Club Member Management & Role Limits", () => {
   describe("Non-Student Account Gating in Club Membership", () => {
     it("Rejects adding a ClubAccount email as a member with 400 Bad Request", async () => {
       prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
-      prisma.clubAccount.findFirst.mockResolvedValue({ id: "acc_1", email: "robotics@nitj.ac.in" });
+      prisma.club.findFirst.mockResolvedValue({ id: "acc_1", clubEmail: "robotics@nitj.ac.in" });
 
       const req = {
         params: { clubId: "club_1" },
@@ -329,6 +329,46 @@ describe("Club Member Management & Role Limits", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "Club organizational accounts cannot be added as club members. Only individual students are allowed.",
+        })
+      );
+    });
+  });
+
+  describe("Position / Designation Management", () => {
+    it("Stores position on membership creation without altering derived role permissions", async () => {
+      prisma.club.findUnique.mockResolvedValue({ id: "club_1" });
+      prisma.club.findFirst.mockResolvedValue(null);
+      prisma.adminRole.findFirst.mockResolvedValue(null);
+      prisma.studentUser.findFirst.mockResolvedValue({
+        id: "stud_123",
+        email: "coord@nitj.ac.in",
+        name: "Dev Coordinator",
+      });
+      prisma.clubMembership.findUnique.mockResolvedValue(null);
+      prisma.clubMembership.count.mockResolvedValue(0);
+      prisma.clubMembership.create.mockImplementation(({ data }) => Promise.resolve({ ...data, id: "mem_123" }));
+
+      const req = {
+        params: { clubId: "club_1" },
+        body: { email: "coord@nitj.ac.in", role: "COORDINATOR", position: "Technical Head" },
+        user: { role: "admin", userId: "admin1" },
+      };
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      await addClubMember(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(prisma.clubMembership.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            role: "COORDINATOR",
+            position: "Technical Head",
+            canTakeAttendance: true,
+            canEditEvents: true,
+          }),
         })
       );
     });

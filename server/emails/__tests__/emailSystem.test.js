@@ -342,4 +342,120 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(cfMeta.device).toBe("Chrome Windows");
     });
   });
+
+  describe("Primary Action Visual Hierarchy Order & Resilience", () => {
+    it("auth:login-otp - Primary Action (OTP) must render before explanation, expiry, and security metadata", () => {
+      const template = getTemplate("auth:login-otp");
+      const rendered = renderEmail(template, {
+        otp: "482917",
+        email: "student@nitj.ac.in",
+        contextLabel: "Student",
+        device: "Chrome on macOS",
+        location: "Jalandhar, India",
+        ipAddress: "14.139.241.2",
+        time: "Sep 14, 6:30 PM IST",
+      });
+
+      const headingIdx = rendered.html.indexOf("Verify Your Login");
+      const otpIdx = rendered.html.indexOf("482917");
+      const promptIdx = rendered.html.indexOf("A login was requested for your student account");
+      const expiryIdx = rendered.html.indexOf("Expires in <strong>5 minutes</strong>");
+      const metadataIdx = rendered.html.indexOf('class="metadata-table"');
+
+      expect(headingIdx).toBeGreaterThan(-1);
+      expect(otpIdx).toBeGreaterThan(headingIdx);
+      expect(promptIdx).toBeGreaterThan(otpIdx);
+      expect(expiryIdx).toBeGreaterThan(promptIdx);
+      expect(metadataIdx).toBeGreaterThan(expiryIdx);
+    });
+
+    it("auth:reset-password - Primary Action (Reset Button) must render before explanation, expiry, and security metadata", () => {
+      const template = getTemplate("auth:reset-password");
+      const rendered = renderEmail(template, {
+        resetUrl: "https://campusnode.vercel.app/reset-password/sample-token",
+        expiryMinutes: 15,
+        device: "Safari on iOS",
+        location: "Delhi, India",
+        ipAddress: "103.21.244.2",
+        time: "Sep 14, 6:30 PM IST",
+      });
+
+      const headingIdx = rendered.html.indexOf("Reset Your Password");
+      const buttonIdx = rendered.html.indexOf('href="https://campusnode.vercel.app/reset-password/sample-token"');
+      const explanationIdx = rendered.html.indexOf("We received a request to reset your CampusNode account password");
+      const expiryIdx = rendered.html.indexOf("expire in <strong>15 minutes</strong>");
+      const metadataIdx = rendered.html.indexOf('class="metadata-table"');
+
+      expect(headingIdx).toBeGreaterThan(-1);
+      expect(buttonIdx).toBeGreaterThan(headingIdx);
+      expect(explanationIdx).toBeGreaterThan(buttonIdx);
+      expect(expiryIdx).toBeGreaterThan(explanationIdx);
+      expect(metadataIdx).toBeGreaterThan(expiryIdx);
+    });
+
+    it("auth:verify-account - Primary Action (Verify Button) must render before explanation, expiry, and security metadata", () => {
+      const template = getTemplate("auth:verify-account");
+      const rendered = renderEmail(template, {
+        name: "Alex",
+        verifyUrl: "https://campusnode.vercel.app/verify-email/test-token",
+        expiryHours: 24,
+        device: "Firefox on Android",
+        location: "Punjab, India",
+        ipAddress: "14.139.241.10",
+        time: "Sep 14, 6:30 PM IST",
+      });
+
+      const headingIdx = rendered.html.indexOf("Welcome to CampusNode!");
+      const explanationIdx = rendered.html.indexOf("To complete your registration and activate your student account");
+      const buttonIdx = rendered.html.indexOf("Verify My Account");
+      const expiryIdx = rendered.html.indexOf("expire in <strong>24 hours</strong>");
+
+      expect(headingIdx).toBeGreaterThan(-1);
+      expect(explanationIdx).toBeGreaterThan(headingIdx);
+      expect(buttonIdx).toBeGreaterThan(explanationIdx);
+      expect(expiryIdx).toBeGreaterThan(buttonIdx);
+    });
+
+    it("Missing security metadata - primary actions must render cleanly when device/location/ipAddress/time are omitted", () => {
+      // 1. OTP without metadata
+      const otpTemplate = getTemplate("auth:login-otp");
+      const otpRender = renderEmail(otpTemplate, {
+        otp: "123456",
+        email: "test@nitj.ac.in",
+      });
+      expect(otpRender.html).toContain("123456");
+      expect(otpRender.html).not.toContain('class="metadata-table"');
+      expect(otpRender.html).not.toContain("DEVICE");
+
+      // 2. Reset password without metadata
+      const resetTemplate = getTemplate("auth:reset-password");
+      const resetRender = renderEmail(resetTemplate, {
+        resetUrl: "https://campusnode.vercel.app/reset-password/token-123",
+      });
+      expect(resetRender.html).toContain("Reset Password");
+      expect(resetRender.html).not.toContain('class="metadata-table"');
+      expect(resetRender.html).not.toContain("IP ADDRESS");
+
+      // 3. Verify account without metadata
+      const verifyTemplate = getTemplate("auth:verify-account");
+      const verifyRender = renderEmail(verifyTemplate, {
+        name: "Sam",
+        verifyUrl: "https://campusnode.vercel.app/verify-email/token-123",
+      });
+      expect(verifyRender.html).toContain("Verify My Account");
+      expect(verifyRender.html).not.toContain('class="metadata-table"');
+    });
+
+    it("Missing optional context - templates render cleanly without contextLabel or optional fields", () => {
+      const otpTemplate = getTemplate("auth:login-otp");
+      const rendered = renderEmail(otpTemplate, {
+        otp: "778899",
+        email: "generic@nitj.ac.in",
+      });
+      expect(rendered.html).toContain("A login was requested for your account");
+      expect(rendered.html).toContain("778899");
+      expect(rendered.html).not.toContain("undefined");
+      expect(rendered.html).not.toContain("null");
+    });
+  });
 });

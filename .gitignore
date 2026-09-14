@@ -61,3 +61,10 @@ LINKS.md
 client/src/__tests__/*
 server/utils/__tests__/*
 server/services/__tests__/*
+server/scratch/*
+server/middleware/__tests__/*
+
+
+skills-lock.json
+
+FeatureTobeADDED.md

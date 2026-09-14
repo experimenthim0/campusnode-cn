@@ -55,7 +55,7 @@ async function logAudit(req, action, targetId, clubId, metadata = {}) {
 export const addClubMember = async (req, res) => {
   try {
     const { clubId } = req.params;
-    const { email, role = "MEMBER", customPermissions = [] } = req.body;
+    const { email, role = "MEMBER", position, customPermissions = [] } = req.body;
 
     if (!VALID_ROLES.includes(role)) {
       return res.status(400).json({
@@ -165,6 +165,9 @@ export const addClubMember = async (req, res) => {
     }
 
     const { canTakeAttendance, canEditEvents } = derivePermissions(role);
+    const sanitizedPosition = typeof position === "string" && position.trim().length > 0
+      ? position.trim().slice(0, 100)
+      : null;
 
     const membership = await prisma.clubMembership.create({
       data: {
@@ -172,6 +175,7 @@ export const addClubMember = async (req, res) => {
         studentId: student.id,
         clubId,
         role,
+        position: sanitizedPosition,
         customPermissions: Array.isArray(customPermissions) ? customPermissions : [],
         canTakeAttendance,
         canEditEvents,
@@ -184,6 +188,7 @@ export const addClubMember = async (req, res) => {
     await logAudit(req, "club.invite_members", membership.id, clubId, {
       studentEmail: student.email,
       role,
+      position: sanitizedPosition,
       membershipId: membership.id,
     });
 
@@ -346,7 +351,7 @@ export const getClubMembers = async (req, res) => {
 export const updateMemberPermissions = async (req, res) => {
   try {
     const { membershipId } = req.params;
-    const { role, permissions, customPermissions, status } = req.body;
+    const { role, position, permissions, customPermissions, status } = req.body;
 
     const existing = await prisma.clubMembership.findUnique({
       where: { id: membershipId },
@@ -429,6 +434,12 @@ export const updateMemberPermissions = async (req, res) => {
       updateData.customPermissions = customPermissions;
     }
 
+    if (position !== undefined) {
+      updateData.position = typeof position === "string" && position.trim().length > 0
+        ? position.trim().slice(0, 100)
+        : null;
+    }
+
     if (permissions) {
       if (permissions.canTakeAttendance !== undefined) {
         updateData.canTakeAttendance = !!permissions.canTakeAttendance;
@@ -453,6 +464,7 @@ export const updateMemberPermissions = async (req, res) => {
     await logAudit(req, "club.assign_roles", membershipId, existing.clubId, {
       updatedFields: Object.keys(updateData),
       role: updateData.role || existing.role,
+      position: updateData.position !== undefined ? updateData.position : existing.position,
       customPermissions: updateData.customPermissions || existing.customPermissions,
     });
 

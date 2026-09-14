@@ -26,21 +26,22 @@ export const resetPasswordTemplate = {
       <h2 class="email-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 16px 0; color: #0f172a; text-align: center;">
         Reset Your Password
       </h2>
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 20px 0;">
-        We received a request to reset your CampusNode account password. Click the button below to choose a new password.
-      </p>
-
-      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
 
       ${Button({ label: "Reset Password", url: resetUrl, variant: "primary" })}
 
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 16px 0 8px 0;">
+      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 12px 0;">
+        We received a request to reset your CampusNode account password. Click the button above to choose a new password.
+      </p>
+
+      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0 0 8px 0;">
         This password reset link will expire in <strong>${expiryMinutes} minutes</strong>.
       </p>
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0; word-break: break-all;">
+      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0 0 20px 0; word-break: break-all;">
         If the button doesn't work, copy and paste this URL into your browser:<br>
         <a href="${safeUrl}" style="color: #0078d4; text-decoration: underline;">${safeUrl}</a>
       </p>
+
+      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
     `.trim();
   },
 };
