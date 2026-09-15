@@ -147,11 +147,15 @@ router.post(
       const idempotencyPayload = `${sender}:${club?.id || ""}:${targetType}:${eventId || ""}:${String(title).trim()}:${String(message).trim()}`;
       const idempotencyHash = crypto.createHash("sha256").update(idempotencyPayload).digest("hex");
       const lockKey = `lock:notif:${idempotencyHash}`;
-      const acquired = await redis.set(lockKey, "1", "EX", 5, "NX");
-      if (!acquired) {
-        return res.status(429).json({
-          message: "A notification with identical content is already being processed. Please wait.",
-        });
+      try {
+        const acquired = await redis.set(lockKey, "1", "EX", 5, "NX");
+        if (!acquired) {
+          return res.status(429).json({
+            message: "A notification with identical content is already being processed. Please wait.",
+          });
+        }
+      } catch (lockErr) {
+        console.warn("[Notifications] Redis idempotency check warning:", lockErr.message);
       }
 
       let recipientStudentIds = [];

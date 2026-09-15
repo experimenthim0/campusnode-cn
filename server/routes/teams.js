@@ -78,11 +78,16 @@ router.post(
 
     try {
       if (teamLockKey) {
-        lockAcquired = await redis.acquireLock(teamLockKey, 5);
-        if (!lockAcquired) {
-          return res.status(429).json({
-            message: "A team creation request for this event is already being processed. Please wait.",
-          });
+        try {
+          lockAcquired = await redis.acquireLock(teamLockKey, 5);
+          if (!lockAcquired) {
+            return res.status(429).json({
+              message: "A team creation request for this event is already being processed. Please wait.",
+            });
+          }
+        } catch (lockErr) {
+          console.warn("[Team Create] Redis lock warning:", lockErr.message);
+          lockAcquired = false;
         }
       }
 
@@ -365,7 +370,11 @@ router.post(
       res.status(500).json({ message: err.message });
     } finally {
       if (lockAcquired && teamLockKey) {
-        await redis.releaseLock(teamLockKey);
+        try {
+          await redis.releaseLock(teamLockKey);
+        } catch (releaseErr) {
+          console.warn("[Team Create] Redis lock release warning:", releaseErr.message);
+        }
       }
     }
   },

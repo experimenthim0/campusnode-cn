@@ -49,6 +49,7 @@
     "seed": "node scripts/seed-synthetic-data.js",
     "seed:synthetic": "node scripts/seed-synthetic-data.js",
     "test:load": "node load-tests/run-full-load-test.js",
+    "test:redis-usage": "node load-tests/benchmark-redis-usage.js",
     "secrets:staging": "node scripts/generate-staging-secrets.js",
     "rotate:key": "node scripts/rotate-key.js",
     "db:create:postgres": "docker compose -f docker-compose.postgres.yml up -d"

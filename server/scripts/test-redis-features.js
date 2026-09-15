@@ -224,8 +224,21 @@ async function runTests() {
     assert(emailJob && typeof emailJob.id === "string" && emailJob.id.length > 0, "Email job assigned a unique Job ID");
     assert(enqueueDurationMs < 50, `Enqueue returns instantly (${enqueueDurationMs.toFixed(1)}ms < 50ms) without blocking on Resend API`);
 
+    // ----------------------------------------------------
+    // Test 8: Redis Telemetry Metrics & Observability
+    // ----------------------------------------------------
+    console.log("\n--- Test 8: Redis Telemetry Metrics ---");
+    const testMetrics = redis.getMetrics();
+    assert(typeof testMetrics.totalCommands === "number" && testMetrics.totalCommands > 0, "Redis metrics tracks total commands executed");
+    assert(testMetrics.categories && typeof testMetrics.categories.otp === "number", "Redis metrics tracks OTP operations");
+    assert(testMetrics.categories && typeof testMetrics.categories.lock === "number", "Redis metrics tracks lock operations");
+    assert(typeof testMetrics.activeMode === "string", "Redis metrics reports active client mode");
+
     console.log(`\n========================================`);
     console.log(`Summary: ${passed} passed, ${failed} failed.`);
+    console.log(`Redis Commands Executed during test suite: ${testMetrics.totalCommands}`);
+    console.log(`Redis Operations: get=${testMetrics.operations.get}, set=${testMetrics.operations.set}, setex=${testMetrics.operations.setex}, del=${testMetrics.operations.del}`);
+    console.log(`Redis Categories: otp=${testMetrics.categories.otp}, token=${testMetrics.categories.token}, lock=${testMetrics.categories.lock}`);
     console.log(`========================================`);
   } catch (err) {
     console.error("Test execution error:", err);

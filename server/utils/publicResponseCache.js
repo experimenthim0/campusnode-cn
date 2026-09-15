@@ -1,13 +1,33 @@
-import redis from "../lib/redis.js";
+/**
+ * High-performance process-local TTL cache for public catalog responses.
+ *
+ * Keeps frequently requested public data (event feeds, club directories, leaderboards)
+ * in fast process memory (< 1ms latency) with deterministic invalidation on mutation.
+ * Completely eliminates remote Redis round-trips, network latency, and KEYS * scans
+ * for read-heavy public catalog endpoints.
+ */
 
 const memoryCache = new Map();
 
-// Default TTL: 60 seconds (extended from 15s since updates trigger active invalidation)
+// Default TTL: 60 seconds
 const DEFAULT_TTL_MS = 60_000;
 
+// Periodic sweep every 60s to prune expired keys
+const sweepTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of memoryCache.entries()) {
+    if (entry.expiresAt && entry.expiresAt <= now) {
+      memoryCache.delete(key);
+    }
+  }
+}, 60_000);
+
+if (sweepTimer.unref) {
+  sweepTimer.unref();
+}
+
 /**
- * Retrieve cached public response by key.
- * Queries Redis first, falling back to process-local memory if unavailable.
+ * Retrieve cached public response by key from fast in-memory store.
  *
  * @param {string} key
  * @returns {Promise<any>}
@@ -15,21 +35,10 @@ const DEFAULT_TTL_MS = 60_000;
 export const getPublicResponse = async (key) => {
   if (!key) return undefined;
 
-  // 1. Check Redis store
-  try {
-    const raw = await redis.get(`cache:${key}`);
-    if (raw) {
-      return JSON.parse(raw);
-    }
-  } catch (err) {
-    // Silently fall back to in-memory store
-  }
-
-  // 2. In-memory fallback
   const entry = memoryCache.get(key);
   if (!entry) return undefined;
 
-  if (entry.expiresAt <= Date.now()) {
+  if (entry.expiresAt && entry.expiresAt <= Date.now()) {
     memoryCache.delete(key);
     return undefined;
   }
@@ -38,8 +47,7 @@ export const getPublicResponse = async (key) => {
 };
 
 /**
- * Cache a public JSON response with TTL.
- * Stores in both Redis and in-memory fallback.
+ * Cache a public JSON response with TTL in memory.
  *
  * @param {string} key
  * @param {any} value
@@ -47,23 +55,12 @@ export const getPublicResponse = async (key) => {
  */
 export const setPublicResponse = async (key, value, ttlMs = DEFAULT_TTL_MS) => {
   if (!key || value === undefined) return;
-
-  const ttlSeconds = Math.max(1, Math.ceil(ttlMs / 1000));
-
-  // 1. Update in-memory fallback
   memoryCache.set(key, { value, expiresAt: Date.now() + ttlMs });
-
-  // 2. Update Redis store
-  try {
-    await redis.setex(`cache:${key}`, ttlSeconds, JSON.stringify(value));
-  } catch (err) {
-    // Non-fatal if Redis blips; in-memory cache remains active
-  }
 };
 
 /**
- * Invalidate cached responses by key or wildcard pattern.
- * Cleans both Redis and the in-memory fallback.
+ * Invalidate cached responses by key, prefix, or wildcard pattern.
+ * Performs fast, deterministic in-memory key matching without Redis scanning.
  *
  * Examples:
  *   invalidatePublicResponses(["events:*"])
@@ -77,30 +74,31 @@ export const invalidatePublicResponses = async (patterns = []) => {
   for (const pattern of patternList) {
     if (!pattern || typeof pattern !== "string") continue;
 
-    // 1. Invalidate in-memory fallback
     for (const key of memoryCache.keys()) {
       if (pattern.endsWith("*")) {
-        if (key.startsWith(pattern.slice(0, -1))) memoryCache.delete(key);
-      } else if (key === pattern || key.startsWith(`${pattern}:`)) {
+        const prefix = pattern.slice(0, -1);
+        if (key.startsWith(prefix)) {
+          memoryCache.delete(key);
+        }
+      } else if (key === pattern || key.startsWith(`${pattern}:`) || key.startsWith(`${pattern}/`)) {
         memoryCache.delete(key);
       }
     }
-
-    // 2. Invalidate in Redis
-    try {
-      let redisPattern;
-      if (pattern.endsWith("*")) {
-        redisPattern = `cache:${pattern}`;
-      } else {
-        redisPattern = `cache:${pattern}*`;
-      }
-
-      const matchingKeys = await redis.keys(redisPattern);
-      if (matchingKeys && matchingKeys.length > 0) {
-        await redis.del(...matchingKeys);
-      }
-    } catch (err) {
-      // Non-fatal
-    }
   }
 };
+
+/**
+ * Clear all cached public responses (useful for test resets).
+ */
+export const clearPublicResponseCache = () => {
+  memoryCache.clear();
+};
+
+/**
+ * Diagnostic stats for monitoring.
+ */
+export const getPublicCacheStats = () => ({
+  size: memoryCache.size,
+  keys: Array.from(memoryCache.keys()),
+});
+

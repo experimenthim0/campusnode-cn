@@ -1593,11 +1593,16 @@ router.post(
 
     try {
       if (regLockKey) {
-        lockAcquired = await redis.acquireLock(regLockKey, 5);
-        if (!lockAcquired) {
-          return res.status(429).json({
-            message: "A registration request for this event is already being processed. Please wait.",
-          });
+        try {
+          lockAcquired = await redis.acquireLock(regLockKey, 5);
+          if (!lockAcquired) {
+            return res.status(429).json({
+              message: "A registration request for this event is already being processed. Please wait.",
+            });
+          }
+        } catch (lockErr) {
+          console.warn("[Event Register] Redis lock warning:", lockErr.message);
+          lockAcquired = false;
         }
       }
 
@@ -1879,7 +1884,11 @@ router.post(
       res.status(500).json({ message: err.message });
     } finally {
       if (lockAcquired && regLockKey) {
-        await redis.releaseLock(regLockKey);
+        try {
+          await redis.releaseLock(regLockKey);
+        } catch (releaseErr) {
+          console.warn("[Event Register] Redis lock release warning:", releaseErr.message);
+        }
       }
     }
   },

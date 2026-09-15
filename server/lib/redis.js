@@ -164,7 +164,7 @@ const inMemoryFallback = new InMemoryRedis();
 let activeClient = inMemoryFallback;
 let nativeClient = null;
 let isConnected = false;
-const redisRequired = process.env.NODE_ENV === "production";
+const redisRequired = process.env.REDIS_STRICT === "true" || process.env.REQUIRE_REDIS === "true";
 
 const assertRedisAvailable = () => {
   if (redisRequired && (!isConnected || activeClient !== nativeClient)) {
@@ -224,100 +224,193 @@ if (redisUrl) {
   console.log("[CampusNode Redis] REDIS_URL not configured. Operating with in-memory TTL store.");
 }
 
+// ── Lightweight Redis Usage Metrics & Observability ──────────────────────────
+
+const metrics = {
+  totalCommands: 0,
+  operations: {
+    get: 0,
+    set: 0,
+    setex: 0,
+    setnx: 0,
+    del: 0,
+    incr: 0,
+    expire: 0,
+    ttl: 0,
+    keys: 0,
+    flushall: 0,
+    acquireLock: 0,
+    releaseLock: 0,
+  },
+  categories: {
+    otp: 0,
+    token: 0,
+    lock: 0,
+    idempotency: 0,
+    queue: 0,
+    publicCache: 0,
+    other: 0,
+  },
+  errors: 0,
+  fallbackOperations: 0,
+};
+
+const categorizeKey = (key = "") => {
+  const k = String(key);
+  if (k.startsWith("otp:")) return "otp";
+  if (k.startsWith("email_verify:") || k.startsWith("pwd_reset:")) return "token";
+  if (k.startsWith("lock:reg:") || k.startsWith("lock:team:")) return "lock";
+  if (k.startsWith("lock:notif:")) return "idempotency";
+  if (k.startsWith("bull:") || k.startsWith("campusnode-emails:")) return "queue";
+  if (k.startsWith("cache:")) return "publicCache";
+  return "other";
+};
+
+const recordMetric = (operation, key = "") => {
+  metrics.totalCommands++;
+  if (metrics.operations[operation] !== undefined) {
+    metrics.operations[operation]++;
+  }
+  const category = categorizeKey(key);
+  metrics.categories[category]++;
+};
+
 /**
  * Unified Redis helper proxy
  */
 export const redis = {
   async get(key) {
+    recordMetric("get", key);
     assertRedisAvailable();
     try {
       return await activeClient.get(key);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.get(key);
     }
   },
 
   async set(key, value, ...args) {
+    recordMetric("set", key);
     assertRedisAvailable();
     try {
       return await activeClient.set(key, value, ...args);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.set(key, value, ...args);
     }
   },
 
   async setex(key, seconds, value) {
+    recordMetric("setex", key);
     assertRedisAvailable();
     try {
       return await activeClient.setex(key, seconds, value);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.setex(key, seconds, value);
     }
   },
 
   async setnx(key, value) {
+    recordMetric("setnx", key);
     assertRedisAvailable();
     try {
       return await activeClient.setnx(key, value);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.setnx(key, value);
     }
   },
 
   async del(...keys) {
+    const flatKeys = keys.flat();
+    recordMetric("del", flatKeys[0] || "");
     assertRedisAvailable();
     try {
-      return await activeClient.del(...keys);
-    } catch {
+      return await activeClient.del(...flatKeys);
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
-      return await inMemoryFallback.del(...keys);
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
+      return await inMemoryFallback.del(...flatKeys);
     }
   },
 
   async incr(key) {
+    recordMetric("incr", key);
     assertRedisAvailable();
     try {
       return await activeClient.incr(key);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.incr(key);
     }
   },
 
   async expire(key, seconds) {
+    recordMetric("expire", key);
     assertRedisAvailable();
     try {
       return await activeClient.expire(key, seconds);
-    } catch {
+    } catch (err) {
+      metrics.errors++;
       if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
       return await inMemoryFallback.expire(key, seconds);
     }
   },
 
   async ttl(key) {
+    recordMetric("ttl", key);
     try {
       return await activeClient.ttl(key);
     } catch {
+      metrics.fallbackOperations++;
       return await inMemoryFallback.ttl(key);
     }
   },
 
   async flushall() {
+    recordMetric("flushall");
     try {
       return await activeClient.flushall();
     } catch {
+      metrics.fallbackOperations++;
       return await inMemoryFallback.flushall();
     }
   },
 
   async keys(pattern = "*") {
+    recordMetric("keys", pattern);
     try {
       return await activeClient.keys(pattern);
     } catch {
+      metrics.fallbackOperations++;
       return await inMemoryFallback.keys(pattern);
     }
   },
@@ -327,15 +420,31 @@ export const redis = {
    * Returns true if lock was acquired, false if already locked.
    */
   async acquireLock(lockKey, ttlSeconds = 5) {
-    const result = await this.set(lockKey, "1", "EX", ttlSeconds, "NX");
-    return result === "OK" || result === 1;
+    recordMetric("acquireLock", lockKey);
+    try {
+      const result = await this.set(lockKey, "1", "EX", ttlSeconds, "NX");
+      return result === "OK" || result === 1;
+    } catch (err) {
+      metrics.errors++;
+      if (redisRequired) throw err;
+      console.warn("[CampusNode Redis] Lock acquisition notice (allowing request):", err.message);
+      return true;
+    }
   },
 
   /**
    * Release a distributed lock.
    */
   async releaseLock(lockKey) {
-    return await this.del(lockKey);
+    recordMetric("releaseLock", lockKey);
+    try {
+      return await this.del(lockKey);
+    } catch (err) {
+      metrics.errors++;
+      if (redisRequired) throw err;
+      console.warn("[CampusNode Redis] Lock release notice:", err.message);
+      return 0;
+    }
   },
 
   /**
@@ -350,6 +459,29 @@ export const redis = {
    */
   getRawClient() {
     return activeClient;
+  },
+
+  /**
+   * Get telemetry metrics snapshot.
+   */
+  getMetrics() {
+    return {
+      ...metrics,
+      operations: { ...metrics.operations },
+      categories: { ...metrics.categories },
+      activeMode: this.isExternalRedis() ? "EXTERNAL_REDIS" : "IN_MEMORY_FALLBACK",
+    };
+  },
+
+  /**
+   * Reset telemetry metrics.
+   */
+  resetMetrics() {
+    metrics.totalCommands = 0;
+    Object.keys(metrics.operations).forEach((k) => { metrics.operations[k] = 0; });
+    Object.keys(metrics.categories).forEach((k) => { metrics.categories[k] = 0; });
+    metrics.errors = 0;
+    metrics.fallbackOperations = 0;
   },
 };
 

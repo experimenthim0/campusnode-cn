@@ -74,6 +74,12 @@ export const getEmailQueue = () => {
 export const initEmailWorker = () => {
   if (emailWorker) return emailWorker;
 
+  // Avoid starting external queue worker in test mode
+  if (emailConfig.isTest() || process.env.NODE_ENV === "test") {
+    console.log("[EmailWorker] Test mode: Operating in direct delivery mode.");
+    return null;
+  }
+
   const conn = getBullConnection();
   if (!conn) {
     console.log("[EmailWorker] Info: Redis not configured. Operating in asynchronous in-memory delivery mode.");
@@ -89,6 +95,9 @@ export const initEmailWorker = () => {
       {
         connection: conn,
         concurrency: 5,
+        stalledInterval: 300000, // 5 minutes (reduced from 30s default) to cut idle command load by 90%
+        drainDelay: 30000, // 30s idle poll delay when queue is empty
+        maxStalledCount: 1,
       }
     );
 
