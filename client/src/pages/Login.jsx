@@ -147,16 +147,16 @@ const Login = () => {
           
           {/* Card Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               <span>CampusNode NITJ</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            </div> */}
+            <h1 className="text-2xl font-medium mysans tracking-tight text-zinc-900 dark:text-white">
               Welcome back
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {/* <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
               Sign in to manage clubs, events, and campus updates.
-            </p>
+            </p> */}
           </div>
 
           {!showOTP ? (
@@ -355,7 +355,7 @@ const Login = () => {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="px-3 bg-white/90 dark:bg-zinc-900/90 text-zinc-400 dark:text-zinc-500">
-                New student?
+                New on CampusNode?
               </span>
             </div>
           </div>
@@ -366,7 +366,7 @@ const Login = () => {
               to="/register"
               className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-xs hover:border-cn-blue-500 dark:hover:border-cn-blue-500 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
             >
-              Register as Student
+              Register Now
             </Link>
           </div>
 

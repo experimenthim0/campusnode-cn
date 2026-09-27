@@ -58,8 +58,18 @@ const ClubCardSkeleton = ({ className }) => {
           </div>
 
           {/* View Page Button */}
-          <Skeleton className="w-full h-10 rounded-xl" />
+          <div className="flex justify-center">
+            <Skeleton className="w-28 h-9 rounded-full" />
+          </div>
         </div>
+      </div>
+
+      {/* Bottom ambient light blue shade (decreasing from bottom to top) */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-44 pointer-events-none z-0 overflow-hidden rounded-b-2xl"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-[#C9EBFF]/60 via-[#C9EBFF]/15 to-transparent dark:from-cn-blue-950/40 dark:via-cn-blue-950/10 dark:to-transparent" />
       </div>
     </div>
   );

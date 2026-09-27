@@ -253,12 +253,10 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       {/* Page Header - Hide if on Home */}
       {!isHome && (
         <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight titlefont">
             NITJ Clubs & Societies
           </h1>
-          <p className="mt-2.5 text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm font-normal max-w-lg mx-auto leading-relaxed">
-            Explore student clubs, connect with coordinators, and join activities across campus.
-          </p>
+         
         </div>
       )}
 
@@ -291,7 +289,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
                 <button
                   key={cat.key}
                   onClick={() => setFilterCategory(cat.key)}
-                  className={` inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 text-[10px] sm:text-[11px] font-bold tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                  className={` inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
                     isSelected
                       ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
@@ -352,7 +350,15 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
         isHome ? (
           <CardCarousel threshold={3}>
             {clubsToShow.map((club, index) => (
-              <ClubCard key={club._id || club.id || club.slug || index} club={club} />
+              <ScrollReveal
+                direction="up"
+                delay={(index % 3) * 0.06}
+                distance={24}
+                key={club._id || club.id || club.slug || index}
+                className="h-full"
+              >
+                <ClubCard club={club} />
+              </ScrollReveal>
             ))}
           </CardCarousel>
         ) : (

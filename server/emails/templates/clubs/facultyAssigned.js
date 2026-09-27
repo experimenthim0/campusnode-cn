@@ -1,5 +1,7 @@
 import { Button } from "../../components/Button.js";
+import { Heading, BodyText, MutedText } from "../../components/Typography.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
+import { colors, typography, radii } from "../../config/designTokens.js";
 
 export const facultyAssignedTemplate = {
   id: "clubs:faculty-assigned",
@@ -17,6 +19,12 @@ export const facultyAssignedTemplate = {
       : "Welcome to CampusNode - Faculty Coordinator Account Created";
   },
 
+  getPreheader(data) {
+    return data?.clubName
+      ? `You have been assigned as Faculty Coordinator for ${data.clubName}.`
+      : "Your Faculty Coordinator account has been created on CampusNode.";
+  },
+
   render(data) {
     const { facultyName, clubName, facultyEmail, defaultPassword, loginUrl } = data;
     const safeName = escapeHtml(facultyName || "Faculty Coordinator");
@@ -25,60 +33,81 @@ export const facultyAssignedTemplate = {
     const safePassword = defaultPassword ? escapeHtml(defaultPassword) : null;
 
     return `
-      <h2 class="email-brand-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0078d4; margin: 0 0 4px 0; font-size: 22px; font-weight: 600;">Faculty Coordinator Portal</h2>
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #64748b; font-size: 14px; font-weight: 400; margin: 0 0 20px 0;">Club Oversight & Governance</p>
+      ${Heading({
+        children: "Faculty Coordinator Portal",
+        level: 2,
+        align: "left",
+        color: colors.primary,
+        style: "margin: 0 0 4px 0; font-size: 22px;",
+      })}
+      ${MutedText({
+        children: "Club Oversight & Governance",
+        align: "left",
+        style: "margin: 0 0 20px 0; font-size: 14px;",
+      })}
       
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6;">Dear <strong>${safeName}</strong>,</p>
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6;">${
-        safeClub
+      ${BodyText({
+        children: `Dear <strong>${safeName}</strong>,`,
+        align: "left",
+        style: "margin-bottom: 8px;",
+      })}
+      ${BodyText({
+        children: safeClub
           ? `You have been assigned as the <strong>Faculty Coordinator</strong> for <strong>${safeClub}</strong> on CampusNode.`
-          : "Your <strong>Faculty Coordinator</strong> account has been created on CampusNode."
-      }</p>
+          : "Your <strong>Faculty Coordinator</strong> account has been created on CampusNode.",
+        align: "left",
+      })}
       
-      <table role="presentation" class="info-table" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; table-layout: fixed; margin: 20px 0; border: 1px solid #b8e1ff; border-radius: 10px; background-color: #eff8ff; border-collapse: separate; overflow: hidden; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+      <table role="presentation" class="info-table" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; table-layout: fixed; margin: 20px 0; border: 1px solid ${colors.infoBorder}; border-radius: ${radii.lg}; background-color: ${colors.infoBg}; border-collapse: separate; overflow: hidden; font-family: ${typography.fontFamily};">
         <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; vertical-align: middle;">Assigned Role</td>
-          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 500; color: #334155; text-align: right; vertical-align: middle;">Faculty Coordinator</td>
+          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Assigned Role</td>
+          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 500; color: ${colors.body}; text-align: right; vertical-align: middle;">Faculty Coordinator</td>
         </tr>
         <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; vertical-align: middle;">Coordinator Email</td>
-          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0078d4; text-align: right; vertical-align: middle; word-break: break-all;">
-            <span class="info-highlight" style="color: #0078d4; font-weight: 600;">${safeEmail}</span>
+          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Coordinator Email</td>
+          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.primary}; text-align: right; vertical-align: middle; word-break: break-all;">
+            <span class="info-highlight" style="color: ${colors.primary}; font-weight: 600;">${safeEmail}</span>
           </td>
         </tr>
         ${
           safePassword
             ? `
         <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; vertical-align: middle;">Default Password</td>
+          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Default Password</td>
           <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; text-align: right; vertical-align: middle;">
-            <code class="info-code" style="background: #e2e8f0; color: #0f172a; padding: 3px 8px; border-radius: 6px; font-family: 'SFMono-Regular', 'Roboto Mono', Menlo, Consolas, monospace; font-weight: 600; font-size: 13px;">${safePassword}</code>
+            <code class="info-code" style="background: ${colors.border}; color: ${colors.heading}; padding: 3px 8px; border-radius: ${radii.sm}; font-family: ${typography.fontMono}; font-weight: 600; font-size: 13px;">${safePassword}</code>
           </td>
         </tr>`
             : `
         <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; vertical-align: middle;">Password</td>
-          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; color: #64748b; text-align: right; vertical-align: middle;">Use existing password</td>
+          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Password</td>
+          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; color: ${colors.muted}; text-align: right; vertical-align: middle;">Use existing password</td>
         </tr>`
         }
         ${
           safeClub
             ? `
         <tr class="info-row">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; vertical-align: middle;">Assigned Club</td>
-          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #0f172a; text-align: right; vertical-align: middle;">${safeClub}</td>
+          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Assigned Club</td>
+          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; text-align: right; vertical-align: middle;">${safeClub}</td>
         </tr>`
             : ""
         }
       </table>
 
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 400; color: #334155; line-height: 1.6;">As Faculty Coordinator, you can review and approve club events, verify receipts, supervise team members, and oversee compliance.</p>
+      ${BodyText({
+        children: "As Faculty Coordinator, you can review and approve club events, verify receipts, supervise team members, and oversee compliance.",
+        align: "left",
+        style: "font-size: 14px;",
+      })}
       
       ${Button({ label: "Access Faculty Portal", url: loginUrl, variant: "primary" })}
       
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 400; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px;">
-        You can access your coordinator portal anytime via the secure faculty login link above.
-      </p>
+      ${MutedText({
+        children: "You can access your coordinator portal anytime via the secure faculty login link above.",
+        align: "center",
+        style: "border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px; font-size: 12px;",
+      })}
     `.trim();
   },
 };

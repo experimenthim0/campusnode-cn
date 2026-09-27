@@ -11,6 +11,9 @@ import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { getStudentRoleAndClub } from "./auth.js";
 
+// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
+import { evaluateRolloutAccess } from "../temporary-rollout/index.js";
+
 const router = express.Router();
 
 const photoUploadLimiter = rateLimit({
@@ -62,12 +65,15 @@ router.get("/me", verifyToken, async (req, res) => {
 
         const effectivePermissions = getEffectivePermissions({ ...req.user, role, clubId: safeUser.clubId }, clubInfo?.id);
 
+        safeUser.rollout = await evaluateRolloutAccess(safeUser);
+
         return res.json({
           user: safeUser,
           role,
           userType: "faculty",
           principalType: "FACULTY",
           effectivePermissions,
+          rollout: safeUser.rollout,
         });
       }
 
@@ -100,12 +106,15 @@ router.get("/me", verifyToken, async (req, res) => {
 
         const effectivePermissions = getEffectivePermissions(req.user, clubInfo?.id);
 
+        safeUser.rollout = await evaluateRolloutAccess(safeUser);
+
         return res.json({
           user: safeUser,
           role: user.role,
           userType: "admin",
           principalType: safeUser.principalType,
           effectivePermissions,
+          rollout: safeUser.rollout,
         });
       }
 
@@ -125,12 +134,15 @@ router.get("/me", verifyToken, async (req, res) => {
 
       const effectivePermissions = getEffectivePermissions(req.user, null);
 
+      safeUser.rollout = await evaluateRolloutAccess(safeUser);
+
       return res.json({
         user: safeUser,
         role: user.role,
         userType: "admin",
         principalType: "ADMIN",
         effectivePermissions,
+        rollout: safeUser.rollout,
       });
     }
 
@@ -160,12 +172,15 @@ router.get("/me", verifyToken, async (req, res) => {
 
       const effectivePermissions = EXTERNAL_USER_PERMISSIONS;
 
+      safeUser.rollout = await evaluateRolloutAccess(safeUser);
+
       return res.json({
         user: safeUser,
         role: "external",
         userType: "external",
         principalType: "EXTERNAL",
         effectivePermissions,
+        rollout: safeUser.rollout,
       });
     }
 
@@ -209,12 +224,15 @@ router.get("/me", verifyToken, async (req, res) => {
 
     const effectivePermissions = getEffectivePermissions(req.user, clubId);
 
+    safeUser.rollout = await evaluateRolloutAccess(safeUser);
+
     return res.json({
       user: safeUser,
       role,
       userType: "student",
       principalType: "STUDENT",
       effectivePermissions,
+      rollout: safeUser.rollout,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

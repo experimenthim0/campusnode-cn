@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Calendar, Trophy, Users } from 'lucide-react';
-import { isClubManagementRole, isStudentLeadRole } from '../utils/rbac';
+import { isClubManagementRole, isStudentLeadRole, isCoordinatorRole } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
 
 
@@ -155,7 +155,7 @@ const AchievementsSection = ({ winnings }) => (
     <CardHeader className="pb-4">
       <div className="flex items-center gap-2">
         <Trophy className="size-4 text-amber-500" />
-        <CardTitle className="text-base font-bold">Achievements & Winnings</CardTitle>
+        <CardTitle className="text-base font-semibold">Achievements & Winnings</CardTitle>
       </div>
     </CardHeader>
     <CardContent>
@@ -167,7 +167,7 @@ const AchievementsSection = ({ winnings }) => (
                 <i className="ri-award-fill text-amber-500 text-lg" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider leading-none mb-1">
+                <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider leading-none mb-1">
                   {w.rank === 1 ? '🥇 1st Place / Winner' : w.rank === 2 ? '🥈 2nd Place / Runner Up' : w.rank === 3 ? '🥉 3rd Place' : `#${w.rank} Position`}
                 </p>
                 <Link to={`/event/${w.eventSlug}`} className="text-sm font-semibold text-foreground hover:text-primary hover:underline truncate block">
@@ -182,7 +182,7 @@ const AchievementsSection = ({ winnings }) => (
         </div>
       ) : (
         <div className="bg-muted/20 p-6 rounded-xl border border-border text-center">
-          <Trophy className="size-8 text-amber-500/50 mx-auto mb-2" />
+          <img src="/trophy_3d.png" alt="Trophy" className="w-20 h-20 mx-auto mb-2" />
           <p className="text-sm font-semibold text-foreground">No achievements recorded yet</p>
           <p className="text-xs text-muted-foreground mt-1">Participate and win in campus events to earn trophies and appear on the leaderboard!</p>
         </div>
@@ -218,7 +218,7 @@ const ClubsSection = ({ user, clubsMap }) => {
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Users className="size-4 text-primary" />
-          <CardTitle className="text-base font-bold">Clubs & Societies</CardTitle>
+          <CardTitle className="text-base font-semibold">Clubs & Societies</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -238,7 +238,7 @@ const ClubsSection = ({ user, clubsMap }) => {
         {/* Management cards: Student Leads & Coordinators */}
         {managementMemberships.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <i className="ri-shield-star-line text-sm" /> Leadership & Management
             </p>
             {managementMemberships.map((m, idx) => {
@@ -256,7 +256,7 @@ const ClubsSection = ({ user, clubsMap }) => {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-neutral-900 dark:text-white text-sm">{m.clubName || 'Club'}</h3>
+                        <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">{m.clubName || 'Club'}</h3>
                         <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full border ${
                           isLead
                             ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
@@ -312,7 +312,7 @@ const ClubsSection = ({ user, clubsMap }) => {
         {memberOnlyMemberships.length > 0 && (
           <div className="space-y-3">
             {managementMemberships.length > 0 && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                 Also a member of
               </p>
             )}
@@ -398,6 +398,35 @@ const Profile = () => {
     localStorage.getItem('role') === 'member' ||
     localStorage.getItem('role') === 'student'
   );
+
+  const isStudentLeadAccount = Boolean(
+    user?.memberships?.some(m => isStudentLeadRole(m.role)) ||
+    role === 'clubHead' ||
+    user?.role === 'clubHead' ||
+    user?.role === 'CLUB_HEAD' ||
+    user?.role === 'STUDENT_LEAD'
+  );
+
+  const isCoordinatorAccount = Boolean(
+    isFacultyCoordinator ||
+    user?.memberships?.some(m => isCoordinatorRole(m.role)) ||
+    user?.institutionalAssignments?.some(a =>
+      a.role === 'EVENT_COORDINATOR' ||
+      a.role === 'ATTENDANCE_COORDINATOR' ||
+      a.role === 'PAYMENT_COORDINATOR'
+    ) ||
+    role === 'coordinator' ||
+    user?.role === 'coordinator' ||
+    user?.role === 'COORDINATOR' ||
+    user?.accessLevel === 'central_organizer' ||
+    role === 'central_organizer'
+  );
+
+  const hasOrangeAvatarBorder = isStudentLeadAccount || isCoordinatorAccount;
+  const avatarBorderClass = hasOrangeAvatarBorder
+    ? "border-2 border-orange-500 dark:border-orange-500 shadow-sm shadow-orange-500/20"
+    : "border-2 border-neutral-200 dark:border-neutral-800";
+
 
   useEffect(() => {
     if (!user) return;
@@ -528,21 +557,21 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 pb-8 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left flex-1">
                 {/* Avatar */}
-                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-800 flex items-center justify-center shrink-0">
+                <div className={`w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden ${avatarBorderClass} flex items-center justify-center shrink-0`}>
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-bold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
                 {/* Identity details & Header Action Buttons */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-semiold text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-bold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
                       Faculty Coordinator
                     </Badge>
                   </div>
@@ -567,32 +596,32 @@ const Profile = () => {
             {/* Faculty Details */}
             {(user.department || user.branch || user.designation || user.phone) && (
               <div className="pt-8">
-                <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+                <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                   Faculty & Account Details
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {user.department && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                       <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Department</p>
-                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.department}</p>
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.department}</p>
                     </div>
                   )}
                   {user.branch && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                       <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Branch / Dept</p>
-                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
                     </div>
                   )}
                   {user.designation && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                       <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Designation</p>
-                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.designation}</p>
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.designation}</p>
                     </div>
                   )}
                   {user.phone && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                       <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
-                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
                     </div>
                   )}
                 </div>
@@ -607,7 +636,7 @@ const Profile = () => {
           <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-white tracking-wider flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-wider flex items-center gap-2">
                   <i className="ri-shield-user-line text-brand-600 dark:text-brand-400" />
                   Assigned Club
                 </h2>
@@ -636,7 +665,7 @@ const Profile = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-bold text-neutral-900 dark:text-white text-base leading-snug">
+                            <h3 className="font-semibold text-neutral-900 dark:text-white text-base leading-snug">
                               {club.clubName || "Assigned Club"}
                             </h3>
                             <span className="px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full border border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800">
@@ -701,21 +730,21 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 pb-8 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left flex-1">
                 {/* Avatar */}
-                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-800 flex items-center justify-center shrink-0">
+                <div className={`w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden ${avatarBorderClass} flex items-center justify-center shrink-0`}>
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-bold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
                 {/* Identity details & Header Action Buttons */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-bold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
                       External Participant
                     </Badge>
                   </div>
@@ -739,20 +768,20 @@ const Profile = () => {
 
             {/* Participant & Institution Details */}
             <div className="pt-8">
-              <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+              <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                 Participant & Institution Details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(user.collegeName || user.college) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">College / Institution</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.collegeName || user.college}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.collegeName || user.college}</p>
                   </div>
                 )}
                 {user.phone && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
                   </div>
                 )}
               </div>
@@ -776,22 +805,22 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 pb-8 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left flex-1">
                 {/* Avatar */}
-                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-800 flex items-center justify-center shrink-0">
+                <div className={`w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden ${avatarBorderClass} flex items-center justify-center shrink-0`}>
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-bold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
                 {/* Identity details & Header Action Buttons */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-bold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
-                      {user.memberships?.some(m => m.role === 'CLUB_HEAD') ? 'Student • Student Lead' : user.memberships?.some(m => m.role === 'COORDINATOR') ? 'Student • Coordinator' : 'Student'}
+                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                      {isStudentLeadAccount ? 'Student • Student Lead' : isCoordinatorAccount ? 'Student • Coordinator' : 'Student'}
                     </Badge>
                   </div>
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
@@ -814,26 +843,26 @@ const Profile = () => {
 
             {/* Academic & Account Attributes */}
             <div className="pt-8">
-              <h3 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+              <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                 Academic & Account Attributes
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {user.rollNo && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
                   </div>
                 )}
                 {(user.program || user.branch) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
                   </div>
                 )}
                 {displayAcademicStanding && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                       {displayAcademicStanding}
                     </p>
                   </div>
@@ -841,7 +870,7 @@ const Profile = () => {
                 {(user.graduationYear || displayGraduationYear) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
+                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
                   </div>
                 )}
               </div>

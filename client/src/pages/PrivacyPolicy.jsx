@@ -24,11 +24,11 @@ const PrivacyPolicy = () => {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-4">
                         <i className="ri-shield-keyhole-line text-sm" /> Legal &amp; Data Security
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                        Privacy <span className="text-brand-600">Policy</span>
+                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+                        Privacy Policy
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        At Campus<span className="text-brand-500 dark:text-brand-400 font-semibold">Node</span>, we prioritize student data protection, transparency, and security across all features and event registrations.
+                        At Campusnode, we prioritize student data protection, transparency, and security across all features and event registrations.
                     </p>
                 </div>
 
@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
                             <i className="ri-shield-check-line" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
+                            <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-1">
                                 Our Privacy Commitment
                             </h2>
                             <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -52,7 +52,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 1: Introduction */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">1</span>
                             Introduction
                         </h2>
@@ -63,7 +63,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 2: Data Collection Table */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">2</span>
                             Information We Collect
                         </h2>
@@ -76,9 +76,9 @@ const PrivacyPolicy = () => {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-cn-surface-muted border-b border-cn-border">
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Details Collected</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Primary Purpose</th>
+                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</th>
+                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Details Collected</th>
+                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Primary Purpose</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-cn-border-subtle text-xs md:text-sm">
@@ -110,7 +110,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 3: Usage */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">3</span>
                             How We Use Your Information
                         </h2>
@@ -130,7 +130,7 @@ const PrivacyPolicy = () => {
                     </section>
 
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">4</span>
                             Information Sharing &amp; Organizer Obligations
                         </h2>
@@ -158,7 +158,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 5: Security */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">5</span>
                             Data Security Standards
                         </h2>
@@ -180,7 +180,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 6: Rights */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">6</span>
                             Your Privacy Rights
                         </h2>
@@ -195,7 +195,7 @@ const PrivacyPolicy = () => {
 
                     {/* Section 7: Contact */}
                     <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 shadow-md">
-                        <h2 className="text-base font-bold mb-2 flex items-center gap-2">
+                        <h2 className="text-base font-semibold mb-2 flex items-center gap-2">
                             <i className="ri-mail-line text-cn-blue-500 text-lg" /> Questions &amp; Support
                         </h2>
                         <p className="text-xs md:text-sm text-cn-text-muted leading-relaxed mb-4">
@@ -209,10 +209,6 @@ const PrivacyPolicy = () => {
                         </a>
                     </section>
 
-                </div>
-
-                <div className="mt-10 text-center text-xs text-neutral-400 dark:text-neutral-600">
-                    <p>CampusNode · NIT Jalandhar Student Portal</p>
                 </div>
             </div>
         </div>

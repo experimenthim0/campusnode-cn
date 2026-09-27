@@ -11,6 +11,7 @@ import { PROGRAM_LABELS, PROGRAM_OPTIONS, ALL_BRANCH_CODES } from '../constants/
 import { MediaType } from '../types/index';
 import EventFormStepper from '../components/EventFormStepper';
 import AutosaveStatusBadge from '../components/AutosaveStatusBadge';
+import EventPosterUpload from '../components/EventPosterUpload';
 import { validateEventStep, validateAllEventSteps } from '../utils/eventValidation';
 import {
   ArrowRight,
@@ -95,15 +96,34 @@ const CreateEvent = () => {
         if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
             return availableClubs;
         }
-        if (user?.principalType === 'CLUB' || user?.role === 'club') {
-            return [{ id: user.clubId || user._id, clubName: user.name || 'My Club' }];
+        if (user?.principalType === 'CLUB' || (user?.role === 'club' && !user?.memberships?.length && !user?.rollNo)) {
+            return [{ id: user.clubId || user._id, clubName: user.clubName || user.name || 'My Club' }];
         }
         return (user?.memberships || []).filter(
             m => m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR' || m.canEditEvents
         );
     }, [user, availableClubs]);
 
+    const isFacultyCoordinator = Boolean(
+        user?.principalType === 'FACULTY' ||
+        user?.role === 'facultyCoordinator' ||
+        user?.role === 'faculty' ||
+        user?.userType === 'faculty' ||
+        user?.memberships?.some(
+            (m) => m.role === 'FACULTY_COORDINATOR' || m.role === 'facultyCoordinator' || m.role === 'FACULTY'
+        )
+    );
+
     useEffect(() => {
+        if (isFacultyCoordinator) {
+            showNotification('Faculty coordinators cannot create events. Event creation is reserved for student club leads.', 'error');
+            const target = user?.clubId ? `/club-events/${user.clubId}` : '/events';
+            navigate(target, { replace: true });
+        }
+    }, [isFacultyCoordinator, user?.clubId, navigate, showNotification]);
+
+    useEffect(() => {
+        if (isFacultyCoordinator) return;
         if (urlClubId) {
             setFormData(prev => ({ ...prev, clubId: urlClubId }));
         } else if (!formData.clubId) {
@@ -113,7 +133,7 @@ const CreateEvent = () => {
             }
         }
         getClubs().then(res => setAvailableClubs(res.data || [])).catch(() => {});
-    }, [user, urlClubId]);
+    }, [user, urlClubId, isFacultyCoordinator]);
 
     // Validation state
     const [fieldErrors, setFieldErrors] = useState({});
@@ -235,28 +255,6 @@ const CreateEvent = () => {
         });
     };
 
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 5 * 1024 * 1024) {
-            showNotification('File size exceeds 5MB limit.', 'error');
-            return;
-        }
-        setUploading(true);
-        const formDataUpload = new FormData();
-        formDataUpload.append('image', file);
-        try {
-            const { data } = await api.post('/api/events/upload', formDataUpload, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
-            showNotification('Poster uploaded successfully!', 'success');
-        } catch (err) {
-            showNotification(err.response?.data?.message || 'Upload failed', 'error');
-        } finally {
-            setUploading(false);
-        }
-    };
 
     const handleProgramToggle = (prog) => {
         setFormData(prev => {
@@ -544,10 +542,33 @@ const CreateEvent = () => {
     const inputCls =
         'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-cn-surface text-black dark:text-white placeholder:text-neutral-400';
     const labelCls =
-        'block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5';
+        'block text-sm font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider mb-1.5';
 
     const getFieldCls = (fieldName) =>
         `${inputCls} ${fieldErrors[fieldName] ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40' : ''}`;
+
+    if (isFacultyCoordinator) {
+        return (
+            <div className="min-h-screen bg-cn-bg flex items-center justify-center p-6 text-center">
+                <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                        <AlertCircle className="w-7 h-7" />
+                    </div>
+                    <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Access Restricted</h2>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
+                        Faculty coordinators cannot create events. Event creation is reserved for student club heads and coordinators.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => navigate(user?.clubId ? `/club-events/${user.clubId}` : '/events', { replace: true })}
+                        className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs transition-colors shadow-xs cursor-pointer"
+                    >
+                        Return to Club Events
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-cn-bg py-8 md:py-12 px-4 sm:px-6">
@@ -557,7 +578,7 @@ const CreateEvent = () => {
                 {/* Header with Title and Autosave Status */}
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl md:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                        <h1 className="text-2xl md:text-4xl font-medium text-neutral-900 dark:text-white tracking-tight">
                             Create New Event
                         </h1>
                         <p className="text-xs md:text-sm text-neutral-500 mt-1">
@@ -571,7 +592,7 @@ const CreateEvent = () => {
                             type="button"
                             onClick={handleSaveServerDraft}
                             disabled={isSavingDraft}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 transition-colors shadow-xs cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 transition-colors shadow-xs cursor-pointer"
                         >
                             <Save className="w-3.5 h-3.5 text-brand-600" />
                             Save as Draft
@@ -598,14 +619,14 @@ const CreateEvent = () => {
                             <button
                                 type="button"
                                 onClick={restoreDraft}
-                                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                             >
                                 Restore Draft
                             </button>
                             <button
                                 type="button"
                                 onClick={discardDraft}
-                                className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
                             >
                                 Discard
                             </button>
@@ -633,10 +654,10 @@ const CreateEvent = () => {
                                     <FileText className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-medium text-brand-600 tracking-widest leading-none mb-0.5">
                                         Step 1
                                     </span>
-                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                    <h2 className="text-base font-medium text-neutral-900 dark:text-white leading-tight">
                                         Basic Details
                                     </h2>
                                 </div>
@@ -672,7 +693,7 @@ const CreateEvent = () => {
                                             <Handshake className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <label htmlFor="joint-event-toggle" className="text-xs font-bold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                            <label htmlFor="joint-event-toggle" className="text-xs font-semibold text-neutral-900 dark:text-white cursor-pointer select-none">
                                                 Joint Event (Club Collaboration)
                                             </label>
                                             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -796,46 +817,17 @@ const CreateEvent = () => {
                             {/* Event Poster Upload */}
                             <div>
                                 <label className={labelCls}>Event Poster <span className="text-neutral-400 font-normal">(max 5 MB)</span></label>
-                                <input 
-                                    type="file" 
-                                    id="poster-upload" 
-                                    accept="image/*" 
-                                    onChange={handleFileChange} 
-                                    className="hidden" 
+                                <EventPosterUpload
+                                    imageUrl={formData.imageUrl}
+                                    onImageChange={(url) => {
+                                        setFormData(prev => ({ ...prev, imageUrl: url }));
+                                        setFieldErrors(prev => ({ ...prev, imageUrl: '' }));
+                                    }}
+                                    onUploadingChange={setUploading}
+                                    title={formData.title}
+                                    disabled={isSubmitting}
                                 />
-                                <label
-                                    htmlFor="poster-upload"
-                                    className={`group flex flex-col items-center justify-center gap-3 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-8 min-h-[140px] text-sm font-semibold text-neutral-400 cursor-pointer hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50/50 dark:hover:bg-brand-950/20 transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
-                                >
-                                    {uploading ? (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <i className="ri-loader-4-line text-2xl animate-spin text-brand-600" />
-                                            <span>Uploading poster...</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <i className="ri-image-add-line text-4xl text-neutral-300 group-hover:text-brand-500 transition-colors" />
-                                            <div className="text-center">
-                                                <span className="text-brand-600 underline">Click to upload</span> or drag and drop
-                                                <p className="text-xs text-neutral-400 mt-1">Supports PNG, JPG, JPEG, WEBP, GIF</p>
-                                            </div>
-                                        </>
-                                    )}
-                                </label>
-
-                                {formData.imageUrl && (
-                                    <div className="relative mt-4 border border-neutral-200 dark:border-neutral-800 rounded-xl p-2 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center">
-                                        <img src={formData.imageUrl} alt="Poster Preview" className="max-h-64 object-contain rounded-lg" />
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                            className="absolute top-4 right-4 bg-black hover:bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer"
-                                            title="Remove Image"
-                                        >
-                                            <i className="ri-close-line text-lg" />
-                                        </button>
-                                    </div>
-                                )}
+                                {renderFieldError('imageUrl')}
                             </div>
                         </div>
                     )}

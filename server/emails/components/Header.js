@@ -1,56 +1,31 @@
 import { escapeHtml } from "../renderer/escapeHtml.js";
+import { colors, typography, spacing } from "../config/designTokens.js";
 
 /**
  * Header component for CampusNode emails.
- * Uses black logo for light mode and white logo for dark mode.
- * Styled with the modern Blue/Teal design system from index.css.
+ * Uses official CampusNode logo and brand typography.
  *
  * @param {object} props
- * @param {string} [props.badgeText] - Optional contextual badge (e.g. "Security", "Club Management")
+ * @param {string} [props.badgeText] - Optional contextual badge (e.g. "Security", "Club Leadership")
  * @param {string} [props.subtitle] - Optional subtitle text below the logo
  * @returns {string} HTML markup
  */
 export const Header = ({ badgeText, subtitle } = {}) => {
-  // Determine badge styling based on context (Blue / Teal theme)
-  let badgeBg = "#eff8ff";
-  let badgeColor = "#0078d4";
-  let badgeBorder = "#b8e1ff";
-
-  if (badgeText?.toLowerCase().includes("security")) {
-    badgeBg = "#ecfff8";
-    badgeColor = "#009f61";
-    badgeBorder = "#a4ffe0";
-  } else if (badgeText?.toLowerCase().includes("club") || badgeText?.toLowerCase().includes("governance")) {
-    badgeBg = "#eff8ff";
-    badgeColor = "#0078d4";
-    badgeBorder = "#b8e1ff";
-  }
-
   return `
-    <div style="margin-bottom: 28px; text-align: center;">
+    <div style="margin-bottom: ${spacing.xxl}; text-align: center;">
       <div style="display: inline-block; vertical-align: middle;">
         <a href="https://campusnode.vercel.app" target="_blank" style="text-decoration: none; display: inline-block; vertical-align: middle;">
-          <!-- Light Mode Logo: Pure Black on Light Background -->
-        <img
-  src="https://campusnode-stagging.vercel.app/logolight.png"
-  alt="CampusNode"
-  width="100"
-  style="
-    display: block;
-    width: 100px;
-    height: auto;
-    border: 0;
-    margin: 0 auto;
-  "
->
-          <!--<![endif]-->
+          <img
+            src="https://campusnode-stagging.vercel.app/logolight.png"
+            alt="CampusNode"
+            width="200"
+            style="display: block; width: 200px; height: auto; border: 0; margin: 0 auto;"
+          />
         </a>
-      
-
       </div>
       ${
         subtitle
-          ? `<p class="email-muted-text" style="margin: 10px 0 0 0; font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 400; color: #64748b;">${escapeHtml(subtitle)}</p>`
+          ? `<p class="email-muted-text" style="margin: ${spacing.sm} 0 0 0; font-family: ${typography.fontFamily}; font-size: ${typography.sizes.sm}; font-weight: ${typography.weights.regular}; color: ${colors.muted};">${escapeHtml(subtitle)}</p>`
           : ""
       }
     </div>

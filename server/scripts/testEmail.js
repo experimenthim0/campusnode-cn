@@ -19,6 +19,7 @@ const testEmail = async () => {
   try {
     const securityMeta = await extractSecurityMetadata();
     const result = await sendEmail({
+      sync: true,
       to: recipientEmail,
       template: "auth:login-otp",
       data: {

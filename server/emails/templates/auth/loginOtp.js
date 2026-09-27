@@ -1,5 +1,6 @@
 import { OtpBadge } from "../../components/OtpBadge.js";
 import { SecurityMetadataCard } from "../../components/SecurityMetadataCard.js";
+import { Heading, BodyText, MutedText } from "../../components/Typography.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
 import { formatRequestTime } from "../../utils/requestMetadata.js";
 
@@ -23,6 +24,10 @@ export const loginOtpTemplate = {
       : "CampusNode Login Verification Code";
   },
 
+  getPreheader() {
+    return "Use this one-time verification code to sign in to your CampusNode account.";
+  },
+
   render(data) {
     const { otp, email, contextLabel, expiryMinutes = 5, device, location, ipAddress, time } = data;
     const safeEmail = escapeHtml(email);
@@ -39,19 +44,21 @@ export const loginOtpTemplate = {
     }
 
     return `
-      <h2 class="email-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 12px 0; color: #0f172a; text-align: center;">
-        Verify Your Login
-      </h2>
+      ${Heading({ children: "Verify Your Login", level: 2, align: "center", style: "margin: 0 0 12px 0;" })}
 
       ${OtpBadge({ code: otp })}
 
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 12px 0;">
-        ${recipientPrompt}
-      </p>
+      ${BodyText({
+        children: recipientPrompt,
+        align: "center",
+        style: "margin: 0 0 12px 0;",
+      })}
 
-      <p class="email-muted-text" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; color: #64748b; text-align: center; margin: 0 0 20px 0;">
-        Expires in <strong>${expiryMinutes} minutes</strong>. Do not share this code.
-      </p>
+      ${MutedText({
+        children: `Expires in <strong>${expiryMinutes} minutes</strong>. Do not share this code.`,
+        align: "center",
+        style: "margin: 0 0 20px 0;",
+      })}
 
       ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
     `.trim();

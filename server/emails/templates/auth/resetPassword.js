@@ -1,5 +1,6 @@
 import { Button } from "../../components/Button.js";
 import { SecurityMetadataCard } from "../../components/SecurityMetadataCard.js";
+import { Heading, BodyText, MutedText, LinkText } from "../../components/Typography.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
 import { formatRequestTime } from "../../utils/requestMetadata.js";
 
@@ -13,8 +14,12 @@ export const resetPasswordTemplate = {
     }
   },
 
-  getSubject() {
-    return "Password Reset Request";
+  getSubject(data) {
+    return data?.subject || "Password Reset Request";
+  },
+
+  getPreheader() {
+    return "Use this secure link to choose a new password for your CampusNode account.";
   },
 
   render(data) {
@@ -23,25 +28,32 @@ export const resetPasswordTemplate = {
     const resolvedTime = time || (device || location || ipAddress ? formatRequestTime(new Date()) : null);
 
     return `
-      <h2 class="email-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 16px 0; color: #0f172a; text-align: center;">
-        Reset Your Password
-      </h2>
+      ${Heading({ children: "Reset Your Password", level: 2, align: "center", style: "margin: 0 0 16px 0;" })}
+
+      
+
+      ${BodyText({
+      children: "We received a request to reset your CampusNode account password. Click the button above to choose a new password.",
+      align: "center",
+      style: "margin: 0 0 12px 0;",
+    })}
 
       ${Button({ label: "Reset Password", url: resetUrl, variant: "primary" })}
 
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 12px 0;">
-        We received a request to reset your CampusNode account password. Click the button above to choose a new password.
-      </p>
 
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0 0 8px 0;">
-        This password reset link will expire in <strong>${expiryMinutes} minutes</strong>.
-      </p>
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0 0 20px 0; word-break: break-all;">
-        If the button doesn't work, copy and paste this URL into your browser:<br>
-        <a href="${safeUrl}" style="color: #0078d4; text-decoration: underline;">${safeUrl}</a>
-      </p>
+      ${MutedText({
+      children: `This password reset link will expire in <strong>${expiryMinutes} minutes</strong>.`,
+      align: "center",
+      style: "margin: 0 0 8px 0;",
+    })}
 
-      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
+      ${MutedText({
+      children: `If the button doesn't work, copy and paste this URL into your browser:<br>${LinkText({ href: safeUrl })}`,
+      align: "center",
+      style: "margin: 0 0 20px 0; word-break: break-all;",
+    })}
+
+    
     `.trim();
   },
 };

@@ -368,11 +368,11 @@ const ClubEvents = () => {
         <div>
           <Link
             to="/profile"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Profile
           </Link>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">
             {clubName} Events
           </h2>
         </div>
@@ -459,7 +459,7 @@ const ClubEvents = () => {
             <Clock className="w-3.5 h-3.5" />
             Pending Review
             {pendingCount > 0 && (
-              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-bold">
+              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-semibold">
                 {pendingCount}
               </Badge>
             )}
@@ -489,7 +489,7 @@ const ClubEvents = () => {
             <Handshake className="w-3.5 h-3.5" />
             Joint Events
             {jointCount > 0 && (
-              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-bold">
+              <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-medium">
                 {jointCount}
               </Badge>
             )}
@@ -861,7 +861,7 @@ const ClubEvents = () => {
                           <AlertTriangle className="w-4 h-4" />
                         </div>
                         <div className="text-left min-w-0">
-                          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-0.5">Rejection Reason</p>
+                          <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-0.5">Rejection Reason</p>
                           <p className="text-xs text-destructive font-medium">{event.reviewComment || 'No feedback provided. Please contact the faculty coordinator.'}</p>
                         </div>
                       </div>
@@ -872,7 +872,7 @@ const ClubEvents = () => {
                           <Trash2 className="w-4 h-4" />
                         </div>
                         <div className="text-left min-w-0">
-                          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-0.5">Deletion Pending Approval</p>
+                          <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-0.5">Deletion Pending Approval</p>
                           <p className="text-xs text-destructive font-medium leading-relaxed">
                             {canReview 
                               ? 'The club has requested to delete this event. Click Approve Deletion to execute, or Restore Event to reject deletion.'
@@ -887,7 +887,7 @@ const ClubEvents = () => {
                           <ShieldCheck className="w-4 h-4" />
                         </div>
                         <div className="text-left min-w-0">
-                          <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-0.5">Review Required</p>
+                          <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-0.5">Review Required</p>
                           <p className="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">This event is waiting for your approval. Click "Preview & Review" to inspect details, or Approve / Reject directly.</p>
                         </div>
                       </div>

@@ -9,15 +9,14 @@ import {
   Mail, 
   User, 
   Lightbulb, 
-  MessageSquare,
-  HelpCircle,
-  Bug,
-  Handshake,
-  ShieldCheck,
-  ArrowRight,
-  Sparkles,
-  ExternalLink,
-  Users
+  MessageSquare, 
+  HelpCircle, 
+  Bug, 
+  Handshake, 
+  ShieldCheck, 
+  ArrowRight, 
+  ExternalLink, 
+  Users 
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 
@@ -159,43 +158,11 @@ const Contact = () => {
     <div className="min-h-screen bg-neutral-50/50 dark:bg-neutral-950/50 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
 
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/50 border border-brand-200 dark:border-brand-800/60 text-brand-700 dark:text-brand-400 text-xs font-bold uppercase tracking-widest mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            Get in touch
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-neutral-900 dark:text-white tracking-tight mb-4 leading-tight">
-            Talk to a human.
+        {/* Title Only */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl titlefont font-black text-neutral-900 dark:text-white tracking-tight">
+            Contact & Suggestions
           </h1>
-
-          <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 font-normal leading-relaxed">
-            Questions, support, privacy, bugs, partnerships — one inbox, read by people who build <span className="font-semibold text-neutral-900 dark:text-white">Campusnode</span>.
-          </p>
-        </div>
-
-        {/* Club Inquiries Notice Banner */}
-        <div className="mb-10 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
-                Looking for club events, recruitments, or permissions?
-              </h3>
-              <p className="text-xs sm:text-sm text-amber-800/90 dark:text-amber-300/80 mt-0.5">
-                <strong className="font-bold underline">For club related queries contact that club only.</strong> Each club manages their own events, workshops, and registrations independently.
-              </p>
-            </div>
-          </div>
-          <Link
-            to="/clubs"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-100 bg-white dark:bg-amber-900/80 hover:bg-amber-100 dark:hover:bg-amber-800/80 border border-amber-300 dark:border-amber-700/80 px-4 py-2 rounded-xl transition-all duration-200 shrink-0 shadow-2xs hover:shadow-xs"
-          >
-            Find Clubs & Leads <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
 
         {/* Main Grid: Form + Direct Channels */}
@@ -236,17 +203,14 @@ const Contact = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-1">
-                    Send us a message or suggestion
+                  <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                    Send a Message
                   </h2>
-                  <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-                    Have an idea to improve CampusNode, discovered a glitch, or want to partner with us? Let us know below.
-                  </p>
                 </div>
 
                 {/* Query Category Selector */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2.5">
+                  <label className="block text-xs font-semibold tracking-wider text-neutral-600 dark:text-neutral-400 mb-2.5">
                     What is this regarding?
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -275,7 +239,7 @@ const Contact = () => {
                 {/* Name & Email Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+                    <label className="block text-xs font-semibold tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                       Your Name <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -301,7 +265,7 @@ const Contact = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+                    <label className="block text-xs font-semibold tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                       Your Email <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -329,7 +293,7 @@ const Contact = () => {
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+                  <label className="block text-xs font-semibold tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                     Subject / Short Title <span className="text-neutral-400 font-normal lowercase">(optional)</span>
                   </label>
                   <input
@@ -344,7 +308,7 @@ const Contact = () => {
 
                 {/* Detailed Description / Suggestion */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+                  <label className="block text-xs font-semibold tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                     Description / Details <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -399,41 +363,43 @@ const Contact = () => {
           <div className="space-y-4">
 
             {/* Email Card */}
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl p-6 shadow-xs">
-              <div className="w-10 h-10 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
-                <Mail className="w-5 h-5" />
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Direct Email
+                  </h3>
+                  <a
+                    href="mailto:clubsetu@nikhim.me"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline truncate"
+                  >
+                    clubsetu@nikhim.me <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
-                Direct Email
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 leading-relaxed">
-                Prefer to write an email directly from your client? Feel free to ping our core team.
-              </p>
-              <a
-                href="mailto:clubsetu@nikhim.me"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
-              >
-                clubsetu@nikhim.me <ExternalLink className="w-3.5 h-3.5" />
-              </a>
             </div>
 
             {/* Club Specific Inquiries */}
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl p-6 shadow-xs">
-              <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
-                <Users className="w-5 h-5" />
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Club Queries
+                  </h3>
+                  <Link
+                    to="/clubs"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                  >
+                    Explore Student Clubs <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
-                Club & Event Queries
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 leading-relaxed">
-                Need to reach club coordinators or event managers? Contact that club directly on their club profile.
-              </p>
-              <Link
-                to="/clubs"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
-              >
-                Explore Student Clubs <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
             </div>
 
             {/* Quick Links Card */}

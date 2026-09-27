@@ -11,6 +11,7 @@ import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } fro
 import Section from '../components/layout/Section';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import CardCarousel from '../components/CardCarousel';
+import ScrollReveal from '../components/ScrollReveal';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -23,10 +24,39 @@ const CAT_IMAGES = [
   "/cat.png",
 ];
 
+const ALL_MONTHS = [
+  { value: 1, label: 'January' },
+  { value: 2, label: 'February' },
+  { value: 3, label: 'March' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'May' },
+  { value: 6, label: 'June' },
+  { value: 7, label: 'July' },
+  { value: 8, label: 'August' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'October' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'December' },
+];
+
 const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false, isCarousel = false }) => {
   const { showNotification } = useNotification();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [events, setEvents] = useState([]);
+
+  const CACHE_FEED_KEY = `cn_event_feed_${limit || 'all'}`;
+  const getCachedEvents = () => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_FEED_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return [];
+  };
+
+  const initialCached = useMemo(() => getCachedEvents(), [limit]);
+  const [events, setEvents] = useState(initialCached);
   const [randomCat] = useState(() => CAT_IMAGES[Math.floor(Math.random() * CAT_IMAGES.length)]);
 
   useEffect(() => {
@@ -42,62 +72,70 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
 
   const { user, role } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialCached.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const sentinelRef = React.useRef(null);
-  const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [registeredEvents, setRegisteredEvents] = useState(() => new Set());
   const [filterStatus, setFilterStatus] = useState(initialStatus);
   const [filterClub, setFilterClub] = useState(initialClub);
   const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [filterYear, setFilterYear] = useState(initialYear);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
 
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
+  const isFirstMountRef = React.useRef(true);
   const eventsUrl = '/api/events';
 
-  // Sync state if URL query params change
+  // Fix double URL-sync on mount: skip the very first render since state was already initialized
   useEffect(() => {
-    const c = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub');
-    const s = searchParams.get('status') || searchParams.get('filterStatus');
-    const m = searchParams.get('month') || searchParams.get('filterMonth');
-    const y = searchParams.get('year') || searchParams.get('filterYear');
-    const q = searchParams.get('search') || searchParams.get('q');
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      return;
+    }
 
-    if (c !== null && c !== undefined) setFilterClub(c);
-    if (s !== null && s !== undefined) setFilterStatus(s);
-    if (m !== null && m !== undefined) setFilterMonth(m);
-    if (y !== null && y !== undefined) setFilterYear(y);
-    if (q !== null && q !== undefined) setSearchQuery(q);
+    const c = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub') || 'ALL';
+    const s = searchParams.get('status') || searchParams.get('filterStatus') || 'ALL';
+    const m = searchParams.get('month') || searchParams.get('filterMonth') || 'ALL';
+    const y = searchParams.get('year') || searchParams.get('filterYear') || 'ALL';
+    const q = searchParams.get('search') || searchParams.get('q') || '';
+
+    setFilterClub(c);
+    setFilterStatus(s);
+    setFilterMonth(m);
+    setFilterYear(y);
+    setSearchQuery(q);
   }, [searchParams]);
 
-  const fetchEvents = async () => {
+  // Wrap fetchEvents in useCallback
+  const fetchEvents = useCallback(async () => {
     try {
-      const initialLimit = limit || 50;
+      const initialLimit = limit || 500;
       const initialUrl = `${eventsUrl}?limit=${initialLimit}&offset=0`;
       const eventData = await getPublicJson(initialUrl);
       const dataList = Array.isArray(eventData) ? eventData : [];
       setEvents(dataList);
       setHasMore(dataList.length >= initialLimit);
+      try {
+        sessionStorage.setItem(CACHE_FEED_KEY, JSON.stringify(dataList));
+      } catch (_) {}
 
       if (user) {
         const regRes = await getUserEvents(user.id || user._id);
-        setRegisteredEvents(regRes.data.map(item => item.eventId?._id || item.eventId));
+        const registeredIds = new Set((regRes.data || []).map(item => String(item.eventId?._id || item.eventId)));
+        setRegisteredEvents(registeredIds);
       }
       setLoading(false);
     } catch (err) {
       console.error(err);
       setLoading(false);
     }
-  };
+  }, [limit, eventsUrl, CACHE_FEED_KEY, user]);
 
   const loadMoreEvents = useCallback(async () => {
     if (loadingMore || !hasMore || limit) return;
     setLoadingMore(true);
     try {
       const nextOffset = events.length;
-      const nextUrl = `${eventsUrl}?limit=10&offset=${nextOffset}`;
+      const nextUrl = `${eventsUrl}?limit=20&offset=${nextOffset}`;
       const nextBatch = await getPublicJson(nextUrl);
 
       if (Array.isArray(nextBatch) && nextBatch.length > 0) {
@@ -106,7 +144,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           const fresh = nextBatch.filter((e) => !seen.has(e.id || e._id));
           return [...prev, ...fresh];
         });
-        if (nextBatch.length < 10) {
+        if (nextBatch.length < 20) {
           setHasMore(false);
         }
       } else {
@@ -124,8 +162,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   const handleBackgroundUpdate = useCallback((newData) => {
     if (newData && Array.isArray(newData)) {
       setEvents((prev) => {
-        // If we only loaded first page, replace; otherwise merge updates
-        if (prev.length <= 50) return newData;
+        if (prev.length <= 500) return newData;
         const newMap = new Map(newData.map(e => [e.id || e._id, e]));
         return prev.map(e => newMap.get(e.id || e._id) || e);
       });
@@ -135,8 +172,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   useEffect(() => {
     fetchEvents();
 
-    // Register for background SWR updates
-    const initialUrl = `${eventsUrl}?limit=${limit || 50}&offset=0`;
+    const initialUrl = `${eventsUrl}?limit=${limit || 500}&offset=0`;
     registerUpdateCallback(initialUrl, handleBackgroundUpdate);
 
     const interval = setInterval(() => {
@@ -148,32 +184,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       clearInterval(interval);
       unregisterUpdateCallback(initialUrl, handleBackgroundUpdate);
     };
-  }, [limit]);
-
-  // Infinite scroll intersection observer
-  useEffect(() => {
-    if (limit || !hasMore || loading || loadingMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
-          loadMoreEvents();
-        }
-      },
-      { rootMargin: '300px' }
-    );
-
-    const currentSentinel = sentinelRef.current;
-    if (currentSentinel) {
-      observer.observe(currentSentinel);
-    }
-
-    return () => {
-      if (currentSentinel) {
-        observer.unobserve(currentSentinel);
-      }
-    };
-  }, [limit, hasMore, loading, loadingMore, loadMoreEvents]);
+  }, [fetchEvents, limit, eventsUrl, handleBackgroundUpdate]);
 
   const clubNames = useMemo(() => {
     const names = new Set();
@@ -194,8 +205,9 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     return Array.from(names).sort();
   }, [events]);
 
+  // Fix currentYear hardcode to dynamic getFullYear()
   const availableYears = useMemo(() => {
-    const currentYear = 2026;
+    const currentYear = new Date().getFullYear();
     const years = new Set([currentYear]);
     if (Array.isArray(events)) {
       events.forEach(e => {
@@ -203,31 +215,15 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           const d = new Date(e.startTime);
           if (!isNaN(d.getTime())) {
             const year = d.getFullYear();
-            if (year >= currentYear) years.add(year);
+            if (year >= currentYear - 2) years.add(year);
           }
         }
       });
     }
-    // Add a few future years if not present
     years.add(currentYear + 1);
-    years.add(currentYear + 2);
     return Array.from(years).sort((a, b) => a - b);
   }, [events]);
 
-  const availableMonths = useMemo(() => {
-    const months = new Set();
-    if (Array.isArray(events)) {
-      events.forEach(e => {
-        if (e.startTime) {
-          const d = new Date(e.startTime);
-          if (!isNaN(d.getTime())) {
-            months.add(d.getMonth() + 1); // 1-12
-          }
-        }
-      });
-    }
-    return Array.from(months).sort((a, b) => a - b);
-  }, [events]);
 
   const handleRegister = async (eventId) => {
     if (!user || (role !== 'member' && role !== 'student')) {
@@ -240,12 +236,129 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         userId: user.id || user._id
       });
       showNotification(res.data.message, 'success');
+      setRegisteredEvents(prev => new Set([...prev, String(eventId)]));
       await invalidateCache(['/api/events', `/api/events/user/${user.id || user._id}`]);
       await fetchEvents();
     } catch (err) {
       showNotification(err.response?.data?.message || 'Registration failed', 'error');
     }
   };
+
+  // 🔴 1: Wrap all filter logic in useMemo
+  const filteredEvents = useMemo(() => {
+    let list = Array.isArray(events) ? [...events] : [];
+
+    if (filterClub !== 'ALL') {
+      if (filterClub === 'CENTRAL' || filterClub.toLowerCase() === 'central') {
+        list = list.filter(e =>
+          e.organizerType === 'CENTRAL' ||
+          e.organizerType === 'CENTRAL_ORGANIZATION' ||
+          Boolean(e.centralOrganizerId) ||
+          Boolean(e.centralOrganizer) ||
+          (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0))
+        );
+      } else {
+        const targetClub = filterClub.trim().toLowerCase();
+        list = list.filter(e => {
+          const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
+          if (isCentral) return false;
+          const matchesOrganizer = Array.isArray(e.organizers) && e.organizers.some(o => o.club?.clubName && o.club.clubName.trim().toLowerCase() === targetClub);
+          const legacyClubName = e.club?.clubName || e.createdBy?.clubName;
+          const matchesLegacy = legacyClubName && legacyClubName.trim().toLowerCase() === targetClub;
+          return matchesOrganizer || matchesLegacy;
+        });
+      }
+    }
+
+    if (filterStatus !== 'ALL') {
+      list = list.filter(e => e.status === filterStatus);
+    }
+
+    if (filterYear !== 'ALL') {
+      list = list.filter(e => {
+        if (!e.startTime) return false;
+        return new Date(e.startTime).getFullYear().toString() === filterYear.toString();
+      });
+    }
+
+    if (filterMonth !== 'ALL') {
+      list = list.filter(e => {
+        if (!e.startTime) return false;
+        return (new Date(e.startTime).getMonth() + 1).toString() === filterMonth.toString();
+      });
+    }
+
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      list = list.filter(e => {
+        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
+        const titleMatch = e.title?.toLowerCase().includes(query);
+        const organizerNames = (e.organizers || []).map(o => o.club?.clubName || '').join(' ').toLowerCase();
+        const organizerCategories = (e.organizers || []).map(o => o.club?.category || '').join(' ').toLowerCase();
+        const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query) || organizerNames.includes(query);
+        const categoryMatch = (e.club?.category || '').toLowerCase().includes(query) || organizerCategories.includes(query);
+        const centralMatch = isCentral && ('central'.includes(query) || 'odsw'.includes(query) || 'college'.includes(query));
+        return titleMatch || clubMatch || categoryMatch || centralMatch;
+      });
+    }
+
+    return list;
+  }, [events, filterClub, filterStatus, filterYear, filterMonth, searchQuery]);
+
+  // 🔴 3: Calculate totalFiltered before limit slicing
+  const totalFiltered = filteredEvents.length;
+
+  // Memoize grouped events and slicing
+  const { liveEvents, upcomingEvents, endedEvents, hasNoActiveEvents } = useMemo(() => {
+    let live = filteredEvents.filter(e => e.status === 'LIVE');
+    let upcoming = filteredEvents.filter(e => e.status === 'UPCOMING');
+    let ended = filteredEvents.filter(e => e.status === 'ENDED');
+
+    upcoming.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    ended.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+    const noActive = live.length === 0 && upcoming.length === 0;
+
+    if (onlyActive) {
+      if (noActive) {
+        ended = hideHeader ? ended.slice(0, 3) : ended;
+      } else {
+        ended = [];
+      }
+    } else {
+      if (noActive && hideHeader) {
+        ended = ended.slice(0, 3);
+      }
+    }
+
+    if (limit) {
+      let remaining = limit;
+      if (live.length > remaining) {
+        live = live.slice(0, remaining);
+        remaining = 0;
+      } else {
+        remaining -= live.length;
+      }
+
+      if (upcoming.length > remaining) {
+        upcoming = upcoming.slice(0, remaining);
+        remaining = 0;
+      } else {
+        remaining -= upcoming.length;
+      }
+
+      if (ended.length > remaining) {
+        ended = ended.slice(0, remaining);
+      }
+    }
+
+    return {
+      liveEvents: live,
+      upcomingEvents: upcoming,
+      endedEvents: ended,
+      hasNoActiveEvents: noActive,
+    };
+  }, [filteredEvents, onlyActive, hideHeader, limit]);
 
   if (loading) {
     const skeletonGrid = (
@@ -268,114 +381,10 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     );
   }
 
-  // Apply filters
-  let filtered = [...events];
-
-  if (filterClub !== 'ALL') {
-    if (filterClub === 'CENTRAL' || filterClub.toLowerCase() === 'central') {
-      filtered = filtered.filter(e =>
-        e.organizerType === 'CENTRAL' ||
-        e.organizerType === 'CENTRAL_ORGANIZATION' ||
-        Boolean(e.centralOrganizerId) ||
-        Boolean(e.centralOrganizer) ||
-        (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0))
-      );
-    } else {
-      const targetClub = filterClub.trim().toLowerCase();
-      filtered = filtered.filter(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
-        if (isCentral) return false;
-        const matchesOrganizer = Array.isArray(e.organizers) && e.organizers.some(o => o.club?.clubName && o.club.clubName.trim().toLowerCase() === targetClub);
-        const legacyClubName = e.club?.clubName || e.createdBy?.clubName;
-        const matchesLegacy = legacyClubName && legacyClubName.trim().toLowerCase() === targetClub;
-        return matchesOrganizer || matchesLegacy;
-      });
-    }
-  }
-
-  if (filterStatus !== 'ALL') {
-    filtered = filtered.filter(e => e.status === filterStatus);
-  }
-
-  if (filterYear !== 'ALL') {
-    filtered = filtered.filter(e => {
-      if (!e.startTime) return false;
-      return new Date(e.startTime).getFullYear().toString() === filterYear.toString();
-    });
-  }
-
-  if (filterMonth !== 'ALL') {
-    filtered = filtered.filter(e => {
-      if (!e.startTime) return false;
-      return (new Date(e.startTime).getMonth() + 1).toString() === filterMonth.toString();
-    });
-  }
-
-  if (searchQuery.trim() !== '') {
-    const query = searchQuery.toLowerCase().trim();
-    filtered = filtered.filter(e => {
-      const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
-      const titleMatch = e.title?.toLowerCase().includes(query);
-      const organizerNames = (e.organizers || []).map(o => o.club?.clubName || '').join(' ').toLowerCase();
-      const organizerCategories = (e.organizers || []).map(o => o.club?.category || '').join(' ').toLowerCase();
-      const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query) || organizerNames.includes(query);
-      const categoryMatch = (e.club?.category || '').toLowerCase().includes(query) || organizerCategories.includes(query);
-      const centralMatch = isCentral && ('central'.includes(query) || 'odsw'.includes(query) || 'college'.includes(query));
-      return titleMatch || clubMatch || categoryMatch || centralMatch;
-    });
-  }
-
-  // Sort events by status priority: LIVE first, then UPCOMING, then ENDED
-  let liveEvents = filtered.filter(e => e.status === 'LIVE');
-  let upcomingEvents = filtered.filter(e => e.status === 'UPCOMING');
-  let endedEvents = filtered.filter(e => e.status === 'ENDED');
-
-  // Sort upcoming by startTime ascending (soonest first)
-  upcomingEvents.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
-  // Sort ended by startTime descending (most recent first)
-  endedEvents.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-  const hasNoActiveEvents = liveEvents.length === 0 && upcomingEvents.length === 0;
-
-  if (onlyActive) {
-    if (hasNoActiveEvents) {
-      endedEvents = hideHeader ? endedEvents.slice(0, 3) : endedEvents;
-    } else {
-      endedEvents = [];
-    }
-  } else {
-    if (hasNoActiveEvents && hideHeader) {
-      endedEvents = endedEvents.slice(0, 3);
-    }
-  }
-
-  // Apply limit: fill slots with priority LIVE → UPCOMING → ENDED
-  if (limit) {
-    let remaining = limit;
-
-    if (liveEvents.length > remaining) {
-      liveEvents = liveEvents.slice(0, remaining);
-      remaining = 0;
-    } else {
-      remaining -= liveEvents.length;
-    }
-
-    if (upcomingEvents.length > remaining) {
-      upcomingEvents = upcomingEvents.slice(0, remaining);
-      remaining = 0;
-    } else {
-      remaining -= upcomingEvents.length;
-    }
-
-    if (endedEvents.length > remaining) {
-      endedEvents = endedEvents.slice(0, remaining);
-    }
-  }
-
-  const totalFiltered = liveEvents.length + upcomingEvents.length + endedEvents.length;
-
   const isFilterActive = filterStatus !== 'ALL' || filterClub !== 'ALL' || filterMonth !== 'ALL' || filterYear !== 'ALL' || searchQuery.trim() !== '';
-  const showEmptyBanner = events.length === 0 || totalFiltered === 0 || (!isFilterActive && hasNoActiveEvents);
+  // 🔴 2: Immediate empty banner calculation with no fake-delay
+  const showEmptyBanner = !loading && !loadingMore && (events.length === 0 || totalFiltered === 0 || (!isFilterActive && hasNoActiveEvents));
+
   const statusButtons = [
     { key: 'ALL', label: 'All', icon: 'ri-layout-grid-line' },
     { key: 'LIVE', label: 'Live', icon: 'ri-live-line' },
@@ -390,7 +399,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
       {!hideHeader && (
         <div className="mb-8 sm:mb-10 text-center">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 titlefont">
             Events & Activities
           </h1>
         </div>
@@ -459,8 +468,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
               >
                 <option value="ALL">All Months</option>
-                {availableMonths.map(m => (
-                  <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'long' })}</option>
+                {ALL_MONTHS.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
 
@@ -572,24 +581,26 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
           {isCarousel || (hideHeader && liveEvents.length > 3) ? (
             <CardCarousel threshold={3}>
-              {liveEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {liveEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </CardCarousel>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {liveEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {liveEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </div>
           )}
@@ -599,31 +610,35 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {upcomingEvents.length > 0 && (
         <div className={endedEvents.length > 0 ? 'mb-14' : ''}>
           {!hideHeader && (
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
-              Upcoming Events
-            </h2>
+            <ScrollReveal direction="up" distance={15}>
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
+                Upcoming Events
+              </h2>
+            </ScrollReveal>
           )}
 
           {isCarousel || (hideHeader && upcomingEvents.length > 3) ? (
             <CardCarousel threshold={3}>
-              {upcomingEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {upcomingEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </CardCarousel>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {upcomingEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {upcomingEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </div>
           )}
@@ -633,9 +648,11 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {endedEvents.length > 0 && (
         <div>
           {!hideHeader && (
-            <h2 className="text-lg font-semibold text-neutral-400 mb-6 flex items-center gap-2">
-              Past Events 
-            </h2>
+            <ScrollReveal direction="up" distance={15}>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-6 flex items-center justify-center gap-2">
+                Past Events 
+              </h2>
+            </ScrollReveal>
           )}
           {hideHeader && (
             <h3 className="text-md font-bold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
@@ -644,65 +661,67 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           )}
           {isCarousel || (hideHeader && endedEvents.length > 3) ? (
             <CardCarousel threshold={3}>
-              {endedEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {endedEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </CardCarousel>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {endedEvents.map(event => (
-                <EventCard
-                  key={event.id || event._id}
-                  event={event}
-                  onRegister={handleRegister}
-                  isRegistered={registeredEvents.includes(event.id || event._id)}
-                />
+              {endedEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                  <EventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Infinite Scroll Sentinel and Status */}
-      {!limit && (
-        <div className="mt-10 mb-6 flex flex-col items-center justify-center min-h-[64px] gap-3">
-          {loadingMore && (
-            <div className="flex items-center gap-2.5 py-3.5 px-6 rounded-full bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-sm text-xs font-semibold text-neutral-800 dark:text-neutral-200 animate-pulse">
-              <i className="ri-loader-4-line animate-spin text-brand-600 dark:text-brand-400 text-base" />
-              <span>Loading more events...</span>
-            </div>
-          )}
-
-          {hasMore && !loadingMore && !loading && (
+      {/* User-Triggered Load More (Only shown when there are matching events to load) */}
+      {!limit && totalFiltered > 0 && (
+        <div className="mt-12 mb-8 flex flex-col items-center justify-center min-h-[64px] gap-3">
+          {hasMore && !loading && (
             <button
               type="button"
               onClick={loadMoreEvents}
-              className="mysans inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-zinc-750 transition-all cursor-pointer shadow-xs active:scale-95"
+              disabled={loadingMore}
+              className="mysans inline-flex items-center gap-2.5 px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl bg-white dark:bg-zinc-900 hover:bg-neutral-50 dark:hover:bg-zinc-850 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-zinc-800 transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md hover:border-brand-500/50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation group"
             >
-              <i className="ri-arrow-down-line text-sm" />
-              <span>Load More (+10 Events)</span>
+              {loadingMore ? (
+                <>
+                  <i className="ri-loader-4-line animate-spin text-brand-600 dark:text-brand-400 text-base" />
+                  <span>Loading events...</span>
+                </>
+              ) : (
+                <>
+                  <i className="ri-arrow-down-line text-sm text-brand-600 dark:text-brand-400 group-hover:translate-y-0.5 transition-transform" />
+                  <span>Load More (+20 Events)</span>
+                </>
+              )}
             </button>
           )}
 
-          {!hasMore && events.length > 0 && (
-            <div className="flex items-center gap-2 py-2.5 px-5 rounded-full bg-neutral-100/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/60 text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+          {!hasMore && totalFiltered > 0 && (
+            <div className="flex items-center gap-2 py-2.5 px-5 rounded-full bg-neutral-100/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/60 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 shadow-2xs">
               <i className="ri-check-double-line text-brand-600 dark:text-brand-400 text-sm" />
-              <span>You've reached the end • All {events.length} events loaded</span>
+              <span>You've reached the end • All {totalFiltered} events loaded</span>
             </div>
           )}
-
-          {/* Invisible sentinel element observed by IntersectionObserver */}
-          <div ref={sentinelRef} className="h-6 w-full pointer-events-none" aria-hidden="true" />
         </div>
       )}
 
     </Container>
   );
-}
+};
 
 export default EventFeed;

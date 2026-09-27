@@ -2,6 +2,7 @@ import { Queue, Worker } from "bullmq";
 import { emailConfig } from "./config/emailConfig.js";
 import { sendEmailDirect } from "./emailService.js";
 import redis from "../lib/redis.js";
+import { withSpan } from "../lib/telemetry/tracer.js";
 
 const QUEUE_NAME = "campusnode-emails";
 
@@ -90,7 +91,9 @@ export const initEmailWorker = () => {
     emailWorker = new Worker(
       QUEUE_NAME,
       async (job) => {
-        return await sendEmailDirect(job.data);
+        return withSpan("email.send_job", { "email.template": job.data?.template || "custom" }, async () => {
+          return await sendEmailDirect(job.data);
+        });
       },
       {
         connection: conn,

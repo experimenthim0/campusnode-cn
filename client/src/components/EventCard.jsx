@@ -4,11 +4,13 @@ import CalendarDropdown from './CalendarDropdown';
 import { getColorSync } from 'colorthief';
 import { useImageBlob } from '../hooks/useImageBlob';
 import { useTheme } from '../context/ThemeContext';
+import { useNotification } from '../context/NotificationContext';
 import { prefetchEventDetail } from '../lib/prefetchManager';
 import { HandHeart, Handshake } from 'lucide-react';
 
 const EventCard = ({ event, onRegister, isRegistered }) => {
     const { title, description, venue, startTime, totalSeats, registeredCount, status, _id, entryFee, registrationDeadline, slug, showWinner } = event;
+    const { showNotification } = useNotification() || {};
 
     const DEFAULT_IMAGE = '/fallback-img.jpg';
     const displayImage = event.imageUrl || DEFAULT_IMAGE;
@@ -90,25 +92,37 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
     const monthName = isValidDate
         ? eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase()
         : '';
+    const dayName = isValidDate
+        ? eventDate.toLocaleString('en-US', { weekday: 'short' }).toUpperCase()
+        : '';
     const dayNumber = isValidDate
         ? eventDate.getDate()
         : '';
 
-    const getDeadlineText = () => {
+    const getDeadlineInfo = () => {
+        if (event.registrationType === 'none') return null;
+
         const dl = new Date(registrationDeadline || startTime);
-        const ev = new Date(startTime);
+        if (isNaN(dl.getTime())) return null;
 
+        const isClosed = dl.getTime() < Date.now();
+        const currentYear = new Date().getFullYear();
+        const dateOptions = dl.getFullYear() !== currentYear
+            ? { month: 'short', day: 'numeric', year: 'numeric' }
+            : { month: 'short', day: 'numeric' };
         const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        const dateOptions = { month: 'short', day: 'numeric' };
 
-        const isSameDay = dl.toDateString() === ev.toDateString();
+        const formattedDate = dl.toLocaleDateString('en-US', dateOptions);
+        const formattedTimeStr = dl.toLocaleTimeString('en-US', timeOptions);
+        const prefix = isClosed ? 'Reg. closed on' : 'Reg. Closes on';
 
-        if (isSameDay) {
-            return `Reg. by ${dl.toLocaleTimeString('en-US', timeOptions)}`;
-        } else {
-            return `Reg. by ${dl.toLocaleDateString('en-US', dateOptions)}, ${dl.toLocaleTimeString('en-US', timeOptions)}`;
-        }
+        return {
+            text: `${prefix} ${formattedDate}, ${formattedTimeStr}`,
+            isClosed
+        };
     };
+
+    const deadlineInfo = getDeadlineInfo();
 
     const isLive = status === 'LIVE';
     const isEnded = status === 'ENDED';
@@ -139,7 +153,51 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgb(229, 231, 235)', // border-gray-200
         };
 
+    const activeRgb = rgb || (isDark ? [59, 130, 246] : [201, 235, 255]);
+
     const navigate = useNavigate();
+
+    const getShareText = () => {
+        const organizer = (event.organizerType === 'CENTRAL' || event.centralOrganizerId)
+            ? 'Office of DSW'
+            : (event.club?.clubName || event.createdBy?.clubName || '');
+        return organizer ? `${title} by ${organizer}` : title;
+    };
+
+    const copyToClipboard = (message, eventUrl) => {
+        navigator.clipboard.writeText(`${message} - ${eventUrl}`)
+            .then(() => {
+                if (showNotification) {
+                    showNotification('Event link copied to clipboard!', 'success');
+                }
+            })
+            .catch((error) => {
+                console.error('Clipboard error:', error);
+                if (showNotification) {
+                    showNotification('Failed to copy link', 'error');
+                }
+            });
+    };
+
+    const handleShare = async (e) => {
+        if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        const message = getShareText();
+        const eventUrl = `${window.location.origin}/event/${slug || _id}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: message, text: message, url: eventUrl });
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    copyToClipboard(message, eventUrl);
+                }
+            }
+        } else {
+            copyToClipboard(message, eventUrl);
+        }
+    };
 
     const handleCardClick = (e) => {
         // Prevent navigation if the user is clicking on nested buttons, links, or dropdowns
@@ -155,7 +213,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleCardClick}
-            className="border border-neutral-200 dark:border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1 flex flex-col h-full shadow-sm group cursor-pointer"
+            className="relative border border-neutral-200 dark:border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1 flex flex-col h-full shadow-sm group cursor-pointer"
         >
 
             {/* Image */}
@@ -194,7 +252,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 </div>
             </div>
 
-            <div className="px-4 pt-2 flex flex-auto flex-col">
+            <div className="px-4 pt-2 flex flex-auto flex-col relative z-10">
                 <div className="flex items-center justify-between gap-2 min-w-0 mb-1">
                 {(() => {
                     const organizers = event.organizers || [];
@@ -268,7 +326,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </div>
                     )}
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-wide mb-2 line-clamp-2">{title}</h3>
+                <h3 className="text-lg font-medium mysans text-neutral-900 dark:text-white tracking-wide mb-2 line-clamp-2">{title}</h3>
 
                 {/* Info row */}
                 {isEnded ? (
@@ -346,12 +404,12 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                             </div>
 
-                            <div className="flex items-center gap-1.5 col-span-2 min-w-0">
+                            {/* <div className="flex items-center gap-1.5 col-span-2 min-w-0">
                                 <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                                 <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
                                     {event.registrationType === 'none' ? 'Open Entry • No Registration' : (isUnlimited ? 'Unlimited Seats' : seatsText)}
                                 </span>
-                            </div>
+                            </div> */}
                         </div>
                     )
                 ) : (
@@ -361,49 +419,54 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
                             <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300 min-w-0">
                                 <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                                <span className="truncate">
-                                    {formattedTime} {`(${getDeadlineText()})`}
-                                </span>
+                                <span className="truncate">{formattedTime}</span>
                             </div>
+
+                            {deadlineInfo && (
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <i className="ri-calendar-check-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                    <span className={`truncate font-medium ${deadlineInfo.isClosed ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                                        {deadlineInfo.text}
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="flex items-center gap-1.5 min-w-0">
                                 <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                                 <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                             </div>
 
-                            <div className="flex items-center gap-1.5 min-w-0">
-                                <i className="ri-group-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                                <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">
-                                    {event.registrationType === 'none' ? 'Open Entry • No Registration' : (isUnlimited ? 'Unlimited Seats' : seatsText)}
-                                </span>
-                            </div>
+                          
                         </div>
 
                         {/* Right Section: Big Calendar Date Badge */}
-                        <div className="shrink-0 self-center pl-1">
+                        {/* <div className="shrink-0 self-center pl-1">
                             <div className="relative flex flex-col items-center justify-center min-w-[50px] sm:min-w-[54px] bg-white dark:bg-neutral-900 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-xs group-hover:scale-105 transition-transform duration-300">
                                 {/* Top Binder Rings */}
                                 {/* <div className="absolute -top-1 left-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" />
-                                <div className="absolute -top-1 right-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" /> */}
+                                <div className="absolute -top-1 right-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" /> 
 
                                 <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center pt-1.5 pb-0.5 px-1.5 leading-none">
-                                    {monthName}
+                                    {dayName}
                                 </div>
 
-                                {/* Big Day Number */}
+                                
                                 <div className="w-full flex items-center justify-center py-1 sm:py-1.5 bg-neutral-50 dark:bg-neutral-900/90">
                                     <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
                                         {dayNumber}
                                     </span>
                                 </div>
+                                <div className="w-full text-blue-400 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center  pb-0.5 px-1.5 leading-none">
+                                    {monthName}
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </div>*/}
+                    </div> 
                 )}
             </div>
 
           
-            <div className="px-5 pb-4 mt-auto">
+            <div className="px-5 pb-4 mt-auto relative z-10">
                 <div className="flex items-center gap-2 border-t border-neutral-100 dark:border-neutral-800/80 pt-3">
                
                     {entryFee !== 0 && (
@@ -442,13 +505,47 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </Link>
                     )}
 
-                    {isUpcoming && (
+                    {/* {isUpcoming && (
                         <CalendarDropdown
                             event={event}
                             btnClassName="p-2 border rounded-full shadow-xs hover:shadow-md hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
                         />
-                    )}
+                    )} */}
+
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className="p-2 border rounded-full shadow-xs hover:shadow-md hover:bg-neutral-150 dark:hover:bg-neutral-900 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shrink-0 flex items-center justify-center border-neutral-200 dark:border-neutral-800/80 h-9 w-9 text-neutral-600 dark:text-neutral-450 cursor-pointer"
+                        title="Share Event"
+                        aria-label="Share Event"
+                    >
+                        <i className="ri-share-line text-md" />
+                    </button>
                 </div>
+            </div>
+
+            {/* Bottom ambient extracted color shade (replaces hardcoded blue with extracted image palette) */}
+            <div
+                className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-0 overflow-hidden rounded-b-xl"
+                aria-hidden="true"
+            >
+                {/* Gentle bottom-to-top decreasing gradient shade */}
+                <div
+                    className="absolute inset-0 transition-all duration-500"
+                    style={{
+                        background: isDark
+                            ? `linear-gradient(to top, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.30 : 0.16}) 0%, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.08 : 0.04}) 50%, transparent 100%)`
+                            : `linear-gradient(to top, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.32 : 0.18}) 0%, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.08 : 0.04}) 50%, transparent 100%)`,
+                    }}
+                />
+
+                {/* Delicate animated ambient glow */}
+                <div
+                    className="campus-glow-flow absolute left-1/2 -bottom-6 h-20 w-52 -translate-x-1/2 rounded-full blur-[30px] transition-all duration-500"
+                    style={{
+                        backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.30 : 0.18) : (isHovered ? 0.42 : 0.25)})`,
+                    }}
+                />
             </div>
         </div>
     );

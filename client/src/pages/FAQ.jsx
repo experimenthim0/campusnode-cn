@@ -653,16 +653,16 @@ const FAQ = () => {
         {/* ── Page Header ── */}
         <div className="text-center max-w-2xl mx-auto">
           <ScrollReveal direction="up" delay={0.05}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full  border border-cn-blue-500/40 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-3 sm:mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full  border border-cn-blue-500/40 bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400 text-[11px] sm:text-xs font-medium tracking-wider mb-3 sm:mb-4">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Help Center & Knowledge Base</span>
             </div>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.1}>
-            <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-900 dark:text-white mb-3 sm:mb-4">
+            <h1 className="text-3xl sm:text-5xl font-medium tracking-tight text-zinc-900 dark:text-white mb-3 sm:mb-4">
               Frequently Asked{' '}
-              <span className="logofont font-light">
+              <span className="logofont font-medium">
                 Questions
               </span>
             </h1>
@@ -751,7 +751,7 @@ const FAQ = () => {
                       aria-expanded={isOpen}
                     >
                       <div className="flex items-start gap-2.5">
-                        <span className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white tracking-tight leading-snug">
+                        <span className="text-sm sm:text-base font-medium text-zinc-900 dark:text-white tracking-tight leading-snug">
                           {faq.question}
                         </span>
                       </div>

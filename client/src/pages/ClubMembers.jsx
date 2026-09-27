@@ -534,16 +534,16 @@ const ClubMembers = () => {
       <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-3.5 border-border bg-card shadow-2xs">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Student Lead</p>
-            <Badge variant="outline" className="text-[9px] font-bold text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
+            <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">Student Lead</p>
+            <Badge variant="outline" className="text-[9px] font-medium text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
               Admin Designated
             </Badge>
           </div>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-foreground truncate">
+            <span className="text-sm font-semibold text-foreground truncate">
               {activeStudentLead?.student?.name || "Not assigned"}
             </span>
-            <Badge variant="secondary" className="text-[10px] font-bold">
+            <Badge variant="secondary" className="text-[10px] font-semibold">
               {activeStudentLead ? "1 / 1" : "0 / 1"}
             </Badge>
           </div>
@@ -555,12 +555,12 @@ const ClubMembers = () => {
         <Card className="p-3.5 border-border bg-card shadow-2xs">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Coordinators</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               {coordinatorCount} Active
             </span>
             <Badge
               variant="outline"
-              className={`text-[10px] font-bold ${
+              className={`text-[10px] font-semibold ${
                 isCoordinatorLimitReached
                   ? "border-destructive text-destructive bg-destructive/10"
                   : "border-sky-200 text-sky-600 bg-sky-50 dark:bg-sky-950/30"
@@ -575,10 +575,10 @@ const ClubMembers = () => {
         <Card className="p-3.5 border-border bg-card shadow-2xs">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Team</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-bold text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               {members.filter((m) => !m.isClubAccount).length} Members
             </span>
-            <Badge variant="secondary" className="text-[10px] font-bold">
+            <Badge variant="secondary" className="text-[10px] font-semibold">
               Active
             </Badge>
           </div>
@@ -589,7 +589,7 @@ const ClubMembers = () => {
       {/* Add Member Card */}
       <Card className="mb-6 p-5 sm:p-6 border-border bg-card shadow-xs">
         <div className="mb-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-foreground">
+          <p className="text-sm font-medium tracking-wider text-foreground">
             Add New Team Member
           </p>
         </div>
@@ -603,7 +603,7 @@ const ClubMembers = () => {
                 value={inviteEmail}
                 onChange={(e) => handleSearchStudents(e.target.value)}
                 required
-                className="h-10 text-xs sm:text-sm bg-background border-input focus-visible:ring-brand-500"
+                className="h-10 text-xs sm:text-xs bg-background border-input focus-visible:ring-brand-300"
               />
 
               {searchingStudents && (
@@ -663,7 +663,7 @@ const ClubMembers = () => {
                 value={invitePosition}
                 onChange={(e) => setInvitePosition(e.target.value)}
                 list="club-position-presets"
-                className="h-10 text-xs sm:text-sm bg-background border-input focus-visible:ring-brand-500"
+                className="h-10 text-xs sm:text-sm bg-background border-input focus-visible:ring-brand-300"
               />
               <datalist id="club-position-presets">
                 {POSITION_PRESETS.map((pos) => (
@@ -734,89 +734,7 @@ const ClubMembers = () => {
         </form>
       </Card>
 
-      {/* Transfer Leadership Modal */}
-      {isTransferModalOpen && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <Card className="w-full max-w-md rounded-2xl border-border bg-card shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600 border border-brand-200/60 shrink-0">
-                  <ArrowRightLeft className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-foreground leading-tight">Transfer Student Lead Role</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Atomic transition of club leadership</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsTransferModalOpen(false)}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <form onSubmit={handleTransferLeadership}>
-              <div className="p-6 space-y-4 text-left">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Transferring leadership will atomically assign <strong className="text-foreground">Student Lead</strong> to the selected student and demote the current lead to <strong className="text-foreground">Coordinator</strong>.
-                </p>
-
-                <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1.5">
-                    Select New Student Lead:
-                  </label>
-                  <select
-                    value={selectedNewLeadId}
-                    onChange={(e) => setSelectedNewLeadId(e.target.value)}
-                    required
-                    className="w-full h-10 rounded-xl border border-input bg-background px-3.5 text-xs sm:text-sm text-foreground focus:border-brand-500 focus:outline-none transition-colors"
-                  >
-                    <option value="">-- Choose member --</option>
-                    {members
-                      .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
-                      .map((m) => {
-                        const id = m.id || m._id;
-                        const isLeadElsewhere = !!m.currentHeadClub;
-                        return (
-                          <option key={id} value={id} disabled={isLeadElsewhere}>
-                            {m.student?.name} ({m.student?.email}) — [{m.role}]
-                            {isLeadElsewhere ? ` (Already Lead of ${m.currentHeadClub.clubName})` : ""}
-                          </option>
-                        );
-                      })}
-                  </select>
-                </div>
-              </div>
-
-              <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-end gap-3 shrink-0">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsTransferModalOpen(false)}
-                  disabled={transferring}
-                  className="rounded-xl text-xs font-medium"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={transferring || !selectedNewLeadId}
-                  className="bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs gap-1.5"
-                >
-                  {transferring && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  {transferring ? "Transferring…" : "Confirm Transfer"}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+    
 
       {/* Members Table */}
       <Card className="overflow-hidden border-border bg-card shadow-xs">
@@ -829,12 +747,12 @@ const ClubMembers = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border bg-muted/30">
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Member</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Designation</TableHead>
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Attendance</TableHead>
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Events</TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Member</TableHead>
+                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Role</TableHead>
+                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Designation</TableHead>
+                <TableHead className="text-center text-xs font-semibold tracking-wider text-muted-foreground">Attendance</TableHead>
+                <TableHead className="text-center text-xs font-semibold tracking-wider text-muted-foreground">Events</TableHead>
+                <TableHead className="text-right text-xs font-semibold tracking-wider text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -857,16 +775,16 @@ const ClubMembers = () => {
                         <MemberAvatar name={member.student?.name} image={member.student?.profileImage} />
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs sm:text-sm font-semibold text-foreground">
+                            <span className="text-xs sm:text-sm font-medium text-foreground">
                               {member.student?.name}
                             </span>
                             {member.currentHeadClub && (
-                              <Badge variant="outline" className="text-[10px] font-medium py-0 px-1.5 text-amber-600 border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
+                              <Badge variant="outline" className="text-[10px] font-light py-0 px-1.5 text-amber-600 border-amber-300 bg-amber-50/50 dark:bg-amber-950/20">
                                 Lead of {member.currentHeadClub.clubName}
                               </Badge>
                             )}
                             {isSelf && (
-                              <Badge variant="secondary" className="text-[10px] font-semibold py-0 px-1.5">
+                              <Badge variant="secondary" className="text-[10px] font-medium py-0 px-1.5">
                                 You
                               </Badge>
                             )}

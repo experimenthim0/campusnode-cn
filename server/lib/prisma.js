@@ -1,5 +1,6 @@
 import prismaPkg from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { recordDbQuery, recordTransaction } from "./observability.js";
 
 const { PrismaClient } = prismaPkg;
 
@@ -24,12 +25,58 @@ if (!isLocal) {
 
 const adapter = new PrismaPg({ connectionString });
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
+const createInstrumentedPrisma = () => {
+  const client = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
+
+  const extendedClient = client.$extends({
+    query: {
+      async $allOperations({ model, operation, args, query }) {
+        const startedAt = process.hrtime.bigint();
+        let error = null;
+        try {
+          return await query(args);
+        } catch (queryError) {
+          error = queryError;
+          throw queryError;
+        } finally {
+          recordDbQuery({
+            model: model || null,
+            operation,
+            durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+            error,
+          });
+        }
+      },
+    },
+  });
+
+  return new Proxy(extendedClient, {
+    get(target, property, receiver) {
+      if (property !== "$transaction") return Reflect.get(target, property, receiver);
+
+      return async (...args) => {
+        const startedAt = process.hrtime.bigint();
+        let error = null;
+        try {
+          return await target.$transaction(...args);
+        } catch (transactionError) {
+          error = transactionError;
+          throw transactionError;
+        } finally {
+          recordTransaction({
+            durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+            error,
+          });
+        }
+      };
+    },
+  });
+};
+
+export const prisma = globalForPrisma.prisma || createInstrumentedPrisma();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

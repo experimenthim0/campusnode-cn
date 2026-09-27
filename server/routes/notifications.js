@@ -7,6 +7,7 @@ import prisma from "../lib/prisma.js";
 import { createObjectId } from "../utils/objectId.js";
 import { sendWebPushNotification } from "../utils/sendPush.js";
 import redis from "../lib/redis.js";
+import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
 
 const router = express.Router();
 
@@ -92,7 +93,8 @@ router.post(
   verifyToken,
   requirePermission(PERMISSIONS.NOTIFICATION_CREATE),
   async (req, res) => {
-    try {
+    return withSpan("notification.send", { "notification.action": "create" }, async (span) => {
+      try {
       const { targetType, eventId, title, message, clubId: requestedClubId } = req.body;
       const { userId: sender, userType } = req.user;
 
@@ -274,9 +276,10 @@ router.post(
         message: `Notification sent to ${recipientStudentIds.length} recipients.`,
         recipientCount: recipientStudentIds.length,
       });
-    } catch (err) {
-      internalNotificationError(res, err, "Failed to send notification.");
-    }
+      } catch (err) {
+        internalNotificationError(res, err, "Failed to send notification.");
+      }
+    });
   },
 );
 

@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { sendNotification, getSentNotifications } from "../services/notificationService";
 import { getClubManagedEvents } from "../services/eventService";
-import { getClubById } from "../services/clubService";
+import { getClubById, getClubs } from "../services/clubService";
 import ClubAnnouncementsSection from "../components/ClubAnnouncementsSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -95,54 +95,128 @@ const SendNotification = () => {
   }, [canBroadcastAll, targetType]);
 
   useEffect(() => {
-    if (user) {
-      const clubs = [];
-      const isAdminOrFaculty =
-        role === "admin" ||
-        role === "SUPER_ADMIN" ||
-        user?.userType === "admin" ||
-        user?.principalType === "ADMIN" ||
-        role === "facultyCoordinator" ||
-        user?.principalType === "FACULTY";
+    if (!user) return;
 
-      if (role === "club") {
+    const isStudentUser =
+      role === "student" ||
+      role === "member" ||
+      user.principalType === "STUDENT" ||
+      Boolean(user.rollNo) ||
+      user.userType === "student";
+
+    const isAdminOrSuperAdmin =
+      role === "admin" ||
+      role === "SUPER_ADMIN" ||
+      user.userType === "admin" ||
+      user.principalType === "ADMIN";
+
+    const isFaculty =
+      role === "facultyCoordinator" ||
+      user.principalType === "FACULTY" ||
+      user.userType === "faculty";
+
+    const clubs = [];
+
+    const addClub = (id, name, logo) => {
+      if (!id) return;
+      const strId = String(id);
+      const existing = clubs.find((c) => String(c.id) === strId);
+      if (!existing) {
         clubs.push({
-          id: user.clubId || user.id || user._id,
-          name: user.name || "Club",
-          logo: user.clubLogo || user.profileImage,
+          id: strId,
+          name: name && name !== "Club" ? name : "Club",
+          logo: logo || null,
         });
+      } else if ((!existing.name || existing.name === "Club") && name && name !== "Club") {
+        existing.name = name;
+        if (logo && !existing.logo) existing.logo = logo;
       }
+    };
 
-      if (user.memberships && Array.isArray(user.memberships)) {
-        user.memberships.forEach((m) => {
-          const isLead = m.role === "CLUB_HEAD" || m.role === "STUDENT_LEAD";
-          const isCoord = m.role === "COORDINATOR";
-          if (
-            (isLead || isCoord || m.role === "facultyCoordinator") &&
-            m.clubId &&
-            !clubs.some((c) => c.id === m.clubId)
-          ) {
-            clubs.push({
-              id: m.clubId,
-              name: m.clubName || "Club",
-              logo: m.clubLogo,
-            });
-          }
-        });
-      } else if (isAdminOrFaculty && user.clubId) {
-        clubs.push({
-          id: user.clubId,
-          name: user.name || "Club",
-          logo: user.clubLogo || user.profileImage,
-        });
-      }
+    // 1. Process memberships: highest priority for student coordinators and faculty
+    if (user.memberships && Array.isArray(user.memberships)) {
+      user.memberships.forEach((m) => {
+        const isLead = m.role === "CLUB_HEAD" || m.role === "STUDENT_LEAD";
+        const isCoord = m.role === "COORDINATOR";
+        const isFacultyCoord =
+          m.role === "facultyCoordinator" || m.role === "FACULTY_COORDINATOR";
+        const canManage = isLead || isCoord || isFacultyCoord || m.canEditEvents;
 
-      setManagedClubs(clubs);
-      if (clubs.length > 0 && !selectedClubId) {
-        setSelectedClubId(urlClubId || clubs[0].id);
-      }
+        if (canManage && m.clubId) {
+          const clubName =
+            m.clubName ||
+            m.club?.clubName ||
+            m.club?.name ||
+            (!isStudentUser ? (user.clubName || user.club?.clubName) : null);
+          const clubLogo =
+            m.clubLogo ||
+            m.club?.clubLogo ||
+            (!isStudentUser ? user.clubLogo : null);
+          addClub(m.clubId, clubName, clubLogo);
+        }
+      });
     }
-  }, [user, role, selectedClubId, urlClubId]);
+
+    // 2. Student with user.clubId (if not already captured in memberships)
+    if (isStudentUser && user.clubId) {
+      const clubName = user.clubName || user.club?.clubName;
+      addClub(user.clubId, clubName, user.clubLogo);
+    }
+
+    // 3. Faculty coordinator with user.clubId
+    if (isFaculty && user.clubId) {
+      const clubName = user.clubName || user.club?.clubName;
+      addClub(user.clubId, clubName, user.clubLogo);
+    }
+
+    // 4. Dedicated Club Account (pure club entity, NEVER a student personal account)
+    if (
+      !isStudentUser &&
+      !isFaculty &&
+      (role === "club" || user.principalType === "CLUB" || user.userType === "club")
+    ) {
+      const cid = user.clubId || user.id || user._id;
+      const cname = user.clubName || user.club?.clubName || user.name || "Club";
+      addClub(cid, cname, user.clubLogo || user.profileImage);
+    }
+
+    // 5. Admin assigned club
+    if (isAdminOrSuperAdmin && user.clubId) {
+      addClub(user.clubId, user.clubName || user.club?.clubName, user.clubLogo);
+    }
+
+    setManagedClubs(clubs);
+
+    // Initial club selection
+    if (clubs.length > 0) {
+      setSelectedClubId((prev) => {
+        if (urlClubId && clubs.some((c) => String(c.id) === String(urlClubId))) {
+          return urlClubId;
+        }
+        if (prev && clubs.some((c) => String(c.id) === String(prev))) {
+          return prev;
+        }
+        return clubs[0].id;
+      });
+    }
+
+    // 6. Admin fallback: load all clubs if admin has no specific clubs
+    if (isAdminOrSuperAdmin && clubs.length === 0) {
+      getClubs()
+        .then((res) => {
+          const fetchedClubs = (res.data?.clubs || res.data || []).map((c) => ({
+            id: String(c.id || c._id),
+            name: c.clubName || c.name || "Club",
+            logo: c.clubLogo || null,
+          }));
+          if (fetchedClubs.length > 0) {
+            setManagedClubs(fetchedClubs);
+            setSelectedClubId((prev) => prev || urlClubId || fetchedClubs[0].id);
+          }
+        })
+        .catch((err) => console.error("Could not fetch clubs for admin broadcast", err));
+    }
+  }, [user, role, urlClubId]);
 
   const fetchActiveClubDetails = useCallback(async (clubIdToFetch) => {
     const targetId = clubIdToFetch || selectedClubId;
@@ -154,6 +228,18 @@ const SendNotification = () => {
       const fetchedClub = res.data?.club || res.data;
       if (fetchedClub) {
         setActiveClubData(fetchedClub);
+        // Ensure managedClubs has the definitive club name & logo synced from database
+        setManagedClubs((prev) =>
+          prev.map((c) =>
+            String(c.id) === String(fetchedClub.id || fetchedClub._id || targetId)
+              ? {
+                  ...c,
+                  name: fetchedClub.clubName || fetchedClub.name || c.name,
+                  logo: fetchedClub.clubLogo || c.logo,
+                }
+              : c
+          )
+        );
       }
     } catch (err) {
       console.error("Error fetching club details for announcements:", err);
@@ -171,7 +257,7 @@ const SendNotification = () => {
   useEffect(() => {
     if (user && (user.id || user.clubId || user._id)) {
       const isCentral = role === "central_organizer" || user?.principalType === "INSTITUTIONAL";
-      const targetClubId = selectedClubId || user.clubId;
+      const targetClubId = selectedClubId || managedClubs[0]?.id || user.clubId;
 
       if (isCentral) {
         import("../services/api").then(({ default: api }) => {
@@ -191,7 +277,7 @@ const SendNotification = () => {
         .then((res) => setHistory(res.data || []))
         .catch((err) => console.error("Could not fetch history", err));
     }
-  }, [user, role, selectedClubId]);
+  }, [user, role, selectedClubId, managedClubs]);
 
   const handleSubmitNotification = async (e) => {
     e.preventDefault();
@@ -199,9 +285,9 @@ const SendNotification = () => {
     setSuccessMsg("");
     setErrorMsg("");
 
-    const targetClubId = selectedClubId || user.clubId;
+    const targetClubId = selectedClubId || managedClubs[0]?.id || user.clubId;
 
-    if (!targetClubId && role !== "admin" && user?.principalType !== "ADMIN") {
+    if (!targetClubId && role !== "admin" && role !== "SUPER_ADMIN" && user?.principalType !== "ADMIN") {
       setErrorMsg("Please select an authorized club before broadcasting.");
       setLoading(false);
       return;
@@ -232,20 +318,32 @@ const SendNotification = () => {
     }
   };
 
+  const isStudent =
+    role === "student" ||
+    role === "member" ||
+    user?.principalType === "STUDENT" ||
+    Boolean(user?.rollNo) ||
+    user?.userType === "student";
+
   const currentClubName =
     activeClubData?.clubName ||
-    managedClubs.find((c) => c.id === selectedClubId)?.name ||
-    user?.name ||
+    activeClubData?.name ||
+    managedClubs.find((c) => String(c.id) === String(selectedClubId))?.name ||
+    (!isStudent ? (user?.clubName || user?.club?.clubName || user?.name) : (user?.clubName || user?.club?.clubName)) ||
     "Club";
 
   const currentClubLogo =
     activeClubData?.clubLogo ||
-    managedClubs.find((c) => c.id === selectedClubId)?.logo ||
+    managedClubs.find((c) => String(c.id) === String(selectedClubId))?.logo ||
+    (!isStudent ? (user?.clubLogo || user?.profileImage) : user?.clubLogo) ||
     null;
 
   // Access Control: regular students without club coordinator roles cannot broadcast
-  const isStudent = role === "student" || role === "member" || user?.principalType === "STUDENT";
-  const hasNoClubAuth = managedClubs.length === 0 && role !== "admin" && user?.principalType !== "ADMIN" && role !== "club";
+  const hasNoClubAuth =
+    managedClubs.length === 0 &&
+    role !== "admin" &&
+    role !== "SUPER_ADMIN" &&
+    user?.principalType !== "ADMIN";
 
   if (isStudent && hasNoClubAuth) {
     return (
@@ -321,8 +419,8 @@ const SendNotification = () => {
       {currentTab === "notifications" && (
         <div className="space-y-6">
           <Card className="p-4 sm:p-6">
-            {/* Multiple Managed Clubs Selector if applicable */}
-            {managedClubs.length > 1 && (
+            {/* Multiple Managed Clubs Selector or Single Club Indicator */}
+            {managedClubs.length > 0 && (
               <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-muted/40 border border-border rounded-xl">
                 <div className="flex items-center gap-2">
                   <Building className="w-4 h-4 text-primary" />
@@ -330,20 +428,26 @@ const SendNotification = () => {
                     Broadcasting on behalf of:
                   </span>
                 </div>
-                <select
-                  value={selectedClubId || ""}
-                  onChange={(e) => {
-                    setSelectedClubId(e.target.value);
-                    setSearchParams({ ...(currentTab === "announcements" ? { tab: "announcements" } : {}), clubId: e.target.value });
-                  }}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary"
-                >
-                  {managedClubs.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                {managedClubs.length > 1 ? (
+                  <select
+                    value={selectedClubId || ""}
+                    onChange={(e) => {
+                      setSelectedClubId(e.target.value);
+                      setSearchParams({ ...(currentTab === "announcements" ? { tab: "announcements" } : {}), clubId: e.target.value });
+                    }}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary cursor-pointer"
+                  >
+                    {managedClubs.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="px-3 py-1.5 text-xs font-bold rounded-lg border border-border bg-background text-foreground">
+                    {managedClubs[0]?.name || currentClubName}
+                  </span>
+                )}
               </div>
             )}
 
@@ -523,14 +627,21 @@ const SendNotification = () => {
                     className="p-4 hover:border-border/80 transition-colors"
                   >
                     <div className="flex justify-between items-start mb-2 gap-3 flex-wrap">
-                      <Badge
-                        variant={notif.targetType === "ALL_STUDENTS" ? "secondary" : "outline"}
-                        className="text-[10px] font-semibold"
-                      >
-                        {notif.targetType === "ALL_STUDENTS"
-                          ? "Sent to all students"
-                          : `Event: ${notif.eventId?.title || "Event Participants"}`}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                          variant={notif.targetType === "ALL_STUDENTS" ? "secondary" : "outline"}
+                          className="text-[10px] font-semibold"
+                        >
+                          {notif.targetType === "ALL_STUDENTS"
+                            ? "Sent to all students"
+                            : `Event: ${notif.eventId?.title || "Event Participants"}`}
+                        </Badge>
+                        {(notif.club?.clubName || notif.sender?.clubName) && (
+                          <Badge variant="outline" className="text-[10px] font-medium border-primary/20 text-primary">
+                            {notif.club?.clubName || notif.sender?.clubName}
+                          </Badge>
+                        )}
+                      </div>
                       <span className="text-[11px] text-muted-foreground font-mono" title={new Date(notif.createdAt).toLocaleString()}>
                         {formatRelativeTime(notif.createdAt)}
                       </span>

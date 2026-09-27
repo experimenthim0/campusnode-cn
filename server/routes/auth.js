@@ -2,7 +2,14 @@ import express from "express";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { generateToken, verifyToken } from "../middleware/auth.js";
-import { sendEmail, extractSecurityMetadata } from "../emails/index.js";
+import {
+  sendEmail,
+  sendVerificationEmail,
+  sendLoginOtpEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+  extractSecurityMetadata,
+} from "../emails/index.js";
 import { getClientUrl } from "../utils/corsConfig.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { checkPasswordRateLimit } from "../utils/checkPasswordRateLimit.js";
@@ -12,6 +19,21 @@ import { PROGRAM_OPTIONS, isValidBranchForProgram } from "../constants/academicC
 import { calculateAcademicProgress, isStudentLoginDeactivated } from "../utils/academicProgress.js";
 import redis from "../lib/redis.js";
 import { z } from "zod";
+import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
+
+// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
+import { evaluateRolloutAccess } from "../temporary-rollout/index.js";
+
+async function attachRolloutToUser(userObj) {
+  if (userObj) {
+    try {
+      userObj.rollout = await evaluateRolloutAccess(userObj);
+    } catch (err) {
+      console.error("[Rollout] Error evaluating rollout on auth session:", err.message);
+    }
+  }
+  return userObj;
+}
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
@@ -30,7 +52,14 @@ const studentRegistrationSchema = z.object({
 
 const facultyRegistrationSchema = z.object({
   name: z.string().trim().min(3).max(120),
-  email: z.string().trim().email().max(254),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(254)
+    .refine((val) => val.toLowerCase().endsWith("@nitj.ac.in"), {
+      message: "Email must be a valid NITJ email (ending in @nitj.ac.in).",
+    }),
   department: z.string().trim().min(2).max(120),
   password: z.string().min(6).max(128),
 });
@@ -68,16 +97,12 @@ async function generateAndSendLoginOtp(req, user, userType, contextLabel) {
   );
 
   const securityMeta = await extractSecurityMetadata(req);
-  await sendEmail({
+  await sendLoginOtpEmail({
     to: user.email,
-    template: "auth:login-otp",
-    data: {
-      email: user.email,
-      otp: otpCode,
-      contextLabel: contextLabel || userType,
-      expiryMinutes: 5,
-      ...securityMeta,
-    },
+    otp: otpCode,
+    contextLabel: contextLabel || userType,
+    expiryMinutes: 5,
+    ...securityMeta,
   });
 
   return {
@@ -240,14 +265,11 @@ router.post("/register/student", async (req, res) => {
     const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
 
     try {
-      await sendEmail({
+      await sendVerificationEmail({
         to: newUser.email,
-        template: "auth:verify-account",
-        data: {
-          name: newUser.name,
-          verifyUrl,
-          expiryHours: 24,
-        },
+        name: newUser.name,
+        verifyUrl,
+        expiryHours: 24,
       });
     } catch (emailErr) {
       console.error("[Auth] Failed to send student verification email:", emailErr);
@@ -275,6 +297,12 @@ router.post("/register/faculty", async (req, res) => {
     }
     const { name, email, department, password } = parsed.data;
     const cleanEmail = email.toLowerCase().trim();
+
+    if (!cleanEmail.endsWith("@nitj.ac.in")) {
+      return res.status(400).json({
+        message: "Email must be a valid NITJ email (ending in @nitj.ac.in).",
+      });
+    }
 
     // Check if email already registered in any user table
     const [existingStudent, existingAdmin, existingExternal, existingFaculty] = await Promise.all([
@@ -336,7 +364,8 @@ router.post("/register/faculty", async (req, res) => {
 // Authenticates students (StudentUser table), admin/faculty (AdminRole table), or external users (ExternalUser table)
 
 router.post(["/login", "/login/student"], async (req, res) => {
-  try {
+  return withSpan("auth.login", { "auth.type": "standard_login" }, async (span) => {
+    try {
     const { email, password } = req.body;
     const cleanEmail = String(email || "").trim().toLowerCase();
 
@@ -391,6 +420,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
+      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
 
       return res.json({
@@ -401,6 +431,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
+        rollout: userObj.rollout,
       });
     }
 
@@ -478,6 +509,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
+      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -487,6 +519,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "faculty",
         principalType,
         token,
+        rollout: userObj.rollout,
       });
     }
 
@@ -542,6 +575,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
+      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -551,6 +585,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "admin",
         principalType,
         token,
+        rollout: userObj.rollout,
       });
     }
 
@@ -595,6 +630,7 @@ router.post(["/login", "/login/student"], async (req, res) => {
         principalType: "EXTERNAL",
       };
 
+      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -604,13 +640,15 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "external",
         principalType: "EXTERNAL",
         token,
+        rollout: userObj.rollout,
       });
     }
 
     return res.status(401).json({ message: "Invalid credentials" });
-  } catch (err) {
-    internalAuthError(res, err);
-  }
+    } catch (err) {
+      internalAuthError(res, err);
+    }
+  });
 });
 
 // Authenticates platform admins and faculty coordinators (AdminRole table)
@@ -861,14 +899,11 @@ router.post("/register/external", async (req, res) => {
     const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
 
     try {
-      await sendEmail({
+      await sendVerificationEmail({
         to: externalUser.email,
-        template: "auth:verify-account",
-        data: {
-          name: externalUser.name,
-          verifyUrl,
-          expiryHours: 24,
-        },
+        name: externalUser.name,
+        verifyUrl,
+        expiryHours: 24,
       });
     } catch (emailErr) {
       console.error("[Auth] Failed to send external verification email:", emailErr);
@@ -1037,6 +1072,7 @@ router.post("/verify-2fa", async (req, res) => {
         memberships,
       };
 
+      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -1046,6 +1082,7 @@ router.post("/verify-2fa", async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
+        rollout: userObj.rollout,
       });
     }
 
@@ -1255,14 +1292,11 @@ router.post("/forgot-password", async (req, res) => {
     const securityMeta = await extractSecurityMetadata(req);
 
     try {
-      await sendEmail({
+      await sendPasswordResetEmail({
         to: user.email,
-        template: "auth:reset-password",
-        data: {
-          resetUrl,
-          expiryMinutes: 30,
-          ...securityMeta,
-        },
+        resetUrl,
+        expiryMinutes: 30,
+        ...securityMeta,
       });
       return res.json({ message: "If an account exists, a reset link has been sent." });
     } catch (err) {
@@ -1329,6 +1363,17 @@ router.post("/reset-password/:token", async (req, res) => {
 
     // Single-use token: consume immediately
     await redis.del(resetKey);
+
+    // Send security confirmation notification
+    try {
+      const securityMeta = await extractSecurityMetadata(req);
+      await sendPasswordChangedEmail({
+        to: tokenData.email,
+        ...securityMeta,
+      });
+    } catch (emailErr) {
+      console.warn("[Auth] Failed to send password changed confirmation email:", emailErr?.message);
+    }
 
     return res.json({
       success: true,
@@ -1427,14 +1472,11 @@ router.post(["/send-verification-email", "/resend-verification"], async (req, re
     const clientUrl = getClientUrl(req.headers.origin);
     const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
 
-    await sendEmail({
+    await sendVerificationEmail({
       to: user.email,
-      template: "auth:verify-account",
-      data: {
-        name: user.name,
-        verifyUrl,
-        expiryHours: 24,
-      },
+      name: user.name,
+      verifyUrl,
+      expiryHours: 24,
     });
 
     return res.json({
@@ -1494,6 +1536,18 @@ router.post("/change-password", verifyToken, async (req, res) => {
         where: { id: user.id },
         data: { password: hashedPassword },
       });
+    }
+
+    // Send security confirmation notification
+    try {
+      const securityMeta = await extractSecurityMetadata(req);
+      await sendPasswordChangedEmail({
+        to: user.email,
+        name: user.name,
+        ...securityMeta,
+      });
+    } catch (emailErr) {
+      console.warn("[Auth] Failed to send password changed confirmation email:", emailErr?.message);
     }
 
     res.json({ message: "Password changed successfully" });

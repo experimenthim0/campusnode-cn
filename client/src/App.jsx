@@ -139,7 +139,7 @@ function App() {
                     <Route path="/verify/certificate/:token" element={<VerifyCertificate />} />
                     <Route path="/verify/certificate" element={<VerifyCertificate />} />
                     {/* Protected routes (require login) */}
-                    <Route path="/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+                    <Route path="/create" element={<ProtectedRoute disallowedRoles={['facultyCoordinator', 'faculty']}><CreateEvent /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
                     <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />

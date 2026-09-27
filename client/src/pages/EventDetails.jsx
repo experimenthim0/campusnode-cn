@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import api from '../services/api';
@@ -25,6 +25,7 @@ import ShimmerText from '../components/ShimmerText';
 import ImageZoomModal from '../components/ImageZoomModal';
 import { formatAcademicYear } from '../utils/academicProgress';
 import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
+import ScrollReveal from '../components/ScrollReveal';
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
 
@@ -93,18 +94,98 @@ const EventDetails = () => {
   const [registrationPaymentStatus, setRegistrationPaymentStatus] = useState(null);
   const [postRegMessage, setPostRegMessage] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
-  const [copiedEmail, setCopiedEmail] = useState(null);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [isCTAVisible, setIsCTAVisible] = useState(true);
+  const bottomSentinelRef = useRef(null);
+  const lastScrollY = useRef(0);
+  const scrollStopTimer = useRef(null);
+  const accumulatedDelta = useRef(0);
 
-  const handleCopyEmail = (emailToCopy) => {
-    if (!emailToCopy) return;
-    navigator.clipboard.writeText(emailToCopy)
-      .then(() => {
-        setCopiedEmail(emailToCopy);
-        showNotification('Club email copied to clipboard!', 'success');
-        setTimeout(() => setCopiedEmail(null), 2500);
-      })
-      .catch(() => showNotification('Failed to copy email', 'error'));
-  };
+  useEffect(() => {
+    let ticking = false;
+
+    const checkBottom = () => {
+      const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      return docHeight > 0 && (scrollY + windowHeight >= docHeight - 160);
+    };
+
+    const handleScroll = () => {
+      const currentScrollY = Math.max(0, window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0);
+      const prevScrollY = lastScrollY.current;
+      const stepDelta = currentScrollY - prevScrollY;
+      lastScrollY.current = currentScrollY;
+
+      // Reset accumulated direction when switching directions
+      if ((stepDelta > 0 && accumulatedDelta.current < 0) || (stepDelta < 0 && accumulatedDelta.current > 0)) {
+        accumulatedDelta.current = 0;
+      }
+      accumulatedDelta.current += stepDelta;
+
+      const reachedBottom = checkBottom();
+      setIsAtBottom(reachedBottom);
+
+      // Scroll behavior with smooth threshold (time lapse):
+      if (reachedBottom || currentScrollY <= 40) {
+        setIsCTAVisible(true);
+        accumulatedDelta.current = 0;
+      } else if (accumulatedDelta.current > 30) {
+        // Deliberate scroll top to bottom (down): smoothly hide
+        setIsCTAVisible(false);
+      } else if (accumulatedDelta.current < -15) {
+        // Opposite scroll (up): smoothly reveal
+        setIsCTAVisible(true);
+      }
+
+      // Stop scrolling: smoothly show button after user pauses / stops scrolling for 300ms
+      if (scrollStopTimer.current) {
+        clearTimeout(scrollStopTimer.current);
+      }
+      scrollStopTimer.current = setTimeout(() => {
+        setIsCTAVisible(true);
+        accumulatedDelta.current = 0;
+      }, 300);
+
+      ticking = false;
+    };
+
+    let observer = null;
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window && bottomSentinelRef.current) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          const reached = entry.isIntersecting || checkBottom();
+          setIsAtBottom(reached);
+          if (reached) setIsCTAVisible(true);
+        },
+        { root: null, rootMargin: '120px', threshold: 0 }
+      );
+      observer.observe(bottomSentinelRef.current);
+    }
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(handleScroll);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      if (observer) observer.disconnect();
+      if (scrollStopTimer.current) clearTimeout(scrollStopTimer.current);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [loading, event]);
 
   // Team Registration States
   const [teamModalOpen, setTeamModalOpen] = useState(false);
@@ -169,26 +250,27 @@ const EventDetails = () => {
         }
         
         setEvent(eventData);
+        setLoading(false);
 
         // Idle prefetch associated club details if present
         if (eventData?.club?.slug || eventData?.club?.id) {
           prefetchClubDetail(eventData.club.slug || eventData.club.id);
         }
 
+        // Check user registration status in background without blocking page render
         if (user && (role === 'member' || role === 'student' || role === 'faculty' || role === 'facultyCoordinator' || role === 'external')) {
-          try {
-            const regRes = await getUserEvents(user.id || user._id);
-            const eventId = eventData.id || eventData._id;
-            const isAlreadyReg = regRes.data.some(r => r.eventId && (r.eventId.id === eventId || r.eventId._id === eventId));
-            if (isAlreadyReg) {
-              setAlreadyRegistered(true);
-            }
-          } catch (regErr) {
-            console.error('Failed to check user registration status:', regErr);
-          }
+          getUserEvents(user.id || user._id)
+            .then((regRes) => {
+              const eventId = eventData.id || eventData._id;
+              const isAlreadyReg = regRes.data?.some(r => r.eventId && (r.eventId.id === eventId || r.eventId._id === eventId));
+              if (isAlreadyReg) {
+                setAlreadyRegistered(true);
+              }
+            })
+            .catch((regErr) => {
+              console.error('Failed to check user registration status:', regErr);
+            });
         }
-        
-        setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load event');
         setLoading(false);
@@ -597,14 +679,14 @@ const EventDetails = () => {
 
   if (error || !event) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
-        <div className="border-2 border-black dark:border-neutral-700 rounded-sm p-10 text-center max-w-sm bg-white dark:bg-neutral-900">
-          <div className="w-14 h-14 bg-brand-600 rounded-sm flex items-center justify-center text-white text-2xl mx-auto mb-5">
+      <div className="min-h-[80vh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
+        <div className="border-2 border-neutral-200 dark:border-neutral-700 rounded-md p-10 text-center max-w-sm bg-white dark:bg-neutral-900">
+          <div className="w-14 h-14 flex items-center justify-center text-yellow-500 text-4xl mx-auto mb-3">
             <i className="ri-error-warning-line" />
           </div>
-          <h2 className="font-black text-xl text-black dark:text-white mb-2">Oops!</h2>
+          <h2 className="font-semibold text-xl text-black dark:text-white mb-2">Oops!</h2>
           <p className="text-neutral-500 text-[14px] mb-6">{error || 'Event not found'}</p>
-          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg border border-black dark:border-white">
+          <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-[12px] font-medium tracking-wide rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg border border-black dark:border-white">
             <i className="ri-arrow-left-line" /> Back to Events
           </button>
         </div>
@@ -912,11 +994,11 @@ const EventDetails = () => {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 myfont text-neutral-900 dark:text-neutral-100">
 
-      <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <div className="hidden sm:block top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-neutral-900/70 hover:bg-white dark:hover:bg-neutral-800 text-[12px] font-medium  text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
@@ -967,143 +1049,118 @@ const EventDetails = () => {
 
           
 
-            <div 
-              onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
-              className="mb-6 rounded-2xl overflow-hidden border-1 border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative group cursor-zoom-in transition-all"
-              title="Click to view and zoom poster"
-            >
-              <img
-                src={event.imageUrl || DEFAULT_IMAGE}
-                alt={title}
-                className="w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
-                style={{ maxHeight: '560px' }}
-                onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
-              />
+            <ScrollReveal direction="up" distance={20} duration={0.4}>
+              <div 
+                onClick={() => openImageModal(event.imageUrl || DEFAULT_IMAGE, event.title, event.title)}
+                className="mb-6 rounded-2xl overflow-hidden border-1 border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 relative group cursor-zoom-in transition-all"
+                title="Click to view and zoom poster"
+              >
+                <img
+                  src={event.imageUrl || DEFAULT_IMAGE}
+                  alt={title}
+                  className="w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+                  style={{ maxHeight: '560px' }}
+                  onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
+                />
 
-              {/* Share button on top right */}
-              <div className="absolute top-2 right-2 z-10">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShare();
-                  }}
-                  className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
-                  title="Share Event"
-                  aria-label="Share Event"
-                >
-                  <i className="ri-share-forward-line text-sm" />
-                </button>
-              </div>
-
-              {/* Status badge overlay */}
-              <div className="absolute top-2 left-2">
-                {isLive && (
-                  <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
-                  </span>
-                )}
-                {isEnded && (
-                  <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
-                    <i className="ri-check-line" /> Ended
-                  </span>
-                )}
-                {!isLive && !isEnded && (
-                  <span className="inline-flex items-center gap-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
-                    <i className="ri-time-line" /> Upcoming
-                  </span>
-                )}
-              </div>
-            </div>
-  <h1 className="font-black text-2xl md:text-3xl text-black dark:text-white leading-tight tracking-tight mb-4">
-              {title}
-            </h1>
-            {/* <div className="flex items-center gap-2 flex-wrap mb-3">
-              {isCentralEvent ? (
-                <>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-bold uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
-                    <i className="ri-sparkling-line" /> College-Wide Event
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                    <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400" /> Office of DSW
-                  </span>
-                </>
-              ) : (
-                clubCategory && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200 dark:border-cn-blue-800/50 text-[10px] font-light uppercase tracking-wider text-cn-blue-700 dark:text-cn-blue-400">
-                    {clubCategory}
-                  </span>
-                )
-              )}
-              {entryFee === 0 && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/50 text-[10px] font-light uppercase tracking-wider text-green-700 dark:text-green-400">
-                   Free
-                </span>
-              )}
-              {event.provideCertificate && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 text-[10px] font-light uppercase tracking-wider text-blue-700 dark:text-blue-400">
-                   Certificate
-                </span>
-              )}
-            </div> */}
-
-     
-          
-
-            <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
-              <span className="inline-flex items-center gap-1.5">
-                <i className="ri-calendar-event-line text-brand-500" />
-                {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-              <span className="inline-flex items-center gap-1.5">
-                <i className="ri-map-pin-2-line text-brand-500" />
-                <span className="truncate max-w-[160px]">{venue}</span>
-              </span>
-              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-              {isCentralEvent ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <i className="ri-building-2-line text-brand-500" />
-                  <span className="truncate max-w-[140px]">Office of DSW</span>
-                </span>
-              ) : clubSlugOrId ? (
-                <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors">
-                  <i className="ri-team-line text-brand-500" />
-                  <span className="truncate max-w-[140px]">{displayName}</span>
-                </Link>
-              ) : (
-                <span className="inline-flex items-center gap-1.5">
-                  <i className="ri-team-line text-brand-500" />
-                  <span className="truncate max-w-[140px]">{displayName}</span>
-                </span>
-              )}
-              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-              <span className="inline-flex items-center gap-1.5">
-                <i className="ri-user-line text-brand-500" />
-                {registeredCount} Registered
-              </span>
-              <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-              <span className="inline-flex items-center gap-1.5" title="Total event views">
-                <i className="ri-eye-line text-brand-500" />
-                {views || 0} Views
-              </span>
-            </div>
-
-{/* /////// Winners Section //////*/}
-
-{showWinners && (
-              <div id="winners-section" className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 bg-white border border-black/10 rounded-lg flex items-center justify-center text-brand-500 text-lg">
-                    <i className="ri-trophy-fill" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
-                    <p className="text-[15px] font-black text-black dark:text-white">
-                      {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
-                    </p>
-                  </div>
+                {/* Share button on top right */}
+                <div className="absolute top-2 right-2 z-10">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShare();
+                    }}
+                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
+                    title="Share Event"
+                    aria-label="Share Event"
+                  >
+                    <i className="ri-share-forward-line text-sm" />
+                  </button>
                 </div>
+
+                {/* Status badge overlay */}
+                <div className="absolute top-2 left-2">
+                  {isLive && (
+                    <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
+                    </span>
+                  )}
+                  {isEnded && (
+                    <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                      <i className="ri-check-line" /> Ended
+                    </span>
+                  )}
+                  {!isLive && !isEnded && (
+                    <span className="inline-flex items-center gap-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                      <i className="ri-time-line" /> Upcoming
+                    </span>
+                  )}
+                </div>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.06} distance={15}>
+              <h1 className="font-medium mysans text-xl md:text-3xl text-black dark:text-white leading-tight tracking-tight mb-4">
+                {title}
+              </h1>
+
+              <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="ri-calendar-event-line text-brand-500" />
+                  {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="ri-map-pin-2-line text-brand-500" />
+                  <span className="truncate max-w-[160px]">{venue}</span>
+                </span>
+                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                {isCentralEvent ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <i className="ri-building-2-line text-brand-500" />
+                    <span className="truncate max-w-[140px]">Office of DSW</span>
+                  </span>
+                ) : clubSlugOrId ? (
+                  <Link to={`/club/${clubSlugOrId}`} className="inline-flex items-center gap-1.5 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors">
+                    <i className="ri-team-line text-brand-500" />
+                    <span className="truncate max-w-[140px]">{displayName}</span>
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5">
+                    <i className="ri-team-line text-brand-500" />
+                    <span className="truncate max-w-[140px]">{displayName}</span>
+                  </span>
+                )}
+                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="ri-user-line text-brand-500" />
+                  {registeredCount} Registered
+                </span>
+                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                <span className="inline-flex items-center gap-1.5" title="Total event views">
+                  <i className="ri-eye-line text-brand-500" />
+                  {views || 0} Views
+                </span>
+              </div>
+            </ScrollReveal>
+
+            {/* /////// Winners Section //////*/}
+            {showWinners && (
+              <div id="winners-section" className="mb-8">
+                <ScrollReveal direction="up" distance={20}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 bg-white border border-black/10 rounded-lg flex items-center justify-center text-brand-500 text-lg">
+                      <i className="ri-trophy-fill" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
+                      <p className="text-[15px] font-black text-black dark:text-white">
+                        {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
+                      </p>
+                    </div>
+                  </div>
+                </ScrollReveal>
                 <div className="space-y-2.5">
                   {[...winners].sort((a, b) => a.rank - b.rank).map((winner, i) => {
                     const medal = medalConfig[winner.rank];
@@ -1111,91 +1168,94 @@ const EventDetails = () => {
                     const isTeamWinner = event.registrationType === 'team' || (memberList && memberList.length > 0);
 
                     return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3.5 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl transition-all shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700"
-                      >
-                        {/* Medal Rank Badge */}
+                      <ScrollReveal key={i} direction="up" delay={0.05 * (i % 3)} distance={20}>
                         <div
-                          className={`w-9 h-9 shrink-0 rounded-lg ${
-                            medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
-                          } flex items-center justify-center font-black text-sm`}
+                          className="flex items-center gap-3.5 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl transition-all shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700"
                         >
-                        
+                          {/* Medal Rank Badge */}
+                          <div
+                            className={`w-9 h-9 shrink-0 rounded-lg ${
+                              medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+                            } flex items-center justify-center font-black text-sm`}
+                          >
                             <span>#{winner.rank}</span>
-                         
-                        </div>
-
-                        {/* Winner / Team Name & Members */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-bold text-black dark:text-white truncate">
-                              {winner.name}
-                            </p>
-                            {isTeamWinner && (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
-                                <i className="ri-team-line text-[10px]" /> Team
-                              </span>
-                            )}
                           </div>
 
-                          {memberList && memberList.length > 0 && (() => {
-                            const namesArr = Array.isArray(memberList)
-                              ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
-                              : [typeof memberList === 'string' ? memberList : memberList?.name].filter(Boolean);
-                            const uniqueNames = Array.from(new Set(namesArr));
-                            if (uniqueNames.length === 0) return null;
-                            return (
-                              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
-                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
-                                {uniqueNames.join(', ')}
+                          {/* Winner / Team Name & Members */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-bold text-black dark:text-white truncate">
+                                {winner.name}
                               </p>
-                            );
-                          })()}
-                        </div>
+                              {isTeamWinner && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                                  <i className="ri-team-line text-[10px]" /> Team
+                                </span>
+                              )}
+                            </div>
 
-                        {/* Rank Label */}
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
-                          {medal ? `${medal.label} Place` : `#${winner.rank}`}
-                        </span>
-                      </div>
+                            {memberList && memberList.length > 0 && (() => {
+                              const namesArr = Array.isArray(memberList)
+                                ? memberList.map(m => (typeof m === 'string' ? m : m?.name)).filter(Boolean)
+                                : [typeof memberList === 'string' ? memberList : memberList?.name].filter(Boolean);
+                              const uniqueNames = Array.from(new Set(namesArr));
+                              if (uniqueNames.length === 0) return null;
+                              return (
+                                <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
+                                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
+                                  {uniqueNames.join(', ')}
+                                </p>
+                              );
+                            })()}
+                          </div>
+
+                          {/* Rank Label */}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                            {medal ? `${medal.label} Place` : `#${winner.rank}`}
+                          </span>
+                        </div>
+                      </ScrollReveal>
                     );
                   })}
                 </div>
               </div>
             )} 
 
-
             {description && (
-              <div className="mb-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
-                  About this Event
-                </h2>
-                <div 
-                  className="text-[15px] text-neutral-700 dark:text-neutral-300 leading-relaxed event-description campusnode-markdown-preview px-0" 
-                  dangerouslySetInnerHTML={{ __html: markdownToHtml(description) }}
-                />
-              </div>
+              <ScrollReveal direction="up" distance={20} delay={0.04}>
+                <div className="mb-8">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
+                    About this Event
+                  </h2>
+                  <div 
+                    className="text-[15px] text-neutral-700 dark:text-neutral-300 leading-relaxed event-description campusnode-markdown-preview px-0" 
+                    dangerouslySetInnerHTML={{ __html: markdownToHtml(description) }}
+                  />
+                </div>
+              </ScrollReveal>
             )}
 
             <div className="mb-8">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
-                Event Highlights
-              </h3>
+              <ScrollReveal direction="up" distance={15}>
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  Event Highlights
+                </h3>
+              </ScrollReveal>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {highlights.map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-cn-blue-300 dark:hover:border-cn-blue-700 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
-                      <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
+                  <ScrollReveal key={i} direction="up" delay={0.04 * (i % 3)} distance={18} className="h-full">
+                    <div
+                      className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-cn-blue-300 dark:hover:border-cn-blue-700 transition-colors h-full"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0">
+                        <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                        <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
-                      <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </div>
@@ -1204,37 +1264,41 @@ const EventDetails = () => {
 
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
-                  Gallery
-                </h3>
+                <ScrollReveal direction="up" distance={15}>
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                    Gallery
+                  </h3>
+                </ScrollReveal>
                 <div className="grid grid-cols-3 gap-2">
                   {event.media.filter(m => m.type !== 'SPONSOR_LOGO').map((item, i) => (
-                    <div key={i} className="aspect-square rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 relative group">
-                      {item.type === 'IMAGE' ? (
-                        <div 
-                          className="w-full h-full cursor-zoom-in" 
-                          onClick={() => openImageModal(item.url, `${title} - Gallery Image ${i + 1}`, `Gallery ${i + 1}`)}
-                        >
-                          <img
-                            src={item.url}
-                            alt={`Gallery ${i}`}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
-                          />
-                        </div>
-                      ) : (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full h-full flex flex-col items-center justify-center bg-black gap-1.5"
-                        >
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="white" className="opacity-80">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                          <span className="text-[9px] text-white font-medium uppercase tracking-widest opacity-50">Watch</span>
-                        </a>
-                      )}
-                    </div>
+                    <ScrollReveal key={i} direction="up" delay={0.05 * (i % 3)} distance={15} className="h-full">
+                      <div className="aspect-square rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 relative group">
+                        {item.type === 'IMAGE' ? (
+                          <div 
+                            className="w-full h-full cursor-zoom-in" 
+                            onClick={() => openImageModal(item.url, `${title} - Gallery Image ${i + 1}`, `Gallery ${i + 1}`)}
+                          >
+                            <img
+                              src={item.url}
+                              alt={`Gallery ${i}`}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
+                            />
+                          </div>
+                        ) : (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full h-full flex flex-col items-center justify-center bg-black gap-1.5"
+                          >
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white" className="opacity-80">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <span className="text-[9px] text-white font-medium uppercase tracking-widest opacity-50">Watch</span>
+                          </a>
+                        )}
+                      </div>
+                    </ScrollReveal>
                   ))}
                 </div>
               </div>
@@ -1242,139 +1306,32 @@ const EventDetails = () => {
 
             
 
-            {/* Contact Event Organizer Section (Left Panel) */}
-            <div className="mb-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-xs">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
-                    Questions about this event?
-                  </h3>
-                  <h4 className="text-base sm:text-lg font-bold text-black dark:text-white mt-0.5">
-                    Contact Event Organizer
-                  </h4>
-                </div>
-                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
-                  <i className="ri-mail-send-line text-lg" />
-                </div>
-              </div>
 
-              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
-                For queries regarding event rules, round timings, team participation, eligibility, or certificates, please contact the organizing club directly.
-              </p>
-
-              {isCentralEvent ? (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 flex items-center justify-center shrink-0 border border-cn-blue-200 dark:border-cn-blue-900/50">
-                      <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-black dark:text-white truncate">Office of DSW</p>
-                      <p className="text-xs text-neutral-500">Dean Student Welfare, NIT Jalandhar</p>
-                    </div>
-                  </div>
-                  <a
-                    href="mailto:dsw@nitj.ac.in"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs shrink-0"
-                  >
-                    <i className="ri-mail-line" /> Contact DSW Office
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {allOrganizingClubs.map((clubObj, idx) => {
-                    const cEmail = clubObj?.clubEmail || (idx === 0 ? (event.club?.clubEmail || event.createdBy?.email) : null) || 'clubsetu@nikhim.me';
-                    const cName = clubObj?.clubName || displayName;
-                    const cSlug = clubObj?.slug || clubSlugOrId;
-                    const cLogo = clubObj?.clubLogo || (idx === 0 ? event.club?.clubLogo : null);
-
-                    return (
-                      <div
-                        key={clubObj?.id || idx}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850/50 border border-neutral-200/80 dark:border-neutral-800"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {cLogo ? (
-                            <img src={cLogo} alt={cName} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-200/60 dark:border-brand-800/40">
-                              <i className="ri-team-line text-lg" />
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {cSlug ? (
-                                <Link
-                                  to={`/club/${cSlug}`}
-                                  className="text-sm font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate hover:underline"
-                                >
-                                  {cName}
-                                </Link>
-                              ) : (
-                                <span className="text-sm font-bold text-black dark:text-white truncate">{cName}</span>
-                              )}
-                              {isJointEvent && (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
-                                  {idx === 0 ? 'Lead Organizer' : 'Co-Host'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <a
-                                href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
-                                className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 truncate"
-                              >
-                                <i className="ri-mail-line text-xs" /> {cEmail}
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                          <button
-                            type="button"
-                            onClick={() => handleCopyEmail(cEmail)}
-                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 transition-all cursor-pointer shadow-2xs"
-                            title="Copy email to clipboard"
-                          >
-                            <i className={copiedEmail === cEmail ? "ri-check-line text-emerald-600" : "ri-file-copy-line"} />
-                            <span>{copiedEmail === cEmail ? 'Copied' : 'Copy Email'}</span>
-                          </button>
-                          <a
-                            href={`mailto:${cEmail}?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
-                            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer"
-                          >
-                            <i className="ri-mail-send-line" />
-                            <span>Send Email</span>
-                          </a>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
 
             <div className="mb-8">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
-                Frequently Asked Questions
-              </h2>
+              <ScrollReveal direction="up" distance={15}>
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  Frequently Asked Questions
+                </h2>
+              </ScrollReveal>
               <div className="space-y-3">
                 {faqItems.map((item, i) => (
-                  <FAQItem
-                    key={i}
-                    question={item.question}
-                    answer={item.answer}
-                    isOpen={openFAQ === i}
-                    onToggle={() => setOpenFAQ(openFAQ === i ? null : i)}
-                  />
+                  <ScrollReveal key={i} direction="up" delay={0.04 * i} distance={15}>
+                    <FAQItem
+                      question={item.question}
+                      answer={item.answer}
+                      isOpen={openFAQ === i}
+                      onToggle={() => setOpenFAQ(openFAQ === i ? null : i)}
+                    />
+                  </ScrollReveal>
                 ))}
               </div>
             </div>
           </div>
 
           <div className="w-full lg:w-[30%] lg:sticky lg:top-[80px] shrink-0">
-            <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+            <ScrollReveal direction="up" distance={20} delay={0.08} duration={0.45}>
+              <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
 
               <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
@@ -1382,7 +1339,7 @@ const EventDetails = () => {
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p>
+                    {/* <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p> */}
                     <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
                       {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
@@ -1485,7 +1442,7 @@ const EventDetails = () => {
                         : handleRegister)
                       : undefined}
                     disabled={btnConfig.disabled || isRegistering}
-                    className={`flex-1 py-3 px-6 text-[13px] font-bold mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
+                    className={`flex-1 py-2 px-4 text-md font-semibold mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
                   >
                     {isRegistering ? (
                       <><i className="ri-loader-4-line animate-spin text-base" /> Processing…</>
@@ -1515,9 +1472,8 @@ const EventDetails = () => {
                       <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
-                      <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
-                      <p className="text-[11px] font-medium text-cn-blue-600 dark:text-cn-blue-400">Dean Student Welfare</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
+                   
                     </div>
                   </div>
 
@@ -1560,7 +1516,7 @@ const EventDetails = () => {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organized by</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
@@ -1571,16 +1527,7 @@ const EventDetails = () => {
                       ) : (
                         <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
                       )}
-                      {primaryClubEmail && (
-                        <a
-                          href={`mailto:${primaryClubEmail}?subject=${encodeURIComponent(`Inquiry: ${title}`)}`}
-                          className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 mt-0.5 truncate max-w-full"
-                          title={primaryClubEmail}
-                        >
-                          <i className="ri-mail-line text-xs" />
-                          <span className="truncate">{primaryClubEmail}</span>
-                        </a>
-                      )}
+
                     </div>
                   </div>
 
@@ -1604,101 +1551,172 @@ const EventDetails = () => {
                     </div>
                   )}
 
-                  {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
-                    <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2.5">
-                        Connect with {displayName}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {event.club.socialLinks.map((link, i) => {
-                          const platform = link.platform?.toLowerCase() || "website";
-                          const iconProps = { className: "w-6 h-6" };
-
-                          const getIcon = () => {
-                            if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={28} />;
-                            if (platform.includes("linkedin")) return <LinkedinIcon {...iconProps} size={28} />;
-                            if (platform.includes("twitter") || platform.includes("x")) return <TwitterIcon {...iconProps} size={28} />;
-                            if (platform.includes("github")) return <GithubIcon {...iconProps} size={28} />;
-                            if (platform.includes("whatsapp")) return <MessageCircleIcon {...iconProps} size={28} />;
-                            if (platform.includes("website")) return <EarthIcon {...iconProps} size={28} />;
-                            return <i className="ri-links-line text-sm" />;
-                          };
-
-                          const href = platform === "whatsapp" 
-                            ? `https://wa.me/${link.url.replace(/\s+/g, "")}` 
-                            : link.url;
-
-                          return (
-                            <a
-                              key={link._id || link.id || i}
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
-                              title={link.platform}
-                            >
-                              {getIcon()}
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
+            </ScrollReveal>
+
+            {/* Contact Club / Organizer Box */}
+            <ScrollReveal direction="up" distance={20} delay={0.12} duration={0.45}>
+              <div className="mt-4 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-200/50 dark:border-brand-800/40">
+                    <i className="ri-question-answer-line text-base" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                      Questions?
+                    </p>
+                    <h3 className="text-[13px] font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                      Contact Organizer
+                    </h3>
+                  </div>
+                </div>
+
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3.5">
+                  Have questions or need assistance with this event?
+                  {/* <span className="font-semibold text-neutral-900 dark:text-neutral-200">
+                    {isCentralEvent ? 'Office of DSW' : displayName}
+                  </span>. */}
+                </p>
+
+                <a
+                  href={`mailto:${
+                    isCentralEvent
+                      ? 'dsw@nitj.ac.in'
+                      : (allOrganizingClubs[0]?.clubEmail || event.club?.clubEmail || event.createdBy?.email || 'clubsetu@nikhim.me')
+                  }?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
+                  className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
+                >
+                  <i className="ri-mail-send-line text-sm" />
+                  <span>Contact Organizer</span>
+                </a>
+
+                {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
+                  <div className="mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
+                      Connect with {displayName}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {event.club.socialLinks.map((link, i) => {
+                        const platform = link.platform?.toLowerCase() || "website";
+                        const iconProps = { className: "w-5 h-5" };
+
+                        const getIcon = () => {
+                          if (platform.includes("instagram")) return <InstagramIcon {...iconProps} size={24} />;
+                          if (platform.includes("linkedin")) return <LinkedinIcon {...iconProps} size={24} />;
+                          if (platform.includes("twitter") || platform.includes("x")) return <TwitterIcon {...iconProps} size={24} />;
+                          if (platform.includes("github")) return <GithubIcon {...iconProps} size={24} />;
+                          if (platform.includes("whatsapp")) return <MessageCircleIcon {...iconProps} size={24} />;
+                          if (platform.includes("website")) return <EarthIcon {...iconProps} size={24} />;
+                          return <i className="ri-links-line text-sm" />;
+                        };
+
+                        const href = platform === "whatsapp" 
+                          ? `https://wa.me/${link.url.replace(/\s+/g, "")}` 
+                          : link.url;
+
+                        return (
+                          <a
+                            key={link._id || link.id || i}
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
+                            title={link.platform}
+                          >
+                            {getIcon()}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollReveal>
 
             {event.sponsors && event.sponsors.length > 0 && (
-              <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
-                  Sponsors/Partners
-                </h3>
-                <div className="flex flex-wrap gap-5 items-center">
-                  {event.sponsors.map((sponsor, i) => (
-                    <a
-                      key={i}
-                      href={sponsor.websiteUrl || '#'}
-                      target={sponsor.websiteUrl ? "_blank" : "_self"}
-                      rel="noopener noreferrer"
-                      className={`flex flex-col items-center gap-1.5 transition-opacity justify-center ${
-                        sponsor.websiteUrl ? 'cursor-pointer hover:opacity-100 opacity-80' : 'cursor-default opacity-80'
-                      }`}
-                    >
-                      <img
-                        src={sponsor.logoUrl}
-                        alt={sponsor.name}
-                        className="h-7 w-auto object-contain bg-white dark:bg-black"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
-                      />
-                    </a>
-                  ))}
+              <ScrollReveal direction="up" distance={20} delay={0.15}>
+                <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                    Sponsors/Partners
+                  </h3>
+                  <div className="flex flex-wrap gap-5 items-center">
+                    {event.sponsors.map((sponsor, i) => (
+                      <a
+                        key={i}
+                        href={sponsor.websiteUrl || '#'}
+                        target={sponsor.websiteUrl ? "_blank" : "_self"}
+                        rel="noopener noreferrer"
+                        className={`flex flex-col items-center gap-1.5 transition-opacity justify-center ${
+                          sponsor.websiteUrl ? 'cursor-pointer hover:opacity-100 opacity-80' : 'cursor-default opacity-80'
+                        }`}
+                      >
+                        <img
+                          src={sponsor.logoUrl}
+                          alt={sponsor.name}
+                          className="h-7 w-auto object-contain bg-white dark:bg-black"
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/28?text=' + sponsor.name[0]; }}
+                        />
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             )}
           </div>
         </div>
       </div>
 
       {showMobileCTA && (
-        <div className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 left-0 right-0 z-40 flex justify-center pointer-events-none px-4">
-          <button
-            onClick={!btnConfig.disabled && !isRegistering ? handleRegister : undefined}
-            disabled={btnConfig.disabled || isRegistering}
-            className={`pointer-events-auto px-6 py-2.5 text-[13px] font-bold mysans tracking-wide border rounded-full shadow-lg dark:shadow-neutral-950/60 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
+        <div
+          className={`lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none px-2 sm:px-3 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isCTAVisible
+              ? 'translate-y-0 opacity-100'
+              : 'translate-y-24 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div
+            className={`w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex justify-center ${
+              isCTAVisible ? 'pointer-events-auto' : 'pointer-events-none'
+            } ${
+              isAtBottom
+                ? 'max-w-xl'
+                : 'max-w-[180px] sm:max-w-[180px]'
+            }`}
           >
-            {isRegistering ? (
-              <><i className="ri-loader-4-line animate-spin text-sm" /> Processing…</>
-            ) : (
-              <>
-                
-                {btnConfig.label}
-              </>
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={!btnConfig.disabled && !isRegistering
+                ? (isEnded
+                  ? () => document.getElementById('winners-section')?.scrollIntoView({ behavior: 'smooth' })
+                  : handleRegister)
+                : undefined}
+              disabled={btnConfig.disabled || isRegistering}
+              className={`w-full py-2.5 px-4 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md text-neutral-950 dark:text-neutral-50 border border-neutral-300/80 dark:border-neutral-700/80 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.45)] ring-1 ring-black/5 dark:ring-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-neutral-50 dark:hover:bg-neutral-850 hover:border-neutral-400/80 dark:hover:border-neutral-600 hover:shadow-[0_6px_28px_rgba(0,0,0,0.12)] active:scale-[0.98] touch-manipulation flex items-center justify-center gap-2.5 font-semibold mysans text-[14px] tracking-tight ${
+                (btnConfig.disabled || isRegistering)
+                  ? 'opacity-60 cursor-not-allowed active:scale-100'
+                  : 'cursor-pointer'
+              }`}
+            >
+              {isRegistering ? (
+                <>
+                  <i className="ri-loader-4-line animate-spin text-base text-neutral-950 dark:text-white shrink-0" />
+                  <span>Processing…</span>
+                </>
+              ) : (
+                <>
+                  <i className="ri-user-add-line text-sm font-light text-neutral-900 dark:text-neutral-100 shrink-0" />
+                  <span className="truncate">{btnConfig.label}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
       {/* Spacer for mobile CTA */}
       {showMobileCTA && <div className="lg:hidden h-24 md:h-16" />}
+      <div ref={bottomSentinelRef} className="h-px w-full pointer-events-none" aria-hidden="true" />
 
       {missingFieldsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">

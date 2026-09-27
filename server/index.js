@@ -1,3 +1,4 @@
+import "./lib/telemetry/index.js";
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -38,6 +39,10 @@ import { apiCompression, etagSupport, getPerformanceStats, overloadProtection, p
 import { seedPermissions } from "./utils/rbac.js";
 import { authenticateSocketToken } from "./middleware/auth.js";
 import browserAccessGuard from "./middleware/browserAccessGuard.js";
+import { recordSocketHandshake } from "./lib/observability.js";
+
+// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
+import { rolloutMiddleware } from "./temporary-rollout/index.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -69,12 +74,24 @@ const getSocketToken = (socket) => {
 };
 
 io.use(async (socket, next) => {
+  const startedAt = process.hrtime.bigint();
   try {
     const principal = await authenticateSocketToken(getSocketToken(socket));
-    if (!principal) return next(new Error("Unauthorized socket connection"));
+    if (!principal) {
+      recordSocketHandshake({
+        durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+        error: new Error("unauthorized"),
+      });
+      return next(new Error("Unauthorized socket connection"));
+    }
     socket.data.principal = principal;
+    recordSocketHandshake({ durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6 });
     next();
   } catch {
+    recordSocketHandshake({
+      durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+      error: new Error("handshake_failed"),
+    });
     next(new Error("Unauthorized socket connection"));
   }
 });
@@ -103,7 +120,7 @@ app.use(cors(corsOptions));
 app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "public")));
 app.use(browserAccessGuard);
 
-app.use(requestMetrics);
+// app.use(requestMetrics);
 app.use(overloadProtection);
 app.use(publicReadCache);
 app.use(etagSupport);
@@ -177,6 +194,9 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ ok: true, ...getPerformanceStats(), uptimeSeconds: Math.round(process.uptime()) });
 });
+
+// [TEMPORARY ROLLOUT INTEGRATION] - Launch rollout access control
+app.use(rolloutMiddleware);
 
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);

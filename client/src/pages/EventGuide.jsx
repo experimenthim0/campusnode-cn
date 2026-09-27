@@ -9,24 +9,24 @@ const EventGuide = () => {
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3 text-brand-600">
             <span className="block w-6 h-[1px] bg-brand-600" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Documentation</span>
+            <span className="text-[10px] font-semibold tracking-wider">Documentation</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-semibold text-neutral-900 dark:text-white tracking-tight">
             Event <span className="text-brand-600">Creation</span> Guide
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-xl text-sm md:text-base leading-relaxed">
-            Everything you need to know about creating and managing events on Campus<span className="text-brand-600 font-semibold">Node</span>. This guide covers our 4-step event creation wizard, eligibility restrictions, payment methods, custom forms, and extras.
+            Everything you need to know about creating and managing events on Campusnode. This guide covers our 4-step event creation wizard, eligibility restrictions, payment methods, custom forms, and extras.
           </p>
         </div>
 
         {/* Who can create */}
         <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-user-star-line text-brand-600 text-xl" />
             Who Can Create Events?
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 text-sm">
-            Only registered <strong className="text-neutral-800 dark:text-neutral-200">Club Heads</strong> can create events on Campus<span className="text-brand-600 font-semibold">Node</span>. Each club head represents an official NITJ club and is responsible for managing their events, registrations, and payments.
+            Only registered <strong className="text-neutral-800 dark:text-neutral-200">Club Heads</strong> can create events on Campusnode. Each club head represents an official NITJ club and is responsible for managing their events, registrations, and payments.
           </p>
           <div className="bg-brand-50 dark:bg-brand-950/20 border border-brand-100 dark:border-brand-900/40 rounded-xl p-4 text-xs md:text-sm text-brand-850 dark:text-brand-400 flex items-center gap-2">
             <i className="ri-information-line text-brand-600 text-base shrink-0" />
@@ -35,9 +35,10 @@ const EventGuide = () => {
         </section>
 
         {/* 4-Step Creation Workflow */}
-        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2.5">
-            <i className="ri-git-commit-line text-brand-600 text-xl" />
+        <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
+             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2.5">
+            <i className="ri-git-commit-line text-brand-600 text-xl font-medium" />
             The 4-Step Event Creation Wizard
           </h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
@@ -72,14 +73,14 @@ const EventGuide = () => {
               },
             ].map((s) => (
               <div key={s.step} className="p-4 bg-cn-surface-muted border border-cn-border-subtle rounded-xl relative overflow-hidden">
-                <span className="absolute top-2 right-3 text-3xl font-black text-neutral-200 dark:text-neutral-800 select-none">
+                <span className="absolute top-2 right-3 text-3xl font-medium text-neutral-200 dark:text-neutral-800 select-none">
                   {s.step}
                 </span>
                 <div className="flex items-center gap-2.5 mb-2 relative z-10">
-                  <div className="w-8 h-8 bg-brand-100 dark:bg-brand-950/50 text-brand-600 rounded-lg flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 bg-brand-100 dark:bg-brand-950/50 text-brand-600 rounded-lg flex items-center justify-center font-light text-sm">
                     <i className={s.icon} />
                   </div>
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-sm">{s.title}</h3>
+                  <h3 className="font-medium text-neutral-900 dark:text-white text-sm">{s.title}</h3>
                 </div>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed relative z-10">
                   {s.desc}
@@ -89,9 +90,10 @@ const EventGuide = () => {
           </div>
         </section>
 
-        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
-            <i className="ri-layout-grid-line text-brand-600 text-xl" />
+        <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
+             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
+            <i className="ri-layout-grid-line text-brand-600 text-xl font-medium" />
             Supported Event Types
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,7 +134,7 @@ const EventGuide = () => {
                   <i className={`${item.icon} text-lg`} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-neutral-800 dark:text-neutral-200 text-sm">{item.title}</h3>
+                  <h3 className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">{item.title}</h3>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
@@ -141,19 +143,20 @@ const EventGuide = () => {
         </section>
 
         {/* All Fields Explained */}
-        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
-            <i className="ri-file-list-3-line text-brand-600 text-xl" />
+        <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
+             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
+            <i className="ri-file-list-3-line text-brand-600 text-xl font-medium" />
             Event Form Fields — Complete Reference
           </h2>
 
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
+                <span className="px-2.5 py-0.5 text-[13px] font-semibold tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
                   Step 1
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span className="text-sm font-semibold tracking-wider text-neutral-400 dark:text-neutral-500">
                   Basic Details
                 </span>
               </div>
@@ -187,10 +190,10 @@ const EventGuide = () => {
 
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
+                <span className="px-2.5 py-0.5 text-[13px] font-medium tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
                   Step 2
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span className="text-sm font-medium tracking-wide text-neutral-400 dark:text-neutral-500">
                   Timings & Access Restrictions
                 </span>
               </div>
@@ -233,10 +236,10 @@ const EventGuide = () => {
 
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
+                <span className="px-2.5 py-0.5 text-[13px] font-medium tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
                   Step 3
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span className="text-sm font-medium tracking-wide text-neutral-400 dark:text-neutral-500">
                   Registration & Payment Settings
                 </span>
               </div>
@@ -290,10 +293,10 @@ const EventGuide = () => {
 
             <div className="pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
+                <span className="px-2.5 py-0.5 text-[13px] font-medium tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
                   Step 4
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span className="text-sm font-medium tracking-wide text-neutral-400 dark:text-neutral-500">
                   Extras & Media Assets
                 </span>
               </div>
@@ -324,7 +327,8 @@ const EventGuide = () => {
         </section>
 
         {/* Custom Field Types */}
-        <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+        <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
+             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-magic-line text-brand-600 text-xl" />
             Custom Registration Field Types
@@ -337,9 +341,9 @@ const EventGuide = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-cn-surface-muted border-b border-cn-border">
-                    <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Type</th>
-                    <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Use Case</th>
-                    <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Example</th>
+                    <th className="px-5 py-3 text-[13px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">Type</th>
+                    <th className="px-5 py-3 text-[13px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">Use Case</th>
+                    <th className="px-5 py-3 text-[13px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400">Example</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cn-border-subtle text-sm">
@@ -373,8 +377,8 @@ const EventGuide = () => {
         <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
           
-          <h2 className="text-lg font-bold mb-5 flex items-center gap-2.5 text-cn-text relative z-10">
-            <i className="ri-lightbulb-line text-amber-400 text-xl" />
+          <h2 className="text-lg font-semibold mb-5 flex items-center gap-2.5 text-cn-text relative z-10">
+            <i className="ri-lightbulb-line text-amber-400 text-xl font-medium" />
             Pro Tips for Event Organizers
           </h2>
           <ul className="space-y-4 text-sm text-cn-text-secondary relative z-10">
@@ -405,7 +409,7 @@ const FieldRow = ({ name, required, type, desc, example }) => (
     <div className="sm:w-48 flex-shrink-0">
       <span className="font-semibold text-sm text-neutral-800 dark:text-neutral-200">{name}</span>
       {required && <span className="text-brand-600 ml-0.5">*</span>}
-      <span className="block text-[9px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-1">{type}</span>
+      <span className="block text-[11px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-1">{type}</span>
     </div>
     <div className="flex-grow">
       <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{desc}</p>

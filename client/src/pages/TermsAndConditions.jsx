@@ -10,9 +10,9 @@ const TermsAndConditions = () => {
                 <div className="mb-8 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-2 text-xs font-bold text-cn-text-muted hover:text-cn-text uppercase tracking-widest transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:hover:text-white tracking-wide mb-8 transition-colors"
                     >
-                        <i className="ri-arrow-left-line text-sm" /> Back
+                        <i className="ri-arrow-left-line text-sm" /> Back to Home
                     </button>
                     <span className="text-[11px] font-mono font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                         Last updated: July 2026 · v2.0
@@ -21,14 +21,14 @@ const TermsAndConditions = () => {
 
                 {/* Hero / Title Section */}
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium tracking-wide mb-4">
                         <i className="ri-file-text-line text-sm" /> Terms of Service
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
                         Terms <span className="text-brand-600">&amp;</span> Conditions
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-                        Please review the rules and agreements governing your use of Campus<span className="text-brand-500 dark:text-brand-400 font-semibold">Node</span>, event registrations, and community interactions across NIT Jalandhar.
+                        Please review the rules and agreements governing your use of Campusnode, event registrations, and community interactions across NIT Jalandhar.
                     </p>
                 </div>
 
@@ -38,7 +38,7 @@ const TermsAndConditions = () => {
                             <i className="ri-scales-3-line" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
+                            <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-1">
                                 Agreement &amp; Code of Conduct
                             </h2>
                             <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -52,8 +52,8 @@ const TermsAndConditions = () => {
 
                     {/* Section 1: Acceptance */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">1</span>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">1</span>
                             Acceptance of Terms
                         </h2>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -62,8 +62,8 @@ const TermsAndConditions = () => {
                     </section>
 
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">2</span>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">2</span>
                             User Accounts &amp; Student Credentials
                         </h2>
                         <ul className="space-y-2.5 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
@@ -84,13 +84,13 @@ const TermsAndConditions = () => {
 
                     {/* Section 3: Event Registration */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">3</span>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">3</span>
                             Event Registration &amp; Participation
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3">
                             <div className="p-4 rounded-xl bg-cn-surface-muted border border-cn-border-subtle">
-                                <h3 className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                <h3 className="font-medium text-sm text-neutral-800 dark:text-neutral-200  tracking-wider mb-1.5 flex items-center gap-1.5">
                                     <i className="ri-ticket-line text-cn-blue-600 dark:text-cn-blue-400" /> Attendance Commitment
                                 </h3>
                                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -98,7 +98,7 @@ const TermsAndConditions = () => {
                                 </p>
                             </div>
                             <div className="p-4 rounded-xl bg-cn-surface-muted border border-cn-border-subtle">
-                                <h3 className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                <h3 className="font-medium text-sm text-neutral-800 dark:text-neutral-200 tracking-wider mb-1.5 flex items-center gap-1.5">
                                     <i className="ri-filter-3-line text-cn-blue-600 dark:text-cn-blue-400" /> Eligibility Criteria
                                 </h3>
                                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -110,8 +110,8 @@ const TermsAndConditions = () => {
 
                     {/* Section 4: Club Heads & Organizers */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">4</span>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">4</span>
                             Club Heads &amp; Event Organizers
                         </h2>
                         <ul className="space-y-2.5 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
@@ -132,7 +132,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 5: Prohibited Activities */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">5</span>
                             Prohibited Activities
                         </h2>
@@ -158,7 +158,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 6: Limitation of Liability */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">6</span>
                             Limitation of Liability
                         </h2>
@@ -169,7 +169,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 7: Updates */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">7</span>
                             Modifications to Terms
                         </h2>
@@ -180,7 +180,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 8: Contact */}
                     <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 shadow-md">
-                        <h2 className="text-base font-bold mb-2 flex items-center gap-2">
+                        <h2 className="text-base font-semibold mb-2 flex items-center gap-2">
                             <i className="ri-mail-line text-cn-blue-500 text-lg" /> Terms &amp; Policy Inquiries
                         </h2>
                         <p className="text-xs md:text-sm text-cn-text-muted leading-relaxed mb-4">
@@ -188,7 +188,7 @@ const TermsAndConditions = () => {
                         </p>
                         <a
                             href="mailto:contact.nikhim@gmail.com"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Email CampusNode Team
                         </a>
@@ -196,9 +196,6 @@ const TermsAndConditions = () => {
 
                 </div>
 
-                <div className="mt-10 text-center text-xs text-neutral-400 dark:text-neutral-600">
-                    <p>CampusNode · NIT Jalandhar Student Portal</p>
-                </div>
             </div>
         </div>
     );

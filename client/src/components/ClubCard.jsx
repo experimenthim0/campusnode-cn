@@ -104,6 +104,8 @@ const ClubCard = ({ club }) => {
     setIsHovered(false);
   }, []);
 
+  const activeRgb = rgb || (isDark ? [59, 130, 246] : [201, 235, 255]);
+
   // Construct card styles dynamically
   const cardStyle = (isHovered && rgb)
     ? {
@@ -144,7 +146,7 @@ const ClubCard = ({ club }) => {
       style={cardStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative  border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col h-full group"
+      className="relative border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col h-full group bg-white dark:bg-[#121316]"
     >
       {/* Ambient color gradient overlay on hover */}
       {/* <div
@@ -279,15 +281,41 @@ const ClubCard = ({ club }) => {
           )}
 
           {/* View Page Button */}
-          <Link
-            to={`/club/${club.slug || club._id || club.id}`}
-            style={buttonStyle}
-            className="w-full py-2.5 px-4 rounded-xl border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md"
-          >
-            <span>View Page</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-          </Link>
+          <div className="flex justify-center">
+            <Link
+              to={`/club/${club.slug || club._id || club.id}`}
+              style={buttonStyle}
+              className="py-2 px-5 rounded-full border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+            >
+              <span>Explore Club</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
+      </div>
+
+      {/* Bottom ambient extracted color shade (matches club logo extracted color) */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-36 pointer-events-none z-0 overflow-hidden rounded-b-2xl"
+        aria-hidden="true"
+      >
+        {/* Soft bottom-to-top decreasing gradient shade */}
+        <div
+          className="absolute inset-0 transition-all duration-500"
+          style={{
+            background: isDark
+              ? `linear-gradient(to top, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.32 : 0.18}) 0%, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.10 : 0.05}) 45%, transparent 100%)`
+              : `linear-gradient(to top, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.36 : 0.22}) 0%, rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isHovered ? 0.10 : 0.05}) 45%, transparent 100%)`,
+          }}
+        />
+
+        {/* Soft animated ambient glow orb */}
+        <div
+          className="campus-glow-flow absolute left-1/2 -bottom-10 h-36 w-72 -translate-x-1/2 rounded-full blur-[45px] transition-all duration-500"
+          style={{
+            backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.35 : 0.20) : (isHovered ? 0.50 : 0.30)})`,
+          }}
+        />
       </div>
     </div>
   );

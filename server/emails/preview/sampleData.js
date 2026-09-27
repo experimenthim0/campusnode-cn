@@ -26,6 +26,15 @@ export const samplePreviewData = {
     ipAddress: "192.168.1.42",
     time: "Feb 9, 10:34 AM IST",
   },
+  "auth:password-changed": {
+    name: "Alex Sharma",
+    email: "alex.sharma@nitj.ac.in",
+    device: "Chrome macOS",
+    location: "Jalandhar, Punjab, India",
+    ipAddress: "192.168.1.42",
+    time: "Feb 9, 10:34 AM IST",
+    supportEmail: "support@campusnode.in",
+  },
   "clubs:student-head-assigned": {
     studentName: "Rahul Sharma",
     studentEmail: "rahul.sharma.cs22@nitj.ac.in",

@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.80.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.222.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.222.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.222.0",
+    "@opentelemetry/resources": "^2.11.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@prisma/config": "^7.7.0",
@@ -39,8 +48,8 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node --import ./lib/telemetry/index.js index.js",
+    "dev": "nodemon --import ./lib/telemetry/index.js index.js",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
@@ -50,6 +59,7 @@
     "seed:synthetic": "node scripts/seed-synthetic-data.js",
     "test:load": "node load-tests/run-full-load-test.js",
     "test:redis-usage": "node load-tests/benchmark-redis-usage.js",
+    "benchmark:otel": "node load-tests/benchmark-otel-comparison.js",
     "secrets:staging": "node scripts/generate-staging-secrets.js",
     "rotate:key": "node scripts/rotate-key.js",
     "db:create:postgres": "docker compose -f docker-compose.postgres.yml up -d"

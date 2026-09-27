@@ -1,39 +1,50 @@
 import { escapeHtml } from "../renderer/escapeHtml.js";
+import { colors, shadows, radii, typography, spacing } from "../config/designTokens.js";
 
 /**
  * Bulletproof CTA button component for HTML emails.
- * Uses the primary Blue (#0078d4) and Teal (#00c977) theme from index.css.
+ * Uses CampusNode Brand Blue (#0078d4), Accent Teal (#00c977), Dark (#0f172a), or Secondary styling.
+ * Includes Microsoft Outlook VML roundrect markup for pixel-perfect cross-client rendering.
  *
  * @param {object} props
  * @param {string} props.label - Button text label
  * @param {string} props.url - Target URL
- * @param {"primary" | "teal" | "dark"} [props.variant="primary"] - Styling variant
+ * @param {"primary" | "secondary" | "teal" | "dark"} [props.variant="primary"] - Styling variant
  * @returns {string} HTML markup
  */
 export const Button = ({ label, url, variant = "primary" }) => {
-  let bg = "#0078d4"; // Default brand blue
-  let shadow = "0 2px 8px rgba(0, 120, 212, 0.28)";
+  let bg = colors.primary;
+  let textColor = "#ffffff";
+  let border = "none";
+  let shadow = shadows.buttonPrimary;
 
-  if (variant === "teal") {
-    bg = "#00c977";
-    shadow = "0 2px 8px rgba(0, 201, 119, 0.28)";
+  if (variant === "secondary") {
+    bg = colors.bgApp;
+    textColor = colors.heading;
+    border = `1px solid ${colors.border}`;
+    shadow = "none";
+  } else if (variant === "teal") {
+    bg = colors.teal;
+    textColor = "#ffffff";
+    shadow = shadows.buttonTeal;
   } else if (variant === "dark") {
-    bg = "#0f172a";
-    shadow = "0 2px 8px rgba(15, 23, 42, 0.25)";
+    bg = colors.dark;
+    textColor = "#ffffff";
+    shadow = shadows.buttonDark;
   }
 
   const safeLabel = escapeHtml(label);
   const safeUrl = escapeHtml(url);
 
   return `
-    <div style="text-align: center; margin: 28px 0;">
+    <div style="text-align: center; margin: ${spacing.xxl} 0;">
       <!--[if mso]>
       <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${safeUrl}" style="height:46px;v-text-anchor:middle;width:230px;" arcsize="20%" stroke="f" fillcolor="${bg}">
         <w:anchorlock/>
-        <center style="color:#ffffff;font-family:'Google Sans',Arial,sans-serif;font-size:15px;font-weight:600;">${safeLabel}</center>
+        <center style="color:${textColor};font-family:${typography.fontFamily};font-size:${typography.sizes.base};font-weight:${typography.weights.semibold};">${safeLabel}</center>
       </v:roundrect>
       <![endif]-->
-      <a href="${safeUrl}" target="_blank" style="background-color: ${bg}; color: #ffffff; padding: 13px 32px; text-decoration: none; border-radius: 10px; font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; font-size: 15px; display: inline-block; mso-padding-alt: 0; box-shadow: ${shadow}; text-align: center; letter-spacing: 0.2px;">
+      <a href="${safeUrl}" target="_blank" style="background-color: ${bg}; color: ${textColor}; padding: 13px 32px; text-decoration: none; border-radius: ${radii.lg}; font-family: ${typography.fontFamily}; font-weight: ${typography.weights.semibold}; font-size: ${typography.sizes.base}; display: inline-block; mso-padding-alt: 0; box-shadow: ${shadow}; text-align: center; letter-spacing: 0.2px; border: ${border};">
         ${safeLabel}
       </a>
     </div>

@@ -1,4 +1,5 @@
 import { Button } from "../../components/Button.js";
+import { Heading, BodyText, MutedText, LinkText } from "../../components/Typography.js";
 import { escapeHtml } from "../../renderer/escapeHtml.js";
 
 export const verifyAccountTemplate = {
@@ -14,8 +15,12 @@ export const verifyAccountTemplate = {
     }
   },
 
-  getSubject() {
-    return "Account Verification";
+  getSubject(data) {
+    return data?.subject || "Account Verification";
+  },
+
+  getPreheader() {
+    return "Confirm your email address to complete registration and activate your CampusNode account.";
   },
 
   render(data) {
@@ -24,23 +29,26 @@ export const verifyAccountTemplate = {
     const safeUrl = escapeHtml(verifyUrl);
 
     return `
-      <h2 class="email-heading" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 600; margin: 0 0 16px 0; color: #0f172a; text-align: center;">
-        Welcome to CampusNode!
-      </h2>
-      <p class="email-body-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 400; color: #334155; line-height: 1.6; text-align: center; margin: 0 0 20px 0;">
-        Hi <strong>${safeName}</strong>,<br><br>
-        Thank you for signing up. To complete your registration and activate your student account, please verify your email address.
-      </p>
+      ${Heading({ children: "Welcome to CampusNode!", level: 2, align: "center" })}
+
+      ${BodyText({
+        children: `Hi <strong>${safeName}</strong>,<br><br>Thank you for signing up. To complete your registration and activate your student account, please verify your email address.`,
+        align: "center",
+      })}
 
       ${Button({ label: "Verify My Account", url: verifyUrl, variant: "primary" })}
 
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 16px 0 8px 0;">
-        This verification link will expire in <strong>${expiryHours} hours</strong>.
-      </p>
-      <p class="email-muted-text" style="font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 400; text-align: center; color: #64748b; margin: 0; word-break: break-all;">
-        If the button doesn't work, copy and paste this URL into your browser:<br>
-        <a href="${safeUrl}" style="color: #0078d4; text-decoration: underline;">${safeUrl}</a>
-      </p>
+      ${MutedText({
+        children: `This verification link will expire in <strong>${expiryHours} hours</strong>.`,
+        align: "center",
+        style: "margin-top: 16px; margin-bottom: 8px;",
+      })}
+
+      ${MutedText({
+        children: `If the button doesn't work, copy and paste this URL into your browser:<br>${LinkText({ href: safeUrl })}`,
+        align: "center",
+        style: "margin: 0; word-break: break-all;",
+      })}
     `.trim();
   },
 };

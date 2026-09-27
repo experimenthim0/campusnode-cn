@@ -158,7 +158,7 @@ const ClubCalendarView = ({ events }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs">
+    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs ">
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
         <div>
           <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white">
@@ -335,7 +335,7 @@ const TeamMemberCard = ({
   const hasImage = imageUrl && !imgError;
 
   return (
-    <div className="group relative flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-300">
+    <div className="group relative flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-300 mysans">
       {/* Top Portrait Image Section */}
       <div className="relative w-full aspect-[4/4.6] bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
         {hasImage ? (
@@ -347,7 +347,7 @@ const TeamMemberCard = ({
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-neutral-100 to-neutral-200/70 dark:from-neutral-800 dark:to-neutral-900 select-none">
-            <span className="text-3xl sm:text-4xl font-black tracking-wider text-neutral-600 dark:text-neutral-300">
+            <span className="text-3xl sm:text-4xl font-semibold tracking-wider text-neutral-600 dark:text-neutral-300 mysans">
               {initials}
             </span>
           </div>
@@ -357,11 +357,11 @@ const TeamMemberCard = ({
       {/* Card Info Footer */}
       <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between text-left">
         <div>
-          <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+          <h4 className="text-xs sm:text-sm font-semibold mysans text-neutral-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
             {name || "Member"}
           </h4>
           <p
-            className={`text-[11px] sm:text-xs font-semibold truncate mt-0.5 ${
+            className={`text-[11px] sm:text-xs font-medium mysans truncate mt-0.5 ${
               isLeadership
                 ? "text-brand-600 dark:text-brand-400"
                 : "text-neutral-500 dark:text-neutral-400"
@@ -766,7 +766,7 @@ const ClubDetails = () => {
   const galleryMedia = club.mediaList || club.media || [];
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-white pb-24 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
           
@@ -785,7 +785,7 @@ const ClubDetails = () => {
             {/* Subtle Gradient Shade on Banner */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
 
-            {/* LinkedIn-style Edit Banner Icon */}
+            
             {canEdit && (
               <button
                 onClick={() => setBannerModalOpen(true)}
@@ -827,7 +827,7 @@ const ClubDetails = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 shrink-0 pb-1">
+              <div className="flex items-center gap-2 shrink-0 pb-1 mysans">
                 <button
                   onClick={handleShareClub}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl transition font-semibold text-xs uppercase tracking-wider shadow-2xs cursor-pointer"
@@ -853,7 +853,7 @@ const ClubDetails = () => {
               {/* Left Column: Category Badges, Club Title, Motto */}
               <div className="space-y-1.5 min-w-0 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-500/10 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-semibold mysans tracking-widest text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-500/10 px-2.5 py-0.5 rounded-full">
                     {club.category || "Student Club"}
                   </span>
                   
@@ -864,7 +864,7 @@ const ClubDetails = () => {
                   )}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-neutral-900 dark:text-white leading-tight">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white leading-tight mysans">
                   {club.clubName}
                 </h1>
 
@@ -882,30 +882,30 @@ const ClubDetails = () => {
               </div>
 
               {/* Right Column: Compact Stat Boxes */}
-              <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0">
+              <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0 mysans">
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                     {club?.stats?.membersCount ?? (regularMembersTotal + studentHeads.length + studentCoordinators.length)}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Members
                   </div>
                 </div>
 
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                     {upcomingEvents.length + liveEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Upcoming
                   </div>
                 </div>
 
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-black text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                     {pastEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Past Events
                   </div>
                 </div>
@@ -944,20 +944,16 @@ const ClubDetails = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 relative z-20 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 relative z-20 space-y-8 mysans">
 
       
 
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
-            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-600 dark:text-neutral-500">
+            <h2 className="text-xs font-semibold text-neutral-600 dark:text-neutral-500">
               About the Club
             </h2>
-            {club.establishedYear && (
-              <span className="text-xs text-neutral-500 font-medium">
-                Serving NITJ since {club.establishedYear}
-              </span>
-            )}
+            
           </div>
 
           {/* Mission Statement Banner */}
@@ -965,7 +961,7 @@ const ClubDetails = () => {
             <div className="flex items-start gap-3.5 p-4 rounded-xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20 shadow-2xs">
              
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 mb-0.5">
+                <p className="text-[10px] font-semibold tracking-wider text-brand-600 dark:text-brand-400 mb-0.5">
                   Club Mission
                 </p>
                 <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 leading-relaxed italic">
@@ -1016,7 +1012,7 @@ const ClubDetails = () => {
           {/* Quick Pillars Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+              <p className="text-[11px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
                 Faculty Coordinator
               </p>
               <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
@@ -1024,10 +1020,10 @@ const ClubDetails = () => {
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+              <p className="text-[11px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
                 Student Coordinator / Lead
               </p>
-              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mysans">
                 {studentHeads.length > 0
                   ? studentHeads.map((h) => h.student?.name).filter(Boolean).join(", ")
                   : club.studentCoordinators && club.studentCoordinators.length > 0
@@ -1238,7 +1234,7 @@ const ClubDetails = () => {
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 pb-4">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
  Club Events & Calendar
               </h2>
               <p className="text-xs text-neutral-400">Browse schedules, workshops, and activities</p>
@@ -1316,7 +1312,7 @@ const ClubDetails = () => {
               )}
 
               <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 mb-4">
+                <h3 className="text-sm font-semibold mysans tracking-wider text-neutral-600 dark:text-neutral-500 mb-4">
                   Upcoming Events
                 </h3>
                 {upcomingEvents.length > 0 ? (
@@ -1406,7 +1402,7 @@ const ClubDetails = () => {
           <section className="w-full space-y-6 sm:space-y-8">
             <div className="flex items-center justify-between pb-2">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             Club Leadership & Team
                 </h2>
                 <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p>
@@ -1419,7 +1415,7 @@ const ClubDetails = () => {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Leadership
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
@@ -1457,7 +1453,7 @@ const ClubDetails = () => {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Coordinators
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
@@ -1499,10 +1495,10 @@ const ClubDetails = () => {
               {(membersInitialLoading || regularMembers.length > 0 || regularMembersTotal > 0) && (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Club Members
                     </h3>
-                    {!membersInitialLoading && regularMembersTotal > 0 && (
+                    {!membersInitialLoading && regularMembersTotal > 8 && (
                       <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
                         Showing {regularMembers.length} of {regularMembersTotal}
                       </span>

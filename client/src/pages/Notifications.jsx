@@ -394,7 +394,7 @@ const Notifications = () => {
 
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4">
             Notifications
           </h1>
 
@@ -403,7 +403,7 @@ const Notifications = () => {
             <button
               type="button"
               onClick={() => setActiveTab("unread")}
-              className={`pb-3 text-xs sm:text-sm font-semibold transition-all relative cursor-pointer flex items-center gap-2 ${
+              className={`pb-3 text-xs sm:text-sm font-medium transition-all relative cursor-pointer flex items-center gap-2 ${
                 activeTab === "unread"
                   ? "text-foreground border-b-2 border-primary"
                   : "text-muted-foreground hover:text-foreground font-normal"
@@ -420,7 +420,7 @@ const Notifications = () => {
             <button
               type="button"
               onClick={() => setActiveTab("read")}
-              className={`pb-3 text-xs sm:text-sm font-semibold transition-all relative cursor-pointer flex items-center gap-2 ${
+              className={`pb-3 text-xs sm:text-sm font-medium transition-all relative cursor-pointer flex items-center gap-2 ${
                 activeTab === "read"
                   ? "text-foreground border-b-2 border-primary"
                   : "text-muted-foreground hover:text-foreground font-normal"

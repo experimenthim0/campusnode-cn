@@ -25,16 +25,14 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cn-bg text-cn-text flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
+    <div className="min-h-[80vh] bg-cn-bg text-cn-text flex flex-col items-center justify-center px-5 py-12 transition-colors duration-300">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-black tracking-tight text-cn-text">
+          <h1 className="text-2xl font-light tracking-wider text-cn-text logofont">
             Campus<span className="text-brand-500 dark:text-brand-400">Node</span>
           </h1>
-          <p className="text-sm text-cn-text-muted mt-1">
-            Reset your account password
-          </p>
+         
         </div>
 
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
@@ -47,9 +45,7 @@ const ForgotPassword = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-cn-text-muted mb-2">
-                Registered Email Address
-              </label>
+              
               <input
                 type="email"
                 required

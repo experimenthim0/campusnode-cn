@@ -1,5 +1,14 @@
 import zlib from "node:zlib";
-import { randomUUID, createHash } from "node:crypto";
+import { createHash } from "node:crypto";
+import {
+  classifyRoute,
+  finalizeRequest,
+  recordCompression,
+  recordEtag,
+  recordOverloadRejection,
+  runWithRequestContext,
+} from "../lib/observability.js";
+import { updateInFlightRequests } from "../lib/telemetry/metrics.js";
 
 const DEFAULT_MAX_IN_FLIGHT = 250;
 let inFlightRequests = 0;
@@ -19,6 +28,7 @@ export const overloadProtection = (req, res, next) => {
 
   const maxInFlight = numberFromEnv("MAX_IN_FLIGHT_REQUESTS", DEFAULT_MAX_IN_FLIGHT);
   if (inFlightRequests >= maxInFlight) {
+    recordOverloadRejection({ currentInFlight: inFlightRequests, threshold: maxInFlight });
     res.set("Retry-After", process.env.OVERLOAD_RETRY_AFTER_SECONDS || "15");
     return res.status(503).json({
       success: false,
@@ -28,11 +38,13 @@ export const overloadProtection = (req, res, next) => {
   }
 
   inFlightRequests += 1;
+  updateInFlightRequests(1);
   let released = false;
   const release = () => {
     if (!released) {
       released = true;
       inFlightRequests = Math.max(0, inFlightRequests - 1);
+      updateInFlightRequests(-1);
     }
   };
   res.once("finish", release);
@@ -41,25 +53,56 @@ export const overloadProtection = (req, res, next) => {
 };
 
 export const requestMetrics = (req, res, next) => {
-  const startedAt = process.hrtime.bigint();
-  res.setHeader("X-Request-Id", req.headers["x-request-id"] || randomUUID());
-  const originalEnd = res.end.bind(res);
-  res.end = (chunk, encoding, callback) => {
-    if (!res.headersSent) {
-      const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
-      res.setHeader("X-Response-Time", `${durationMs.toFixed(1)}ms`);
-    }
-    return originalEnd(chunk, encoding, callback);
-  };
+  return runWithRequestContext(req, () => {
+    const context = req.observability;
+    const byteLength = (chunk, encoding) => {
+      if (chunk === undefined || chunk === null) return 0;
+      if (Buffer.isBuffer(chunk)) return chunk.length;
+      if (chunk instanceof Uint8Array) return chunk.byteLength;
+      return Buffer.byteLength(String(chunk), typeof encoding === "string" ? encoding : undefined);
+    };
 
-  res.once("finish", () => {
-    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
-    const slowThreshold = numberFromEnv("SLOW_REQUEST_MS", 300);
-    if (durationMs >= slowThreshold || res.statusCode >= 500) {
-      console.warn(`[Performance] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs.toFixed(1)}ms`);
-    }
+    res.setHeader("X-Request-Id", context.requestId);
+    const originalJson = res.json.bind(res);
+    res.json = (...args) => {
+      const startedAt = process.hrtime.bigint();
+      try {
+        return originalJson(...args);
+      } finally {
+        context.jsonResponseCallMs += Number(process.hrtime.bigint() - startedAt) / 1e6;
+      }
+    };
+
+    const originalWrite = res.write.bind(res);
+    res.write = (chunk, ...args) => {
+      context.responseBytes += byteLength(chunk, args[0]);
+      return originalWrite(chunk, ...args);
+    };
+
+    const originalEnd = res.end.bind(res);
+    res.end = (chunk, encoding, callback) => {
+      context.responseBytes += byteLength(chunk, encoding);
+      if (!res.headersSent) {
+        const durationMs = Number(process.hrtime.bigint() - context.startedAt) / 1e6;
+        const category = classifyRoute(req);
+        res.setHeader("X-Response-Time", `${durationMs.toFixed(1)}ms`);
+        res.setHeader("X-Response-Bytes", String(context.responseBytes));
+        res.setHeader("X-Route-Category", category);
+        res.setHeader(
+          "Server-Timing",
+          `total;dur=${durationMs.toFixed(1)}, auth;dur=${context.authDurationMs.toFixed(1)}, db;dur=${context.db.timeMs.toFixed(1)}`,
+        );
+      }
+      return originalEnd(chunk, encoding, callback);
+    };
+
+    res.once("finish", () => finalizeRequest(req, res));
+    res.once("close", () => {
+      if (!res.writableFinished) finalizeRequest(req, res, { clientAborted: true });
+    });
+
+    next();
   });
-  next();
 };
 
 // Instead of a blanket max-age=15 for all public GETs, each route gets
@@ -196,6 +239,7 @@ export const etagSupport = (req, res, next) => {
   const originalJson = res.json.bind(res);
 
   res.json = (body) => {
+    const startedAt = process.hrtime.bigint();
     try {
       const bodyStr = JSON.stringify(body);
       const hash = createHash("md5").update(bodyStr).digest("hex").slice(0, 16);
@@ -211,6 +255,8 @@ export const etagSupport = (req, res, next) => {
       }
     } catch {
       // If ETag computation fails, just send normally
+    } finally {
+      recordEtag(Number(process.hrtime.bigint() - startedAt) / 1e6);
     }
 
     return originalJson(body);
@@ -245,12 +291,27 @@ export const apiCompression = (req, res, next) => {
     const compressible = contentType.includes("json") || contentType.startsWith("text/") || contentType.includes("javascript");
 
     if (!compressible || body.length < 1024 || res.headersSent) {
+      recordCompression({
+        encoding,
+        inputBytes: body.length,
+        outputBytes: body.length,
+        durationMs: 0,
+        applied: false,
+      });
       res.write = originalWrite;
       res.end = originalEnd;
       return originalEnd(body, ...args);
     }
 
+    const startedAt = process.hrtime.bigint();
     const compressed = encoding === "br" ? zlib.brotliCompressSync(body) : zlib.gzipSync(body);
+    recordCompression({
+      encoding,
+      inputBytes: body.length,
+      outputBytes: compressed.length,
+      durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+      applied: true,
+    });
     res.removeHeader("Content-Length");
     res.setHeader("Content-Encoding", encoding);
     res.setHeader("Vary", "Accept-Encoding");

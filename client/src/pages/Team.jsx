@@ -58,6 +58,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
         transition-all duration-300
         flex flex-col
         select-none
+        mysans
         ${className}
       `}
     >
@@ -84,13 +85,13 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
         {/* Name + Badge + Role */}
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[17px] font-bold text-zinc-900 dark:text-white tracking-tight leading-tight truncate">
+            <h3 className="text-[17px] font-semibold text-zinc-900 dark:text-white tracking-tight leading-tight truncate">
               {item.name}
             </h3>
             <VerifiedBadge className="w-[15px] h-[15px] flex-shrink-0" />
           </div>
 
-          <p className="text-[12.5px] font-medium text-zinc-400 dark:text-zinc-500 leading-snug tracking-wide uppercase truncate">
+          <p className="text-[12.5px] font-medium text-zinc-400 dark:text-zinc-500 leading-snug tracking-wide truncate">
             {item.role}
           </p>
         </div>
@@ -156,7 +157,7 @@ export const TEAM_MEMBERS = [
     role: 'Product Designer',
     department: 'design',
     batch: "Design '27",
-    imageUrl: '/sophie-bennett.jpg',
+    imageUrl: '/user-img.png',
     fallbackUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
     socials: {
       linkedin: 'https://linkedin.com',
@@ -170,7 +171,7 @@ export const TEAM_MEMBERS = [
     role: 'Founder & Lead Backend Engineer',
     department: 'core',
     batch: "CSE '28",
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/user-img.png',
     socials: {
       linkedin: 'https://linkedin.com',
       instagram: 'https://instagram.com',
@@ -183,7 +184,7 @@ export const TEAM_MEMBERS = [
     role: 'Frontend Architect',
     department: 'frontend',
     batch: "CSE '27",
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/user-img.png',
     socials: {
       linkedin: 'https://linkedin.com',
       instagram: 'https://instagram.com',
@@ -196,7 +197,7 @@ export const TEAM_MEMBERS = [
     role: 'Security & Auth Lead',
     department: 'core',
     batch: "ECE '27",
-    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/user-img.png',
     socials: {
       linkedin: 'https://linkedin.com',
       instagram: 'https://instagram.com',
@@ -281,10 +282,10 @@ const Team = () => {
               <Sparkles className="w-3.5 h-3.5" />
               The People Behind CampusNode
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-cn-text tracking-tight mb-3 sm:mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl titlefont font-black text-cn-text tracking-tight mb-3 sm:mb-4">
               Meet the Creators
             </h1>
-            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed">
+            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
               CampusNode is designed, built, and maintained by student developers and designers at
               NIT Jalandhar.
             </p>
@@ -309,7 +310,7 @@ const Team = () => {
             <h3 className="text-xl sm:text-2xl font-bold text-cn-text mb-2 sm:mb-3">
               Want to build with us?
             </h3>
-            <p className="text-xs sm:text-sm text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm mysans text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
               CampusNode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
             </p>
             <a

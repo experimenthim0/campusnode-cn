@@ -14,6 +14,7 @@ import { CalendarCogIcon } from "./ui/calendar-cog";
 import { LayoutGridIcon } from "./ui/layout-grid";
 import LogInIcon from "./ui/login";
 import { LayoutDashboard, Shield } from "lucide-react";
+import { EyeIcon } from "./ui/eye";
 import SearchBar from "./SearchBar";
 import { ArrowRightIcon } from "./ui/arrow-right";
 import { usePwaInstall } from "../hooks/usePwaInstall";
@@ -59,17 +60,57 @@ const Navbar = () => {
   const location = useLocation();
   const dropdownRef = useRef(null);
 
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    let ticking = false;
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = Math.max(0, window.scrollY);
+          const prevScrollY = lastScrollY.current;
+          const delta = currentScrollY - prevScrollY;
+
+          setScrolled(currentScrollY > 10);
+
+          // Always visible near top of page
+          if (currentScrollY <= 40) {
+            setVisible(true);
+          } else if (delta > 6) {
+            // Scrolling down: hide navbar to maximize view size
+            setVisible(false);
+            setDropdownOpen(false);
+            setNotifDropdownOpen(false);
+          } else if (delta < -3) {
+            // Scrolling up (little bit or more): reveal navbar
+            setVisible(true);
+          }
+
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
+    setVisible(true);
     setMobileOpen(false);
     setDropdownOpen(false);
     setSearchOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (searchOpen) {
+      setVisible(true);
+    }
+  }, [searchOpen]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -185,9 +226,9 @@ const Navbar = () => {
       .toUpperCase() || "?";
 
   const navLinkCls = (path) =>
-    `relative px-3.5 py-1.5 text-[13.5px] font-semibold tracking-wide rounded-full transition-all duration-200 group flex items-center justify-center ${isActive(path)
-      ? "text-cn-blue-600 dark:text-cn-blue-400 font-bold bg-cn-blue-50 dark:bg-cn-blue-950/40 shadow-2xs"
-      : "text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:bg-cn-surface-muted"
+    `relative py-1 text-[14px] font-semibold tracking-wide transition-colors duration-200 group flex items-center justify-center ${isActive(path)
+      ? "text-cn-blue-600 dark:text-cn-blue-400 font-bold"
+      : "text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
     }`;
 
 
@@ -217,8 +258,9 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-bg/40 border-b border-cn-border-subtle backdrop-blur-xl transition-all duration-300 myfont ${scrolled ? "shadow-xs border-cn-border-subtle bg-cn-bg/80" : ""
-          }`}
+        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-bg/40 border-b border-cn-border-subtle backdrop-blur-xl transition-all duration-300 ease-in-out myfont ${
+          scrolled ? "shadow-xs border-cn-border-subtle bg-cn-bg/80" : ""
+        } ${visible ? "translate-y-0" : "-translate-y-full pointer-events-none shadow-none"}`}
       >
 
 
@@ -230,7 +272,7 @@ const Navbar = () => {
               to="/"
               className="flex items-center gap-2.5 shrink-0 group logofont hidden sm:block"
             >
-              <span className="font-light text-[24px] tracking-wider text-black uppercase  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
+              <span className="font-light text-[24px] tracking-wider text-black  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
                 Campusnode
               </span>
             </Link>
@@ -245,23 +287,61 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
             <Link to="/" className={navLinkCls("/")}>
-              Home
-              <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${isActive("/") ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"}`} />
+              <span className="relative inline-block leading-none">
+                Home
+                {isActive("/") && (
+                  <EyeIcon
+                    size={12}
+                    className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
+                  />
+                )}
+              </span>
+              <span
+                className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
+                  isActive("/")
+                    ? "scale-x-100 opacity-100"
+                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"
+                }`}
+              />
             </Link>
             <Link to="/clubs" className={navLinkCls("/clubs")}>
-              Clubs
-              <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${isActive("/clubs") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100 group-hover:opacity-75"}`} />
+              <span className="relative inline-block leading-none">
+                Clubs
+                {isActive("/clubs") && (
+                  <EyeIcon
+                    size={12}
+                    className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
+                  />
+                )}
+              </span>
+              <span
+                className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
+                  isActive("/clubs")
+                    ? "scale-x-100 opacity-100"
+                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"
+                }`}
+              />
             </Link>
             <Link to="/events" className={navLinkCls("/events")}>
-              Events
-              <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${isActive("/events") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100 group-hover:opacity-75"}`} />
+              <span className="relative inline-block leading-none">
+                Events
+                {isActive("/events") && (
+                  <EyeIcon
+                    size={12}
+                    className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
+                  />
+                )}
+              </span>
+              <span
+                className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
+                  isActive("/events")
+                    ? "scale-x-100 opacity-100"
+                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"
+                }`}
+              />
             </Link>
-            {/* <Link to="/team" className={navLinkCls("/team")}>
-              Team
-              <span className={`absolute bottom-0.5 left-3 right-3 h-[2px] bg-brand-600 transform transition-all duration-200 origin-center ${isActive("/team") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
-            </Link> */}
           </div>
 
           <div className="hidden md:flex items-center gap-2">
@@ -474,13 +554,13 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs sm:text-[13px] font-bold tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
+                  className="px-4 py-2 text-xs sm:text-[13px] font-semibold tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-bold tracking-widest rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-semibold tracking-widest rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 >
                   <span>Register</span>
                   <i className="ri-arrow-right-line text-xs" />

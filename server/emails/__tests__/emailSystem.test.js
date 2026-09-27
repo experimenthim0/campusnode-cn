@@ -3,9 +3,21 @@ import { escapeHtml } from "../renderer/escapeHtml.js";
 import { templateRegistry, getTemplate, getAllTemplates } from "../templateRegistry.js";
 import { renderEmail } from "../renderer/emailRenderer.js";
 import { mockTransport, getSentEmails, clearSentEmails, getLastEmail } from "../transports/mockTransport.js";
-import { sendEmail, renderPreview } from "../emailService.js";
+import {
+  sendEmail,
+  sendVerificationEmail,
+  sendLoginOtpEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+  renderPreview,
+} from "../emailService.js";
 import legacySendEmail from "../../utils/sendEmail.js";
 import { SecurityMetadataCard } from "../components/SecurityMetadataCard.js";
+import { Heading, BodyText, MutedText, SmallText, LinkText } from "../components/Typography.js";
+import { Button } from "../components/Button.js";
+import { InfoBox } from "../components/InfoBox.js";
+import { Divider } from "../components/Divider.js";
+import { colors, typography, spacing, designTokens } from "../config/designTokens.js";
 import { extractSecurityMetadata, parseUserAgent, cleanIp, formatRequestTime } from "../utils/requestMetadata.js";
 
 describe("CampusNode Centralized Email Subsystem", () => {
@@ -29,22 +41,111 @@ describe("CampusNode Centralized Email Subsystem", () => {
   });
 
   describe("Template Registry", () => {
-    it("should catalogue all 5 active templates", () => {
+    it("should catalogue all 6 active templates", () => {
       const templates = getAllTemplates();
-      expect(templates.length).toBe(5);
+      expect(templates.length).toBe(6);
 
       const ids = templates.map((t) => t.id);
       expect(ids).toContain("auth:verify-account");
       expect(ids).toContain("auth:login-otp");
       expect(ids).toContain("auth:reset-password");
+      expect(ids).toContain("auth:password-changed");
       expect(ids).toContain("clubs:student-head-assigned");
       expect(ids).toContain("clubs:faculty-assigned");
+    });
+
+    it("should resolve developer-friendly aliases", () => {
+      expect(getTemplate("verify-email").id).toBe("auth:verify-account");
+      expect(getTemplate("login-otp").id).toBe("auth:login-otp");
+      expect(getTemplate("reset-password").id).toBe("auth:reset-password");
+      expect(getTemplate("password-changed").id).toBe("auth:password-changed");
+      expect(getTemplate("auth:change-password").id).toBe("auth:password-changed");
     });
 
     it("should throw an informative error on unknown template ID", () => {
       expect(() => getTemplate("unknown:template")).toThrow(
         /Unknown email template ID: "unknown:template"/
       );
+    });
+  });
+
+  describe("Design Tokens & Reusable Typography / Components", () => {
+    it("designTokens - should define coherent colors, typography, and spacing", () => {
+      expect(designTokens.colors.primary).toBe("#0078d4");
+      expect(designTokens.colors.heading).toBe("#0f172a");
+      expect(designTokens.colors.body).toBe("#334155");
+      expect(designTokens.colors.muted).toBe("#64748b");
+      expect(designTokens.colors.teal).toBe("#00c977");
+      expect(designTokens.typography.fontFamily).toContain("Google Sans");
+    });
+
+    it("Heading - should render standardized heading tags and styles", () => {
+      const h1 = Heading({ children: "Welcome", level: 1 });
+      expect(h1).toContain("<h1");
+      expect(h1).toContain("24px");
+      expect(h1).toContain("Welcome");
+
+      const h2 = Heading({ children: "Sub Title", level: 2 });
+      expect(h2).toContain("<h2");
+      expect(h2).toContain("Sub Title");
+    });
+
+    it("BodyText, MutedText, SmallText - should render semantic paragraph elements", () => {
+      const body = BodyText({ children: "Main paragraph content." });
+      expect(body).toContain('class="email-body-text"');
+      expect(body).toContain("Main paragraph content.");
+
+      const muted = MutedText({ children: "Footnote message." });
+      expect(muted).toContain('class="email-muted-text"');
+      expect(muted).toContain("Footnote message.");
+
+      const small = SmallText({ children: "Legal disclaimer." });
+      expect(small).toContain("12px");
+      expect(small).toContain("Legal disclaimer.");
+    });
+
+    it("LinkText - should render accessible anchor tags with word-break", () => {
+      const link = LinkText({ href: "https://campusnode.in/help", label: "Help Center" });
+      expect(link).toContain('href="https://campusnode.in/help"');
+      expect(link).toContain("Help Center");
+      expect(link).toContain("word-break: break-all");
+    });
+
+    it("Button - should render Outlook VML and HTML button across variants", () => {
+      const primaryBtn = Button({ label: "Confirm Account", url: "https://campusnode.in/confirm", variant: "primary" });
+      expect(primaryBtn).toContain("Confirm Account");
+      expect(primaryBtn).toContain("#0078d4");
+      expect(primaryBtn).toContain("v:roundrect");
+
+      const secondaryBtn = Button({ label: "Dismiss", url: "https://campusnode.in/home", variant: "secondary" });
+      expect(secondaryBtn).toContain("Dismiss");
+      expect(secondaryBtn).toContain(colors.bgApp);
+
+      const tealBtn = Button({ label: "Join Club", url: "https://campusnode.in/join", variant: "teal" });
+      expect(tealBtn).toContain("#00c977");
+    });
+
+    it("InfoBox - should render styled alert box across variants", () => {
+      const warningBox = InfoBox({
+        variant: "warning",
+        title: "Security Alert",
+        children: "Unauthorized attempt detected.",
+      });
+      expect(warningBox).toContain("Security Alert");
+      expect(warningBox).toContain("Unauthorized attempt detected.");
+      expect(warningBox).toContain(colors.warningBg);
+
+      const infoBox = InfoBox({
+        variant: "info",
+        children: "Informational notice.",
+      });
+      expect(infoBox).toContain(colors.infoBg);
+    });
+
+    it("Divider - should render clean separator line", () => {
+      const div = Divider();
+      expect(div).toContain("<hr");
+      expect(div).toContain(colors.divider);
     });
   });
 
@@ -133,6 +234,34 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("192.168.1.42");
       expect(rendered.html).toContain("TIME");
       expect(rendered.html).toContain("Feb 9, 10:34 AM");
+    });
+
+    it("auth:password-changed - should render password changed alert with instructions and security card", () => {
+      const template = getTemplate("auth:password-changed");
+
+      const rendered = renderEmail(template, {
+        name: "Priya Patel",
+        email: "priya@nitj.ac.in",
+        device: "Safari on iOS",
+        location: "Chandigarh, IN",
+        ipAddress: "103.21.244.2",
+        time: "Sep 24, 11:30 PM IST",
+        supportEmail: "support@campusnode.in",
+      });
+
+      expect(rendered.subject).toBe("Your CampusNode password has been changed");
+      expect(rendered.html).toContain("Password Changed");
+      expect(rendered.html).toContain("Priya Patel");
+      expect(rendered.html).toContain("Didn&#039;t make this change?");
+      expect(rendered.html).toContain("support@campusnode.in");
+      expect(rendered.html).toContain("DEVICE");
+      expect(rendered.html).toContain("Safari on iOS");
+      expect(rendered.html).toContain("LOCATION");
+      expect(rendered.html).toContain("Chandigarh, IN");
+      expect(rendered.html).toContain("IP ADDRESS");
+      expect(rendered.html).toContain("103.21.244.2");
+      // Security principle: Never include reset URL in password changed alert
+      expect(rendered.html).not.toContain("reset-password/");
     });
 
     it("clubs:student-head-assigned - should render student lead appointment details with dark mode compatibility", () => {
@@ -235,8 +364,75 @@ describe("CampusNode Centralized Email Subsystem", () => {
 
       expect(preview.subject).toBe("CampusNode Login Verification Code");
       expect(preview.html).toContain("112233");
-      // Verify no email was dispatched
       expect(getSentEmails().length).toBe(0);
+    });
+  });
+
+  describe("High-Level Email Service Helpers", () => {
+    it("sendVerificationEmail - dispatches auth:verify-account with correct payload", async () => {
+      const res = await sendVerificationEmail({
+        to: "newuser@nitj.ac.in",
+        name: "Aman Deep",
+        verifyUrl: "https://campusnode.in/verify/abc123token",
+        expiryHours: 24,
+      });
+
+      expect(res.id).toMatch(/^mock_/);
+      const email = getLastEmail();
+      expect(email.to).toBe("newuser@nitj.ac.in");
+      expect(email.subject).toBe("Account Verification");
+      expect(email.html).toContain("Aman Deep");
+      expect(email.html).toContain("https://campusnode.in/verify/abc123token");
+    });
+
+    it("sendLoginOtpEmail - dispatches auth:login-otp with correct payload and metadata", async () => {
+      const res = await sendLoginOtpEmail({
+        to: "student@nitj.ac.in",
+        otp: "543210",
+        contextLabel: "Student",
+        device: "Edge Windows",
+        location: "New Delhi, IN",
+      });
+
+      expect(res.id).toMatch(/^mock_/);
+      const email = getLastEmail();
+      expect(email.to).toBe("student@nitj.ac.in");
+      expect(email.subject).toBe("CampusNode Login Verification Code");
+      expect(email.html).toContain("543210");
+      expect(email.html).toContain("Edge Windows");
+      expect(email.html).toContain("New Delhi, IN");
+    });
+
+    it("sendPasswordResetEmail - dispatches auth:reset-password with reset URL", async () => {
+      const res = await sendPasswordResetEmail({
+        to: "forgot@nitj.ac.in",
+        resetUrl: "https://campusnode.in/reset/xyztoken",
+        expiryMinutes: 15,
+      });
+
+      expect(res.id).toMatch(/^mock_/);
+      const email = getLastEmail();
+      expect(email.to).toBe("forgot@nitj.ac.in");
+      expect(email.subject).toBe("Password Reset Request");
+      expect(email.html).toContain("https://campusnode.in/reset/xyztoken");
+      expect(email.html).toContain("15 minutes");
+    });
+
+    it("sendPasswordChangedEmail - dispatches auth:password-changed alert", async () => {
+      const res = await sendPasswordChangedEmail({
+        to: "changed@nitj.ac.in",
+        name: "Kavita Rao",
+        device: "Firefox Android",
+        location: "Mumbai, IN",
+      });
+
+      expect(res.id).toMatch(/^mock_/);
+      const email = getLastEmail();
+      expect(email.to).toBe("changed@nitj.ac.in");
+      expect(email.subject).toBe("Your CampusNode password has been changed");
+      expect(email.html).toContain("Kavita Rao");
+      expect(email.html).toContain("Firefox Android");
+      expect(email.html).toContain("Mumbai, IN");
     });
   });
 
@@ -267,23 +463,18 @@ describe("CampusNode Centralized Email Subsystem", () => {
     });
 
     it("parseUserAgent - should accurately recognize browser and operating system", () => {
-      // macOS Chrome
       const macChrome = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
       expect(parseUserAgent(macChrome)).toBe("Chrome macOS");
 
-      // Windows Edge
       const winEdge = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
       expect(parseUserAgent(winEdge)).toBe("Edge Windows");
 
-      // iOS Safari
       const iosSafari = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1";
       expect(parseUserAgent(iosSafari)).toBe("Safari iOS");
 
-      // Android Firefox
       const androidFirefox = "Mozilla/5.0 (Android 14; Mobile; rv:120.0) Gecko/120.0 Firefox/120.0";
       expect(parseUserAgent(androidFirefox)).toBe("Firefox Android");
 
-      // Fallback
       expect(parseUserAgent(null)).toBe("Unknown Device");
       expect(parseUserAgent("")).toBe("Unknown Device");
     });
@@ -296,12 +487,10 @@ describe("CampusNode Centralized Email Subsystem", () => {
     });
 
     it("formatRequestTime - should format timestamp in Indian Standard Time (IST)", () => {
-      // 05:04 UTC corresponds to 10:34 AM in Indian Standard Time (UTC+5:30)
       const fixedDate = new Date("2026-02-09T05:04:00Z");
       const formatted = formatRequestTime(fixedDate);
       expect(formatted).toBe("Feb 9, 10:34 AM IST");
 
-      // Custom timezone without suffix
       const utcFormatted = formatRequestTime(fixedDate, "UTC", false);
       expect(utcFormatted).toBe("Feb 9, 5:04 AM");
     });
@@ -326,7 +515,6 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(meta.location).toBe("San Francisco, CA, US");
       expect(meta.time).toBe("Feb 9, 10:34 AM IST");
 
-      // Cloudflare City and State
       const mockCfReq = {
         headers: {
           "cf-connecting-ip": "103.21.244.2",
@@ -417,7 +605,6 @@ describe("CampusNode Centralized Email Subsystem", () => {
     });
 
     it("Missing security metadata - primary actions must render cleanly when device/location/ipAddress/time are omitted", () => {
-      // 1. OTP without metadata
       const otpTemplate = getTemplate("auth:login-otp");
       const otpRender = renderEmail(otpTemplate, {
         otp: "123456",
@@ -427,7 +614,6 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(otpRender.html).not.toContain('class="metadata-table"');
       expect(otpRender.html).not.toContain("DEVICE");
 
-      // 2. Reset password without metadata
       const resetTemplate = getTemplate("auth:reset-password");
       const resetRender = renderEmail(resetTemplate, {
         resetUrl: "https://campusnode.vercel.app/reset-password/token-123",
@@ -436,7 +622,6 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(resetRender.html).not.toContain('class="metadata-table"');
       expect(resetRender.html).not.toContain("IP ADDRESS");
 
-      // 3. Verify account without metadata
       const verifyTemplate = getTemplate("auth:verify-account");
       const verifyRender = renderEmail(verifyTemplate, {
         name: "Sam",
@@ -456,6 +641,60 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("778899");
       expect(rendered.html).not.toContain("undefined");
       expect(rendered.html).not.toContain("null");
+    });
+  });
+
+  describe("HTML Injection & XSS Immunity", () => {
+    it("should neutralize malicious XSS vectors across all dynamic fields", () => {
+      const maliciousVectors = {
+        name: '<script>alert("hacked")</script>',
+        email: 'victim" onmouseover="alert(1)"@domain.com',
+        verifyUrl: 'https://campusnode.in/verify?x="><script>alert(1)</script>',
+        resetUrl: 'https://campusnode.in/reset?token=<img src=x onerror=alert(1)>',
+        otp: '<script>999999</script>',
+        device: '<b style="color:red">Hacker Device</b>',
+        location: '"><script>stealCookie()</script>',
+      };
+
+      // 1. Verify Account
+      const verifyTpl = getTemplate("auth:verify-account");
+      const verifyHtml = renderEmail(verifyTpl, {
+        name: maliciousVectors.name,
+        verifyUrl: maliciousVectors.verifyUrl,
+      }).html;
+      expect(verifyHtml).not.toContain("<script>");
+      expect(verifyHtml).toContain("&lt;script&gt;alert(&quot;hacked&quot;)&lt;/script&gt;");
+
+      // 2. Login OTP
+      const otpTpl = getTemplate("auth:login-otp");
+      const otpHtml = renderEmail(otpTpl, {
+        otp: maliciousVectors.otp,
+        email: maliciousVectors.email,
+        device: maliciousVectors.device,
+        location: maliciousVectors.location,
+      }).html;
+      expect(otpHtml).not.toContain("<script>");
+      expect(otpHtml).not.toContain("<b style=");
+      expect(otpHtml).toContain("&lt;script&gt;999999&lt;/script&gt;");
+
+      // 3. Password Reset
+      const resetTpl = getTemplate("auth:reset-password");
+      const resetHtml = renderEmail(resetTpl, {
+        resetUrl: maliciousVectors.resetUrl,
+        device: maliciousVectors.device,
+      }).html;
+      expect(resetHtml).not.toContain("<img src=x");
+      expect(resetHtml).toContain("&lt;img src=x onerror=alert(1)&gt;");
+
+      // 4. Password Changed
+      const changedTpl = getTemplate("auth:password-changed");
+      const changedHtml = renderEmail(changedTpl, {
+        name: maliciousVectors.name,
+        email: maliciousVectors.email,
+        device: maliciousVectors.device,
+      }).html;
+      expect(changedHtml).not.toContain("<script>");
+      expect(changedHtml).toContain("&lt;script&gt;alert(&quot;hacked&quot;)&lt;/script&gt;");
     });
   });
 });

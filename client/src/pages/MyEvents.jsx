@@ -34,9 +34,9 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
-import QRCode from 'qrcode';
+import { downloadTicketImage, generateTicketQrUrl } from '../services/ticketService';
 import { invalidateCache } from '../lib/cacheManager';
-import { getMyFeedbackHistory } from '../services/feedbackService';
+import { getMyFeedbackHistory, getPendingFeedback } from '../services/feedbackService';
 import { EventFeedbackModal } from '../components/EventFeedbackModal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -57,6 +57,7 @@ const MyRegisteredEventCard = ({
   downloadingCert,
   onOpenFeedback,
   hasSubmittedFeedback,
+  clubWantsFeedback,
 }) => {
   const event = reg.eventId;
   if (!event) return null;
@@ -98,6 +99,9 @@ const MyRegisteredEventCard = ({
   const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted;
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
 
+  // Only allow feedback when club explicitly wants to collect feedback, event has ended or user attended, and not yet submitted
+  const canGiveFeedback = Boolean(clubWantsFeedback) && (isPast || isAttended) && !hasSubmittedFeedback;
+
   // Certificate download is only available if added or selected to provide, event is past, and user attended
   const isCertificateAvailable = Boolean(
     event.provideCertificate ||
@@ -111,139 +115,138 @@ const MyRegisteredEventCard = ({
   const clubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
 
   return (
-    <Card
+    <div
       id={`reg-card-${regId}`}
-      className={`overflow-hidden flex flex-col h-full transition-all duration-200 ${
+      className={`group relative flex flex-col h-full bg-white dark:bg-neutral-900 rounded-2xl border transition-all duration-200 overflow-hidden hover:shadow-md hover:-translate-y-0.5 ${
         isHighlighted
-          ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
-          : 'hover:border-border/80 hover:shadow-sm'
+          ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-sm'
+          : 'border-neutral-200/90 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-2xs'
       }`}
     >
       {/* Top Poster Banner */}
-      <div className="relative w-full aspect-[21/9] overflow-hidden bg-muted border-b border-border">
+      <div className="relative w-full aspect-[16/9] overflow-hidden bg-neutral-100 dark:bg-neutral-800/80 border-b border-neutral-200/80 dark:border-neutral-800">
         <img
           src={posterImage}
           alt={event.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500 ease-out"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = '/CLUBSETU.png';
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 pointer-events-none" />
 
         {/* Top-Left: Timing Status Badge */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
           {isLive && (
-            <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 gap-1.5 animate-pulse border-none">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-rose-600 text-white shadow-xs animate-pulse">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
               Live
-            </Badge>
+            </span>
           )}
           {isUpcoming && (
-            <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md bg-background/80">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-black/70 text-white backdrop-blur-md border border-white/10 shadow-xs">
               Upcoming
-            </Badge>
+            </span>
           )}
           {isPast && (
-            <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md bg-background/80 text-muted-foreground">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-black/60 text-neutral-300 backdrop-blur-md border border-white/10 shadow-xs">
               Ended
-            </Badge>
+            </span>
           )}
         </div>
 
         {/* Top-Right: Registration Status Badge */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
           {isAttended ? (
-            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 border-none">
-              ✓ Attended
-            </Badge>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-black/75 text-white backdrop-blur-md border border-white/15 shadow-xs">
+              <span className="text-emerald-400">✓</span> Attended
+            </span>
           ) : isWaitlisted ? (
-            <Badge variant="outline" className="bg-amber-500/90 text-white border-none text-[10px] font-bold px-2 py-0.5">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-black/70 text-amber-300 backdrop-blur-md border border-white/10 shadow-xs">
               Waitlisted
-            </Badge>
+            </span>
           ) : (
-            <Badge variant="secondary" className="text-[10px] font-bold px-2 py-0.5 backdrop-blur-md bg-background/90 text-foreground">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand-600 text-white shadow-xs">
               ✓ Registered
-            </Badge>
+            </span>
           )}
         </div>
       </div>
 
-      {/* Card Content */}
-      <CardContent className="p-4 flex flex-col flex-1 gap-2.5">
-        {/* Club line */}
-        {clubName && (
-          <div className="flex items-center min-w-0">
-            {clubLogo ? (
-              <img
-                src={clubLogo}
-                alt={clubName}
-                className="w-4 h-4 rounded-full object-cover mr-1.5 border border-border"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/lightthemelogo.png';
-                }}
-              />
-            ) : (
-              <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center mr-1.5 text-primary text-[9px] font-bold">
-                <Users className="w-2.5 h-2.5" />
+      {/* Card Body */}
+      <div className="p-5 flex flex-col flex-1 gap-3">
+        {/* Club line & Payment pill */}
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          {clubName ? (
+            <div className="flex items-center min-w-0 gap-2">
+              <div className="w-5 h-5 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-neutral-100 dark:bg-neutral-800">
+                <img
+                  src={clubLogo || '/lightthemelogo.png'}
+                  alt={clubName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/lightthemelogo.png';
+                  }}
+                />
               </div>
-            )}
-            <span className="text-xs font-semibold text-primary truncate">{clubName}</span>
-          </div>
-        )}
+              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 truncate hover:text-neutral-900 dark:hover:text-white transition-colors">{clubName}</span>
+            </div>
+          ) : <div />}
+
+          {/* Payment badge if paid event */}
+          {isPaidEvent && (
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${
+                isPaymentSuccess
+                  ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700'
+                  : isPaymentRejected
+                  ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400 border-rose-200 dark:border-rose-800/60'
+                  : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+              }`}
+            >
+              {isPaymentSuccess ? 'Paid' : reg.paymentStatus || 'Pending'}
+            </span>
+          )}
+        </div>
 
         {/* Event Title */}
-        <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug line-clamp-2">
-          <Link to={`/event/${event.slug || event.id || event._id}`} className="hover:text-primary transition-colors">
+        <h3 className="text-base sm:text-lg font-medium leading-snug line-clamp-2">
+          <Link
+            to={`/event/${event.slug || event.id || event._id}`}
+            className="text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          >
             {event.title}
           </Link>
         </h3>
 
         {/* Middle Info & Calendar Date Box */}
-        <div className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-center justify-between gap-3 pt-0.5">
           {/* Left Info Column */}
-          <div className="flex-1 min-w-0 space-y-1.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5 min-w-0 font-medium text-foreground">
-              <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+            <div className="flex items-center gap-1.5 min-w-0 font-medium text-neutral-800 dark:text-neutral-200">
+              <MapPin className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400 shrink-0" />
               <span className="truncate">{event.venue || 'Campus Venue'}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground">
-              <Clock className="w-3.5 h-3.5 shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0 text-neutral-500 dark:text-neutral-400">
+              <Clock className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" />
               <span className="truncate">{formattedTime}</span>
             </div>
-
-            {/* Payment badge if paid event */}
-            {isPaidEvent && (
-              <div className="pt-0.5">
-                <Badge
-                  variant={isPaymentSuccess ? 'default' : isPaymentRejected ? 'destructive' : 'outline'}
-                  className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0 ${
-                    isPaymentSuccess
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : isPaymentRejected
-                      ? ''
-                      : 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
-                  }`}
-                >
-                  {isPaymentSuccess ? 'Payment: Paid' : `Payment: ${reg.paymentStatus || 'Pending'}`}
-                </Badge>
-              </div>
-            )}
           </div>
 
-          {/* Right Calendar Date Box */}
+          {/* Right Calendar Date Box - Minimal black/white */}
           {isValidDate && (
             <div className="shrink-0 self-center">
-              <div className="flex flex-col items-center justify-center min-w-[48px] bg-muted/50 rounded-lg overflow-hidden border border-border">
-                <div className="w-full bg-destructive text-destructive-foreground text-[8px] font-bold uppercase tracking-wider text-center py-0.5 px-1 leading-none">
+              <div className="flex flex-col items-center justify-center min-w-[50px] bg-white dark:bg-neutral-800/90 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-2xs">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-[8px] font-bold uppercase tracking-wider text-center py-0.5 px-1 leading-none border-b border-neutral-200/80 dark:border-neutral-700/60">
                   {monthName}
                 </div>
-                <div className="text-sm font-black leading-tight px-2 pt-0.5 font-mono">
+                <div className="text-base font-semibold text-neutral-900 dark:text-white leading-tight px-2 pt-0.5 font-mono">
                   {dayNumber}
                 </div>
-                <div className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider pb-1">
+                <div className="text-[8px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider pb-0.5">
                   {dayName}
                 </div>
               </div>
@@ -253,29 +256,27 @@ const MyRegisteredEventCard = ({
 
         {/* Team Details (if team registration) */}
         {reg.team && (
-          <div className="p-2.5 bg-muted/40 border border-border rounded-lg text-xs space-y-1">
-            <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <Users className="w-3.5 h-3.5 text-primary" />
-                <span>Team: <span className="text-primary font-bold">{reg.team.teamName}</span></span>
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-850/80 border border-neutral-200/80 dark:border-neutral-800 rounded-xl text-xs space-y-1.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 font-medium text-neutral-900 dark:text-white">
+                <Users className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" />
+                <span>Team: <span className="text-brand-600 dark:text-brand-400">{reg.team.teamName}</span></span>
               </div>
               {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => onUpdateTeam(reg)}
-                  className="h-6 text-[10px] font-semibold px-2 py-0"
+                  className="h-6 px-2.5 rounded-full text-[10px] font-semibold bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500 transition-all cursor-pointer shadow-2xs"
                 >
                   Update
-                </Button>
+                </button>
               )}
             </div>
-            <div className="text-muted-foreground text-[11px]">
-              Leader: <span className="font-medium text-foreground">{reg.team.leader?.name}</span>
+            <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
+              Leader: <span className="font-semibold text-neutral-800 dark:text-neutral-200">{reg.team.leader?.name}</span>
             </div>
-            <div className="text-muted-foreground text-[11px] line-clamp-1">
-              Members: <span className="font-medium text-foreground">
+            <div className="text-neutral-500 dark:text-neutral-400 text-[11px] line-clamp-1">
+              Members: <span className="font-medium text-neutral-800 dark:text-neutral-200">
                 {(reg.team.members || []).map(m => m.user?.name).filter(Boolean).join(', ')}
               </span>
             </div>
@@ -283,7 +284,7 @@ const MyRegisteredEventCard = ({
         )}
 
         {/* Action Buttons Footer */}
-        <div className="mt-auto pt-3 border-t border-border flex flex-col gap-2">
+        <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800 flex flex-col gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             {(!reg.team || isTeamLeader) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
               <Button
@@ -291,9 +292,9 @@ const MyRegisteredEventCard = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onEditPayment(reg)}
-                className="h-8 text-xs font-semibold gap-1.5"
+                className="h-9 rounded-full text-xs font-semibold gap-1.5 border-neutral-300 dark:border-neutral-700 hover:border-brand-500"
               >
-                <Edit2 className="w-3 h-3 text-primary" />
+                <Edit2 className="w-3 h-3 text-black dark:text-white" />
                 <span>Edit Payment Info</span>
               </Button>
             )}
@@ -306,46 +307,46 @@ const MyRegisteredEventCard = ({
                     type="button"
                     size="sm"
                     onClick={() => onShowTicket(reg)}
-                    className="flex-1 h-8 text-xs font-semibold uppercase tracking-wider gap-1.5"
+                    className="flex-1 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-bold uppercase tracking-wider gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
-                    <QrCode className="w-3.5 h-3.5" />
+                    <QrCode className="w-3.5 h-3.5 text-white dark:text-black" />
                     <span>Show Ticket</span>
                   </Button>
                 )}
 
                 {isWaitlisted && (
-                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate">
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 truncate">
                     On Waitlist — Ticket available when cleared
                   </span>
                 )}
 
                 {isPaidEvent && isPaymentPending && (
-                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate">
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 truncate">
                     Ticket after approval
                   </span>
                 )}
 
                 {isPaidEvent && isPaymentRejected && (
-                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-md bg-destructive/10 text-destructive border border-destructive/20 truncate">
+                  <span className="flex-1 text-center px-3 py-1.5 text-[11px] font-medium rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 truncate">
                     Payment rejected
                   </span>
                 )}
 
                 {isPaidEvent ? (
-                  <Badge variant="secondary" className="h-8 px-2.5 text-xs font-medium text-muted-foreground shrink-0">
+                  <span className="h-9 px-3 inline-flex items-center rounded-full text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0">
                     Paid
-                  </Badge>
+                  </span>
                 ) : isTeamMember ? (
-                  <Badge variant="secondary" className="h-8 px-2.5 text-xs font-medium text-muted-foreground shrink-0" title="Only the team leader can cancel the team registration.">
+                  <span className="h-9 px-3 inline-flex items-center rounded-full text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0" title="Only the team leader can cancel the team registration.">
                     Team Member
-                  </Badge>
+                  </span>
                 ) : (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeregister(reg)}
-                    className="h-8 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                    className="h-9 px-3 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 shrink-0 cursor-pointer"
                   >
                     {isTeamLeader ? 'Deregister Team' : 'Deregister'}
                   </Button>
@@ -356,27 +357,20 @@ const MyRegisteredEventCard = ({
             {/* Completed events (isPast) */}
             {isPast && (
               <>
-                {isAttended ? (
-                  hasSubmittedFeedback ? (
-                    <Badge variant="secondary" className="flex-1 h-8 justify-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Feedback Submitted</span>
-                    </Badge>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => onOpenFeedback(event)}
-                      className="flex-1 h-8 text-xs font-semibold uppercase tracking-wider gap-1.5 bg-primary"
-                    >
-                      <Star className="w-3.5 h-3.5 fill-current" />
-                      <span>Submit Feedback</span>
-                    </Button>
-                  )
+                {canGiveFeedback ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onOpenFeedback(event)}
+                    className="flex-1 h-9 rounded-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white text-xs font-semibold gap-1.5 shadow-xs transition-all cursor-pointer"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Submit Feedback</span>
+                  </Button>
                 ) : (
-                  <Badge variant="secondary" className="flex-1 h-8 justify-center text-xs font-medium text-muted-foreground">
+                  <span className="flex-1 h-9 inline-flex items-center justify-center text-xs font-normal text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-850 rounded-full border border-neutral-200 dark:border-neutral-800">
                     Event Ended
-                  </Badge>
+                  </span>
                 )}
 
                 {/* Secondary pass view button for participants */}
@@ -387,9 +381,9 @@ const MyRegisteredEventCard = ({
                     size="icon"
                     onClick={() => onShowTicket(reg)}
                     title="View Digital Pass"
-                    className="h-8 w-8 shrink-0"
+                    className="h-9 w-9 rounded-full border-neutral-300 dark:border-neutral-700 hover:border-brand-500 shrink-0 cursor-pointer"
                   >
-                    <QrCode className="w-4 h-4" />
+                    <QrCode className="w-4 h-4 text-black dark:text-white" />
                   </Button>
                 )}
               </>
@@ -404,15 +398,15 @@ const MyRegisteredEventCard = ({
               size="sm"
               onClick={() => onDownloadCertificate(event.id || event._id)}
               disabled={downloadingCert === (event.id || event._id)}
-              className="w-full h-8 text-xs font-semibold gap-2"
+              className="w-full h-9 rounded-full text-xs font-semibold gap-2 border-neutral-300 dark:border-neutral-700 hover:border-brand-500 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 transition-all cursor-pointer"
             >
               <DownloadIcon size={14} />
               <span>{downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}</span>
             </Button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
@@ -424,9 +418,10 @@ const MyEvents = () => {
   const [user, setUser] = useState(authUser);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('events'); // 'events' | 'feedback'
+  const [filter, setFilter] = useState('all'); // 'all' | 'upcoming' | 'past' | 'pending_feedback'
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+  const [pendingFeedbackEventIds, setPendingFeedbackEventIds] = useState(new Set());
 
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [eventToDeregister, setEventToDeregister] = useState(null);
@@ -441,6 +436,7 @@ const MyEvents = () => {
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const [downloadingTicket, setDownloadingTicket] = useState(false);
 
   const [editPaymentModalOpen, setEditPaymentModalOpen] = useState(false);
   const [editingReg, setEditingReg] = useState(null);
@@ -462,6 +458,7 @@ const MyEvents = () => {
       if (userId && !isClubAccount) {
         fetchRegistrations(userId);
         fetchFeedbackHistory();
+        fetchPendingFeedbackEvents();
       } else {
         setLoading(false);
       }
@@ -475,6 +472,89 @@ const MyEvents = () => {
       feedbacks.map((fb) => fb.eventId || fb.event?.id || fb.event?._id).filter(Boolean)
     );
   }, [feedbacks]);
+
+  // Sort registrations: active/upcoming events first (earliest start time first), followed by past events (most recent first)
+  const sortedRegistrations = React.useMemo(() => {
+    const now = Date.now();
+    return [...registrations].sort((a, b) => {
+      const eventA = a.eventId;
+      const eventB = b.eventId;
+      if (!eventA && !eventB) return 0;
+      if (!eventA) return 1;
+      if (!eventB) return -1;
+
+      const endA = eventA.endTime ? new Date(eventA.endTime).getTime() : (eventA.startTime ? new Date(eventA.startTime).getTime() : 0);
+      const endB = eventB.endTime ? new Date(eventB.endTime).getTime() : (eventB.startTime ? new Date(eventB.startTime).getTime() : 0);
+      
+      const isPastA = endA < now;
+      const isPastB = endB < now;
+
+      // Active (upcoming/live) events come before past events
+      if (!isPastA && isPastB) return -1;
+      if (isPastA && !isPastB) return 1;
+
+      // Both are active: sort ascending by startTime (happening earliest/soonest at the top)
+      if (!isPastA && !isPastB) {
+        const startA = eventA.startTime ? new Date(eventA.startTime).getTime() : endA;
+        const startB = eventB.startTime ? new Date(eventB.startTime).getTime() : endB;
+        return startA - startB;
+      }
+
+      // Both are past: sort descending by endTime (most recently ended on top)
+      return endB - endA;
+    });
+  }, [registrations]);
+
+  // Dynamic counts for filter pills (strictly respects club feedback preference)
+  const counts = React.useMemo(() => {
+    const now = Date.now();
+    let upcoming = 0;
+    let past = 0;
+    let pendingFeedback = 0;
+
+    registrations.forEach((r) => {
+      const ev = r.eventId;
+      if (!ev) return;
+      const end = ev.endTime ? new Date(ev.endTime).getTime() : (ev.startTime ? new Date(ev.startTime).getTime() : 0);
+      const isPast = end < now;
+      const isAttended = r.status === 'ATTENDED' || r.attended;
+      const hasFeedback = submittedFeedbackEventIds.has(ev.id || ev._id);
+      const clubWantsFeedback = (ev.feedbackEnabled === true || pendingFeedbackEventIds.has(ev.id || ev._id)) && ev.feedbackEnabled !== false;
+
+      if (isPast) {
+        past++;
+      } else {
+        upcoming++;
+      }
+
+      if (clubWantsFeedback && (isPast || isAttended) && !hasFeedback) {
+        pendingFeedback++;
+      }
+    });
+
+    return { all: registrations.length, upcoming, past, pendingFeedback };
+  }, [registrations, submittedFeedbackEventIds, pendingFeedbackEventIds]);
+
+  // Filtered registrations based on current active filter
+  const filteredRegistrations = React.useMemo(() => {
+    const now = Date.now();
+    if (filter === 'all') return sortedRegistrations;
+
+    return sortedRegistrations.filter((r) => {
+      const ev = r.eventId;
+      if (!ev) return false;
+      const end = ev.endTime ? new Date(ev.endTime).getTime() : (ev.startTime ? new Date(ev.startTime).getTime() : 0);
+      const isPast = end < now;
+      const isAttended = r.status === 'ATTENDED' || r.attended;
+      const hasFeedback = submittedFeedbackEventIds.has(ev.id || ev._id);
+      const clubWantsFeedback = (ev.feedbackEnabled === true || pendingFeedbackEventIds.has(ev.id || ev._id)) && ev.feedbackEnabled !== false;
+
+      if (filter === 'upcoming') return !isPast;
+      if (filter === 'past') return isPast;
+      if (filter === 'pending_feedback') return clubWantsFeedback && (isPast || isAttended) && !hasFeedback;
+      return true;
+    });
+  }, [sortedRegistrations, filter, submittedFeedbackEventIds, pendingFeedbackEventIds]);
 
   // Deep-link highlighting
   useEffect(() => {
@@ -527,132 +607,33 @@ const MyEvents = () => {
     }
   };
 
-  useEffect(() => {
-    if (activeTab === 'feedback' && feedbacks.length === 0) {
-      fetchFeedbackHistory();
+  const fetchPendingFeedbackEvents = async () => {
+    try {
+      const res = await getPendingFeedback();
+      const list = res.data?.pendingEvents || [];
+      setPendingFeedbackEventIds(new Set(list.map((e) => e.id || e.eventId || e._id)));
+    } catch (err) {
+      console.error('Failed to fetch pending feedback events:', err);
     }
-  }, [activeTab]);
+  };
 
   const handleDownloadTicket = async () => {
-    if (!selectedTicket || !qrDataUrl) return;
+    if (!selectedTicket || !qrDataUrl || downloadingTicket) return;
 
     try {
-      await document.fonts.ready;
-    } catch (e) {
-      console.warn("Fonts not loaded yet", e);
+      setDownloadingTicket(true);
+      await downloadTicketImage({
+        ticket: selectedTicket,
+        qrDataUrl,
+        user,
+      });
+      showNotification('Ticket downloaded successfully!', 'success');
+    } catch (err) {
+      console.error('Failed to download ticket:', err);
+      showNotification('Failed to download ticket. Please try again.', 'error');
+    } finally {
+      setDownloadingTicket(false);
     }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = 1000;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.02)';
-    ctx.lineWidth = 1;
-    for (let i = -400; i < 1000; i += 15) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i + 400, 400);
-      ctx.stroke();
-    }
-
-    // Ghost Watermark
-    ctx.save();
-    ctx.font = 'bold 160px "logofont"';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.025)'; 
-    ctx.textAlign = 'center';
-    ctx.translate(350, 240);
-    ctx.rotate(-Math.PI / 12);
-    ctx.fillText('CAMPUSNODE', 0, 0);
-    ctx.restore();
-
-    const computedTheme = getComputedStyle(document.documentElement);
-    const brandColor = computedTheme.getPropertyValue('--cn-brand').trim() || '#0094FF';
-    const brandDark = computedTheme.getPropertyValue('--color-brand-800').trim() || '#064f89';
-    const textColor = computedTheme.getPropertyValue('--cn-primary').trim() || '#0a0a0a';
-
-    ctx.fillStyle = textColor;
-    ctx.fillRect(700, 0, 300, canvas.height);
-
-    const accentGrad = ctx.createLinearGradient(0, 0, 15, 400);
-    accentGrad.addColorStop(0, brandColor);
-    accentGrad.addColorStop(1, brandDark);
-    ctx.fillStyle = accentGrad;
-    ctx.fillRect(0, 0, 15, canvas.height);
-
-    ctx.fillStyle = '#f3f4f6';
-    ctx.beginPath(); ctx.arc(700, 0, 25, 0, Math.PI, false); ctx.fill();
-    ctx.beginPath(); ctx.arc(700, 400, 25, Math.PI, 0, false); ctx.fill();
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-    for (let i = 40; i < 370; i += 25) {
-      ctx.beginPath(); ctx.arc(700, i, 3, 0, Math.PI * 2); ctx.fill();
-    }
-
-    const brandX = 60;
-    const brandY = 65;
-    ctx.letterSpacing = "4px"; 
-    ctx.font = 'bold 30px "logofont"'; 
-    ctx.fillStyle = textColor;
-    ctx.fillText('CAMPUS', brandX, brandY);
-    const clubWidth = ctx.measureText('CAMPUS').width;
-    ctx.fillStyle = brandColor;
-    ctx.fillText('NODE', brandX + clubWidth, brandY);
-    ctx.letterSpacing = "0px";
-
-    // Event Name
-    ctx.font = 'bold 44px "myfont"';
-    ctx.fillStyle = textColor;
-    const eventName = (selectedTicket.eventId?.title || 'EVENT TICKET');
-    ctx.fillText(eventName.length > 20 ? eventName.substring(0, 20) + '...' : eventName, 60, 145);
-
-    const drawData = (label, value, x, y) => {
-      ctx.font = 'bold 12px "myfont"';
-      ctx.fillStyle = '#a3a3a3';
-      ctx.fillText(label.toUpperCase(), x, y);
-      ctx.font = 'bold 22px "myfont"';
-      ctx.fillStyle = textColor;
-      ctx.fillText(value, x, y + 28);
-    };
-
-    const eventDate = new Date(selectedTicket.eventId?.startTime);
-    drawData('Attendee', user?.name || 'Guest User', 60, 215);
-    drawData('Date', eventDate.toLocaleDateString(undefined, { dateStyle: 'medium', timeZone: 'Asia/Kolkata' }), 60, 305);
-    drawData('Time', eventDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }), 280, 305);
-    drawData('Venue', selectedTicket.eventId?.venue || 'TBA', 460, 305);
-
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 20px "myfont"';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('Event Pass', 850, 55);
-
-    const qrImage = new Image();
-    qrImage.crossOrigin = "anonymous";
-    qrImage.onload = () => {
-      ctx.fillStyle = brandColor;
-      ctx.fillRect(748, 93, 204, 204);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(750, 95, 200, 200);
-      ctx.drawImage(qrImage, 750, 95, 200, 200);
-
-      ctx.font = '12px "myfont"';
-      ctx.fillStyle = '#737373';
-      ctx.fillText('SERIAL NUMBER', 850, 325);
-      
-      ctx.font = 'bold 15px monospace';
-      ctx.fillStyle = brandColor;
-      ctx.fillText(selectedTicket.qrCode, 850, 350);
-
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `CampusNode-Ticket-${selectedTicket.qrCode}.png`;
-      link.click();
-    };
-    qrImage.src = qrDataUrl;
   };
 
   const handleShowTicket = async (reg) => {
@@ -665,10 +646,10 @@ const MyEvents = () => {
         setTicketModalOpen(false);
         return;
       }
-      const url = await QRCode.toDataURL(payloadToEncode, { width: 400, margin: 2 });
+      const url = await generateTicketQrUrl(payloadToEncode);
       setQrDataUrl(url);
     } catch (err) {
-      console.error(err);
+      console.error('Error generating ticket QR:', err);
       setTicketModalOpen(false);
       showNotification('Unable to generate ticket.', 'error');
     }
@@ -886,175 +867,134 @@ const MyEvents = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 mb-8 border-b border-border pb-3">
-        <Button
+      {/* Modern Filter Navigation */}
+      <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
+        <button
           type="button"
-          variant={activeTab === 'events' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('events')}
-          className="gap-2 font-semibold"
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+            filter === 'all'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+          }`}
         >
-          <Ticket className="w-4 h-4" />
-          <span>Tickets & Registrations ({registrations.length})</span>
-        </Button>
-        <Button
+          <Ticket className="w-3.5 h-3.5" />
+          <span>All Events</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === 'all' ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+            {counts.all}
+          </span>
+        </button>
+
+        <button
           type="button"
-          variant={activeTab === 'feedback' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => {
-            setActiveTab('feedback');
-            fetchFeedbackHistory();
-          }}
-          className="gap-2 font-semibold"
+          onClick={() => setFilter('upcoming')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+            filter === 'upcoming'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+          }`}
         >
-          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-          <span>My Feedback</span>
-        </Button>
+          <Clock className="w-3.5 h-3.5" />
+          <span>Upcoming & Live</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === 'upcoming' ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+            {counts.upcoming}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilter('past')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+            filter === 'past'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          <span>Past Events</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === 'past' ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+            {counts.past}
+          </span>
+        </button>
+
+        {counts.pendingFeedback > 0 && (
+          <button
+            type="button"
+            onClick={() => setFilter('pending_feedback')}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+              filter === 'pending_feedback'
+                ? 'bg-brand-600 text-white shadow-xs'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Needs Feedback</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${filter === 'pending_feedback' ? 'bg-white/20 text-white' : 'bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300'}`}>
+              {counts.pendingFeedback}
+            </span>
+          </button>
+        )}
       </div>
 
-      {/* Feedback Tab Content */}
-      {activeTab === 'feedback' && (
-        <div>
-          {loadingFeedbacks ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-2">
-              <ShimmerText text="Loading your feedback history..." className="text-xs font-semibold tracking-wider" />
-            </div>
-          ) : feedbacks.length === 0 ? (
-            <Card className="p-12 text-center">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6" />
-              </div>
-              <CardTitle className="text-base mb-1">No Feedback Submitted Yet</CardTitle>
-              <CardDescription className="text-xs max-w-md mx-auto">
-                After attending events, you'll be automatically invited to share your ratings and reviews here.
-              </CardDescription>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {feedbacks.map((fb) => (
-                <Card key={fb.id} className="p-5 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        {(fb.event?.club?.clubName || fb.event?.organizers?.[0]?.club?.clubName) && (
-                          <Badge variant="outline" className="text-[10px] font-semibold text-primary">
-                            {fb.event?.club?.clubName || fb.event?.organizers?.[0]?.club?.clubName}
-                          </Badge>
-                        )}
-                        <span className="text-[11px] text-muted-foreground">
-                          Submitted on {new Date(fb.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
-                      <h3 className="text-base font-bold">
-                        <Link to={`/event/${fb.event?.slug || fb.eventId}`} className="hover:text-primary transition-colors">
-                          {fb.event?.title || 'Campus Event'}
-                        </Link>
-                      </h3>
-                    </div>
+      {/* Events Grid / Empty States */}
+      {registrations.length === 0 ? (
+        <Card className="p-12 text-center">
+          <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <CardTitle className="text-base mb-1">No Registered Events Found</CardTitle>
+          <CardDescription className="text-xs mb-6 max-w-md mx-auto">
+            You haven't registered for any campus events yet. Explore upcoming hackathons, workshops, and fests!
+          </CardDescription>
+          <Button asChild className="font-semibold">
+            <Link to="/events">Browse Events</Link>
+          </Button>
+        </Card>
+      ) : filteredRegistrations.length === 0 ? (
+        <Card className="p-12 text-center">
+          <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center mx-auto mb-4">
+            <Ticket className="w-6 h-6" />
+          </div>
+          <CardTitle className="text-base mb-1">No events in this category</CardTitle>
+          <CardDescription className="text-xs mb-4 max-w-md mx-auto">
+            {filter === 'upcoming'
+              ? 'You have no upcoming or live events right now.'
+              : filter === 'past'
+              ? 'You have no past events.'
+              : 'You have submitted feedback for all attended and ended events!'}
+          </CardDescription>
+          <Button variant="outline" size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs font-semibold cursor-pointer">
+            View All Events ({counts.all})
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredRegistrations.map((reg) => {
+            const event = reg.eventId;
+            if (!event) return null;
+            const regId = reg.id || reg._id;
+            const isHighlighted = highlightedRegId === regId;
+            const clubWantsFeedback = (event.feedbackEnabled === true || pendingFeedbackEventIds.has(event.id || event._id)) && event.feedbackEnabled !== false;
 
-                    {/* Overall Rating Badge */}
-                    <Badge variant="outline" className="px-3 py-1.5 gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 self-start sm:self-auto">
-                      <Star className="w-4 h-4 fill-amber-400 stroke-amber-500" />
-                      <span className="text-sm font-bold font-mono">{fb.overallRating} / 5</span>
-                      <span className="text-[10px] font-medium uppercase tracking-wider">Overall</span>
-                    </Badge>
-                  </div>
-
-                  {/* 6 Metric Breakdown Badges */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
-                    {[
-                      { label: 'Overall', val: fb.overallRating },
-                      { label: 'Organization', val: fb.organizationRating },
-                      { label: 'Usefulness', val: fb.usefulnessRating },
-                      { label: 'Speaker', val: fb.speakerRating },
-                      { label: 'Venue', val: fb.venueRating },
-                      { label: 'Timing', val: fb.timingRating },
-                    ].map((item, i) => (
-                      <div key={i} className="p-2 rounded-lg bg-muted/40 border border-border text-center">
-                        <p className="text-[10px] text-muted-foreground font-medium truncate">{item.label}</p>
-                        <p className="font-bold mt-0.5 flex items-center justify-center gap-1">
-                          <span className="font-mono">{item.val}</span>
-                          <Star className="w-3 h-3 fill-amber-400 stroke-amber-500" />
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Recommendation & Comments */}
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground font-medium">Would attend again:</span>
-                      <Badge variant={fb.attendSimilar === 'YES' ? 'default' : fb.attendSimilar === 'MAYBE' ? 'outline' : 'destructive'} className="text-[11px]">
-                        {fb.attendSimilar === 'YES' ? 'Yes' : fb.attendSimilar === 'MAYBE' ? 'Maybe' : 'No'}
-                      </Badge>
-                    </div>
-
-                    {(fb.liked || fb.improvements || fb.comments) && (
-                      <div className="p-3 bg-muted/30 rounded-lg space-y-1.5 border border-border">
-                        {fb.liked && (
-                          <p><strong className="text-foreground">Liked:</strong> <span className="text-muted-foreground">{fb.liked}</span></p>
-                        )}
-                        {fb.improvements && (
-                          <p><strong className="text-foreground">Improvements:</strong> <span className="text-muted-foreground">{fb.improvements}</span></p>
-                        )}
-                        {fb.comments && (
-                          <p><strong className="text-foreground">Comments:</strong> <span className="text-muted-foreground">{fb.comments}</span></p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Events Tab Content */}
-      {activeTab === 'events' && (
-        <div>
-          {registrations.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <CardTitle className="text-base mb-1">No Registered Events Found</CardTitle>
-              <CardDescription className="text-xs mb-6 max-w-md mx-auto">
-                You haven't registered for any campus events yet. Explore upcoming hackathons, workshops, and fests!
-              </CardDescription>
-              <Button asChild className="font-semibold">
-                <Link to="/events">Browse Events</Link>
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {registrations.map(reg => {
-                const event = reg.eventId;
-                if (!event) return null;
-                const regId = reg.id || reg._id;
-                const isHighlighted = highlightedRegId === regId;
-
-                return (
-                  <MyRegisteredEventCard
-                    key={regId}
-                    reg={reg}
-                    user={user}
-                    isHighlighted={isHighlighted}
-                    onShowTicket={handleShowTicket}
-                    onDeregister={handleDeregister}
-                    onEditPayment={openEditPaymentModal}
-                    onUpdateTeam={(r) => {
-                      setTeamToUpdate(r);
-                      setUpdateTeamModalOpen(true);
-                    }}
-                    onDownloadCertificate={handleDownloadCertificate}
-                    downloadingCert={downloadingCert}
-                    onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
-                    hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
-                  />
-                );
-              })}
-            </div>
-          )}
+            return (
+              <MyRegisteredEventCard
+                key={regId}
+                reg={reg}
+                user={user}
+                isHighlighted={isHighlighted}
+                onShowTicket={handleShowTicket}
+                onDeregister={handleDeregister}
+                onEditPayment={openEditPaymentModal}
+                onUpdateTeam={(r) => {
+                  setTeamToUpdate(r);
+                  setUpdateTeamModalOpen(true);
+                }}
+                onDownloadCertificate={handleDownloadCertificate}
+                downloadingCert={downloadingCert}
+                onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
+                hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
+                clubWantsFeedback={clubWantsFeedback}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -1130,7 +1070,7 @@ const MyEvents = () => {
                 <Card className="p-5 shadow-2xl">
                   <div className="mb-4">
                     <div className="flex items-center justify-between gap-2 mb-2 pr-8">
-                      <Badge className="text-[10px] font-bold uppercase tracking-wider">
+                      <Badge className="text-[10px] font-bold tracking-wider">
                         Digital Event Pass
                       </Badge>
 
@@ -1226,9 +1166,17 @@ const MyEvents = () => {
                       type="button"
                       size="sm"
                       onClick={handleDownloadTicket}
+                      disabled={downloadingTicket}
                       className="flex-1 font-semibold"
                     >
-                      Save Ticket
+                      {downloadingTicket ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Ticket'
+                      )}
                     </Button>
                   </div>
                 </Card>
@@ -1565,6 +1513,7 @@ const MyEvents = () => {
         pendingEvents={feedbackModalEvent ? [feedbackModalEvent] : []}
         onFeedbackSubmitted={async () => {
           await fetchFeedbackHistory();
+          await fetchPendingFeedbackEvents();
           showNotification('Feedback submitted successfully! Thank you.', 'success');
         }}
       />

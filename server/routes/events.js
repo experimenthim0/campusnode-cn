@@ -19,6 +19,7 @@ import { calculateAcademicProgress, isStudentEligibleForEventYears } from "../ut
 import { validateCustomFields } from "../utils/customFields.js";
 import { generateEventSocialHtml, generateDefaultSocialHtml } from "../utils/eventSocialMetadata.js";
 import { MAX_WAITLIST_CAPACITY, promoteWaitlistCandidates, notifyWaitlistCleared } from "../services/waitlistService.js";
+import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
 
 const router = express.Router();
 
@@ -59,6 +60,22 @@ const upload = multer({
 // POST /api/events/upload - Handle image upload for event poster
 router.post("/upload", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), upload.single("image"), async (req, res) => {
   try {
+    const isFacultyCoordinator = Boolean(
+      req.user.principalType === "FACULTY" ||
+      req.user.role === "facultyCoordinator" ||
+      req.user.role === "faculty" ||
+      req.user.userType === "faculty" ||
+      req.user.memberships?.some(
+        (m) => m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || m.role === "FACULTY"
+      )
+    );
+
+    if (isFacultyCoordinator) {
+      return res.status(403).json({
+        message: "Access denied. Faculty coordinators cannot create events or upload event posters."
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded." });
     }
@@ -258,6 +275,7 @@ const publicEventSelect = {
   winners: true,
   showWinner: true,
   provideCertificate: true,
+  feedbackEnabled: true,
   registrationType: true,
   minTeamSize: true,
   maxTeamSize: true,
@@ -318,8 +336,8 @@ router.get("/", async (req, res) => {
     const statusFilter = typeof req.query.status === "string" ? req.query.status.trim().toUpperCase() : "ALL";
 
     const limit = Number.isFinite(requestedLimit)
-      ? Math.min(Math.max(requestedLimit, 1), 100)
-      : 50;
+      ? Math.min(Math.max(requestedLimit, 1), 1000)
+      : 500;
 
     let skip = 0;
     if (Number.isFinite(requestedOffset) && requestedOffset >= 0) {
@@ -1027,6 +1045,22 @@ router.get(
 
 router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), validate(eventSchema), async (req, res) => {
   try {
+    const isFacultyCoordinator = Boolean(
+      req.user.principalType === "FACULTY" ||
+      req.user.role === "facultyCoordinator" ||
+      req.user.role === "faculty" ||
+      req.user.userType === "faculty" ||
+      req.user.memberships?.some(
+        (m) => m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || m.role === "FACULTY"
+      )
+    );
+
+    if (isFacultyCoordinator) {
+      return res.status(403).json({
+        message: "Access denied. Faculty coordinators cannot create events. Event creation is reserved for student club heads and coordinators."
+      });
+    }
+
     const {
       title,
       description,
@@ -1586,7 +1620,8 @@ router.post(
   requirePermission(PERMISSIONS.REGISTRATION_CREATE),
   validate(registerParamSchema),
   async (req, res) => {
-    const eventId = req.params.id;
+    return withSpan("event.register", { "event.id": req.params.id }, async (span) => {
+      const eventId = req.params.id;
     const unifiedUserId = req.user?.userId;
     const regLockKey = eventId && unifiedUserId ? `lock:reg:${eventId}:${unifiedUserId}` : null;
     let lockAcquired = false;
@@ -1891,7 +1926,8 @@ router.post(
         }
       }
     }
-  },
+  });
+},
 );
 
 

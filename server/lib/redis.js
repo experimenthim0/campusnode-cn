@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import { recordRedisCommand } from "./observability.js";
 
 /**
  * High-performance In-Memory fallback store with TTL expiration.
@@ -278,7 +279,7 @@ const recordMetric = (operation, key = "") => {
 /**
  * Unified Redis helper proxy
  */
-export const redis = {
+const redisClient = {
   async get(key) {
     recordMetric("get", key);
     assertRedisAvailable();
@@ -484,5 +485,33 @@ export const redis = {
     metrics.fallbackOperations = 0;
   },
 };
+
+const redisCommandMethods = new Set([
+  "get", "set", "setex", "setnx", "del", "incr", "expire", "ttl", "flushall", "keys",
+]);
+
+export const redis = new Proxy(redisClient, {
+  get(target, property, receiver) {
+    const value = Reflect.get(target, property, receiver);
+    if (!redisCommandMethods.has(property) || typeof value !== "function") return value;
+
+    return async (...args) => {
+      const startedAt = process.hrtime.bigint();
+      let error = null;
+      try {
+        return await Reflect.apply(value, receiver, args);
+      } catch (commandError) {
+        error = commandError;
+        throw commandError;
+      } finally {
+        recordRedisCommand({
+          operation: property,
+          durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+          error,
+        });
+      }
+    };
+  },
+});
 
 export default redis;

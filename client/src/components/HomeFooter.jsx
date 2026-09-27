@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Bus } from 'lucide-react';
 import {InstagramIcon} from './ui/instagram';
 import { LinkedinIcon } from './ui/linkedin';
 import {TwitterIcon} from './ui/twitter';
 import ScrollReveal from './ScrollReveal';
-import ContactModal from './ContactModal';
 import Section from './layout/Section';
 
 const HomeFooter = () => {
   const currentYear = new Date().getFullYear();
-  const [isContactOpen, setIsContactOpen] = useState(false);
 
   
   const quickLinks = [
@@ -123,11 +121,6 @@ const HomeFooter = () => {
         </div>
       </Section>
 
-      {/* Custom Contact & Suggestion Modal */}
-      <ContactModal 
-        isOpen={isContactOpen} 
-        onClose={() => setIsContactOpen(false)} 
-      />
     </footer>
   );
 };

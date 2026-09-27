@@ -12,6 +12,7 @@ import { getStudentRoleAndClub } from "./auth.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 import { deleteImage, extractCloudinaryPublicId } from "../utils/cloudinary.js";
+import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
 
 const router = express.Router();
 
@@ -61,7 +62,8 @@ router.get(
   verifyToken,
   requirePermission(PERMISSIONS.AUDIT_VIEW),
   async (req, res) => {
-    try {
+    return withSpan("admin.dashboard", { "admin.view": "dashboard-stats" }, async (span) => {
+      try {
       const adminRoles = await prisma.adminRole.findMany({ select: { email: true } });
       const excludedEmails = adminRoles.map((r) => r.email.toLowerCase());
 
@@ -152,9 +154,10 @@ router.get(
           .map(([year, count]) => ({ _id: year, count })),
         eventStats,
       });
-    } catch {
-      res.status(500).json({ message: "Failed to fetch dashboard stats" });
-    }
+      } catch {
+        res.status(500).json({ message: "Failed to fetch dashboard stats" });
+      }
+    });
   },
 );
 

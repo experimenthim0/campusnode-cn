@@ -73,7 +73,7 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
         ? "w-10 h-10 mx-auto justify-center p-0"
         : "w-full gap-3 px-3 py-1.5"
       } ${isActive
-        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold border-0"
+        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium border-0"
         : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
       }`}
   >
@@ -92,7 +92,7 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
     </div>
     {!isCollapsed && <span className="truncate">{label}</span>}
     {!isCollapsed && badge && (
-      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-black rounded-full bg-brand-500 text-white leading-none">
+      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-brand-500 text-white leading-none">
         {badge}
       </span>
     )}
@@ -149,7 +149,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
                 : "text-slate-600 dark:text-slate-400"
               }`}
           />
-          <span className="text-[13px] tracking-wide truncate">{label}</span>
+          <span className="text-[13px] tracking-wide truncate font-medium">{label}</span>
         </div>
         <ChevronDown
           size={14}
@@ -179,7 +179,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
                 key={idx}
                 to={item.to}
                 className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-150 ${isActive
-                    ? "bg-brand-500/15 text-brand-600 dark:text-brand-400 font-bold"
+                    ? "bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium"
                     : "text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-800/60 hover:text-black dark:hover:text-white"
                   }`}
               >
@@ -337,11 +337,11 @@ const DynamicSidebar = ({ user }) => {
           <Link
             to={createEventUrl}
             title={isCollapsed ? "Create Event" : undefined}
-            className={`flex items-center justify-center bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black shadow-sm hover:shadow-md hover:-translate-y-px transition-all font-bold text-[12px] uppercase tracking-wider cursor-pointer border-0 outline-none ${isCollapsed ? "w-10 h-10 p-0 rounded-xl" : "w-full gap-2.5 px-3 py-3 rounded-full"
+            className={`flex items-center justify-center bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black shadow-sm hover:shadow-md hover:-translate-y-px transition-all text-[12px] tracking-wider cursor-pointer border-0 outline-none ${isCollapsed ? "w-10 h-10 p-0 rounded-xl" : "w-full gap-2.5 px-3 py-3 rounded-full"
               }`}
           >
-            <Plus size={18} strokeWidth={2.8} className="w-[18px] h-[18px] min-w-[18px] min-h-[18px] shrink-0" />
-            {!isCollapsed && <span>Create Event</span>}
+            <Plus size={18} strokeWidth={2.8} className="w-[18px] h-[18px] min-w-[18px] min-h-[18px] shrink-0 font-medium" />
+            {!isCollapsed && <span className="font-medium">Create Event</span>}
           </Link>
         </div>
       )}

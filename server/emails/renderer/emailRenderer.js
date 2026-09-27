@@ -5,6 +5,7 @@ import { BaseLayout } from "../components/BaseLayout.js";
  *
  * @param {object} template - Template definition from templateRegistry
  * @param {object} data - Dynamic data passed for rendering
+ * @param {object} [options] - Additional render options (e.g. theme override)
  * @returns {{ subject: string, html: string }}
  */
 export const renderEmail = (template, data = {}, options = {}) => {
@@ -16,7 +17,13 @@ export const renderEmail = (template, data = {}, options = {}) => {
   const subject =
     typeof template.getSubject === "function"
       ? template.getSubject(data)
-      : "CampusNode Notification";
+      : template.subject || "CampusNode Notification";
+
+  // Generate preheader preview text (if provided)
+  const preheader =
+    typeof template.getPreheader === "function"
+      ? template.getPreheader(data)
+      : template.preheader || "";
 
   // Generate inner body content
   const content = template.render(data);
@@ -25,6 +32,7 @@ export const renderEmail = (template, data = {}, options = {}) => {
   const theme = options.theme || data?._theme || null;
   const html = BaseLayout({
     title: subject,
+    preheader,
     headerBadge: template.headerBadge,
     headerSubtitle: template.headerSubtitle,
     footerDisclaimer: template.footerDisclaimer,

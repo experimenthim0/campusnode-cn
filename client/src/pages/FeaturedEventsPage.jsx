@@ -4,6 +4,7 @@ import { Sparkles, Calendar, ArrowLeft } from "lucide-react";
 import api from "../services/api";
 import Section from "../components/layout/Section";
 import FeaturedEventCard from "../components/FeaturedEventCard";
+import ScrollReveal from "../components/ScrollReveal";
 
 const FeaturedEventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -101,8 +102,10 @@ const FeaturedEventsPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {events.map((event) => (
-              <FeaturedEventCard key={event.id} event={event} />
+            {events.map((event, idx) => (
+              <ScrollReveal key={event.id} direction="up" delay={0.06 * (idx % 3)} distance={24} className="h-full">
+                <FeaturedEventCard event={event} />
+              </ScrollReveal>
             ))}
           </div>
         )}

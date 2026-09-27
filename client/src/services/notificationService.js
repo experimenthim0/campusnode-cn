@@ -11,8 +11,8 @@ export const getNotifications = () =>
 export const sendNotification = (data) =>
   api.post('/api/notifications', data);
 
-export const getSentNotifications = () =>
-  api.get('/api/notifications/sent');
+export const getSentNotifications = (params) =>
+  api.get('/api/notifications/sent', { params });
 
 export const markAsRead = (id) =>
   api.put(`/api/notifications/${id}/read`);

@@ -9,38 +9,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="CampusNode" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" id="dynamic-favicon" type="image/png" href="/lightthemelogo2.png" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
     <script>
-      // Helper to dynamically round the favicon using HTML Canvas
-      window.setRoundedFavicon = function(src) {
-        const favicon = document.getElementById('dynamic-favicon');
-        if (!favicon) return;
-        const img = new Image();
-        img.src = src;
-        img.onload = function() {
-          try {
-            const canvas = document.createElement('canvas');
-            const size = Math.min(img.width, img.height) || 64;
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.beginPath();
-            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(img, 0, 0, size, size);
-            favicon.href = canvas.toDataURL('image/png');
-          } catch (e) {
-            favicon.href = src;
-          }
-        };
-        img.onerror = function() {
-          favicon.href = src;
-        };
-      };
-
       // Expose global updater function so React can invoke it at runtime
       window.updateAppTheme = function(isDark) {
         const targetColor = isDark ? '#0a0a0a' : '#ffffff';
@@ -59,11 +31,6 @@
         meta.setAttribute('name', 'theme-color');
         meta.setAttribute('content', targetColor);
         document.head.appendChild(meta);
-
-        // Update dynamic favicon
-        if (typeof window.setRoundedFavicon === 'function') {
-          window.setRoundedFavicon(isDark ? '/darkthemelogo.png' : '/lightthemelogo2.png');
-        }
       };
 
       // Run immediately on page load to prevent FOUC

@@ -12,9 +12,6 @@ import { getGraduationYearOptions, calculateAcademicProgress } from '../utils/ac
 import {
   Eye,
   EyeOff,
-  Check,
-  ArrowRight,
-  Sparkles,
   AlertCircle,
   GraduationCap,
   Lock,
@@ -173,7 +170,7 @@ const RegisterStudent = () => {
   };
 
   const labelCls =
-    'block text-[12px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1';
+    'block text-[12px] font-medium  tracking-wider text-zinc-500 dark:text-zinc-400 mb-1';
 
   const getInputCls = (fieldName) =>
     `w-full px-3.5 py-2.5 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border ${
@@ -194,76 +191,16 @@ const RegisterStudent = () => {
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-5xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+      <div className="w-full max-w-2xl mx-auto relative z-10">
+        <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden">
           
-          {/* Left Column: Compact Hero / Intro */}
-          <div className="lg:col-span-5 flex flex-col justify-center space-y-4 text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-500/10 border border-cn-blue-500/20 text-cn-blue-600 dark:text-cn-blue-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider w-fit">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>NIT Jalandhar Student Portal</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                Student Registration
-              </h1>
-              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-sm">
-                Create your account using your NITJ student credentials.
-              </p>
-            </div>
-
-            {/* Compact Benefits Presentation */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-600 dark:text-zinc-400 pt-1 font-medium">
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
-                Discover events
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-700">•</span>
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
-                Join clubs
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-700">•</span>
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 shrink-0" />
-                Digital certificates
-              </span>
-            </div>
-
-            {/* Secondary Links for Faculty & External */}
-            <div className="pt-2 flex flex-col gap-1.5">
-              <Link
-                to="/register/faculty"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
-              >
-                <span>Are you a faculty or staff member? Register as Faculty</span>
-                <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/register/external"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors group"
-              >
-                <span>Not a NITJ student? Register as an external participant</span>
-                <ArrowRight className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
+              NITJ Student Registration
+            </h1>
           </div>
 
-          {/* Right Column: Frosted Glass Registration Card */}
-          <div className="lg:col-span-7 w-full">
-            <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-5 sm:p-7 relative overflow-hidden">
-              
-              <div className="mb-4">
-                <h2 className="text-xl sm:text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-                  Create your account
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  Register with your NITJ student credentials
-                </p>
-              </div>
-
-              <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
                 {serverError && (
                   <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -273,11 +210,7 @@ const RegisterStudent = () => {
 
                 {/* ── SECTION 1: Academic Information ── */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 pb-1 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    <GraduationCap className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400" />
-                    <span>Academic Information</span>
-                  </div>
-
+                  
                   {/* Full Name & Roll Number */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -421,11 +354,7 @@ const RegisterStudent = () => {
 
                 {/* ── SECTION 2: Account Credentials ── */}
                 <div className="space-y-3 pt-1">
-                  <div className="flex items-center gap-2 pb-1 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    <Lock className="w-3.5 h-3.5 text-cn-blue-600 dark:text-cn-blue-400" />
-                    <span>Account Credentials</span>
-                  </div>
-
+                 
                   {/* College Email */}
                   <div>
                     <label htmlFor="email" className={labelCls}>
@@ -511,20 +440,26 @@ const RegisterStudent = () => {
                 </button>
               </form>
 
-              {/* Already have an account footer */}
-              <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-center">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {/* Footer Links */}
+              <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                <span>
                   Already have an account?{' '}
                   <Link to="/login" className="font-semibold text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
                     Log in
                   </Link>
-                </p>
+                </span>
+                <div className="flex items-center gap-2">
+                  <Link to="/register/faculty" className="hover:text-cn-blue-600 dark:hover:text-cn-blue-400">
+                    Register as Faculty
+                  </Link>
+                  <span>•</span>
+                  <Link to="/register/external" className="hover:text-cn-blue-600 dark:hover:text-cn-blue-400">
+                    Register as External
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-
-        </div>
-      </div>
     </div>
   );
 };

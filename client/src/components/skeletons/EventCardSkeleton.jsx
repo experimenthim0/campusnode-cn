@@ -83,7 +83,17 @@ const EventCardSkeleton = ({ className }) => {
           <Skeleton className="flex-1 h-9 rounded-full" />
           {/* Calendar Dropdown Button */}
           <Skeleton className="w-9 h-9 rounded-full shrink-0" />
+          {/* Share Button */}
+          <Skeleton className="w-9 h-9 rounded-full shrink-0" />
         </div>
+      </div>
+
+      {/* Bottom ambient light blue shade (subtle height & gentle intensity) */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-0 overflow-hidden rounded-b-xl"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-[#C9EBFF]/40 via-[#C9EBFF]/10 to-transparent dark:from-cn-blue-950/20 dark:via-cn-blue-950/5 dark:to-transparent" />
       </div>
     </div>
   );

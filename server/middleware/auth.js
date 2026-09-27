@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
+import { markAuthEnd, markAuthStart } from "../lib/observability.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -57,7 +58,7 @@ const getFacultyClub = async (adminId) => {
   });
 };
 
-export const verifyToken = async (req, res, next) => {
+const verifyTokenImpl = async (req, res, next) => {
   const tokens = getTokensFromRequest(req);
 
   if (tokens.length === 0) {
@@ -248,6 +249,15 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
+export const verifyToken = async (req, res, next) => {
+  markAuthStart(req);
+  try {
+    return await verifyTokenImpl(req, res, next);
+  } finally {
+    markAuthEnd(req);
+  }
+};
+
 // Socket.IO cannot use Express' req/res middleware directly. This helper
 // validates the same JWT and confirms that its principal still exists before
 // allowing a socket to receive private notifications.
@@ -285,7 +295,7 @@ export const authenticateSocketToken = async (token) => {
 import { hasPermission } from "../utils/rbac.js";
 
 export const requirePermission = (permission, resourceExtractor = null) => {
-  return async (req, res, next) => {
+  const permissionMiddleware = async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ message: "Authentication required." });
     }
@@ -335,6 +345,15 @@ export const requirePermission = (permission, resourceExtractor = null) => {
     }
     next();
   };
+
+  return async (req, res, next) => {
+    markAuthStart(req);
+    try {
+      return await permissionMiddleware(req, res, next);
+    } finally {
+      markAuthEnd(req);
+    }
+  };
 };
 
 export const requireAnyPermission = (...permissions) => {
@@ -343,12 +362,17 @@ export const requireAnyPermission = (...permissions) => {
 
 export const allowRoles = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "No token provided." });
+    markAuthStart(req);
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "No token provided." });
+      }
+      if (!roles.includes(req.user.role)) {
+        return res.status(403).json({ message: "Access denied." });
+      }
+      next();
+    } finally {
+      markAuthEnd(req);
     }
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied." });
-    }
-    next();
   };
 };

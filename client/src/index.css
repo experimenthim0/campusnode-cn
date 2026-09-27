@@ -58,7 +58,7 @@
      CampusNode Primary Brand: Blue Scale (50 - 950)
      ============================================================ */
   --color-brand-50: #eff8ff;
-  --color-brand-100: #dff1ff;
+  --color-brand-100: #dff1ff#dff1ff;
   --color-brand-200: #b8e1ff;
   --color-brand-300: #7ccaff;
   --color-brand-350: #57bfff;
@@ -297,6 +297,32 @@ html.dark body {
   }
 }
 
+
+
+@keyframes campus-glow-flow {
+  0% {
+    transform: translateX(-18%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(18%) translateY(20px);
+  }
+
+  100% {
+    transform: translateX(-18%) translateY(0);
+  }
+}
+
+.campus-glow-flow {
+  animation: campus-glow-flow 18s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campus-glow-flow {
+    animation: none;
+  }
+}
+
 .ai-shimmer-text {
   display: inline-block;
   background-image: linear-gradient(90deg,
@@ -444,6 +470,25 @@ html.dark body {
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: 'titlefont';
+  src: url('/fonts/Kovanov Regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'parafont';
+  src: url('/fonts/Galens Medium.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'logofont';
+  src: url('/fonts/Reaktif-SemiBold.ttf') format('truetype');
+ font-display: swap;
+}
 
 @font-face {
   font-family: 'DancingScript';
@@ -475,20 +520,20 @@ html.dark body {
   src: url('./assets/fonts/PinyonScript.ttf') format('truetype');
 }
 
-@font-face {
-  font-family: 'logofont';
-  src: url('/fonts/organix.regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: block;
-}
+
 
 body {
-  font-family: 'myfont', sans-serif;
+  font-family: 'mysans', sans-serif;
 }
 
 .myfont {
   font-family: 'myfont', sans-serif;
+}
+.titlefont {
+  font-family: 'titlefont', 'mysans';
+}
+.parafont {
+  font-family: 'parafont', 'mysans';
 }
 
 .logofont {
@@ -2384,3 +2429,40 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.8) !important;
   cursor: pointer;
 }
+
+/* ── Event Poster Upload Scanning & Progress Animations ─────────────────── */
+@keyframes posterScan {
+  0% {
+    top: -15%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+.animate-poster-scan {
+  animation: posterScan 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes uploadPulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.animate-upload-pulse {
+  animation: uploadPulseGlow 2s ease-in-out infinite;
+}
