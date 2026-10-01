@@ -28,6 +28,7 @@ const EventFeedbackAnalytics = lazy(() => import('./pages/EventFeedbackAnalytics
 const CheckIn = lazy(() => import('./pages/CheckIn'));
 
 const ClubsPage = lazy(() => import('./pages/Clubspage'));
+const ClubDirectory = lazy(() => import('./pages/ClubDirectory'));
 const ClubDetails = lazy(() => import('./pages/ClubDetails'));
 const EditClub = lazy(() => import('./pages/EditClub'));
 const ClubMembers = lazy(() => import('./pages/ClubMembers'));
@@ -108,6 +109,8 @@ function App() {
                   <Route element={<AppLayout />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/clubs" element={<ClubsPage />} />
+                    <Route path="/clubs/directory" element={<ClubDirectory />} />
+                    <Route path="/club-directory" element={<Navigate to="/clubs/directory" replace />} />
                     <Route path="/club/:slug" element={<ClubDetails />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password/:token" element={<ResetPassword />} />

@@ -301,24 +301,61 @@ html.dark body {
 
 @keyframes campus-glow-flow {
   0% {
-    transform: translateX(-18%) translateY(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate3d(70px, -20px, 0) scale(1.06);
   }
 
   50% {
-    transform: translateX(18%) translateY(20px);
+    transform: translate3d(0px, 26px, 0) scale(1.10);
+  }
+
+  75% {
+    transform: translate3d(-70px, -14px, 0) scale(1.04);
   }
 
   100% {
-    transform: translateX(-18%) translateY(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes campus-glow-flow-reverse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate3d(-70px, 20px, 0) scale(0.96);
+  }
+
+  50% {
+    transform: translate3d(0px, -26px, 0) scale(0.92);
+  }
+
+  75% {
+    transform: translate3d(70px, 14px, 0) scale(1.04);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 .campus-glow-flow {
-  animation: campus-glow-flow 18s ease-in-out infinite;
+  animation: campus-glow-flow 11s ease-in-out infinite;
+  will-change: transform;
+}
+
+.campus-glow-flow-reverse {
+  animation: campus-glow-flow-reverse 13s ease-in-out infinite;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .campus-glow-flow {
+  .campus-glow-flow,
+  .campus-glow-flow-reverse {
     animation: none;
   }
 }

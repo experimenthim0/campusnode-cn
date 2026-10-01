@@ -310,12 +310,14 @@ const ClubCard = ({ club }) => {
         />
 
         {/* Soft animated ambient glow orb */}
-        <div
-          className="campus-glow-flow absolute left-1/2 -bottom-10 h-36 w-72 -translate-x-1/2 rounded-full blur-[45px] transition-all duration-500"
-          style={{
-            backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.35 : 0.20) : (isHovered ? 0.50 : 0.30)})`,
-          }}
-        />
+        <div className="absolute left-1/2 -bottom-10 -translate-x-1/2 pointer-events-none">
+          <div
+            className="campus-glow-flow h-36 w-72 rounded-full blur-[45px] transition-all duration-500"
+            style={{
+              backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.35 : 0.20) : (isHovered ? 0.50 : 0.30)})`,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

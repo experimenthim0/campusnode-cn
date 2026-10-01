@@ -10,6 +10,9 @@ const DashboardFooter = () => {
         </p>
 
         <div className="flex items-center gap-x-5">
+          <Link to="/clubs/directory" className="text-[11px] hover:text-cn-text font-medium transition-colors">
+            Club Directory
+          </Link>
           <Link to='/Team' className="text-[11px] hover:text-cn-text font-medium transition-colors">
             Team
           </Link>

@@ -11,6 +11,7 @@ import {
   Lock,
 } from 'lucide-react';
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
+import CampusNodeIntroAnimation from '../components/CampusNodeIntroAnimation';
 
 const RegisterExternal = () => {
   const navigate = useNavigate();
@@ -135,7 +136,7 @@ const RegisterExternal = () => {
     } rounded-xl text-zinc-900 dark:text-white text-xs font-light outline-none focus:ring-2 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500`;
 
   return (
-    <div className="mysans min-h-screen bg-cn-bg text-cn-text relative overflow-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mysans min-h-[70vh] bg-cn-bg text-cn-text relative overflow-x-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
       {/* ── Background Ambient Atmosphere ── */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
@@ -146,14 +147,21 @@ const RegisterExternal = () => {
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-2xl mx-auto relative z-10">
-        <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden">
+      <div className="w-full mx-auto relative z-10 my-auto ">
+        <div className="rounded-3xl backdrop-blur-xl relative overflow-hidden flex flex-col md:flex-row items-stretch">
           
-          <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
-              External Registration
-            </h1>
+          {/* ── LEFT COLUMN: CampusNode introduction / interactive animation (~55% width on desktop) ── */}
+          <div className="w-full p-6 sm:p-10 lg:p-12 xl:p-14 flex flex-col justify-center hidden md:block">
+            <CampusNodeIntroAnimation />
           </div>
+
+          {/* ── RIGHT COLUMN: Registration form (~45% width on desktop, vertically centered) ── */}
+          <div className="w-full p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center">
+            <div className="text-center sm:text-left mb-6">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
+                External Registration
+              </h1>
+            </div>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
                 {serverError && (
@@ -391,7 +399,8 @@ const RegisterExternal = () => {
               </div>
             </div>
           </div>
-    </div>
+        </div>
+      </div>
   );
 };
 

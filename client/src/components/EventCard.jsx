@@ -540,12 +540,14 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 />
 
                 {/* Delicate animated ambient glow */}
-                <div
-                    className="campus-glow-flow absolute left-1/2 -bottom-6 h-20 w-52 -translate-x-1/2 rounded-full blur-[30px] transition-all duration-500"
-                    style={{
-                        backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.30 : 0.18) : (isHovered ? 0.42 : 0.25)})`,
-                    }}
-                />
+                <div className="absolute left-1/2 -bottom-6 -translate-x-1/2 pointer-events-none">
+                    <div
+                        className="campus-glow-flow h-20 w-52 rounded-full blur-[30px] transition-all duration-500"
+                        style={{
+                            backgroundColor: `rgba(${activeRgb[0]}, ${activeRgb[1]}, ${activeRgb[2]}, ${isDark ? (isHovered ? 0.30 : 0.18) : (isHovered ? 0.42 : 0.25)})`,
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

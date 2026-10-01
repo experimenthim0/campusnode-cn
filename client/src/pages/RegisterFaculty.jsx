@@ -12,6 +12,7 @@ import {
   User,
 } from 'lucide-react';
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
+import CampusNodeIntroAnimation from '../components/CampusNodeIntroAnimation';
 
 const DEPARTMENTS = [
   'Computer Science & Engineering',
@@ -158,27 +159,34 @@ const RegisterFaculty = () => {
     } rounded-xl text-zinc-900 dark:text-white text-xs font-light outline-none focus:ring-2 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500`;
 
   return (
-    <div className="mysans min-h-screen bg-cn-bg text-cn-text relative overflow-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-      {/* Background Atmosphere */}
+    <div className="mysans min-h-[70vh] bg-cn-bg text-cn-text relative overflow-x-hidden transition-colors duration-300 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+      {/* ── Background Ambient Atmosphere ── */}
       <div
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[650px] opacity-40 dark:opacity-20"
         style={{
           background:
-            'radial-gradient(ellipse at center top, rgba(59, 130, 246, 0.15) 0%, rgba(168, 85, 247, 0.08) 45%, transparent 70%)',
+            'radial-gradient(ellipse at center top, rgba(0, 148, 255, 0.12) 0%, rgba(249, 115, 22, 0.06) 45%, transparent 70%)',
         }}
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-xl mx-auto relative z-10">
-        <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden">
+      <div className="w-full mx-auto relative z-10 my-auto ">
+        <div className="rounded-3xl backdrop-blur-xl relative overflow-hidden flex flex-col md:flex-row items-stretch">
           
-          <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
-              Faculty Registration
-            </h1>
+          {/* ── LEFT COLUMN: CampusNode introduction / interactive animation (~55% width on desktop) ── */}
+          <div className="w-full p-6 sm:p-10 lg:p-12 xl:p-14 flex flex-col justify-center hidden md:block">
+            <CampusNodeIntroAnimation />
           </div>
 
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+          {/* ── RIGHT COLUMN: Registration form (~45% width on desktop, vertically centered) ── */}
+          <div className="w-full p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center">
+            <div className="text-center sm:text-left mb-6">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
+                Faculty Registration
+              </h1>
+            </div>
+
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
                 {serverError && (
                   <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -392,6 +400,7 @@ const RegisterFaculty = () => {
               </form>
             </div>
           </div>
+        </div>
       </div>
   );
 };

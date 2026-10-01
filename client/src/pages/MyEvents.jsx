@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
-import { downloadTicketImage, generateTicketQrUrl } from '../services/ticketService';
+import { downloadTicketPdf, downloadTicketImage, generateTicketQrUrl } from '../services/ticketService';
 import { invalidateCache } from '../lib/cacheManager';
 import { getMyFeedbackHistory, getPendingFeedback } from '../services/feedbackService';
 import { EventFeedbackModal } from '../components/EventFeedbackModal';
@@ -618,19 +618,18 @@ const MyEvents = () => {
   };
 
   const handleDownloadTicket = async () => {
-    if (!selectedTicket || !qrDataUrl || downloadingTicket) return;
+    if (!selectedTicket || downloadingTicket) return;
 
     try {
       setDownloadingTicket(true);
-      await downloadTicketImage({
+      await downloadTicketPdf({
         ticket: selectedTicket,
-        qrDataUrl,
         user,
       });
-      showNotification('Ticket downloaded successfully!', 'success');
+      showNotification('Ticket PDF downloaded successfully!', 'success');
     } catch (err) {
-      console.error('Failed to download ticket:', err);
-      showNotification('Failed to download ticket. Please try again.', 'error');
+      console.error('Failed to download ticket PDF:', err);
+      showNotification('Failed to download ticket PDF. Please try again.', 'error');
     } finally {
       setDownloadingTicket(false);
     }
@@ -1172,10 +1171,13 @@ const MyEvents = () => {
                       {downloadingTicket ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                          Saving...
+                          Generating PDF...
                         </>
                       ) : (
-                        'Save Ticket'
+                        <>
+                          <Download className="w-3.5 h-3.5 mr-1.5" />
+                          Download PDF
+                        </>
                       )}
                     </Button>
                   </div>

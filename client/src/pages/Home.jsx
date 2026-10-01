@@ -131,6 +131,24 @@ const SectionLabel = ({ children }) => (
   </div>
 );
 
+const SectionGlow = ({ className = '' }) => (
+  <div className={`absolute inset-0 pointer-events-none overflow-hidden select-none z-0 ${className}`} aria-hidden="true">
+    {/* Light Mode: Centered floating soft brand-blue glow tint */}
+    <div className="dark:hidden absolute inset-0 pointer-events-none">
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none">
+        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#C9EBFF] opacity-35 blur-[100px]" />
+      </div>
+    </div>
+
+    {/* Dark Mode: Centered floating brand-blue glow matching Hero */}
+    <div className="hidden dark:block absolute inset-0 pointer-events-none">
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none">
+        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#0094FF] opacity-[0.24] blur-[95px]" />
+      </div>
+    </div>
+  </div>
+);
+
 const BtnPrimary = ({ to, children }) => (
   <Link
     to={to}
@@ -314,18 +332,23 @@ const Home = () => {
               className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-white pointer-events-none dark:hidden"
               aria-hidden="true"
             >
-              {/* Soft animated blue glow */}
-              <div
-                className="campus-glow-flow absolute left-1/2 top-[40px] h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-[#C9EBFF] opacity-45 blur-[110px]"
-              />
+              {/* Soft animated blue glow centered cleanly */}
+              <div className="absolute left-1/2 top-[40px] -translate-x-1/2 pointer-events-none">
+                <div
+                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#C9EBFF] opacity-45 blur-[110px]"
+                />
+              </div>
             </div>
-            {/* ── DARK MODE BG: Slate-950 with Brand Blue Radial Glow Orbs ── */}
+            {/* ── DARK MODE BG: Slate-950 with Brand Blue Glow Orbs ── */}
             <div
               className="absolute inset-0 pointer-events-none z-0 h-full w-full bg-slate-950 hidden dark:block overflow-hidden"
               aria-hidden="true"
             >
-              <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(0,120,212,.18),rgba(255,255,255,0))]" />
-              <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(0,120,212,.18),rgba(255,255,255,0))]" />
+              <div className="absolute left-1/2 top-[40px] -translate-x-1/2 pointer-events-none">
+                <div
+                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#0094FF] opacity-[0.26] blur-[105px]"
+                />
+              </div>
             </div>
 
             <Section className="relative z-10 w-full">
@@ -412,8 +435,9 @@ const Home = () => {
 
           {/* ── Section A: My Campus Journey (all students, including leads) ─ */}
           {isStudent && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-              <Section>
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+              <SectionGlow />
+              <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <SectionLabel>My Campus Journey</SectionLabel>
@@ -538,8 +562,9 @@ const Home = () => {
 
           {/* ── Section B: Club Operations Desk (Student Leads & Coordinators only) ── */}
           {isStudent && (isStudentLead || isCoordinator || operationalMemberships.length > 0) && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-              <Section>
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+              <SectionGlow />
+              <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10">
                   {/* Section identity */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-200 dark:border-cn-blue-800/50 mb-4">
@@ -673,8 +698,9 @@ const Home = () => {
 
           {/* ── Section C: Faculty Coordinator Desk ───────────────────────── */}
           {isFaculty && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-              <Section>
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+              <SectionGlow />
+              <Section className="relative z-10">
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-200 dark:border-cn-blue-800/50 mb-4">
                     <i className="ri-government-line text-cn-blue-600 dark:text-cn-blue-400 text-sm" />
@@ -720,8 +746,9 @@ const Home = () => {
 
           {/* ── Section D: Admin Command Center ───────────────────────────── */}
           {isAdmin && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-              <Section>
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+              <SectionGlow />
+              <Section className="relative z-10">
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 mb-4">
                     <i className="ri-shield-keyhole-line text-red-600 dark:text-red-400 text-sm" />
@@ -774,43 +801,26 @@ const Home = () => {
           <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-white dark:bg-slate-950 overflow-hidden">
             {/* ── LIGHT MODE BG: Subtle Grid + Brand Blue Radial Spotlight ── */}
             <div
-              className="
-    absolute
-    inset-0
-    z-0
-    h-full
-    w-full
-    overflow-hidden
-    bg-white
-    pointer-events-none
-    dark:hidden
-  "
+              className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-white pointer-events-none dark:hidden"
               aria-hidden="true"
             >
-              {/* Soft animated blue glow */}
-              <div
-                className="
-      campus-glow-flow
-      absolute
-      left-1/2
-      top-[80px]
-      h-[500px]
-      w-[900px]
-      -translate-x-1/2
-      rounded-full
-      bg-[#C9EBFF]
-      opacity-45
-      blur-[110px]
-    "
-              />
+              {/* Soft animated blue glow centered cleanly */}
+              <div className="absolute left-1/2 top-[80px] -translate-x-1/2 pointer-events-none">
+                <div
+                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#C9EBFF] opacity-45 blur-[110px]"
+                />
+              </div>
             </div>
-            {/* ── DARK MODE BG: Slate-950 with Brand Blue Radial Glow Orbs ── */}
+            {/* ── DARK MODE BG: Slate-950 with Brand Blue Glow Orbs ── */}
             <div
               className="absolute inset-0 pointer-events-none z-0 h-full w-full bg-slate-950 hidden dark:block overflow-hidden"
               aria-hidden="true"
             >
-              <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(0,120,212,.18),rgba(255,255,255,0))]" />
-              <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(0,120,212,.18),rgba(255,255,255,0))]" />
+              <div className="absolute left-1/2 top-[80px] -translate-x-1/2 pointer-events-none">
+                <div
+                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#0094FF] opacity-[0.26] blur-[105px]"
+                />
+              </div>
             </div>
 
             <Section className="w-full relative z-10">
@@ -886,8 +896,9 @@ const Home = () => {
       {/* NEW Featured Events Section */}
       <FeaturedEventsSection />
 
-      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <Section>
+      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+        <SectionGlow />
+        <Section className="relative z-10">
           <ScrollReveal direction="up">
             <div className="mb-6 sm:mb-6">
               <SectionLabel>Latest Happenings</SectionLabel>
@@ -910,8 +921,9 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <Section>
+      <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+        <SectionGlow />
+        <Section className="relative z-10">
           <ScrollReveal direction="up">
             <div className="mb-10 sm:mb-12">
               <h2 className="font-black titlefont text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-wide text-center">
@@ -932,8 +944,9 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-        <Section>
+      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+        <SectionGlow />
+        <Section className="relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
@@ -964,8 +977,9 @@ const Home = () => {
       {!user && (
         <>
           {/* Section 1: For Students */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <Section>
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+            <SectionGlow />
+            <Section className="relative z-10">
               <ScrollReveal direction="up">
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
@@ -1022,8 +1036,9 @@ const Home = () => {
           </section>
 
           {/* Section 2: For Clubs & Societies */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <Section>
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+            <SectionGlow />
+            <Section className="relative z-10">
               <ScrollReveal direction="up">
                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
@@ -1062,8 +1077,9 @@ const Home = () => {
             </Section>
           </section>
 
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300">
-            <Section>
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+            <SectionGlow />
+            <Section className="relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 <ScrollReveal direction="left">
                   <div>
@@ -1100,15 +1116,8 @@ const Home = () => {
 
 
       <section id="team" className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
-        {/* Glow accent */}
-        <div
-          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] sm:h-[600px] opacity-40 dark:opacity-20"
-          style={{
-            background:
-              'radial-gradient(ellipse at center top, rgba(234, 88, 12, 0.12) 0%, rgba(59, 130, 246, 0.05) 45%, transparent 70%)',
-          }}
-          aria-hidden="true"
-        />
+        {/* Brand blue glow accent matching Hero vibe */}
+        <SectionGlow />
 
         <Section className="relative z-10">
           <div className="flex flex-col items-center mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
@@ -1155,8 +1164,7 @@ const Home = () => {
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
         <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors duration-300">
-          {/* Glow accent */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[320px] bg-brand-500/[0.04] dark:bg-brand-500/[0.07] rounded-full blur-[130px] pointer-events-none" />
+          <SectionGlow />
 
           <Section className="relative z-10">
             <div className="flex flex-col items-center text-center max-w-3xl mx-auto">

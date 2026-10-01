@@ -237,7 +237,7 @@ const HighlightMatch = ({ text = "", query = "" }) => {
         regex.test(part) ? (
           <span
             key={i}
-            className="text-primary font-bold underline decoration-primary/40 underline-offset-2"
+            className="text-primary font-semibold mysans underline decoration-primary/40 underline-offset-2"
           >
             {part}
           </span>
@@ -845,7 +845,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                 <span>{tab.label}</span>
                 {count !== null && (
                   <span
-                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono font-bold ${
+                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono font-semibold ${
                       isActive
                         ? "bg-white/20 text-white"
                         : "bg-muted text-muted-foreground"
@@ -871,7 +871,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
               {recentSearches.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Recent Searches
                     </p>
                     <button
@@ -909,7 +909,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
 
               {/* Popular Searches */}
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                   Popular Searches
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -931,7 +931,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
 
               {/* Quick Access */}
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                   Quick Access
                 </p>
                 <div className="space-y-1">
@@ -972,7 +972,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                 <div key={sIdx} className="space-y-1">
                   {/* Category Header */}
                   <div className="flex items-center justify-between px-2 pt-1.5 pb-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       {section.title}
                     </span>
                     <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5">
@@ -1022,7 +1022,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-border"
                                 />
                               ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 font-bold text-xs">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 font-semibold text-xs">
                                   {getInitials(item.title)}
                                 </div>
                               )
@@ -1034,7 +1034,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-border"
                                 />
                               ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs border border-primary/20">
                                   {getInitials(item.title)}
                                 </div>
                               )
@@ -1055,14 +1055,14 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                               {item.type === "member" && item.roleBadge && (
                                 <Badge
                                   variant={getMemberRoleBadgeVariant(item.roleBadge)}
-                                  className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-bold"
+                                  className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-semibold"
                                 >
                                   {item.roleBadge}
                                 </Badge>
                               )}
 
                               {item.type === "event" && item.isLive && (
-                                <Badge className="text-[9px] font-bold px-1.5 py-0 bg-primary text-primary-foreground shrink-0 flex items-center gap-1 border-none">
+                                <Badge className="text-[9px] font-semibold px-1.5 py-0 bg-primary text-primary-foreground shrink-0 flex items-center gap-1 border-none">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                   LIVE
                                 </Badge>

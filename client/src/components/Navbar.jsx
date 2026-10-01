@@ -273,7 +273,7 @@ const Navbar = () => {
               className="flex items-center gap-2.5 shrink-0 group logofont hidden sm:block"
             >
               <span className="font-light text-[24px] tracking-wider text-black  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                Campusnode
+                Cam<span className="uppercase text-[18px] font-extrabold">P</span>usnode
               </span>
             </Link>
           </div>
@@ -282,9 +282,9 @@ const Navbar = () => {
             to="/"
             className="flex items-center gap-2.5 shrink-0 group logofont sm:hidden block"
           >
-            <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none">
-              Campusnode
-            </span>
+            <span className="font-light text-[24px] tracking-wider text-black  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
+                Cam<span className="uppercase text-[18px] font-medium">P</span>usnode
+              </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6 lg:gap-8">

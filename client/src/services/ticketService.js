@@ -440,9 +440,327 @@ export const downloadTicketImage = async ({ ticket, qrDataUrl, user, filename })
   return dataUrl;
 };
 
+/**
+ * Safely converts an image URL to a base64 Data URL for pdfme embedding.
+ * Supports cross-origin images via browser canvas or fetch fallback,
+ * with a strict timeout to ensure PDF generation never hangs.
+ * @param {string} url - Image URL or data URL
+ * @param {number} [timeoutMs=3000] - Maximum wait time
+ * @returns {Promise<string>} - Base64 Data URL or empty string
+ */
+export const convertImageUrlToDataUrl = async (url, timeoutMs = 3000) => {
+  if (!url || typeof url !== 'string') return '';
+  if (url.startsWith('data:')) return url;
+
+  const fetchWithTimeout = async () => {
+    // 1. In browser environment, try Image + Canvas (handles CDN CORS configs cleanly)
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      try {
+        const dataUrlFromImg = await new Promise((resolve, reject) => {
+          const img = new window.Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth || img.width;
+              canvas.height = img.naturalHeight || img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              resolve(canvas.toDataURL('image/jpeg', 0.88));
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = reject;
+          img.src = url;
+        });
+        if (dataUrlFromImg) return dataUrlFromImg;
+      } catch {
+        // Fall back to fetch below
+      }
+    }
+
+    // 2. Fetch fallback (works in browser & node)
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return '';
+      if (typeof window !== 'undefined' && typeof FileReader !== 'undefined') {
+        const blob = await res.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result || '');
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        const arrayBuffer = await res.arrayBuffer();
+        const contentType = res.headers.get('content-type') || 'image/jpeg';
+        const base64 = Buffer.from(arrayBuffer).toString('base64');
+        return `data:${contentType};base64,${base64}`;
+      }
+    } catch {
+      return '';
+    }
+  };
+
+  return Promise.race([
+    fetchWithTimeout(),
+    new Promise((resolve) => setTimeout(() => resolve(''), timeoutMs)),
+  ]);
+};
+
+/**
+ * Generates an official CampusNode Event Entry Pass as a PDF (Uint8Array).
+ * Utilizes @pdfme/generator with dynamic code splitting to maintain lightweight client bundle.
+ * @param {Object} options
+ * @param {Object} options.ticket - The registration/ticket object
+ * @param {Object} [options.user] - The logged in user
+ * @returns {Promise<Uint8Array>}
+ */
+export const generateTicketPdf = async ({ ticket, user }) => {
+  if (!ticket) throw new Error('Ticket data is required');
+
+  // Dynamic code-splitting: @pdfme and template loaded only when generating PDF
+  const [
+    { generate },
+    { text, image, line, rectangle, multiVariableText, barcodes },
+    templateMod,
+  ] = await Promise.all([
+    import('@pdfme/generator'),
+    import('@pdfme/schemas'),
+    import('../assets/ticketTemplate.json'),
+  ]);
+
+  const template = templateMod.default || templateMod;
+
+  const ev = ticket.eventId || ticket.event || {};
+  const passId = ticket.qrCode || ticket.id || ticket._id || 'PASS';
+  const qrPayload = ticket.qrPayload || ticket.qrCode || passId;
+
+  let rawOrganizer =
+    ev.club?.clubName ||
+    ev.club?.name ||
+    ev.organizers?.[0]?.club?.clubName ||
+    ev.centralOrganizer?.name ||
+    (ev.organizerType === 'CENTRAL_ORGANIZATION' ? 'Central Student Body' : null) ||
+    ev.createdBy?.name ||
+    'CampusNode';
+
+  // Strip redundant "Organized by" prefix if already present
+  const organizerName = rawOrganizer.replace(/^organized by\s+/i, '').trim();
+
+  const attendeeName =
+    ticket.student?.name ||
+    user?.name ||
+    'Participant';
+
+  const attendeeEmail =
+    ticket.student?.email ||
+    user?.email ||
+    '';
+
+  const attendeeRoll =
+    ticket.student?.rollNo ||
+    user?.rollNo ||
+    '';
+
+  const eventDateObj = ev.startTime ? new Date(ev.startTime) : null;
+  const eventEndDateObj = ev.endTime ? new Date(ev.endTime) : null;
+  const isValidDate = eventDateObj && !isNaN(eventDateObj.getTime());
+  const isValidEndDate = eventEndDateObj && !isNaN(eventEndDateObj.getTime());
+
+  const formattedDate = isValidDate
+    ? eventDateObj.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Asia/Kolkata',
+      })
+    : 'TBA';
+
+  const startTimeStr = isValidDate
+    ? eventDateObj.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata',
+      })
+    : 'TBA';
+
+  const endTimeStr = isValidEndDate
+    ? eventEndDateObj.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata',
+      })
+    : null;
+
+  const formattedTime = endTimeStr && endTimeStr !== 'TBA'
+    ? `${startTimeStr} - ${endTimeStr}`
+    : startTimeStr !== 'TBA'
+    ? `${startTimeStr} Onwards`
+    : 'TBA';
+
+  const venue = ev.venue || 'Campus Venue, NIT Jalandhar';
+
+  // Format generation timestamp
+  const nowStr = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  });
+
+  // Clean and sanitize description to prevent overflow
+  const cleanDescription = (ev.shortDescription || ev.description || '')
+    .replace(/[#*_`~>\[\]]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const truncatedDesc = cleanDescription.length > 160
+    ? cleanDescription.slice(0, 157) + '...'
+    : cleanDescription;
+
+  const rollText = attendeeRoll || 'N/A';
+
+  const categoryText = ticket.team?.teamName
+    ? `Team (${ticket.team.teamName})`
+    : (ticket.category || (attendeeRoll ? 'Internal (NITJ Students)' : 'General Participant'));
+
+  const feeVal = ticket.amount ?? ticket.fee ?? ticket.registrationFee ?? ev.price ?? ev.fee ?? (ev.isPaid ? 100 : 0);
+  const feeText = typeof feeVal === 'number' && feeVal > 0
+    ? `INR ${feeVal.toFixed(1)}`
+    : (typeof feeVal === 'string' && feeVal.trim() && feeVal !== '0' ? feeVal : 'INR 0.0 (Free / Sponsored)');
+
+  const paymentStatusText = ticket.paymentStatus
+    ? ticket.paymentStatus.toUpperCase()
+    : 'SUCCESS';
+
+  const registrationStatusText = ticket.status
+    ? ticket.status.toUpperCase()
+    : 'CONFIRMED';
+
+  const issuedDateObj = (ticket.createdAt || ticket.registeredAt || ticket.issuedAt)
+    ? new Date(ticket.createdAt || ticket.registeredAt || ticket.issuedAt)
+    : new Date();
+
+  const issuedAtStr = !isNaN(issuedDateObj.getTime())
+    ? issuedDateObj.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Kolkata',
+      }).replace(',', '')
+    : nowStr;
+
+  // Extract embedded college and platform logo content if available in template
+  const collegeLogoContent = template.schemas?.[0]?.find((s) => s.name === 'collegeLogo')?.content || '';
+  const campusNodeLogoContent = template.schemas?.[0]?.find((s) => s.name === 'campusNodeLogo')?.content || '';
+
+  const inputs = [{
+    // Branding & Header
+    collegeLogo: ev.collegeLogo || collegeLogoContent,
+    campusNodeLogo: campusNodeLogoContent,
+    headerInstitute: ev.collegeName
+      ? `${ev.collegeName.toUpperCase()}\nJALANDHAR-144008, PUNJAB (INDIA)`
+      : 'Dr B R AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY\nJALANDHAR-144008, PUNJAB (INDIA)',
+    institution: ev.collegeName || 'Dr B R Ambedkar NIT Jalandhar',
+    receiptTitle: 'EVENT REGISTRATION RECEIPT & ENTRY CREDENTIAL',
+
+    // Attendee & Registration Section
+    ticketId: passId,
+    verifIdValue: passId,
+    attendeeName: attendeeName.toUpperCase(),
+    rollNumber: rollText,
+    rollNo: rollText,
+    attendeeEmail: attendeeEmail || 'N/A',
+    category: categoryText,
+
+    // Event Section
+    eventName: ev.title || 'Event Registration',
+    organizerName,
+    eventDate: formattedDate,
+    eventTime: formattedTime,
+    eventVenue: venue,
+    venue,
+
+    // Fee & Admission Details
+    feeAmount: feeText,
+    paymentStatus: paymentStatusText,
+    registrationStatus: registrationStatusText,
+    issuedAt: issuedAtStr,
+
+    // Verification Sidebar
+    qrCode: qrPayload,
+    scanToVerify: 'SCAN TO VERIFY',
+    verifStatus: `STATUS: ${registrationStatusText}`,
+
+    // Footer & Acknowledgement
+    acknowledgement: 'THANK YOU FOR REGISTERING, SEE YOU SOON.',
+    footerPlatform: 'CampusNode Event Portal · NIT Jalandhar (nitj.ac.in)',
+    footerDisclaimer: 'Note: This is an official system-generated institutional e-receipt and valid event admission credential issued by CampusNode on behalf of Dr B R Ambedkar National Institute of Technology Jalandhar. No physical signature is required. Keep this receipt safe for gate clearance.',
+    generatedAt: `Generated on ${nowStr}`,
+
+    // Compatibility fallbacks
+    eventPassLabel: 'EVENT RECEIPT',
+    ticketTitle: 'EVENT RECEIPT',
+    date: formattedDate,
+    time: formattedTime,
+    ticketOrganizer: `Organized by ${organizerName}`,
+    organizer: organizerName,
+    eventDescription: '',
+  }];
+
+  const plugins = {
+    text,
+    qrcode: barcodes.qrcode,
+    image,
+    line,
+    rectangle,
+    multiVariableText,
+  };
+
+  const pdf = await generate({ template, inputs, plugins });
+  return pdf;
+};
+
+/**
+ * Generates and triggers download of the official CampusNode Event Ticket as a high-fidelity PDF.
+ * @param {Object} options
+ * @param {Object} options.ticket - The registration/ticket object
+ * @param {Object} [options.user] - The logged in user
+ * @param {string} [options.filename] - Optional custom filename
+ * @returns {Promise<Blob>}
+ */
+export const downloadTicketPdf = async ({ ticket, user, filename }) => {
+  const pdfBytes = await generateTicketPdf({ ticket, user });
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const code = ticket?.qrCode || ticket?._id || ticket?.id || 'pass';
+  const downloadName = filename || `CampusNode-Ticket-${code}.pdf`;
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = downloadName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+
+  return blob;
+};
+
 export default {
   BRAND_COLORS,
   generateTicketQrUrl,
   generateTicketCanvas,
   downloadTicketImage,
+  generateTicketPdf,
+  downloadTicketPdf,
 };
