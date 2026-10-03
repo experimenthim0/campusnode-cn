@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
 import CampusNodeIntroAnimation from '../components/CampusNodeIntroAnimation';
+import RegistrationTermsNotice from '../components/RegistrationTermsNotice';
 
 const RegisterStudent = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const RegisterStudent = () => {
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const isOtherProgram = formData.program === 'OTHER';
   const availableBranches = getBranchesForProgram(formData.program);
@@ -81,8 +83,19 @@ const RegisterStudent = () => {
       errors.password = 'Password must contain at least 6 characters.';
     }
 
+    if (!agreedToTerms) {
+      errors.terms = 'Please accept the Terms & Conditions and acknowledge non-editable fields before registering.';
+    }
+
     setFieldErrors(errors);
     return { isValid: Object.keys(errors).length === 0, errors };
+  };
+
+  const handleTermsChange = (checked) => {
+    setAgreedToTerms(checked);
+    if (fieldErrors.terms) {
+      setFieldErrors((prev) => ({ ...prev, terms: '' }));
+    }
   };
 
   const handleGraduationYearChange = (e) => {
@@ -428,6 +441,14 @@ const RegisterStudent = () => {
                   )}
                 </div>
               </div>
+
+              {/* Terms & Conditions + Non-Editable Fields Notice */}
+              <RegistrationTermsNotice
+                role="student"
+                agreed={agreedToTerms}
+                onAgreementChange={handleTermsChange}
+                error={fieldErrors.terms}
+              />
 
               {/* Submit Button */}
               <button

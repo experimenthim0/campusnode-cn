@@ -1556,6 +1556,26 @@ router.post("/change-password", verifyToken, async (req, res) => {
   }
 });
 
+// Returns client session security metadata (IP, Geo-location, device, TLS status)
+router.get("/session-security", async (req, res) => {
+  try {
+    const securityMeta = await extractSecurityMetadata(req);
+    res.json({
+      success: true,
+      ip: securityMeta.ipAddress || null,
+      location: securityMeta.location || null,
+      device: securityMeta.device || null,
+      time: securityMeta.time || null,
+      secure: Boolean(req.secure || req.headers["x-forwarded-proto"] === "https"),
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Backend telemetry unavailable",
+    });
+  }
+});
+
 // Clears the httpOnly token cookie
 router.post("/logout", (req, res) => {
   res.cookie("token", "", {

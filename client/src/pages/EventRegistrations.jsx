@@ -373,7 +373,7 @@ const EventRegistrations = () => {
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-black text-black dark:text-white tracking-tight">
+                        <h1 className="text-2xl md:text-3xl font-semibold text-black dark:text-white tracking-tight">
                             {eventData?.title || 'Event Registrations'}
                         </h1>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
@@ -414,10 +414,10 @@ const EventRegistrations = () => {
                     return (
                         <div className={`grid grid-cols-1 ${entryFee > 0 ? 'sm:grid-cols-2 lg:grid-cols-4' : (eventHasStarted ? 'sm:grid-cols-2' : 'grid-cols-1')} gap-5 mb-8`}>
                             <div className="bg-white dark:bg-neutral-900 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                                     Total Registered
                                 </p>
-                                <p className="text-3xl font-black text-black dark:text-white">{registeredCount}</p>
+                                <p className="text-3xl font-semibold text-black dark:text-white">{registeredCount}</p>
                                 <p className="text-[11px] text-neutral-500 mt-2">
                                     {isTeamEvent
                                         ? `${teamCount} team${teamCount !== 1 ? 's' : ''} · ${indivCount} individual${indivCount !== 1 ? 's' : ''}`
@@ -428,10 +428,10 @@ const EventRegistrations = () => {
 
                             {eventHasStarted && (
                                 <div className="bg-white dark:bg-neutral-900 p-6 border border-green-200 dark:border-green-900/40 rounded-2xl shadow-sm">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-green-600 mb-1">
+                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-green-600 mb-1">
                                         Attended
                                     </p>
-                                    <p className="text-3xl font-black text-green-600">{attendedCount}</p>
+                                    <p className="text-3xl font-semibold text-green-600">{attendedCount}</p>
                                     <p className="text-[11px] text-neutral-500 mt-2">
                                         {registeredCount > 0 ? Math.round((attendedCount / registeredCount) * 100) : 0}% check-in rate
                                     </p>

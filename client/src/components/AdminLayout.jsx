@@ -63,7 +63,7 @@ const AdminLayout = () => {
           <div className="flex items-center gap-2.5">
             <img src="/nitjlogo.png" alt="NITJ Logo" className="w-8 h-9 shrink-0" />
             <span className="font-light text-[20px] tracking-wider text-black dark:text-white leading-none select-none logofont">
-              Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+              Cam<span className="uppercase">P</span>usnode
             </span>
             <span className="px-2 py-0.5 bg-neutral-200/70 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-[9px] font-bold uppercase tracking-wider rounded-md shrink-0">
               Admin

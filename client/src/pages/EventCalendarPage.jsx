@@ -28,7 +28,7 @@ import {
   RotateCcw,
   Loader2
 } from "lucide-react";
-import { Card, CardContent } from "../components/ui/card";
+import { Card } from "../components/ui/card";
 import ShimmerText from "../components/ShimmerText";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -42,18 +42,40 @@ import {
 } from "../components/ui/table";
 
 const StatCard = ({ label, value, accent, icon: Icon }) => (
-  <Card className={`transition-all ${accent ? "border-amber-500/30 bg-amber-500/5" : ""}`}>
-    <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+  <Card
+    className={`h-full transition-all duration-200 border ${
+      accent
+        ? "border-amber-500/35 bg-amber-500/5 dark:bg-amber-950/20 shadow-xs"
+        : "border-border/80 bg-card hover:border-border shadow-xs"
+    }`}
+  >
+    <div className="p-4 flex flex-col justify-between h-full min-h-[96px]">
+      <div className="flex items-start justify-between gap-2.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-tight min-h-[28px] sm:min-h-[30px] flex items-start">
           {label}
         </p>
-        {Icon && <Icon size={16} className={accent ? "text-amber-500" : "text-muted-foreground"} />}
+        {Icon && (
+          <div
+            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              accent
+                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                : "bg-muted/80 text-muted-foreground"
+            }`}
+          >
+            <Icon size={14} strokeWidth={2.2} />
+          </div>
+        )}
       </div>
-      <p className={`text-2xl font-bold font-mono mt-1 ${accent ? "text-amber-600 dark:text-amber-400" : ""}`}>
-        {value}
-      </p>
-    </CardContent>
+      <div className="mt-3 flex items-baseline">
+        <p
+          className={`text-2xl sm:text-3xl font-bold logofont tracking-tight leading-none ${
+            accent ? "text-amber-600 dark:text-amber-400" : "text-foreground"
+          }`}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
   </Card>
 );
 

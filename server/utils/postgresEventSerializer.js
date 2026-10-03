@@ -78,7 +78,7 @@ export function serializeParticipation(participation) {
   }
 
   const fee = participation.event?.registrationFee ?? participation.event?.entryFee ?? 0;
-  const isPaidSuccess = participation.paymentStatus === "SUCCESS" || participation.paymentStatus === "APPROVED";
+  const isPaidSuccess = participation.paymentStatus === "SUCCESS";
 
   return {
     ...participation,

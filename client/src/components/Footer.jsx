@@ -22,6 +22,9 @@ const Footer = () => {
             <Link to="/faq" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
               FAQ
             </Link>
+              <Link to="/what-we-access" className="text-[11px] hover:text-brand-600 dark:hover:text-brand-400 font-semibold transition-colors text-neutral-400">
+                        Access Telemetry
+                      </Link>
           </div>
         </div>
       </div>

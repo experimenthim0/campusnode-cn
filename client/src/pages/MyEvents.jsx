@@ -44,7 +44,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import ShimmerText from '../components/ShimmerText';
-
+import { useTheme } from '../context/ThemeContext';
 const MyRegisteredEventCard = ({
   reg,
   user,
@@ -98,6 +98,22 @@ const MyRegisteredEventCard = ({
   const isWaitlisted = reg.status === 'WAITLISTED';
   const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted;
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
+  const { isDark } = useTheme();
+const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
+    const rawClubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
+    const [clubLogoSrc, setClubLogoSrc] = useState(fallbackLogo);
+
+    useEffect(() => {
+        if (!rawClubLogo) {
+            setClubLogoSrc(fallbackLogo);
+            return;
+        }
+        setClubLogoSrc(fallbackLogo);
+        const img = new Image();
+        img.src = rawClubLogo;
+        img.onload = () => setClubLogoSrc(rawClubLogo);
+        img.onerror = () => setClubLogoSrc(fallbackLogo);
+    }, [rawClubLogo, fallbackLogo]);
 
   // Only allow feedback when club explicitly wants to collect feedback, event has ended or user attended, and not yet submitted
   const canGiveFeedback = Boolean(clubWantsFeedback) && (isPast || isAttended) && !hasSubmittedFeedback;
@@ -182,7 +198,7 @@ const MyRegisteredEventCard = ({
             <div className="flex items-center min-w-0 gap-2">
               <div className="w-5 h-5 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-neutral-100 dark:bg-neutral-800">
                 <img
-                  src={clubLogo || '/lightthemelogo.png'}
+                  src={clubLogoSrc}
                   alt={clubName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -853,17 +869,12 @@ const MyEvents = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">My Events</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">My Events</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Track all events you have registered for, view digital tickets, and download participation certificates.
           </p>
         </div>
-        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
-          <Link to="/profile">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Profile</span>
-          </Link>
-        </Button>
+       
       </div>
 
       {/* Modern Filter Navigation */}
@@ -871,10 +882,10 @@ const MyEvents = () => {
         <button
           type="button"
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+          className={`px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
             filter === 'all'
-              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:!text-neutral-900 dark:hover:!text-white hover:!bg-neutral-200 dark:hover:!bg-neutral-700'
           }`}
         >
           <Ticket className="w-3.5 h-3.5" />
@@ -887,10 +898,10 @@ const MyEvents = () => {
         <button
           type="button"
           onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+          className={`px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
             filter === 'upcoming'
-              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:!text-neutral-900 dark:hover:!text-white hover:!bg-neutral-200 dark:hover:!bg-neutral-700'
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -903,10 +914,10 @@ const MyEvents = () => {
         <button
           type="button"
           onClick={() => setFilter('past')}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+          className={`px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
             filter === 'past'
-              ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+              ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:!text-neutral-900 dark:hover:!text-white hover:!bg-neutral-200 dark:hover:!bg-neutral-700'
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
@@ -920,10 +931,10 @@ const MyEvents = () => {
           <button
             type="button"
             onClick={() => setFilter('pending_feedback')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               filter === 'pending_feedback'
                 ? 'bg-brand-600 text-white shadow-xs'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/70 dark:hover:bg-neutral-700/60'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:!text-neutral-900 dark:hover:!text-white hover:!bg-neutral-200 dark:hover:!bg-neutral-700'
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
@@ -1069,7 +1080,7 @@ const MyEvents = () => {
                 <Card className="p-5 shadow-2xl">
                   <div className="mb-4">
                     <div className="flex items-center justify-between gap-2 mb-2 pr-8">
-                      <Badge className="text-[10px] font-bold tracking-wider">
+                      <Badge className="text-[10px] font-semibold tracking-wider">
                         Digital Event Pass
                       </Badge>
 
@@ -1090,29 +1101,29 @@ const MyEvents = () => {
                       </Button>
                     </div>
 
-                    <h3 className="text-base font-bold leading-tight line-clamp-2">
+                    <h3 className="text-base font-medium leading-tight line-clamp-2">
                       {ev.title || "Event Pass"}
                     </h3>
 
                     <p className="text-xs text-muted-foreground mt-1">
-                      Organized by <span className="font-semibold text-foreground">{organizerName}</span>
+                      Organized by <span className="font-medium text-foreground">{organizerName}</span>
                     </p>
                   </div>
 
                   <div className="rounded-xl border border-border bg-muted/40 overflow-hidden mb-4 divide-y divide-border">
                     <div className="grid grid-cols-2 divide-x divide-border">
                       <div className="p-2.5">
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Date</p>
-                        <p className="text-xs font-semibold mt-0.5">{formattedDate}</p>
+                        <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Date</p>
+                        <p className="text-xs font-medium mt-0.5">{formattedDate}</p>
                       </div>
                       <div className="p-2.5">
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Time</p>
-                        <p className="text-xs font-semibold mt-0.5">{formattedTime}</p>
+                        <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Time</p>
+                        <p className="text-xs font-medium mt-0.5">{formattedTime}</p>
                       </div>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Venue</p>
-                      <p className="text-xs font-semibold mt-0.5 truncate">{ev.venue || "Venue not specified"}</p>
+                      <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Venue</p>
+                      <p className="text-xs font-medium mt-0.5 truncate">{ev.venue || "Venue not specified"}</p>
                     </div>
                   </div>
 
@@ -1130,15 +1141,15 @@ const MyEvents = () => {
                     <div className="w-full mt-3">
                       <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-muted/50 border border-border">
                         <div className="min-w-0 flex-1">
-                          <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Participant</p>
-                          <p className="text-xs font-bold text-primary truncate mt-0.5">
+                          <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Participant</p>
+                          <p className="text-xs font-medium text-primary truncate mt-0.5">
                             {attendeeName}
                           </p>
                         </div>
                         {attendeeRoll && (
                           <div className="shrink-0 text-right">
-                            <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Roll No.</p>
-                            <p className="text-xs font-mono font-bold mt-0.5">{attendeeRoll}</p>
+                            <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Roll No.</p>
+                            <p className="text-xs font-medium mt-0.5 tracking-wider">{attendeeRoll}</p>
                           </div>
                         )}
                       </div>

@@ -19,8 +19,8 @@ const AdminNavbar = () => {
       <div className="max-w-full mx-auto px-5 lg:px-8 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 sm:gap-4">
           <img src="/nitjlogo.png" alt="NITJ Logo" className="w-9 h-10" />
-          <span className="font-light text-[22px] tracking-wider text-cn-text leading-none select-none logofont">
-            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+          <span className="text-[22px] tracking-wider text-cn-text leading-none select-none logofont">
+            Cam<span className="uppercase text-[17px] font-semibold">P</span>usnode
           </span>
           <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-cn-surface-muted text-cn-text-muted text-[9px] font-bold uppercase tracking-[0.15em] rounded-md">
             Admin

@@ -1,6 +1,7 @@
 import express from "express";
 import { verifyToken, requirePermission } from "../middleware/auth.js";
 import { PERMISSIONS } from "../utils/rbac.js";
+import { extractClientIp, resolveLocation } from "../emails/utils/requestMetadata.js";
 import {
   DATASETS,
   getAuthorizedDatasets,
@@ -110,12 +111,22 @@ router.post("/export", verifyToken, async (req, res) => {
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `campusnode_${dataset}_${timestamp}.csv`;
 
+    const ipAddress = extractClientIp(req);
+    let location = "Campus Local";
+    try {
+      location = await resolveLocation(req);
+    } catch {
+      // Non-fatal geolocation fallback
+    }
+
     await recordExportLog({
       dataset,
       recordCount: result.records.length,
       actorId: req.user.userId,
       actorEmail: req.user.email,
       actorRole: req.user.role,
+      ipAddress,
+      location,
       filters: mergedFilters,
       columns,
     });

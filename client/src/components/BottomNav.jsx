@@ -320,7 +320,7 @@ const BottomNav = () => {
                         Team Management
                       </Link>
                       <Link
-                        to="/payments"
+                        to={user.clubId || user.id ? `/payments?clubId=${user.clubId || user.id}` : "/payments"}
                         onClick={() => setDrawerOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
@@ -443,7 +443,7 @@ const BottomNav = () => {
                                         {canManageClub && (
                                           <>
                                             <Link
-                                              to="/payments"
+                                              to={`/payments?clubId=${clubId}`}
                                               onClick={() => setDrawerOpen(false)}
                                               className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                             >
@@ -511,7 +511,7 @@ const BottomNav = () => {
                         {/* Payments, Broadcasts & Settings - For both Student Lead and Coordinator */}
                         {canManageClub && (
                           <>
-                            <Link to="/payments" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/payments?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <IndianRupeeIcon size={16} />
                               </div>

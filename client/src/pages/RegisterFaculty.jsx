@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
 import CampusNodeIntroAnimation from '../components/CampusNodeIntroAnimation';
+import RegistrationTermsNotice from '../components/RegistrationTermsNotice';
 
 const DEPARTMENTS = [
   'Computer Science & Engineering',
@@ -53,6 +54,7 @@ const RegisterFaculty = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const validateForm = () => {
     const errors = {};
@@ -89,8 +91,19 @@ const RegisterFaculty = () => {
       errors.confirmPassword = 'Passwords do not match.';
     }
 
+    if (!agreedToTerms) {
+      errors.terms = 'Please accept the Terms & Conditions and acknowledge non-editable fields before registering.';
+    }
+
     setFieldErrors(errors);
     return { isValid: Object.keys(errors).length === 0, errors, effectiveDept };
+  };
+
+  const handleTermsChange = (checked) => {
+    setAgreedToTerms(checked);
+    if (fieldErrors.terms) {
+      setFieldErrors((prev) => ({ ...prev, terms: '' }));
+    }
   };
 
   const handleChange = (e) => {
@@ -358,6 +371,14 @@ const RegisterFaculty = () => {
                 {formData.password && (
                   <PasswordStrengthChecker password={formData.password} />
                 )}
+
+                {/* Terms & Conditions + Non-Editable Fields Notice */}
+                <RegistrationTermsNotice
+                  role="faculty"
+                  agreed={agreedToTerms}
+                  onAgreementChange={handleTermsChange}
+                  error={fieldErrors.terms}
+                />
 
                 {/* Submit Action */}
                 <div className="pt-2">

@@ -517,21 +517,104 @@ export const convertImageUrlToDataUrl = async (url, timeoutMs = 3000) => {
  * @param {Object} [options.user] - The logged in user
  * @returns {Promise<Uint8Array>}
  */
+const ACRONYMS = new Set([
+  'CTF', 'AI', 'ML', 'NITJ', 'NIT', 'IT', 'CSE', 'ECE', 'EE', 'ME', 'CE', 'ICE',
+  'IPE', 'TT', 'BT', 'HM', 'IEEE', 'ACM', 'GDSC', 'IEDC', 'ID', 'TBA', 'UI', 'UX',
+  'API', 'WEB3', 'DEV'
+]);
+
+/**
+ * Converts a string to Title Case while preserving short technical/institutional acronyms.
+ */
+export const toTicketTitleCase = (str) => {
+  if (!str) return '';
+  return str
+    .split(/(\s+|[-/·&:,])/)
+    .map((part) => {
+      if (!part || /^\s+$/.test(part) || /^[-/·&:,]$/.test(part)) return part;
+      const upper = part.toUpperCase();
+      if (ACRONYMS.has(upper)) return upper;
+      const lower = part.toLowerCase();
+      if (['and', 'or', 'the', 'of', 'in', 'at', 'by', 'for', 'with', 'on', 'to'].includes(lower)) {
+        return lower;
+      }
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join('');
+};
+
+/**
+ * Strips the organizer's name from the beginning of the title if already displayed above it.
+ */
+export const stripOrganizerFromTitle = (title, organizer) => {
+  if (!title) return '';
+  if (!organizer) return title.trim();
+  const org = organizer.trim().toLowerCase();
+  let t = title.trim();
+  if (t.toLowerCase().startsWith(org)) {
+    t = t.slice(org.length).replace(/^[\s\-–—:|]+/, '').trim();
+  }
+  return t || title.trim();
+};
+
+/**
+ * Formats time range dropping repeated am/pm, e.g. "2:00 – 5:00 pm".
+ */
+export const formatTicketTimeRange = (startTime, endTime) => {
+  const parseTime = (dateObj) => {
+    if (!dateObj || isNaN(dateObj.getTime())) return null;
+    let h = dateObj.getHours();
+    const min = dateObj.getMinutes().toString().padStart(2, '0');
+    const meridiem = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    h = h ? h : 12;
+    return { h, min, m: meridiem };
+  };
+
+  const s = parseTime(startTime);
+  const e = parseTime(endTime);
+
+  if (!s && !e) return 'TBA';
+  if (!s) return `${e.h}:${e.min} ${e.m}`;
+  if (!e) return `${s.h}:${s.min} ${s.m} onwards`;
+
+  if (s.m === e.m) {
+    return `${s.h}:${s.min} – ${e.h}:${e.min} ${s.m}`;
+  }
+  return `${s.h}:${s.min} ${s.m} – ${e.h}:${e.min} ${e.m}`;
+};
+
+/**
+ * Generates an official CampusNode Event Entry Pass as a PDF (Uint8Array).
+ * Utilizes @pdfme/generator with dynamic code splitting to maintain lightweight client bundle.
+ * @param {Object} options
+ * @param {Object} options.ticket - The registration/ticket object
+ * @param {Object} [options.user] - The logged in user
+ * @returns {Promise<Uint8Array>}
+ */
 export const generateTicketPdf = async ({ ticket, user }) => {
   if (!ticket) throw new Error('Ticket data is required');
 
-  // Dynamic code-splitting: @pdfme and template loaded only when generating PDF
+  // Dynamic code-splitting: @pdfme, fonts, and template loaded only when generating PDF
+  let templateMod;
+  try {
+    templateMod = await import('../assets/ticketTemplate.json', { with: { type: 'json' } });
+  } catch {
+    templateMod = await import('../assets/ticketTemplate.json');
+  }
+
   const [
     { generate },
     { text, image, line, rectangle, multiVariableText, barcodes },
-    templateMod,
+    { loadTicketFonts },
   ] = await Promise.all([
     import('@pdfme/generator'),
     import('@pdfme/schemas'),
-    import('../assets/ticketTemplate.json'),
+    import('./ticketFonts.js'),
   ]);
 
   const template = templateMod.default || templateMod;
+  const fonts = await loadTicketFonts();
 
   const ev = ticket.eventId || ticket.event || {};
   const passId = ticket.qrCode || ticket.id || ticket._id || 'PASS';
@@ -546,13 +629,19 @@ export const generateTicketPdf = async ({ ticket, user }) => {
     ev.createdBy?.name ||
     'CampusNode';
 
-  // Strip redundant "Organized by" prefix if already present
-  const organizerName = rawOrganizer.replace(/^organized by\s+/i, '').trim();
+  // Strip redundant "Organized by" prefix if already present and convert to title case
+  const organizerName = toTicketTitleCase(rawOrganizer.replace(/^organized by\s+/i, '').trim());
 
-  const attendeeName =
+  // Event title in title case with acronyms preserved, stripping duplicate organizer name
+  const rawTitle = ev.title || 'Event Registration';
+  const strippedTitle = stripOrganizerFromTitle(rawTitle, organizerName);
+  const eventTitle = toTicketTitleCase(strippedTitle);
+
+  const attendeeName = toTicketTitleCase(
     ticket.student?.name ||
     user?.name ||
-    'Participant';
+    'Participant'
+  );
 
   const attendeeEmail =
     ticket.student?.email ||
@@ -567,80 +656,50 @@ export const generateTicketPdf = async ({ ticket, user }) => {
   const eventDateObj = ev.startTime ? new Date(ev.startTime) : null;
   const eventEndDateObj = ev.endTime ? new Date(ev.endTime) : null;
   const isValidDate = eventDateObj && !isNaN(eventDateObj.getTime());
-  const isValidEndDate = eventEndDateObj && !isNaN(eventEndDateObj.getTime());
 
+  // e.g. "16 Sept 2026"
   const formattedDate = isValidDate
     ? eventDateObj.toLocaleDateString('en-IN', {
-        day: '2-digit',
+        day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'Asia/Kolkata',
-      })
+      }).replace(/\bSept?\b/, 'Sept')
     : 'TBA';
 
-  const startTimeStr = isValidDate
-    ? eventDateObj.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'Asia/Kolkata',
-      })
-    : 'TBA';
+  // e.g. "2:00 – 5:00 pm"
+  const formattedTime = formatTicketTimeRange(eventDateObj, eventEndDateObj);
 
-  const endTimeStr = isValidEndDate
-    ? eventEndDateObj.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'Asia/Kolkata',
-      })
-    : null;
-
-  const formattedTime = endTimeStr && endTimeStr !== 'TBA'
-    ? `${startTimeStr} - ${endTimeStr}`
-    : startTimeStr !== 'TBA'
-    ? `${startTimeStr} Onwards`
-    : 'TBA';
-
-  const venue = ev.venue || 'Campus Venue, NIT Jalandhar';
+  const venue = toTicketTitleCase(ev.venue || 'IT Building · Lab 1');
 
   // Format generation timestamp
   const nowStr = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
+    day: 'numeric',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
+    hour12: true,
     timeZone: 'Asia/Kolkata',
-  });
-
-  // Clean and sanitize description to prevent overflow
-  const cleanDescription = (ev.shortDescription || ev.description || '')
-    .replace(/[#*_`~>\[\]]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const truncatedDesc = cleanDescription.length > 160
-    ? cleanDescription.slice(0, 157) + '...'
-    : cleanDescription;
+  }).replace(/\bSept?\b/, 'Sept');
 
   const rollText = attendeeRoll || 'N/A';
 
-  const categoryText = ticket.team?.teamName
-    ? `Team (${ticket.team.teamName})`
-    : (ticket.category || (attendeeRoll ? 'Internal (NITJ Students)' : 'General Participant'));
+  const categoryText = toTicketTitleCase(
+    ticket.team?.teamName
+      ? ticket.team.teamName
+      : (ticket.category || (attendeeRoll ? 'Internal' : 'General Participant'))
+  );
+
+  const attendeeDetail = rollText !== 'N/A'
+    ? `${rollText} · ${categoryText}`
+    : categoryText;
 
   const feeVal = ticket.amount ?? ticket.fee ?? ticket.registrationFee ?? ev.price ?? ev.fee ?? (ev.isPaid ? 100 : 0);
-  const feeText = typeof feeVal === 'number' && feeVal > 0
-    ? `INR ${feeVal.toFixed(1)}`
-    : (typeof feeVal === 'string' && feeVal.trim() && feeVal !== '0' ? feeVal : 'INR 0.0 (Free / Sponsored)');
-
-  const paymentStatusText = ticket.paymentStatus
-    ? ticket.paymentStatus.toUpperCase()
-    : 'SUCCESS';
-
-  const registrationStatusText = ticket.status
-    ? ticket.status.toUpperCase()
-    : 'CONFIRMED';
+  const isFree = !feeVal || feeVal === 0 || feeVal === '0' || (typeof feeVal === 'string' && feeVal.toLowerCase().includes('free'));
+  const feeValueText = isFree
+    ? 'Free'
+    : (typeof feeVal === 'number' ? `Rs ${Math.round(feeVal)} paid` : `Rs ${feeVal} paid`);
 
   const issuedDateObj = (ticket.createdAt || ticket.registeredAt || ticket.issuedAt)
     ? new Date(ticket.createdAt || ticket.registeredAt || ticket.issuedAt)
@@ -648,73 +707,90 @@ export const generateTicketPdf = async ({ ticket, user }) => {
 
   const issuedAtStr = !isNaN(issuedDateObj.getTime())
     ? issuedDateObj.toLocaleDateString('en-IN', {
-        day: '2-digit',
+        day: 'numeric',
         month: 'short',
         year: 'numeric',
-        hour: '2-digit',
+        hour: 'numeric',
         minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
+        hour12: true,
         timeZone: 'Asia/Kolkata',
-      }).replace(',', '')
+      }).replace(/\bSept?\b/, 'Sept')
     : nowStr;
 
   // Extract embedded college and platform logo content if available in template
   const collegeLogoContent = template.schemas?.[0]?.find((s) => s.name === 'collegeLogo')?.content || '';
   const campusNodeLogoContent = template.schemas?.[0]?.find((s) => s.name === 'campusNodeLogo')?.content || '';
 
+  // Dynamic auto-shrinking rules to ensure text never overflows
+  const clonedTemplate = JSON.parse(JSON.stringify(template));
+  const schemaList = clonedTemplate.schemas?.[0] || [];
+
+  // Title: 20 pt, shrink to 13 pt if wraps/long
+  const eventNameSchema = schemaList.find((s) => s.name === 'eventName');
+  if (eventNameSchema) {
+    eventNameSchema.fontSize = eventTitle.length > 28 ? 13 : 20;
+  }
+
+  // Venue: 9.5 pt, auto-shrink to 7.5 pt if venue wraps/long
+  const venueSchema = schemaList.find((s) => s.name === 'eventVenue');
+  if (venueSchema) {
+    venueSchema.fontSize = venue.length > 24 ? 7.5 : 9.5;
+  }
+
+  // Attendee: 15 pt, shrink to 10 pt if long
+  const attendeeSchema = schemaList.find((s) => s.name === 'attendeeName');
+  if (attendeeSchema) {
+    attendeeSchema.fontSize = attendeeName.length > 20 ? 10 : 15;
+  }
+
+  // Registration ID: 8.5 pt, auto-shrink to 6 pt so it always stays on one line
+  const regIdSchema = schemaList.find((s) => s.name === 'regId');
+  if (regIdSchema) {
+    regIdSchema.fontSize = passId.length > 18 ? 6 : 8.5;
+  }
+
   const inputs = [{
     // Branding & Header
     collegeLogo: ev.collegeLogo || collegeLogoContent,
     campusNodeLogo: campusNodeLogoContent,
-    headerInstitute: ev.collegeName
-      ? `${ev.collegeName.toUpperCase()}\nJALANDHAR-144008, PUNJAB (INDIA)`
-      : 'Dr B R AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY\nJALANDHAR-144008, PUNJAB (INDIA)',
-    institution: ev.collegeName || 'Dr B R Ambedkar NIT Jalandhar',
-    receiptTitle: 'EVENT REGISTRATION RECEIPT & ENTRY CREDENTIAL',
+    headerInstitute: 'Dr. B. R. Ambedkar National Institute of Technology\nJalandhar-144008, Punjab (India)',
+    institution: 'Dr. B. R. Ambedkar National Institute of Technology, Jalandhar',
 
-    // Attendee & Registration Section
-    ticketId: passId,
-    verifIdValue: passId,
-    attendeeName: attendeeName.toUpperCase(),
-    rollNumber: rollText,
-    rollNo: rollText,
-    attendeeEmail: attendeeEmail || 'N/A',
-    category: categoryText,
-
-    // Event Section
-    eventName: ev.title || 'Event Registration',
+    // Main Card: Left side
     organizerName,
+    eventName: eventTitle,
     eventDate: formattedDate,
     eventTime: formattedTime,
     eventVenue: venue,
-    venue,
+    feeValue: feeValueText,
 
-    // Fee & Admission Details
-    feeAmount: feeText,
-    paymentStatus: paymentStatusText,
-    registrationStatus: registrationStatusText,
-    issuedAt: issuedAtStr,
+    // Attendee
+    attendeeName,
+    attendeeDetail,
+    attendeeSubline: attendeeDetail,
+    attendeeEmail: attendeeEmail || 'N/A',
 
-    // Verification Sidebar
+    // Footer
+    footerInstruction: 'Must present this receipt with Institute ID card at gate. No physical signature is required.',
+    issuedTimestamp: `Issued ${issuedAtStr}`,
+
+    // Stub: Right side
+    statusPillText: 'Registered',
     qrCode: qrPayload,
-    scanToVerify: 'SCAN TO VERIFY',
-    verifStatus: `STATUS: ${registrationStatusText}`,
+    scanAtGate: 'Scan at the gate',
+    regId: passId,
+    admitsOne: 'Admits one',
 
-    // Footer & Acknowledgement
-    acknowledgement: 'THANK YOU FOR REGISTERING, SEE YOU SOON.',
-    footerPlatform: 'CampusNode Event Portal · NIT Jalandhar (nitj.ac.in)',
-    footerDisclaimer: 'Note: This is an official system-generated institutional e-receipt and valid event admission credential issued by CampusNode on behalf of Dr B R Ambedkar National Institute of Technology Jalandhar. No physical signature is required. Keep this receipt safe for gate clearance.',
-    generatedAt: `Generated on ${nowStr}`,
-
-    // Compatibility fallbacks
-    eventPassLabel: 'EVENT RECEIPT',
-    ticketTitle: 'EVENT RECEIPT',
+    // Backwards compatibility mappings for older components
+    ticketId: passId,
+    feeAmount: feeValueText,
+    admissionStatus: 'Registered',
+    paymentStatus: 'Success',
+    registrationStatus: 'Confirmed',
+    issuedAt: issuedAtStr,
+    venue,
     date: formattedDate,
     time: formattedTime,
-    ticketOrganizer: `Organized by ${organizerName}`,
-    organizer: organizerName,
-    eventDescription: '',
   }];
 
   const plugins = {
@@ -726,7 +802,12 @@ export const generateTicketPdf = async ({ ticket, user }) => {
     multiVariableText,
   };
 
-  const pdf = await generate({ template, inputs, plugins });
+  const pdf = await generate({
+    template: clonedTemplate,
+    inputs,
+    plugins,
+    options: fonts ? { font: fonts } : undefined,
+  });
   return pdf;
 };
 
@@ -742,7 +823,7 @@ export const downloadTicketPdf = async ({ ticket, user, filename }) => {
   const pdfBytes = await generateTicketPdf({ ticket, user });
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const code = ticket?.qrCode || ticket?._id || ticket?.id || 'pass';
-  const downloadName = filename || `CampusNode-Ticket-${code}.pdf`;
+  const downloadName = filename || `Campusnode-Ticket-${code}.pdf`;
 
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');

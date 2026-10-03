@@ -95,7 +95,7 @@ export default function PageLoader({
               color: 'var(--cn-text)',
             }}
           >
-            CampusNode
+            Campusnode
           </div>
         )}
 

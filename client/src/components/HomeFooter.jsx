@@ -67,6 +67,7 @@ const HomeFooter = () => {
     { label: 'Privacy Policy', to: '/privacy' },
     { label: 'Terms of Service', to: '/terms' },
     { label: 'Payment Policy', to: '/payment-policy' },
+    { label: 'About You', to: '/access-telemetry' },
   ];
 
   const currentSlide = CAMPUS_SLIDES[activeSlideIndex];

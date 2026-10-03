@@ -155,7 +155,7 @@ const AchievementsSection = ({ winnings }) => (
     <CardHeader className="pb-4">
       <div className="flex items-center gap-2">
         <Trophy className="size-4 text-amber-500" />
-        <CardTitle className="text-base font-semibold">Achievements & Winnings</CardTitle>
+        <CardTitle className="text-base font-medium">Achievements & Winnings</CardTitle>
       </div>
     </CardHeader>
     <CardContent>
@@ -218,7 +218,7 @@ const ClubsSection = ({ user, clubsMap }) => {
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Users className="size-4 text-primary" />
-          <CardTitle className="text-base font-semibold">Clubs & Societies</CardTitle>
+          <CardTitle className="text-base font-medium">Clubs & Societies</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -238,7 +238,7 @@ const ClubsSection = ({ user, clubsMap }) => {
         {/* Management cards: Student Leads & Coordinators */}
         {managementMemberships.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <i className="ri-shield-star-line text-sm" /> Leadership & Management
             </p>
             {managementMemberships.map((m, idx) => {
@@ -281,20 +281,22 @@ const ClubsSection = ({ user, clubsMap }) => {
                     >
                       <i className="ri-calendar-event-line text-xs font-light" /> Events
                     </Link>
+                     {isLead && (
                     <Link
                       to={`/club/${m.clubId}/team`}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors"
                     >
                       <i className="ri-team-line text-xs font-light" /> Team
                     </Link>
-                    {isLead && (
+                     )}
+                   
                       <Link
                         to={`/club/edit/${m.clubId}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors"
                       >
                         <i className="ri-settings-4-line text-xs text-neutral-500 font-light" /> Settings
                       </Link>
-                    )}
+                  
                     <Link
                       to={`/club/${m.slug || m.clubId}`}
                       className="inline-flex items-center gap-1 px-3 py-1.5 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-medium transition-colors"
@@ -578,12 +580,12 @@ const Profile = () => {
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
-                    <Button asChild size="sm" className="font-semibold shadow-xs">
+                    <Button asChild size="sm" className="font-medium shadow-xs">
                       <Link to="/profile/edit">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="font-semibold border-border">
+                    <Button asChild variant="outline" size="sm" className="font-medium border-border">
                       <Link to="/my-events">
                         <Calendar className="size-3.5 mr-1" /> View My Events
                       </Link>
@@ -826,12 +828,12 @@ const Profile = () => {
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
-                    <Button asChild size="sm" className="font-semibold shadow-xs">
+                    <Button asChild size="sm" className="font-medium shadow-xs">
                       <Link to="/profile/edit">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="font-semibold border-border">
+                    <Button asChild variant="outline" size="sm" className="font-medium border-border">
                       <Link to="/my-events">
                         <Calendar className="size-3.5 mr-1" /> View My Events
                       </Link>
@@ -850,19 +852,19 @@ const Profile = () => {
                 {user.rollNo && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 font-mono">{user.rollNo}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 ">{user.rollNo}</p>
                   </div>
                 )}
                 {(user.program || user.branch) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
                   </div>
                 )}
                 {displayAcademicStanding && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                       {displayAcademicStanding}
                     </p>
                   </div>
@@ -870,7 +872,7 @@ const Profile = () => {
                 {(user.graduationYear || displayGraduationYear) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
                   </div>
                 )}
               </div>

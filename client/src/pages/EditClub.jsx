@@ -536,17 +536,22 @@ const EditClub = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          {/* <div className="flex items-center gap-2 mb-1.5">
             <Badge variant="secondary" className="font-semibold text-xs text-primary shrink-0">
               {formData.category || "Club Management"}
             </Badge>
             <span className="text-xs text-muted-foreground font-mono">
               ID: {clubSlug || clubId}
             </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Club Settings & Brand Hub
+          </div> */}
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground">
+            Club Page Settings
           </h1>
+          <div>
+            <span className="text-xs text-muted-foreground font-mono">
+              ID: {clubSlug || clubId}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
@@ -581,7 +586,7 @@ const EditClub = () => {
           <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
               <Palette className="w-4 h-4 text-primary shrink-0" />
-              <CardTitle className="text-base font-semibold">Visual Identity & Branding</CardTitle>
+              <CardTitle className="text-base font-medium">Visual Identity & Branding</CardTitle>
             </div>
           </CardHeader>
 
@@ -589,15 +594,15 @@ const EditClub = () => {
             {/* Banner Container */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-primary shrink-0" />
                   Cover Banner
                 </label>
-                {formData.bannerImage && (
+                {/* {formData.bannerImage && (
                   <Badge variant="outline" className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 gap-1 shrink-0">
                     <Check className="w-3 h-3 shrink-0" /> Custom Banner Active
                   </Badge>
-                )}
+                )} */}
               </div>
 
               <div className="relative w-full h-44 sm:h-60 rounded-xl overflow-hidden border border-border bg-muted/40 shadow-inner group">

@@ -65,6 +65,7 @@ const RegisterExternal = lazy(() => import('./pages/RegisterExternal'));
 const RegisterFaculty = lazy(() => import('./pages/RegisterFaculty'));
 const RegisterLanding = lazy(() => import('./pages/RegisterLanding'));
 const FeaturedEventsPage = lazy(() => import('./pages/FeaturedEventsPage'));
+const DeviceTelemetry = lazy(() => import('./pages/DeviceTelemetry'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
 import { FeedbackPromptProvider } from './context/FeedbackPromptContext';
@@ -127,6 +128,9 @@ function App() {
                     <Route path="/terms" element={<TermsAndConditions />} />
                     <Route path="/payment-policy" element={<PaymentPolicy />} />
                     <Route path="/data-privacy" element={<DataPrivacy />} />
+                    <Route path="/what-we-access" element={<DeviceTelemetry />} />
+                    <Route path="/device-telemetry" element={<DeviceTelemetry />} />
+                    <Route path="/access-telemetry" element={<DeviceTelemetry />} />
                     <Route path="/event-guide" element={<EventGuide />} />
                     <Route path="/contribute" element={<Contribute />} />
                     <Route path="/verify-email/:token" element={<VerifyEmail />} />
@@ -156,6 +160,7 @@ function App() {
                     <Route path="/event/:id/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
                     <Route path="/event/:id/design-certificate" element={<ProtectedRoute><CertificateDesigner /></ProtectedRoute>} />
                     <Route path="/payments" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
+                    <Route path="/payments/:clubId" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
  
                     <Route path="/event-calendar" element={<ProtectedRoute><EventCalendarPage readOnly /></ProtectedRoute>} />

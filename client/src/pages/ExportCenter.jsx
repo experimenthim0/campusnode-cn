@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../services/api";
 import {
   EXPORT_DATASETS,
@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, History, Filter, Columns3, Loader2 } from "lucide-react";
 
 
-const ExportCenter = () => {
+const ExportCenter = ({ embedded = false }) => {
   const { showNotification } = useNotification();
 
   const [selectedDatasetId, setSelectedDatasetId] = useState("events");
@@ -54,6 +54,7 @@ const ExportCenter = () => {
   const [exportHistory, setExportHistory] = useState([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const historySectionRef = useRef(null);
 
   // Authorized Datasets list from backend
   const [authorizedDatasets, setAuthorizedDatasets] = useState(
@@ -220,8 +221,13 @@ const ExportCenter = () => {
   const toggleHistory = () => {
     if (!isHistoryOpen) {
       fetchHistory();
+      setIsHistoryOpen(true);
+      setTimeout(() => {
+        historySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    } else {
+      historySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    setIsHistoryOpen((prev) => !prev);
   };
 
   // Column checkbox toggling
@@ -250,18 +256,18 @@ const ExportCenter = () => {
   );
 
   return (
-    <div className="min-h-full bg-cn-bg myfont text-black dark:text-white p-5 lg:p-8 space-y-6">
+    <div className={embedded ? "space-y-6" : "min-h-full bg-cn-bg myfont text-black dark:text-white p-5 lg:p-8 space-y-6"}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-extrabold tracking-tight text-black dark:text-white">
+            <h1 className="text-2xl font-black text-black dark:text-white tracking-wide">
               Export Center
             </h1>
             <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50">
               Data Management
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-neutral-400 dark:text-neutral-500 text-[12px] mt-0.5 tracking-wide font-medium">
             Export and download structured CampusNode administrative data into clean CSV files.
           </p>
         </div>
@@ -636,9 +642,12 @@ const ExportCenter = () => {
       </div>
 
       {isHistoryOpen && (
-        <div className="p-5 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
+        <div
+          ref={historySectionRef}
+          className="p-5 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4 scroll-mt-6"
+        >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
+            <h3 className="text-md font-semibold tracking-wider text-black dark:text-white flex items-center gap-2">
               <i className="ri-history-line text-brand-500" />
               Recent Export Audit Log
             </h3>
@@ -662,7 +671,8 @@ const ExportCenter = () => {
                     <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Dataset</TableHead>
                     <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Records</TableHead>
                     <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Exported By</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Role</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">IP Address</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Location</TableHead>
                     <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">Date & Time</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -678,11 +688,21 @@ const ExportCenter = () => {
                       <TableCell className="font-mono font-bold text-brand-600 dark:text-brand-400">
                         {item.recordCount}
                       </TableCell>
-                      <TableCell>{item.actorEmail || item.actorId}</TableCell>
-                      <TableCell className="text-[10px] font-bold uppercase text-neutral-400">
-                        {item.actorRole}
+                      <TableCell className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        {item.actorEmail || item.actorId}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-[11px] text-neutral-400">
+                      <TableCell className="font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
+                        {item.ipAddress || "127.0.0.1"}
+                      </TableCell>
+                      <TableCell className="text-neutral-600 dark:text-neutral-300 text-xs">
+                        <span className="inline-flex items-center gap-1.5">
+                          <i className="ri-map-pin-2-line text-brand-500 text-xs shrink-0" />
+                          <span className="truncate max-w-[200px]" title={item.location || "Testing"}>
+                            {item.location || "Testing"}
+                          </span>
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-[11px] text-neutral-400 whitespace-nowrap">
                         {new Date(item.createdAt).toLocaleString()}
                       </TableCell>
                     </TableRow>

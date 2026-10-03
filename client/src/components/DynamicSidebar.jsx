@@ -69,7 +69,7 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
   <Link
     to={to}
     title={isCollapsed ? label : undefined}
-    className={`group flex items-center rounded-xl text-[13px] transition-all duration-200 relative ${isCollapsed
+    className={`group flex items-center mysans rounded-xl text-[13px] transition-all duration-200 relative ${isCollapsed
         ? "w-10 h-10 mx-auto justify-center p-0"
         : "w-full gap-3 px-3 py-1.5"
       } ${isActive
@@ -103,14 +103,52 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
 );
 
 /**
+ * Accurately determines if a sidebar link or dropdown item is active,
+ * respecting path matching, path parameters, and query parameters (e.g. ?clubId=...).
+ */
+const isItemActive = (itemTo, location) => {
+  if (!itemTo) return false;
+
+  const [targetPath, targetQuery] = itemTo.split("?");
+  const currentPath = location.pathname;
+  const currentParams = new URLSearchParams(location.search);
+
+  // Path must match exactly or match as a subpath (e.g. /club/123/team)
+  const pathMatches = currentPath === targetPath || currentPath.startsWith(targetPath + "/");
+  if (!pathMatches) return false;
+
+  // If item specifies query parameters (e.g. ?clubId=123 or ?tab=announcements)
+  if (targetQuery) {
+    const targetParams = new URLSearchParams(targetQuery);
+    for (const [key, val] of targetParams.entries()) {
+      if (currentParams.get(key) !== val) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // If item does NOT specify query parameters, ensure it doesn't collide with query-specific sibling links
+  if (targetPath === "/send-notification" && currentParams.has("tab")) {
+    return false;
+  }
+  if (targetPath === "/send-notification" && currentParams.has("clubId")) {
+    return false;
+  }
+  if (targetPath === "/payments" && currentParams.has("clubId")) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
  * Collapsible Dropdown Component for grouped navigation (e.g. Broadcasts & Notifications / Club Hub).
  */
 const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
   const location = useLocation();
 
-  const isAnyChildActive = items.some((item) => {
-    return location.pathname === item.to || location.pathname.startsWith(item.to + "/");
-  });
+  const isAnyChildActive = items.some((item) => isItemActive(item.to, location));
 
   const [isOpen, setIsOpen] = useState(isAnyChildActive);
 
@@ -162,17 +200,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
       {isOpen && (
         <div className="pl-4 pt-1 pb-1 space-y-1 border-l-2 border-brand-500/20 dark:border-zinc-800 ml-4 my-1">
           {items.map((item, idx) => {
-            const isTabAnnouncement = item.to.includes("tab=announcements");
-            const isCurrentAnnouncement = location.search.includes("tab=announcements");
-
-            let isActive = false;
-            if (isTabAnnouncement) {
-              isActive = location.pathname === "/send-notification" && isCurrentAnnouncement;
-            } else if (item.to === "/send-notification") {
-              isActive = location.pathname === "/send-notification" && !isCurrentAnnouncement;
-            } else {
-              isActive = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
-            }
+            const isActive = isItemActive(item.to, location);
 
             return (
               <Link
@@ -203,7 +231,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
 const SectionLabel = ({ children, isCollapsed }) => {
   if (isCollapsed) return <hr className="border-gray-200 dark:border-zinc-800 my-3 mx-2" />;
   return (
-    <p className="px-3 mb-2 mt-4 text-[10px] font-bold uppercase tracking-widest text-slate-700 dark:text-slate-400">
+    <p className="px-3 mb-2 mt-4 text-[10px] font-semibold uppercase tracking-widest text-slate-700 dark:text-slate-400">
       {children}
     </p>
   );
@@ -215,7 +243,7 @@ const SectionLabel = ({ children, isCollapsed }) => {
 const ClubHeader = ({ name, isCollapsed }) => {
   if (isCollapsed) return null;
   return (
-    <p className="px-3 py-1.5 mb-1 text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-white dark:bg-zinc-900 rounded-md">
+    <p className="px-3 py-1.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-brand-600 bg-white dark:bg-zinc-900 rounded-md">
       {name}
     </p>
   );
@@ -256,7 +284,9 @@ const DynamicSidebar = ({ user }) => {
   // Detect active club context from current URL pathname
   const matchClubEvents = location.pathname.match(/\/club-events\/([a-zA-Z0-9_-]+)/);
   const matchClub = location.pathname.match(/\/club\/(?:edit\/|team\/)?([a-zA-Z0-9_-]+)/);
-  const activeRouteClubId = matchClubEvents?.[1] || matchClub?.[1];
+  const matchPayments = location.pathname.match(/\/payments\/([a-zA-Z0-9_-]+)/);
+  const queryClubId = new URLSearchParams(location.search).get("clubId");
+  const activeRouteClubId = matchClubEvents?.[1] || matchClub?.[1] || matchPayments?.[1] || queryClubId;
 
   const eligibleCreateClubs = (user?.memberships || []).filter(
     (m) => m.role === "CLUB_HEAD" || m.role === "COORDINATOR" || m.canEditEvents
@@ -292,7 +322,7 @@ const DynamicSidebar = ({ user }) => {
       <div className="px-3 py-4 border-b border-cn-border shrink-0">
         <div className={`flex items-center justify-between ${isCollapsed ? "flex-col gap-3 items-center" : "px-1"}`}>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full overflow-hidden text-black dark:text-white bg-gray-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs shrink-0 select-none border border-neutral-200 dark:border-zinc-800">
+            <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full overflow-hidden text-black dark:text-white bg-gray-200 dark:bg-zinc-800 flex items-center justify-center font-semibold text-xs shrink-0 select-none border border-neutral-200 dark:border-zinc-800">
               {(user?.profileImage || user?.picture || user?.clubLogo) ? (
                 <img
                   src={user.profileImage || user.picture || user.clubLogo}
@@ -387,6 +417,17 @@ const DynamicSidebar = ({ user }) => {
                       isActive={isActive(`/club/${fc.clubId}/team`)}
                       isCollapsed={isCollapsed}
                     />
+                    <SidebarLink
+                      to={`/payments?clubId=${fc.clubId}`}
+                      icon={Wallet}
+                      label="Payments"
+                      isActive={
+                        location.pathname === "/payments" &&
+                        (new URLSearchParams(location.search).get("clubId") === String(fc.clubId) ||
+                          (!new URLSearchParams(location.search).get("clubId") && facultyClubs[0]?.clubId === fc.clubId))
+                      }
+                      isCollapsed={isCollapsed}
+                    />
                   </div>
                 ))}
               </div>
@@ -423,7 +464,7 @@ const DynamicSidebar = ({ user }) => {
                         items.push({ label: "Team Management", to: `/club/${m.clubId}/team` });
                       }
                       if (canReviewPayments) {
-                        items.push({ label: "Payments", to: "/payments" });
+                        items.push({ label: "Payments", to: `/payments?clubId=${m.clubId}` });
                       }
                       if (canBroadcast) {
                         items.push({ label: "Broadcasts", to: `/send-notification?clubId=${m.clubId}` });
@@ -480,10 +521,14 @@ const DynamicSidebar = ({ user }) => {
                   {/* Payments */}
                   {canReviewPayments && (
                     <SidebarLink
-                      to="/payments"
+                      to={`/payments?clubId=${m.clubId}`}
                       icon={Wallet}
                       label="Payments"
-                      isActive={isActive("/payments")}
+                      isActive={
+                        location.pathname === "/payments" &&
+                        (new URLSearchParams(location.search).get("clubId") === String(m.clubId) ||
+                          !new URLSearchParams(location.search).get("clubId"))
+                      }
                       isCollapsed={isCollapsed}
                     />
                   )}

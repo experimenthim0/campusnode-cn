@@ -510,7 +510,7 @@ const ClubMembers = () => {
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Club Events
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Team Management</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">Team Management</h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Manage club members, leadership designations, and event editing permissions.
           </p>

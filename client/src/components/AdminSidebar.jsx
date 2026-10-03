@@ -23,7 +23,7 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
     to={to}
     className={`admin-sidebar-link group relative flex items-center rounded-xl transition-all duration-200 py-2 px-2.5 my-0.5
       ${isActive
-        ? "bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white font-bold shadow-xs border border-neutral-200/80 dark:border-zinc-700/60"
+        ? "bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white font-medium shadow-xs border border-neutral-200/80 dark:border-zinc-700/60"
         : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium border border-transparent"
       }`}
     title={collapsed ? label : undefined}
@@ -77,7 +77,7 @@ const AdminSidebarDropdown = ({
         onClick={() => !collapsed && onToggle(id)}
         className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer ${
           isAnyChildActive
-            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-bold border border-neutral-200/60 dark:border-zinc-700/50"
+            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-semibold border border-neutral-200/60 dark:border-zinc-700/50"
             : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white border border-transparent"
         }`}
         title={collapsed ? label : undefined}
@@ -91,7 +91,7 @@ const AdminSidebarDropdown = ({
             }`} 
           />
           {!collapsed && (
-            <span className="text-[13px] font-bold tracking-wide truncate ml-3">
+            <span className="text-[13px] font-semibold tracking-wide truncate ml-3">
               {label}
             </span>
           )}
@@ -122,7 +122,7 @@ const AdminSidebarDropdown = ({
                 to={linkTo}
                 className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${
                   isActive
-                    ? "bg-black dark:bg-white text-white dark:text-black font-bold shadow-xs"
+                    ? "bg-black dark:bg-white text-white dark:text-black font-semibold shadow-xs"
                     : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-zinc-800/70 hover:text-black dark:hover:text-white font-medium"
                 }`}
               >
@@ -262,12 +262,10 @@ const AdminSidebar = () => {
             <Shield size={16} strokeWidth={2.2} />
           </div>
           <div className="min-w-0 sidebar-brand-text">
-            <p className="text-[13px] font-black text-black dark:text-white truncate leading-tight tracking-tight">
+            <p className="text-[13px] font-semibold text-black dark:text-white truncate leading-tight tracking-tight">
               Control Panel
             </p>
-            <p className="text-[10px] text-brand-600 dark:text-brand-400 font-bold tracking-wider uppercase leading-tight mt-0.5">
-              {role === "paymentAdmin" ? "Finance Desk" : "Administration"}
-            </p>
+            
           </div>
         </div>
 
@@ -355,7 +353,7 @@ const AdminSidebar = () => {
                 <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
                   {adminName}
                 </p>
                 <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate leading-tight mt-0.5">

@@ -297,7 +297,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       records = rawParts.map((p) => {
         const clubNames = p.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
         const fee = p.event?.registrationFee || 0;
-        const amountPaid = (p.paymentStatus === "SUCCESS" || p.paymentStatus === "APPROVED") ? fee : 0;
+        const amountPaid = p.paymentStatus === "SUCCESS" ? fee : 0;
         return {
           id: p.id,
           studentName: p.student?.name || p.faculty?.name || p.externalUser?.name || "N/A",
@@ -388,7 +388,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
           facultyCoordinator: { select: { name: true, email: true } },
           memberships: {
             where: { role: "CLUB_HEAD" },
-            select: { student: { select: { email: true } } },
+            select: { student: { select: { name: true, email: true } } },
             take: 1,
           },
         },
@@ -398,12 +398,15 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       });
 
       records = rawClubs.map((c) => {
-        const clubHeadEmail = c.memberships && c.memberships[0]?.student?.email;
+        const clubHead = c.memberships && c.memberships[0]?.student;
+        const clubHeadEmail = clubHead?.email;
         const officialClubEmail = c.clubEmail || clubHeadEmail || "N/A";
         return {
           id: c.id,
           clubName: c.clubName,
           category: c.category || "General",
+          studentLeadName: clubHead?.name || "N/A",
+          studentLeadEmail: clubHeadEmail || "N/A",
           facultyName: c.facultyName || c.facultyCoordinator?.name || "N/A",
           facultyEmail: c.facultyEmail || c.facultyCoordinator?.email || "N/A",
           officialClubEmail,
@@ -416,10 +419,6 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
     case "transactions": {
       const where = {
         event: { registrationFee: { gt: 0 } },
-        OR: [
-          { paymentStatus: { in: ["SUCCESS", "APPROVED", "PENDING", "REJECTED", "NEED_MORE_DETAILS"] } },
-          { transactionId: { not: null } },
-        ],
       };
       if (effectiveClubId) where.event = { ...where.event, organizers: { some: { clubId: effectiveClubId } } };
       if (filters.eventId && filters.eventId !== "all") where.eventId = filters.eventId;
@@ -431,7 +430,8 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
 
       totalCount = await prisma.participation.count({ where });
       const rawTxns = await prisma.participation.findMany({
-             include: {
+        where,
+        include: {
           student: { select: { name: true, rollNo: true, email: true } },
           faculty: { select: { name: true, email: true, department: true } },
           externalUser: { select: { name: true, email: true, collegeName: true } },
@@ -451,7 +451,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
       records = rawTxns.map((t) => {
         const clubNames = t.event?.organizers?.map((o) => o.club?.clubName).filter(Boolean).join(", ") || "N/A";
         const fee = t.event?.registrationFee || 0;
-        const amountPaid = (t.paymentStatus === "SUCCESS" || t.paymentStatus === "APPROVED") ? fee : 0;
+        const amountPaid = t.paymentStatus === "SUCCESS" ? fee : 0;
         return {
           transactionId: t.transactionId || "N/A",
           studentName: t.student?.name || t.faculty?.name || t.externalUser?.name || "N/A",
@@ -487,7 +487,7 @@ export async function queryDatasetRecords({ datasetId, user, filters = {}, page 
             include: { club: { select: { clubName: true } } },
           },
           participations: {
-            where: { paymentStatus: { in: ["SUCCESS", "APPROVED"] } },
+            where: { paymentStatus: "SUCCESS" },
             select: { id: true },
           },
         },
@@ -555,7 +555,17 @@ export function generateCSV(records, selectedColumns, datasetId) {
   return `\uFEFF${headers.map(escapeCSV).join(",")}\n${rows.join("\n")}`;
 }
 
-export async function recordExportLog({ dataset, recordCount, actorId, actorEmail, actorRole, filters, columns }) {
+export async function recordExportLog({
+  dataset,
+  recordCount,
+  actorId,
+  actorEmail,
+  actorRole,
+  ipAddress,
+  location,
+  filters,
+  columns,
+}) {
   const logEntry = {
     id: createObjectId(),
     dataset,
@@ -563,6 +573,8 @@ export async function recordExportLog({ dataset, recordCount, actorId, actorEmai
     actorId,
     actorEmail,
     actorRole,
+    ipAddress: ipAddress || "127.0.0.1",
+    location: location || "Campus Local",
     filters: filters || {},
     columns: columns || [],
     createdAt: new Date(),
@@ -602,11 +614,21 @@ export async function getExportHistory(limit = 20) {
         take: limit,
         orderBy: { createdAt: "desc" },
       });
-      if (logs && logs.length > 0) return logs;
+      if (logs && logs.length > 0) {
+        return logs.map((l) => ({
+          ...l,
+          ipAddress: l.ipAddress || "127.0.0.1",
+          location: l.location || "Campus Local",
+        }));
+      }
     }
   } catch (err) {
     console.error("Non-fatal: Error reading export history from DB:", err.message);
   }
 
-  return exportHistoryMemoryLog.slice(0, limit);
+  return exportHistoryMemoryLog.slice(0, limit).map((l) => ({
+    ...l,
+    ipAddress: l.ipAddress || "127.0.0.1",
+    location: l.location || "Campus Local",
+  }));
 }

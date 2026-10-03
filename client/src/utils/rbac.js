@@ -440,8 +440,11 @@ export function hasPermission(user, permission, resource = null) {
     const hasBase = FACULTY_COORDINATOR_PERMISSIONS.includes(perm) || FACULTY_COORDINATOR_PERMISSIONS.includes(permission);
     if (!hasBase) return false;
 
-    if (targetClubId && userClubId) {
-      return String(userClubId) === String(targetClubId);
+    if (targetClubId) {
+      if (userClubId && String(userClubId) === String(targetClubId)) return true;
+      if (user.memberships?.some(m => String(m.clubId || m.club?.id || m.club?._id || m.id) === String(targetClubId) && m.status !== "INACTIVE")) return true;
+      if (!userClubId && (!user.memberships || user.memberships.length === 0)) return true;
+      return false;
     }
     return true;
   }
