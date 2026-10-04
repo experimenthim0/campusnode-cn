@@ -25,10 +25,10 @@ const SITE_URL = (
   process.env.SITE_URL || "https://clubsetu.nikhim.me"
 ).replace(/\/+$/, "");
 
-const DEFAULT_TITLE = "CampusNode - NIT Jalandhar Clubs & Events";
+const DEFAULT_TITLE = "Campusnode - NIT Jalandhar Clubs & Events";
 
 const DEFAULT_DESCRIPTION =
-  "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
+  "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on Campusnode.";
 
 const DEFAULT_IMAGE = `${SITE_URL}/campusnode-og-fallback.png`;
 
@@ -72,7 +72,7 @@ function formatEventTitle(title) {
     return clean;
   }
 
-  return `${clean} | CampusNode`;
+  return `${clean} | Campusnode`;
 }
 
 /**
@@ -160,7 +160,7 @@ export function formatEventDetails(event = {}) {
   if (venue) {
     return `📍 ${venue}`;
   }
-  return "Discover this event on CampusNode.";
+  return "Discover this event on Campusnode.";
 }
 
 /**
@@ -264,7 +264,7 @@ export function generateSocialMetadata(event, slug) {
 
   <!-- Open Graph / WhatsApp / Facebook / LinkedIn / Discord -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="CampusNode" />
+  <meta property="og:site_name" content="Campusnode" />
   <meta property="og:title" content="${titleAttr}" />
   <meta property="og:description" content="${descriptionAttr}" />
   <meta property="og:url" content="${canonicalAttr}" />
@@ -336,7 +336,7 @@ function generateDefaultMetadata() {
   />
 
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="CampusNode" />
+  <meta property="og:site_name" content="Campusnode" />
   <meta property="og:title" content="${titleAttr}" />
   <meta property="og:description" content="${descriptionAttr}" />
   <meta property="og:url" content="${SITE_URL}/events" />

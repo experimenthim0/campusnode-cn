@@ -63,7 +63,7 @@ const RecommendedActions = ({ recommendations = [] }) => {
                   <h5 className="text-xs font-semibold text-slate-900 dark:text-white leading-snug">
                     {rec.title}
                   </h5>
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${pConfig.badge}`}>
+                  <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full shrink-0 ${pConfig.badge}`}>
                     {pConfig.label}
                   </span>
                 </div>

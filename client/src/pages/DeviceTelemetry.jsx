@@ -578,7 +578,7 @@ Audio Context Sample Rate : ${audioInfo.sampleRate}
 
 FINGERPRINTING SIGNALS
 Exposed Signals           : Screen resolution, Browser Viewport, DPR, Color depth, Logical CPU cores, Approx. device memory, Timezone, Browser language list, Platform string, Touch capabilities, WebGL renderer, Audio sample rate.
-Note: Browser fingerprinting combines technical configuration signals to distinguish or recognize browser environments. These signals may contribute to fingerprinting when combined with other information. CampusNode does not generate, log, or persist browser fingerprints.
+Note: Browser fingerprinting combines technical configuration signals to distinguish or recognize browser environments. These signals may contribute to fingerprinting when combined with other information. Campusnode does not generate, log, or persist browser fingerprints.
 
 CAMPUSNODE DATA HANDLING
 Receives                  : Source IP address, User-Agent & request metadata, requested endpoint, session cookies/tokens when authenticated.
@@ -1221,7 +1221,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           </div>
 
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed pt-1">
-            Browser fingerprinting refers to scripts collecting technical configuration signals to distinguish devices without storing cookies. CampusNode does not generate, log, or persist browser fingerprints.
+            Browser fingerprinting refers to scripts collecting technical configuration signals to distinguish devices without storing cookies. Campusnode does not generate, log, or persist browser fingerprints.
           </p>
         </section>
 
@@ -1260,19 +1260,19 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           </div>
         </section>
 
-        {/* Section 12 & 13: CampusNode Data Handling */}
+        {/* Section 12 & 13: Campusnode Data Handling */}
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-5">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Terminal size={16} className="text-brand-600 dark:text-brand-400" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
-              12. CampusNode Data Handling
+              12. Campusnode Data Handling
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
-                CampusNode Receives
+                Campusnode Receives
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
                 IP address associated with the network connection, User-Agent &amp; request metadata, requested endpoints, and authentication session cookies when signed in.
@@ -1281,7 +1281,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
 
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
-                CampusNode Processes
+                Campusnode Processes
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
                 Authentication &amp; RBAC token verification, rate limiting, brute-force &amp; DDoS protection, event registration eligibility checks, and automated security login alerts.
@@ -1290,7 +1290,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
 
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
-                CampusNode Stores
+                Campusnode Stores
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
                 Explicit account and profile records (name, roll number, department, college email), registered events, attendance logs, verified payment transaction IDs, and administrative export audit logs.
@@ -1300,7 +1300,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
 
           <div className="pt-2 border-t border-neutral-100 dark:border-zinc-800">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
-              Not Collected by CampusNode
+              Not Collected by Campusnode
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-neutral-600 dark:text-neutral-300">
               <div className="p-2 rounded bg-neutral-50 dark:bg-zinc-900/30 border border-neutral-100 dark:border-zinc-800">• Battery status or percentage</div>

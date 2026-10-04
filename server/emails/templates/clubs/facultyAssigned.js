@@ -18,7 +18,7 @@ export const facultyAssignedTemplate = {
 
   getSubject(data) {
     if (data?.subject) return data.subject;
-    return `CampusNode - Assigned as Faculty Coordinator for ${data?.clubName || "Club"}`;
+    return `Campusnode - Assigned as Faculty Coordinator for ${data?.clubName || "Club"}`;
   },
 
   getPreheader(data) {
@@ -63,7 +63,7 @@ export const facultyAssignedTemplate = {
         style: "margin-bottom: 8px;",
       })}
       ${BodyText({
-        children: `You have been officially appointed as the <strong>Faculty Coordinator</strong> for <strong>${safeClub}</strong> on CampusNode.`,
+        children: `You have been officially appointed as the <strong>Faculty Coordinator</strong> for <strong>${safeClub}</strong> on Campusnode.`,
         align: "left",
       })}
 

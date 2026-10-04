@@ -4,7 +4,7 @@ import { getClientUrl as getCorsClientUrl } from "../../utils/corsConfig.js";
 dotenv.config();
 
 export const emailConfig = {
-  getFromName: () => process.env.EMAIL_FROM_NAME || "CampusNode Support",
+  getFromName: () => process.env.EMAIL_FROM_NAME || "Campusnode Support",
   getFromEmail: () => process.env.EMAIL_FROM || "onboarding@resend.dev",
   getFromHeader: () => `${emailConfig.getFromName()} <${emailConfig.getFromEmail()}>`,
   getApiKey: () => process.env.RESEND_API_KEY || "",

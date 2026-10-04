@@ -37,12 +37,12 @@ export const RolloutBlocked = ({ rollout }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cn-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cn-blue-500" />
             </span>
-            <span>CampusNode Launch in Phases</span>
+            <span>Campusnode Launch in Phases</span>
           </div>
 
           {/* Headline */}
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight mb-2">
-            CampusNode is launching in phases.
+            Campusnode is launching in phases.
           </h1>
 
           <p className="text-zinc-600 dark:text-zinc-400 text-sm max-w-sm mb-6 leading-relaxed font-normal">

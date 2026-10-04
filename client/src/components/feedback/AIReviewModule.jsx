@@ -41,10 +41,10 @@ const AIReviewModule = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
                 AI Feedback Review
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cn-teal-50 text-cn-teal-800 dark:bg-cn-teal-950/50 dark:text-cn-teal-300 border border-cn-teal-200 dark:border-cn-teal-800/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cn-teal-50 text-cn-teal-800 dark:bg-cn-teal-950/50 dark:text-cn-teal-300 border border-cn-teal-200 dark:border-cn-teal-800/40">
                 OpenRouter AI
               </span>
             </div>
@@ -164,7 +164,7 @@ const AIReviewModule = ({
                       ({rev.responseCount} responses)
                     </span>
                     {isLatest && (
-                      <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                      <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-semibold uppercase tracking-wider ${
                         isSelected ? 'bg-white text-cn-blue-600' : 'bg-cn-teal-50 text-cn-teal-700 dark:bg-cn-teal-950/60 dark:text-cn-teal-300'
                       }`}>
                         Latest

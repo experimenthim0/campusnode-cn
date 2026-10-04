@@ -4,7 +4,7 @@ import { escapeHtml } from "../renderer/escapeHtml.js";
 import { colors, typography, spacing, radii, shadows } from "../config/designTokens.js";
 
 /**
- * Base responsive document shell for all CampusNode transactional emails.
+ * Base responsive document shell for all Campusnode transactional emails.
  * Supports light & dark modes with the modern Blue/Teal theme.
  * Enforces a 600px max-width container, table-based layout, and cross-client compatibility.
  *
@@ -19,7 +19,7 @@ import { colors, typography, spacing, radii, shadows } from "../config/designTok
  * @returns {string} Complete HTML document
  */
 export const BaseLayout = ({
-  title = "CampusNode Notification",
+  title = "Campusnode Notification",
   preheader = "",
   headerBadge,
   headerSubtitle,

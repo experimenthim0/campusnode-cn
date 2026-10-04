@@ -1021,7 +1021,7 @@ const MyEvents = () => {
               ? "Central Student Body"
               : null) ||
             ev.createdBy?.name ||
-            "CampusNode";
+            "Campusnode";
 
           const formattedDate = ev.startTime
             ? new Date(ev.startTime).toLocaleDateString("en-IN", {

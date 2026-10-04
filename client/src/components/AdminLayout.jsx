@@ -155,7 +155,7 @@ const AdminLayout = () => {
 
         {/* Footer Note */}
         <div className="text-center text-[11px] text-neutral-400 dark:text-neutral-600">
-          CampusNode Security & Administration
+          Campusnode Security & Administration
         </div>
       </div>
 

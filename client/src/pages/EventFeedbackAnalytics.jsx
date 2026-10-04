@@ -97,7 +97,7 @@ const EventFeedbackAnalytics = () => {
       const link = document.createElement('a');
       link.href = url;
       const sanitizedTitle = (eventData?.title || 'event').replace(/[^a-zA-Z0-9_-]/g, '_');
-      link.setAttribute('download', `CampusNode_AI_Review_${sanitizedTitle}_R${reviewNumber}.pdf`);
+      link.setAttribute('download', `Campusnode_AI_Review_${sanitizedTitle}_R${reviewNumber}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -119,7 +119,7 @@ const EventFeedbackAnalytics = () => {
       const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(res.data, null, 2))}`;
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute('href', jsonString);
-      downloadAnchor.setAttribute('download', `CampusNode_AI_Review_R${reviewNumber}.json`);
+      downloadAnchor.setAttribute('download', `Campusnode_AI_Review_R${reviewNumber}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();

@@ -182,7 +182,7 @@ const Home = () => {
   const [celebrationWinnerRank, setCelebrationWinnerRank] = useState(null);
 
   useEffect(() => {
-    document.title = "CampusNode | NITJ Clubs & Events";
+    document.title = "Campusnode | NITJ Clubs & Events";
     if (authUser) {
       setUser(authUser);
       setRole(authRole);
@@ -1043,7 +1043,7 @@ const Home = () => {
                         Campus life is full of events, communities, announcements and opportunities—but finding them shouldn't be difficult.
                       </p>
                       <p>
-                        CampusNode brings everything together, making it easier to discover what's happening, connect with others and be part of campus life.
+                        Campusnode brings everything together, making it easier to discover what's happening, connect with others and be part of campus life.
                       </p>
                     </div>
                   </div>
@@ -1053,7 +1053,7 @@ const Home = () => {
                   <div className="flex items-center justify-center lg:justify-end">
                     <img
                       src="/what-cn.png"
-                      alt="CampusNode Ecosystem"
+                      alt="Campusnode Ecosystem"
                       className="w-full max-w-lg h-auto object-contain"
                     />
                   </div>
@@ -1191,12 +1191,12 @@ const Home = () => {
               <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-semibold text-cn-text mt-4 leading-tight">Congratulations!</h3>
-            <p className="text-sm sm:text-base font-medium text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
+            <h3 className="text-[22px] sm:text-2xl font-semibold text-cn-text mt-4 leading-tight">Congratulations!</h3>
+            <p className="text-[16px] sm:text-base font-medium text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
               You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
             </p>
 
-            <p className="text-xs text-cn-text-muted mt-3 leading-relaxed italic px-2">
+            <p className="text-[14px] text-cn-text-muted mt-3 leading-relaxed italic px-2">
               "Hard work pays off! Congratulations to the winners of {celebrationEvent.title}. Keep striving for excellence and inspiring those around you."
             </p>
 

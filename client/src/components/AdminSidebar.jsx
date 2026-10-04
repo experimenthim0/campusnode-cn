@@ -15,25 +15,25 @@ import {
   Settings,
   LogOut,
   Shield,
-  Layers
+  Layers,
+  GraduationCap
 } from "lucide-react";
 
 const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
   <Link
     to={to}
-    className={`admin-sidebar-link group relative flex items-center rounded-xl transition-all duration-200 py-2 px-2.5 my-0.5
+    className={`admin-sidebar-link group relative flex items-center rounded-xl transition-colors duration-200 py-2 px-2.5 my-0.5
       ${isActive
-        ? "bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white font-medium shadow-xs border border-neutral-200/80 dark:border-zinc-700/60"
-        : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium border border-transparent"
+        ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12] text-black dark:text-white font-medium"
+        : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white font-medium"
       }`}
     title={collapsed ? label : undefined}
   >
     <Icon
       size={18}
       strokeWidth={isActive ? 2.2 : 1.7}
-      className={`shrink-0 sidebar-link-icon transition-colors ${
-        isActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
-      }`}
+      className={`shrink-0 sidebar-link-icon transition-colors ${isActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
+        }`}
     />
     <span className="text-[13px] tracking-wide truncate sidebar-link-text ml-3">
       {label}
@@ -75,20 +75,18 @@ const AdminSidebarDropdown = ({
       <button
         type="button"
         onClick={() => !collapsed && onToggle(id)}
-        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer ${
-          isAnyChildActive
-            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-medium border border-neutral-200/60 dark:border-zinc-700/50"
-            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white border border-transparent"
-        }`}
+        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-colors duration-200 cursor-pointer ${isAnyChildActive
+            ? `${collapsed ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12]" : ""} text-black dark:text-white font-medium`
+            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white"
+          }`}
         title={collapsed ? label : undefined}
       >
         <div className="flex items-center min-w-0">
-          <Icon 
-            size={18} 
-            strokeWidth={isAnyChildActive ? 2.2 : 1.7} 
-            className={`shrink-0 transition-colors ${
-              isAnyChildActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500"
-            }`} 
+          <Icon
+            size={18}
+            strokeWidth={isAnyChildActive ? 2.2 : 1.7}
+            className={`shrink-0 transition-colors ${isAnyChildActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500"
+              }`}
           />
           {!collapsed && (
             <span className="text-[13px] font-medium tracking-wide truncate ml-3">
@@ -99,16 +97,15 @@ const AdminSidebarDropdown = ({
         {!collapsed && (
           <ChevronDown
             size={14}
-            className={`shrink-0 text-neutral-400 dark:text-neutral-500 transition-transform duration-200 ${
-              isOpen ? "rotate-180 text-black dark:text-white" : ""
-            }`}
+            className={`shrink-0 text-neutral-400 dark:text-neutral-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+              }`}
           />
         )}
       </button>
 
       {/* Submenu links without dots, clean auto-collapsible */}
       {!collapsed && isOpen && (
-        <div className="pl-3 pt-1 pb-1 space-y-0.5 border-l-2 border-neutral-200 dark:border-zinc-800 ml-4 my-1">
+        <div className="pl-3 pt-1 pb-1 space-y-0.5 border-l border-neutral-200/60 dark:border-zinc-800/60 ml-4 my-1">
           {items.map((item, idx) => {
             const isActive = item.exactPath
               ? location.pathname === item.exactPath
@@ -120,11 +117,10 @@ const AdminSidebarDropdown = ({
               <Link
                 key={idx}
                 to={linkTo}
-                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${
-                  isActive
-                    ? "bg-black dark:bg-white text-white dark:text-black font-medium shadow-xs"
-                    : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-zinc-800/70 hover:text-black dark:hover:text-white font-medium"
-                }`}
+                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${isActive
+                    ? "bg-neutral-100 dark:bg-zinc-800/60 text-black dark:text-white font-medium"
+                    : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white font-medium"
+                  }`}
               >
                 <span className="truncate">{item.label}</span>
                 {isActive && (
@@ -166,11 +162,15 @@ const AdminSidebar = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem("adminSidebarCollapsed", String(collapsed));
+    try {
+      localStorage.setItem("adminSidebarCollapsed", String(collapsed));
+    } catch {
+      // ignore
+    }
   }, [collapsed]);
 
-  // Dropdown categories definition
-  const dropdownCategories = [
+  // Categories definition
+  const categories = [
     {
       id: "events",
       icon: Calendar,
@@ -183,17 +183,25 @@ const AdminSidebar = () => {
     {
       id: "clubs",
       icon: Users,
-      label: "Clubs Management",
+      label: "Clubs",
       items: [
         { label: "Clubs", tab: "club-heads" },
       ]
     },
     {
+      id: "students",
+      icon: GraduationCap,
+      label: "Students",
+      items: [
+        { label: "Student Directory", tab: "students" },
+      ]
+    },
+    {
       id: "finance",
       icon: Wallet,
-      label: "Financial Operations",
+      label: "Transactions",
       items: [
-        { label: "Transactions", tab: "payments-overview" },
+        { label: "Event Collections", tab: "payments-overview" },
       ]
     },
     {
@@ -217,9 +225,11 @@ const AdminSidebar = () => {
     }
   ];
 
+  const dropdownCategories = categories.filter(c => c.items.length > 1);
+
   // Accordion state: only one open category at a time
   const findMatchingCategory = (tab) => {
-    return dropdownCategories.find(cat => 
+    return dropdownCategories.find(cat =>
       cat.items.some(item => item.tab === tab || (item.exactPath && location.pathname === item.exactPath))
     )?.id || null;
   };
@@ -229,11 +239,7 @@ const AdminSidebar = () => {
   // Automatically switch open accordion when active tab changes
   useEffect(() => {
     const matched = findMatchingCategory(currentTab);
-    if (matched) {
-      setOpenDropdownId(matched);
-    } else if (currentTab === "overview" || currentTab === "profile") {
-      setOpenDropdownId(null);
-    }
+    setOpenDropdownId(matched);
   }, [currentTab, location.pathname]);
 
   const handleToggleDropdown = (id) => {
@@ -249,9 +255,8 @@ const AdminSidebar = () => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col shrink-0 bg-cn-surface border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${
-        collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
-      }`}
+      className={`hidden md:flex flex-col shrink-0 bg-cn-surface border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
+        }`}
       style={{ height: "calc(100dvh - 3.5rem - env(safe-area-inset-top))" }}
       aria-label="Admin sidebar"
     >
@@ -264,7 +269,7 @@ const AdminSidebar = () => {
             <p className="text-[13px] font-medium text-black dark:text-white truncate leading-tight tracking-tight">
               Control Panel
             </p>
-            
+
           </div>
         </div>
 
@@ -298,19 +303,40 @@ const AdminSidebar = () => {
               collapsed={collapsed}
             />
 
-            {/* 2-6. Accordion Dropdown Categories */}
-            {dropdownCategories.map((cat) => (
-              <AdminSidebarDropdown
-                key={cat.id}
-                id={cat.id}
-                icon={cat.icon}
-                label={cat.label}
-                items={cat.items}
-                collapsed={collapsed}
-                isOpen={openDropdownId === cat.id}
-                onToggle={handleToggleDropdown}
-              />
-            ))}
+            {/* Categories Navigation */}
+            {categories.map((cat) => {
+              if (cat.items.length === 1) {
+                const singleItem = cat.items[0];
+                const linkTo = singleItem.exactPath || `/admin-dashboard?tab=${singleItem.tab}`;
+                const isActive = singleItem.exactPath
+                  ? location.pathname === singleItem.exactPath
+                  : location.pathname === "/admin-dashboard" && currentTab === singleItem.tab;
+
+                return (
+                  <AdminSidebarLink
+                    key={cat.id}
+                    to={linkTo}
+                    icon={cat.icon}
+                    label={cat.label}
+                    isActive={isActive}
+                    collapsed={collapsed}
+                  />
+                );
+              }
+
+              return (
+                <AdminSidebarDropdown
+                  key={cat.id}
+                  id={cat.id}
+                  icon={cat.icon}
+                  label={cat.label}
+                  items={cat.items}
+                  collapsed={collapsed}
+                  isOpen={openDropdownId === cat.id}
+                  onToggle={handleToggleDropdown}
+                />
+              );
+            })}
           </>
         )}
 
@@ -318,7 +344,7 @@ const AdminSidebar = () => {
           <>
             <AdminSidebarLink
               to="/admin-dashboard?tab=payments-overview"
-              icon={Layers}
+              icon={Wallet}
               label="Transactions"
               isActive={location.pathname === "/admin-dashboard" && (!currentTab || currentTab === "payments-overview")}
               collapsed={collapsed}

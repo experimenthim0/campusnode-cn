@@ -14,6 +14,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
   const [candidateSuggestions, setCandidateSuggestions] = useState({});
   const [activeDropdownIndex, setActiveDropdownIndex] = useState(null);
   const searchTimeoutRef = useRef({});
+  const dropdownRef = useRef(null);
 
   const eventId = event?.id || event?._id;
   const isTeamEvent = event?.registrationType === 'team' || event?.registrationType === 'both';
@@ -57,6 +58,15 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
       setActiveDropdownIndex(null);
     }
   }, [isOpen, event, fetchCandidatesSummary]);
+
+  // Auto-scroll dropdown into view when it opens
+  useEffect(() => {
+    if (activeDropdownIndex !== null && dropdownRef.current) {
+      setTimeout(() => {
+        dropdownRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    }
+  }, [activeDropdownIndex]);
 
   if (!isOpen || !event) return null;
 
@@ -297,7 +307,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-cn-text-secondary">
+        <div className="p-6 pb-32 overflow-y-auto space-y-6 flex-1 text-cn-text-secondary">
           
           {/* Zero Participation Banner */}
           {hasZeroParticipation && (
@@ -369,7 +379,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
             {winners.map((winner, index) => (
               <div
                 key={index}
-                className="p-4 bg-cn-surface-muted dark:bg-cn-surface-elevated border border-cn-border dark:border-cn-border-subtle rounded-xl relative group transition-all"
+                className="p-4 bg-cn-surface-muted dark:bg-cn-surface-elevated border border-cn-border dark:border-cn-border-subtle rounded-xl relative group transition-all overflow-visible"
               >
                 <button
                   type="button"
@@ -421,7 +431,7 @@ const WinnerModal = ({ isOpen, onClose, event, onWinnersUpdated }) => {
 
                     {/* Autocomplete Dropdown */}
                     {activeDropdownIndex === index && candidateSuggestions[index]?.length > 0 && (
-                      <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-cn-border-subtle">
+                      <div ref={activeDropdownIndex === index ? dropdownRef : null} className="absolute left-0 right-0 top-full mt-1 z-[60] bg-cn-surface dark:bg-cn-surface-card border border-cn-border dark:border-cn-border-subtle rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-cn-border-subtle">
                         {candidateSuggestions[index].map((candidate, cIdx) => (
                           <div
                             key={cIdx}

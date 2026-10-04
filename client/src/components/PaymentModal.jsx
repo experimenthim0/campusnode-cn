@@ -239,7 +239,7 @@ const PaymentModal = ({
                 </div>
                 <div>
                   <span className="font-semibold text-xs tracking-tight text-white block leading-tight">
-                    CampusNode
+                    Campusnode
                   </span>
                   <span className="text-[10px] text-neutral-400 font-medium">
                     Secure Checkout

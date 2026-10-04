@@ -19,7 +19,7 @@ export const resetPasswordTemplate = {
   },
 
   getPreheader() {
-    return "Use this secure link to choose a new password for your CampusNode account.";
+    return "Use this secure link to choose a new password for your Campusnode account.";
   },
 
   render(data) {
@@ -33,7 +33,7 @@ export const resetPasswordTemplate = {
       
 
       ${BodyText({
-      children: "We received a request to reset your CampusNode account password. Click the button to choose a new password.",
+      children: "We received a request to reset your Campusnode account password. Click the button to choose a new password.",
       align: "center",
       style: "margin: 0 0 12px 0;",
     })}

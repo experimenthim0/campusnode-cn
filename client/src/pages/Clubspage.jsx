@@ -98,7 +98,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
 
   useEffect(() => {
     if (!isHome) {
-      document.title = "Clubs & Societies - CampusNode";
+      document.title = "Clubs & Societies - Campusnode";
     }
   }, [isHome]);
 

@@ -60,7 +60,7 @@ const Contact = () => {
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    document.title = "Contact Us & Suggestions | CampusNode";
+    document.title = "Contact Us & Suggestions | Campusnode";
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser) {
@@ -359,7 +359,7 @@ const Contact = () => {
                   {status === 'submitting' ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Sending to CampusNode…
+                      Sending to Campusnode…
                     </>
                   ) : (
                     <>
@@ -416,7 +416,7 @@ const Contact = () => {
                     to="/team"
                     className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-between"
                   >
-                    <span>Meet the CampusNode Team</span>
+                    <span>Meet the Campusnode Team</span>
                     <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
                   </Link>
                 </li>
@@ -425,7 +425,7 @@ const Contact = () => {
                     to="/contribute"
                     className="text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-between"
                   >
-                    <span>Contribute to CampusNode</span>
+                    <span>Contribute to Campusnode</span>
                     <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
                   </Link>
                 </li>

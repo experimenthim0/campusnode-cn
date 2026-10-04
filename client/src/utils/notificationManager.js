@@ -40,7 +40,7 @@ export function normalizeNotification(rawNotif) {
   if (!rawNotif) return null;
 
   const id = String(rawNotif.id || rawNotif._id || `temp-${Date.now()}`);
-  const title = rawNotif.title || rawNotif.heading || 'CampusNode';
+  const title = rawNotif.title || rawNotif.heading || 'Campusnode';
   const message = rawNotif.message || rawNotif.content || rawNotif.body || 'New campus update!';
   
   const isTeam =
@@ -60,8 +60,8 @@ export function normalizeNotification(rawNotif) {
 
   const club = rawNotif.club || null;
   let sender = isTeam
-    ? { name: 'CampusNode', clubName: 'CampusNode' }
-    : (rawNotif.sender || (club ? { name: club.clubName, clubName: club.clubName, clubLogo: club.clubLogo } : { name: 'CampusNode', clubName: 'CampusNode' }));
+    ? { name: 'Campusnode', clubName: 'Campusnode' }
+    : (rawNotif.sender || (club ? { name: club.clubName, clubName: club.clubName, clubLogo: club.clubLogo } : { name: 'Campusnode', clubName: 'Campusnode' }));
 
   if (club) {
     sender = {

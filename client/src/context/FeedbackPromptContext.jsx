@@ -3,18 +3,31 @@ import { useAuth } from './AuthContext';
 import { getPendingFeedback } from '../services/feedbackService';
 import EventFeedbackModal from '../components/EventFeedbackModal';
 
-const FeedbackPromptContext = createContext(null);
+const defaultFeedbackPromptContext = {
+  pendingCount: 0,
+  nextPending: null,
+  pendingEvents: [],
+  loading: false,
+  openFeedbackModal: () => {},
+  closeFeedbackModal: () => {},
+  refreshPending: () => {},
+};
+
+const FeedbackPromptContext = createContext(defaultFeedbackPromptContext);
 
 export const useFeedbackPrompt = () => {
   const context = useContext(FeedbackPromptContext);
-  if (!context) {
-    throw new Error('useFeedbackPrompt must be used within a FeedbackPromptProvider');
-  }
-  return context;
+  return context || defaultFeedbackPromptContext;
 };
 
 export const FeedbackPromptProvider = ({ children }) => {
-  const { user, isAuthenticated, role } = useAuth();
+  let auth = {};
+  try {
+    auth = useAuth() || {};
+  } catch {
+    auth = {};
+  }
+  const { user, isAuthenticated, role } = auth;
   const [pendingCount, setPendingCount] = useState(0);
   const [nextPending, setNextPending] = useState(null);
   const [pendingEvents, setPendingEvents] = useState([]);

@@ -149,7 +149,7 @@ const Login = () => {
           <div className="text-center mb-6">
             {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>CampusNode NITJ</span>
+              <span>Campusnode NITJ</span>
             </div> */}
             <h1 className="text-2xl font-medium mysans tracking-tight text-zinc-900 dark:text-white">
               Welcome back
@@ -355,7 +355,7 @@ const Login = () => {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="px-3 bg-white/90 dark:bg-zinc-900/90 text-zinc-400 dark:text-zinc-500">
-                New on CampusNode?
+                New on Campusnode?
               </span>
             </div>
           </div>

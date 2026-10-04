@@ -8,7 +8,7 @@ const Maintainance = () => {
         <div className="relative mb-6">
           <img
             src="/construction-machine.png"
-            alt="CampusNode Under Maintenance"
+            alt="Campusnode Under Maintenance"
             className="w-64 sm:w-80 md:w-96 max-w-full h-auto object-contain drop-shadow-xl select-none pointer-events-none"
             loading="eager"
           />

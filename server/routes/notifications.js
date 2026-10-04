@@ -52,7 +52,7 @@ function formatSender(notification) {
     notification.title?.toLowerCase().includes("invitation") ||
     notification.title?.toLowerCase().includes("team")
   ) {
-    return { name: "CampusNode", clubName: "CampusNode" };
+    return { name: "Campusnode", clubName: "Campusnode" };
   }
 
   // Prioritize official club identity
@@ -84,7 +84,7 @@ function formatSender(notification) {
     const a = notification.senderAdmin;
     return { ...a, _id: a.id, clubName: a.name || "Campus Administration" };
   }
-  return { name: "CampusNode", clubName: "CampusNode" };
+  return { name: "Campusnode", clubName: "Campusnode" };
 }
 
 router.post(

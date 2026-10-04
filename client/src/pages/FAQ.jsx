@@ -292,14 +292,14 @@ const FAQS = [
     category: 'account',
     question: 'Who can create a student account?',
     answer:
-      'Student accounts are intended for eligible students supported by CampusNode. The registration process may require institutional information such as your college email, roll number, branch, program, or academic year.',
+      'Student accounts are intended for eligible students supported by Campusnode. The registration process may require institutional information such as your college email, roll number, branch, program, or academic year.',
   },
   {
     id: 'email-verification',
     category: 'account',
     question: 'Why do I need to verify my email?',
     answer:
-      'Email verification helps CampusNode confirm ownership of the email address associated with your account and protects account-related features.',
+      'Email verification helps Campusnode confirm ownership of the email address associated with your account and protects account-related features.',
   },
   {
     id: 'verification-email-not-received',
@@ -318,7 +318,7 @@ const FAQS = [
   {
     id: 'cannot-login',
     category: 'account',
-    question: 'Why can I not log in to CampusNode?',
+    question: 'Why can I not log in to Campusnode?',
     answer:
       'Check that you are using the correct email and password and that your account has completed any required verification. If you use a role-specific login flow, make sure you are using the appropriate account type.',
   },
@@ -327,14 +327,14 @@ const FAQS = [
     category: 'account',
     question: 'How can I update my profile information?',
     answer:
-      'Open your Profile and use the available profile-editing options to update information that CampusNode allows you to change.',
+      'Open your Profile and use the available profile-editing options to update information that Campusnode allows you to change.',
   },
   {
     id: 'privacy',
     category: 'account',
     question: 'What personal information is visible to other users?',
     answer:
-      'CampusNode only exposes profile information that is intended to be public or required for a specific platform function. Sensitive account information should not be treated as publicly visible. Access to additional information is controlled by the relevant permissions and event workflows.',
+      'Campusnode only exposes profile information that is intended to be public or required for a specific platform function. Sensitive account information should not be treated as publicly visible. Access to additional information is controlled by the relevant permissions and event workflows.',
   },
 
   // ─────────────────────────────────────────────
@@ -343,9 +343,9 @@ const FAQS = [
   {
     id: 'notifications',
     category: 'account',
-    question: 'Where can I see my CampusNode notifications?',
+    question: 'Where can I see my Campusnode notifications?',
     answer:
-      'Open the Notifications section from your CampusNode account. Notifications are used to keep you informed about actions and updates relevant to your account, events, teams, clubs, and other CampusNode activities.',
+      'Open the Notifications section from your Campusnode account. Notifications are used to keep you informed about actions and updates relevant to your account, events, teams, clubs, and other Campusnode activities.',
   },
   {
     id: 'notification-types',
@@ -366,7 +366,7 @@ const FAQS = [
     category: 'account',
     question: 'How do I mark a notification as read?',
     answer:
-      'Open the notification from your Notifications section. CampusNode can mark notifications as read when you view them, and supported notification controls may also allow you to manage unread notifications.',
+      'Open the notification from your Notifications section. Campusnode can mark notifications as read when you view them, and supported notification controls may also allow you to manage unread notifications.',
   },
 
   // ─────────────────────────────────────────────
@@ -375,9 +375,9 @@ const FAQS = [
   {
     id: 'club-onboarding',
     category: 'organizers',
-    question: 'How can a club or society join CampusNode?',
+    question: 'How can a club or society join Campusnode?',
     answer:
-      'Clubs and societies can follow the CampusNode onboarding or approval process available to organizations. Access to organizer features is provided after the required authorization and approval steps are completed.',
+      'Clubs and societies can follow the Campusnode onboarding or approval process available to organizations. Access to organizer features is provided after the required authorization and approval steps are completed.',
   },
   {
     id: 'create-event',
@@ -403,7 +403,7 @@ const FAQS = [
   {
     id: 'manage-registrations',
     category: 'organizers',
-    question: 'Can organizers manage event registrations on CampusNode?',
+    question: 'Can organizers manage event registrations on Campusnode?',
     answer:
       'Authorized organizers can manage registrations for their events according to their permissions. Depending on the event, this can include reviewing participants, teams, payment status, and registration information.',
   },
@@ -417,16 +417,16 @@ const FAQS = [
   {
     id: 'certificate-designer',
     category: 'organizers',
-    question: 'Can organizers design certificates on CampusNode?',
+    question: 'Can organizers design certificates on Campusnode?',
     answer:
-      'CampusNode provides a certificate-design workflow for authorized organizers. Organizers can configure certificate layouts and dynamic participant information according to the available designer features.',
+      'Campusnode provides a certificate-design workflow for authorized organizers. Organizers can configure certificate layouts and dynamic participant information according to the available designer features.',
   },
   {
     id: 'qr-scanner',
     category: 'organizers',
     question: 'Can event organizers scan participant QR tickets?',
     answer:
-      'Authorized event staff can use the CampusNode check-in or scanner tools to scan participant tickets and record attendance for the relevant event.',
+      'Authorized event staff can use the Campusnode check-in or scanner tools to scan participant tickets and record attendance for the relevant event.',
   },
 
   // ─────────────────────────────────────────────
@@ -435,7 +435,7 @@ const FAQS = [
   {
     id: 'faculty-coordinator',
     category: 'organizers',
-    question: 'What is the role of a Faculty Coordinator on CampusNode?',
+    question: 'What is the role of a Faculty Coordinator on Campusnode?',
     answer:
       'A Faculty Coordinator can oversee and support the activities assigned to them, including relevant club or event workflows that require faculty involvement. Their available actions depend on the permissions assigned to their account.',
   },
@@ -469,7 +469,7 @@ const FAQS = [
     category: 'organizers',
     question: 'Can the Central Organizer manage college-level events?',
     answer:
-      'Authorized Central Organizers can manage institution-level event workflows supported by CampusNode, including the event-management functions available to their account.',
+      'Authorized Central Organizers can manage institution-level event workflows supported by Campusnode, including the event-management functions available to their account.',
   },
   {
     id: 'event-staff',
@@ -481,7 +481,7 @@ const FAQS = [
   {
     id: 'event-staff-access',
     category: 'organizers',
-    question: 'Can Event Staff access every event on CampusNode?',
+    question: 'Can Event Staff access every event on Campusnode?',
     answer:
       'No. Event Staff access is intended to be scoped to the events and functions they are authorized to handle. Staff assigned to one event should not automatically gain access to unrelated event operations.',
   },
@@ -494,7 +494,7 @@ const FAQS = [
     category: 'campus',
     question: 'How can I search for events, clubs, or other content?',
     answer:
-      'Use the CampusNode search feature to find relevant events, clubs, and supported campus content. Search results can be refined using the available filters and categories.',
+      'Use the Campusnode search feature to find relevant events, clubs, and supported campus content. Search results can be refined using the available filters and categories.',
   },
   {
     id: 'club-pages',
@@ -510,7 +510,7 @@ const FAQS = [
   {
     id: 'lost-found',
     category: 'campus',
-    question: 'How does CampusNode Lost & Found work?',
+    question: 'How does Campusnode Lost & Found work?',
     answer:
       'The Lost & Found section allows campus users to report lost or found items and provide relevant information such as the item category, description, images, and location. The system helps connect people who may be able to return or identify an item.',
   },
@@ -542,37 +542,37 @@ const FAQS = [
   {
     id: 'account-security',
     category: 'account',
-    question: 'How does CampusNode protect my account?',
+    question: 'How does Campusnode protect my account?',
     answer:
-      'CampusNode uses account authentication, role and permission controls, and protected application workflows to restrict access to platform features and data. Keep your password and verification information private and never share them with another person.',
+      'Campusnode uses account authentication, role and permission controls, and protected application workflows to restrict access to platform features and data. Keep your password and verification information private and never share them with another person.',
   },
   {
     id: 'two-factor-authentication',
     category: 'account',
-    question: 'Does CampusNode support two-factor authentication?',
+    question: 'Does Campusnode support two-factor authentication?',
     answer:
-      'Two-factor authentication can be enabled for supported account types and security workflows. If 2FA is available for your account, follow the security settings or verification flow provided by CampusNode.',
+      'Two-factor authentication can be enabled for supported account types and security workflows. If 2FA is available for your account, follow the security settings or verification flow provided by Campusnode.',
   },
   {
     id: 'report-problem',
     category: 'campus',
     question: 'How do I report a problem or technical issue?',
     answer:
-      'If you encounter a technical problem, provide the relevant details such as the page or feature, what you were trying to do, and what happened. Use the support or issue-reporting channel provided by CampusNode.',
+      'If you encounter a technical problem, provide the relevant details such as the page or feature, what you were trying to do, and what happened. Use the support or issue-reporting channel provided by Campusnode.',
   },
   {
     id: 'feature-request',
     category: 'campus',
-    question: 'How can I suggest a new CampusNode feature?',
+    question: 'How can I suggest a new Campusnode feature?',
     answer:
-      'You can submit feature suggestions through the available CampusNode feedback or contribution channels. Include a clear explanation of the problem and how the proposed feature would help students, clubs, organizers, or administrators.',
+      'You can submit feature suggestions through the available Campusnode feedback or contribution channels. Include a clear explanation of the problem and how the proposed feature would help students, clubs, organizers, or administrators.',
   },
   {
     id: 'student-contribution',
     category: 'campus',
-    question: 'Can students contribute to CampusNode?',
+    question: 'Can students contribute to Campusnode?',
     answer:
-      'Yes. Students can contribute ideas, feedback, design improvements, development work, and other useful contributions through the contribution channels provided by the CampusNode project.',
+      'Yes. Students can contribute ideas, feedback, design improvements, development work, and other useful contributions through the contribution channels provided by the Campusnode project.',
   },
 ];
 
@@ -587,7 +587,7 @@ const FAQ = () => {
   const [feedbackState, setFeedbackState] = useState({});
 
   useEffect(() => {
-    document.title = 'Frequently Asked Questions · CampusNode';
+    document.title = 'Frequently Asked Questions · Campusnode';
   }, []);
 
   const toggleFaq = (id) => {
@@ -670,7 +670,7 @@ const FAQ = () => {
 
           <ScrollReveal direction="up" delay={0.15}>
             <p className="text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl mx-auto">
-              Everything you need to know about event registrations, QR tickets, payment verifications, club portals, and digital certificates on CampusNode.
+              Everything you need to know about event registrations, QR tickets, payment verifications, club portals, and digital certificates on Campusnode.
             </p>
           </ScrollReveal>
         </div>

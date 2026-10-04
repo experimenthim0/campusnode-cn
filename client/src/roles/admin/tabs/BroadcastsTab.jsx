@@ -15,7 +15,7 @@ const BroadcastsTab = ({
 }) => {
     return (
         <div className="space-y-6">
-            <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 flex items-start gap-3">
+            {/* <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 flex items-start gap-3">
                 <Radio size={20} className="shrink-0 mt-0.5" />
                 <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider">Real-Time Broadcast Engine</h4>
@@ -23,7 +23,7 @@ const BroadcastsTab = ({
                         Broadcast announcements are dispatched instantly via WebSocket live feeds and recorded in student notification feeds.
                     </p>
                 </div>
-            </div>
+            </div> */}
 
             <DataTable>
                 <thead>

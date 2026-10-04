@@ -1781,7 +1781,7 @@ const CertificateDesigner = () => {
                               Cryptographic Verification
                             </p>
                             <p className="text-muted-foreground">
-                              Upon issuance, this QR code embeds an unguessable 256-bit slug pointing directly to CampusNode's public verification engine.
+                              Upon issuance, this QR code embeds an unguessable 256-bit slug pointing directly to Campusnode's public verification engine.
                             </p>
                           </div>
 

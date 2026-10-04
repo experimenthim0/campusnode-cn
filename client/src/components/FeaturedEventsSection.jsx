@@ -80,8 +80,8 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
 
       {/* 3 Cards in One Row on Desktop, Horizontal Scroll on Mobile with Scroll Animations */}
       <div
-        className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y no-scrollbar snap-x snap-mandatory px-1 pt-2 pb-5 md:p-1.5 md:pb-2"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none", overflowY: "hidden" }}
+        className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain no-scrollbar snap-x snap-proximity px-1 pt-2 pb-5 md:p-1.5 md:pb-2"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none", overflowY: "hidden", WebkitOverflowScrolling: "touch" }}
       >
         {events.map((event, i) => (
           <ScrollReveal

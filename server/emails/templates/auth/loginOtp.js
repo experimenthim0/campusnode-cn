@@ -21,11 +21,11 @@ export const loginOtpTemplate = {
     if (data?.subject) return data.subject;
     return data?.contextLabel === "Admin"
       ? "Admin Login Verification Code"
-      : "CampusNode Login Verification Code";
+      : "Campusnode Login Verification Code";
   },
 
   getPreheader() {
-    return "Use this one-time verification code to sign in to your CampusNode account.";
+    return "Use this one-time verification code to sign in to your Campusnode account.";
   },
 
   render(data) {

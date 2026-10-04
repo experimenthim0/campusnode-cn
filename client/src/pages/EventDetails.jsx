@@ -282,7 +282,7 @@ const EventDetails = () => {
   useEffect(() => {
     if (event) {
       const cleanTitle = event.title?.trim() || "Event Details";
-      const formattedTitle = /campusnode/i.test(cleanTitle) ? cleanTitle : `${cleanTitle} | CampusNode`;
+      const formattedTitle = /campusnode/i.test(cleanTitle) ? cleanTitle : `${cleanTitle} | Campusnode`;
       document.title = formattedTitle;
 
       const setMetaTag = (selector, propertyAttr, propertyVal, content) => {
@@ -297,7 +297,7 @@ const EventDetails = () => {
 
       const cleanDesc =
         (event.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() ||
-        `Join ${cleanTitle} on CampusNode. View schedule, details, and register online.`;
+        `Join ${cleanTitle} on Campusnode. View schedule, details, and register online.`;
 
       const socialImage = event.imageUrl || `${window.location.origin}/campusnode-og-fallback.png`;
 
@@ -985,7 +985,7 @@ const EventDetails = () => {
               {clubSlugOrId ? ' You can click the organizer name in the sidebar to visit their club page.' : ''}{' '}
             </>
           )}
-          {!isOpenEvent ? ' If you need to cancel your registration, you can do so in the "My Events" section on CampusNode before the event begins.' : ''}
+          {!isOpenEvent ? ' If you need to cancel your registration, you can do so in the "My Events" section on Campusnode before the event begins.' : ''}
         </span>
       ),
     }

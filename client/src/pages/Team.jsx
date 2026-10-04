@@ -355,11 +355,11 @@ export const TEAM_MEMBERS = [
     role: 'Core Member',
     department: 'core',
     batch: "ECE '27",
-    imageUrl: '/user-img.png',
+    imageUrl: '/team_members/ayush_poddar.jpg',
+    fallbackUrl: '/user-img.png',
     socials: {
-      linkedin: 'https://www.linkedin.com/in/ayush-poddar-88026221a/',
-      // instagram: 'https://instagram.com',
-      github: 'https://github.com/ayushpoddar06',
+      linkedin: 'https://www.linkedin.com/in/ayush-poddar-159041310/',
+      github: 'https://github.com/ayush2006-creator',
     },
   },
   {
@@ -368,24 +368,24 @@ export const TEAM_MEMBERS = [
     role: 'Frontend Architect',
     department: 'frontend',
     batch: "ECE '27",
-    imageUrl: '/user-img.png',
+    imageUrl: '/team_members/vikrant.jpeg',
+    fallbackUrl: '/user-img.png',
     socials: {
-      linkedin: 'https://www.linkedin.com/in/vikrant-saini',
-      // instagram: 'https://instagram.com',
-      github: 'https://github.com',
+      linkedin: 'https://www.linkedin.com/in/vikrant-saini-44b769232/',
+      github: 'https://github.com/vikrant-sainii',
     },
   },
   {
-    id: 'simran-mourya',
-    name: 'Simran Mourya',
+    id: 'simran-maurya',
+    name: 'Simran Maurya',
     role: 'Core Member',
     department: 'backend',
-    batch: "IT '27",
-    imageUrl: '/user-img.png',
+    batch: "Data Science '28",
+    imageUrl: '/team_members/simran_maurya.jpg',
+    fallbackUrl: '/user-img.png',
     socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
+      linkedin: 'https://www.linkedin.com/in/simran-m-2209nitj',
+      github: 'https://github.com/simran-nitj',
     },
   },
   {
@@ -394,11 +394,12 @@ export const TEAM_MEMBERS = [
     role: 'Core Member',
     department: 'frontend',
     batch: "ECE '27",
-    imageUrl: '/user-img.png',
+    imageUrl: '/team_members/sujal_gupta.jpg',
+    fallbackUrl: '/user-img.png',
     socials: {
-      linkedin: 'https://linkedin.com',
-      instagram: 'https://instagram.com',
-      github: 'https://github.com',
+      linkedin: 'https://www.linkedin.com/in/sujal-gupta-4198b9368/',
+      github: 'https://github.com/Sujal01go',
+      portfolio:'https://sujalg.me',
     },
   },
   // {
@@ -444,7 +445,7 @@ const Team = () => {
               Mentorship & Guidance
             </h1>
             <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
-              CampusNode is developed under the institutional guidance and mentorship of faculty members from the Department of Computer Science & Engineering, NIT Jalandhar.
+              Campusnode is developed under the institutional guidance and mentorship of faculty members from the Department of Computer Science & Engineering, NIT Jalandhar.
             </p>
           </div>
         </ScrollReveal>
@@ -472,7 +473,7 @@ const Team = () => {
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
               <Sparkles className="w-3.5 h-3.5" />
-              The People Behind CampusNode
+              The People Behind Campusnode
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-cn-text tracking-tight mb-3">
               Meet the Creators
@@ -502,7 +503,7 @@ const Team = () => {
               Want to build with us?
             </h3>
             <p className="text-xs sm:text-sm mysans text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
-              CampusNode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
+              Campusnode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
             </p>
             <a
               href="/contribute"

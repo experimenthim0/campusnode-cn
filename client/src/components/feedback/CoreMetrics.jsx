@@ -14,7 +14,7 @@ const CoreMetrics = ({ totalResponses, totalAttendees, responseRate, overallScor
           <MessageSquare className="w-4 h-4 text-brand-500" aria-hidden="true" />
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
             {totalResponses}
           </span>
           <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -34,7 +34,7 @@ const CoreMetrics = ({ totalResponses, totalAttendees, responseRate, overallScor
           <Percent className="w-4 h-4 text-amber-500" aria-hidden="true" />
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-3xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+          <span className="text-3xl font-semibold text-amber-600 dark:text-amber-400 tracking-tight">
             {responseRate}%
           </span>
         </div>
@@ -51,7 +51,7 @@ const CoreMetrics = ({ totalResponses, totalAttendees, responseRate, overallScor
           <Award className="w-4 h-4 text-brand-500" aria-hidden="true" />
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
             {roundedOverall.toFixed(1)}
           </span>
           <span className="text-sm font-medium text-slate-500 dark:text-slate-400">

@@ -103,3 +103,13 @@ export const addClubFacultyCoordinator = (clubId, data) =>
 
 export const removeClubFacultyCoordinator = (clubId, facultyId) =>
   api.delete(`/api/admin/clubs/${clubId}/coordinators/${facultyId}`);
+
+// Student Directory & Advanced Search
+export const getAdminStudents = (params) =>
+  api.get('/api/admin/students', { params });
+
+export const getAdminStudentDetails = (id) =>
+  api.get(`/api/admin/students/${id}`);
+
+export const toggleStudentVerification = (id) =>
+  api.patch(`/api/admin/students/${id}/toggle-verification`);

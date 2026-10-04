@@ -30,7 +30,7 @@ export async function sendWebPushNotification(recipientUserIds, notificationPayl
 
     const payloadString = JSON.stringify({
       id: notificationPayload.id || notificationPayload._id,
-      title: notificationPayload.title || "CampusNode",
+      title: notificationPayload.title || "Campusnode",
       body: notificationPayload.message || notificationPayload.content || "New campus update!",
       url: notificationPayload.link || (
         notificationPayload.type === "TEAM_INVITATION" ||

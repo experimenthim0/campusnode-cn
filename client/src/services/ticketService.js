@@ -141,7 +141,7 @@ export const generateTicketCanvas = async ({ ticket, qrDataUrl, user }) => {
     ev.centralOrganizer?.name ||
     (ev.organizerType === 'CENTRAL_ORGANIZATION' ? 'Central Student Body' : null) ||
     ev.createdBy?.name ||
-    'CampusNode';
+    'Campusnode';
 
   const attendeeName =
     ticket.student?.name ||
@@ -428,7 +428,7 @@ export const downloadTicketImage = async ({ ticket, qrDataUrl, user, filename })
   const canvas = await generateTicketCanvas({ ticket, qrDataUrl, user });
   const dataUrl = canvas.toDataURL('image/png');
   const code = ticket?.qrCode || ticket?._id || ticket?.id || 'pass';
-  const downloadName = filename || `CampusNode-Ticket-${code}.png`;
+  const downloadName = filename || `Campusnode-Ticket-${code}.png`;
 
   const link = document.createElement('a');
   link.href = dataUrl;
@@ -627,7 +627,7 @@ export const generateTicketPdf = async ({ ticket, user }) => {
     ev.centralOrganizer?.name ||
     (ev.organizerType === 'CENTRAL_ORGANIZATION' ? 'Central Student Body' : null) ||
     ev.createdBy?.name ||
-    'CampusNode';
+    'Campusnode';
 
   // Strip redundant "Organized by" prefix if already present and convert to title case
   const organizerName = toTicketTitleCase(rawOrganizer.replace(/^organized by\s+/i, '').trim());

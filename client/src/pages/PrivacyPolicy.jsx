@@ -57,7 +57,7 @@ const PrivacyPolicy = () => {
                             Introduction
                         </h2>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                            Welcome to CampusNode ("we", "our", or "us"). This Privacy Policy outlines how your personal information is gathered, managed, and safeguarded when you access our web application, register for events, or participate in campus communities at NIT Jalandhar.
+                            Welcome to Campusnode ("we", "our", or "us"). This Privacy Policy outlines how your personal information is gathered, managed, and safeguarded when you access our web application, register for events, or participate in campus communities at NIT Jalandhar.
                         </p>
                     </section>
 

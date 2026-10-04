@@ -13,7 +13,7 @@ export const passwordChangedTemplate = {
   },
 
   getSubject(data) {
-    return data?.subject || "Your CampusNode password has been changed";
+    return data?.subject || "Your Campusnode password has been changed";
   },
 
   getPreheader() {
@@ -31,7 +31,7 @@ export const passwordChangedTemplate = {
       supportEmail = "support@campusnode.in",
     } = data;
 
-    const safeName = name ? escapeHtml(name) : (email ? escapeHtml(email) : "CampusNode User");
+    const safeName = name ? escapeHtml(name) : (email ? escapeHtml(email) : "Campusnode User");
     const safeSupportEmail = escapeHtml(supportEmail);
     const resolvedTime = time || (device || location || ipAddress ? formatRequestTime(new Date()) : null);
 
@@ -39,7 +39,7 @@ export const passwordChangedTemplate = {
       ${Heading({ children: "Password Changed", level: 2, align: "center", style: "margin: 0 0 16px 0;" })}
 
       ${BodyText({
-        children: `Hi <strong>${safeName}</strong>,<br><br>The password for your CampusNode account was recently updated. You can now use your new password to sign in.`,
+        children: `Hi <strong>${safeName}</strong>,<br><br>The password for your Campusnode account was recently updated. You can now use your new password to sign in.`,
         align: "center",
         style: "margin: 0 0 16px 0;",
       })}
@@ -54,7 +54,7 @@ export const passwordChangedTemplate = {
       ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
 
       ${MutedText({
-        children: "For security, CampusNode staff will never ask for your password or verification codes.",
+        children: "For security, Campusnode staff will never ask for your password or verification codes.",
         align: "center",
         style: "margin-top: 20px; font-size: 12px;",
       })}

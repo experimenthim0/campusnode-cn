@@ -224,11 +224,36 @@ export function isStudentLoginDeactivated(student, currentDate = new Date()) {
   if (now >= cutoffDate) {
     return {
       isDeactivated: true,
-      reason: "Student account deactivated following graduation grace period (4 months post-graduation). All institutional records, certificates, and achievements remain permanently preserved on CampusNode.",
+      reason: "Student account deactivated following graduation grace period (4 months post-graduation). All institutional records, certificates, and achievements remain permanently preserved on Campusnode.",
       cutoffDate,
     };
   }
 
   return { isDeactivated: false, reason: null, cutoffDate };
+}
+
+/**
+ * Returns student's admission batch year.
+ * In college: Batch '24 = admission year 2024.
+ * Derived from roll number (first 2 digits e.g. "241050148" -> 2024)
+ * or calculated as expectedGraduationYear - maxDuration.
+ */
+export function getStudentBatchYear(student) {
+  if (!student) return null;
+  if (student.rollNo) {
+    const match = String(student.rollNo).trim().match(/^(\d{2})/);
+    if (match) {
+      const yr2 = parseInt(match[1], 10);
+      if (yr2 >= 15 && yr2 <= 35) {
+        return 2000 + yr2;
+      }
+    }
+  }
+  if (student.expectedGraduationYear) {
+    const grad = parseInt(student.expectedGraduationYear, 10);
+    const duration = getMaxDurationForProgram(student.program || "BTECH");
+    return grad - duration;
+  }
+  return null;
 }
 

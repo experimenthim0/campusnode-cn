@@ -201,7 +201,7 @@ const CentralFeaturedEvents = () => {
             Featured Events Management
           </h2>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 max-w-xl">
-            Promote college-wide highlights, sponsor partnerships, and flagship gatherings across the CampusNode Homepage and Event Feed.
+            Promote college-wide highlights, sponsor partnerships, and flagship gatherings across the Campusnode Homepage and Event Feed.
           </p>
         </div>
 

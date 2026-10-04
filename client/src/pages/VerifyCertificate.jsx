@@ -127,7 +127,7 @@ const VerifyCertificate = () => {
             to="/"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="size-3.5" /> Back to CampusNode
+            <ArrowLeft className="size-3.5" /> Back to Campusnode
           </Link>
           <span className="text-[11px] font-medium text-muted-foreground">
             Official Credential Registry
@@ -175,7 +175,7 @@ const VerifyCertificate = () => {
                 Checking Certificate
               </h2>
               <p className="text-xs text-muted-foreground">
-                Verifying issued certificate against CampusNode registry…
+                Verifying issued certificate against Campusnode registry…
               </p>
             </div>
           </Card>
@@ -324,7 +324,7 @@ const VerifyCertificate = () => {
 
               {/* Bottom Info & Action */}
               <div className="pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-muted-foreground">
-                <span>Verified against CampusNode official registry.</span>
+                <span>Verified against Campusnode official registry.</span>
                 <Button
                   type="button"
                   variant="ghost"

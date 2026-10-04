@@ -23,7 +23,7 @@ router.get("/", (req, res) => {
     .map((t) => {
       const sample = samplePreviewData[t.id];
       const status = sample ? "🟢 Fixture Ready" : "🟡 No Sample";
-      const subject = t.getSubject ? t.getSubject(sample || {}) : "CampusNode Notification";
+      const subject = t.getSubject ? t.getSubject(sample || {}) : "Campusnode Notification";
 
       return `
         <li style="margin-bottom: 16px; padding: 18px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
@@ -52,7 +52,7 @@ router.get("/", (req, res) => {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CampusNode — Email Preview Studio</title>
+        <title>Campusnode — Email Preview Studio</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; padding: 40px 20px; color: #0f172a; margin: 0; }
           .container { max-width: 780px; margin: 0 auto; }
@@ -67,7 +67,7 @@ router.get("/", (req, res) => {
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
             <div>
               <span class="badge">Development Studio</span>
-              <h1 style="margin: 6px 0 2px 0;">CampusNode Email Preview</h1>
+              <h1 style="margin: 6px 0 2px 0;">Campusnode Email Preview</h1>
               <p>Visual testing and dark/light mode switcher for registered transactional emails.</p>
             </div>
           </div>
@@ -121,7 +121,7 @@ router.get("/:templateId", (req, res) => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${templateId} — CampusNode Email Preview Studio</title>
+          <title>${templateId} — Campusnode Email Preview Studio</title>
           <style>
             * { box-sizing: border-box; }
             html, body {

@@ -109,7 +109,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
   useEffect(() => {
     if (!hideHeader) {
-      document.title = "Events - CampusNode";
+      document.title = "Events - Campusnode";
     }
   }, [hideHeader]);
 

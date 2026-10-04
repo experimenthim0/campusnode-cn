@@ -431,8 +431,8 @@ const Navbar = () => {
                                 <div className="flex justify-between items-start mb-1">
                                   <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
                                     {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
-                                      ? 'CampusNode'
-                                      : (notif.sender?.clubName || notif.sender?.name || 'CampusNode')}
+                                      ? 'Campusnode'
+                                      : (notif.sender?.clubName || notif.sender?.name || 'Campusnode')}
                                   </span>
                                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap ml-2">{formatDate(notif.createdAt)}</span>
                                 </div>
@@ -638,9 +638,9 @@ const Navbar = () => {
                             >
                               <div className="flex justify-between items-start mb-1">
                                 <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 tracking-widest">
-                                  {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
-                                    ? 'CampusNode'
-                                    : (notif.sender?.clubName || notif.sender?.name || 'CampusNode')}
+                                    {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
+                                    ? 'Campusnode'
+                                    : (notif.sender?.clubName || notif.sender?.name || 'Campusnode')}
                                 </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(notif.createdAt)} </span>
                               </div>

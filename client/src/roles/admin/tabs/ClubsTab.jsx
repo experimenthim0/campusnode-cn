@@ -1475,7 +1475,7 @@ const ClubsTab = ({
                                 <GraduationCap size={13} className="text-brand-600 dark:text-brand-400" /> Faculty Coordinator Note
                             </p>
                             <p>
-                                Changing the faculty coordinator will reassign governance permissions to their existing faculty account (<span className="font-mono text-cn-text font-semibold">/login</span>). Faculty members must already have an account on CampusNode.
+                                Changing the faculty coordinator will reassign governance permissions to their existing faculty account (<span className="font-mono text-cn-text font-semibold">/login</span>). Faculty members must already have an account on Campusnode.
                             </p>
                         </div>
 

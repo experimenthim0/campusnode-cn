@@ -191,7 +191,7 @@ const NotFound = () => {
         </div>
 
         <p className="pt-6 text-[10px] text-muted-foreground tracking-wider uppercase font-medium">
-          CampusNode Platform • National Institute of Technology Jalandhar
+          Campusnode Platform • National Institute of Technology Jalandhar
         </p>
       </div>
     </div>

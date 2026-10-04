@@ -90,7 +90,31 @@ const ClubsCarousel = () => {
     if (isCarousel) {
       checkScroll();
       window.addEventListener('resize', checkScroll);
-      return () => window.removeEventListener('resize', checkScroll);
+
+      const el = scrollRef.current;
+      const onWheel = (e) => {
+        if (!el || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) return;
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) delta *= 33;
+        else if (e.deltaMode === 2) delta *= el.clientWidth;
+
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        if (maxScroll <= 0) return;
+        const canLeft = el.scrollLeft > 2;
+        const canRight = el.scrollLeft < maxScroll - 2;
+
+        if ((delta > 0 && canRight) || (delta < 0 && canLeft)) {
+          e.preventDefault();
+          el.scrollLeft += delta;
+        }
+      };
+
+      if (el) el.addEventListener('wheel', onWheel, { passive: false });
+
+      return () => {
+        window.removeEventListener('resize', checkScroll);
+        if (el) el.removeEventListener('wheel', onWheel);
+      };
     }
   }, [isCarousel, filteredClubs, checkScroll]);
 
@@ -215,8 +239,8 @@ const ClubsCarousel = () => {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="flex gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y no-scrollbar snap-x snap-mandatory pt-2 pb-5 px-1 scroll-smooth"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'hidden' }}
+          className="flex gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain no-scrollbar snap-x snap-proximity pt-2 pb-5 px-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'hidden', WebkitOverflowScrolling: 'touch' }}
         >
           {filteredClubs.map(club => (
             <div

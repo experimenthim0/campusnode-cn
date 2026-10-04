@@ -34,22 +34,22 @@ const RATING_CRITERIA = [
   { key: 'venueRating', label: 'Venue & atmosphere' },
   { key: 'timingRating', label: 'Timing & schedule' },
 ];
-
 /**
  * StarRatingSelector — Accessible 1-5 Star Interactive Component
  */
 const StarRatingSelector = ({ value, onChange, name, disabled }) => {
   const [hovered, setHovered] = useState(0);
+  const display = disabled ? value : hovered || value;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex items-center justify-between gap-1 pt-1">
       <div
         className="flex items-center gap-1 sm:gap-1.5"
         role="radiogroup"
         aria-label={name}
       >
         {[1, 2, 3, 4, 5].map((star) => {
-          const isActive = (hovered || value) >= star;
+          const isActive = display >= star;
           const isSelected = value === star;
 
           return (
@@ -61,40 +61,53 @@ const StarRatingSelector = ({ value, onChange, name, disabled }) => {
               aria-label={`${star} star - ${RATING_LABELS[star]}`}
               disabled={disabled}
               onClick={() => onChange(star)}
-              onMouseEnter={() => setHovered(star)}
+              onMouseEnter={() => !disabled && setHovered(star)}
               onMouseLeave={() => setHovered(0)}
-              onFocus={() => setHovered(star)}
+              onFocus={() => !disabled && setHovered(star)}
               onBlur={() => setHovered(0)}
-              className={`p-1.5 rounded-lg transition-all duration-150 transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer ${
+              className={`p-1 sm:p-1.5 rounded-lg outline-none focus:outline-none focus-visible:outline-none transition-transform duration-150 shrink-0 ${
+                disabled
+                  ? 'cursor-not-allowed opacity-60'
+                  : 'cursor-pointer hover:scale-115 active:scale-95'
+              } ${
                 isActive
                   ? 'text-amber-500 dark:text-amber-400'
-                  : 'text-muted-foreground/30 hover:text-amber-400'
+                  : 'text-muted-foreground/30 hover:text-amber-400/50'
               }`}
             >
               <Star
-                className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-150 ${
-                  isActive ? 'fill-amber-400 stroke-amber-500' : 'fill-transparent stroke-current'
+                size={26}
+                strokeWidth={1.75}
+                className={`w-5 h-5 sm:w-6 sm:h-6 shrink-0 transition-colors duration-150 ${
+                  isActive
+                    ? 'fill-amber-400 stroke-amber-500'
+                    : 'fill-transparent stroke-current'
                 }`}
               />
             </button>
           );
         })}
-        <span className="ml-2 text-xs font-medium text-muted-foreground min-w-[85px]">
-          {(hovered || value) ? RATING_LABELS[hovered || value] : (
-            <span className="text-muted-foreground/50 italic">Rate 1–5</span>
-          )}
-        </span>
       </div>
+
+      <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 shrink-0 text-right min-w-[70px]">
+        {display ? (
+          RATING_LABELS[display]
+        ) : (
+          <span className="text-muted-foreground/50 font-normal italic text-[11px]">
+            Rate 1–5
+          </span>
+        )}
+      </span>
     </div>
   );
 };
-
 export const EventFeedbackModal = ({
   isOpen,
   onClose,
   pendingEvents = [],
   onFeedbackSubmitted,
 }) => {
+  const [sessionEvents, setSessionEvents] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [ratings, setRatings] = useState({
     overallRating: 0,
@@ -115,10 +128,30 @@ export const EventFeedbackModal = ({
 
   const modalRef = useRef(null);
 
-  const currentEvent = pendingEvents[currentIndex] || null;
-  const totalPending = pendingEvents.length;
-
+  // Snapshot pendingEvents when modal opens so parent context updates do not empty our active list
   useEffect(() => {
+    if (isOpen && pendingEvents.length > 0 && sessionEvents.length === 0) {
+      setSessionEvents(pendingEvents);
+      setCurrentIndex(0);
+      setIsSuccess(false);
+    }
+  }, [isOpen, pendingEvents, sessionEvents.length]);
+
+  // Clean up when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSessionEvents([]);
+      setCurrentIndex(0);
+      setIsSuccess(false);
+      setError('');
+    }
+  }, [isOpen]);
+
+  const activeEventsList = sessionEvents.length > 0 ? sessionEvents : pendingEvents;
+  const currentEvent = activeEventsList[currentIndex] || activeEventsList[0] || null;
+  const totalPending = activeEventsList.length;
+
+  const resetFormFields = () => {
     setRatings({
       overallRating: 0,
       organizationRating: 0,
@@ -132,8 +165,24 @@ export const EventFeedbackModal = ({
     setImprovements('');
     setComments('');
     setError('');
-    setIsSuccess(false);
+  };
+
+  // Reset form values when moving to another event
+  useEffect(() => {
+    if (currentEvent && !isSuccess) {
+      resetFormFields();
+    }
   }, [currentIndex, currentEvent?.id]);
+
+  // Auto-close after showing the Thank You note if it's the last event
+  useEffect(() => {
+    if (isSuccess && currentIndex >= totalPending - 1) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, currentIndex, totalPending, onClose]);
 
   // Trap focus & ESC key listener
   useEffect(() => {
@@ -149,7 +198,7 @@ export const EventFeedbackModal = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, submitting, onClose]);
 
-  if (!isOpen || !currentEvent) return null;
+  if (!isOpen || (!currentEvent && !isSuccess)) return null;
 
   const isFormValid =
     ratings.overallRating > 0 &&
@@ -167,7 +216,7 @@ export const EventFeedbackModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormValid) {
+    if (!isFormValid || !currentEvent) {
       setError('Please complete all 6 star ratings and the recommendation question.');
       return;
     }
@@ -176,7 +225,8 @@ export const EventFeedbackModal = ({
     setError('');
 
     try {
-      await submitEventFeedback(currentEvent.id || currentEvent.eventId, {
+      const eventIdToSubmit = currentEvent.id || currentEvent.eventId;
+      await submitEventFeedback(eventIdToSubmit, {
         ...ratings,
         attendSimilar,
         liked: liked.trim() || undefined,
@@ -186,7 +236,7 @@ export const EventFeedbackModal = ({
 
       setIsSuccess(true);
       if (onFeedbackSubmitted) {
-        onFeedbackSubmitted(currentEvent.id || currentEvent.eventId);
+        onFeedbackSubmitted(eventIdToSubmit);
       }
     } catch (err) {
       console.error('Feedback submit error:', err);
@@ -202,12 +252,14 @@ export const EventFeedbackModal = ({
   const handleNextPending = () => {
     if (currentIndex < totalPending - 1) {
       setCurrentIndex((prev) => prev + 1);
+      setIsSuccess(false);
+      resetFormFields();
     } else {
       onClose();
     }
   };
 
-  const formattedDate = currentEvent.startTime
+  const formattedDate = currentEvent?.startTime
     ? new Date(currentEvent.startTime).toLocaleDateString(undefined, {
         weekday: 'short',
         month: 'short',
@@ -229,7 +281,7 @@ export const EventFeedbackModal = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden text-foreground transition-colors"
+          className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden text-foreground transition-colors"
         >
           {/* Header */}
           <div className="relative shrink-0 px-6 py-4 border-b border-border flex items-start justify-between gap-4">
@@ -330,13 +382,7 @@ export const EventFeedbackModal = ({
             ) : (
               <form id="event-feedback-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* 72h window indicator */}
-                <div className="flex items-center gap-2 p-3 bg-muted/40 border border-border rounded-xl text-xs text-muted-foreground">
-                  <Clock className="w-4 h-4 shrink-0 text-muted-foreground" />
-                  <span>
-                    Feedback closes 72 hours after event completion. Quick rating takes under a minute!
-                  </span>
-                </div>
-
+               
                 {error && (
                   <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl text-xs font-medium text-destructive">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

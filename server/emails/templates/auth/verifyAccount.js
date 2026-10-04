@@ -20,7 +20,7 @@ export const verifyAccountTemplate = {
   },
 
   getPreheader() {
-    return "Confirm your email address to complete registration and activate your CampusNode account.";
+    return "Confirm your email address to complete registration and activate your Campusnode account.";
   },
 
   render(data) {
@@ -29,7 +29,7 @@ export const verifyAccountTemplate = {
     const safeUrl = escapeHtml(verifyUrl);
 
     return `
-      ${Heading({ children: "Welcome to CampusNode!", level: 2, align: "center" })}
+      ${Heading({ children: "Welcome to Campusnode!", level: 2, align: "center" })}
 
       ${BodyText({
         children: `Hi <strong>${safeName}</strong>,<br><br>Thank you for signing up. To complete your registration and activate your student account, please verify your email address.`,

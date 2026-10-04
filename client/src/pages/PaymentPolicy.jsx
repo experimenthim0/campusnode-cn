@@ -20,7 +20,7 @@ const PaymentPolicy = () => {
                 <div className="space-y-8 text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                     <section>
                         <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-3">1. Payment Processing</h2>
-                        <p>All registration payments on CampusNode are conducted externally. Verification of these payments is managed manually by the organizing club's management. We support two primary methods of payment:</p>
+                        <p>All registration payments on Campusnode are conducted externally. Verification of these payments is managed manually by the organizing club's management. We support two primary methods of payment:</p>
                         <ul className="list-disc pl-6 mt-2 space-y-1.5">
                             <li><strong>Direct UPI Transfers:</strong> Payments can be scanned and processed via dynamically generated QR codes or direct mobile app deep links.</li>
                             <li><strong>Official College Portal:</strong> Redirect link to the official college portal where fees are settled externally.</li>
@@ -40,7 +40,7 @@ const PaymentPolicy = () => {
                     <section>
                         <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3">3. Data Security & Privacy</h2>
                         <ul className="list-disc pl-6 space-y-1.5">
-                            <li>CampusNode does <strong>not</strong> process, request, or store credit card details, CVVs, netbanking passwords, or UPI PINs.</li>
+                            <li>Campusnode does <strong>not</strong> process, request, or store credit card details, CVVs, netbanking passwords, or UPI PINs.</li>
                             <li>We only collect transaction reference numbers (Transaction IDs, Payer Names, and optional Remarks) for verification and bookkeeping purposes.</li>
                             <li>This verification data is shared exclusively with the respective event organizers and administrators.</li>
                         </ul>
@@ -53,7 +53,7 @@ const PaymentPolicy = () => {
                                 <i className="ri-information-line" /> Important Notice
                             </p>
                             <p className="text-neutral-600 dark:text-neutral-400 text-xs mt-1 leading-relaxed">
-                                CampusNode is a platform for listing and verifying events. We do not act as an escrow or payment gateway. All refund settlements are handled directly by the organizing club's management.
+                                Campusnode is a platform for listing and verifying events. We do not act as an escrow or payment gateway. All refund settlements are handled directly by the organizing club's management.
                             </p>
                         </div>
                         <ul className="list-disc pl-6 space-y-1.5">

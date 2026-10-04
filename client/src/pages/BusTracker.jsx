@@ -140,7 +140,7 @@ const BusTracker = () => {
 
   // Set page title
   useEffect(() => {
-    document.title = "Bus Tracker | CampusNode NITJ";
+    document.title = "Bus Tracker | Campusnode NITJ";
     window.scrollTo(0, 0);
   }, []);
 

@@ -67,8 +67,8 @@ export const SAMPLE_TOAST_PRESETS = [
       type: 'TEAM_INVITATION',
       teamId: 'team-789',
       sender: {
-        name: 'CampusNode',
-        clubName: 'CampusNode',
+        name: 'Campusnode',
+        clubName: 'Campusnode',
       },
     },
   },
@@ -149,8 +149,8 @@ const InAppNotificationToast = ({ toast, onClose, preview = false, inline = fals
   const isClubBroadcast = Boolean(activeToast.clubId || clubName);
 
   const displaySender = isTeam
-    ? 'CampusNode'
-    : (clubName || 'CampusNode');
+    ? 'Campusnode'
+    : (clubName || 'Campusnode');
 
   return (
     <div

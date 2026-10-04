@@ -268,7 +268,7 @@ const ExportCenter = ({ embedded = false }) => {
             </span>
           </div>
           <p className="text-neutral-400 dark:text-neutral-500 text-[12px] mt-0.5 tracking-wide font-medium">
-            Export and download structured CampusNode administrative data into clean CSV files.
+            Export and download structured Campusnode administrative data into clean CSV files.
           </p>
         </div>
 
@@ -310,7 +310,7 @@ const ExportCenter = ({ embedded = false }) => {
                 onClick={() => setSelectedDatasetId(ds.id)}
                 className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between cursor-pointer ${
                   isSelected
-                    ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-sm"
+                    ? "bg-white dark:bg-neutral-900 text-brand-600 border-brand-600 dark:border-brand-500 shadow-sm"
                     : isAuthorized
                     ? "bg-cn-surface text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:border-neutral-400 dark:hover:border-zinc-700"
                     : "opacity-40 cursor-not-allowed border-neutral-200 dark:border-zinc-900 bg-neutral-100 dark:bg-zinc-900/30"

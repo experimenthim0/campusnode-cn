@@ -28,7 +28,7 @@ async function notifyTeamMember(io, recipientId, title, message) {
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: "CampusNode", clubName: "CampusNode" },
+      sender: { name: "Campusnode", clubName: "Campusnode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);
@@ -55,7 +55,7 @@ async function notifyInvitation(io, recipientId, eventId, teamId, teamName, even
     const payload = {
       ...notification,
       _id: notification.id,
-      sender: { name: "CampusNode", clubName: "CampusNode" },
+      sender: { name: "Campusnode", clubName: "Campusnode" },
     };
     if (io) {
       io.to(recipientId).emit("new-notification", payload);

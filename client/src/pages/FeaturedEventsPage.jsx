@@ -11,7 +11,7 @@ const FeaturedEventsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = "Featured Events - CampusNode";
+    document.title = "Featured Events - Campusnode";
     const fetchAllFeatured = async () => {
       try {
         let res = await api.get("/api/featured-events/all");

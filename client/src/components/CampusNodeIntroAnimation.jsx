@@ -8,10 +8,10 @@ import {
   Share2,
 } from 'lucide-react';
 
-const QUESTION = 'What is CampusNode?';
+const QUESTION = 'What is Campusnode?';
 
 const RESPONSE =
-  'CampusNode is your digital campus hub, built to bring the different parts of college life together. Discover events happening around campus, explore clubs and activities, stay updated with important announcements, and access useful student resources. Everything is organized in one place, so you spend less time searching and more time being part of what is happening on campus.';
+  'Campusnode is your digital campus hub, built to bring the different parts of college life together. Discover events happening around campus, explore clubs and activities, stay updated with important announcements, and access useful student resources. Everything is organized in one place, so you spend less time searching and more time being part of what is happening on campus.';
 
 const CampusNodeIntroAnimation = () => {
   const [displayedQuestion, setDisplayedQuestion] = useState('');
@@ -174,7 +174,7 @@ const CampusNodeIntroAnimation = () => {
     if (navigator.share) {
       navigator
         .share({
-          title: 'CampusNode',
+          title: 'Campusnode',
           text: displayedResponse,
           url: window.location.href,
         })
@@ -209,7 +209,7 @@ const CampusNodeIntroAnimation = () => {
       <div className="mt-4 sm:mt-5 lg:mt-4 xl:mt-5">
         <div
           role="region"
-          aria-label="CampusNode interactive demonstration"
+          aria-label="Campusnode interactive demonstration"
           className="w-full flex items-center justify-between gap-3 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-white dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-xs"
         >
           <div className="flex items-center min-w-0 flex-1">

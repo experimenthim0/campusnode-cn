@@ -17,7 +17,7 @@ export const renderEmail = (template, data = {}, options = {}) => {
   const subject =
     typeof template.getSubject === "function"
       ? template.getSubject(data)
-      : template.subject || "CampusNode Notification";
+      : template.subject || "Campusnode Notification";
 
   // Generate preheader preview text (if provided)
   const preheader =

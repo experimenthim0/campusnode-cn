@@ -20,17 +20,20 @@ export const PROGRAM_BRANCH_MAP = {
     label: "B.Tech (4 Years)",
     maxDurationYears: 4,
     branches: [
-      { code: "CSE", label: "Computer Science & Engineering (CSE)" },
-      { code: "IT", label: "Information Technology (IT)" },
-      { code: "MnC", label: "Mathematics & Computing (MnC)" },
-      { code: "ECE", label: "Electronics & Communication Engineering (ECE)" },
-      { code: "EE", label: "Electrical Engineering (EE)" },
-      { code: "ICE", label: "Instrumentation & Control Engineering (ICE)" },
-      { code: "ME", label: "Mechanical Engineering (ME)" },
-      { code: "CE", label: "Civil Engineering (CE)" },
-      { code: "CH", label: "Chemical Engineering (CH)" },
-      { code: "IPE", label: "Industrial & Production Engineering (IPE)" },
+      { code: "AI", label: "Artificial Intelligence (AI)" },
       { code: "BT", label: "Biotechnology (BT)" },
+      { code: "CH", label: "Chemical Engineering (CH)" },
+      { code: "CE", label: "Civil Engineering (CE)" },
+      { code: "CSE", label: "Computer Science & Engineering (CSE)" },
+      { code: "DSE", label: "Data Science & Engineering (DSE)" },
+      { code: "EE", label: "Electrical Engineering (EE)" },
+      { code: "ECE", label: "Electronics & Communication Engineering (ECE)" },
+      { code: "VLSI", label: "Electronics & VLSI Engineering (VLSI)" },
+      { code: "IPE", label: "Industrial & Production Engineering (IPE)" },
+      { code: "IT", label: "Information Technology (IT)" },
+      { code: "ICE", label: "Instrumentation & Control Engineering (ICE)" },
+      { code: "MNC", label: "Mathematics & Computing (MNC)" },
+      { code: "ME", label: "Mechanical Engineering (ME)" },
       { code: "TT", label: "Textile Technology (TT)" },
     ],
   },
@@ -40,7 +43,7 @@ export const PROGRAM_BRANCH_MAP = {
     branches: [
       { code: "CSE", label: "Computer Science & Engineering" },
       { code: "IT", label: "Information Technology" },
-      { code: "MnC", label: "Mathematics & Computing" },
+      { code: "MNC", label: "Mathematics & Computing" },
       { code: "VLSI", label: "VLSI Design" },
       { code: "AI", label: "Artificial Intelligence" },
       { code: "ECE", label: "Electronics & Communication Engineering" },
@@ -52,7 +55,7 @@ export const PROGRAM_BRANCH_MAP = {
       { code: "IPE", label: "Industrial & Production Engineering" },
       { code: "BT", label: "Biotechnology" },
       { code: "TT", label: "Textile Technology" },
-     
+      { code: "RE", label: "Renewable Energy" },
     ],
   },
   MSC: {
@@ -117,7 +120,11 @@ export function getBranchesForProgram(program) {
 export function isValidBranchForProgram(program, branchCode) {
   if (!program || !branchCode) return false;
   const branches = getBranchesForProgram(program);
-  return branches.some((b) => b.code === branchCode || b.label === branchCode);
+  const upper = String(branchCode).toUpperCase();
+  return branches.some((b) => {
+    const code = (typeof b === "string" ? b : b.code).toUpperCase();
+    return code === upper;
+  });
 }
 
 /**
@@ -129,10 +136,43 @@ export function getMaxDurationForProgram(program) {
 }
 
 /**
- * Unique list of all distinct branch codes across all programs.
+ * Unique list of all distinct branch codes across all programs (short uppercase names only).
  */
 export const ALL_BRANCH_CODES = Array.from(
   new Set(
-    Object.values(PROGRAM_BRANCH_MAP).flatMap((p) => p.branches.map((b) => b.code))
+    Object.values(PROGRAM_BRANCH_MAP).flatMap((p) =>
+      p.branches.map((b) => (typeof b === "string" ? b : b.code).toUpperCase())
+    )
   )
-);
+).sort();
+
+export const BRANCH_FULL_NAMES = {
+  AI: "Artificial Intelligence",
+  BT: "Biotechnology",
+  CH: "Chemical Engineering",
+  CE: "Civil Engineering",
+  CSE: "Computer Science & Engineering",
+  DSE: "Data Science & Engineering",
+  EE: "Electrical Engineering",
+  ECE: "Electronics & Communication Engineering",
+  VLSI: "Electronics & VLSI Engineering",
+  IPE: "Industrial & Production Engineering",
+  IT: "Information Technology",
+  ICE: "Instrumentation & Control Engineering",
+  MNC: "Mathematics & Computing",
+  ME: "Mechanical Engineering",
+  TT: "Textile Technology",
+  RE: "Renewable Energy",
+  PH: "Physics",
+  CY: "Chemistry",
+  MA: "Mathematics",
+  MB: "Management Studies",
+  HUM: "Humanities & Management",
+  GENERAL: "General / Other",
+};
+
+export function getBranchFullName(code) {
+  if (!code) return "";
+  const upper = String(code).toUpperCase();
+  return BRANCH_FULL_NAMES[upper] || code;
+}

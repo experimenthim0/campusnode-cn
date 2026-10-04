@@ -202,7 +202,7 @@ const EventGuide = () => {
                   name="Start Time"
                   required
                   type="Date & Time"
-                  desc="When the event officially begins. Used by CampusNode to compute event status (Upcoming, Live, or Ended)."
+                  desc="When the event officially begins. Used by Campusnode to compute event status (Upcoming, Live, or Ended)."
                 />
                 <FieldRow
                   name="End Time"

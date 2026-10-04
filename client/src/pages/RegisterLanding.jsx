@@ -18,7 +18,7 @@ const RegisterLanding = () => {
       <div className="w-full mx-auto relative z-10 my-auto ">
         <div className="rounded-3xl backdrop-blur-xl relative overflow-hidden flex flex-col md:flex-row items-stretch">
           
-          {/* ── LEFT COLUMN: CampusNode introduction / interactive animation (~55% width on desktop) ── */}
+          {/* ── LEFT COLUMN: Campusnode introduction / interactive animation (~55% width on desktop) ── */}
           <div className="w-full p-6 sm:p-10 lg:p-12 xl:p-14 flex flex-col justify-center hidden md:block">
             <CampusNodeIntroAnimation />
           </div>

@@ -24,7 +24,7 @@ const AttendanceIntent = ({ recommendationAnalytics = {}, totalResponses = 0 }) 
           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
             Dominant Response
           </span>
-          <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">
+          <p className="text-2xl font-semibold text-emerald-700 dark:text-emerald-300 mt-0.5">
             {yes.percentage}% YES
           </p>
           <p className="text-xs font-medium text-emerald-800/80 dark:text-emerald-300/80 mt-0.5">
@@ -44,7 +44,7 @@ const AttendanceIntent = ({ recommendationAnalytics = {}, totalResponses = 0 }) 
             <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
             <p className="text-[10px] font-semibold uppercase tracking-wider">Maybe</p>
           </div>
-          <p className="text-lg font-black text-amber-700 dark:text-amber-300 mt-0.5">
+          <p className="text-lg font-semibold text-amber-700 dark:text-amber-300 mt-0.5">
             {maybe.percentage}%
           </p>
           <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">
@@ -58,7 +58,7 @@ const AttendanceIntent = ({ recommendationAnalytics = {}, totalResponses = 0 }) 
             <XCircle className="w-3.5 h-3.5" aria-hidden="true" />
             <p className="text-[10px] font-semibold uppercase tracking-wider">No</p>
           </div>
-          <p className="text-lg font-black text-rose-700 dark:text-rose-300 mt-0.5">
+          <p className="text-lg font-semibold text-rose-700 dark:text-rose-300 mt-0.5">
             {no.percentage}%
           </p>
           <p className="text-[10px] text-rose-700/80 dark:text-rose-400/80 mt-0.5">

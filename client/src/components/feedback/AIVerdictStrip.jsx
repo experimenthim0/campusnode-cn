@@ -34,21 +34,21 @@ const AIVerdictStrip = ({ review, analytics }) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Overall Satisfaction</p>
-          <p className="text-2xl font-black text-white mt-1">
+          <p className="text-2xl font-semibold text-white mt-1">
             {overallScore} <span className="text-xs font-medium text-slate-400">/ 5.0</span>
           </p>
         </div>
 
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Would Attend Again</p>
-          <p className="text-2xl font-black text-emerald-400 mt-1">
+          <p className="text-2xl font-semibold text-emerald-400 mt-1">
             {yesPercentage}% <span className="text-xs font-medium text-slate-400">Yes</span>
           </p>
         </div>
 
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Improvement Themes</p>
-          <p className="text-2xl font-black text-amber-400 mt-1">
+          <p className="text-2xl font-semibold text-amber-400 mt-1">
             {improvementThemesCount} <span className="text-xs font-medium text-slate-400">areas identified</span>
           </p>
         </div>
@@ -59,7 +59,7 @@ const AIVerdictStrip = ({ review, analytics }) => {
         <div className="flex items-start gap-3 bg-emerald-950/40 border border-emerald-800/40 rounded-xl p-3.5">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
           <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 block">
               Top Strength
             </span>
             <p className="text-xs font-medium text-slate-200 truncate mt-0.5">
@@ -71,7 +71,7 @@ const AIVerdictStrip = ({ review, analytics }) => {
         <div className="flex items-start gap-3 bg-amber-950/40 border border-amber-800/40 rounded-xl p-3.5">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
           <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 block">
               Top Issue To Address
             </span>
             <p className="text-xs font-medium text-slate-200 truncate mt-0.5">

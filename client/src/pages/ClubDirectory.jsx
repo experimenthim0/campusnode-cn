@@ -115,7 +115,7 @@ const ClubDirectory = () => {
   const [copiedKey, setCopiedKey] = useState(null);
 
   useEffect(() => {
-    document.title = 'Club Directory - CampusNode';
+    document.title = 'Club Directory - Campusnode';
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 

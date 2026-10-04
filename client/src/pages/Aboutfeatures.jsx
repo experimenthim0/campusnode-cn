@@ -175,7 +175,7 @@ const Aboutfeatures = () => {
                 Ready to dive in?
               </h3>
               <p className="text-[13px] text-brand-100 font-light">
-                Join 500+ NITJ students already on CampusNode.
+                Join 500+ NITJ students already on Campusnode.
               </p>
             </div>
             <Link
@@ -295,7 +295,7 @@ const Aboutfeatures = () => {
             <span className="text-brand-500">Connect?</span>
           </h2>
           <p className="text-[15px] font-light text-neutral-500 max-w-md mx-auto mb-10 leading-relaxed">
-            Whether you're hunting your next hackathon or running the grandest fest, CampusNode has you covered.
+            Whether you're hunting your next hackathon or running the grandest fest, Campusnode has you covered.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link

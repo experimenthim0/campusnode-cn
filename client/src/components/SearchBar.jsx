@@ -103,7 +103,7 @@ const PUBLIC_PAGES = [
     title: "Meet the Developers",
     path: "/team",
     category: "About",
-    description: "Core developers, designers, and contributors behind CampusNode",
+    description: "Core developers, designers, and contributors behind Campusnode",
     keywords: "team developers creators contributors nikhil yadav nitj engineering maintainers",
     icon: Code,
   },

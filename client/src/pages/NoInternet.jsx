@@ -461,7 +461,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
               You're Offline
             </CardTitle>
             <CardDescription className="text-sm mt-2 leading-relaxed text-muted-foreground">
-              CampusNode cannot reach the campus network. Check your Wi-Fi or mobile connection and retry.
+              Campusnode cannot reach the campus network. Check your Wi-Fi or mobile connection and retry.
             </CardDescription>
           </div>
         </CardHeader>
@@ -499,7 +499,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
 
           <div className="pt-4 border-t border-border">
             <p className="text-[11px] text-muted-foreground uppercase font-medium tracking-wider">
-              CampusNode Platform • Auto Reconnect Active
+              Campusnode Platform • Auto Reconnect Active
             </p>
           </div>
         </CardContent>

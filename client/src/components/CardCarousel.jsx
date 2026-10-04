@@ -25,6 +25,12 @@ export default function CardCarousel({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const isMouseDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftStartRef = useRef(0);
+  const hasDraggedRef = useRef(false);
 
   const items = React.Children.toArray(children).filter(Boolean);
   const totalItems = items.length;
@@ -59,6 +65,109 @@ export default function CardCarousel({
       window.removeEventListener("resize", updateScrollState);
     };
   }, [isCarouselActive, updateScrollState]);
+
+  // Handle mouse wheel scrolling: smoothly convert vertical mouse wheel scroll to horizontal scrolling
+  useEffect(() => {
+    if (!isCarouselActive) return;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const onWheel = (e) => {
+      // If user has horizontal scroll device (trackpad deltaX or Shift+wheel), let native handling take care
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
+        return;
+      }
+
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 33;
+      else if (e.deltaMode === 2) delta *= el.clientWidth;
+
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+
+      const isScrollingLeft = delta < 0;
+      const isScrollingRight = delta > 0;
+
+      const canScrollLeftNow = el.scrollLeft > 2;
+      const canScrollRightNow = el.scrollLeft < maxScroll - 2;
+
+      // Intercept wheel only if carousel can still scroll in that direction
+      if ((isScrollingRight && canScrollRightNow) || (isScrollingLeft && canScrollLeftNow)) {
+        e.preventDefault();
+        el.scrollLeft += delta;
+      }
+      // If at boundaries, don't preventDefault so page vertical scrolling continues seamlessly
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, [isCarouselActive]);
+
+  // Handle Desktop Mouse Drag-to-Scroll (Click & Drag)
+  const handleMouseDown = (e) => {
+    if (!isCarouselActive || e.button !== 0) return;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    isMouseDownRef.current = true;
+    startXRef.current = e.pageX;
+    scrollLeftStartRef.current = el.scrollLeft;
+    hasDraggedRef.current = false;
+  };
+
+  useEffect(() => {
+    if (!isCarouselActive) return;
+
+    const handleWindowMouseMove = (e) => {
+      if (!isMouseDownRef.current) return;
+      const el = scrollRef.current;
+      if (!el) return;
+
+      const deltaX = e.pageX - startXRef.current;
+
+      // If dragged more than 5px, enter drag state and update scroll position
+      if (Math.abs(deltaX) > 5) {
+        if (!hasDraggedRef.current) {
+          hasDraggedRef.current = true;
+          setIsDragging(true);
+          el.style.scrollSnapType = "none";
+        }
+        el.scrollLeft = scrollLeftStartRef.current - deltaX;
+      }
+    };
+
+    const handleWindowMouseUp = () => {
+      if (isMouseDownRef.current) {
+        isMouseDownRef.current = false;
+        setIsDragging(false);
+        const el = scrollRef.current;
+        if (el) {
+          el.style.scrollSnapType = "";
+        }
+        // Small timeout so click capture can prevent accidental navigation
+        setTimeout(() => {
+          hasDraggedRef.current = false;
+        }, 50);
+      }
+    };
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+    };
+  }, [isCarouselActive]);
+
+  const handleClickCapture = (e) => {
+    if (hasDraggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const handleScroll = (direction) => {
     const el = scrollRef.current;
@@ -121,11 +230,20 @@ export default function CardCarousel({
         </button>
       </div>
 
-      {/* Carousel Track with smooth snap */}
+      {/* Carousel Track with smooth snap & touch/mouse interaction */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y scroll-smooth snap-x snap-mandatory no-scrollbar px-1 pt-2 pb-5 -mx-1"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none", overflowY: "hidden" }}
+        onMouseDown={handleMouseDown}
+        onClickCapture={handleClickCapture}
+        onDragStart={(e) => e.preventDefault()}
+        className={`flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-proximity no-scrollbar px-1 pt-2 pb-5 -mx-1 ${
+          isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+        }`}
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         {items.map((child, idx) => (
           <div

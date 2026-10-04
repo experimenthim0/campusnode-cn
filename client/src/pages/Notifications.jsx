@@ -218,7 +218,7 @@ const Notifications = () => {
 
   // Initial push check
   useEffect(() => {
-    document.title = "Notifications - CampusNode";
+    document.title = "Notifications - Campusnode";
     setPermissionState(getNotificationPermissionState());
     isPushSubscribed().then((sub) => setIsSubscribed(sub));
   }, []);

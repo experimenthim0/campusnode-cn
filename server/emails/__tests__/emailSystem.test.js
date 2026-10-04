@@ -20,7 +20,7 @@ import { Divider } from "../components/Divider.js";
 import { colors, typography, spacing, designTokens } from "../config/designTokens.js";
 import { extractSecurityMetadata, parseUserAgent, cleanIp, formatRequestTime } from "../utils/requestMetadata.js";
 
-describe("CampusNode Centralized Email Subsystem", () => {
+describe("Campusnode Centralized Email Subsystem", () => {
   beforeEach(() => {
     clearSentEmails();
   });
@@ -166,7 +166,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("Alex &lt;Student&gt;");
       expect(rendered.html).toContain("verify-email/test-token-123");
       expect(rendered.html).toContain("Verify My Account");
-      expect(rendered.html).toContain("CampusNode");
+      expect(rendered.html).toContain("Campusnode");
       expect(rendered.html).toContain("fonts.googleapis.com/css2?family=Google+Sans");
     });
 
@@ -186,7 +186,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
         ipAddress: "192.168.1.42",
         time: "Feb 9, 10:34 AM",
       });
-      expect(studentRender.subject).toBe("CampusNode Login Verification Code");
+      expect(studentRender.subject).toBe("Campusnode Login Verification Code");
       expect(studentRender.html).toContain("Verify Your Login");
       expect(studentRender.html).toContain("123456");
       expect(studentRender.html).toContain("student@nitj.ac.in");
@@ -199,7 +199,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(studentRender.html).toContain("TIME");
       expect(studentRender.html).toContain("Feb 9, 10:34 AM");
       expect(studentRender.html).toContain("SFMono-Regular");
-      expect(studentRender.html).toContain("CampusNode");
+      expect(studentRender.html).toContain("Campusnode");
 
       // 2. Admin portal context
       const adminRender = renderEmail(template, {
@@ -249,7 +249,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
         supportEmail: "support@campusnode.in",
       });
 
-      expect(rendered.subject).toBe("Your CampusNode password has been changed");
+      expect(rendered.subject).toBe("Your Campusnode password has been changed");
       expect(rendered.html).toContain("Password Changed");
       expect(rendered.html).toContain("Priya Patel");
       expect(rendered.html).toContain("Didn&#039;t make this change?");
@@ -308,7 +308,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
         loginUrl: "https://campusnode.vercel.app/login",
       });
 
-      expect(rendered.subject).toBe("CampusNode - Assigned as Faculty Coordinator for Robotics Club");
+      expect(rendered.subject).toBe("Campusnode - Assigned as Faculty Coordinator for Robotics Club");
       expect(rendered.html).toContain("Dr. Sharma");
       expect(rendered.html).toContain("Robotics Club");
       expect(rendered.html).toContain("sharma@nitj.ac.in");
@@ -332,7 +332,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       const sent = getSentEmails();
       expect(sent.length).toBe(1);
       expect(sent[0].to).toBe("recipient@nitj.ac.in");
-      expect(sent[0].subject).toBe("CampusNode Login Verification Code");
+      expect(sent[0].subject).toBe("Campusnode Login Verification Code");
       expect(sent[0].html).toContain("998877");
     });
 
@@ -361,7 +361,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
         },
       });
 
-      expect(preview.subject).toBe("CampusNode Login Verification Code");
+      expect(preview.subject).toBe("Campusnode Login Verification Code");
       expect(preview.html).toContain("112233");
       expect(getSentEmails().length).toBe(0);
     });
@@ -396,7 +396,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(res.id).toMatch(/^mock_/);
       const email = getLastEmail();
       expect(email.to).toBe("student@nitj.ac.in");
-      expect(email.subject).toBe("CampusNode Login Verification Code");
+      expect(email.subject).toBe("Campusnode Login Verification Code");
       expect(email.html).toContain("543210");
       expect(email.html).toContain("Edge Windows");
       expect(email.html).toContain("New Delhi, IN");
@@ -428,7 +428,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
       expect(res.id).toMatch(/^mock_/);
       const email = getLastEmail();
       expect(email.to).toBe("changed@nitj.ac.in");
-      expect(email.subject).toBe("Your CampusNode password has been changed");
+      expect(email.subject).toBe("Your Campusnode password has been changed");
       expect(email.html).toContain("Kavita Rao");
       expect(email.html).toContain("Firefox Android");
       expect(email.html).toContain("Mumbai, IN");
@@ -569,7 +569,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
 
       const headingIdx = rendered.html.indexOf("Reset Your Password");
       const buttonIdx = rendered.html.indexOf('href="https://campusnode.vercel.app/reset-password/sample-token"');
-      const explanationIdx = rendered.html.indexOf("We received a request to reset your CampusNode account password");
+      const explanationIdx = rendered.html.indexOf("We received a request to reset your Campusnode account password");
       const expiryIdx = rendered.html.indexOf("expire in <strong>15 minutes</strong>");
       const metadataIdx = rendered.html.indexOf('class="metadata-table"');
 
@@ -592,7 +592,7 @@ describe("CampusNode Centralized Email Subsystem", () => {
         time: "Sep 14, 6:30 PM IST",
       });
 
-      const headingIdx = rendered.html.indexOf("Welcome to CampusNode!");
+      const headingIdx = rendered.html.indexOf("Welcome to Campusnode!");
       const explanationIdx = rendered.html.indexOf("To complete your registration and activate your student account");
       const buttonIdx = rendered.html.indexOf("Verify My Account");
       const expiryIdx = rendered.html.indexOf("expire in <strong>24 hours</strong>");

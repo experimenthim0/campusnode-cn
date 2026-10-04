@@ -153,7 +153,7 @@ const CentralEventForm = ({
           </div>
           {formData.registrationType === "none" && (
             <p className="text-[11px] text-brand-700 dark:text-brand-400 pt-1">
-              ℹ️ Attendees do not need to register on CampusNode. The event will appear with an "Open Event &bull; Walk-ins Welcome" badge.
+              ℹ️ Attendees do not need to register on Campusnode. The event will appear with an "Open Event &bull; Walk-ins Welcome" badge.
             </p>
           )}
         </div>

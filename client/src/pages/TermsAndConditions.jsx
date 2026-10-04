@@ -42,7 +42,7 @@ const TermsAndConditions = () => {
                                 Agreement &amp; Code of Conduct
                             </h2>
                             <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                                By creating an account or accessing events on CampusNode, you agree to comply with institutional policies, maintain honest event registrations, and treat fellow campus members with respect.
+                                By creating an account or accessing events on Campusnode, you agree to comply with institutional policies, maintain honest event registrations, and treat fellow campus members with respect.
                             </p>
                         </div>
                     </div>
@@ -57,7 +57,7 @@ const TermsAndConditions = () => {
                             Acceptance of Terms
                         </h2>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                            By accessing, browsing, or registering for events via CampusNode, you acknowledge that you have read, understood, and agreed to be bound by these Terms and Conditions. If you do not accept these terms, you should discontinue using the platform immediately.
+                            By accessing, browsing, or registering for events via Campusnode, you acknowledge that you have read, understood, and agreed to be bound by these Terms and Conditions. If you do not accept these terms, you should discontinue using the platform immediately.
                         </p>
                     </section>
 
@@ -77,7 +77,7 @@ const TermsAndConditions = () => {
                             </li>
                             <li className="flex items-start gap-2.5">
                                 <i className="ri-checkbox-circle-line text-cn-blue-600 dark:text-cn-blue-400 mt-0.5 shrink-0" />
-                                <span><strong>Account Suspension:</strong> CampusNode reserves the right to restrict or terminate accounts violating institutional rules or community standards.</span>
+                                <span><strong>Account Suspension:</strong> Campusnode reserves the right to restrict or terminate accounts violating institutional rules or community standards.</span>
                             </li>
                         </ul>
                     </section>
@@ -163,7 +163,7 @@ const TermsAndConditions = () => {
                             Limitation of Liability
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                            CampusNode is provided on an "as is" and "as available" basis. While we strive to maintain uninterrupted uptime, we are not liable for unannounced event cancellations, venue schedule shifts, or third-party network interruptions.
+                            Campusnode is provided on an "as is" and "as available" basis. While we strive to maintain uninterrupted uptime, we are not liable for unannounced event cancellations, venue schedule shifts, or third-party network interruptions.
                         </p>
                     </section>
 
@@ -190,7 +190,7 @@ const TermsAndConditions = () => {
                             href="mailto:contact.nikhim@gmail.com"
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
-                            <i className="ri-send-plane-line" /> Email CampusNode Team
+                            <i className="ri-send-plane-line" /> Email Campusnode Team
                         </a>
                     </section>
 

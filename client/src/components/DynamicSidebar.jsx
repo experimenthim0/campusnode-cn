@@ -46,6 +46,7 @@ const getRoleLabel = (role, user) => {
   if (isStudent) {
     if (user?.memberships?.some(m => m.role === 'CLUB_HEAD')) return 'Student • Student Lead';
     if (user?.memberships?.some(m => m.role === 'COORDINATOR')) return 'Student • Coordinator';
+    if (user?.memberships?.some(m => m.role === 'MEMBER' || m.role === 'member') || user?.clubId) return 'Student • Member';
     return 'Student';
   }
   const labels = {
@@ -313,6 +314,22 @@ const DynamicSidebar = ({ user }) => {
     facultyClubs.push({ clubId: userClubId, clubName: "Assigned Club" });
   }
 
+  // Student memberships / clubs (matching BottomNav resolution)
+  const rawMemberships = Array.isArray(user?.memberships) ? user.memberships : [];
+  let studentMemberships = [...rawMemberships];
+  if (!isFacultyCoordinator && user?.clubId && !studentMemberships.some((m) => String(m.clubId || m.club?.id || m.club?._id || m.id) === String(user.clubId))) {
+    studentMemberships.push({
+      clubId: user.clubId,
+      clubName: user.clubName || "My Club",
+      role: user.clubRole || "MEMBER",
+    });
+  }
+
+  const eligibleMemberships = studentMemberships.filter((m) => {
+    const cid = m.clubId || m.club?.id || m.club?._id || m.id || m._id;
+    return Boolean(cid);
+  });
+
   return (
     <aside
       className={`hidden md:flex flex-col shrink-0 bg-cn-surface text-cn-text border-r border-cn-border transition-all duration-300 overflow-y-auto ${isCollapsed ? "w-16" : "w-64"}`}
@@ -393,7 +410,7 @@ const DynamicSidebar = ({ user }) => {
           <SidebarLink to="/my-events" icon={CalendarDays} label="My Events" isActive={isActive("/my-events")} isCollapsed={isCollapsed} />
         )}
 
-        {((isFacultyCoordinator && facultyClubs.length > 0) || (!isFacultyCoordinator && (user?.memberships && user.memberships.length > 0))) && (
+        {((isFacultyCoordinator && facultyClubs.length > 0) || (!isFacultyCoordinator && eligibleMemberships.length > 0)) && (
           <>
             <SectionLabel isCollapsed={isCollapsed}>Management</SectionLabel>
 
@@ -433,51 +450,40 @@ const DynamicSidebar = ({ user }) => {
               </div>
             )}
 
-            {/* Membership-based clubs (Student Leads & Coordinators across all clubs) */}
+            {/* Membership-based clubs (Student Leads, Coordinators & Members across all clubs) */}
             {!isFacultyCoordinator && (() => {
-              const eligibleMemberships = (user?.memberships || []).filter((m) => {
-                const isLead = isStudentLeadRole(m.role);
-                const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
-                const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-                const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
-                const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
-                return canManageTeam || canReviewPayments || canUpdateClub || canBroadcast || m.canEditEvents;
-              });
-
-              if (eligibleMemberships.length === 0) return null;
-
-              // If 2 or more clubs, collapse each into a SidebarDropdown to prevent vertical clutter
               if (eligibleMemberships.length >= 2) {
                 return (
                   <div className="space-y-1 mb-3">
                     {eligibleMemberships.map((m) => {
+                      const clubId = m.clubId || m.club?.id || m.club?._id || m.id || m._id;
                       const isLead = isStudentLeadRole(m.role);
-                      const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
-                      const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-                      const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
-                      const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
+                      const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId });
+                      const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId });
+                      const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId });
+                      const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId });
 
                       const items = [
-                        { label: "Club Events", to: `/club-events/${m.clubId}` },
+                        { label: "Club Events", to: `/club-events/${clubId}` },
                       ];
                       if (canManageTeam) {
-                        items.push({ label: "Team Management", to: `/club/${m.clubId}/team` });
+                        items.push({ label: "Team Management", to: `/club/${clubId}/team` });
                       }
                       if (canReviewPayments) {
-                        items.push({ label: "Payments", to: `/payments?clubId=${m.clubId}` });
+                        items.push({ label: "Payments", to: `/payments?clubId=${clubId}` });
                       }
                       if (canBroadcast) {
-                        items.push({ label: "Broadcasts", to: `/send-notification?clubId=${m.clubId}` });
+                        items.push({ label: "Broadcasts", to: `/send-notification?clubId=${clubId}` });
                       }
                       if (canUpdateClub) {
-                        items.push({ label: "Club Settings", to: `/club/edit/${m.clubId}` });
+                        items.push({ label: "Club Settings", to: `/club/edit/${clubId}` });
                       }
 
                       return (
                         <SidebarDropdown
-                          key={m.clubId}
+                          key={clubId}
                           icon={Users}
-                          label={m.clubName || "Club"}
+                          label={m.clubName || m.club?.clubName || m.club?.name || "Club"}
                           isCollapsed={isCollapsed}
                           items={items}
                         />
@@ -489,31 +495,32 @@ const DynamicSidebar = ({ user }) => {
 
               // Exactly 1 club: render flat layout directly without dropdown
               const m = eligibleMemberships[0];
+              const clubId = m.clubId || m.club?.id || m.club?._id || m.id || m._id;
               const isLead = isStudentLeadRole(m.role);
-              const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId: m.clubId });
-              const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId: m.clubId });
-              const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId: m.clubId });
-              const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId: m.clubId });
+              const canManageTeam = isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId });
+              const canReviewPayments = hasPermission(user, PERMISSIONS.PAYMENT_REVIEW, { clubId });
+              const canUpdateClub = isLead || hasPermission(user, PERMISSIONS.CLUB_UPDATE, { clubId });
+              const canBroadcast = isLead || m.role === "COORDINATOR" || hasPermission(user, PERMISSIONS.NOTIFICATION_CREATE, { clubId });
 
               return (
-                <div key={m.clubId} className="space-y-1 mb-3">
-                  <ClubHeader name={m.clubName || "Club"} isCollapsed={isCollapsed} />
+                <div key={clubId} className="space-y-1 mb-3">
+                  <ClubHeader name={m.clubName || m.club?.clubName || m.club?.name || "Club"} isCollapsed={isCollapsed} />
 
                   <SidebarLink
-                    to={`/club-events/${m.clubId}`}
+                    to={`/club-events/${clubId}`}
                     icon={CalendarDays}
                     label="Club Events"
-                    isActive={isActive(`/club-events/${m.clubId}`)}
+                    isActive={isActive(`/club-events/${clubId}`)}
                     isCollapsed={isCollapsed}
                   />
 
                   {/* Team Management - Only for users with club.manage_members permission */}
                   {canManageTeam && (
                     <SidebarLink
-                      to={`/club/${m.clubId}/team`}
+                      to={`/club/${clubId}/team`}
                       icon={Users}
                       label="Team Management"
-                      isActive={isActive(`/club/${m.clubId}/team`)}
+                      isActive={isActive(`/club/${clubId}/team`)}
                       isCollapsed={isCollapsed}
                     />
                   )}
@@ -521,12 +528,12 @@ const DynamicSidebar = ({ user }) => {
                   {/* Payments */}
                   {canReviewPayments && (
                     <SidebarLink
-                      to={`/payments?clubId=${m.clubId}`}
+                      to={`/payments?clubId=${clubId}`}
                       icon={Wallet}
                       label="Payments"
                       isActive={
                         location.pathname === "/payments" &&
-                        (new URLSearchParams(location.search).get("clubId") === String(m.clubId) ||
+                        (new URLSearchParams(location.search).get("clubId") === String(clubId) ||
                           !new URLSearchParams(location.search).get("clubId"))
                       }
                       isCollapsed={isCollapsed}
@@ -536,10 +543,10 @@ const DynamicSidebar = ({ user }) => {
                   {/* Broadcasts */}
                   {canBroadcast && (
                     <SidebarLink
-                      to={`/send-notification?clubId=${m.clubId}`}
+                      to={`/send-notification?clubId=${clubId}`}
                       icon={Radio}
                       label="Broadcasts"
-                      isActive={isActive(`/send-notification?clubId=${m.clubId}`) || (location.pathname === "/send-notification" && !new URLSearchParams(location.search).get("clubId"))}
+                      isActive={isActive(`/send-notification?clubId=${clubId}`) || (location.pathname === "/send-notification" && !new URLSearchParams(location.search).get("clubId"))}
                       isCollapsed={isCollapsed}
                     />
                   )}
@@ -547,10 +554,10 @@ const DynamicSidebar = ({ user }) => {
                   {/* Club Settings */}
                   {canUpdateClub && (
                     <SidebarLink
-                      to={`/club/edit/${m.clubId}`}
+                      to={`/club/edit/${clubId}`}
                       icon={LayoutGrid}
                       label="Club Settings"
-                      isActive={isActive(`/club/edit/${m.clubId}`)}
+                      isActive={isActive(`/club/edit/${clubId}`)}
                       isCollapsed={isCollapsed}
                     />
                   )}

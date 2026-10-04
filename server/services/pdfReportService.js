@@ -5,8 +5,8 @@ export function generateFeedbackReviewPDF({ event, review, analytics, stream }) 
     size: "A4",
     margin: 40,
     info: {
-      Title: `CampusNode AI Feedback Review - ${event.title}`,
-      Author: "CampusNode NITJ",
+      Title: `Campusnode AI Feedback Review - ${event.title}`,
+      Author: "Campusnode NITJ",
       Subject: "Event Attendee AI Feedback Review & Actionable Insights",
     },
   });
@@ -26,7 +26,7 @@ export function generateFeedbackReviewPDF({ event, review, analytics, stream }) 
   };
 
   doc.rect(40, 40, 515, 60).fillAndStroke("#18181b", "#27272a");
-  doc.fillColor("#ffffff").fontSize(18).font("Helvetica-Bold").text("CampusNode", 55, 52);
+  doc.fillColor("#ffffff").fontSize(18).font("Helvetica-Bold").text("Campusnode", 55, 52);
   doc.fontSize(10).font("Helvetica").fillColor("#fdba74").text("AI EVENT FEEDBACK REVIEW & ANALYTICS REPORT", 55, 75);
   doc.fontSize(9).font("Helvetica").fillColor("#a1a1aa").text(`Review #${review.reviewNumber} • ${new Date(review.generatedAt).toLocaleDateString()}`, 380, 75, { align: "right", width: 160 });
 
@@ -206,7 +206,7 @@ export function generateFeedbackReviewPDF({ event, review, analytics, stream }) 
 
   doc.moveDown(1.5);
   doc.fillColor(colors.muted).fontSize(8).font("Helvetica").text(
-    "Generated securely by CampusNode Event Feedback AI Service. Grounded directly in attendee feedback without student identifying information.",
+    "Generated securely by Campusnode Event Feedback AI Service. Grounded directly in attendee feedback without student identifying information.",
     40,
     780,
     { align: "center", width: 515 }

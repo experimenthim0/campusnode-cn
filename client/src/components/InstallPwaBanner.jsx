@@ -36,7 +36,7 @@ export const InstallPwaBanner = () => {
             <TabletSmartphone size={24} />
           </div>
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-black dark:text-white truncate">Install CampusNode</h4>
+            <h4 className="text-sm font-semibold text-black dark:text-white truncate">Install Campusnode</h4>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">Add to home screen for fast offline access</p>
           </div>
         </div>

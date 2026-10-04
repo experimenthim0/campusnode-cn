@@ -31,13 +31,13 @@ export function escapeHtmlAttr(str = "") {
  */
 export function formatEventTitle(title) {
   if (!title || typeof title !== "string") {
-    return "CampusNode - Event Management";
+    return "Campusnode - Event Management";
   }
   const clean = title.trim();
   if (/campusnode/i.test(clean)) {
     return clean;
   }
-  return `${clean} | CampusNode`;
+  return `${clean} | Campusnode`;
 }
 
 /**
@@ -77,9 +77,9 @@ export function cleanEventDescription(description, event = {}) {
     const title = event.title ? event.title.trim() : "this event";
     const club =
       event.club?.clubName ||
-      (event.organizerType === "CENTRAL" ? "Central Student Body" : "CampusNode");
+      (event.organizerType === "CENTRAL" ? "Central Student Body" : "Campusnode");
     const venue = event.venue ? ` at ${event.venue.trim()}` : " at NIT Jalandhar";
-    text = `Join ${title} organized by ${club}${venue}. View event details, schedule, and register online on CampusNode.`;
+    text = `Join ${title} organized by ${club}${venue}. View event details, schedule, and register online on Campusnode.`;
   }
 
   // 5. Truncate cleanly on word boundary (max ~175 characters)
@@ -161,7 +161,7 @@ export function generateEventSocialHtml(event, options = {}) {
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
+  <meta property="og:site_name" content="Campusnode">
   <meta property="og:title" content="${titleEscaped}">
   <meta property="og:description" content="${descEscaped}">
   <meta property="og:url" content="${urlEscaped}">
@@ -218,10 +218,10 @@ export function generateDefaultSocialHtml(options = {}) {
   const fallbackUrl = `${normalizedDomain}/campusnode-og-fallback.png`;
   const homeUrl = `${normalizedDomain}/events`;
 
-  const title = "CampusNode - NIT Jalandhar Clubs & Events";
+  const title = "Campusnode - NIT Jalandhar Clubs & Events";
   const description =
     options.message ||
-    "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on CampusNode.";
+    "Discover, organize, and participate in technical, cultural, and sports events across NIT Jalandhar clubs on Campusnode.";
 
   const titleEscaped = escapeHtmlAttr(title);
   const descEscaped = escapeHtmlAttr(description);
@@ -238,7 +238,7 @@ export function generateDefaultSocialHtml(options = {}) {
   <link rel="canonical" href="${urlEscaped}">
 
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CampusNode">
+  <meta property="og:site_name" content="Campusnode">
   <meta property="og:title" content="${titleEscaped}">
   <meta property="og:description" content="${descEscaped}">
   <meta property="og:url" content="${urlEscaped}">
@@ -257,7 +257,7 @@ export function generateDefaultSocialHtml(options = {}) {
   <meta http-equiv="refresh" content="0;url=${urlEscaped}">
 </head>
 <body style="font-family:system-ui,-apple-system,sans-serif;margin:0;padding:24px;background:#0a0a0a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;">
-  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Redirecting to CampusNode Events...</p>
+  <p style="font-size:18px;color:#94a3b8;margin-bottom:12px;">Redirecting to Campusnode Events...</p>
   <a href="${urlEscaped}" style="color:#ea580c;text-decoration:none;font-weight:600;font-size:16px;">Click here if you are not redirected automatically</a>
   <script>
     try {

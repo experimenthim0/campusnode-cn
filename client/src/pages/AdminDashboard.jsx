@@ -20,10 +20,11 @@ import { Plus, CheckCheck } from 'lucide-react';
 
 import {
     OverviewTab,
+    StudentsTab,
     EventDataTable,
     VenuesTab,
     ClubsTab,
-    ManualPaymentsTab,
+    PaymentsOverviewTab,
     BroadcastsTab,
     NotificationsTab,
     FeaturedEventsTab,
@@ -46,11 +47,6 @@ const AdminDashboard = () => {
 
     // Clubs states
     const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
-
-    // Payments Management States
-    const [manualPayments, setManualPayments] = useState([]);
-    const [manualPaymentsSummary, setManualPaymentsSummary] = useState(null);
-    const [paymentsSearch, setPaymentsSearch] = useState('');
 
     // Venue Management States
     const [venues, setVenues] = useState([]);
@@ -114,19 +110,14 @@ const AdminDashboard = () => {
             const fetchData = async () => {
                 try {
                     const query = new URLSearchParams(filters).toString();
-                    const [statsRes, clubsRes, paymentsRes, eventsRes] = await Promise.allSettled([
+                    const [statsRes, clubsRes, eventsRes] = await Promise.allSettled([
                         getDashboardStats(),
                         getClubsList(),
-                        api.get('/api/admin/manual-payments'),
                         api.get(`/api/admin/event-data-export?${query}`)
                     ]);
 
                     if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
                     if (clubsRes.status === 'fulfilled') setClubHeads(clubsRes.value.data);
-                    if (paymentsRes.status === 'fulfilled') {
-                        setManualPayments(paymentsRes.value.data.participations || []);
-                        setManualPaymentsSummary(paymentsRes.value.data.summary || null);
-                    }
                     if (eventsRes.status === 'fulfilled') {
                         setEventData(eventsRes.value.data.events || []);
                     }
@@ -210,15 +201,7 @@ const AdminDashboard = () => {
         }
     };
 
-    const fetchManualPayments = async () => {
-        try {
-            const res = await api.get('/api/admin/manual-payments');
-            setManualPayments(res.data.participations || []);
-            setManualPaymentsSummary(res.data.summary || null);
-        } catch (err) {
-            console.error('Failed to fetch manual payments overview:', err);
-        }
-    };
+
 
     const fetchFilteredEventData = async () => {
         try {
@@ -259,12 +242,13 @@ const AdminDashboard = () => {
 
     const tabTitles = {
         overview: { title: 'Overview', subtitle: 'All events and system metrics at a glance' },
+        students: { title: 'Student Directory & Records', subtitle: 'Search, look up, and inspect academic, contact, and campus records for any student' },
         'event-data': { title: 'All Events', subtitle: 'View, filter, and access all event details and direct page links' },
         calendar: { title: 'Event Calendar & Venue Scheduling', subtitle: 'Interactive month, week, day, and venue timeline scheduling grid' },
         'calendar-schedule': { title: 'Event Calendar & Venue Scheduling', subtitle: 'Interactive month, week, day, and venue timeline scheduling grid' },
         venues: { title: 'Venues Management', subtitle: 'Manage campus event venues and configure their event booking availability' },
         'club-heads': { title: 'Clubs Management', subtitle: 'Create, edit, and configure registered student clubs' },
-        'payments-overview': { title: 'Transactions Management', subtitle: 'Overview of manual transaction registrations and UTR verifications' },
+        'payments-overview': { title: 'Event Collections & Revenue', subtitle: 'Overview of registration fees and total amount collected per event' },
         broadcasts: { title: 'Outgoing Broadcasts', subtitle: 'Dispatch real-time broadcast announcements to all students or event participants' },
         notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
         'export-center': { title: 'Export Center', subtitle: 'Export & download structured administrative data' },
@@ -373,6 +357,10 @@ const AdminDashboard = () => {
                     />
                 )}
 
+                {activeTab === 'students' && (
+                    <StudentsTab />
+                )}
+
                 {activeTab === 'event-data' && (
                     <EventDataTable
                         events={allEvents}
@@ -411,11 +399,10 @@ const AdminDashboard = () => {
 
 
                 {activeTab === 'payments-overview' && (
-                    <ManualPaymentsTab
-                        manualPayments={manualPayments}
-                        manualPaymentsSummary={manualPaymentsSummary}
-                        paymentsSearch={paymentsSearch}
-                        setPaymentsSearch={setPaymentsSearch}
+                    <PaymentsOverviewTab
+                        eventStats={stats?.eventStats || []}
+                        allEvents={allEvents}
+                        totalRevenue={stats?.totalRevenue}
                     />
                 )}
 

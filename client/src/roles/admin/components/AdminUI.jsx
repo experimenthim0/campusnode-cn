@@ -96,23 +96,37 @@ export const FormInput = ({ name, type = "text", placeholder, required }) => (
     />
 );
 
-export const FilterSelect = ({ children, value, onChange, className = "" }) => (
-    <select 
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`h-9 px-3 bg-cn-surface border border-cn-border rounded-xl text-[12px] font-medium text-cn-text-secondary focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors cursor-pointer ${className}`}
-    >
-        {children}
-    </select>
-);
+export const FilterSelect = ({ children, options, value, onChange, className = "" }) => {
+    const handleChange = (e) => {
+        if (typeof onChange === 'function') {
+            onChange(e.target.value, e);
+        }
+    };
+    return (
+        <select 
+            value={value}
+            onChange={handleChange}
+            className={`h-9 px-3 bg-cn-surface border border-cn-border rounded-xl text-[12px] font-medium text-cn-text-secondary focus:border-brand-600 dark:focus:border-brand-500 outline-none transition-colors cursor-pointer ${className}`}
+        >
+            {Array.isArray(options) && options.length > 0
+                ? options.map((opt, i) => (
+                    <option key={opt.value ?? i} value={opt.value} className="bg-cn-surface text-cn-text">
+                        {opt.label}
+                    </option>
+                  ))
+                : children
+            }
+        </select>
+    );
+};
 
-export const Modal = ({ onClose, title, subtitle, children }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-blur px-4 py-4 sm:py-6" onClick={onClose}>
+export const Modal = ({ onClose, title, subtitle, children, maxWidth = "max-w-lg", className = "" }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-blur px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto" onClick={onClose}>
         <div 
-            className="bg-cn-surface dark:bg-cn-surface-muted border border-cn-border rounded-2xl max-w-lg w-full max-h-[calc(100dvh-2rem)] sm:max-h-[88dvh] flex flex-col overflow-hidden shadow-2xl transition-colors" 
+            className={`bg-cn-surface dark:bg-cn-surface-muted border border-cn-border rounded-2xl ${maxWidth} w-full max-h-[calc(100dvh-2rem)] sm:max-h-[88dvh] flex flex-col overflow-hidden shadow-2xl transition-colors my-auto ${className}`} 
             onClick={e => e.stopPropagation()}
         >
-            <div className="px-6 py-4 flex justify-between items-center border-b border-cn-border-subtle shrink-0">
+            <div className="px-5 sm:px-6 py-4 flex justify-between items-center border-b border-cn-border-subtle shrink-0">
                 <div>
                     <h3 className="text-base sm:text-lg font-semibold text-cn-text tracking-tight">{title}</h3>
                     {subtitle && <p className="text-xs text-cn-text-muted font-normal mt-0.5">{subtitle}</p>}
@@ -125,7 +139,7 @@ export const Modal = ({ onClose, title, subtitle, children }) => (
                     <X size={18} />
                 </button>
             </div>
-            <div className="px-6 py-5 text-cn-text-secondary overflow-y-auto min-h-0 flex-1">{children}</div>
+            <div className="px-5 sm:px-6 py-5 text-cn-text-secondary overflow-y-auto min-h-0 flex-1">{children}</div>
         </div>
     </div>
 );

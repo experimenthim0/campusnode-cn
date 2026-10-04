@@ -366,8 +366,8 @@ self.addEventListener('push', (event) => {
   console.log('[CampusNode SW Push] Push event received.');
 
   let data = {
-    title: 'CampusNode',
-    body: 'New update available on CampusNode!',
+    title: 'Campusnode',
+    body: 'New update available on Campusnode!',
     url: '/events',
     unreadCount: 1,
     tag: 'campusnode-notification',
@@ -383,7 +383,7 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  const title = data.title || 'CampusNode';
+  const title = data.title || 'Campusnode';
   const options = {
     body: data.body || 'You have a new campus update.',
     icon: '/cs_pwa_notification.png',

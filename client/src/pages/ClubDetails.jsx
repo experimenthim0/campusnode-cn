@@ -588,7 +588,7 @@ const ClubDetails = () => {
 
   useEffect(() => {
     if (club) {
-      document.title = `${club.clubName} - CampusNode`;
+      document.title = `${club.clubName} - Campusnode`;
     }
   }, [club]);
 
@@ -680,8 +680,8 @@ const ClubDetails = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${club.clubName} · CampusNode`,
-          text: club.motto || club.description || `Explore ${club.clubName} on CampusNode`,
+          title: `${club.clubName} · Campusnode`,
+          text: club.motto || club.description || `Explore ${club.clubName} on Campusnode`,
           url,
         });
       } catch (err) {

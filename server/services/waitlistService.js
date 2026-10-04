@@ -159,7 +159,7 @@ export async function notifyWaitlistCleared(io, promotedCandidates, eventDetails
         const payload = {
           ...notification,
           _id: notification.id,
-          sender: { name: "CampusNode" },
+          sender: { name: "Campusnode" },
         };
 
         if (io) {

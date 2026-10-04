@@ -130,4 +130,38 @@ export function getMaxDurationForProgram(program) {
 
 export const ALL_BRANCH_CODES = Array.from(
   new Set(Object.values(PROGRAM_BRANCH_MAP).flatMap((p) => p.branches))
-);
+).sort();
+
+export const BRANCH_FULL_NAMES = {
+  AI: "Artificial Intelligence",
+  BT: "Biotechnology",
+  CH: "Chemical Engineering",
+  CE: "Civil Engineering",
+  CSE: "Computer Science & Engineering",
+  DSE: "Data Science & Engineering",
+  EE: "Electrical Engineering",
+  ECE: "Electronics & Communication Engineering",
+  VLSI: "Electronics & VLSI Engineering",
+  IPE: "Industrial & Production Engineering",
+  IT: "Information Technology",
+  ICE: "Instrumentation & Control Engineering",
+  MNC: "Mathematics & Computing",
+  MAC: "Mathematics & Computing",
+  MnC: "Mathematics & Computing",
+  ME: "Mechanical Engineering",
+  TT: "Textile Technology",
+  RE: "Renewable Energy",
+  PH: "Physics",
+  CY: "Chemistry",
+  MA: "Mathematics",
+  MB: "Management Studies",
+  HUM: "Humanities & Management",
+  GENERAL: "General / Other",
+};
+
+export function getBranchFullName(code) {
+  if (!code) return "";
+  const upper = String(code).toUpperCase();
+  return BRANCH_FULL_NAMES[upper] || code;
+}
+

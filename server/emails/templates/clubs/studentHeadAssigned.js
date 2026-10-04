@@ -48,7 +48,7 @@ export const studentHeadAssignedTemplate = {
         style: "margin-bottom: 8px;",
       })}
       ${BodyText({
-        children: `Congratulations! You have been officially appointed as the <strong>Club Head (Student Lead)</strong> for <strong>${safeClub}</strong> on CampusNode.`,
+        children: `Congratulations! You have been officially appointed as the <strong>Club Head (Student Lead)</strong> for <strong>${safeClub}</strong> on Campusnode.`,
         align: "left",
       })}
       
