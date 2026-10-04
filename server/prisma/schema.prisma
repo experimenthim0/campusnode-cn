@@ -102,6 +102,7 @@ model StudentUser {
   branch                 String              @db.VarChar
   program                String              @db.VarChar
   expectedGraduationYear Int
+  phone                  String?             @db.VarChar
   profileImage           String?             @db.VarChar
   isVerified             Boolean             @default(false)
   isTwoStepEnabled       Boolean             @default(false)
@@ -168,9 +169,10 @@ model FacultyUser {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  coordinatedClubs Club[]          @relation("ClubFacultyCoordinator")
-  participations   Participation[] @relation("FacultyParticipation")
-  certificates     Certificate[]   @relation("FacultyCertificate")
+  coordinatedClubs Club[]                   @relation("ClubFacultyCoordinator")
+  clubCoordinators ClubFacultyCoordinator[]
+  participations   Participation[]          @relation("FacultyParticipation")
+  certificates     Certificate[]            @relation("FacultyCertificate")
 
   @@index([email])
   @@index([department])
@@ -181,25 +183,26 @@ model FacultyUser {
 // ==========================================
 
 model Club {
-  id                   String             @id @db.VarChar(24)
-  clubName             String             @unique @db.VarChar
-  slug                 String             @unique @db.VarChar
-  description          String?            @db.VarChar
-  category             String?            @db.VarChar
-  clubLogo             String?            @db.VarChar
-  bannerImage          String?            @db.VarChar
-  facultyCoordinatorId String?            @db.VarChar(24)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  clubEmail            String?            @db.VarChar
-  facultyEmail         String?            @db.VarChar
-  facultyName          String?            @db.VarChar
-  studentcoordinators  String[]           @default([]) @db.VarChar
-  motto                String?            @db.VarChar
-  mission              String?            @db.VarChar
-  establishedYear      String?            @db.VarChar
+  id                   String                   @id @db.VarChar(24)
+  clubName             String                   @unique @db.VarChar
+  slug                 String                   @unique @db.VarChar
+  description          String?                  @db.VarChar
+  category             String?                  @db.VarChar
+  clubLogo             String?                  @db.VarChar
+  bannerImage          String?                  @db.VarChar
+  facultyCoordinatorId String?                  @db.VarChar(24)
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  clubEmail            String?                  @db.VarChar
+  facultyEmail         String?                  @db.VarChar
+  facultyName          String?                  @db.VarChar
+  studentcoordinators  String[]                 @default([]) @db.VarChar
+  motto                String?                  @db.VarChar
+  mission              String?                  @db.VarChar
+  establishedYear      String?                  @db.VarChar
 
-  facultyCoordinator   FacultyUser?       @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
+  facultyCoordinator   FacultyUser?             @relation("ClubFacultyCoordinator", fields: [facultyCoordinatorId], references: [id])
+  facultyCoordinators  ClubFacultyCoordinator[]
   socialLinks          ClubSocialLink[]
   memberships          ClubMembership[]
   organizedEvents      EventOrganizer[]
@@ -208,6 +211,19 @@ model Club {
   achievements         ClubAchievement[]
   notifications        Notification[]
   headHistory          ClubHeadHistory[]
+}
+
+model ClubFacultyCoordinator {
+  id        String      @id @db.VarChar(24)
+  clubId    String      @db.VarChar(24)
+  facultyId String      @db.VarChar(24)
+  createdAt DateTime    @default(now())
+
+  club      Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  faculty   FacultyUser @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+
+  @@unique([facultyId])
+  @@index([clubId])
 }
 
 model ClubSocialLink {

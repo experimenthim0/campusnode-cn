@@ -155,7 +155,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
         {/* Top-Left: Timing Status Badge */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
           {isLive && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-rose-600 text-white shadow-xs animate-pulse">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-rose-600 text-white shadow-xs animate-pulse">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
               Live
             </span>
@@ -183,7 +183,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
               Waitlisted
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand-600 text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-brand-600 text-white shadow-xs">
               ✓ Registered
             </span>
           )}
@@ -256,10 +256,10 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
           {isValidDate && (
             <div className="shrink-0 self-center">
               <div className="flex flex-col items-center justify-center min-w-[50px] bg-white dark:bg-neutral-800/90 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-2xs">
-                <div className="w-full bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-[8px] font-bold uppercase tracking-wider text-center py-0.5 px-1 leading-none border-b border-neutral-200/80 dark:border-neutral-700/60">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-[8px] font-semibold uppercase tracking-wider text-center py-0.5 px-1 leading-none border-b border-neutral-200/80 dark:border-neutral-700/60">
                   {monthName}
                 </div>
-                <div className="text-base font-semibold text-neutral-900 dark:text-white leading-tight px-2 pt-0.5 font-mono">
+                <div className="text-base font-medium text-neutral-900 dark:text-white leading-tight px-2 pt-0.5 font-mono">
                   {dayNumber}
                 </div>
                 <div className="text-[8px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider pb-0.5">
@@ -282,14 +282,14 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                 <button
                   type="button"
                   onClick={() => onUpdateTeam(reg)}
-                  className="h-6 px-2.5 rounded-full text-[10px] font-semibold bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500 transition-all cursor-pointer shadow-2xs"
+                  className="h-6 px-2.5 rounded-full text-[10px] font-medium bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500 transition-all cursor-pointer shadow-2xs"
                 >
                   Update
                 </button>
               )}
             </div>
             <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
-              Leader: <span className="font-semibold text-neutral-800 dark:text-neutral-200">{reg.team.leader?.name}</span>
+              Leader: <span className="font-medium text-neutral-800 dark:text-neutral-200">{reg.team.leader?.name}</span>
             </div>
             <div className="text-neutral-500 dark:text-neutral-400 text-[11px] line-clamp-1">
               Members: <span className="font-medium text-neutral-800 dark:text-neutral-200">
@@ -308,7 +308,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                 variant="outline"
                 size="sm"
                 onClick={() => onEditPayment(reg)}
-                className="h-9 rounded-full text-xs font-semibold gap-1.5 border-neutral-300 dark:border-neutral-700 hover:border-brand-500"
+                className="h-9 rounded-full text-xs font-medium gap-1.5 border-neutral-300 dark:border-neutral-700 hover:border-brand-500"
               >
                 <Edit2 className="w-3 h-3 text-black dark:text-white" />
                 <span>Edit Payment Info</span>
@@ -323,7 +323,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                     type="button"
                     size="sm"
                     onClick={() => onShowTicket(reg)}
-                    className="flex-1 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-bold uppercase tracking-wider gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="flex-1 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold uppercase tracking-wider gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
                     <QrCode className="w-3.5 h-3.5 text-white dark:text-black" />
                     <span>Show Ticket</span>
@@ -362,7 +362,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeregister(reg)}
-                    className="h-9 px-3 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 shrink-0 cursor-pointer"
+                    className="h-9 px-3 rounded-full text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 shrink-0 cursor-pointer"
                   >
                     {isTeamLeader ? 'Deregister Team' : 'Deregister'}
                   </Button>
@@ -378,7 +378,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                     type="button"
                     size="sm"
                     onClick={() => onOpenFeedback(event)}
-                    className="flex-1 h-9 rounded-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white text-xs font-semibold gap-1.5 shadow-xs transition-all cursor-pointer"
+                    className="flex-1 h-9 rounded-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white text-xs font-medium gap-1.5 shadow-xs transition-all cursor-pointer"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     <span>Submit Feedback</span>
@@ -414,7 +414,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
               size="sm"
               onClick={() => onDownloadCertificate(event.id || event._id)}
               disabled={downloadingCert === (event.id || event._id)}
-              className="w-full h-9 rounded-full text-xs font-semibold gap-2 border-neutral-300 dark:border-neutral-700 hover:border-brand-500 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 transition-all cursor-pointer"
+              className="w-full h-9 rounded-full text-xs font-medium gap-2 border-neutral-300 dark:border-neutral-700 hover:border-brand-500 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 transition-all cursor-pointer"
             >
               <DownloadIcon size={14} />
               <span>{downloadingCert === (event.id || event._id) ? 'Downloading...' : 'Download E-Certificate'}</span>
@@ -838,7 +838,7 @@ const MyEvents = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <ShimmerText text="Loading your events..." className="text-sm font-semibold tracking-wider" />
+        <ShimmerText text="Loading your events..." className="text-sm font-medium tracking-wider" />
       </div>
     );
   }
@@ -856,7 +856,7 @@ const MyEvents = () => {
           <CardDescription className="text-sm mb-6">
             You are currently signed in as an Official Club Account. To manage, create, and review events organized by your club, visit your Club Events dashboard.
           </CardDescription>
-          <Button asChild className="font-semibold">
+          <Button asChild className="font-medium">
             <Link to={`/club-events/${clubTargetId}`}>Open Club Events</Link>
           </Button>
         </Card>
@@ -869,7 +869,7 @@ const MyEvents = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">My Events</h1>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight">My Events</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Track all events you have registered for, view digital tickets, and download participation certificates.
           </p>
@@ -954,7 +954,7 @@ const MyEvents = () => {
           <CardDescription className="text-xs mb-6 max-w-md mx-auto">
             You haven't registered for any campus events yet. Explore upcoming hackathons, workshops, and fests!
           </CardDescription>
-          <Button asChild className="font-semibold">
+          <Button asChild className="font-medium">
             <Link to="/events">Browse Events</Link>
           </Button>
         </Card>
@@ -971,7 +971,7 @@ const MyEvents = () => {
               ? 'You have no past events.'
               : 'You have submitted feedback for all attended and ended events!'}
           </CardDescription>
-          <Button variant="outline" size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs font-semibold cursor-pointer">
+          <Button variant="outline" size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs font-medium cursor-pointer">
             View All Events ({counts.all})
           </Button>
         </Card>
@@ -1080,7 +1080,7 @@ const MyEvents = () => {
                 <Card className="p-5 shadow-2xl">
                   <div className="mb-4">
                     <div className="flex items-center justify-between gap-2 mb-2 pr-8">
-                      <Badge className="text-[10px] font-semibold tracking-wider">
+                      <Badge className="text-[10px] font-medium tracking-wider">
                         Digital Event Pass
                       </Badge>
 
@@ -1113,16 +1113,16 @@ const MyEvents = () => {
                   <div className="rounded-xl border border-border bg-muted/40 overflow-hidden mb-4 divide-y divide-border">
                     <div className="grid grid-cols-2 divide-x divide-border">
                       <div className="p-2.5">
-                        <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Date</p>
+                        <p className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">Date</p>
                         <p className="text-xs font-medium mt-0.5">{formattedDate}</p>
                       </div>
                       <div className="p-2.5">
-                        <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Time</p>
+                        <p className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">Time</p>
                         <p className="text-xs font-medium mt-0.5">{formattedTime}</p>
                       </div>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Venue</p>
+                      <p className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">Venue</p>
                       <p className="text-xs font-medium mt-0.5 truncate">{ev.venue || "Venue not specified"}</p>
                     </div>
                   </div>
@@ -1141,14 +1141,14 @@ const MyEvents = () => {
                     <div className="w-full mt-3">
                       <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-muted/50 border border-border">
                         <div className="min-w-0 flex-1">
-                          <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Participant</p>
+                          <p className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">Participant</p>
                           <p className="text-xs font-medium text-primary truncate mt-0.5">
                             {attendeeName}
                           </p>
                         </div>
                         {attendeeRoll && (
                           <div className="shrink-0 text-right">
-                            <p className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground">Roll No.</p>
+                            <p className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">Roll No.</p>
                             <p className="text-xs font-medium mt-0.5 tracking-wider">{attendeeRoll}</p>
                           </div>
                         )}
@@ -1158,7 +1158,7 @@ const MyEvents = () => {
 
                   <div className="mt-3 mb-4 text-center">
                     <p className="text-[10px] font-mono text-muted-foreground">
-                      Pass ID: <span className="font-bold text-primary">{passId}</span>
+                      Pass ID: <span className="font-semibold text-primary">{passId}</span>
                     </p>
                   </div>
 
@@ -1177,7 +1177,7 @@ const MyEvents = () => {
                       size="sm"
                       onClick={handleDownloadTicket}
                       disabled={downloadingTicket}
-                      className="flex-1 font-semibold"
+                      className="flex-1 font-medium"
                     >
                       {downloadingTicket ? (
                         <>
@@ -1245,7 +1245,7 @@ const MyEvents = () => {
                     variant="destructive"
                     size="sm"
                     onClick={confirmDeregister}
-                    className="flex-1 font-semibold"
+                    className="flex-1 font-medium"
                   >
                     {regToDeregister?.team ? 'Yes, Deregister Team' : 'Yes, Deregister'}
                   </Button>
@@ -1301,13 +1301,13 @@ const MyEvents = () => {
 
                 <CardContent className="p-5 space-y-4 overflow-y-auto flex-1">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    <label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
                       Current Team Members
                     </label>
                     <div className="divide-y divide-border text-xs border border-border rounded-lg overflow-hidden">
                       <div className="p-2.5 flex justify-between items-center bg-muted/20">
                         <div>
-                          <p className="font-semibold">{teamToUpdate.team?.leader?.name} <span className="text-primary font-bold">(Leader)</span></p>
+                          <p className="font-medium">{teamToUpdate.team?.leader?.name} <span className="text-primary font-semibold">(Leader)</span></p>
                           <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
                         </div>
                       </div>
@@ -1316,7 +1316,7 @@ const MyEvents = () => {
                         .map(m => (
                           <div key={m.id || m.userId} className="p-2.5 flex justify-between items-center">
                             <div>
-                              <p className="font-semibold">{m.user?.name || "Pending Invitation"}</p>
+                              <p className="font-medium">{m.user?.name || "Pending Invitation"}</p>
                               <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
                             </div>
                           </div>
@@ -1340,7 +1340,7 @@ const MyEvents = () => {
 
                     return (
                       <div className="space-y-2">
-                        <label className="block text-xs font-semibold">
+                        <label className="block text-xs font-medium">
                           Invite Teammate <span className="text-muted-foreground font-normal">(Size: {currentCount} / max {maxLimit})</span>
                         </label>
                         <div className="relative">
@@ -1366,7 +1366,7 @@ const MyEvents = () => {
                                 className="p-2.5 text-xs hover:bg-muted/50 cursor-pointer flex justify-between items-center transition-colors"
                               >
                                 <div className="min-w-0 pr-2">
-                                  <p className="font-semibold truncate">{s.name}</p>
+                                  <p className="font-medium truncate">{s.name}</p>
                                   <p className="text-muted-foreground font-mono text-[11px] truncate">{s.rollNo} • {s.email}</p>
                                 </div>
                                 <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-primary border-primary/30 shrink-0">
@@ -1444,7 +1444,7 @@ const MyEvents = () => {
                 <form onSubmit={submitPaymentEdit}>
                   <CardContent className="p-5 space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold mb-1.5">
+                      <label className="block text-xs font-medium mb-1.5">
                         UTR / Transaction ID <span className="text-destructive">*</span>
                       </label>
                       <Input
@@ -1458,7 +1458,7 @@ const MyEvents = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-semibold mb-1.5">
+                      <label className="block text-xs font-medium mb-1.5">
                         Payer Name
                       </label>
                       <Input
@@ -1471,7 +1471,7 @@ const MyEvents = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-semibold mb-1.5">
+                      <label className="block text-xs font-medium mb-1.5">
                         Payment Remarks
                       </label>
                       <Textarea
@@ -1484,7 +1484,7 @@ const MyEvents = () => {
 
                     {editingReg.paymentReviewMessage && (
                       <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p className="text-[11px] font-bold text-destructive uppercase tracking-wider mb-1">
+                        <p className="text-[11px] font-semibold text-destructive uppercase tracking-wider mb-1">
                           Reviewer Note
                         </p>
                         <p className="text-xs text-destructive leading-relaxed font-medium">
@@ -1507,7 +1507,7 @@ const MyEvents = () => {
                       type="submit"
                       size="sm"
                       disabled={submittingEdit}
-                      className="font-semibold"
+                      className="font-medium"
                     >
                       {submittingEdit ? 'Submitting...' : 'Update Details'}
                     </Button>

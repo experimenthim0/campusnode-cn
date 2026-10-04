@@ -11,20 +11,62 @@ import toast from 'react-hot-toast';
 import { getPublicJson } from '../lib/publicDataCache';
 import Section from '../components/layout/Section';
 
+const extractFacultyList = (club) => {
+  const list = [];
+  const seen = new Set();
+
+  if (Array.isArray(club.facultyCoordinators)) {
+    for (const fc of club.facultyCoordinators) {
+      const item = fc?.faculty ? fc.faculty : fc;
+      const name = item?.name;
+      const key = item?.id || item?._id || item?.email || name;
+      if (name && !seen.has(key)) {
+        seen.add(key);
+        list.push({
+          id: item?.id || item?._id || key,
+          name,
+          email: item?.email || null,
+          department: item?.department || null,
+          designation: item?.designation || 'Faculty Coordinator',
+        });
+      }
+    }
+  }
+
+  if (club.facultyCoordinator?.name) {
+    const fc = club.facultyCoordinator;
+    const key = fc.id || fc._id || fc.email || fc.name;
+    if (!seen.has(key)) {
+      seen.add(key);
+      list.push({
+        id: fc.id || fc._id || key,
+        name: fc.name,
+        email: fc.email || null,
+        department: fc.department || null,
+        designation: fc.designation || 'Faculty Coordinator',
+      });
+    }
+  }
+
+  if (list.length === 0 && club.facultyName) {
+    list.push({
+      id: 'legacy-faculty',
+      name: club.facultyName,
+      email: club.facultyEmail || null,
+      department: null,
+      designation: 'Faculty Coordinator',
+    });
+  }
+
+  return list;
+};
+
 const extractFaculty = (club) => {
-  const name =
-    club.facultyCoordinator?.name ||
-    club.facultyCoordinators?.[0]?.name ||
-    club.facultyName ||
-    'Not Assigned';
-
-  const email =
-    club.facultyCoordinator?.email ||
-    club.facultyCoordinators?.[0]?.email ||
-    club.facultyEmail ||
-    null;
-
-  return { name, email, isAssigned: name !== 'Not Assigned' };
+  const list = extractFacultyList(club);
+  if (list.length > 0) {
+    return { name: list[0].name, email: list[0].email, isAssigned: true };
+  }
+  return { name: 'Not Assigned', email: null, isAssigned: false };
 };
 
 const extractStudentLead = (club) => {
@@ -49,10 +91,7 @@ const extractStudentLead = (club) => {
     coordinators[0]?.student?.name ||
     'Not Assigned';
 
-  const email =
-    primaryHead?.student?.email ||
-    coordinators[0]?.student?.email ||
-    null;
+
 
   const roleTitle = primaryHead
     ? (primaryHead.position || 'Student Lead')
@@ -62,7 +101,7 @@ const extractStudentLead = (club) => {
 
   return {
     name,
-    email,
+   
     roleTitle,
     isAssigned: name !== 'Not Assigned',
   };
@@ -126,14 +165,20 @@ const ClubDirectory = () => {
     return clubs.filter((club) => {
       const clubName = (club.clubName || '').toLowerCase();
       const clubEmail = (club.clubEmail || '').toLowerCase();
-      const faculty = extractFaculty(club);
+      const facultyList = extractFacultyList(club);
       const student = extractStudentLead(club);
+
+      const matchesFaculty = facultyList.some(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          (f.email && f.email.toLowerCase().includes(q)) ||
+          (f.department && f.department.toLowerCase().includes(q))
+      );
 
       return (
         clubName.includes(q) ||
         clubEmail.includes(q) ||
-        faculty.name.toLowerCase().includes(q) ||
-        (faculty.email && faculty.email.toLowerCase().includes(q)) ||
+        matchesFaculty ||
         student.name.toLowerCase().includes(q) ||
         (student.email && student.email.toLowerCase().includes(q))
       );
@@ -160,7 +205,7 @@ const ClubDirectory = () => {
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 pt-24 sm:pt-28 pb-5 transition-colors">
         <Section>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
               Club Directory
             </h1>
 
@@ -256,7 +301,7 @@ const ClubDirectory = () => {
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
-                      <tr className="bg-neutral-50 dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-800 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      <tr className="bg-neutral-50 dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-800 text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                         <th className="py-3 px-4">Club</th>
                         <th className="py-3 px-4">Faculty Coordinator</th>
                         <th className="py-3 px-4">Student Lead</th>
@@ -266,7 +311,7 @@ const ClubDirectory = () => {
                     </thead>
                     <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                       {filteredClubs.map((club, idx) => {
-                        const faculty = extractFaculty(club);
+                        const facultyList = extractFacultyList(club);
                         const student = extractStudentLead(club);
                         const clubUrl = `/club/${club.slug || club.id || club._id}`;
 
@@ -276,7 +321,7 @@ const ClubDirectory = () => {
                             className="hover:bg-neutral-50 dark:hover:bg-neutral-850/50 transition-colors"
                           >
                             {/* Club */}
-                            <td className="py-3 px-4 align-middle">
+                            <td className="py-3 px-4 align-top">
                               <Link to={clubUrl} className="flex items-center gap-3">
                                 {club.clubLogo ? (
                                   <img
@@ -285,86 +330,85 @@ const ClubDirectory = () => {
                                     className="w-8 h-8 rounded object-cover bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0"
                                   />
                                 ) : (
-                                  <div className="w-8 h-8 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                                  <div className="w-8 h-8 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
                                     {(club.clubName || 'C')[0]}
                                   </div>
                                 )}
-                                <span className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline truncate max-w-[220px]">
+                                <span className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline truncate max-w-[220px]">
                                   {club.clubName}
                                 </span>
                               </Link>
                             </td>
 
-                            {/* Faculty Coordinator */}
-                            <td className="py-3 px-4 align-middle">
-                              <div className="min-w-0">
-                                <div className="font-medium text-neutral-900 dark:text-neutral-200 truncate max-w-[190px]">
-                                  {faculty.name}
+                            {/* Faculty Coordinator(s) */}
+                            <td className="py-3 px-4 align-top">
+                              {facultyList.length === 0 ? (
+                                <span className="text-xs text-neutral-400 italic">None</span>
+                              ) : (
+                                <div className="space-y-2.5 min-w-0">
+                                  {facultyList.map((fac, fIdx) => {
+                                    const copyId = `fac-${club.id || club._id}-${fIdx}`;
+                                    return (
+                                      <div key={fac.id || fac.email || fIdx} className="min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="font-medium text-neutral-900 dark:text-neutral-200 truncate max-w-[190px]">
+                                            {fac.name}
+                                          </span>
+                                          {facultyList.length > 1 && (
+                                            <span className="text-[10px] px-1 py-0.2 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 font-mono">
+                                              #{fIdx + 1}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {fac.department && (
+                                          <div className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate max-w-[190px]">
+                                            {fac.department}
+                                          </div>
+                                        )}
+                                        {fac.email ? (
+                                          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                            <a
+                                              href={`mailto:${fac.email}`}
+                                              className="hover:underline truncate max-w-[160px]"
+                                              title={fac.email}
+                                            >
+                                              {fac.email}
+                                            </a>
+                                            <button
+                                              onClick={() => handleCopy(fac.email, copyId, 'Faculty email')}
+                                              className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                                              title="Copy email"
+                                              aria-label={`Copy email for ${fac.name}`}
+                                            >
+                                              {copiedKey === copyId ? (
+                                                <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
+                                              ) : (
+                                                <Copy className="w-3 h-3" />
+                                              )}
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <span className="text-xs text-neutral-400 italic">No email</span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                                {faculty.email ? (
-                                  <div className="flex items-center gap-1.5 mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                    <a
-                                      href={`mailto:${faculty.email}`}
-                                      className="hover:underline truncate max-w-[160px]"
-                                      title={faculty.email}
-                                    >
-                                      {faculty.email}
-                                    </a>
-                                    <button
-                                      onClick={() => handleCopy(faculty.email, `fac-${club.id}`, 'Faculty email')}
-                                      className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
-                                      title="Copy email"
-                                      aria-label={`Copy email for ${faculty.name}`}
-                                    >
-                                      {copiedKey === `fac-${club.id}` ? (
-                                        <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
-                                      ) : (
-                                        <Copy className="w-3 h-3" />
-                                      )}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <span className="text-xs text-neutral-400 italic">None</span>
-                                )}
-                              </div>
+                              )}
                             </td>
 
                             {/* Student Lead */}
-                            <td className="py-3 px-4 align-middle">
+                            <td className="py-3 px-4 align-top">
                               <div className="min-w-0">
                                 <div className="font-medium text-neutral-900 dark:text-neutral-200 truncate max-w-[190px]">
                                   {student.name}
                                 </div>
-                                {student.email ? (
-                                  <div className="flex items-center gap-1.5 mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                    <a
-                                      href={`mailto:${student.email}`}
-                                      className="hover:underline truncate max-w-[160px]"
-                                      title={student.email}
-                                    >
-                                      {student.email}
-                                    </a>
-                                    <button
-                                      onClick={() => handleCopy(student.email, `stu-${club.id}`, 'Student lead email')}
-                                      className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
-                                      title="Copy email"
-                                      aria-label={`Copy email for ${student.name}`}
-                                    >
-                                      {copiedKey === `stu-${club.id}` ? (
-                                        <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
-                                      ) : (
-                                        <Copy className="w-3 h-3" />
-                                      )}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <span className="text-xs text-neutral-400 italic">None</span>
-                                )}
+
                               </div>
                             </td>
 
                             {/* Official Club Email */}
-                            <td className="py-3 px-4 align-middle">
+                            <td className="py-3 px-4 align-top">
                               {club.clubEmail ? (
                                 <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
                                   <a
@@ -375,12 +419,12 @@ const ClubDirectory = () => {
                                     {club.clubEmail}
                                   </a>
                                   <button
-                                    onClick={() => handleCopy(club.clubEmail, `club-${club.id}`, 'Club email')}
+                                    onClick={() => handleCopy(club.clubEmail, `club-${club.id || club._id}`, 'Club email')}
                                     className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
                                     title="Copy official email"
                                     aria-label={`Copy official email for ${club.clubName}`}
                                   >
-                                    {copiedKey === `club-${club.id}` ? (
+                                    {copiedKey === `club-${club.id || club._id}` ? (
                                       <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
                                     ) : (
                                       <Copy className="w-3 h-3" />
@@ -393,10 +437,10 @@ const ClubDirectory = () => {
                             </td>
 
                             {/* Action */}
-                            <td className="py-3 px-4 align-middle text-right">
+                            <td className="py-3 px-4 align-top text-right">
                               <Link
                                 to={clubUrl}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:underline"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:white hover:underline"
                               >
                                 <span>Profile</span>
                                 <ArrowRight className="w-3 h-3" />
@@ -412,7 +456,7 @@ const ClubDirectory = () => {
                 {/* ── MOBILE LIST VIEW (Below md) ── */}
                 <div className="block md:hidden divide-y divide-neutral-200 dark:divide-neutral-800">
                   {filteredClubs.map((club, idx) => {
-                    const faculty = extractFaculty(club);
+                    const facultyList = extractFacultyList(club);
                     const student = extractStudentLead(club);
                     const clubUrl = `/club/${club.slug || club.id || club._id}`;
 
@@ -428,11 +472,11 @@ const ClubDirectory = () => {
                                 className="w-7 h-7 rounded object-cover bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0"
                               />
                             ) : (
-                              <div className="w-7 h-7 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                              <div className="w-7 h-7 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
                                 {(club.clubName || 'C')[0]}
                               </div>
                             )}
-                            <h3 className="font-semibold text-neutral-900 dark:text-white text-sm truncate">
+                            <h3 className="font-medium text-neutral-900 dark:text-white text-sm truncate">
                               {club.clubName}
                             </h3>
                           </Link>
@@ -447,37 +491,59 @@ const ClubDirectory = () => {
 
                         {/* Contacts List */}
                         <div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
-                          {/* Faculty Coordinator */}
-                          <div className="flex items-baseline justify-between gap-2 bg-neutral-50 dark:bg-neutral-850/60 p-2 rounded border border-neutral-100 dark:border-neutral-800/80">
-                            <span className="text-neutral-400 dark:text-neutral-500 text-[11px] shrink-0 font-medium">
-                              Faculty:
-                            </span>
-                            <div className="flex items-center gap-1.5 text-right truncate">
-                              <span className="text-neutral-900 dark:text-neutral-200 font-medium truncate">
-                                {faculty.name}
-                              </span>
-                              {faculty.email && (
-                                <>
-                                  <span className="text-neutral-300 dark:text-neutral-700">•</span>
-                                  <a
-                                    href={`mailto:${faculty.email}`}
-                                    className="truncate hover:underline text-neutral-500 max-w-[120px]"
-                                  >
-                                    {faculty.email}
-                                  </a>
-                                  <button
-                                    onClick={() => handleCopy(faculty.email, `m-fac-${club.id}`, 'Faculty email')}
-                                    className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
-                                  >
-                                    {copiedKey === `m-fac-${club.id}` ? (
-                                      <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
-                                    ) : (
-                                      <Copy className="w-3 h-3" />
-                                    )}
-                                  </button>
-                                </>
-                              )}
+                          {/* Faculty Coordinator(s) */}
+                          <div className="bg-neutral-50 dark:bg-neutral-850/60 p-2 rounded border border-neutral-100 dark:border-neutral-800/80 space-y-1.5">
+                            <div className="text-neutral-400 dark:text-neutral-500 text-[11px] font-medium">
+                              Faculty Coordinator{facultyList.length > 1 ? `s (${facultyList.length})` : ''}:
                             </div>
+                            {facultyList.length === 0 ? (
+                              <span className="text-xs text-neutral-400 italic">Not Assigned</span>
+                            ) : (
+                              <div className="space-y-1.5 divide-y divide-neutral-100 dark:divide-neutral-800/60">
+                                {facultyList.map((fac, fIdx) => {
+                                  const copyId = `m-fac-${club.id || club._id}-${fIdx}`;
+                                  return (
+                                    <div
+                                      key={fac.id || fac.email || fIdx}
+                                      className={`flex items-baseline justify-between gap-2 ${fIdx > 0 ? 'pt-1.5' : ''}`}
+                                    >
+                                      <div className="truncate min-w-0">
+                                        <div className="text-neutral-900 dark:text-neutral-200 font-medium truncate text-xs">
+                                          {fac.name}
+                                        </div>
+                                        {fac.department && (
+                                          <div className="text-[10px] text-neutral-400 truncate">
+                                            {fac.department}
+                                          </div>
+                                        )}
+                                      </div>
+                                      {fac.email && (
+                                        <div className="flex items-center gap-1.5 shrink-0 text-right">
+                                          <a
+                                            href={`mailto:${fac.email}`}
+                                            className="truncate hover:underline text-neutral-500 text-xs max-w-[120px]"
+                                            title={fac.email}
+                                          >
+                                            {fac.email}
+                                          </a>
+                                          <button
+                                            onClick={() => handleCopy(fac.email, copyId, 'Faculty email')}
+                                            className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                                            title="Copy email"
+                                          >
+                                            {copiedKey === copyId ? (
+                                              <Check className="w-3 h-3 text-neutral-900 dark:text-white" />
+                                            ) : (
+                                              <Copy className="w-3 h-3" />
+                                            )}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
 
                           {/* Student Lead */}

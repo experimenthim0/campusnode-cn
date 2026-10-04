@@ -68,10 +68,10 @@ const EventQuickViewDrawer = ({
         <div>
           <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border ${statusBadge}`}>
+              <span className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full border ${statusBadge}`}>
                 {event.reviewStatus}
               </span>
-              <span className="text-xs font-semibold text-cn-text-muted">
+              <span className="text-xs font-medium text-cn-text-muted">
                 {event.club?.category || "General Event"}
               </span>
             </div>
@@ -96,15 +96,15 @@ const EventQuickViewDrawer = ({
                     className="w-10 h-10 rounded-xl object-cover border border-cn-border"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center font-semibold text-sm">
                     {event.club?.clubName?.[0] || "C"}
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
+                  <h3 className="text-base sm:text-lg font-semibold text-cn-text leading-tight">
                     {event.title}
                   </h3>
-                  <p className="text-xs text-brand-600 dark:text-brand-400 font-bold">
+                  <p className="text-xs text-brand-600 dark:text-brand-400 font-semibold">
                     {event.club?.clubName || "Organized Club"}
                   </p>
                 </div>
@@ -123,30 +123,30 @@ const EventQuickViewDrawer = ({
             <div className="p-4 rounded-xl bg-cn-surface-muted border border-cn-border space-y-3">
               <div className="flex items-center gap-3 text-xs">
                 <Calendar size={16} className="text-brand-600 dark:text-brand-400 shrink-0" />
-                <span className="font-bold text-cn-text">{dateStr}</span>
+                <span className="font-semibold text-cn-text">{dateStr}</span>
               </div>
               <div className="flex items-center gap-3 text-xs">
                 <Clock size={16} className="text-brand-600 dark:text-brand-400 shrink-0" />
-                <span className="font-semibold text-cn-text-secondary">
+                <span className="font-medium text-cn-text-secondary">
                   {startStr} - {endStr}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-xs">
                 <MapPin size={16} className="text-brand-600 dark:text-brand-400 shrink-0" />
-                <span className="font-bold text-cn-text">{event.venue}</span>
+                <span className="font-semibold text-cn-text">{event.venue}</span>
               </div>
             </div>
 
             {/* Organizer Info */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted">
                 Organizer Contact
               </p>
               <div className="p-3 rounded-xl border border-cn-border bg-cn-surface-muted flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <User size={15} className="text-cn-text-muted" />
                   <div>
-                    <p className="font-bold text-cn-text">{event.createdBy?.name || "Student Coordinator"}</p>
+                    <p className="font-semibold text-cn-text">{event.createdBy?.name || "Student Coordinator"}</p>
                     <p className="text-[11px] text-cn-text-muted">{event.createdBy?.email || "No email"}</p>
                   </div>
                 </div>
@@ -165,11 +165,11 @@ const EventQuickViewDrawer = ({
             {/* Attendance & Capacity Section */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted">
                   Capacity & Attendance
                 </p>
                 {isCapacityWarning && (
-                  <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1">
+                  <span className="text-[10px] font-semibold text-rose-500 flex items-center gap-1">
                     <AlertTriangle size={12} /> Capacity Reached
                   </span>
                 )}
@@ -181,15 +181,15 @@ const EventQuickViewDrawer = ({
                   : "bg-cn-surface-muted border-cn-border"
               }`}>
                 <div>
-                  <p className="text-xs font-semibold text-cn-text-muted">Expected / Registered</p>
-                  <p className="text-xl font-bold text-cn-text mt-0.5">
+                  <p className="text-xs font-medium text-cn-text-muted">Expected / Registered</p>
+                  <p className="text-xl font-semibold text-cn-text mt-0.5">
                     {expectedAttendance} <span className="text-xs text-cn-text-muted font-normal">students</span>
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-xs font-semibold text-cn-text-muted">Venue Capacity</p>
-                  <p className="text-xl font-bold text-cn-text mt-0.5">
+                  <p className="text-xs font-medium text-cn-text-muted">Venue Capacity</p>
+                  <p className="text-xl font-semibold text-cn-text mt-0.5">
                     {venueCapacity > 0 ? venueCapacity : "Unlimited"}
                   </p>
                 </div>
@@ -198,14 +198,14 @@ const EventQuickViewDrawer = ({
 
             {/* Allocated Resources Badges */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted">
                 Resource Requirements
               </p>
               <div className="flex flex-wrap gap-2">
                 {resources.map((res, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 bg-cn-surface text-cn-text text-xs font-bold rounded-lg border border-cn-border flex items-center gap-1.5"
+                    className="px-2.5 py-1 bg-cn-surface text-cn-text text-xs font-semibold rounded-lg border border-cn-border flex items-center gap-1.5"
                   >
                     <Package size={12} className="text-brand-600 dark:text-brand-400" />
                     <span>{res}</span>
@@ -224,7 +224,7 @@ const EventQuickViewDrawer = ({
                 onClose();
                 onOpenPreview(event);
               }}
-              className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs mb-2"
+              className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs mb-2"
             >
               <ExternalLink size={14} />
               <span>Full Event &amp; Payment Preview</span>
@@ -236,7 +236,7 @@ const EventQuickViewDrawer = ({
               <button
                 type="button"
                 onClick={() => onApprove(event)}
-                className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <CheckCircle size={15} />
                 <span>Approve Event</span>
@@ -244,7 +244,7 @@ const EventQuickViewDrawer = ({
               <button
                 type="button"
                 onClick={() => onReject(event)}
-                className="py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <XCircle size={15} />
                 <span>Reject</span>
@@ -260,7 +260,7 @@ const EventQuickViewDrawer = ({
                   onClose();
                   onOpenReschedule(event);
                 }}
-                className="py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Clock size={14} />
                 <span>Reschedule</span>
@@ -273,7 +273,7 @@ const EventQuickViewDrawer = ({
                 onClose();
                 navigate(`/events/edit/${event.id || event._id}`);
               }}
-              className="py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Edit2 size={14} />
               <span>Edit Details</span>

@@ -35,11 +35,11 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
       <div className="w-full max-w-2xl bg-cn-surface border border-cn-border rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col transition-colors">
         <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-semibold shrink-0">
               <AlertTriangle size={18} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
+              <h3 className="text-base sm:text-lg font-semibold text-cn-text leading-tight">
                 Conflict Center
               </h3>
               <p className="text-xs text-cn-text-muted font-normal mt-0.5">
@@ -70,7 +70,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
 
         <div className="flex-1 overflow-y-auto p-6 space-y-3 text-cn-text-secondary">
           {loading ? (
-            <div className="py-16 text-center text-cn-text-muted text-xs font-semibold">
+            <div className="py-16 text-center text-cn-text-muted text-xs font-medium">
               Analyzing active bookings & blackouts...
             </div>
           ) : issues.length === 0 ? (
@@ -78,7 +78,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
               <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 size={24} />
               </div>
-              <p className="text-sm font-bold text-cn-text">No Active Conflicts Found</p>
+              <p className="text-sm font-semibold text-cn-text">No Active Conflicts Found</p>
               <p className="text-xs text-cn-text-muted max-w-sm mx-auto">
                 All campus venues and event schedules are properly validated with zero double-bookings.
               </p>
@@ -101,7 +101,7 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                         isBlackout
                           ? "bg-rose-600 text-white"
                           : isVenueOverlap
@@ -112,13 +112,13 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                       {issue.type}
                     </span>
 
-                    <span className="text-xs font-bold text-cn-text-muted flex items-center gap-1">
+                    <span className="text-xs font-semibold text-cn-text-muted flex items-center gap-1">
                       <Building2 size={13} />
                       {issue.venue}
                     </span>
                   </div>
 
-                  <p className="text-xs font-bold text-cn-text">
+                  <p className="text-xs font-semibold text-cn-text">
                     {issue.message}
                   </p>
 
@@ -126,11 +126,11 @@ const ConflictCenter = ({ isOpen, onClose, onSelectEvent }) => {
                   {issue.event1 && issue.event2 && (
                     <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-cn-border-subtle">
                       <div className="p-2.5 rounded-xl bg-cn-surface border border-cn-border">
-                        <p className="font-bold text-cn-text truncate">{issue.event1.title}</p>
+                        <p className="font-semibold text-cn-text truncate">{issue.event1.title}</p>
                         <p className="text-xs text-cn-text-muted">{issue.event1.clubName}</p>
                       </div>
                       <div className="p-2.5 rounded-xl bg-cn-surface border border-cn-border">
-                        <p className="font-bold text-cn-text truncate">{issue.event2.title}</p>
+                        <p className="font-semibold text-cn-text truncate">{issue.event2.title}</p>
                         <p className="text-xs text-cn-text-muted">{issue.event2.clubName}</p>
                       </div>
                     </div>

@@ -237,7 +237,7 @@ const HighlightMatch = ({ text = "", query = "" }) => {
         regex.test(part) ? (
           <span
             key={i}
-            className="text-primary font-semibold mysans underline decoration-primary/40 underline-offset-2"
+            className="text-primary font-medium mysans underline decoration-primary/40 underline-offset-2"
           >
             {part}
           </span>
@@ -840,12 +840,12 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                   setActiveTab(tab.id);
                   inputRef.current?.focus();
                 }}
-                className={`h-7 text-xs font-semibold px-2.5 gap-1.5 ${!isActive ? 'text-muted-foreground' : ''}`}
+                className={`h-7 text-xs font-medium px-2.5 gap-1.5 ${!isActive ? 'text-muted-foreground' : ''}`}
               >
                 <span>{tab.label}</span>
                 {count !== null && (
                   <span
-                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono font-semibold ${
+                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono font-medium ${
                       isActive
                         ? "bg-white/20 text-white"
                         : "bg-muted text-muted-foreground"
@@ -871,12 +871,12 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
               {recentSearches.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Recent Searches
                     </p>
                     <button
                       onClick={clearAllRecents}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      className="text-[10px] font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                     >
                       Clear all
                     </button>
@@ -909,7 +909,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
 
               {/* Popular Searches */}
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2 px-1">
                   Popular Searches
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -931,7 +931,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
 
               {/* Quick Access */}
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2 px-1">
                   Quick Access
                 </p>
                 <div className="space-y-1">
@@ -951,7 +951,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                           <div className="w-6 h-6 rounded-md bg-background border border-border flex items-center justify-center text-primary text-xs shrink-0">
                             <PageIcon className="w-3.5 h-3.5" />
                           </div>
-                          <span className="text-xs font-semibold group-hover:text-primary truncate">
+                          <span className="text-xs font-medium group-hover:text-primary truncate">
                             {p.title}
                           </span>
                           <span className="text-[11px] text-muted-foreground hidden sm:inline truncate">
@@ -972,7 +972,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                 <div key={sIdx} className="space-y-1">
                   {/* Category Header */}
                   <div className="flex items-center justify-between px-2 pt-1.5 pb-0.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       {section.title}
                     </span>
                     <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5">
@@ -1022,7 +1022,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-border"
                                 />
                               ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 font-semibold text-xs">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 font-medium text-xs">
                                   {getInitials(item.title)}
                                 </div>
                               )
@@ -1034,7 +1034,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-border"
                                 />
                               ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs border border-primary/20">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-xs border border-primary/20">
                                   {getInitials(item.title)}
                                 </div>
                               )
@@ -1048,21 +1048,21 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                           {/* Result Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs sm:text-sm font-semibold truncate">
+                              <span className="text-xs sm:text-sm font-medium truncate">
                                 <HighlightMatch text={item.title} query={query} />
                               </span>
 
                               {item.type === "member" && item.roleBadge && (
                                 <Badge
                                   variant={getMemberRoleBadgeVariant(item.roleBadge)}
-                                  className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-semibold"
+                                  className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-medium"
                                 >
                                   {item.roleBadge}
                                 </Badge>
                               )}
 
                               {item.type === "event" && item.isLive && (
-                                <Badge className="text-[9px] font-semibold px-1.5 py-0 bg-primary text-primary-foreground shrink-0 flex items-center gap-1 border-none">
+                                <Badge className="text-[9px] font-medium px-1.5 py-0 bg-primary text-primary-foreground shrink-0 flex items-center gap-1 border-none">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                   LIVE
                                 </Badge>
@@ -1089,7 +1089,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                             )}
 
                             {isSelected ? (
-                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground bg-primary rounded">
+                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground bg-primary rounded">
                                 ↵
                               </kbd>
                             ) : (
@@ -1107,7 +1107,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
             /* No Results Found */
             <div className="py-12 px-4 text-center">
               <Search className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <h4 className="text-sm font-semibold mb-1">
+              <h4 className="text-sm font-medium mb-1">
                 No matching results found
               </h4>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">

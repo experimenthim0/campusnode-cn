@@ -228,7 +228,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
           <div className="flex items-center gap-2.5 pointer-events-auto min-w-0 pr-4">
             <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />
             <div className="min-w-0">
-              <h3 className="text-white text-sm sm:text-base font-bold truncate max-w-[200px] sm:max-w-md">
+              <h3 className="text-white text-sm sm:text-base font-semibold truncate max-w-[200px] sm:max-w-md">
                 {title || 'Event Poster'}
               </h3>
               <p className="text-neutral-400 text-[11px] font-medium hidden sm:block">
@@ -240,7 +240,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
           <div className="flex items-center gap-2 pointer-events-auto shrink-0">
             <button
               onClick={handleDownload}
-              className="p-2 sm:px-3.5 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer border border-white/10 hover:border-white/25 active:scale-95"
+              className="p-2 sm:px-3.5 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer border border-white/10 hover:border-white/25 active:scale-95"
               title="Download image"
             >
               <i className="ri-download-2-line text-sm" />
@@ -274,7 +274,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none z-10">
               <i className="ri-loader-4-line animate-spin text-3xl text-brand-500" />
-              <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+              <span className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
                 Loading poster...
               </span>
             </div>
@@ -314,7 +314,7 @@ const ImageZoomModal = ({ isOpen, onClose, src, alt = 'Poster', title = '' }) =>
             {/* Scale percentage indicator */}
             <button
               onClick={handleResetZoom}
-              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[11px] sm:text-xs font-mono font-bold tracking-wider transition-colors cursor-pointer text-neutral-200"
+              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[11px] sm:text-xs font-mono font-semibold tracking-wider transition-colors cursor-pointer text-neutral-200"
               title="Click to reset (0)"
             >
               {Math.round(scale * 100)}%

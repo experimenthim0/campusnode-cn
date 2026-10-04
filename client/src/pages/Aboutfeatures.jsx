@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const SectionTag = ({ label }) => (
   <div className="flex items-center gap-2.5 mb-4">
     <span className="h-px w-7 bg-brand-500" />
-    <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-brand-500">
+    <span className="text-[10px] font-semibold tracking-[0.22em] uppercase text-brand-500">
       {label}
     </span>
   </div>
@@ -40,7 +40,7 @@ const StudentCard = ({ icon, title, desc }) => (
     </div>
     <div>
       <h3
-        className="text-[15px] font-bold tracking-[-0.3px] mb-2 text-neutral-950"
+        className="text-[15px] font-semibold tracking-[-0.3px] mb-2 text-neutral-950"
         style={{ fontFamily: "'myfont', sans-serif" }}
       >
         {title}
@@ -60,12 +60,12 @@ const OrgCard = ({ icon, title, desc, soon = false, className = '' }) => (
     </div>
     <div>
       <h3
-        className="text-[15px] font-bold text-black tracking-[-0.3px] mb-2"
+        className="text-[15px] font-semibold text-black tracking-[-0.3px] mb-2"
         style={{ fontFamily: "'myfont', sans-serif" }}
       >
         {title}
         {soon && (
-          <span className="ml-2 text-[10px] font-bold tracking-widest text-brand-500 uppercase">
+          <span className="ml-2 text-[10px] font-semibold tracking-widest text-brand-500 uppercase">
             Soon
           </span>
         )}
@@ -97,7 +97,7 @@ const Aboutfeatures = () => {
           {/* Eyebrow */}
           <div className="flex items-center gap-2.5 mb-8 relative z-10">
             <span className="w-2 h-2 rounded-full bg-brand-500" />
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-700 flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-neutral-700 flex items-center gap-1.5 flex-wrap">
               <span className="logofont font-light normal-case text-xs text-black dark:text-neutral-200">Campus<span className="text-brand-500">Node</span></span> — Campus Events Platform
             </span>
           </div>
@@ -119,14 +119,14 @@ const Aboutfeatures = () => {
           <div className="flex flex-wrap gap-3 relative z-10">
             <a
               href="#students"
-              className="px-7 py-3.5 bg-brand-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
+              className="px-7 py-3.5 bg-brand-500 text-white text-[13px] font-semibold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               For Students
             </a>
             <a
               href="#organizers"
-              className="px-7 py-3.5 bg-transparent text-black text-[13px] font-bold uppercase tracking-widest border border-neutral-700 rounded-sm hover:border-neutral-400 transition-colors"
+              className="px-7 py-3.5 bg-transparent text-black text-[13px] font-semibold uppercase tracking-widest border border-neutral-700 rounded-sm hover:border-neutral-400 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               For Organizers
@@ -180,7 +180,7 @@ const Aboutfeatures = () => {
             </div>
             <Link
               to="/register/student"
-              className="shrink-0 px-8 py-3.5 bg-white text-neutral-950 text-[12px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-50 transition-colors"
+              className="shrink-0 px-8 py-3.5 bg-white text-neutral-950 text-[12px] font-semibold uppercase tracking-widest rounded-sm hover:bg-brand-50 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Create Student Account →
@@ -216,7 +216,7 @@ const Aboutfeatures = () => {
                     <i class="ri-settings-2-line text-black text-xl"></i>
                   </div>
                   <h3
-                    className="text-[20px] font-bold text-black tracking-[-0.4px]"
+                    className="text-[20px] font-semibold text-black tracking-[-0.4px]"
                     style={{ fontFamily: "'myfont', sans-serif" }}
                   >
                     Seamless Event Hosting
@@ -229,7 +229,7 @@ const Aboutfeatures = () => {
                   {['Automated Payments', 'Custom Forms', 'Role Management'].map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500 border border-neutral-800 rounded-full"
+                      className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500 border border-neutral-800 rounded-full"
                     >
                       {tag}
                     </span>
@@ -277,7 +277,7 @@ const Aboutfeatures = () => {
             <div className="mt-12 text-center">
               <Link
                 to="/register/club-head"
-                className="inline-block px-10 py-4 bg-brand-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
+                className="inline-block px-10 py-4 bg-brand-500 text-white text-[13px] font-semibold uppercase tracking-widest rounded-sm hover:bg-brand-600 transition-colors"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 Onboard Your Club →
@@ -300,14 +300,14 @@ const Aboutfeatures = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               to="/events"
-              className="w-full sm:w-auto px-9 py-4 bg-neutral-950 text-white text-[13px] font-bold uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-colors"
+              className="w-full sm:w-auto px-9 py-4 bg-neutral-950 text-white text-[13px] font-semibold uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Explore Events
             </Link>
             <Link
               to="/faq"
-              className="w-full sm:w-auto px-9 py-4 bg-transparent text-neutral-950 text-[13px] font-bold uppercase tracking-widest border border-neutral-950 rounded-sm hover:bg-neutral-950 hover:text-white transition-colors"
+              className="w-full sm:w-auto px-9 py-4 bg-transparent text-neutral-950 text-[13px] font-semibold uppercase tracking-widest border border-neutral-950 rounded-sm hover:bg-neutral-950 hover:text-white transition-colors"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Got Questions?

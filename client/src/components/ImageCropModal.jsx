@@ -150,7 +150,7 @@ const ImageCropModal = ({
               <ImageIcon className="w-5 h-5 shrink-0" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground leading-tight">
                 {title}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
@@ -209,7 +209,7 @@ const ImageCropModal = ({
           {busy && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 backdrop-blur-xs text-white gap-2">
               <Loader2 className="w-8 h-8 animate-spin text-brand-500 shrink-0" />
-              <span className="text-xs font-semibold tracking-wide">
+              <span className="text-xs font-medium tracking-wide">
                 Processing & Uploading…
               </span>
             </div>
@@ -326,7 +326,7 @@ const ImageCropModal = ({
               size="sm"
               onClick={handleSave}
               disabled={busy || !imageSrc}
-              className="h-9 px-5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+              className="h-9 px-5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-medium shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
             >
               {busy ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />

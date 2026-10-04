@@ -1,5 +1,11 @@
-
-export const PROGRAM_OPTIONS = ["BTECH", "MTECH", "MSC", "MBA", "PHD", "OTHER"];
+export const PROGRAM_OPTIONS = [
+  "BTECH",
+  "MTECH",
+  "MSC",
+  "MBA",
+  "PHD",
+  "OTHER",
+];
 
 export const PROGRAM_LABELS = {
   BTECH: "B.Tech",
@@ -14,32 +20,93 @@ export const PROGRAM_BRANCH_MAP = {
   BTECH: {
     label: "B.Tech (4 Years)",
     maxDurationYears: 4,
-    branches: ["CSE", "IT", "MNC", "MAC", "ECE", "EE", "ICE", "ME", "CE", "CH", "IPE", "BT", "TT"],
+    branches: [
+      "AI",  // Artificial Intelligence
+      "BT",   // Biotechnology
+      "CH",   // Chemical Engineering
+      "CE",   // Civil Engineering
+      "CSE",  // Computer Science & Engineering
+      "DSE",  // Data Science & Engineering
+      "EE",   // Electrical Engineering
+      "ECE",  // Electronics & Communication Engineering
+      "VLSI",   // Electronics & VLSI Engineering
+      "IPE",  // Industrial & Production Engineering
+      "IT",   // Information Technology
+      "ICE",  // Instrumentation & Control Engineering
+      "MNC",  // Mathematics & Computing
+      "ME",   // Mechanical Engineering
+      "TT",   // Textile Technology
+    ],
   },
+
   MTECH: {
     label: "M.Tech (2 Years)",
     maxDurationYears: 2,
-    branches: ["CSE", "IT", "MNC", "MAC", "VLSI", "AI", "ECE", "EE", "ICE", "ME", "CE", "CH", "IPE", "BT", "TT", "RE"],
+    branches: [
+      "CSE",
+      "IT",
+      "MNC",
+      "VLSI",
+      "AI",
+      "ECE",
+      "EE",
+      "ICE",
+      "ME",
+      "CE",
+      "CH",
+      "IPE",
+      "BT",
+      "TT",
+      "RE",
+    ],
   },
+
   MSC: {
     label: "M.Sc (2 Years)",
     maxDurationYears: 2,
-    branches: ["PH", "CY", "MA"],
+    branches: [
+      "PH", // Physics
+      "CY", // Chemistry
+      "MA", // Mathematics
+    ],
   },
+
   MBA: {
     label: "MBA (2 Years)",
     maxDurationYears: 2,
-    branches: ["MB"],
+    branches: [
+      "MB",
+    ],
   },
+
   PHD: {
-    label: "Ph.D (5 Years)",
+    label: "Ph.D (Typically 5 Years)",
     maxDurationYears: 5,
-    branches: ["CSE", "IT", "ECE", "EE", "ICE", "ME", "CE", "CH", "IPE", "BT", "TT", "PH", "CY", "MA", "HUM"],
+    branches: [
+      "CSE",
+      "IT",
+      "ECE",
+      "EE",
+      "ICE",
+      "ME",
+      "CE",
+      "CH",
+      "IPE",
+      "BT",
+      "TT",
+      "PH",
+      "CY",
+      "MA",
+      "HUM",
+    ],
   },
+
   OTHER: {
-    label: "Other Category (Max 5 Years)",
+    label: "Other Category",
     maxDurationYears: 5,
-    branches: ["GENERAL"],
+    branches: [
+      "GENERAL",
+    ],
   },
 };
 

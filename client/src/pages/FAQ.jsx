@@ -704,7 +704,7 @@ const FAQ = () => {
           {/* Result Count & Expand/Collapse Toggle */}
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1 pt-1 max-w-4xl mx-auto">
             <span>
-              Showing <strong className="text-zinc-800 dark:text-zinc-200 font-semibold">{filteredFaqs.length}</strong> {filteredFaqs.length === 1 ? 'question' : 'questions'}
+              Showing <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{filteredFaqs.length}</strong> {filteredFaqs.length === 1 ? 'question' : 'questions'}
             </span>
             <div className="flex items-center gap-3">
               <button
@@ -781,7 +781,7 @@ const FAQ = () => {
                               onClick={() => handleFeedback(faq.id, true)}
                               className={`p-1 rounded-md transition-colors cursor-pointer ${
                                 feedback === 'up'
-                                  ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 font-semibold'
+                                  ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 font-medium'
                                   : 'hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
                               }`}
                               title="Yes, helpful"
@@ -793,7 +793,7 @@ const FAQ = () => {
                               onClick={() => handleFeedback(faq.id, false)}
                               className={`p-1 rounded-md transition-colors cursor-pointer ${
                                 feedback === 'down'
-                                  ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-semibold'
+                                  ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 font-medium'
                                   : 'hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
                               }`}
                               title="Needs improvement"
@@ -834,7 +834,7 @@ const FAQ = () => {
           ) : (
             <div className="text-center py-12 p-8 rounded-3xl bg-white/60 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800">
               <HelpCircle className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+              <h3 className="text-base font-medium text-zinc-900 dark:text-white mb-1">
                 No matching answers found
               </h3>
               <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-4">
@@ -843,7 +843,7 @@ const FAQ = () => {
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="px-4 py-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-medium cursor-pointer"
               >
                 Clear Search
               </button>
@@ -860,7 +860,7 @@ const FAQ = () => {
                   <MessageCircle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white mb-0.5">
+                  <h3 className="text-base sm:text-lg font-medium text-zinc-900 dark:text-white mb-0.5">
                     Still have questions or need assistance?
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
@@ -872,7 +872,7 @@ const FAQ = () => {
               <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
                 <a
                   href="mailto:clubsetu@nikhim.me"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium shadow-xs transition-all active:scale-95 cursor-pointer"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   <span>Email Support</span>
@@ -882,7 +882,7 @@ const FAQ = () => {
                   href="https://whatsapp.com/channel/0029VbAhXba7z4kgTBY3nS0Z"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-whatsapp hover:bg-whatsapp-hover text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-whatsapp hover:bg-whatsapp-hover text-white text-xs font-medium shadow-xs transition-all active:scale-95 cursor-pointer"
                 >
                   <i className="ri-whatsapp-line text-sm" />
                   <span>WhatsApp Help</span>
@@ -893,7 +893,7 @@ const FAQ = () => {
         </ScrollReveal>
 
         {/* ── Bottom Navigation Links ── */}
-        <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm font-semibold">
+        <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm font-medium">
           <Link
             to="/"
             className="text-zinc-600 dark:text-zinc-400 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors inline-flex items-center gap-1"

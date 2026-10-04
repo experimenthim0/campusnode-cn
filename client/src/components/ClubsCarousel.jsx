@@ -116,7 +116,7 @@ const ClubsCarousel = () => {
       {/* Header with Navigation Controls */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
         <div>
-          <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-bold text-xs uppercase tracking-widest mb-1.5">
+          <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
             <i className="ri-team-line text-sm" />
             <span>Student Communities</span>
           </div>
@@ -153,7 +153,7 @@ const ClubsCarousel = () => {
           {/* Direct link to all clubs */}
           <Link
             to="/clubs"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:border-cn-blue-500/40 transition-all duration-200 shadow-2xs hover:shadow-xs group"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:border-cn-blue-500/40 transition-all duration-200 shadow-2xs hover:shadow-xs group"
           >
             <span>Explore All</span>
             <i className="ri-arrow-right-line text-xs transition-transform group-hover:translate-x-1" />
@@ -169,7 +169,7 @@ const ClubsCarousel = () => {
             <button
               key={tab.key}
               onClick={() => setFilterCategory(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full border transition-all duration-150 shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border transition-all duration-150 shrink-0 cursor-pointer ${
                 isSelected
                   ? 'bg-neutral-900 dark:bg-white text-white dark:text-black border-neutral-900 dark:border-white shadow-2xs'
                   : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
@@ -215,8 +215,8 @@ const ClubsCarousel = () => {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="flex gap-5 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory py-2 px-1 scroll-smooth"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y no-scrollbar snap-x snap-mandatory pt-2 pb-5 px-1 scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'hidden' }}
         >
           {filteredClubs.map(club => (
             <div

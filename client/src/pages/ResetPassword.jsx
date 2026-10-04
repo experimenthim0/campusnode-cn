@@ -43,7 +43,7 @@ const ResetPassword = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-medium tracking-wider text-cn-text logofont">
-            Campus<span className="text-brand-600">Node</span>
+            Campusnode
           </h1>
           <p className="text-sm text-cn-text-muted mt-1">
             Reset your password
@@ -51,7 +51,7 @@ const ResetPassword = () => {
         </div>
 
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-cn-text text-center">
+          <h2 className="text-lg font-semibold text-cn-text text-center">
             Set New Password
           </h2>
           <p className="mt-1 text-center text-sm text-cn-text-muted">
@@ -60,7 +60,7 @@ const ResetPassword = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
             <div>
-              <label className="block text-[13px] font-semibold  tracking-wider text-cn-text-muted mb-2">
+              <label className="block text-[13px] font-medium  tracking-wider text-cn-text-muted mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -84,7 +84,7 @@ const ResetPassword = () => {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold  tracking-wider text-cn-text-muted mb-2">
+              <label className="block text-[13px] font-medium  tracking-wider text-cn-text-muted mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
@@ -109,7 +109,7 @@ const ResetPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${
+              className={`w-full py-3 rounded-xl text-white text-sm font-medium transition-all ${
                 loading
                   ? 'bg-neutral-400 cursor-not-allowed'
                   : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5 shadow-sm'
@@ -122,7 +122,7 @@ const ResetPassword = () => {
           <div className="mt-6 pt-5 border-t border-cn-border-subtle text-center">
             <Link
               to="/login"
-              className="text-sm font-semibold text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
+              className="text-sm font-medium text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
             >
               ← Back to Sign In
             </Link>

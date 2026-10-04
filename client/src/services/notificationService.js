@@ -5,8 +5,8 @@ import api from './api';
  * All notification-related API calls.
  */
 
-export const getNotifications = () =>
-  api.get('/api/notifications');
+export const getNotifications = (params) =>
+  api.get('/api/notifications', { params });
 
 export const sendNotification = (data) =>
   api.post('/api/notifications', data);

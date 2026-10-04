@@ -18,7 +18,7 @@ const BroadcastsTab = ({
             <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 flex items-start gap-3">
                 <Radio size={20} className="shrink-0 mt-0.5" />
                 <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider">Real-Time Broadcast Engine</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider">Real-Time Broadcast Engine</h4>
                     <p className="text-xs mt-1 leading-relaxed opacity-90">
                         Broadcast announcements are dispatched instantly via WebSocket live feeds and recorded in student notification feeds.
                     </p>
@@ -40,16 +40,16 @@ const BroadcastsTab = ({
                         <tr key={b._id || b.id || idx} className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
                             <Td className="text-neutral-400 dark:text-neutral-600 font-mono font-medium">{idx + 1}</Td>
                             <Td className="max-w-md">
-                                <p className="font-bold text-black dark:text-white text-sm">{b.title}</p>
+                                <p className="font-semibold text-black dark:text-white text-sm">{b.title}</p>
                                 <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-0.5">{b.message}</p>
                             </Td>
                             <Td>
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
                                     <Radio size={11} className="text-brand-500" />
                                     {b.recipientStudentId ? 'Direct Student' : 'All Students'}
                                 </span>
                             </Td>
-                            <Td className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                            <Td className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                                 {b.sender?.name || b.sender?.clubName || 'Admin'}
                             </Td>
                             <Td align="right" className="text-xs text-neutral-400 font-mono">
@@ -76,11 +76,11 @@ const BroadcastsTab = ({
                 >
                     <form onSubmit={handleSendBroadcast} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-2">Target Audience</label>
+                            <label className="block text-xs font-semibold text-cn-text mb-2">Target Audience</label>
                             <div className="grid grid-cols-2 gap-3">
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'ALL_STUDENTS' 
-                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold' 
+                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold' 
                                         : 'border-cn-border bg-cn-surface-muted text-cn-text-secondary'
                                 }`}>
                                     <input 
@@ -97,7 +97,7 @@ const BroadcastsTab = ({
 
                                 <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                                     broadcastForm.targetType === 'REGISTERED_STUDENTS' 
-                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold' 
+                                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold' 
                                         : 'border-cn-border bg-cn-surface-muted text-cn-text-secondary'
                                 }`}>
                                     <input 
@@ -116,7 +116,7 @@ const BroadcastsTab = ({
 
                         {broadcastForm.targetType === 'REGISTERED_STUDENTS' && (
                             <div>
-                                <label className="block text-xs font-bold text-cn-text mb-1.5">Select Event</label>
+                                <label className="block text-xs font-semibold text-cn-text mb-1.5">Select Event</label>
                                 <select
                                     value={broadcastForm.eventId}
                                     onChange={(e) => setBroadcastForm(prev => ({ ...prev, eventId: e.target.value }))}
@@ -139,7 +139,7 @@ const BroadcastsTab = ({
                         )}
 
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-1.5">Broadcast Title</label>
+                            <label className="block text-xs font-semibold text-cn-text mb-1.5">Broadcast Title</label>
                             <input 
                                 type="text" 
                                 placeholder="e.g. Registration Extended for TechFest 2026"
@@ -151,7 +151,7 @@ const BroadcastsTab = ({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-1.5">Message Content</label>
+                            <label className="block text-xs font-semibold text-cn-text mb-1.5">Message Content</label>
                             <textarea 
                                 rows={4}
                                 placeholder="Write your broadcast message here..."
@@ -166,14 +166,14 @@ const BroadcastsTab = ({
                             <button
                                 type="button"
                                 onClick={() => setBroadcastModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={sendingBroadcast}
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                             >
                                 <Send size={14} />
                                 <span>{sendingBroadcast ? 'Dispatching...' : 'Send Broadcast'}</span>

@@ -50,7 +50,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
       className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer select-none"
       aria-expanded={isOpen}
     >
-      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
+      <span className="text-[14px] font-medium text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
       <div
         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
           isOpen
@@ -193,7 +193,7 @@ const EventPreview = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center">
-        <ShimmerText text="Loading event preview..." className="text-sm font-semibold tracking-wide" />
+        <ShimmerText text="Loading event preview..." className="text-sm font-medium tracking-wide" />
       </div>
     );
   }
@@ -205,11 +205,11 @@ const EventPreview = () => {
           <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center text-rose-600 mx-auto mb-5">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <h2 className="font-bold text-xl text-neutral-900 dark:text-white mb-2">Event Not Found</h2>
+          <h2 className="font-semibold text-xl text-neutral-900 dark:text-white mb-2">Event Not Found</h2>
           <p className="text-neutral-500 text-sm mb-6">The requested event preview is unavailable or has been removed.</p>
           <button
             onClick={handleClosePreview}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold uppercase tracking-wider rounded-xl transition hover:opacity-90 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold uppercase tracking-wider rounded-xl transition hover:opacity-90 cursor-pointer"
           >
             Close Preview
           </button>
@@ -323,15 +323,15 @@ const EventPreview = () => {
       answer: (
         <span>
           The event starts on{' '}
-          <strong className="font-bold text-neutral-900 dark:text-white">
+          <strong className="font-semibold text-neutral-900 dark:text-white">
             {startTime ? new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'} at {startTime ? new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
           </strong>{' '}
           and ends on{' '}
-          <strong className="font-bold text-neutral-900 dark:text-white">
+          <strong className="font-semibold text-neutral-900 dark:text-white">
             {endTime ? new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'} at {endTime ? new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
           </strong>
           . It will be held at{' '}
-          <strong className="font-bold text-neutral-900 dark:text-white">
+          <strong className="font-semibold text-neutral-900 dark:text-white">
             {venue || 'Campus Venue'}
           </strong>.
         </span>
@@ -344,7 +344,7 @@ const EventPreview = () => {
           {registrationDeadline ? (
             <>
               Registration closes on{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 {new Date(registrationDeadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(registrationDeadline).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
               </strong>.{' '}
             </>
@@ -354,7 +354,7 @@ const EventPreview = () => {
           {effectiveFee > 0 ? (
             <>
               The entry fee is{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 ₹{effectiveFee}
               </strong>{' '}
               (non-refundable), payable securely via the event's designated payment method.{' '}
@@ -362,7 +362,7 @@ const EventPreview = () => {
           ) : (
             <>
               This event is{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 Completely Free
               </strong>{' '}
               to attend!{' '}
@@ -378,14 +378,14 @@ const EventPreview = () => {
           {isUnlimited ? (
             <>
               This event has{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 Unlimited Seats
               </strong>.{' '}
             </>
           ) : (
             <>
               Total capacity is{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 {totalSeats} seats
               </strong>.{' '}
             </>
@@ -393,7 +393,7 @@ const EventPreview = () => {
           {!isAllPrograms && event.allowedPrograms && event.allowedPrograms.length > 0 ? (
             <>
               Eligibility is open to programs:{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 {programDisplay}
               </strong>.{' '}
             </>
@@ -415,14 +415,14 @@ const EventPreview = () => {
           {isCentralEvent ? (
             <>
               This event is organized centrally by the{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 Office of DSW (Dean Student Welfare)
               </strong>.
             </>
           ) : (
             <>
               This event is organized by{' '}
-              <strong className="font-bold text-neutral-900 dark:text-white">
+              <strong className="font-semibold text-neutral-900 dark:text-white">
                 {displayName}
               </strong>.
             </>
@@ -444,7 +444,7 @@ const EventPreview = () => {
             {isStudentLeadOrCoordinator ? (
               <Link
                 to={`/events/edit/${event.id || event._id}`}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-semibold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 title="Return to editing this event"
               >
                 <i className="ri-arrow-left-line text-base" /> Back to Edit
@@ -453,7 +453,7 @@ const EventPreview = () => {
               <button
                 type="button"
                 onClick={handleClosePreview}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-bold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 text-[11px] font-semibold mysans uppercase tracking-[0.15em] text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800/80 backdrop-blur-md shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 title="Close this preview tab and return to dashboard"
               >
                 <i className="ri-close-line text-base" /> Close Preview
@@ -462,25 +462,25 @@ const EventPreview = () => {
 
             {/* Status pill */}
             {isDraft && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mr-1" />
                 Draft Preview
               </span>
             )}
             {isPending && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/60">
                 <Clock className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                 Pending Faculty Review
               </span>
             )}
             {isRejected && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
                 <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                 Changes Requested
               </span>
             )}
             {isPublished && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                 <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 Published &amp; Live
               </span>
@@ -488,7 +488,7 @@ const EventPreview = () => {
           </div>
 
           {/* Center: Title indicator */}
-          <span className="text-[13px] font-bold text-neutral-500 dark:text-neutral-400 tracking-wide truncate max-w-[240px] hidden md:block">
+          <span className="text-[13px] font-semibold text-neutral-500 dark:text-neutral-400 tracking-wide truncate max-w-[240px] hidden md:block">
             Event Preview (Read-Only)
           </span>
 
@@ -500,9 +500,9 @@ const EventPreview = () => {
                   type="button"
                   onClick={() => handleReview('PUBLISHED')}
                   disabled={submitting}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-lg transition font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
-                  <i className="ri-check-line text-sm font-bold" />
+                  <i className="ri-check-line text-sm font-semibold" />
                   Approve
                 </button>
                 <button
@@ -512,9 +512,9 @@ const EventPreview = () => {
                     if (reason) handleReview('REJECTED', reason);
                   }}
                   disabled={submitting}
-                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white rounded-lg transition font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
-                  <i className="ri-close-line text-sm font-bold" />
+                  <i className="ri-close-line text-sm font-semibold" />
                   Reject
                 </button>
               </>
@@ -525,7 +525,7 @@ const EventPreview = () => {
                 type="button"
                 onClick={handleSubmitForReview}
                 disabled={submitting}
-                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white rounded-lg transition font-bold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white rounded-lg transition font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5" />
                 Submit for Review
@@ -549,13 +549,13 @@ const EventPreview = () => {
                   Event Proposal Rejected
                 </span>
                 {event.reviewedBy?.name && (
-                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                  <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
                     Reviewed by: {event.reviewedBy.name}
                   </span>
                 )}
               </div>
-              <p className="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-1">
-                <span className="font-bold">Feedback: </span>
+              <p className="text-sm font-medium text-rose-800 dark:text-rose-200 mt-1">
+                <span className="font-semibold">Feedback: </span>
                 {event.reviewComment || "No specific feedback comment provided. Please contact the faculty coordinator."}
               </p>
             </div>
@@ -567,7 +567,7 @@ const EventPreview = () => {
           <div className="mb-6 bg-teal-50/80 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 rounded-xl p-4 shadow-xs flex items-center gap-3">
             <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
             <div className="flex-1">
-              <p className="text-xs font-bold text-teal-800 dark:text-teal-300">
+              <p className="text-xs font-semibold text-teal-800 dark:text-teal-300">
                 This event proposal is currently <span className="underline font-black">PENDING REVIEW</span> by the faculty coordinator and is not yet public.
               </p>
             </div>
@@ -613,7 +613,7 @@ const EventPreview = () => {
               </div>
 
               {/* Zoom hint badge */}
-              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                 <i className="ri-zoom-in-line" /> Click to Zoom
               </div>
             </div>
@@ -671,7 +671,7 @@ const EventPreview = () => {
                     <i className="ri-trophy-fill" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Event Results</p>
                     <p className="text-[15px] font-black text-black dark:text-white">
                       {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
                     </p>
@@ -698,11 +698,11 @@ const EventPreview = () => {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-bold text-black dark:text-white truncate">
+                            <p className="text-sm font-semibold text-black dark:text-white truncate">
                               {winner.name}
                             </p>
                             {isTeamWinner && (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
                                 <i className="ri-team-line text-[10px]" /> Team
                               </span>
                             )}
@@ -716,14 +716,14 @@ const EventPreview = () => {
                             if (uniqueNames.length === 0) return null;
                             return (
                               <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
-                                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
+                                <span className="font-medium text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
                                 {uniqueNames.join(', ')}
                               </p>
                             );
                           })()}
                         </div>
 
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
                           {medal ? `${medal.label} Place` : `#${winner.rank}`}
                         </span>
                       </div>
@@ -736,7 +736,7 @@ const EventPreview = () => {
             {/* About this Event */}
             {description && (
               <div className="mb-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
                   About this Event
                 </h2>
                 <div
@@ -748,7 +748,7 @@ const EventPreview = () => {
 
             {/* Event Highlights Grid */}
             <div className="mb-8">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Event Highlights
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -761,8 +761,8 @@ const EventPreview = () => {
                       <i className={`${h.icon} text-brand-600 dark:text-brand-400 text-base`} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
-                      <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                      <p className="text-[13px] font-medium text-black dark:text-white leading-snug">{h.value}</p>
                     </div>
                   </div>
                 ))}
@@ -772,7 +772,7 @@ const EventPreview = () => {
             {/* Gallery */}
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Gallery
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
@@ -810,7 +810,7 @@ const EventPreview = () => {
 
             {/* FAQs Accordion */}
             <div className="mb-8">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                 Frequently Asked Questions
               </h2>
               <div className="space-y-3">
@@ -839,18 +839,18 @@ const EventPreview = () => {
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p>
-                    <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p>
+                    <p className="text-[16px] font-semibold text-black dark:text-white leading-snug">
                       {startTime ? new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'TBA'}
                     </p>
-                    <p className="text-[14px] font-semibold text-brand-600">
+                    <p className="text-[14px] font-medium text-brand-600">
                       {startTime ? new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : ''}
                     </p>
                   </div>
                   {endTime && (
                     <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/60">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
-                      <p className="text-[13px] font-semibold text-neutral-700 dark:text-neutral-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
+                      <p className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">
                         {new Date(endTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' })} · {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                       </p>
                     </div>
@@ -862,8 +862,8 @@ const EventPreview = () => {
               {!isUnlimited && (
                 <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
                   </div>
                   <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div
@@ -896,7 +896,7 @@ const EventPreview = () => {
                   <button
                     type="button"
                     disabled
-                    className="flex-1 py-3 px-4 text-[12px] font-bold mysans tracking-wide rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 cursor-not-allowed text-center select-none flex items-center justify-center gap-2"
+                    className="flex-1 py-3 px-4 text-[12px] font-semibold mysans tracking-wide rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 cursor-not-allowed text-center select-none flex items-center justify-center gap-2"
                   >
                     <Eye className="w-3.5 h-3.5 text-neutral-400" />
                     Preview Mode — Registrations Disabled
@@ -923,7 +923,7 @@ const EventPreview = () => {
                       <i className="ri-building-2-line text-brand-600 dark:text-brand-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Organized by</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Organized by</p>
                       <p className="text-[14px] font-black text-black dark:text-white truncate">Office of DSW</p>
                       <p className="text-[11px] font-medium text-brand-600 dark:text-brand-400">Dean Student Welfare</p>
                     </div>
@@ -931,14 +931,14 @@ const EventPreview = () => {
 
                   {event.participatingClubs?.length > 0 && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-2">
                         Participating Clubs
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {event.participatingClubs.map((pc) => (
                           <span
                             key={pc.id || pc._id}
-                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg"
                           >
                             {pc.club?.clubName || pc.clubName}
                           </span>
@@ -967,23 +967,23 @@ const EventPreview = () => {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Organized by</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Organized by</p>
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-semibold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
                       ) : (
-                        <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
+                        <p className="text-[13px] font-semibold text-black dark:text-white truncate">{displayName}</p>
                       )}
                     </div>
                   </div>
 
                   {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                     <div className="px-6 pb-2 border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-2.5">
                         Connect with {displayName}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -1028,7 +1028,7 @@ const EventPreview = () => {
             {/* Sponsors / Partners */}
             {event.sponsors && event.sponsors.length > 0 && (
               <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 mb-4">
+                <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500 mb-4">
                   Sponsors / Partners
                 </h3>
                 <div className="flex flex-wrap gap-5 items-center">

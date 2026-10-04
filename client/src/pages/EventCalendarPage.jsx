@@ -51,7 +51,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
   >
     <div className="p-4 flex flex-col justify-between h-full min-h-[96px]">
       <div className="flex items-start justify-between gap-2.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-tight min-h-[28px] sm:min-h-[30px] flex items-start">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground leading-tight min-h-[28px] sm:min-h-[30px] flex items-start">
           {label}
         </p>
         {Icon && (
@@ -68,7 +68,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
       </div>
       <div className="mt-3 flex items-baseline">
         <p
-          className={`text-2xl sm:text-3xl font-bold logofont tracking-tight leading-none ${
+          className={`text-2xl sm:text-3xl font-semibold logofont tracking-tight leading-none ${
             accent ? "text-amber-600 dark:text-amber-400" : "text-foreground"
           }`}
         >
@@ -340,7 +340,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
       {/* Calendar Views Render Switch */}
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
-          <ShimmerText text="Loading calendar schedule..." className="text-sm font-semibold tracking-wider" />
+          <ShimmerText text="Loading calendar schedule..." className="text-sm font-medium tracking-wider" />
         </div>
       ) : activeView === "list" ? (
         <Card className="overflow-hidden shadow-xs">
@@ -348,12 +348,12 @@ const EventCalendarPage = ({ readOnly = false }) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Event Name</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Date & Time</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Venue</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Organizing Club</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-wider text-right">Action</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Event Name</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Date & Time</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Venue</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Organizing Club</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -380,7 +380,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                     >
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-bold hover:text-primary transition-colors text-xs line-clamp-1">
+                          <span className="font-semibold hover:text-primary transition-colors text-xs line-clamp-1">
                             {e.title}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
@@ -407,14 +407,14 @@ const EventCalendarPage = ({ readOnly = false }) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`text-xs font-semibold ${clubName === 'ODSW' ? 'text-primary' : ''}`}>
+                        <span className={`text-xs font-medium ${clubName === 'ODSW' ? 'text-primary' : ''}`}>
                           {clubName}
                         </span>
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={status === "PUBLISHED" ? "default" : status === "PENDING" ? "outline" : "destructive"}
-                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                          className={`text-[10px] font-semibold uppercase tracking-wider ${
                             status === "PUBLISHED"
                               ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                               : status === "PENDING"
@@ -430,7 +430,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                           variant="ghost"
                           size="sm"
                           asChild
-                          className="h-7 px-2.5 text-xs font-semibold gap-1"
+                          className="h-7 px-2.5 text-xs font-medium gap-1"
                         >
                           <a
                             href={eventUrl}
@@ -450,7 +450,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                   <TableRow>
                     <TableCell colSpan={6} className="py-16 text-center text-muted-foreground text-xs">
                       <div className="max-w-xs mx-auto space-y-1.5">
-                        <p className="font-semibold text-foreground">No events found for this time period</p>
+                        <p className="font-medium text-foreground">No events found for this time period</p>
                         <p className="text-[11px] text-muted-foreground">Adjust your date selector, view switch, or clear active filters.</p>
                       </div>
                     </TableCell>

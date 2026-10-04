@@ -110,7 +110,7 @@ const CentralAuditLogs = ({ events = [] }) => {
               <Terminal size={16} />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold myfont tracking-tight text-black dark:text-white uppercase">
+              <h2 className="text-base sm:text-lg font-semibold myfont tracking-tight text-black dark:text-white uppercase">
                 System Audit Logs
               </h2>
               <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
@@ -123,7 +123,7 @@ const CentralAuditLogs = ({ events = [] }) => {
             <button
               onClick={() => fetchAuditLogs(true)}
               disabled={refreshing || loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-mono font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-mono font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
               <span>{refreshing ? "REFRESHING" : "REFRESH"}</span>
@@ -187,7 +187,7 @@ const CentralAuditLogs = ({ events = [] }) => {
           </div>
         ) : logs.length === 0 ? (
           <div className="py-16 text-center px-4 font-mono">
-            <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">
               No Log Entries Found
             </p>
             <p className="text-[11px] text-neutral-500 mt-1">
@@ -201,12 +201,12 @@ const CentralAuditLogs = ({ events = [] }) => {
             <table className="w-full text-left border-collapse text-xs font-mono">
               <thead>
                 <tr className="bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-600 dark:text-neutral-400 uppercase">
-                  <th className="py-2.5 px-4 font-bold tracking-wider whitespace-nowrap">Timestamp (UTC)</th>
-                  <th className="py-2.5 px-4 font-bold tracking-wider whitespace-nowrap">Level</th>
-                  <th className="py-2.5 px-4 font-bold tracking-wider whitespace-nowrap">Action</th>
-                  <th className="py-2.5 px-4 font-bold tracking-wider whitespace-nowrap">Event</th>
-                  <th className="py-2.5 px-4 font-bold tracking-wider whitespace-nowrap">Actor</th>
-                  <th className="py-2.5 px-4 font-bold tracking-wider text-right whitespace-nowrap">Details</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider whitespace-nowrap">Timestamp (UTC)</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider whitespace-nowrap">Level</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider whitespace-nowrap">Action</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider whitespace-nowrap">Event</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider whitespace-nowrap">Actor</th>
+                  <th className="py-2.5 px-4 font-semibold tracking-wider text-right whitespace-nowrap">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -229,19 +229,19 @@ const CentralAuditLogs = ({ events = [] }) => {
                       {/* Level */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         {alert ? (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-red-600 text-white rounded">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-red-600 text-white rounded">
                             <AlertTriangle size={10} />
                             ALERT
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-300 rounded">
+                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium tracking-wider uppercase bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-300 rounded">
                             INFO
                           </span>
                         )}
                       </td>
 
                       {/* Action */}
-                      <td className="py-3 px-4 whitespace-nowrap font-bold">
+                      <td className="py-3 px-4 whitespace-nowrap font-semibold">
                         <span
                           className={`${
                             alert
@@ -322,7 +322,7 @@ const CentralAuditLogs = ({ events = [] }) => {
                   <Terminal size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
+                  <h3 className="text-base sm:text-lg font-semibold text-cn-text leading-tight">
                     Audit Payload Inspector
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Raw transaction telemetry</p>
@@ -340,28 +340,28 @@ const CentralAuditLogs = ({ events = [] }) => {
             <div className="p-6 space-y-4 text-xs text-cn-text-secondary">
               <div className="grid grid-cols-2 gap-3 p-3.5 bg-cn-surface-muted border border-cn-border rounded-xl text-[11px]">
                 <div>
-                  <span className="text-cn-text-muted uppercase block font-bold text-[10px]">Log ID:</span>
-                  <span className="text-cn-text font-mono font-bold">{selectedMetadata.id}</span>
+                  <span className="text-cn-text-muted uppercase block font-semibold text-[10px]">Log ID:</span>
+                  <span className="text-cn-text font-mono font-semibold">{selectedMetadata.id}</span>
                 </div>
                 <div>
-                  <span className="text-cn-text-muted uppercase block font-bold text-[10px]">Action:</span>
-                  <span className={`font-bold ${isAlertAction(selectedMetadata.action) ? "text-danger-600 dark:text-danger-400" : "text-cn-text"}`}>
+                  <span className="text-cn-text-muted uppercase block font-semibold text-[10px]">Action:</span>
+                  <span className={`font-semibold ${isAlertAction(selectedMetadata.action) ? "text-danger-600 dark:text-danger-400" : "text-cn-text"}`}>
                     {selectedMetadata.action}
                   </span>
                 </div>
                 <div>
-                  <span className="text-cn-text-muted uppercase block font-bold text-[10px]">Actor:</span>
+                  <span className="text-cn-text-muted uppercase block font-semibold text-[10px]">Actor:</span>
                   <span className="text-cn-text">{selectedMetadata.actorEmail}</span>
                 </div>
                 <div>
-                  <span className="text-cn-text-muted uppercase block font-bold text-[10px]">Timestamp:</span>
+                  <span className="text-cn-text-muted uppercase block font-semibold text-[10px]">Timestamp:</span>
                   <span className="text-cn-text">{formatTimestamp(selectedMetadata.createdAt)}</span>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5 pt-1">
-                  <span className="text-xs font-bold text-cn-text">
+                  <span className="text-xs font-semibold text-cn-text">
                     Metadata Payload (JSON):
                   </span>
                   <button
@@ -369,7 +369,7 @@ const CentralAuditLogs = ({ events = [] }) => {
                     className="inline-flex items-center gap-1 text-xs text-cn-text-muted hover:text-brand-500 dark:hover:text-brand-400 cursor-pointer transition-colors"
                   >
                     {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                    <span className="font-bold">{copied ? "COPIED" : "COPY JSON"}</span>
+                    <span className="font-semibold">{copied ? "COPIED" : "COPY JSON"}</span>
                   </button>
                 </div>
                 <pre className="p-3.5 bg-cn-surface-muted text-cn-text rounded-xl text-[11px] font-mono overflow-x-auto max-h-64 border border-cn-border">
@@ -381,7 +381,7 @@ const CentralAuditLogs = ({ events = [] }) => {
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-transparent flex justify-end shrink-0">
               <button
                 onClick={() => setSelectedMetadata(null)}
-                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl cursor-pointer transition-colors"
               >
                 Close
               </button>

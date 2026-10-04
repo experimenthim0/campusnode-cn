@@ -49,9 +49,9 @@ const TablePagination = ({
         <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-cn-surface border border-cn-border rounded-2xl shadow-xs text-xs text-neutral-500 dark:text-neutral-400 select-none ${className}`}>
             {/* Left: Summary text */}
             <div className="font-medium">
-                Showing <span className="font-semibold text-neutral-900 dark:text-neutral-100">{startRecord}</span> to{' '}
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">{endRecord}</span> of{' '}
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">{totalItems.toLocaleString()}</span> {itemName}
+                Showing <span className="font-medium text-neutral-900 dark:text-neutral-100">{startRecord}</span> to{' '}
+                <span className="font-medium text-neutral-900 dark:text-neutral-100">{endRecord}</span> of{' '}
+                <span className="font-medium text-neutral-900 dark:text-neutral-100">{totalItems.toLocaleString()}</span> {itemName}
             </div>
 
             {/* Right: Page controls and per-page selector */}
@@ -65,7 +65,7 @@ const TablePagination = ({
                                 onPageSizeChange(Number(e.target.value));
                                 if (onPageChange) onPageChange(1);
                             }}
-                            className="h-8 pl-2.5 pr-6 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-300 outline-none cursor-pointer hover:border-neutral-300 dark:hover:border-zinc-700 transition-colors appearance-none"
+                            className="h-8 pl-2.5 pr-6 bg-neutral-50 dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 outline-none cursor-pointer hover:border-neutral-300 dark:hover:border-zinc-700 transition-colors appearance-none"
                             title="Rows per page"
                         >
                             {pageSizeOptions.map(opt => (
@@ -103,7 +103,7 @@ const TablePagination = ({
                                 key={p}
                                 type="button"
                                 onClick={() => onPageChange(p)}
-                                className={`h-8 min-w-[32px] px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                                className={`h-8 min-w-[32px] px-2 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
                                     safePage === p
                                         ? "bg-brand-600 text-white border-brand-600 shadow-xs"
                                         : "border-neutral-200 dark:border-zinc-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800"

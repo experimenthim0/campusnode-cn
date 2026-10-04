@@ -5,7 +5,7 @@ import { useFeedbackPrompt } from '../context/FeedbackPromptContext';
 import { getUserEvents } from '../services/eventService';
 import { isStudentLeadRole, isCoordinatorRole, hasPermission, PERMISSIONS } from '../utils/rbac';
 
-import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search } from 'lucide-react';
+import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search, ArrowRight, GraduationCap } from 'lucide-react';
 import EventFeed from './EventFeed';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import Clubspage from './Clubspage';
@@ -13,6 +13,7 @@ import ClubLeaderboard from '../components/ClubLeaderboard';
 import HomeFooter from '../components/HomeFooter';
 import ScrollReveal from '../components/ScrollReveal';
 import Section from '../components/layout/Section';
+import HeroBackground from '../components/HeroBackground';
 import { ArrowRightIcon } from '../components/ui/arrow-right';
 import ShimmerText from '../components/ShimmerText';
 import { InstagramIcon } from '@/components/ui/instagram';
@@ -22,7 +23,7 @@ import { MailIcon, Github, Linkedin, Twitter, ExternalLink } from 'lucide-react'
 import { AtSignIcon } from '@/components/ui/at-sign';
 import { EarthIcon } from '@/components/ui/earth';
 import { ZapIcon } from '@/components/ui/zap';
-import { InsetModernTeamCard, TEAM_MEMBERS } from './Team';
+import { InsetModernTeamCard, FacultyCard, TEAM_MEMBERS, FACULTY_MENTORS } from './Team';
 
 
 
@@ -104,7 +105,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
 
   if (timeLeft.status === 'PAST') {
     return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/5 dark:bg-brand-400/5 text-neutral-600 dark:text-neutral-400 border border-brand-500/15 dark:border-brand-400/15 backdrop-blur-sm">
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/5 dark:bg-brand-400/5 text-neutral-600 dark:text-neutral-400 border border-brand-500/15 dark:border-brand-400/15 backdrop-blur-sm">
         Finished
       </span>
     );
@@ -112,14 +113,14 @@ const CountdownTimer = ({ startTime, endTime }) => {
 
   if (timeLeft.status === 'LIVE') {
     return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/15 dark:bg-brand-400/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 dark:border-brand-400/30 animate-pulse backdrop-blur-sm">
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/15 dark:bg-brand-400/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 dark:border-brand-400/30 animate-pulse backdrop-blur-sm">
         🔵 Live • {timeLeft.text}
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm">
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm">
       ⏳ {timeLeft.text}
     </span>
   );
@@ -127,7 +128,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
 
 const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-2 mb-5 text-brand-600 dark:text-brand-500">
-    <span className="text-[11px] font-bold uppercase tracking-[0.15em]">{children}</span>
+    <span className="text-[11px] font-semibold uppercase tracking-[0.15em]">{children}</span>
   </div>
 );
 
@@ -152,7 +153,7 @@ const SectionGlow = ({ className = '' }) => (
 const BtnPrimary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-bold uppercase tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg"
+    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-semibold uppercase tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg"
   >
     {children}
   </Link>
@@ -161,7 +162,7 @@ const BtnPrimary = ({ to, children }) => (
 const BtnSecondary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-cn-blue-500/50"
+    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-medium text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-cn-blue-500/50"
   >
     {children}
   </Link>
@@ -327,36 +328,15 @@ const Home = () => {
         <>
           {/* ── Hero: Welcome Banner ────────────────────────────────────── */}
           <section className="relative pt-24 sm:pt-28 pb-10 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 text-cn-text transition-colors duration-300 overflow-hidden">
-            {/* ── LIGHT MODE BG: Subtle Grid + Brand Blue Radial Spotlight ── */}
-            <div
-              className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-white pointer-events-none dark:hidden"
-              aria-hidden="true"
-            >
-              {/* Soft animated blue glow centered cleanly */}
-              <div className="absolute left-1/2 top-[40px] -translate-x-1/2 pointer-events-none">
-                <div
-                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#C9EBFF] opacity-45 blur-[110px]"
-                />
-              </div>
-            </div>
-            {/* ── DARK MODE BG: Slate-950 with Brand Blue Glow Orbs ── */}
-            <div
-              className="absolute inset-0 pointer-events-none z-0 h-full w-full bg-slate-950 hidden dark:block overflow-hidden"
-              aria-hidden="true"
-            >
-              <div className="absolute left-1/2 top-[40px] -translate-x-1/2 pointer-events-none">
-                <div
-                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#4ab4f2] opacity-[0.26] blur-[105px]"
-                />
-              </div>
-            </div>
+            {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
+       
 
             <Section className="relative z-10 w-full">
               {/* Top row: greeting + role badge */}
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-brand-500/10 dark:border-brand-400/10">
                 <div className="flex flex-col gap-2">
                   {/* Role badge */}
-                  <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-500 dark:bg-brand-400 opacity-80" />
                     {roleBadgeLabel}
                   </span>
@@ -386,7 +366,7 @@ const Home = () => {
                         <button
                           type="button"
                           onClick={openFeedbackModal}
-                          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-brand-500/10 dark:bg-brand-400/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 dark:border-brand-400/20 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md group backdrop-blur-sm"
+                          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 dark:bg-brand-400/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 dark:border-brand-400/20 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md group backdrop-blur-sm"
                         >
                           <span className="w-2 h-2 rounded-full bg-brand-500 dark:bg-brand-400 animate-ping" />
                           <span>FEEDBACK • {pendingCount} {pendingCount === 1 ? 'event needs' : 'events need'} your feedback</span>
@@ -410,7 +390,7 @@ const Home = () => {
                       <Link
                         key={idx}
                         to={action.to}
-                        className="group flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 bg-white/40 dark:bg-slate-900/40 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 border border-brand-500/15 dark:border-brand-400/15 hover:border-brand-500/30 dark:hover:border-brand-400/30 shadow-2xs hover:shadow-xs backdrop-blur-sm"
+                        className="group flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-medium tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 bg-white/40 dark:bg-slate-900/40 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 border border-brand-500/15 dark:border-brand-400/15 hover:border-brand-500/30 dark:hover:border-brand-400/30 shadow-2xs hover:shadow-xs backdrop-blur-sm"
                       >
                         <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 dark:text-brand-400 shrink-0 group-hover:scale-110 transition-transform" />
                         <span className="truncate">{action.label}</span>
@@ -436,7 +416,7 @@ const Home = () => {
                   </div>
                   <Link
                     to="/my-events"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 text-xs font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md self-start sm:self-auto backdrop-blur-sm"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md self-start sm:self-auto backdrop-blur-sm"
                   >
                     Manage Passes & QR Codes <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 shrink-0" />
                   </Link>
@@ -444,20 +424,20 @@ const Home = () => {
 
                 {timelineLoading ? (
                   <div className="flex flex-col items-center justify-center py-12 text-neutral-500 dark:text-neutral-400">
-                    <ShimmerText text="Loading your timeline..." className="text-xs font-semibold tracking-wider uppercase text-brand-600 dark:text-brand-400" />
+                    <ShimmerText text="Loading your timeline..." className="text-xs font-medium tracking-wider uppercase text-brand-600 dark:text-brand-400" />
                   </div>
                 ) : registrations.length === 0 ? (
                   <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-brand-500/15 dark:border-brand-400/15 rounded-2xl p-10 text-center shadow-sm max-w-xl mx-auto">
                     <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4">
                       <Calendar className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                     </div>
-                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-1">Your timeline is empty</h3>
+                    <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-1">Your timeline is empty</h3>
                     <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed mb-6">
                       You haven't registered for any events yet. Check out the latest campus fests and technical sessions below!
                     </p>
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center px-6 py-3 bg-brand-500/10 hover:bg-brand-500/20 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-600 dark:text-brand-400 border border-brand-500/25 dark:border-brand-400/25 font-bold text-xs uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs backdrop-blur-sm"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-brand-500/10 hover:bg-brand-500/20 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-600 dark:text-brand-400 border border-brand-500/25 dark:border-brand-400/25 font-semibold text-xs uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs backdrop-blur-sm"
                     >
                       Find Events to Join
                     </Link>
@@ -481,11 +461,11 @@ const Home = () => {
                             <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-brand-500/15 dark:border-brand-400/15 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md hover:border-brand-500/30 dark:hover:border-brand-400/30 transition-all duration-300">
                               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                 <div className="space-y-2">
-                                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                                     <Link to={`/event/${event.slug || event.id || event._id}`}>{event.title}</Link>
                                   </h3>
                                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                    <span className="font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
+                                    <span className="font-medium text-brand-600 dark:text-brand-400 uppercase tracking-wide">
                                       {new Date(event.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                     </span>
                                     <span>•</span>
@@ -497,7 +477,7 @@ const Home = () => {
                                 <div className="flex flex-wrap items-center sm:flex-col sm:items-end gap-2">
                                   <CountdownTimer startTime={event.startTime} endTime={event.endTime} />
                                   {isPaidEvent && reg.paymentStatus && (
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
                                       {isPending && (
                                         <span className="w-1.5 h-1.5 rounded-full bg-brand-500 dark:bg-brand-400 animate-ping inline-block" />
                                       )}
@@ -509,12 +489,12 @@ const Home = () => {
                               <div className="mt-4 pt-4 border-t border-brand-500/10 dark:border-brand-400/10 flex flex-col items-start gap-1">
                                 <button
                                   onClick={() => setOpenMapEventId(openMapEventId === event._id ? null : event._id)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-500/15 dark:border-brand-400/15 bg-brand-500/5 dark:bg-brand-400/5 backdrop-blur-sm text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/30 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-500/15 dark:border-brand-400/15 bg-brand-500/5 dark:bg-brand-400/5 backdrop-blur-sm text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/30 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
                                 >
                                   <MapPin className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
                                   <span>Venue: <strong className="text-neutral-900 dark:text-white">{event.venue}</strong></span>
                                   {event.venue !== 'Online' && (
-                                    <span className="text-[10px] text-brand-600 dark:text-brand-400 font-bold hover:underline">
+                                    <span className="text-[10px] text-brand-600 dark:text-brand-400 font-semibold hover:underline">
                                       ({openMapEventId === event._id ? 'Close Map' : 'Locate on Map'})
                                     </span>
                                   )}
@@ -553,7 +533,7 @@ const Home = () => {
                   {/* Section identity */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-shield-star-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">
                       {isStudentLead ? 'Club Operations Desk' : 'Coordinator Desk'}
                     </span>
                   </div>
@@ -590,14 +570,14 @@ const Home = () => {
                               </div>
                             )}
                             <div>
-                              <p className="font-bold text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
-                              <p className="text-[10px] uppercase tracking-widest font-bold text-brand-600 dark:text-brand-400">
+                              <p className="font-semibold text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
+                              <p className="text-[10px] uppercase tracking-widest font-semibold text-brand-600 dark:text-brand-400">
                                 {isLead ? 'Student Lead' : isCoord ? 'Club Coordinator' : 'Team Member'}
                               </p>
                             </div>
                             <Link
                               to={`/club-events/${m.clubId}`}
-                              className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
+                              className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
                             >
                               View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
                             </Link>
@@ -615,7 +595,7 @@ const Home = () => {
                                   <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
+                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">
                                     {isLead || isCoord || m.canEditEvents ? 'Create & manage events, scan QR tickets' : 'Scan QR tickets and check-in attendees'}
                                   </p>
@@ -633,7 +613,7 @@ const Home = () => {
                                   <Users className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-sm text-neutral-900 dark:text-white">Team & Members</p>
+                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Team & Members</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
                                 </div>
                               </Link>
@@ -649,7 +629,7 @@ const Home = () => {
                                   <Wallet className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
+                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
                                 </div>
                               </Link>
@@ -665,7 +645,7 @@ const Home = () => {
                                   <Bell className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-sm text-neutral-900 dark:text-white">Announcements</p>
+                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Announcements</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
                                 </div>
                               </Link>
@@ -688,7 +668,7 @@ const Home = () => {
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-government-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">Faculty Coordinator Desk</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">Faculty Coordinator Desk</span>
                   </div>
                   <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     Approvals & Oversight
@@ -700,12 +680,12 @@ const Home = () => {
                       <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                         <Calendar className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                       </div>
-                      <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Event Proposals</h3>
+                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Event Proposals</h3>
                       <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                         Review detailed proposals for upcoming club events. Approve for public release or return with comments.
                       </p>
                     </div>
-                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                       Review Proposals <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
@@ -714,12 +694,12 @@ const Home = () => {
                       <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                         <Users className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                       </div>
-                      <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
+                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
                       <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                         Oversee student memberships, coordinate schedules, and send urgent notifications.
                       </p>
                     </div>
-                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                       View Club Directory <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
@@ -736,7 +716,7 @@ const Home = () => {
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-shield-keyhole-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">Admin Command Center</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">Admin Command Center</span>
                   </div>
                   <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     Platform Management
@@ -749,12 +729,12 @@ const Home = () => {
                         <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                           <LayoutDashboard className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                         </div>
-                        <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
+                        <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                           Access platform statistics, manage clubs, review transaction logs, and configure core settings.
                         </p>
                       </div>
-                      <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                      <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                         Open Admin Panel <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -765,12 +745,12 @@ const Home = () => {
                         <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                           <Bell className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                         </div>
-                        <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
+                        <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                           Send campus-wide push notifications and official announcements to all registered accounts.
                         </p>
                       </div>
-                      <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                      <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                         Create System Broadcast <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -783,92 +763,62 @@ const Home = () => {
       ) : (
         <>
           <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-white dark:bg-slate-950 overflow-hidden">
-            {/* ── LIGHT MODE BG: Subtle Grid + Brand Blue Radial Spotlight ── */}
-            <div
-              className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-white pointer-events-none dark:hidden"
-              aria-hidden="true"
-            >
-              {/* Soft animated blue glow centered cleanly */}
-              <div className="absolute left-1/2 top-[80px] -translate-x-1/2 pointer-events-none">
-                <div
-                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#C9EBFF] opacity-45 blur-[110px]"
-                />
-              </div>
-            </div>
-            {/* ── DARK MODE BG: Slate-950 with Brand Blue Glow Orbs ── */}
-            <div
-              className="absolute inset-0 pointer-events-none z-0 h-full w-full bg-slate-950 hidden dark:block overflow-hidden"
-              aria-hidden="true"
-            >
-              <div className="absolute left-1/2 top-[80px] -translate-x-1/2 pointer-events-none">
-                <div
-                  className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#0094FF] opacity-[0.26] blur-[105px]"
-                />
-              </div>
-            </div>
+            {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
+            <HeroBackground glowTop="top-[40px]" showLocationTag={false} />
 
-            <Section className="w-full relative z-10">
-              <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
-                <span className="inline-flex items-center text-brand-600 dark:text-brand-500 font-medium mysans text-sm mb-3 bg-cn-blue/8 dark:bg-cn-blue/10 px-5 py-1 rounded-full">
-                  <i className="ri-sparkling-2-fill mr-2 text-lg animate-pulse" /> NITJ Events Platform
-                </span>
+            <Section className="w-full min-h-[80vh] flex items-center relative z-10">
+              <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
+                
                 <ScrollReveal delay={0.2}>
-                  <h1 className="font-black titlefont text-[clamp(36px,5.5vw,72px)] leading-[1.08] tracking-tight text-neutral-900 dark:text-white">
-                    Discover What's Happening.
+                  <h1 className="font-semibold  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight text-neutral-900 dark:text-white drop-shadow-2xs">
+                    Never Miss What's Happening
                     <br />
-                    <span className="text-cn-blue text-[clamp(39px,5.5vw,78px)]">Be Part of It.</span>
+                    <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
                   </h1>
                 </ScrollReveal>
 
                 <ScrollReveal delay={0.3} className="w-full">
                   <div className="flex flex-col items-center gap-8 mt-6">
-                    <p className="text-base md:text-lg font-normal text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl mx-auto ">
-                      Discover campus events, explore student clubs, receive official announcements,
-                      and access secure student services—all from one verified platform built for
-                      the NIT Jalandhar community.
+                    <p className="text-base md:text-lg font-normal text-neutral-900 dark:text-neutral-200 leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
+                      Find events, discover clubs, follow campus updates, and take part in the communities that make NIT Jalandhar more than just a campus.
                     </p>
 
                     <div className="flex gap-3 sm:gap-4 flex-wrap justify-center items-center">
                       {/* Primary Action */}
                       <Link
                         to="/events"
-                        className="text-white bg-cn-blue-600 hover:bg-cn-blue-700 active:bg-cn-blue-800 transition-all duration-200 font-bold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-lg shadow-cn-blue-600/25 hover:shadow-xl hover:shadow-cn-blue-600/35 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                        className="group h-12 text-white bg-cn-blue-600 hover:bg-cn-blue-700 active:bg-cn-blue-800 transition-all duration-200 font-semibold text-sm px-7 inline-flex items-center justify-center rounded-full cursor-pointer shadow-lg shadow-cn-blue-600/25 hover:shadow-xl hover:shadow-cn-blue-600/35 hover:-translate-y-0.5 active:scale-95 touch-manipulation border border-transparent"
                       >
-                        <i className="ri-calendar-event-line text-lg mr-2 font-medium" /> Browse Events
+                        <span>Explore What's Happening</span>
+                        <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       </Link>
 
                       {/* Secondary Action */}
                       <Link
                         to="/clubs"
-                        className="text-neutral-800 dark:text-neutral-100 bg-white hover:bg-neutral-50 dark:bg-neutral-850 dark:hover:bg-neutral-800 border border-neutral-300/80 dark:border-neutral-700 transition-all duration-200 font-semibold text-sm px-6 py-3 inline-flex items-center rounded-full cursor-pointer shadow-sm hover:shadow-md hover:border-neutral-400 dark:hover:border-neutral-600 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                        className="h-12 text-neutral-800 dark:text-neutral-100 bg-white/90 hover:bg-white dark:bg-neutral-850/90 dark:hover:bg-neutral-800 backdrop-blur-sm border border-neutral-300/80 dark:border-neutral-700 transition-all duration-200 font-medium text-sm px-6 inline-flex items-center justify-center rounded-full cursor-pointer shadow-sm hover:shadow-md hover:border-neutral-400 dark:hover:border-neutral-600 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                       >
-                        <i className="ri-group-line text-lg mr-2 text-cn-blue-600 dark:text-cn-blue-400 font-medium" /> Explore Clubs
-                      </Link>
-
-                      {/* Tertiary Action */}
-                      <Link
-                        to="/register"
-                        className="group text-black dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white border border-cn-blue/50  dark:border-neutral-800/80 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 font-semibold text-sm px-5 py-4 inline-flex items-center rounded-full cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-2xs hover:shadow-xs"
-                      >
-                        <span>Get Involved Now</span>
-                        <ArrowRightIcon className="w-4 h-4 ml-1.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                        <i className="ri-group-line text-base mr-2 text-cn-blue-600 dark:text-cn-blue-400 font-medium" />
+                        <span>Explore Clubs</span>
                       </Link>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-16 pt-2">
+                    {/* <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-16 pt-2 px-6 py-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800/60 shadow-2xs">
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">5K+</span>
+                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">5K+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Students</span>
                       </div>
+                      <div className="w-[1px] h-8 bg-neutral-200 dark:bg-neutral-800" />
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">25+</span>
+                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">25+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Clubs & Societies</span>
                       </div>
+                      <div className="w-[1px] h-8 bg-neutral-200 dark:bg-neutral-800" />
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white leading-none">100+</span>
+                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">100+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Events Every Year</span>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </ScrollReveal>
               </div>
@@ -886,7 +836,7 @@ const Home = () => {
           <ScrollReveal direction="up">
             <div className="mb-6 sm:mb-6">
               <SectionLabel>Latest Happenings</SectionLabel>
-              <h2 className="font-black titlefont text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight">
+              <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight">
                 What's Buzzing on Campus
               </h2>
             </div>
@@ -905,14 +855,31 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+      <section className="py-10 sm:py-10 lg:py-10 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <ScrollReveal direction="up">
-            <div className="mb-10 sm:mb-12">
-              <h2 className="font-black titlefont text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-wide text-center">
-                NITJ Clubs & Societies
-              </h2>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+              <div>
+                <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
+
+                  <span>CAMPUS COMMUNITIES</span>
+                </div>
+                <h2 className="font-semibold text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-wide">
+                  Discover Your Campus Community.
+                </h2>
+                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 max-w-xl">
+                  Explore the clubs and societies that shape student life, innovation, and culture at NIT Jalandhar.
+                </p>
+              </div>
+
+              <Link
+                to="/clubs"
+                className=" hidden sm:block sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs group shrink-0 self-start sm:self-end"
+              >
+                <span>View all clubs</span>
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
           </ScrollReveal>
           <Clubspage isHome={true} />
@@ -934,7 +901,7 @@ const Home = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
-                <h2 className="font-black titlefont text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
+                <h2 className="font-black  text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
                   Club<br /><span className="text-brand-600 dark:text-brand-500 text-5xl sm:text-6xl">Hall of Fame</span>
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6">
@@ -968,12 +935,12 @@ const Home = () => {
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
+                    <p className="text-xs font-semibold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Students
                     </p>
-                    <h2 className="text-3xl titlefont sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                      Never miss a<br />campus beat{" "}
-                      <span className="text-brand-600 dark:text-brand-500">again.</span>
+                    <h2 className="text-3xl  sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
+                     Don't Just Be on Campus. <br/>Be Part of It.
+                      
                     </h2>
 
                     <div className="flex flex-col gap-4">
@@ -984,18 +951,18 @@ const Home = () => {
                           </div>
                           <div className="pt-0.5">
                             <p className="text-xs text-neutral-400 line-through mb-0.5">{item.problem}</p>
-                            <p className="text-sm font-semibold text-neutral-900 dark:text-white leading-snug">{item.solution}</p>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-white leading-snug">{item.solution}</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
-                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
+                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-semibold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
                         Join now
                         <i className="ri-arrow-right-line text-sm" />
                       </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-semibold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
                         Browse Events
                       </Link>
                     </div>
@@ -1011,7 +978,7 @@ const Home = () => {
                     />
                     <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-xl px-4 py-3 shadow-md">
                       <p className="text-lg font-black text-cn-text leading-none">1-Click</p>
-                      <p className="text-[11px] text-cn-text mt-0.5 font-bold">Event Registration</p>
+                      <p className="text-[11px] text-cn-text mt-0.5 font-semibold">Event Registration</p>
                     </div>
                   </div>
                 </div>
@@ -1026,17 +993,17 @@ const Home = () => {
               <ScrollReveal direction="up">
                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
+                    <p className="text-xs font-semibold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Clubs & Societies
                     </p>
-                    <h2 className="text-3xl titlefont sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
                       Less logistics,{" "}
                       <span className="text-brand-600 dark:text-brand-500">more impact.</span>
                     </h2>
                   </div>
                   <Link
                     to="/clubs"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-bold uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-semibold uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
                   >
                     <span>Explore All Societies</span>
                     <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -1052,7 +1019,7 @@ const Home = () => {
                       <div className="w-10 h-10 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-cn-blue-600 group-hover:text-white transition-colors text-lg">
                         {f.icon}
                       </div>
-                      <p className="text-base font-bold text-neutral-900 dark:text-white mb-1">{f.title}</p>
+                      <p className="text-base font-semibold text-neutral-900 dark:text-white mb-1">{f.title}</p>
                       <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
                     </div>
                   ))}
@@ -1068,9 +1035,8 @@ const Home = () => {
                 <ScrollReveal direction="left">
                   <div>
                     <SectionLabel>OUR VISION</SectionLabel>
-                    <h2 className="font-black titlefont text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                      Find More.<br />
-                      <span className="text-brand-600 dark:text-brand-500">Connect More.</span>
+                    <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
+                      Making Campus Life Easier to Discover.<br />
                     </h2>
                     <div className="space-y-4 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
                       <p>
@@ -1106,14 +1072,14 @@ const Home = () => {
         <Section className="relative z-10">
           <div className="flex flex-col items-center mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
-              <span className="text-brand-600 dark:text-brand-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
+              <span className="text-brand-600 dark:text-brand-500 font-semibold tracking-[0.2em] text-xs uppercase block mb-3">
                 The Innovators
               </span>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2}>
-              <h2 className="text-3xl titlefont sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                The Minds Behind <span className="logofont font-light tracking-wide">Campusnode</span>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
+                Built by Students, for Students.
               </h2>
             </ScrollReveal>
 
@@ -1122,6 +1088,32 @@ const Home = () => {
                 Student creators, architects, and designers crafting the next-generation digital ecosystem for NIT Jalandhar.
               </p>
             </ScrollReveal>
+          </div>
+
+          {/* Faculty Mentors */}
+          <div className="mb-12 sm:mb-16">
+            <div className="text-center mb-6">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+                <GraduationCap className="w-3.5 h-3.5" />
+                Faculty Mentors
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
+              {FACULTY_MENTORS.map((mentor, idx) => (
+                <ScrollReveal key={mentor.id} direction="up" delay={0.05 * idx}>
+                  <FacultyCard mentor={mentor} />
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="relative flex py-4 items-center max-w-4xl mx-auto mb-10">
+            <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
+            <span className="shrink-0 mx-3 text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              Student Creators
+            </span>
+            <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
           </div>
 
           {/* Frosted Team Cards Responsive Grid */}
@@ -1137,7 +1129,7 @@ const Home = () => {
           <ScrollReveal direction="up" delay={0.25} className="mt-12 sm:mt-16 text-center">
             <Link
               to="/team"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-semibold shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-medium shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
             >
               <span>Explore Team Page & Join Us</span>
               <ArrowRightIcon className="w-4 h-4" />
@@ -1153,31 +1145,29 @@ const Home = () => {
           <Section className="relative z-10">
             <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
               <ScrollReveal direction="up" delay={0.1}>
-                <span className="text-brand-600 dark:text-brand-500 font-bold tracking-[0.2em] text-xs uppercase block mb-3">
+                <span className="text-brand-600 dark:text-brand-500 font-semibold tracking-[0.2em] text-xs uppercase block mb-3">
                   STAY CONNECTED
                 </span>
               </ScrollReveal>
 
               <ScrollReveal direction="up" delay={0.2}>
-                <h2 className="font-black titlefont text-3xl sm:text-4xl lg:text-5xl leading-[1.12] tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
-                  Something Is Always Happening.
-                  <br />
-                  <span className="text-brand-500">Don't Miss Out.</span>
-                </h2>
+                <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.12] tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
+                  Your Next Campus Experience Starts Here.
+                    </h2>
               </ScrollReveal>
 
               <ScrollReveal direction="up" delay={0.3}>
                 <p className="text-base sm:text-lg font-normal  text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-xl mx-auto mb-8">
-                  Discover events, explore communities, and stay connected to everything happening around you.
+                 Discover events, explore communities, and stay connected to everything happening at NIT Jalandhar
                 </p>
               </ScrollReveal>
 
               <ScrollReveal direction="up" delay={0.35}>
                 <Link
                   to="/register"
-                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-bold text-sm px-7 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-semibold text-sm px-7 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                 >
-                  Be Part of It <ArrowRightIcon className="w-4 h-4 ml-1.5" />
+                  Get Started <ArrowRightIcon className="w-4 h-4 ml-1.5" />
                 </Link>
               </ScrollReveal>
             </div>
@@ -1201,8 +1191,8 @@ const Home = () => {
               <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-bold text-cn-text mt-4 leading-tight">Congratulations!</h3>
-            <p className="text-sm sm:text-base font-semibold text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
+            <h3 className="text-xl sm:text-2xl font-semibold text-cn-text mt-4 leading-tight">Congratulations!</h3>
+            <p className="text-sm sm:text-base font-medium text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
               You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
             </p>
 
@@ -1212,7 +1202,7 @@ const Home = () => {
 
             <button
               onClick={acknowledgeWin}
-              className="mt-6 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 dark:bg-brand-400/20 dark:hover:bg-brand-400/30 text-brand-700 dark:text-brand-300 border border-brand-500/30 dark:border-brand-400/30 font-bold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs text-xs cursor-pointer"
+              className="mt-6 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 dark:bg-brand-400/20 dark:hover:bg-brand-400/30 text-brand-700 dark:text-brand-300 border border-brand-500/30 dark:border-brand-400/30 font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs text-xs cursor-pointer"
             >
               Claim Victory 🏆
             </button>

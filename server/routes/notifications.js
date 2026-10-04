@@ -313,34 +313,140 @@ router.get(
   async (req, res) => {
     try {
       const { userId, userType } = req.user;
-
       const scope = getNotificationRecipientFilter(req.user);
-      const rawNotifications = await prisma.notification.findMany({
-        where: scope,
-        include: senderInclude,
-        orderBy: { createdAt: "desc" },
-        take: userType === "admin" ? 300 : 100,
-      });
 
-      // Deduplicate broadcast copies by (title, club/sender, minute) so admin sees 1 card per broadcast
-      const seen = new Set();
-      const deduplicated = [];
-      for (const n of rawNotifications) {
-        const senderKey = n.clubId || n.senderStudentId || n.senderAdminId || "unknown";
-        const dedupeKey = `${n.title}_${senderKey}_${Math.floor(new Date(n.createdAt).getTime() / 60000)}`;
-        if (!seen.has(dedupeKey)) {
-          seen.add(dedupeKey);
-          deduplicated.push(n);
+      const isPaginatedRequest =
+        req.query.page !== undefined ||
+        req.query.limit !== undefined ||
+        req.query.tab !== undefined ||
+        req.query.status !== undefined ||
+        req.query.search !== undefined ||
+        req.query.sort !== undefined ||
+        req.query.type !== undefined;
+
+      // Handle legacy unpaginated calls (e.g. background sync, initial scripts)
+      if (!isPaginatedRequest) {
+        const rawNotifications = await prisma.notification.findMany({
+          where: scope,
+          include: senderInclude,
+          orderBy: { createdAt: "desc" },
+          take: userType === "admin" ? 300 : 100,
+        });
+
+        // Deduplicate broadcast copies by (title, club/sender, minute) so admin sees 1 card per broadcast
+        const seen = new Set();
+        const deduplicated = [];
+        for (const n of rawNotifications) {
+          const senderKey = n.clubId || n.senderStudentId || n.senderAdminId || "unknown";
+          const dedupeKey = `${n.title}_${senderKey}_${Math.floor(new Date(n.createdAt).getTime() / 60000)}`;
+          if (!seen.has(dedupeKey)) {
+            seen.add(dedupeKey);
+            deduplicated.push(n);
+          }
         }
+
+        const unreadCount = deduplicated.filter(
+          (n) => !(n.readBy || []).includes(userId)
+        ).length;
+
+        res.setHeader("X-Total-Count", deduplicated.length);
+        res.setHeader("X-Unread-Count", unreadCount);
+
+        return res.json(
+          deduplicated.map((n) => ({
+            ...n,
+            _id: n.id,
+            sender: formatSender(n),
+          })),
+        );
       }
 
-      res.json(
-        deduplicated.map((n) => ({
-          ...n,
-          _id: n.id,
-          sender: formatSender(n),
-        })),
-      );
+      // ── Server-side Paginated & Filtered Query ──
+      const parsedPage = parseInt(req.query.page, 10);
+      const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+      const parsedLimit = parseInt(req.query.limit, 10);
+      const limit = Number.isInteger(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 50)
+        : 15;
+
+      const rawTab = (req.query.tab || req.query.status || "all").toLowerCase().trim();
+      const tab = ["unread", "read", "all"].includes(rawTab) ? rawTab : "all";
+
+      const sort = req.query.sort === "oldest" || req.query.sort === "asc" ? "asc" : "desc";
+
+      const search = typeof req.query.search === "string" ? req.query.search.trim().slice(0, 100) : "";
+      const type = typeof req.query.type === "string" ? req.query.type.trim() : null;
+
+      const andConditions = [scope];
+
+      if (tab === "unread") {
+        andConditions.push({ NOT: { readBy: { has: userId } } });
+      } else if (tab === "read") {
+        andConditions.push({ readBy: { has: userId } });
+      }
+
+      if (search) {
+        andConditions.push({
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { message: { contains: search, mode: "insensitive" } },
+            { club: { clubName: { contains: search, mode: "insensitive" } } },
+            { senderStudent: { name: { contains: search, mode: "insensitive" } } },
+            { senderAdmin: { name: { contains: search, mode: "insensitive" } } },
+          ],
+        });
+      }
+
+      if (type) {
+        andConditions.push({ type });
+      }
+
+      const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
+
+      const [rawNotifications, total, unreadCount, readCount] = await Promise.all([
+        prisma.notification.findMany({
+          where,
+          include: senderInclude,
+          orderBy: { createdAt: sort },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.notification.count({ where }),
+        prisma.notification.count({
+          where: { AND: [scope, { NOT: { readBy: { has: userId } } }] },
+        }),
+        prisma.notification.count({
+          where: { AND: [scope, { readBy: { has: userId } }] },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit) || 1;
+      const hasNextPage = page < totalPages;
+      const hasPreviousPage = page > 1;
+
+      const notifications = rawNotifications.map((n) => ({
+        ...n,
+        _id: n.id,
+        sender: formatSender(n),
+      }));
+
+      res.setHeader("X-Total-Count", total);
+      res.setHeader("X-Unread-Count", unreadCount);
+
+      return res.json({
+        notifications,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+        },
+        unreadCount,
+        readCount,
+      });
     } catch (err) {
       internalNotificationError(res, err, "Failed to fetch notifications.");
     }
@@ -350,19 +456,67 @@ router.get(
 router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW), async (req, res) => {
   try {
     const { userId, userType } = req.user;
-    const { clubId } = req.query;
+    const { clubId, page: reqPage, limit: reqLimit, search: reqSearch } = req.query;
 
-     let where;
-     if (userType === "admin") {
-       const isFaculty = req.user.role === "facultyCoordinator";
-       where = clubId
-         ? (isFaculty && String(clubId) !== String(req.user.clubId)
-             ? { id: "__unauthorized__" }
-             : { clubId })
-         : { senderAdminId: userId };
-     } else {
-       const ownsClub = !clubId || (req.user.memberships || []).some((m) => String(m.clubId) === String(clubId));
-       where = ownsClub ? (clubId ? { clubId } : { senderStudentId: userId }) : { id: "__unauthorized__" };
+    let baseWhere;
+    if (userType === "admin") {
+      const isFaculty = req.user.role === "facultyCoordinator";
+      baseWhere = clubId
+        ? (isFaculty && String(clubId) !== String(req.user.clubId)
+            ? { id: "__unauthorized__" }
+            : { clubId })
+        : { senderAdminId: userId };
+    } else {
+      const ownsClub = !clubId || (req.user.memberships || []).some((m) => String(m.clubId) === String(clubId));
+      baseWhere = ownsClub ? (clubId ? { clubId } : { senderStudentId: userId }) : { id: "__unauthorized__" };
+    }
+
+    const isPaginated = reqPage !== undefined || reqLimit !== undefined || reqSearch !== undefined;
+    const parsedPage = parseInt(reqPage, 10);
+    const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const parsedLimit = parseInt(reqLimit, 10);
+    const limit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 50) : 20;
+
+    const andConditions = [baseWhere];
+    if (typeof reqSearch === "string" && reqSearch.trim()) {
+      const s = reqSearch.trim().slice(0, 100);
+      andConditions.push({
+        OR: [
+          { title: { contains: s, mode: "insensitive" } },
+          { message: { contains: s, mode: "insensitive" } },
+        ],
+      });
+    }
+    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
+
+    if (isPaginated) {
+      const [rawNotifications, total] = await Promise.all([
+        prisma.notification.findMany({
+          where,
+          include: senderInclude,
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.notification.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit) || 1;
+      return res.json({
+        notifications: rawNotifications.map((n) => ({
+          ...n,
+          _id: n.id,
+          sender: formatSender(n),
+        })),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      });
     }
 
     const rawNotifications = await prisma.notification.findMany({

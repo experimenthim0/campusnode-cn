@@ -330,24 +330,66 @@ const getEventByIdOrSlug = async (id) =>
 
 router.get("/", async (req, res) => {
   try {
-    const requestedPage = Number.parseInt(req.query.page, 10);
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-    const requestedOffset = Number.parseInt(req.query.offset, 10);
+    const requestedPage = req.query.page !== undefined ? Number.parseInt(req.query.page, 10) : undefined;
+    const requestedLimit = req.query.limit !== undefined ? Number.parseInt(req.query.limit, 10) : undefined;
+    const requestedOffset = req.query.offset !== undefined ? Number.parseInt(req.query.offset, 10) : undefined;
     const statusFilter = typeof req.query.status === "string" ? req.query.status.trim().toUpperCase() : "ALL";
+    const category = typeof req.query.category === "string" ? req.query.category.trim() : undefined;
+    const department = typeof req.query.department === "string" ? req.query.department.trim() : undefined;
+    const club = typeof req.query.club === "string" ? req.query.club.trim() : undefined;
+    const search = typeof req.query.search === "string"
+      ? req.query.search.trim()
+      : (typeof req.query.q === "string" ? req.query.q.trim() : undefined);
+    const month = req.query.month !== undefined ? String(req.query.month).trim() : undefined;
+    const year = req.query.year !== undefined ? String(req.query.year).trim() : undefined;
+    const startDate = typeof req.query.startDate === "string" ? req.query.startDate : (typeof req.query.from === "string" ? req.query.from : undefined);
+    const endDate = typeof req.query.endDate === "string" ? req.query.endDate : (typeof req.query.to === "string" ? req.query.to : undefined);
+    const sort = typeof req.query.sort === "string" ? req.query.sort.trim().toLowerCase() : undefined;
 
+    // Detect if client expects paginated envelope
+    const isExplicitPagination = requestedPage !== undefined ||
+      req.query.paginated === "true" ||
+      req.query.format === "paginated" ||
+      category !== undefined ||
+      search !== undefined ||
+      department !== undefined ||
+      (club !== undefined && club.toUpperCase() !== "ALL") ||
+      (month !== undefined && month.toUpperCase() !== "ALL") ||
+      (year !== undefined && year.toUpperCase() !== "ALL");
+
+    // Pagination numbers with strict limit bounds (max 50 to prevent excessive payloads)
+    const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const limit = Number.isFinite(requestedLimit)
-      ? Math.min(Math.max(requestedLimit, 1), 1000)
-      : 500;
+      ? Math.min(Math.max(requestedLimit, 1), 50)
+      : (isExplicitPagination ? 12 : 50);
 
     let skip = 0;
     if (Number.isFinite(requestedOffset) && requestedOffset >= 0) {
       skip = requestedOffset;
     } else {
-      const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
       skip = (page - 1) * limit;
     }
 
-    const cacheKey = "events:public:" + statusFilter + ":" + skip + ":" + limit;
+    const now = new Date();
+
+    // Cache key incorporates all query parameters to prevent cache collisions
+    const cacheKeyParts = [
+      "events:public",
+      statusFilter,
+      club || "all",
+      category || "all",
+      department || "all",
+      search ? search.slice(0, 30) : "none",
+      month || "all",
+      year || "all",
+      startDate || "none",
+      endDate || "none",
+      sort || "default",
+      skip,
+      limit,
+      isExplicitPagination ? "paginated" : "raw",
+    ];
+    const cacheKey = cacheKeyParts.join(":");
     const cachedEvents = await getPublicResponse(cacheKey);
 
     if (cachedEvents) {
@@ -356,92 +398,252 @@ router.get("/", async (req, res) => {
       return res.json(cachedEvents);
     }
 
-    const now = new Date();
-    let orderedRows = [];
+    // Build Prisma WHERE clause
+    const where = {
+      reviewStatus: "PUBLISHED",
+    };
 
-    try {
-      if (statusFilter === "LIVE") {
-        orderedRows = await prisma.$queryRaw`
-          SELECT id FROM "Event"
-          WHERE "reviewStatus" = 'PUBLISHED'
-            AND "startTime" <= ${now} AND "endTime" >= ${now}
-          ORDER BY "startTime" ASC, id ASC
-          LIMIT ${limit} OFFSET ${skip}
-        `;
-      } else if (statusFilter === "UPCOMING") {
-        orderedRows = await prisma.$queryRaw`
-          SELECT id FROM "Event"
-          WHERE "reviewStatus" = 'PUBLISHED'
-            AND "startTime" > ${now}
-          ORDER BY "startTime" ASC, id ASC
-          LIMIT ${limit} OFFSET ${skip}
-        `;
-      } else if (statusFilter === "ENDED") {
-        orderedRows = await prisma.$queryRaw`
-          SELECT id FROM "Event"
-          WHERE "reviewStatus" = 'PUBLISHED'
-            AND "endTime" < ${now}
-          ORDER BY "endTime" DESC, id ASC
-          LIMIT ${limit} OFFSET ${skip}
-        `;
+    if (statusFilter === "LIVE") {
+      where.startTime = { lte: now };
+      where.endTime = { gte: now };
+    } else if (statusFilter === "UPCOMING") {
+      where.startTime = { gt: now };
+    } else if (statusFilter === "ENDED") {
+      where.endTime = { lt: now };
+    }
+
+    const andConditions = [];
+
+    // Club filter (supports 'CENTRAL', club id, slug, or clubName)
+    if (club && club.toUpperCase() !== "ALL") {
+      if (club.toUpperCase() === "CENTRAL") {
+        andConditions.push({ organizers: { none: {} } });
       } else {
-        // Priority 1: LIVE (now >= startTime AND now <= endTime) -> soonest start first
-        // Priority 2: UPCOMING (now < startTime) -> soonest start first
-        // Priority 3: ENDED (now > endTime) -> most recently ended first
-        orderedRows = await prisma.$queryRaw`
-          SELECT id FROM "Event"
-          WHERE "reviewStatus" = 'PUBLISHED'
-          ORDER BY
-            CASE
-              WHEN "startTime" <= ${now} AND "endTime" >= ${now} THEN 1
-              WHEN "startTime" > ${now} THEN 2
-              ELSE 3
-            END ASC,
-            CASE
-              WHEN "endTime" >= ${now} THEN "startTime"
-              ELSE NULL
-            END ASC,
-            "endTime" DESC,
-            id ASC
-          LIMIT ${limit} OFFSET ${skip}
-        `;
+        andConditions.push({
+          organizers: {
+            some: {
+              club: {
+                OR: [
+                  { id: club },
+                  { slug: club },
+                  { clubName: { equals: club, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        });
       }
-    } catch (queryErr) {
-      console.error("Priority queryRaw error, falling back to standard Prisma query:", queryErr.message);
-      // Resilient fallback
-      const fallbackEvents = await prisma.event.findMany({
-        where: { reviewStatus: "PUBLISHED" },
-        select: publicEventSelect,
-        orderBy: { startTime: "desc" },
-        skip,
-        take: limit,
+    }
+
+    // Category filter
+    if (category && category.toUpperCase() !== "ALL") {
+      andConditions.push({
+        organizers: {
+          some: {
+            club: {
+              category: { equals: category, mode: "insensitive" },
+            },
+          },
+        },
       });
-      const response = fallbackEvents.map(serializeEvent);
-      return res.json(response);
     }
 
-    const ids = orderedRows.map((r) => r.id);
-    if (ids.length === 0) {
-      res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
-      res.set("X-Public-Cache", "MISS");
-      return res.json([]);
+    // Department filter (allowedBranches on Event: matches branch or open to all branches)
+    if (department && department.toUpperCase() !== "ALL") {
+      andConditions.push({
+        OR: [
+          { allowedBranches: { has: department.toUpperCase() } },
+          { allowedBranches: { equals: [] } },
+        ],
+      });
     }
 
-    const events = await prisma.event.findMany({
-      where: { id: { in: ids } },
-      select: publicEventSelect,
-    });
+    // Date range / Year / Month filter
+    if (startDate && endDate) {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        andConditions.push({
+          startTime: { gte: s, lte: e },
+        });
+      }
+    } else if (year && year.toUpperCase() !== "ALL") {
+      const y = Number.parseInt(year, 10);
+      if (!isNaN(y)) {
+        if (month && month.toUpperCase() !== "ALL") {
+          const m = Number.parseInt(month, 10);
+          if (!isNaN(m) && m >= 1 && m <= 12) {
+            andConditions.push({
+              startTime: {
+                gte: new Date(Date.UTC(y, m - 1, 1)),
+                lt: new Date(Date.UTC(y, m, 1)),
+              },
+            });
+          }
+        } else {
+          andConditions.push({
+            startTime: {
+              gte: new Date(Date.UTC(y, 0, 1)),
+              lt: new Date(Date.UTC(y + 1, 0, 1)),
+            },
+          });
+        }
+      }
+    } else if (month && month.toUpperCase() !== "ALL") {
+      const m = Number.parseInt(month, 10);
+      if (!isNaN(m) && m >= 1 && m <= 12) {
+        const curYear = now.getFullYear();
+        const monthRanges = [];
+        for (let yr = curYear - 2; yr <= curYear + 2; yr++) {
+          monthRanges.push({
+            startTime: {
+              gte: new Date(Date.UTC(yr, m - 1, 1)),
+              lt: new Date(Date.UTC(yr, m, 1)),
+            },
+          });
+        }
+        andConditions.push({ OR: monthRanges });
+      }
+    }
 
-    // Preserve the exact priority ordering from orderedRows
-    const idMap = new Map(events.map((e) => [e.id, e]));
-    const orderedEvents = ids.map((id) => idMap.get(id)).filter(Boolean);
+    // Search query filter (matches title, description, venue, and club name / category)
+    if (search && search.length > 0) {
+      const q = search.slice(0, 100);
+      const searchOr = [
+        { title: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { venue: { contains: q, mode: "insensitive" } },
+        {
+          organizers: {
+            some: {
+              club: {
+                OR: [
+                  { clubName: { contains: q, mode: "insensitive" } },
+                  { category: { contains: q, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        },
+      ];
+      if (/central|odsw|college/i.test(q)) {
+        searchOr.push({ organizers: { none: {} } });
+      }
+      andConditions.push({ OR: searchOr });
+    }
 
-    const response = orderedEvents.map(serializeEvent);
-    await setPublicResponse(cacheKey, response, 60_000);
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
+    // Efficient total count query executed directly in PostgreSQL
+    const total = await prisma.event.count({ where });
+
+    let orderedEvents = [];
+
+    if (total > 0) {
+      if (statusFilter === "ALL" && andConditions.length === 0 && !sort) {
+        // Unfiltered ALL feed: use priority raw SQL ordering (Live > Upcoming > Ended)
+        try {
+          const orderedRows = await prisma.$queryRaw`
+            SELECT id FROM "Event"
+            WHERE "reviewStatus" = 'PUBLISHED'
+            ORDER BY
+              CASE
+                WHEN "startTime" <= ${now} AND "endTime" >= ${now} THEN 1
+                WHEN "startTime" > ${now} THEN 2
+                ELSE 3
+              END ASC,
+              CASE
+                WHEN "endTime" >= ${now} THEN "startTime"
+                ELSE NULL
+              END ASC,
+              "endTime" DESC,
+              id ASC
+            LIMIT ${limit} OFFSET ${skip}
+          `;
+          const ids = orderedRows.map((r) => r.id);
+          if (ids.length > 0) {
+            const fetched = await prisma.event.findMany({
+              where: { id: { in: ids } },
+              select: publicEventSelect,
+            });
+            const idMap = new Map(fetched.map((e) => [e.id, e]));
+            orderedEvents = ids.map((id) => idMap.get(id)).filter(Boolean);
+          }
+        } catch (err) {
+          console.error("Priority queryRaw error, falling back to Prisma query:", err.message);
+          orderedEvents = await prisma.event.findMany({
+            where,
+            select: publicEventSelect,
+            orderBy: [{ startTime: "desc" }, { id: "asc" }],
+            skip,
+            take: limit,
+          });
+        }
+      } else {
+        // Filtered or status-specific query using Prisma findMany with where, skip, take, and orderBy
+        let orderBy = [{ startTime: "desc" }, { id: "asc" }];
+        if (sort === "date_asc" || sort === "starttime_asc") {
+          orderBy = [{ startTime: "asc" }, { id: "asc" }];
+        } else if (sort === "date_desc" || sort === "starttime_desc") {
+          orderBy = [{ startTime: "desc" }, { id: "asc" }];
+        } else if (sort === "title_asc") {
+          orderBy = [{ title: "asc" }, { id: "asc" }];
+        } else if (sort === "title_desc") {
+          orderBy = [{ title: "desc" }, { id: "asc" }];
+        } else if (statusFilter === "LIVE") {
+          orderBy = [{ startTime: "asc" }, { id: "asc" }];
+        } else if (statusFilter === "UPCOMING") {
+          orderBy = [{ startTime: "asc" }, { id: "asc" }];
+        } else if (statusFilter === "ENDED") {
+          orderBy = [{ endTime: "desc" }, { id: "asc" }];
+        }
+
+        orderedEvents = await prisma.event.findMany({
+          where,
+          select: publicEventSelect,
+          orderBy,
+          skip,
+          take: limit,
+        });
+      }
+    }
+
+    const responseEvents = orderedEvents.map(serializeEvent);
+    const totalPages = Math.ceil(total / limit) || (total === 0 ? 0 : 1);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    res.set("X-Total-Count", String(total));
+    res.set("X-Total-Pages", String(totalPages));
+    res.set("X-Current-Page", String(page));
+    res.set("X-Per-Page", String(limit));
+    res.set("X-Has-Next-Page", String(hasNextPage));
+    res.set("X-Has-Prev-Page", String(hasPreviousPage));
     res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=120");
     res.set("X-Public-Cache", "MISS");
-    res.json(response);
+
+    if (isExplicitPagination) {
+      const result = {
+        events: responseEvents,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+        },
+      };
+      await setPublicResponse(cacheKey, result, 60_000);
+      return res.json(result);
+    }
+
+    await setPublicResponse(cacheKey, responseEvents, 60_000);
+    return res.json(responseEvents);
   } catch (err) {
+    console.error("GET /api/events error:", err);
     res.status(500).json({ message: err.message });
   }
 });

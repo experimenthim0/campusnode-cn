@@ -30,11 +30,17 @@ router.get("/me", verifyToken, async (req, res) => {
       const faculty = await prisma.facultyUser.findUnique({ where: { id: userId } });
       if (faculty) {
         const safeUser = sanitizeUser(faculty);
-        const clubInfo = await prisma.club.findFirst({
-          where: { facultyCoordinatorId: faculty.id },
+        const coordinatedClubs = await prisma.club.findMany({
+          where: {
+            OR: [
+              { facultyCoordinatorId: faculty.id },
+              { facultyCoordinators: { some: { facultyId: faculty.id } } },
+            ],
+          },
           select: { id: true, clubName: true, slug: true, clubLogo: true },
         });
-        const isCoordinator = Boolean(clubInfo);
+        const clubInfo = coordinatedClubs[0] || null;
+        const isCoordinator = coordinatedClubs.length > 0;
         const role = isCoordinator ? "facultyCoordinator" : "faculty";
 
         safeUser.principalType = "FACULTY";
@@ -44,12 +50,12 @@ router.get("/me", verifyToken, async (req, res) => {
         safeUser.designation = faculty.designation;
         safeUser.clubId = clubInfo?.id ?? null;
         safeUser.clubName = clubInfo?.clubName ?? null;
-        safeUser.memberships = clubInfo ? [{
-          id: `fac_${clubInfo.id}`,
-          clubId: clubInfo.id,
-          clubName: clubInfo.clubName,
-          slug: clubInfo.slug,
-          clubLogo: clubInfo.clubLogo,
+        safeUser.memberships = coordinatedClubs.map((c) => ({
+          id: `fac_${c.id}`,
+          clubId: c.id,
+          clubName: c.clubName,
+          slug: c.slug,
+          clubLogo: c.clubLogo,
           role: "facultyCoordinator",
           status: "ACTIVE",
           customPermissions: [],
@@ -61,7 +67,7 @@ router.get("/me", verifyToken, async (req, res) => {
             canCheckRegistration: true,
             canEditEvents: true,
           },
-        }] : [];
+        }));
 
         const effectivePermissions = getEffectivePermissions({ ...req.user, role, clubId: safeUser.clubId }, clubInfo?.id);
 
@@ -369,8 +375,17 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       }
 
       const safeUser = sanitizeUser(updated);
-      const clubInfo = await prisma.club.findFirst({ where: { facultyCoordinatorId: updated.id } });
-      const isCoordinator = Boolean(clubInfo);
+      const coordinatedClubs = await prisma.club.findMany({
+        where: {
+          OR: [
+            { facultyCoordinatorId: updated.id },
+            { facultyCoordinators: { some: { facultyId: updated.id } } },
+          ],
+        },
+        select: { id: true, clubName: true, slug: true, clubLogo: true },
+      });
+      const clubInfo = coordinatedClubs[0] || null;
+      const isCoordinator = coordinatedClubs.length > 0;
       const userRole = isCoordinator ? "facultyCoordinator" : "faculty";
 
       safeUser.principalType = "FACULTY";
@@ -380,18 +395,24 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       safeUser.designation = updated.designation;
       safeUser.clubId = clubInfo?.id ?? null;
       safeUser.clubName = clubInfo?.clubName ?? null;
-      safeUser.memberships = clubInfo ? [{
-        id: `fac_${clubInfo.id}`,
-        clubId: clubInfo.id,
-        clubName: clubInfo.clubName,
+      safeUser.memberships = coordinatedClubs.map((c) => ({
+        id: `fac_${c.id}`,
+        clubId: c.id,
+        clubName: c.clubName,
+        slug: c.slug,
+        clubLogo: c.clubLogo,
         role: "facultyCoordinator",
+        status: "ACTIVE",
+        customPermissions: [],
+        canTakeAttendance: true,
+        canEditEvents: true,
         permissions: {
           canTakeAttendance: true,
           canViewDashboard: true,
           canCheckRegistration: true,
           canEditEvents: true,
         },
-      }] : [];
+      }));
 
       return res.json({
         message: "Profile updated successfully",
@@ -437,6 +458,9 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
     const studentTargetId = userId || id;
     const studentUpdates = {};
     if (req.body.name !== undefined) studentUpdates.name = String(req.body.name).trim();
+    if (req.body.phone !== undefined) {
+      studentUpdates.phone = req.body.phone ? String(req.body.phone).trim() : null;
+    }
     if (req.body.isTwoStepEnabled !== undefined) studentUpdates.isTwoStepEnabled = Boolean(req.body.isTwoStepEnabled);
 
     if (Object.keys(studentUpdates).length > 0) {

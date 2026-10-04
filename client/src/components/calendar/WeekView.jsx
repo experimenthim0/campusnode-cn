@@ -117,7 +117,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
           {HOURS.map((h) => (
             <div
               key={h}
-              className="h-[60px] pr-2 flex items-start justify-end text-[10px] font-bold text-neutral-400 pt-1"
+              className="h-[60px] pr-2 flex items-start justify-end text-[10px] font-semibold text-neutral-400 pt-1"
             >
               {formatHour(h)}
             </div>
@@ -145,7 +145,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                   <div
                     key={b.id || b._id}
                     style={style}
-                    className="absolute left-1 right-1 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-[10px] font-bold text-rose-600 dark:text-rose-400 overflow-hidden flex flex-col justify-between"
+                    className="absolute left-1 right-1 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-[10px] font-semibold text-rose-600 dark:text-rose-400 overflow-hidden flex flex-col justify-between"
                   >
                     <div className="flex items-center gap-1">
                       <AlertTriangle size={12} className="text-rose-500 shrink-0" />
@@ -170,7 +170,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                     key={event.id || event._id}
                     onClick={() => onSelectEvent(event)}
                     style={style}
-                    className={`absolute left-1 right-1 z-10 p-2 rounded-xl border text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] cursor-pointer flex flex-col justify-between overflow-hidden ${colorClass}`}
+                    className={`absolute left-1 right-1 z-10 p-2 rounded-xl border text-xs font-medium shadow-sm transition-all hover:scale-[1.02] cursor-pointer flex flex-col justify-between overflow-hidden ${colorClass}`}
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 mb-0.5">
@@ -182,7 +182,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                       <p className="text-[10px] opacity-80 truncate">{event.club?.clubName}</p>
                     </div>
 
-                    <div className="mt-1 flex items-center justify-between text-[10px] font-bold opacity-90">
+                    <div className="mt-1 flex items-center justify-between text-[10px] font-semibold opacity-90">
                       <span className="truncate">{event.venue}</span>
                       <span>{startStr}</span>
                     </div>

@@ -21,7 +21,7 @@ const AIVerdictStrip = ({ review, analytics }) => {
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" aria-hidden="true" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-brand-400">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-400">
             Event Verdict & Key Highlights
           </h3>
         </div>
@@ -33,21 +33,21 @@ const AIVerdictStrip = ({ review, analytics }) => {
       {/* 3 Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Overall Satisfaction</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Overall Satisfaction</p>
           <p className="text-2xl font-black text-white mt-1">
             {overallScore} <span className="text-xs font-medium text-slate-400">/ 5.0</span>
           </p>
         </div>
 
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Would Attend Again</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Would Attend Again</p>
           <p className="text-2xl font-black text-emerald-400 mt-1">
             {yesPercentage}% <span className="text-xs font-medium text-slate-400">Yes</span>
           </p>
         </div>
 
         <div className="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/50">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Improvement Themes</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Improvement Themes</p>
           <p className="text-2xl font-black text-amber-400 mt-1">
             {improvementThemesCount} <span className="text-xs font-medium text-slate-400">areas identified</span>
           </p>
@@ -62,7 +62,7 @@ const AIVerdictStrip = ({ review, analytics }) => {
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
               Top Strength
             </span>
-            <p className="text-xs font-semibold text-slate-200 truncate mt-0.5">
+            <p className="text-xs font-medium text-slate-200 truncate mt-0.5">
               {topStrength}
             </p>
           </div>
@@ -74,7 +74,7 @@ const AIVerdictStrip = ({ review, analytics }) => {
             <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block">
               Top Issue To Address
             </span>
-            <p className="text-xs font-semibold text-slate-200 truncate mt-0.5">
+            <p className="text-xs font-medium text-slate-200 truncate mt-0.5">
               {topIssue}
             </p>
           </div>

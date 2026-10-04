@@ -271,9 +271,9 @@ const AdminLogin = () => {
         {/* Brand Header */}
         <div className="text-center mb-8">
           <span className="font-light text-[24px] tracking-wider text-black dark:text-neutral-200 leading-none select-none logofont">
-            Campus<span className="text-brand-600 dark:text-brand-500">Node</span>
+            Campusnode
           </span>
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-2 flex items-center justify-center gap-1.5">
+          <p className="text-xs font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-2 flex items-center justify-center gap-1.5">
             <ShieldAlert size={14} className="text-neutral-900 dark:text-white" />
             <span>Admin Portal</span>
           </p>
@@ -290,7 +290,7 @@ const AdminLogin = () => {
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="font-bold text-base sm:text-lg text-neutral-900 dark:text-white tracking-tight">
+                <h3 className="font-semibold text-base sm:text-lg text-neutral-900 dark:text-white tracking-tight">
                   {lockoutInfo.title}
                 </h3>
                 <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-xs mx-auto">
@@ -304,10 +304,10 @@ const AdminLogin = () => {
               </div>
 
               <div className="py-2.5 px-5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 rounded-xl inline-flex flex-col items-center justify-center shadow-2xs">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Time Remaining
                 </span>
-                <span className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white mt-0.5">
+                <span className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white mt-0.5">
                   {formatRemainingTime(lockoutRemaining)}
                 </span>
               </div>
@@ -319,7 +319,7 @@ const AdminLogin = () => {
                 <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
                   <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                   <div className="space-y-0.5">
-                    <strong className="block font-semibold text-xs text-amber-950 dark:text-amber-100">
+                    <strong className="block font-medium text-xs text-amber-950 dark:text-amber-100">
                       One attempt left
                     </strong>
                     <p className="text-xs text-amber-900/90 dark:text-amber-300 leading-relaxed font-normal">
@@ -340,7 +340,7 @@ const AdminLogin = () => {
               )}
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
                   Admin Email
                 </label>
                 <input
@@ -357,7 +357,7 @@ const AdminLogin = () => {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Password
                   </label>
                   {attempts > 0 && !isLockedOut && (
@@ -392,7 +392,7 @@ const AdminLogin = () => {
               <button
                 type="submit"
                 disabled={loading || isLockedOut}
-                className="w-full py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:opacity-90 transition-all mt-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                className="w-full py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-90 transition-all mt-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
               >
                 {loading ? 'Authenticating...' : 'Go to Dashboard'}
               </button>
@@ -413,7 +413,7 @@ const AdminLogin = () => {
           <div className="mt-6 flex justify-center">
             <Link
               to="/login"
-              className="w-full text-center py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-semibold text-sm hover:border-neutral-900 dark:hover:border-white transition-all"
+              className="w-full text-center py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-medium text-sm hover:border-neutral-900 dark:hover:border-white transition-all"
             >
               Back to Student Login
             </Link>
@@ -421,7 +421,7 @@ const AdminLogin = () => {
         </div>
 
         {/* Security Notice */}
-        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500 mt-6 font-bold uppercase tracking-widest">
+        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500 mt-6 font-semibold uppercase tracking-widest">
           Authorized personnel only. All access attempts are logged.
         </p>
       </div>

@@ -20,8 +20,8 @@ const DashboardFooter = () => {
           <Link to='/Team' className="text-[11px] hover:text-cn-text font-medium transition-colors">
             Team
           </Link>
-          <Link to="/contribute" className="text-[11px] hover:text-cn-text font-medium transition-colors">
-            Contribute
+          <Link to="/contact" className="text-[11px] hover:text-cn-text font-medium transition-colors">
+            Contact
           </Link>
           <Link to="/faq" className="text-[11px] hover:text-cn-text font-medium transition-colors">
             FAQ

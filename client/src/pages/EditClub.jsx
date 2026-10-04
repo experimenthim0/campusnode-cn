@@ -525,7 +525,7 @@ const EditClub = () => {
       <div className="text-center py-24 flex flex-col items-center justify-center min-h-[60vh]">
         <ShimmerText
           text="Loading club settings & visual assets..."
-          className="text-sm font-semibold tracking-wide text-neutral-600 dark:text-neutral-400"
+          className="text-sm font-medium tracking-wide text-neutral-600 dark:text-neutral-400"
         />
       </div>
     );
@@ -537,7 +537,7 @@ const EditClub = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           {/* <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="secondary" className="font-semibold text-xs text-primary shrink-0">
+            <Badge variant="secondary" className="font-medium text-xs text-primary shrink-0">
               {formData.category || "Club Management"}
             </Badge>
             <span className="text-xs text-muted-foreground font-mono">
@@ -623,7 +623,7 @@ const EditClub = () => {
                 {isUploadingBanner && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white z-20">
                     <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin mb-2 shrink-0" />
-                    <span className="text-xs font-semibold tracking-wide">Uploading banner…</span>
+                    <span className="text-xs font-medium tracking-wide">Uploading banner…</span>
                   </div>
                 )}
 
@@ -636,7 +636,7 @@ const EditClub = () => {
                       setSelectedBannerFileSrc(null);
                       setBannerModalOpen(true);
                     }}
-                    className="h-8 gap-1.5 bg-black/70 hover:bg-black/90 text-white backdrop-blur-md text-xs font-semibold shrink-0"
+                    className="h-8 gap-1.5 bg-black/70 hover:bg-black/90 text-white backdrop-blur-md text-xs font-medium shrink-0"
                     title="Open Canvas Crop & Position Editor"
                   >
                     <Crop className="w-3.5 h-3.5 shrink-0" />
@@ -647,7 +647,7 @@ const EditClub = () => {
                     type="button"
                     size="sm"
                     onClick={() => bannerInputRef.current?.click()}
-                    className="h-8 gap-1.5 text-xs font-semibold shadow-xs shrink-0"
+                    className="h-8 gap-1.5 text-xs font-medium shadow-xs shrink-0"
                     title="Upload image directly"
                   >
                     <Upload className="w-3.5 h-3.5 shrink-0" />
@@ -708,7 +708,7 @@ const EditClub = () => {
                     {!isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-1 text-center">
                         <Camera className="w-4 h-4 mb-0.5 shrink-0" />
-                        <span className="text-[10px] font-bold leading-tight">
+                        <span className="text-[10px] font-semibold leading-tight">
                           Change
                         </span>
                       </div>
@@ -718,7 +718,7 @@ const EditClub = () => {
                     {isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
-                        <span className="text-[9px] font-bold mt-1">Uploading…</span>
+                        <span className="text-[9px] font-semibold mt-1">Uploading…</span>
                       </div>
                     )}
 
@@ -735,7 +735,7 @@ const EditClub = () => {
 
                   <div className="text-white drop-shadow-sm pb-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm sm:text-base font-bold tracking-tight">
+                      <span className="text-sm sm:text-base font-semibold tracking-tight">
                         {formData.clubName || "Club Logo"}
                       </span>
                       {formData.clubLogo && (
@@ -783,7 +783,7 @@ const EditClub = () => {
             {/* Direct URL Inputs for Logo & Banner */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Club Logo URL
                 </label>
                 <Input
@@ -796,7 +796,7 @@ const EditClub = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Cover Banner URL
                 </label>
                 <Input
@@ -820,7 +820,7 @@ const EditClub = () => {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-primary shrink-0" />
-                <CardTitle className="text-base font-semibold">Media Gallery</CardTitle>
+                <CardTitle className="text-base font-medium">Media Gallery</CardTitle>
                 <Badge variant="secondary" className="text-xs shrink-0">
                   {galleryList.length} photo{galleryList.length === 1 ? "" : "s"}
                 </Badge>
@@ -832,7 +832,7 @@ const EditClub = () => {
                   size="sm"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={isUploadingGallery}
-                  className="gap-1.5 h-8 text-xs font-semibold shrink-0"
+                  className="gap-1.5 h-8 text-xs font-medium shrink-0"
                 >
                   {isUploadingGallery ? (
                     <>
@@ -880,7 +880,7 @@ const EditClub = () => {
                 variant="secondary"
                 size="sm"
                 onClick={handleAddGalleryUrl}
-                className="text-xs font-semibold h-9 shrink-0"
+                className="text-xs font-medium h-9 shrink-0"
               >
                 Add URL
               </Button>
@@ -932,7 +932,7 @@ const EditClub = () => {
                       </Button>
                     </div>
 
-                    <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white/90 bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="absolute bottom-2 left-2 text-[10px] font-semibold text-white/90 bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                       #{idx + 1}
                     </span>
                   </div>
@@ -943,7 +943,7 @@ const EditClub = () => {
                 <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3 shrink-0">
                   <ImageIcon className="w-6 h-6 shrink-0" />
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">
+                <h3 className="text-sm font-medium text-foreground">
                   No Gallery Photos Uploaded
                 </h3>
                 <Button
@@ -951,7 +951,7 @@ const EditClub = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => galleryInputRef.current?.click()}
-                  className="mt-4 gap-1.5 text-xs font-semibold shrink-0"
+                  className="mt-4 gap-1.5 text-xs font-medium shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5 shrink-0" />
                   Upload Photos
@@ -968,14 +968,14 @@ const EditClub = () => {
           <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary shrink-0" />
-              <CardTitle className="text-base font-semibold">Club Information & Leadership</CardTitle>
+              <CardTitle className="text-base font-medium">Club Information & Leadership</CardTitle>
             </div>
           </CardHeader>
 
           <CardContent className="pt-4 sm:pt-5 space-y-4 sm:space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Club Name *
                 </label>
                 <Input
@@ -988,7 +988,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Category
                 </label>
                 <Input
@@ -1001,7 +1001,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Faculty Coordinator Name
                 </label>
                 <Input
@@ -1014,7 +1014,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Faculty Coordinator Email
                 </label>
                 <Input
@@ -1028,7 +1028,7 @@ const EditClub = () => {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Student Lead / Club Head
                   </label>
                   {roleStudentLeads.length > 0 && (
@@ -1059,7 +1059,7 @@ const EditClub = () => {
                 {roleStudentLeads.length > 0 && (
                   <p className="text-[11px] text-muted-foreground">
                     Active Student Lead (from Team Roles):{" "}
-                    <strong className="text-foreground font-semibold">
+                    <strong className="text-foreground font-medium">
                       {roleStudentLeads.join(", ")}
                     </strong>
                   </p>
@@ -1067,7 +1067,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Official Club Email
                 </label>
                 <Input
@@ -1080,7 +1080,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Club Motto / Slogan
                 </label>
                 <Input
@@ -1093,7 +1093,7 @@ const EditClub = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Established Year
                 </label>
                 <Input
@@ -1107,7 +1107,7 @@ const EditClub = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Mission Statement
               </label>
               <Input
@@ -1120,7 +1120,7 @@ const EditClub = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Detailed Description & Activities
               </label>
               <WysiwygMarkdownEditor
@@ -1142,7 +1142,7 @@ const EditClub = () => {
           <CardHeader className="border-b border-border py-4">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary shrink-0" />
-              <CardTitle className="text-base font-semibold">Social Media & Online Presence</CardTitle>
+              <CardTitle className="text-base font-medium">Social Media & Online Presence</CardTitle>
             </div>
           </CardHeader>
 
@@ -1189,7 +1189,7 @@ const EditClub = () => {
                 const IconComponent = field.icon;
                 return (
                   <div key={field.name} className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <IconComponent className="w-3.5 h-3.5 text-primary shrink-0" />
                       {field.label}
                     </label>
@@ -1218,14 +1218,14 @@ const EditClub = () => {
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/club/${clubSlug || clubId}`)}
-                className="flex-1 sm:flex-none text-xs font-semibold shrink-0"
+                className="flex-1 sm:flex-none text-xs font-medium shrink-0"
               >
                 Discard Changes
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1 sm:flex-none text-xs font-semibold gap-2 shadow-xs shrink-0"
+                className="flex-1 sm:flex-none text-xs font-medium gap-2 shadow-xs shrink-0"
               >
                 {isSaving ? (
                   <>

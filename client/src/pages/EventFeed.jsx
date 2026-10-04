@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import EventCard from '../components/EventCard';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { getUserEvents, registerForEvent } from '../services/eventService';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import EventCardSkeleton from '../components/skeletons/EventCardSkeleton';
 import { Skeleton } from '../components/ui/Skeleton';
 import { getPublicJson } from '../lib/publicDataCache';
@@ -39,25 +39,73 @@ const ALL_MONTHS = [
   { value: 12, label: 'December' },
 ];
 
+function getPageNumbers(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages = [1];
+  if (currentPage > 3) {
+    pages.push('...');
+  }
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (currentPage < totalPages - 2) {
+    pages.push('...');
+  }
+
+  pages.push(totalPages);
+  return pages;
+}
+
 const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive = false, isCarousel = false }) => {
   const { showNotification } = useNotification();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const CACHE_FEED_KEY = `cn_event_feed_${limit || 'all'}`;
-  const getCachedEvents = () => {
-    try {
-      const cached = sessionStorage.getItem(CACHE_FEED_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (_) {}
-    return [];
-  };
+  // Read initial filter values from URL searchParams
+  const initialClub = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub') || 'ALL';
+  const initialStatus = searchParams.get('status') || searchParams.get('filterStatus') || 'ALL';
+  const initialMonth = searchParams.get('month') || searchParams.get('filterMonth') || 'ALL';
+  const initialYear = searchParams.get('year') || searchParams.get('filterYear') || 'ALL';
+  const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
+  const initialPage = Number.parseInt(searchParams.get('page'), 10) || 1;
 
-  const initialCached = useMemo(() => getCachedEvents(), [limit]);
-  const [events, setEvents] = useState(initialCached);
+  const pageSize = limit || 12;
+  const [page, setPage] = useState(initialPage > 0 ? initialPage : 1);
+  const [filterStatus, setFilterStatus] = useState(initialStatus);
+  const [filterClub, setFilterClub] = useState(initialClub);
+  const [filterMonth, setFilterMonth] = useState(initialMonth);
+  const [filterYear, setFilterYear] = useState(initialYear);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+
+  const [events, setEvents] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: pageSize,
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [registeredEvents, setRegisteredEvents] = useState(() => new Set());
+  const [clubsList, setClubsList] = useState([]);
   const [randomCat] = useState(() => CAT_IMAGES[Math.floor(Math.random() * CAT_IMAGES.length)]);
+
+  const { user, role } = useAuth();
+  const isFirstMountRef = useRef(true);
+  const requestIdRef = useRef(0);
+  const eventsUrl = '/api/events';
 
   useEffect(() => {
     if (!hideHeader) {
@@ -65,165 +113,239 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     }
   }, [hideHeader]);
 
-  const initialClub = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub') || 'ALL';
-  const initialStatus = searchParams.get('status') || searchParams.get('filterStatus') || 'ALL';
-  const initialMonth = searchParams.get('month') || searchParams.get('filterMonth') || 'ALL';
-  const initialYear = searchParams.get('year') || searchParams.get('filterYear') || 'ALL';
-  const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
+  // Debounce search input (350ms)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-  const { user, role } = useAuth();
-  const [loading, setLoading] = useState(initialCached.length === 0);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [registeredEvents, setRegisteredEvents] = useState(() => new Set());
-  const [filterStatus, setFilterStatus] = useState(initialStatus);
-  const [filterClub, setFilterClub] = useState(initialClub);
-  const [filterMonth, setFilterMonth] = useState(initialMonth);
-  const [filterYear, setFilterYear] = useState(initialYear);
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  // Load all clubs once for dropdown options
+  useEffect(() => {
+    let isMounted = true;
+    getPublicJson('/api/clubs')
+      .then((data) => {
+        if (isMounted && Array.isArray(data)) {
+          setClubsList(data);
+        }
+      })
+      .catch((err) => console.error('Failed to load clubs for dropdown:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  const isFirstMountRef = React.useRef(true);
-  const eventsUrl = '/api/events';
+  // Fetch logged-in student's registrations
+  useEffect(() => {
+    let isMounted = true;
+    if (user && (user.id || user._id)) {
+      getUserEvents(user.id || user._id)
+        .then((regRes) => {
+          if (isMounted) {
+            const registeredIds = new Set(
+              (regRes.data || []).map((item) => String(item.eventId?._id || item.eventId))
+            );
+            setRegisteredEvents(registeredIds);
+          }
+        })
+        .catch((err) => console.error('Failed to load registered events:', err));
+    } else {
+      setRegisteredEvents(new Set());
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
-  // Fix double URL-sync on mount: skip the very first render since state was already initialized
+  // Sync state from URL search params (e.g., browser back/forward buttons)
   useEffect(() => {
     if (isFirstMountRef.current) {
       isFirstMountRef.current = false;
       return;
     }
 
-    const c = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub') || 'ALL';
-    const s = searchParams.get('status') || searchParams.get('filterStatus') || 'ALL';
-    const m = searchParams.get('month') || searchParams.get('filterMonth') || 'ALL';
-    const y = searchParams.get('year') || searchParams.get('filterYear') || 'ALL';
-    const q = searchParams.get('search') || searchParams.get('q') || '';
+    if (hideHeader) return;
 
-    setFilterClub(c);
-    setFilterStatus(s);
-    setFilterMonth(m);
-    setFilterYear(y);
-    setSearchQuery(q);
-  }, [searchParams]);
+    const urlPage = Number.parseInt(searchParams.get('page'), 10) || 1;
+    const urlClub = searchParams.get('club') || searchParams.get('clubName') || searchParams.get('filterClub') || 'ALL';
+    const urlStatus = searchParams.get('status') || searchParams.get('filterStatus') || 'ALL';
+    const urlMonth = searchParams.get('month') || searchParams.get('filterMonth') || 'ALL';
+    const urlYear = searchParams.get('year') || searchParams.get('filterYear') || 'ALL';
+    const urlSearch = searchParams.get('search') || searchParams.get('q') || '';
 
-  // Wrap fetchEvents in useCallback
-  const fetchEvents = useCallback(async () => {
-    try {
-      const initialLimit = limit || 500;
-      const initialUrl = `${eventsUrl}?limit=${initialLimit}&offset=0`;
-      const eventData = await getPublicJson(initialUrl);
-      const dataList = Array.isArray(eventData) ? eventData : [];
-      setEvents(dataList);
-      setHasMore(dataList.length >= initialLimit);
-      try {
-        sessionStorage.setItem(CACHE_FEED_KEY, JSON.stringify(dataList));
-      } catch (_) {}
+    setPage((prev) => (prev !== urlPage ? urlPage : prev));
+    setFilterClub((prev) => (prev !== urlClub ? urlClub : prev));
+    setFilterStatus((prev) => (prev !== urlStatus ? urlStatus : prev));
+    setFilterMonth((prev) => (prev !== urlMonth ? urlMonth : prev));
+    setFilterYear((prev) => (prev !== urlYear ? urlYear : prev));
+    setSearchQuery((prev) => (prev !== urlSearch ? urlSearch : prev));
+  }, [searchParams, hideHeader]);
 
-      if (user) {
-        const regRes = await getUserEvents(user.id || user._id);
-        const registeredIds = new Set((regRes.data || []).map(item => String(item.eventId?._id || item.eventId)));
-        setRegisteredEvents(registeredIds);
-      }
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  }, [limit, eventsUrl, CACHE_FEED_KEY, user]);
-
-  const loadMoreEvents = useCallback(async () => {
-    if (loadingMore || !hasMore || limit) return;
-    setLoadingMore(true);
-    try {
-      const nextOffset = events.length;
-      const nextUrl = `${eventsUrl}?limit=20&offset=${nextOffset}`;
-      const nextBatch = await getPublicJson(nextUrl);
-
-      if (Array.isArray(nextBatch) && nextBatch.length > 0) {
-        setEvents((prev) => {
-          const seen = new Set(prev.map((e) => e.id || e._id));
-          const fresh = nextBatch.filter((e) => !seen.has(e.id || e._id));
-          return [...prev, ...fresh];
-        });
-        if (nextBatch.length < 20) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (err) {
-      console.error('Failed to load more events:', err);
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, limit, events.length]);
-
-  // SWR: auto-update UI when background revalidation finds new data
-  const handleBackgroundUpdate = useCallback((newData) => {
-    if (newData && Array.isArray(newData)) {
-      setEvents((prev) => {
-        if (prev.length <= 500) return newData;
-        const newMap = new Map(newData.map(e => [e.id || e._id, e]));
-        return prev.map(e => newMap.get(e.id || e._id) || e);
-      });
-    }
-  }, []);
+  // Reset page to 1 when any filter or debounced search changes
+  const prevFilterValuesRef = useRef({
+    status: filterStatus,
+    club: filterClub,
+    month: filterMonth,
+    year: filterYear,
+    search: debouncedSearch,
+  });
 
   useEffect(() => {
-    fetchEvents();
+    const prev = prevFilterValuesRef.current;
+    if (
+      prev.status !== filterStatus ||
+      prev.club !== filterClub ||
+      prev.month !== filterMonth ||
+      prev.year !== filterYear ||
+      prev.search !== debouncedSearch
+    ) {
+      prevFilterValuesRef.current = {
+        status: filterStatus,
+        club: filterClub,
+        month: filterMonth,
+        year: filterYear,
+        search: debouncedSearch,
+      };
+      setPage(1);
+    }
+  }, [filterStatus, filterClub, filterMonth, filterYear, debouncedSearch]);
 
-    const initialUrl = `${eventsUrl}?limit=${limit || 500}&offset=0`;
-    registerUpdateCallback(initialUrl, handleBackgroundUpdate);
+  // Synchronize state to URL search parameters for shareable URLs and persistence
+  useEffect(() => {
+    if (hideHeader) return;
+
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', String(page));
+    if (filterStatus !== 'ALL') params.set('status', filterStatus);
+    if (filterClub !== 'ALL') params.set('club', filterClub);
+    if (filterMonth !== 'ALL') params.set('month', String(filterMonth));
+    if (filterYear !== 'ALL') params.set('year', String(filterYear));
+    if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+
+    setSearchParams(params, { replace: true });
+  }, [page, filterStatus, filterClub, filterMonth, filterYear, debouncedSearch, hideHeader, setSearchParams]);
+
+  // Core server-side query fetcher with AbortController and race condition guard
+  const fetchEvents = useCallback(async () => {
+    const currentRequestId = ++requestIdRef.current;
+    setIsFetching(true);
+    setApiError(null);
+
+    const controller = new AbortController();
+
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.set('page', String(page));
+      queryParams.set('limit', String(pageSize));
+
+      if (filterStatus !== 'ALL') queryParams.set('status', filterStatus);
+      if (filterClub !== 'ALL') queryParams.set('club', filterClub);
+      if (filterMonth !== 'ALL') queryParams.set('month', String(filterMonth));
+      if (filterYear !== 'ALL') queryParams.set('year', String(filterYear));
+      if (debouncedSearch.trim()) queryParams.set('search', debouncedSearch.trim());
+
+      const url = `${eventsUrl}?${queryParams.toString()}`;
+      const resData = await getPublicJson(url);
+
+      // Race condition check: ensure out-of-order response does not overwrite latest
+      if (currentRequestId !== requestIdRef.current) return;
+
+      const dataList = Array.isArray(resData) ? resData : (resData?.events || []);
+      const paginationMeta = resData?.pagination || {
+        page,
+        limit: pageSize,
+        total: dataList.length,
+        totalPages: Math.ceil(dataList.length / pageSize) || (dataList.length === 0 ? 0 : 1),
+        hasNextPage: false,
+        hasPreviousPage: page > 1,
+      };
+
+      setEvents(dataList);
+      setPagination(paginationMeta);
+      setLoading(false);
+      setIsFetching(false);
+    } catch (err) {
+      if (currentRequestId !== requestIdRef.current) return;
+      console.error('Failed to fetch events:', err);
+      setApiError(err.message || 'Failed to load events. Please try again.');
+      setLoading(false);
+      setIsFetching(false);
+    }
+
+    return () => {
+      controller.abort();
+    };
+  }, [page, pageSize, filterStatus, filterClub, filterMonth, filterYear, debouncedSearch, eventsUrl]);
+
+  // Trigger fetch whenever page or active filters change
+  useEffect(() => {
+    fetchEvents();
 
     const interval = setInterval(() => {
       if (!document.hidden) {
         fetchEvents();
       }
     }, 60000);
+
     return () => {
       clearInterval(interval);
-      unregisterUpdateCallback(initialUrl, handleBackgroundUpdate);
     };
-  }, [fetchEvents, limit, eventsUrl, handleBackgroundUpdate]);
+  }, [fetchEvents]);
 
+  // Background update callback from cacheManager
+  const handleBackgroundUpdate = useCallback((newData) => {
+    if (newData) {
+      const dataList = Array.isArray(newData) ? newData : (newData?.events || []);
+      if (Array.isArray(dataList)) {
+        setEvents((prev) => {
+          const newMap = new Map(dataList.map((e) => [e.id || e._id, e]));
+          return prev.map((e) => newMap.get(e.id || e._id) || e);
+        });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const currentUrl = `${eventsUrl}?page=${page}&limit=${pageSize}&status=${filterStatus}&club=${filterClub}&month=${filterMonth}&year=${filterYear}&search=${encodeURIComponent(debouncedSearch.trim())}`;
+    registerUpdateCallback(currentUrl, handleBackgroundUpdate);
+    return () => {
+      unregisterUpdateCallback(currentUrl, handleBackgroundUpdate);
+    };
+  }, [page, pageSize, filterStatus, filterClub, filterMonth, filterYear, debouncedSearch, eventsUrl, handleBackgroundUpdate]);
+
+  // Club names for dropdown: combines all campus clubs + any active event organizers
   const clubNames = useMemo(() => {
     const names = new Set();
-    if (Array.isArray(events)) {
-      events.forEach(e => {
-        const hasOrganizers = Array.isArray(e.organizers) && e.organizers.length > 0;
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && !hasOrganizers);
-        if (isCentral) return;
-        if (hasOrganizers) {
-          e.organizers.forEach(o => {
-            if (o.club?.clubName) names.add(o.club.clubName);
-          });
-        }
-        const cName = e.club?.clubName || e.createdBy?.clubName;
-        if (cName) names.add(cName);
-      });
-    }
+    clubsList.forEach((c) => {
+      if (c.clubName) names.add(c.clubName);
+    });
+    events.forEach((e) => {
+      const cName = e.club?.clubName || e.createdBy?.clubName;
+      if (cName) names.add(cName);
+      if (Array.isArray(e.organizers)) {
+        e.organizers.forEach((o) => {
+          if (o.club?.clubName) names.add(o.club.clubName);
+        });
+      }
+    });
     return Array.from(names).sort();
-  }, [events]);
+  }, [clubsList, events]);
 
-  // Fix currentYear hardcode to dynamic getFullYear()
+  // Dynamic years list based on current year
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const years = new Set([currentYear]);
-    if (Array.isArray(events)) {
-      events.forEach(e => {
-        if (e.startTime) {
-          const d = new Date(e.startTime);
-          if (!isNaN(d.getTime())) {
-            const year = d.getFullYear();
-            if (year >= currentYear - 2) years.add(year);
-          }
+    const years = new Set([currentYear - 2, currentYear - 1, currentYear, currentYear + 1]);
+    events.forEach((e) => {
+      if (e.startTime) {
+        const d = new Date(e.startTime);
+        if (!isNaN(d.getTime())) {
+          years.add(d.getFullYear());
         }
-      });
-    }
-    years.add(currentYear + 1);
+      }
+    });
     return Array.from(years).sort((a, b) => a - b);
   }, [events]);
-
 
   const handleRegister = async (eventId) => {
     if (!user || (role !== 'member' && role !== 'student')) {
@@ -233,10 +355,10 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
     try {
       const res = await registerForEvent(eventId, {
-        userId: user.id || user._id
+        userId: user.id || user._id,
       });
       showNotification(res.data.message, 'success');
-      setRegisteredEvents(prev => new Set([...prev, String(eventId)]));
+      setRegisteredEvents((prev) => new Set([...prev, String(eventId)]));
       await invalidateCache(['/api/events', `/api/events/user/${user.id || user._id}`]);
       await fetchEvents();
     } catch (err) {
@@ -244,75 +366,24 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     }
   };
 
-  // 🔴 1: Wrap all filter logic in useMemo
-  const filteredEvents = useMemo(() => {
-    let list = Array.isArray(events) ? [...events] : [];
-
-    if (filterClub !== 'ALL') {
-      if (filterClub === 'CENTRAL' || filterClub.toLowerCase() === 'central') {
-        list = list.filter(e =>
-          e.organizerType === 'CENTRAL' ||
-          e.organizerType === 'CENTRAL_ORGANIZATION' ||
-          Boolean(e.centralOrganizerId) ||
-          Boolean(e.centralOrganizer) ||
-          (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0))
-        );
-      } else {
-        const targetClub = filterClub.trim().toLowerCase();
-        list = list.filter(e => {
-          const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
-          if (isCentral) return false;
-          const matchesOrganizer = Array.isArray(e.organizers) && e.organizers.some(o => o.club?.clubName && o.club.clubName.trim().toLowerCase() === targetClub);
-          const legacyClubName = e.club?.clubName || e.createdBy?.clubName;
-          const matchesLegacy = legacyClubName && legacyClubName.trim().toLowerCase() === targetClub;
-          return matchesOrganizer || matchesLegacy;
-        });
-      }
+  const handleResetFilters = () => {
+    setFilterStatus('ALL');
+    setFilterClub('ALL');
+    setFilterMonth('ALL');
+    setFilterYear('ALL');
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setPage(1);
+    if (!hideHeader) {
+      setSearchParams({}, { replace: true });
     }
+  };
 
-    if (filterStatus !== 'ALL') {
-      list = list.filter(e => e.status === filterStatus);
-    }
-
-    if (filterYear !== 'ALL') {
-      list = list.filter(e => {
-        if (!e.startTime) return false;
-        return new Date(e.startTime).getFullYear().toString() === filterYear.toString();
-      });
-    }
-
-    if (filterMonth !== 'ALL') {
-      list = list.filter(e => {
-        if (!e.startTime) return false;
-        return (new Date(e.startTime).getMonth() + 1).toString() === filterMonth.toString();
-      });
-    }
-
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase().trim();
-      list = list.filter(e => {
-        const isCentral = e.organizerType === 'CENTRAL' || e.organizerType === 'CENTRAL_ORGANIZATION' || Boolean(e.centralOrganizerId) || (!e.club && !e.clubId && (!e.organizers || e.organizers.length === 0));
-        const titleMatch = e.title?.toLowerCase().includes(query);
-        const organizerNames = (e.organizers || []).map(o => o.club?.clubName || '').join(' ').toLowerCase();
-        const organizerCategories = (e.organizers || []).map(o => o.club?.category || '').join(' ').toLowerCase();
-        const clubMatch = (e.club?.clubName || e.createdBy?.clubName || '').toLowerCase().includes(query) || organizerNames.includes(query);
-        const categoryMatch = (e.club?.category || '').toLowerCase().includes(query) || organizerCategories.includes(query);
-        const centralMatch = isCentral && ('central'.includes(query) || 'odsw'.includes(query) || 'college'.includes(query));
-        return titleMatch || clubMatch || categoryMatch || centralMatch;
-      });
-    }
-
-    return list;
-  }, [events, filterClub, filterStatus, filterYear, filterMonth, searchQuery]);
-
-  // 🔴 3: Calculate totalFiltered before limit slicing
-  const totalFiltered = filteredEvents.length;
-
-  // Memoize grouped events and slicing
+  // Group events into sections based on their status
   const { liveEvents, upcomingEvents, endedEvents, hasNoActiveEvents } = useMemo(() => {
-    let live = filteredEvents.filter(e => e.status === 'LIVE');
-    let upcoming = filteredEvents.filter(e => e.status === 'UPCOMING');
-    let ended = filteredEvents.filter(e => e.status === 'ENDED');
+    let live = events.filter((e) => e.status === 'LIVE');
+    let upcoming = events.filter((e) => e.status === 'UPCOMING');
+    let ended = events.filter((e) => e.status === 'ENDED');
 
     upcoming.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     ended.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
@@ -331,39 +402,18 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       }
     }
 
-    if (limit) {
-      let remaining = limit;
-      if (live.length > remaining) {
-        live = live.slice(0, remaining);
-        remaining = 0;
-      } else {
-        remaining -= live.length;
-      }
-
-      if (upcoming.length > remaining) {
-        upcoming = upcoming.slice(0, remaining);
-        remaining = 0;
-      } else {
-        remaining -= upcoming.length;
-      }
-
-      if (ended.length > remaining) {
-        ended = ended.slice(0, remaining);
-      }
-    }
-
     return {
       liveEvents: live,
       upcomingEvents: upcoming,
       endedEvents: ended,
       hasNoActiveEvents: noActive,
     };
-  }, [filteredEvents, onlyActive, hideHeader, limit]);
+  }, [events, onlyActive, hideHeader]);
 
   if (loading) {
     const skeletonGrid = (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-        {[...Array(limit || 6)].map((_, i) => (
+        {[...Array(pageSize > 6 ? 6 : pageSize)].map((_, i) => (
           <EventCardSkeleton key={i} />
         ))}
       </div>
@@ -381,9 +431,14 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     );
   }
 
-  const isFilterActive = filterStatus !== 'ALL' || filterClub !== 'ALL' || filterMonth !== 'ALL' || filterYear !== 'ALL' || searchQuery.trim() !== '';
-  // 🔴 2: Immediate empty banner calculation with no fake-delay
-  const showEmptyBanner = !loading && !loadingMore && (events.length === 0 || totalFiltered === 0 || (!isFilterActive && hasNoActiveEvents));
+  const isFilterActive =
+    filterStatus !== 'ALL' ||
+    filterClub !== 'ALL' ||
+    filterMonth !== 'ALL' ||
+    filterYear !== 'ALL' ||
+    debouncedSearch.trim() !== '';
+
+  const showEmptyBanner = !loading && !apiError && (events.length === 0 || (!isFilterActive && hasNoActiveEvents));
 
   const statusButtons = [
     { key: 'ALL', label: 'All', icon: 'ri-layout-grid-line' },
@@ -391,15 +446,15 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     { key: 'UPCOMING', label: 'Upcoming', icon: 'ri-calendar-event-line' },
     { key: 'ENDED', label: 'Ended', icon: 'ri-history-line' },
   ];
+
   const Container = hideHeader ? 'div' : Section;
   const containerProps = hideHeader ? { className: "myfont w-full" } : { className: "myfont py-10 sm:py-12 lg:py-16" };
 
   return (
     <Container {...containerProps}>
-
       {!hideHeader && (
         <div className="mb-8 sm:mb-10 text-center">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 titlefont">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
             Events & Activities
           </h1>
         </div>
@@ -409,7 +464,6 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
       {(!hideHeader || showFilters) && (
         <div className="mb-6 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
-
           <div className="relative group">
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
@@ -421,8 +475,12 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors p-1"
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setDebouncedSearch('');
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors p-1 cursor-pointer"
                 aria-label="Clear search"
               >
                 <i className="ri-close-circle-fill text-sm sm:text-base" />
@@ -431,13 +489,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-2 sm:gap-2.5 mt-2 sm:mt-2.5 min-w-0 max-w-full">
-
             <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 shrink-0 max-w-full">
-              {statusButtons.map(btn => (
+              {statusButtons.map((btn) => (
                 <button
                   key={btn.key}
+                  type="button"
                   onClick={() => setFilterStatus(btn.key)}
-                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
                     filterStatus === btn.key
                       ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
@@ -454,10 +512,11 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 value={filterClub}
                 onChange={(e) => setFilterClub(e.target.value)}
                 className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                aria-label="Filter by club"
               >
                 <option value="ALL">All Clubs</option>
                 <option value="CENTRAL">Central (ODSW)</option>
-                {clubNames.map(c => (
+                {clubNames.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -466,9 +525,10 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
                 className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                aria-label="Filter by month"
               >
                 <option value="ALL">All Months</option>
-                {ALL_MONTHS.map(m => (
+                {ALL_MONTHS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
@@ -477,9 +537,10 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
                 className="w-full px-2 py-1.5 bg-neutral-50 dark:bg-zinc-900/70 border border-neutral-200 dark:border-zinc-800 rounded-lg text-[11px] sm:text-xs text-neutral-800 dark:text-neutral-200 focus:border-brand-600 dark:focus:border-brand-500 outline-none truncate transition-colors font-medium cursor-pointer"
+                aria-label="Filter by year"
               >
                 <option value="ALL">All Years</option>
-                {availableYears.map(y => (
+                {availableYears.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
@@ -487,15 +548,9 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
             {isFilterActive && (
               <button
-                onClick={() => {
-                  setFilterStatus('ALL');
-                  setFilterClub('ALL');
-                  setFilterMonth('ALL');
-                  setFilterYear('ALL');
-                  setSearchQuery('');
-                  setSearchParams({});
-                }}
-                className="mysans inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
+                type="button"
+                onClick={handleResetFilters}
+                className="mysans inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
                 title="Reset all filters"
               >
                 <i className="ri-refresh-line text-xs" />
@@ -506,14 +561,50 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
 
           <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
             <span>
-              Showing <span className="font-bold text-neutral-800 dark:text-neutral-200">{totalFiltered}</span> {totalFiltered === 1 ? 'event' : 'events'}
+              Showing{' '}
+              <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                {pagination.total > 0
+                  ? `${(pagination.page - 1) * pagination.limit + 1}–${Math.min(pagination.page * pagination.limit, pagination.total)} of ${pagination.total}`
+                  : '0'}
+              </span>{' '}
+              {pagination.total === 1 ? 'event' : 'events'}
             </span>
-            {isFilterActive && (
-              <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
-                Filters applied
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {isFetching && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider animate-pulse">
+                  <i className="ri-loader-4-line animate-spin text-xs" />
+                  Updating...
+                </span>
+              )}
+              {isFilterActive && !isFetching && (
+                <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+                  Filters applied
+                </span>
+              )}
+            </div>
           </div>
+        </div>
+      )}
+
+      {apiError && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-6 text-center shadow-2xs mb-8">
+          <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">
+            <i className="ri-error-warning-line text-2xl" />
+          </div>
+          <h3 className="font-bold text-neutral-900 dark:text-neutral-100 text-base mb-1">
+            Failed to load events
+          </h3>
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 max-w-md mx-auto">
+            {apiError}
+          </p>
+          <button
+            type="button"
+            onClick={() => fetchEvents()}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+          >
+            <i className="ri-refresh-line text-xs" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 
@@ -527,31 +618,25 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             />
           </div>
           <h3 className="font-extrabold text-base sm:text-lg text-neutral-900 dark:text-white mb-1 tracking-tight">
-            {events.length === 0
+            {pagination.total === 0 && !isFilterActive
               ? 'No events scheduled yet'
-              : totalFiltered === 0
+              : pagination.total === 0
                 ? 'No matching events found'
                 : 'No active events currently'}
           </h3>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-4 leading-relaxed font-light">
-            {events.length === 0
+            {pagination.total === 0 && !isFilterActive
               ? 'Please check back later for new events.'
-              : totalFiltered === 0
+              : pagination.total === 0
                 ? "Try adjusting your filters or search query to find what you're looking for."
                 : "There aren't any active events happening right now. Don't worry! You can still browse our past events below."}
           </p>
 
-          {isFilterActive && totalFiltered === 0 && (
+          {isFilterActive && pagination.total === 0 && (
             <button
-              onClick={() => {
-                setFilterStatus('ALL');
-                setFilterClub('ALL');
-                setFilterMonth('ALL');
-                setFilterYear('ALL');
-                setSearchQuery('');
-                setSearchParams({});
-              }}
-              className="text-brand-600 font-bold uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
+              type="button"
+              onClick={handleResetFilters}
+              className="text-brand-600 font-semibold uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
             >
               Clear all filters
             </button>
@@ -562,7 +647,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {liveEvents.length > 0 && (
         <div className="mb-14">
           {!hideHeader && (
-            <h2 className="text-lg font-semibold text-red-500 mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-medium text-red-500 mb-6 flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -571,7 +656,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </h2>
           )}
           {hideHeader && (
-            <h3 className="text-md font-bold text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <h3 className="text-md font-semibold text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
               <span className="relative flex h-3 w-3">
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
               </span>
@@ -582,7 +667,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           {isCarousel || (hideHeader && liveEvents.length > 3) ? (
             <CardCarousel threshold={3}>
               {liveEvents.map((event, idx) => (
-                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                <ScrollReveal key={event.id || event._id} direction="none" delay={0.05 * (idx % 3)} className="h-full">
                   <EventCard
                     event={event}
                     onRegister={handleRegister}
@@ -620,7 +705,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           {isCarousel || (hideHeader && upcomingEvents.length > 3) ? (
             <CardCarousel threshold={3}>
               {upcomingEvents.map((event, idx) => (
-                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                <ScrollReveal key={event.id || event._id} direction="none" delay={0.05 * (idx % 3)} className="h-full">
                   <EventCard
                     event={event}
                     onRegister={handleRegister}
@@ -649,20 +734,20 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div>
           {!hideHeader && (
             <ScrollReveal direction="up" distance={15}>
-              <h2 className="text-xl font-semibold text-neutral-800 mb-6 flex items-center justify-center gap-2">
-                Past Events 
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-6 flex items-center justify-center gap-2">
+                Past Events
               </h2>
             </ScrollReveal>
           )}
           {hideHeader && (
-            <h3 className="text-md font-bold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <h3 className="text-md font-semibold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
               Past Events
             </h3>
           )}
           {isCarousel || (hideHeader && endedEvents.length > 3) ? (
             <CardCarousel threshold={3}>
               {endedEvents.map((event, idx) => (
-                <ScrollReveal key={event.id || event._id} direction="up" delay={0.05 * (idx % 3)} distance={24} className="h-full">
+                <ScrollReveal key={event.id || event._id} direction="none" delay={0.05 * (idx % 3)} className="h-full">
                   <EventCard
                     event={event}
                     onRegister={handleRegister}
@@ -687,39 +772,89 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-      {/* User-Triggered Load More (Only shown when there are matching events to load) */}
-      {!limit && totalFiltered > 0 && (
-        <div className="mt-12 mb-8 flex flex-col items-center justify-center min-h-[64px] gap-3">
-          {hasMore && !loading && (
+      {/* Traditional Pagination Controls */}
+      {!limit && pagination.totalPages > 1 && (
+        <div className="mt-12 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-100 dark:border-zinc-800/80 pt-6">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+            Page <span className="font-semibold text-neutral-900 dark:text-neutral-100">{pagination.page}</span> of{' '}
+            <span className="font-semibold text-neutral-900 dark:text-neutral-100">{pagination.totalPages}</span>
+            {' '}• {pagination.total} total {pagination.total === 1 ? 'event' : 'events'}
+          </div>
+
+          <nav aria-label="Events Pagination" className="inline-flex items-center gap-1.5">
+            {/* Previous button */}
             <button
               type="button"
-              onClick={loadMoreEvents}
-              disabled={loadingMore}
-              className="mysans inline-flex items-center gap-2.5 px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl bg-white dark:bg-zinc-900 hover:bg-neutral-50 dark:hover:bg-zinc-850 text-neutral-900 dark:text-white border border-neutral-200/90 dark:border-zinc-800 transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md hover:border-brand-500/50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation group"
+              onClick={() => {
+                if (pagination.hasPreviousPage) {
+                  setPage((p) => p - 1);
+                  window.scrollTo({ top: 200, behavior: 'smooth' });
+                }
+              }}
+              disabled={!pagination.hasPreviousPage || isFetching}
+              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
+              aria-label="Previous Page"
             >
-              {loadingMore ? (
-                <>
-                  <i className="ri-loader-4-line animate-spin text-brand-600 dark:text-brand-400 text-base" />
-                  <span>Loading events...</span>
-                </>
-              ) : (
-                <>
-                  <i className="ri-arrow-down-line text-sm text-brand-600 dark:text-brand-400 group-hover:translate-y-0.5 transition-transform" />
-                  <span>Load More (+20 Events)</span>
-                </>
-              )}
+              <i className="ri-arrow-left-s-line text-sm" />
+              <span className="hidden sm:inline">Previous</span>
             </button>
-          )}
 
-          {!hasMore && totalFiltered > 0 && (
-            <div className="flex items-center gap-2 py-2.5 px-5 rounded-full bg-neutral-100/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/60 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 shadow-2xs">
-              <i className="ri-check-double-line text-brand-600 dark:text-brand-400 text-sm" />
-              <span>You've reached the end • All {totalFiltered} events loaded</span>
+            {/* Page Numbers */}
+            <div className="inline-flex items-center gap-1">
+              {getPageNumbers(pagination.page, pagination.totalPages).map((p, idx) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 py-1 text-xs text-neutral-400 select-none">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={`page-${p}`}
+                    type="button"
+                    onClick={() => {
+                      if (p !== pagination.page) {
+                        setPage(p);
+                        window.scrollTo({ top: 200, behavior: 'smooth' });
+                      }
+                    }}
+                    disabled={isFetching}
+                    className={`min-w-[34px] h-[34px] text-xs font-semibold rounded-lg border transition-all duration-150 cursor-pointer ${
+                      pagination.page === p
+                        ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs font-bold'
+                        : 'bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800'
+                    }`}
+                    aria-current={pagination.page === p ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
             </div>
-          )}
+
+            {/* Next button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (pagination.hasNextPage) {
+                  setPage((p) => p + 1);
+                  window.scrollTo({ top: 200, behavior: 'smooth' });
+                }
+              }}
+              disabled={!pagination.hasNextPage || isFetching}
+              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
+              aria-label="Next Page"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <i className="ri-arrow-right-s-line text-sm" />
+            </button>
+          </nav>
         </div>
       )}
 
+      {!limit && pagination.total > 0 && pagination.totalPages <= 1 && (
+        <div className="mt-8 mb-4 text-center text-xs text-neutral-400 dark:text-neutral-500 font-medium">
+          All {pagination.total} {pagination.total === 1 ? 'event' : 'events'} loaded
+        </div>
+      )}
     </Container>
   );
 };

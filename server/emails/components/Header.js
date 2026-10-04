@@ -14,14 +14,7 @@ export const Header = ({ badgeText, subtitle } = {}) => {
   return `
     <div style="margin-bottom: ${spacing.xxl}; text-align: center;">
       <div style="display: inline-block; vertical-align: middle;">
-        <a href="https://campusnode.vercel.app" target="_blank" style="text-decoration: none; display: inline-block; vertical-align: middle;">
-          <img
-            src="https://campusnode-stagging.vercel.app/logolight.png"
-            alt="CampusNode"
-            width="200"
-            style="display: block; width: 200px; height: auto; border: 0; margin: 0 auto;"
-          />
-        </a>
+        <h1 style="color: ${colors.primary}; font-family: ${typography.fontFamily}; font-size: ${typography.sizes.xxl}; font-weight: ${typography.weights.bold}; margin: 0;">Campusnode</h1>
       </div>
       ${
         subtitle

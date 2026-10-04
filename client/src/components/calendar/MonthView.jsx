@@ -118,7 +118,7 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
               {/* Cell Header: Day Number + Density Badge */}
               <div className="flex items-center justify-between mb-1">
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
                     today
                       ? "bg-brand-600 text-white shadow-sm"
                       : cell.isCurrentMonth
@@ -140,7 +140,7 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
               {dayBlackouts.map((b) => (
                 <div
                   key={b.id || b._id}
-                  className="mb-1 p-1 bg-rose-500/15 border border-rose-500/30 rounded-lg text-[10px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate"
+                  className="mb-1 p-1 bg-rose-500/15 border border-rose-500/30 rounded-lg text-[10px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate"
                 >
                   <AlertTriangle size={10} className="shrink-0 text-rose-500" />
                   <span className="truncate">{b.venue}: CLOSED</span>
@@ -164,10 +164,10 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
                         e.stopPropagation();
                         onSelectEvent(event);
                       }}
-                      className={`p-1.5 rounded-xl border text-[11px] font-semibold transition-all hover:scale-[1.02] cursor-pointer ${colorClass}`}
+                      className={`p-1.5 rounded-xl border text-[11px] font-medium transition-all hover:scale-[1.02] cursor-pointer ${colorClass}`}
                     >
                       <div className="flex items-center justify-between gap-1 leading-tight mb-0.5">
-                        <span className="font-bold truncate text-black dark:text-white">
+                        <span className="font-semibold truncate text-black dark:text-white">
                           {event.title}
                         </span>
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot}`} title={`Status: ${event.reviewStatus}`} />
@@ -181,7 +181,7 @@ const MonthView = ({ currentDate, events = [], blackouts = [], onSelectEvent, on
                 })}
 
                 {dayEvents.length > 3 && (
-                  <p className="text-[10px] font-bold text-neutral-400 text-center pt-0.5">
+                  <p className="text-[10px] font-semibold text-neutral-400 text-center pt-0.5">
                     +{dayEvents.length - 3} more
                   </p>
                 )}

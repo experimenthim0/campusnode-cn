@@ -124,13 +124,13 @@ export default function CardCarousel({
       {/* Carousel Track with smooth snap */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar p-1 pb-4 pt-1 -mx-1"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y scroll-smooth snap-x snap-mandatory no-scrollbar px-1 pt-2 pb-5 -mx-1"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none", overflowY: "hidden" }}
       >
         {items.map((child, idx) => (
           <div
             key={idx}
-            className={`w-[85vw] sm:w-[320px] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 snap-start transition-opacity duration-300 ${cardClassName}`}
+            className={`w-[85vw] sm:w-[320px] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 snap-start transition-opacity duration-300 self-stretch flex flex-col ${cardClassName}`}
           >
             {child}
           </div>

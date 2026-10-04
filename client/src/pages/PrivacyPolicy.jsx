@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
                 <div className="mb-8 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-2 text-xs font-bold text-cn-text-muted hover:text-cn-text uppercase tracking-widest transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 text-xs font-semibold text-cn-text-muted hover:text-cn-text uppercase tracking-widest transition-colors cursor-pointer"
                     >
                         <i className="ri-arrow-left-line text-sm" /> Back
                     </button>
@@ -21,10 +21,10 @@ const PrivacyPolicy = () => {
 
                 {/* Hero / Title Section */}
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-4">
                         <i className="ri-shield-keyhole-line text-sm" /> Legal &amp; Data Security
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+                    <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-neutral-900 dark:text-white">
                         Privacy Policy
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
                             <i className="ri-shield-check-line" />
                         </div>
                         <div>
-                            <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-1">
+                            <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-1">
                                 Our Privacy Commitment
                             </h2>
                             <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -52,8 +52,8 @@ const PrivacyPolicy = () => {
 
                     {/* Section 1: Introduction */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">1</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">1</span>
                             Introduction
                         </h2>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -63,8 +63,8 @@ const PrivacyPolicy = () => {
 
                     {/* Section 2: Data Collection Table */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">2</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">2</span>
                             Information We Collect
                         </h2>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
@@ -76,29 +76,29 @@ const PrivacyPolicy = () => {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-cn-surface-muted border-b border-cn-border">
-                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</th>
-                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Details Collected</th>
-                                            <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Primary Purpose</th>
+                                            <th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Category</th>
+                                            <th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Details Collected</th>
+                                            <th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Primary Purpose</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-cn-border-subtle text-xs md:text-sm">
                                         <tr>
-                                            <td className="px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-200">Account Credentials</td>
+                                            <td className="px-4 py-3 font-medium text-neutral-800 dark:text-neutral-200">Account Credentials</td>
                                             <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">Name, NITJ Email, Roll Number, Branch, Year, Program</td>
                                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">Student verification &amp; eligibility checks</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-200">Profile Links</td>
+                                            <td className="px-4 py-3 font-medium text-neutral-800 dark:text-neutral-200">Profile Links</td>
                                             <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">GitHub, LinkedIn, X (Twitter), Portfolio URL</td>
                                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">Optional developer/participant showcase</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-200">Event Responses</td>
+                                            <td className="px-4 py-3 font-medium text-neutral-800 dark:text-neutral-200">Event Responses</td>
                                             <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">Answers to custom questions created by organizers</td>
                                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">Event-specific team &amp; logistics management</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-4 py-3 font-semibold text-neutral-800 dark:text-neutral-200">Payment References</td>
+                                            <td className="px-4 py-3 font-medium text-neutral-800 dark:text-neutral-200">Payment References</td>
                                             <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">Transaction UTR IDs, payment screenshots</td>
                                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">Manual payment verification by club heads</td>
                                         </tr>
@@ -110,8 +110,8 @@ const PrivacyPolicy = () => {
 
                     {/* Section 3: Usage */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">3</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">3</span>
                             How We Use Your Information
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -130,13 +130,13 @@ const PrivacyPolicy = () => {
                     </section>
 
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">4</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">4</span>
                             Information Sharing &amp; Organizer Obligations
                         </h2>
 
                         <div className="bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-200 dark:border-cn-blue-900/50 rounded-xl p-4 mb-4">
-                            <div className="flex items-center gap-2 text-cn-blue-800 dark:text-cn-blue-300 font-bold text-xs uppercase tracking-wider mb-1">
+                            <div className="flex items-center gap-2 text-cn-blue-800 dark:text-cn-blue-300 font-semibold text-xs uppercase tracking-wider mb-1">
                                 <i className="ri-shield-flash-line text-cn-blue-600 dark:text-cn-blue-400" /> Organizer Data Scope
                             </div>
                             <p className="text-xs text-cn-blue-900/80 dark:text-cn-blue-200/80 leading-relaxed">
@@ -158,14 +158,14 @@ const PrivacyPolicy = () => {
 
                     {/* Section 5: Security */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">5</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">5</span>
                             Data Security Standards
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
                             We employ modern technical measures including HTTPS encryption, secure session tokens, role-based database access, and password hashing to defend student accounts against unauthorized access.
                         </p>
-                        <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-mono font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                        <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-mono font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                             <div className="p-2.5 bg-cn-surface-muted rounded-lg border border-cn-border-subtle">
                                 HTTPS Encrypted
                             </div>
@@ -180,22 +180,22 @@ const PrivacyPolicy = () => {
 
                     {/* Section 6: Rights */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">6</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">6</span>
                             Your Privacy Rights
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3">
                             You maintain full control over your stored credentials and profile:
                         </p>
                         <ul className="space-y-2 text-xs md:text-sm text-neutral-600 dark:text-neutral-400 list-disc pl-5">
-                            <li>View and update your academic details, social handles, and avatar via <Link to="/profile/edit" className="text-cn-blue-600 dark:text-cn-blue-400 font-semibold hover:underline">Profile Settings</Link>.</li>
+                            <li>View and update your academic details, social handles, and avatar via <Link to="/profile/edit" className="text-cn-blue-600 dark:text-cn-blue-400 font-medium hover:underline">Profile Settings</Link>.</li>
                             <li>Request account deactivation or data removal by contacting system admins.</li>
                         </ul>
                     </section>
 
                     {/* Section 7: Contact */}
                     <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 shadow-md">
-                        <h2 className="text-base font-semibold mb-2 flex items-center gap-2">
+                        <h2 className="text-base font-medium mb-2 flex items-center gap-2">
                             <i className="ri-mail-line text-cn-blue-500 text-lg" /> Questions &amp; Support
                         </h2>
                         <p className="text-xs md:text-sm text-cn-text-muted leading-relaxed mb-4">
@@ -203,7 +203,7 @@ const PrivacyPolicy = () => {
                         </p>
                         <a
                             href="mailto:contact.nikhim@gmail.com"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Contact Privacy Officer
                         </a>

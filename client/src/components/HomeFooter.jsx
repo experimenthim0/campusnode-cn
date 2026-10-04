@@ -12,22 +12,36 @@ const CAMPUS_SLIDES = [
     id: 'mainbuilding',
     name: 'Main Building',
     tag: 'Administrative Block',
-    src: '/mainbuilding.jpeg',
+    src: '/bg_images/mainbuilding.jpeg',
     position: 'center 46%',
   },
   {
-    id: 'csh',
-    name: 'Central Seminar Hall',
-    tag: 'CSH & Campus Core',
-    src: '/csh.jpeg',
+    id: 'sac',
+    name: 'Student Activity Centre',
+    tag: 'SAC & Campus Core',
+    src: '/bg_images/SAC.webp',
     position: 'center 48%',
   },
   {
-    id: 'mainbld',
-    name: 'Campus Avenue',
-    tag: 'Institute Main Drive',
-    src: '/mainbld.jpeg',
+    id: 'itbuilding',
+    name: 'IT Building',
+    tag: 'Department of IT & Computer Science',
+    src: '/bg_images/itbuilding.jpeg',
     position: 'center 58%',
+  },
+  {
+    id: 'alt',
+    name: 'Akam Lecture Theatre',
+    tag: 'Academic Hub',
+    src: '/bg_images/ALt.webp',
+    position: 'center 65%',
+  },
+  {
+    id: 'lib_alt',
+    name: 'Central Library & ALT',
+    tag: 'Library & Learning Core',
+    src: '/bg_images/lib_alt.webp',
+    position: 'center 70%',
   },
 ];
 
@@ -82,7 +96,7 @@ const HomeFooter = () => {
             <div className="flex items-center gap-2.5 mb-4">
               <img src="/nitjlogo.png" alt="NITJ Logo" className="w-11 h-12 shrink-0 select-none" />
               <span className="font-light text-[24px] tracking-wider text-cn-text leading-none select-none logofont">
-                Cam<span className="uppercase text-[18px] font-medium">P</span>usnode
+                Campusnode
               </span>
             </div>
             <div>
@@ -113,7 +127,7 @@ const HomeFooter = () => {
           <div className="flex justify-start gap-16 sm:gap-28 md:justify-end">
             {/* Quick Links */}
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-cn-text-secondary mb-5">
+              <h4 className="text-[11px] font-semibold uppercase tracking-widest text-cn-text-secondary mb-5">
                 Quick Links
               </h4>
               <ul className="space-y-3">
@@ -133,7 +147,7 @@ const HomeFooter = () => {
 
             {/* Other Links */}
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-cn-text-secondary mb-5">
+              <h4 className="text-[11px] font-semibold uppercase tracking-widest text-cn-text-secondary mb-5">
                 Other Links
               </h4>
               <ul className="space-y-3">

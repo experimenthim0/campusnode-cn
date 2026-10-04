@@ -23,8 +23,59 @@ export function derivePermissions(role) {
   return { canTakeAttendance: true, canEditEvents: false };
 }
 
+export async function canAssignClubHead(req, clubId) {
+  if (!req.user) return false;
+  const isAdmin =
+    req.user?.role === "admin" ||
+    req.user?.role === "SUPER_ADMIN" ||
+    req.user?.principalType === "ADMIN" ||
+    req.user?.userType === "admin";
+  if (isAdmin) return true;
+
+  const isStudent =
+    req.user?.principalType === "STUDENT" ||
+    req.user?.userType === "student" ||
+    Boolean(req.user?.rollNo);
+  if (isStudent) return false;
+
+  const isFaculty =
+    req.user?.principalType === "FACULTY" ||
+    req.user?.role === "facultyCoordinator" ||
+    req.user?.role === "faculty" ||
+    req.user?.userType === "faculty";
+
+  if (!isFaculty) return false;
+
+  const userId = req.user?.userId || req.user?.id || req.user?.facultyId;
+  if (!userId) return false;
+
+  if (req.user?.clubId && String(req.user.clubId) === String(clubId)) return true;
+  if (req.user?.memberships?.some((m) => String(m.clubId) === String(clubId))) return true;
+
+  const club = await prisma.club.findFirst({
+    where: {
+      id: clubId,
+      OR: [
+        { facultyCoordinatorId: userId },
+        { facultyCoordinators: { some: { facultyId: userId } } },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return Boolean(club);
+}
+
 export async function canManageClubMembers(req, clubId) {
   if (!req.user) return false;
+  const isFaculty =
+    req.user?.principalType === "FACULTY" ||
+    req.user?.role === "facultyCoordinator" ||
+    req.user?.role === "faculty" ||
+    req.user?.userType === "faculty";
+  if (isFaculty) {
+    return canAssignClubHead(req, clubId);
+  }
   return hasPermission(req.user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId, id: clubId });
 }
 
@@ -76,12 +127,12 @@ export const addClubMember = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized to add members to this club." });
     }
 
-    const isAdmin = req.user?.role === "admin" || req.user?.role === "SUPER_ADMIN" || req.user?.principalType === "ADMIN";
+    const canAssignLead = await canAssignClubHead(req, clubId);
 
     if (role === "CLUB_HEAD") {
-      if (!isAdmin) {
+      if (!canAssignLead) {
         return res.status(403).json({
-          message: "Only administrators can assign the Club Head role.",
+          message: "Only administrators and the club's faculty coordinator can assign the Club Head role.",
         });
       }
       const activeHeads = await prisma.clubMembership.count({
@@ -387,12 +438,16 @@ export const updateMemberPermissions = async (req, res) => {
         });
       }
 
-      if (role === "CLUB_HEAD" && existing.role !== "CLUB_HEAD") {
-        if (!isAdmin) {
+      if ((role === "CLUB_HEAD" || existing.role === "CLUB_HEAD") && role !== existing.role) {
+        const canAssignLead = await canAssignClubHead(req, existing.clubId);
+        if (!canAssignLead) {
           return res.status(403).json({
-            message: "Only administrators can assign the Club Head role.",
+            message: "Only administrators and the club's faculty coordinator can assign or change the Student Lead role.",
           });
         }
+      }
+
+      if (role === "CLUB_HEAD" && existing.role !== "CLUB_HEAD") {
         const activeHeads = await prisma.clubMembership.count({
           where: { clubId: existing.clubId, role: "CLUB_HEAD", id: { not: membershipId } },
         });
@@ -501,9 +556,9 @@ export const transferStudentLead = async (req, res) => {
     const { clubId } = req.params;
     const { targetMembershipId, targetStudentId, targetEmail } = req.body;
 
-    const isAdmin = req.user?.role === "admin" || req.user?.role === "SUPER_ADMIN" || req.user?.principalType === "ADMIN";
-    if (!isAdmin) {
-      return res.status(403).json({ message: "Only administrators can transfer the Club Head role." });
+    const canTransferLead = await canAssignClubHead(req, clubId);
+    if (!canTransferLead) {
+      return res.status(403).json({ message: "Only administrators and the club's faculty coordinator can transfer the Club Head role." });
     }
 
     const club = await prisma.club.findUnique({ where: { id: clubId } });
@@ -628,6 +683,15 @@ export const removeClubMember = async (req, res) => {
 
     if (!(await canManageClubMembers(req, membership.clubId))) {
       return res.status(403).json({ message: "Unauthorized to remove members from this club." });
+    }
+
+    if (membership.role === "CLUB_HEAD") {
+      const canManageHead = await canAssignClubHead(req, membership.clubId);
+      if (!canManageHead) {
+        return res.status(403).json({
+          message: "Only administrators and the club's faculty coordinator can remove the Student Lead.",
+        });
+      }
     }
 
     const isAdmin = req.user?.role === "admin" || req.user?.role === "SUPER_ADMIN" || req.user?.principalType === "ADMIN";

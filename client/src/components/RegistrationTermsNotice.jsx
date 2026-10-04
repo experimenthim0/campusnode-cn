@@ -228,7 +228,7 @@ const RegistrationTermsNotice = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-0.5"
+                className="font-medium text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-0.5"
               >
                 Terms & Conditions
                 <ExternalLink className="w-2.5 h-2.5 opacity-70" />
@@ -243,7 +243,7 @@ const RegistrationTermsNotice = ({
               aria-label="View non-editable fields"
               aria-expanded={isOpen}
               title="View non-editable fields"
-              className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+              className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-semibold transition-all cursor-pointer ${
                 isOpen
                   ? 'bg-brand-600 text-white shadow-xs scale-110'
                   : 'bg-neutral-200 hover:bg-brand-100 text-neutral-700 hover:text-brand-700 dark:bg-neutral-800 dark:hover:bg-brand-950/60 dark:text-neutral-300 dark:hover:text-brand-300'
@@ -259,7 +259,7 @@ const RegistrationTermsNotice = ({
               onClick={toggleOpen}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-medium text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
             >
               <Lock className="w-3 h-3" />
               <span>
@@ -293,7 +293,7 @@ const RegistrationTermsNotice = ({
               </div>
 
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white leading-tight">
+                <h4 className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-white leading-tight">
                   Non-Editable Fields
                 </h4>
 
@@ -334,7 +334,7 @@ const RegistrationTermsNotice = ({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-100 leading-tight">
+                  <p className="text-[11px] font-medium text-neutral-900 dark:text-neutral-100 leading-tight">
                     {item.label}
                   </p>
 
@@ -348,7 +348,7 @@ const RegistrationTermsNotice = ({
 
           {/* Editable Fields */}
           <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mb-1">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mb-1">
               <CheckCircle2 className="w-3 h-3" />
               Editable later
             </p>
@@ -373,7 +373,7 @@ const RegistrationTermsNotice = ({
             <button
               type="button"
               onClick={handleAcknowledgeAndAgree}
-              className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-[11px] font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1"
+              className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-[11px] font-medium transition-all cursor-pointer shadow-xs flex items-center gap-1"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>

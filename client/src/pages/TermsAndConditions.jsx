@@ -24,7 +24,7 @@ const TermsAndConditions = () => {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/40 border border-cn-blue-200/60 dark:border-cn-blue-900/40 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium tracking-wide mb-4">
                         <i className="ri-file-text-line text-sm" /> Terms of Service
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+                    <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-neutral-900 dark:text-white">
                         Terms <span className="text-brand-600">&amp;</span> Conditions
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
@@ -38,7 +38,7 @@ const TermsAndConditions = () => {
                             <i className="ri-scales-3-line" />
                         </div>
                         <div>
-                            <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-1">
+                            <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-1">
                                 Agreement &amp; Code of Conduct
                             </h2>
                             <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -52,7 +52,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 1: Acceptance */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">1</span>
                             Acceptance of Terms
                         </h2>
@@ -62,7 +62,7 @@ const TermsAndConditions = () => {
                     </section>
 
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">2</span>
                             User Accounts &amp; Student Credentials
                         </h2>
@@ -84,7 +84,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 3: Event Registration */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">3</span>
                             Event Registration &amp; Participation
                         </h2>
@@ -110,7 +110,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 4: Club Heads & Organizers */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
                             <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">4</span>
                             Club Heads &amp; Event Organizers
                         </h2>
@@ -132,8 +132,8 @@ const TermsAndConditions = () => {
 
                     {/* Section 5: Prohibited Activities */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">5</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">5</span>
                             Prohibited Activities
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
@@ -158,8 +158,8 @@ const TermsAndConditions = () => {
 
                     {/* Section 6: Limitation of Liability */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">6</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">6</span>
                             Limitation of Liability
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -169,8 +169,8 @@ const TermsAndConditions = () => {
 
                     {/* Section 7: Updates */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center">7</span>
+                        <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">7</span>
                             Modifications to Terms
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -180,7 +180,7 @@ const TermsAndConditions = () => {
 
                     {/* Section 8: Contact */}
                     <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 shadow-md">
-                        <h2 className="text-base font-semibold mb-2 flex items-center gap-2">
+                        <h2 className="text-base font-medium mb-2 flex items-center gap-2">
                             <i className="ri-mail-line text-cn-blue-500 text-lg" /> Terms &amp; Policy Inquiries
                         </h2>
                         <p className="text-xs md:text-sm text-cn-text-muted leading-relaxed mb-4">

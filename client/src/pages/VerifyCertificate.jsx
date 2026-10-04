@@ -125,7 +125,7 @@ const VerifyCertificate = () => {
         <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-3.5" /> Back to CampusNode
           </Link>
@@ -138,7 +138,7 @@ const VerifyCertificate = () => {
         {!token && (
           <Card className="border-border bg-card shadow-xs">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg font-bold">
+              <CardTitle className="text-base sm:text-lg font-semibold">
                 Verify Certificate
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm text-muted-foreground">
@@ -157,7 +157,7 @@ const VerifyCertificate = () => {
                 <Button
                   type="submit"
                   disabled={!inputToken.trim()}
-                  className="h-10 gap-1.5 font-semibold shadow-xs cursor-pointer"
+                  className="h-10 gap-1.5 font-medium shadow-xs cursor-pointer"
                 >
                   <Search className="size-4" /> Verify
                 </Button>
@@ -171,7 +171,7 @@ const VerifyCertificate = () => {
           <Card className="border-border bg-card shadow-xs text-center p-8 sm:p-12 space-y-3">
             <Loader2 className="size-8 animate-spin text-primary mx-auto" />
             <div className="space-y-1">
-              <h2 className="text-sm sm:text-base font-semibold text-foreground">
+              <h2 className="text-sm sm:text-base font-medium text-foreground">
                 Checking Certificate
               </h2>
               <p className="text-xs text-muted-foreground">
@@ -192,14 +192,14 @@ const VerifyCertificate = () => {
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="bg-emerald-600 text-white font-semibold text-[10px] uppercase">
+                      <Badge className="bg-emerald-600 text-white font-medium text-[10px] uppercase">
                         Authentic
                       </Badge>
                       <span className="text-xs text-muted-foreground font-mono">
                         {cert.certificateNumber}
                       </span>
                     </div>
-                    <CardTitle className="text-base sm:text-lg font-bold tracking-tight mt-1">
+                    <CardTitle className="text-base sm:text-lg font-semibold tracking-tight mt-1">
                       Certificate Verified
                     </CardTitle>
                   </div>
@@ -238,7 +238,7 @@ const VerifyCertificate = () => {
                     <span>Awarded To</span>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-sm font-bold text-foreground">
+                    <p className="text-sm font-semibold text-foreground">
                       {cert.studentName}
                     </p>
                     {cert.rollNo && cert.rollNo !== "N/A" && (
@@ -256,7 +256,7 @@ const VerifyCertificate = () => {
                     <span>Standing / Award</span>
                   </div>
                   <div className="text-left sm:text-right">
-                    <Badge variant={cert.awardPosition === "Winner" ? "default" : "secondary"} className="text-xs font-semibold">
+                    <Badge variant={cert.awardPosition === "Winner" ? "default" : "secondary"} className="text-xs font-medium">
                       {cert.awardPosition || "Participant"}
                     </Badge>
                   </div>
@@ -268,7 +268,7 @@ const VerifyCertificate = () => {
                     <FileCheck2 className="size-3.5 text-muted-foreground" />
                     <span>Event</span>
                   </div>
-                  <p className="text-xs font-semibold text-foreground text-left sm:text-right max-w-sm">
+                  <p className="text-xs font-medium text-foreground text-left sm:text-right max-w-sm">
                     {cert.eventTitle}
                   </p>
                 </div>
@@ -351,7 +351,7 @@ const VerifyCertificate = () => {
                   <Badge variant="destructive" className="text-[10px] uppercase">
                     Status: Invalidated
                   </Badge>
-                  <CardTitle className="text-base sm:text-lg font-bold text-destructive mt-1">
+                  <CardTitle className="text-base sm:text-lg font-semibold text-destructive mt-1">
                     Certificate Revoked
                   </CardTitle>
                 </div>
@@ -360,12 +360,12 @@ const VerifyCertificate = () => {
 
             <CardContent className="pt-4 space-y-4">
               <div className="p-3.5 bg-destructive/5 border border-destructive/20 rounded-lg text-xs text-destructive space-y-1.5">
-                <p className="font-semibold">
+                <p className="font-medium">
                   This certificate has been revoked by the issuing club or administrator.
                 </p>
                 {cert.revocationReason && (
                   <p className="text-foreground">
-                    <span className="font-semibold">Reason:</span> {cert.revocationReason}
+                    <span className="font-medium">Reason:</span> {cert.revocationReason}
                   </p>
                 )}
                 {cert.revokedAt && (
@@ -398,7 +398,7 @@ const VerifyCertificate = () => {
             </div>
 
             <div className="space-y-1.5">
-              <h2 className="text-base sm:text-lg font-bold text-foreground">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">
                 Certificate Not Found
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
@@ -421,7 +421,7 @@ const VerifyCertificate = () => {
               <Button
                 type="submit"
                 disabled={!inputToken.trim()}
-                className="h-9 gap-1.5 font-semibold cursor-pointer"
+                className="h-9 gap-1.5 font-medium cursor-pointer"
               >
                 <Search className="size-3.5" /> Check
               </Button>

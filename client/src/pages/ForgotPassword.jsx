@@ -30,13 +30,13 @@ const ForgotPassword = () => {
         {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-light tracking-wider text-cn-text logofont">
-            Campus<span className="text-brand-500 dark:text-brand-400">Node</span>
+            Campusnode
           </h1>
          
         </div>
 
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-cn-text text-center">
+          <h2 className="text-lg font-semibold text-cn-text text-center">
             Forgot Password
           </h2>
           <p className="mt-1 text-center text-sm text-cn-text-muted mb-6">
@@ -59,7 +59,7 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-xl text-white text-sm font-semibold transition-all ${loading
+              className={`w-full py-3 rounded-xl text-white text-sm font-medium transition-all ${loading
                   ? 'bg-neutral-400 cursor-not-allowed'
                   : 'bg-brand-600 hover:bg-brand-700 cursor-pointer hover:-translate-y-0.5'
                 }`}
@@ -78,7 +78,7 @@ const ForgotPassword = () => {
           <div className="mt-6 pt-5 border-t border-cn-border-subtle text-center">
             <Link
               to="/login"
-              className="text-sm font-semibold text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
+              className="text-sm font-medium text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors"
             >
               ← Back to Login
             </Link>

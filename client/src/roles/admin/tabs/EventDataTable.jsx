@@ -215,7 +215,7 @@ const EventDataTable = ({
                         {isAnyFilterActive && (
                             <button
                                 onClick={handleResetFilters}
-                                className="h-9 px-2.5 rounded-xl border border-neutral-200 dark:border-zinc-800 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 text-[11px] font-bold tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                                className="h-9 px-2.5 rounded-xl border border-neutral-200 dark:border-zinc-800 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 text-[11px] font-semibold tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
                                 title="Reset all filters"
                             >
                                 <RotateCcw size={12} />
@@ -225,7 +225,7 @@ const EventDataTable = ({
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100 dark:border-zinc-800/80 shrink-0">
-                        <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
+                        <span className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                             Showing <strong className="text-black dark:text-white">{startRecord}–{endRecord}</strong> of <strong className="text-black dark:text-white">{totalEvents}</strong>
                             {isAnyFilterActive && ` (filtered from ${events.length})`}
                         </span>
@@ -233,7 +233,7 @@ const EventDataTable = ({
                         <button
                             onClick={handleCSVExport}
                             disabled={!filteredEventList.length}
-                            className="h-9 px-3 bg-neutral-100 dark:bg-zinc-800/90 text-neutral-700 dark:text-neutral-200 text-xs font-semibold rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer border border-neutral-200/60 dark:border-zinc-700/60 shrink-0"
+                            className="h-9 px-3 bg-neutral-100 dark:bg-zinc-800/90 text-neutral-700 dark:text-neutral-200 text-xs font-medium rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer border border-neutral-200/60 dark:border-zinc-700/60 shrink-0"
                             title="Export filtered events to CSV"
                         >
                             <Download size={13} strokeWidth={2.2} />
@@ -282,7 +282,7 @@ const EventDataTable = ({
                                         href={eventUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-bold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
+                                        className="font-semibold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
                                         title={eventTitle}
                                     >
                                         <span className="truncate group-hover:underline">{eventTitle}</span>
@@ -291,7 +291,7 @@ const EventDataTable = ({
                                 </Td>
                                 <Td>
                                     <div className="flex flex-col leading-tight">
-                                        <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-xs">
+                                        <span className="font-medium text-neutral-900 dark:text-neutral-100 text-xs">
                                             {date}
                                         </span>
                                         {time && (
@@ -303,15 +303,15 @@ const EventDataTable = ({
                                 </Td>
                                 <Td>
                                     <span 
-                                        className={`font-semibold text-xs ${
-                                            isCentral ? "text-brand-600 dark:text-brand-400 font-bold" : "text-neutral-800 dark:text-neutral-200"
+                                        className={`font-medium text-xs ${
+                                            isCentral ? "text-brand-600 dark:text-brand-400 font-semibold" : "text-neutral-800 dark:text-neutral-200"
                                         }`}
                                         title={isCentral ? 'Office of DSW (Central)' : clubName}
                                     >
                                         {clubName}
                                     </span>
                                 </Td>
-                                <Td className="text-right font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
+                                <Td className="text-right font-mono font-semibold text-xs text-neutral-900 dark:text-neutral-100">
                                     {item.registrationType === 'none' ? (
                                         <span className="text-neutral-400 font-normal">—</span>
                                     ) : (
@@ -331,12 +331,12 @@ const EventDataTable = ({
                         <tr>
                             <td colSpan="7" className="px-5 py-16 text-center text-neutral-400 dark:text-neutral-500 text-xs">
                                 <div className="max-w-xs mx-auto space-y-2">
-                                    <p className="font-semibold text-neutral-700 dark:text-neutral-300">No events matched your criteria</p>
+                                    <p className="font-medium text-neutral-700 dark:text-neutral-300">No events matched your criteria</p>
                                     <p className="text-[11px]">Try adjusting your search query, club filter, or date range.</p>
                                     {isAnyFilterActive && (
                                         <button
                                             onClick={handleResetFilters}
-                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                                         >
                                             <RotateCcw size={11} />
                                             Reset all filters

@@ -136,7 +136,7 @@ const CalendarFilterBar = ({
           <button
             type="button"
             onClick={handleToday}
-            className="px-3 py-1.5 bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+            className="px-3 py-1.5 bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
           >
             Today
           </button>
@@ -170,7 +170,7 @@ const CalendarFilterBar = ({
               key={mode}
               type="button"
               onClick={() => onSubViewChange(mode)}
-              className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer ${
                 subView === mode
                   ? "bg-white dark:bg-zinc-800 text-black dark:text-white shadow-sm"
                   : "text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white"
@@ -187,7 +187,7 @@ const CalendarFilterBar = ({
             <button
               type="button"
               onClick={onOpenConflictCenter}
-              className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border ${
                 conflictCount > 0
                   ? "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800"
                   : "bg-neutral-50 dark:bg-zinc-900 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800"
@@ -202,7 +202,7 @@ const CalendarFilterBar = ({
             <button
               type="button"
               onClick={onNewBlackout}
-              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Building2 size={14} />
               <span>Venue Blackout</span>
@@ -217,9 +217,9 @@ const CalendarFilterBar = ({
           <button
             type="button"
             onClick={() => setVenueDropdownOpen((prev) => !prev)}
-            className={`px-3 py-1.5 border rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3 py-1.5 border rounded-xl text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
               selectedVenues.length > 0
-                ? "bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 border-cn-blue-200 dark:border-cn-blue-800/60 font-bold"
+                ? "bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 border-cn-blue-200 dark:border-cn-blue-800/60 font-semibold"
                 : "bg-neutral-50 dark:bg-cn-surface text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-cn-border"
             }`}
           >
@@ -232,21 +232,21 @@ const CalendarFilterBar = ({
           {venueDropdownOpen && (
             <div className="absolute left-0 mt-1 w-64 bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-2xl shadow-xl z-50 p-2 space-y-1">
               <div className="flex items-center justify-between pb-1.5 border-b border-neutral-100 dark:border-cn-border px-1">
-                <span className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                   Venues ({venues.length})
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleSelectAllVenues}
-                    className="text-[10px] text-cn-blue-600 dark:text-cn-blue-400 font-bold hover:underline cursor-pointer"
+                    className="text-[10px] text-cn-blue-600 dark:text-cn-blue-400 font-semibold hover:underline cursor-pointer"
                   >
                     Select All
                   </button>
                   <button
                     type="button"
                     onClick={handleClearVenues}
-                    className="text-[10px] text-neutral-400 hover:text-black dark:hover:text-white font-bold cursor-pointer"
+                    className="text-[10px] text-neutral-400 hover:text-black dark:hover:text-white font-semibold cursor-pointer"
                   >
                     Clear
                   </button>
@@ -260,7 +260,7 @@ const CalendarFilterBar = ({
                   return (
                     <label
                       key={vName}
-                      className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated cursor-pointer"
+                      className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated cursor-pointer"
                     >
                       <input
                         type="checkbox"
@@ -280,7 +280,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.clubId || "all"}
           onChange={(e) => onFilterChange("clubId", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           <option value="all">All Clubs / Orgs</option>
           {safeClubs.map((c, idx) => {
@@ -297,7 +297,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.category || "all"}
           onChange={(e) => onFilterChange("category", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           {CATEGORY_OPTIONS.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -309,7 +309,7 @@ const CalendarFilterBar = ({
         <select
           value={filters.status || "all"}
           onChange={(e) => onFilterChange("status", e.target.value)}
-          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
+          className="px-3 py-1.5 bg-neutral-50 dark:bg-cn-surface border border-neutral-200 dark:border-cn-border rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 outline-none focus:border-cn-blue-500 cursor-pointer"
         >
           {STATUS_OPTIONS.map((st) => (
             <option key={st.id} value={st.id}>
@@ -322,7 +322,7 @@ const CalendarFilterBar = ({
           <button
             type="button"
             onClick={onClearFilters}
-            className="px-3 py-1.5 text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white bg-neutral-100 dark:bg-zinc-800 rounded-xl transition-all flex items-center gap-1 cursor-pointer ml-auto"
+            className="px-3 py-1.5 text-xs font-semibold text-neutral-500 hover:text-black dark:hover:text-white bg-neutral-100 dark:bg-zinc-800 rounded-xl transition-all flex items-center gap-1 cursor-pointer ml-auto"
           >
             <RotateCcw size={13} />
             <span>Clear Filters</span>

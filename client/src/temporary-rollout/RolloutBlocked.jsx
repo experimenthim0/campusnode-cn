@@ -32,7 +32,7 @@ export const RolloutBlocked = ({ rollout }) => {
         <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden text-center flex flex-col items-center">
           
           {/* Phased Launch Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-4 shadow-xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-4 shadow-xs">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cn-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cn-blue-500" />
@@ -51,7 +51,7 @@ export const RolloutBlocked = ({ rollout }) => {
 
           {/* Scheduled Date Display Box */}
           <div className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-5 mb-4 text-left">
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
               <Calendar className="w-3.5 h-3.5 text-cn-blue-500" />
               <span>Your access will be available from:</span>
             </div>
@@ -62,10 +62,10 @@ export const RolloutBlocked = ({ rollout }) => {
 
           {/* User Group Display Box */}
           <div className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-5 mb-6 text-left">
-            <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
               Your group:
             </div>
-            <div className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
+            <div className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white">
               {groupLabel}
             </div>
             {user?.email && (
@@ -83,7 +83,7 @@ export const RolloutBlocked = ({ rollout }) => {
           <button
             type="button"
             onClick={() => logout('/login')}
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400/20"
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400/20"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out / Switch Account</span>

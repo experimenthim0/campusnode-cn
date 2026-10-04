@@ -53,7 +53,12 @@ const getTokensFromRequest = (req) => {
 
 const getFacultyClub = async (adminId) => {
   return prisma.club.findFirst({
-    where: { facultyCoordinatorId: adminId },
+    where: {
+      OR: [
+        { facultyCoordinatorId: adminId },
+        { facultyCoordinators: { some: { facultyId: adminId } } },
+      ],
+    },
     select: { id: true, clubName: true },
   });
 };
@@ -89,11 +94,17 @@ const verifyTokenImpl = async (req, res, next) => {
       });
 
       if (faculty) {
-        const facultyClub = await prisma.club.findFirst({
-          where: { facultyCoordinatorId: faculty.id },
-          select: { id: true, clubName: true },
+        const facultyClubs = await prisma.club.findMany({
+          where: {
+            OR: [
+              { facultyCoordinatorId: faculty.id },
+              { facultyCoordinators: { some: { facultyId: faculty.id } } },
+            ],
+          },
+          select: { id: true, clubName: true, slug: true, clubLogo: true },
         });
-        const isCoordinator = Boolean(facultyClub);
+        const facultyClub = facultyClubs[0] || null;
+        const isCoordinator = facultyClubs.length > 0;
 
         req.user = {
           principalType: "FACULTY",
@@ -108,6 +119,21 @@ const verifyTokenImpl = async (req, res, next) => {
           userType: "faculty",
           clubId: facultyClub?.id ?? null,
           clubName: facultyClub?.clubName ?? null,
+          memberships: facultyClubs.map((c) => ({
+            id: `fac_${c.id}`,
+            clubId: c.id,
+            clubName: c.clubName,
+            slug: c.slug,
+            clubLogo: c.clubLogo,
+            role: "facultyCoordinator",
+            status: "ACTIVE",
+            canTakeAttendance: true,
+            canEditEvents: true,
+            permissions: {
+              canTakeAttendance: true,
+              canEditEvents: true,
+            },
+          })),
         };
         return next();
       }

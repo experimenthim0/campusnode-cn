@@ -51,14 +51,17 @@ export const SocketProvider = ({ children }) => {
 
     try {
       const res = await getNotifications();
-      const fetched = res.data || [];
+      const raw = res.data;
+      const fetched = Array.isArray(raw) ? raw : (raw?.notifications || []);
       const normalizedList = fetched.map((n) => normalizeNotification(n)).filter(Boolean);
 
       setNotifications(normalizedList);
 
-      const unread = normalizedList.filter(
-        (n) => !(n.readBy || []).includes(currentUserId)
-      ).length;
+      const unread = typeof raw?.unreadCount === "number"
+        ? raw.unreadCount
+        : normalizedList.filter(
+            (n) => !(n.readBy || []).includes(currentUserId)
+          ).length;
 
       setUnreadCount(unread);
       setAppIconBadge(unread);

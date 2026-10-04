@@ -31,7 +31,7 @@ const PayoutsTab = ({
                             : (item.club?.clubName || 'ODSW');
                         return (
                             <tr key={idx} className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
-                                <Td className="font-semibold text-black dark:text-white" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>{displayClubName}</Td>
+                                <Td className="font-medium text-black dark:text-white" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>{displayClubName}</Td>
                                 <Td>{item.title}</Td>
                                 <Td className="font-mono font-black text-brand-600 dark:text-brand-400 text-base">₹{item.totalCollected}</Td>
                                 <Td>{item.regCount} students</Td>
@@ -48,7 +48,7 @@ const PayoutsTab = ({
 
                                         if (item.payoutStatus === 'COMPLETED') {
                                             return (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-green-200 dark:border-green-500/20">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-semibold uppercase tracking-widest rounded-lg border border-green-200 dark:border-green-500/20">
                                                     <i className="ri-checkbox-circle-fill text-sm" />
                                                     Completed
                                                 </span>
@@ -58,7 +58,7 @@ const PayoutsTab = ({
                                         if (isLocked) {
                                             return (
                                                 <div className="flex flex-col items-end">
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800 text-neutral-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-neutral-200 dark:border-neutral-700 cursor-not-allowed">
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800 text-neutral-400 text-[10px] font-semibold uppercase tracking-widest rounded-lg border border-neutral-200 dark:border-neutral-700 cursor-not-allowed">
                                                         <i className="ri-lock-2-line text-sm" />
                                                         Locked
                                                     </span>
@@ -70,7 +70,7 @@ const PayoutsTab = ({
                                         return (
                                             <button 
                                                 onClick={() => handleFetchPayoutInfo(item.clubHeadId, item.eventId)}
-                                                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer"
+                                                className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-semibold uppercase tracking-widest rounded-lg hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-colors cursor-pointer"
                                             >
                                                 Make Payout
                                             </button>
@@ -103,13 +103,13 @@ const PayoutsTab = ({
                         <div className="pt-4 flex justify-end gap-3">
                             <button 
                                 onClick={() => setModalOpen(false)} 
-                                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors"
+                                className="px-4 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-semibold uppercase tracking-wider rounded-lg hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleConfirmPayout} 
-                                className="px-4 py-2 bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-brand-500 transition-colors"
+                                className="px-4 py-2 bg-brand-600 text-white text-[10px] font-semibold uppercase tracking-wider rounded-lg hover:bg-brand-500 transition-colors"
                             >
                                 Confirm Payout Complete
                             </button>

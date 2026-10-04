@@ -38,37 +38,37 @@ const CentralEventCard = ({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
                 <Sparkles size={11} className="text-brand-600 dark:text-brand-400" />
                 College-Wide
               </span>
 
               {event.registrationType === "none" ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <DoorOpen size={11} className="text-brand-600 dark:text-brand-400" />
                   Open Walk-in
                 </span>
               ) : event.registrationType === "team" ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <Users size={11} className="text-brand-600 dark:text-brand-400" />
                   Team ({event.minTeamSize || 1}-{event.maxTeamSize || 1})
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <User size={11} className="text-brand-600 dark:text-brand-400" />
                   Individual Pass
                 </span>
               )}
             </div>
 
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 line-clamp-1">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-1">
               {event.title}
             </h3>
           </div>
 
           {/* Status badge */}
           <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${
+            className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
               event.reviewStatus === "PUBLISHED"
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60"
                 : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700"
@@ -124,11 +124,11 @@ const CentralEventCard = ({
         {/* Participating Clubs Preview */}
         {event.participatingClubs?.length > 0 && (
           <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold text-neutral-400">Clubs:</span>
+            <span className="text-[11px] font-semibold text-neutral-400">Clubs:</span>
             {event.participatingClubs.map((pc) => (
               <span
                 key={pc.id}
-                className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-md"
+                className="px-2 py-0.5 text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-md"
               >
                 {pc.club?.clubName}
               </span>
@@ -142,14 +142,14 @@ const CentralEventCard = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => onManageStaff(event)}
-            className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-600 dark:text-brand-400 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-600 dark:text-brand-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <Shield size={13} className="text-brand-600 dark:text-brand-400" />
             Staff ({event._count?.eventStaff || 0})
           </button>
           <button
             onClick={() => onManageClubs(event)}
-            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <Building2 size={13} className="text-brand-600 dark:text-brand-400" />
             Clubs ({event.participatingClubs?.length || 0})
@@ -161,7 +161,7 @@ const CentralEventCard = ({
           <button
             type="button"
             onClick={() => onTogglePublish(event.id, event.reviewStatus)}
-            className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
               event.reviewStatus === "PUBLISHED"
                 ? "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
                 : "bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"

@@ -207,7 +207,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
               }}
             />
           ) : (
-            <span className="text-3xl md:text-4xl font-bold text-foreground select-none">
+            <span className="text-3xl md:text-4xl font-semibold text-foreground select-none">
               {initials}
             </span>
           )}
@@ -217,7 +217,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
             <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
               <div className="text-center">
                 <i className="ri-camera-line text-white text-2xl" />
-                <p className="text-white text-[10px] font-semibold mt-0.5">
+                <p className="text-white text-[10px] font-medium mt-0.5">
                   {displayImage ? 'Change' : 'Upload'}
                 </p>
               </div>
@@ -228,7 +228,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
           {uploading && (
             <div className="absolute inset-0 rounded-full bg-black/50 flex flex-col items-center justify-center">
               <div className="w-7 h-7 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
-              <p className="text-white text-[10px] font-bold mt-1.5">{uploadProgress}%</p>
+              <p className="text-white text-[10px] font-semibold mt-1.5">{uploadProgress}%</p>
             </div>
           )}
         </div>
@@ -260,7 +260,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
             fileInputRef.current?.click();
           }}
           disabled={uploading}
-          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all cursor-pointer ${
             uploading
               ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
               : 'bg-muted text-foreground hover:bg-muted/80 hover:text-brand-600 border border-border'
@@ -277,7 +277,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
               e.stopPropagation();
               handleCropExisting();
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-muted text-foreground hover:bg-muted/80 hover:text-brand-600 border border-border transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-muted text-foreground hover:bg-muted/80 hover:text-brand-600 border border-border transition-all cursor-pointer"
             title="Re-crop and adjust current avatar"
           >
             <Crop className="w-3.5 h-3.5" />
@@ -293,7 +293,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
               handleDelete();
             }}
             disabled={deleting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {deleting ? (
               <div className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />

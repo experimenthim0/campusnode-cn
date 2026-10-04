@@ -237,7 +237,7 @@ export const EventFeedbackModal = ({
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-900/50 bg-brand-50/50 dark:bg-brand-950/30"
+                  className="gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-900/50 bg-brand-50/50 dark:bg-brand-950/30"
                 >
                   <Sparkles className="w-3 h-3" /> Event Feedback
                 </Badge>
@@ -249,12 +249,12 @@ export const EventFeedbackModal = ({
               </div>
               <h2
                 id="feedback-dialog-title"
-                className="text-lg sm:text-xl font-bold tracking-tight text-foreground"
+                className="text-lg sm:text-xl font-semibold tracking-tight text-foreground"
               >
                 How was your experience?
               </h2>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pt-0.5">
-                <span className="font-semibold text-foreground line-clamp-1">
+                <span className="font-medium text-foreground line-clamp-1">
                   {currentEvent.title}
                 </span>
                 {formattedDate && (
@@ -299,7 +299,7 @@ export const EventFeedbackModal = ({
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div className="space-y-1.5 max-w-sm mx-auto">
-                  <h3 className="text-xl font-bold text-foreground">
+                  <h3 className="text-xl font-semibold text-foreground">
                     Thank you!
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -312,7 +312,7 @@ export const EventFeedbackModal = ({
                     <Button
                       type="button"
                       onClick={handleNextPending}
-                      className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5"
+                      className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-xl shadow-xs gap-1.5"
                     >
                       Next Feedback <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -321,7 +321,7 @@ export const EventFeedbackModal = ({
                     type="button"
                     variant="outline"
                     onClick={onClose}
-                    className="w-full sm:w-auto font-semibold text-xs rounded-xl"
+                    className="w-full sm:w-auto font-medium text-xs rounded-xl"
                   >
                     Done
                   </Button>
@@ -347,7 +347,7 @@ export const EventFeedbackModal = ({
                 {/* 1-5 Ratings Section */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                       Required Ratings (1–5)
                     </h3>
                     <span className="text-[11px] text-muted-foreground font-medium">
@@ -361,7 +361,7 @@ export const EventFeedbackModal = ({
                         key={criterion.key}
                         className="p-3 bg-muted/20 border border-border rounded-xl space-y-1.5"
                       >
-                        <label className="block text-xs font-semibold text-foreground">
+                        <label className="block text-xs font-medium text-foreground">
                           {idx + 1}. {criterion.label} <span className="text-brand-500">*</span>
                         </label>
                         <StarRatingSelector
@@ -378,7 +378,7 @@ export const EventFeedbackModal = ({
                 {/* Recommendation Question */}
                 <div className="p-4 bg-muted/20 border border-border rounded-xl space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-foreground">
+                    <label className="block text-xs font-medium text-foreground">
                       Would you attend a similar event again? <span className="text-brand-500">*</span>
                     </label>
                     <span className="text-[11px] text-muted-foreground font-medium">
@@ -400,7 +400,7 @@ export const EventFeedbackModal = ({
                             setAttendSimilar(opt.val);
                             if (error) setError('');
                           }}
-                          className={`py-2 px-3 rounded-lg font-semibold text-xs transition-all cursor-pointer border ${
+                          className={`py-2 px-3 rounded-lg font-medium text-xs transition-all cursor-pointer border ${
                             isSelected
                               ? 'bg-brand-500 text-white border-brand-500 shadow-xs'
                               : 'bg-card text-foreground border-border hover:bg-muted/50'
@@ -416,7 +416,7 @@ export const EventFeedbackModal = ({
                 {/* Optional Written Feedback */}
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center justify-between border-b border-border pb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                       Optional Written Feedback
                     </h3>
                     <span className="text-[11px] text-muted-foreground font-medium">
@@ -426,7 +426,7 @@ export const EventFeedbackModal = ({
 
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">
+                      <label className="block text-xs font-medium text-foreground mb-1.5">
                         What did you like?
                       </label>
                       <Input
@@ -440,7 +440,7 @@ export const EventFeedbackModal = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">
+                      <label className="block text-xs font-medium text-foreground mb-1.5">
                         What could be improved?
                       </label>
                       <Input
@@ -454,7 +454,7 @@ export const EventFeedbackModal = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">
+                      <label className="block text-xs font-medium text-foreground mb-1.5">
                         Additional comments
                       </label>
                       <Textarea
@@ -479,7 +479,7 @@ export const EventFeedbackModal = ({
                 variant="outline"
                 onClick={onClose}
                 disabled={submitting}
-                className="font-semibold text-xs rounded-xl"
+                className="font-medium text-xs rounded-xl"
               >
                 Remind me later
               </Button>
@@ -488,7 +488,7 @@ export const EventFeedbackModal = ({
                 type="submit"
                 form="event-feedback-form"
                 disabled={submitting || !isFormValid}
-                className="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs disabled:opacity-50 gap-1.5 cursor-pointer"
+                className="bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-xl shadow-xs disabled:opacity-50 gap-1.5 cursor-pointer"
               >
                 {submitting ? (
                   <>

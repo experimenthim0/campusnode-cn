@@ -52,8 +52,8 @@ export const samplePreviewData = {
     facultyName: "Dr. Rajesh Kumar",
     clubName: "Robotics Society",
     facultyEmail: "rajesh.kumar@nitj.ac.in",
-    defaultPassword: "robotics@nitj2026",
-    loginUrl: "http://localhost:5173/admin-secret-login",
+    loginUrl: "http://localhost:5173/login",
+    dashboardUrl: "http://localhost:5173/clubs/robotics-society",
   },
 };
 

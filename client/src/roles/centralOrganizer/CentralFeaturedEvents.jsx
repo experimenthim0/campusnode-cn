@@ -192,7 +192,7 @@ const CentralFeaturedEvents = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
               <Sparkles size={12} />
               Homepage & Event Feed Spotlight
             </span>
@@ -210,7 +210,7 @@ const CentralFeaturedEvents = () => {
             setIsAddModalOpen(true);
             setCandidateSearch("");
           }}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
         >
           <Plus size={18} />
           <span>Add Featured Event</span>
@@ -221,7 +221,7 @@ const CentralFeaturedEvents = () => {
       <div className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <span>Ordering Mode</span>
               {savingMode && <span className="text-xs text-brand-600 animate-pulse">Saving...</span>}
             </h3>
@@ -234,7 +234,7 @@ const CentralFeaturedEvents = () => {
             <button
               onClick={() => handleModeChange("CUSTOM")}
               disabled={savingMode}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 orderingMode === "CUSTOM"
                   ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
@@ -247,7 +247,7 @@ const CentralFeaturedEvents = () => {
             <button
               onClick={() => handleModeChange("AUTOMATIC")}
               disabled={savingMode}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 orderingMode === "AUTOMATIC"
                   ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
@@ -264,7 +264,7 @@ const CentralFeaturedEvents = () => {
           <div className="mt-4 p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
             <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
             <div>
-              <span className="font-bold">Automatic Rotation Active:</span> Featured events will automatically rotate their order on each fresh page load/refresh among the active pool. The saved custom order remains intact and will be restored if you switch back to Custom Order.
+              <span className="font-semibold">Automatic Rotation Active:</span> Featured events will automatically rotate their order on each fresh page load/refresh among the active pool. The saved custom order remains intact and will be restored if you switch back to Custom Order.
             </div>
           </div>
         )}
@@ -277,7 +277,7 @@ const CentralFeaturedEvents = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black uppercase tracking-wider text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <span>Homepage Featured Slots (Top 3)</span>
-              <span className="px-2 py-0.5 text-[10px] bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md font-bold">
+              <span className="px-2 py-0.5 text-[10px] bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md font-semibold">
                 {slots.length} / 3 Filled
               </span>
             </h3>
@@ -295,11 +295,11 @@ const CentralFeaturedEvents = () => {
           ) : slots.length === 0 ? (
             <div className="p-8 text-center bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
               <Calendar size={28} className="mx-auto text-neutral-400 mb-2" />
-              <div className="text-sm font-bold text-neutral-900 dark:text-neutral-100">No Active Featured Slots</div>
+              <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">No Active Featured Slots</div>
               <div className="text-xs text-neutral-500 mt-1 mb-4">Add events below to feature them on the homepage.</div>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-xl shadow-xs"
+                className="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs"
               >
                 + Add First Event
               </button>
@@ -324,7 +324,7 @@ const CentralFeaturedEvents = () => {
                       </div>
 
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-neutral-900 dark:text-neutral-50 truncate">
+                        <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50 truncate">
                           {item.title}
                         </div>
                         <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
@@ -342,7 +342,7 @@ const CentralFeaturedEvents = () => {
                       <button
                         onClick={() => setPreviewEvent(item)}
                         title="Preview Public Card"
-                        className={`p-2 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                        className={`p-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                           isSelectedForPreview
                             ? "bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400"
                             : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -386,7 +386,7 @@ const CentralFeaturedEvents = () => {
               <Eye size={14} className="text-brand-500" />
               <span>Live Public Card Preview</span>
             </h3>
-            <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500">
+            <span className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500">
               Interactive Preview
             </span>
           </div>
@@ -412,7 +412,7 @@ const CentralFeaturedEvents = () => {
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs overflow-hidden">
         <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
               Featured Events Pool ({featuredEvents.length})
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -429,7 +429,7 @@ const CentralFeaturedEvents = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider text-[11px] border-b border-neutral-200 dark:border-neutral-800">
+                <tr className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 dark:text-neutral-400 font-semibold uppercase tracking-wider text-[11px] border-b border-neutral-200 dark:border-neutral-800">
                   <th className="py-3 px-4 w-12 text-center">#</th>
                   <th className="py-3 px-4">Event Title & Host</th>
                   <th className="py-3 px-4">Date & Time</th>
@@ -444,12 +444,12 @@ const CentralFeaturedEvents = () => {
                   const { combinedStr } = formatFeaturedEventDateTime(item.startTime);
                   return (
                     <tr key={item.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
-                      <td className="py-3.5 px-4 text-center font-bold text-neutral-400">
+                      <td className="py-3.5 px-4 text-center font-semibold text-neutral-400">
                         {idx + 1}
                       </td>
 
                       <td className="py-3.5 px-4 min-w-[200px]">
-                        <div className="font-bold text-neutral-900 dark:text-neutral-50 truncate max-w-xs">
+                        <div className="font-semibold text-neutral-900 dark:text-neutral-50 truncate max-w-xs">
                           {item.title}
                         </div>
                         <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-xs mt-0.5">
@@ -463,7 +463,7 @@ const CentralFeaturedEvents = () => {
 
                       <td className="py-3.5 px-4 min-w-[140px]">
                         {item.sponsorName ? (
-                          <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px] block">
+                          <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate max-w-[140px] block">
                             {item.sponsorName}
                           </span>
                         ) : (
@@ -473,7 +473,7 @@ const CentralFeaturedEvents = () => {
 
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                          className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded uppercase ${
                             item.eventStatus === "LIVE"
                               ? "bg-rose-100 text-rose-700 border border-rose-200"
                               : item.eventStatus === "UPCOMING"
@@ -488,7 +488,7 @@ const CentralFeaturedEvents = () => {
                       <td className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => handleToggleActive(item)}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-colors ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${
                             item.isActive
                               ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
                               : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-200 dark:border-neutral-700"
@@ -542,7 +542,7 @@ const CentralFeaturedEvents = () => {
             {/* Modal Header */}
             <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-50">
+                <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                   Add to Featured Events
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -565,7 +565,7 @@ const CentralFeaturedEvents = () => {
               {/* Event Search */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     1. Search Upcoming & Live Events
                   </label>
                   <span className="text-[10px] text-neutral-400">Only upcoming & live events</span>
@@ -588,7 +588,7 @@ const CentralFeaturedEvents = () => {
                   const eligibleCandidates = candidates.filter((c) => c.status !== "ENDED");
                   return (
                     <>
-                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                      <div className="text-xs font-medium text-neutral-500 mb-2">
                         {loadingCandidates ? "Searching events..." : `Available upcoming & live events (${eligibleCandidates.length})`}
                       </div>
                       <div className="max-h-48 overflow-y-auto space-y-2 border border-neutral-200 dark:border-neutral-800 rounded-xl p-2 bg-neutral-50/50 dark:bg-neutral-950/40">
@@ -614,21 +614,21 @@ const CentralFeaturedEvents = () => {
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="font-bold text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                                  <div className="font-semibold text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 truncate">
                                     {c.title}
                                   </div>
                                   <div className="flex items-center gap-1 shrink-0">
                                     {isAlreadyFeatured ? (
-                                      <span className="px-2 py-0.5 text-[10px] font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded">
+                                      <span className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded">
                                         Already Featured
                                       </span>
                                     ) : isLive ? (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 rounded uppercase tracking-wider">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 rounded uppercase tracking-wider">
                                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                                         Live Now
                                       </span>
                                     ) : (
-                                      <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded uppercase tracking-wider">
+                                      <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded uppercase tracking-wider">
                                         Upcoming
                                       </span>
                                     )}
@@ -653,7 +653,7 @@ const CentralFeaturedEvents = () => {
               {selectedCandidate && (
                 <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+                    <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                       Event Sponsor
                     </label>
                     <span className="text-[11px] text-neutral-400">Pulled automatically from event</span>
@@ -661,7 +661,7 @@ const CentralFeaturedEvents = () => {
                   {selectedCandidate.sponsorName ? (
                     <div className="p-3 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl flex items-center justify-between text-xs">
                       <span className="text-neutral-600 dark:text-neutral-400">Associated Sponsor:</span>
-                      <span className="font-bold text-neutral-900 dark:text-neutral-100">{selectedCandidate.sponsorName}</span>
+                      <span className="font-semibold text-neutral-900 dark:text-neutral-100">{selectedCandidate.sponsorName}</span>
                     </div>
                   ) : (
                     <div className="p-3 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-neutral-500 italic">
@@ -680,7 +680,7 @@ const CentralFeaturedEvents = () => {
                   setIsAddModalOpen(false);
                   setSelectedCandidate(null);
                 }}
-                className="px-4 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 rounded-xl"
+                className="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 rounded-xl"
               >
                 Cancel
               </button>
@@ -688,7 +688,7 @@ const CentralFeaturedEvents = () => {
                 type="button"
                 onClick={handleAddSubmit}
                 disabled={!selectedCandidate || adding}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
               >
                 {adding ? "Adding..." : "Add to Featured Events"}
               </button>

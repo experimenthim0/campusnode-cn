@@ -161,7 +161,7 @@ const ClubCalendarView = ({ events }) => {
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs ">
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
         <div>
-          <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white">
+          <h3 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white">
             {monthNames[month]} {year}
           </h3>
           <p className="text-xs text-neutral-400">Club schedule & upcoming events</p>
@@ -187,7 +187,7 @@ const ClubCalendarView = ({ events }) => {
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <span
             key={day}
-            className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 py-1"
+            className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500 py-1"
           >
             {day}
           </span>
@@ -225,7 +225,7 @@ const ClubCalendarView = ({ events }) => {
                 hasEvents ? "cursor-pointer hover:border-cn-blue-500 hover:shadow-xs" : ""
               } ${
                 isToday
-                  ? "border-cn-blue-500 bg-cn-blue-500/5 dark:bg-cn-blue-500/10 font-bold"
+                  ? "border-cn-blue-500 bg-cn-blue-500/5 dark:bg-cn-blue-500/10 font-medium"
                   : hasEvents
                   ? "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
                   : "bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800/60"
@@ -235,7 +235,7 @@ const ClubCalendarView = ({ events }) => {
                 <span
                   className={`text-xs ${
                     isToday
-                      ? "text-cn-blue-600 dark:text-cn-blue-400 font-bold"
+                      ? "text-cn-blue-600 dark:text-cn-blue-400 font-medium"
                       : "text-neutral-700 dark:text-neutral-300"
                   }`}
                 >
@@ -247,7 +247,7 @@ const ClubCalendarView = ({ events }) => {
               </div>
               {hasEvents && (
                 <div className="hidden sm:block truncate">
-                  <span className="text-[10px] font-semibold text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-50 dark:bg-cn-blue-950/40 px-1.5 py-0.5 rounded truncate block">
+                  <span className="text-[10px] font-medium text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-50 dark:bg-cn-blue-950/40 px-1.5 py-0.5 rounded truncate block">
                     {dayEvents[0].title}
                   </span>
                   {dayEvents.length > 1 && (
@@ -266,7 +266,7 @@ const ClubCalendarView = ({ events }) => {
       {selectedDayEvents && (
         <div className="mt-6 p-4 rounded-xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+            <h4 className="text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400">
               Events on {monthNames[month]} {selectedDayNumber}, {year}
             </h4>
             <button
@@ -284,7 +284,7 @@ const ClubCalendarView = ({ events }) => {
                 className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-brand-500 transition group"
               >
                 <div>
-                  <h5 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-brand-600 transition">
+                  <h5 className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-brand-600 transition">
                     {ev.title}
                   </h5>
                   <p className="text-xs text-neutral-400 mt-0.5">
@@ -347,7 +347,7 @@ const TeamMemberCard = ({
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-neutral-100 to-neutral-200/70 dark:from-neutral-800 dark:to-neutral-900 select-none">
-            <span className="text-3xl sm:text-4xl font-semibold tracking-wider text-neutral-600 dark:text-neutral-300 mysans">
+            <span className="text-3xl sm:text-4xl font-medium tracking-wider text-neutral-600 dark:text-neutral-300 mysans">
               {initials}
             </span>
           </div>
@@ -357,7 +357,7 @@ const TeamMemberCard = ({
       {/* Card Info Footer */}
       <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between text-left">
         <div>
-          <h4 className="text-xs sm:text-sm font-semibold mysans text-neutral-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+          <h4 className="text-xs sm:text-sm font-medium mysans text-neutral-900 dark:text-white truncate group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
             {name || "Member"}
           </h4>
           <p
@@ -516,7 +516,12 @@ const ClubDetails = () => {
         const isFacultyCoord =
           (authRole === "faculty" || authRole === "facultyCoordinator") &&
           (clubData.club.facultyCoordinatorId === authUser.id ||
-            clubData.club.facultyCoordinator?.id === authUser.id);
+            clubData.club.facultyCoordinator?.id === authUser.id ||
+            clubData.club.facultyCoordinator?._id === authUser.id ||
+            (Array.isArray(clubData.club.facultyCoordinators) &&
+              clubData.club.facultyCoordinators.some(
+                (fc) => (fc.faculty?.id || fc.id || fc._id) === authUser.id
+              )));
         const isClubAcct =
           (authRole === "club" || authRole === "CLUB") &&
           String(authUser.clubId) === String(clubId);
@@ -586,6 +591,60 @@ const ClubDetails = () => {
       document.title = `${club.clubName} - CampusNode`;
     }
   }, [club]);
+
+  // ── Derived faculty coordinators ──────────────────────────────────────────
+  const allFacultyCoordinators = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+
+    if (Array.isArray(club?.facultyCoordinators)) {
+      for (const fc of club.facultyCoordinators) {
+        const item = fc?.faculty ? fc.faculty : fc;
+        const name = item?.name;
+        const key = item?.id || item?._id || item?.email || name;
+        if (name && !seen.has(key)) {
+          seen.add(key);
+          list.push({
+            id: item?.id || item?._id || key,
+            name,
+            email: item?.email || null,
+            image: item?.profileImage || null,
+            department: item?.department || null,
+            designation: item?.designation || "Faculty Coordinator",
+          });
+        }
+      }
+    }
+
+    if (club?.facultyCoordinator?.name) {
+      const fc = club.facultyCoordinator;
+      const key = fc.id || fc._id || fc.email || fc.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push({
+          id: fc.id || fc._id || key,
+          name: fc.name,
+          email: fc.email || null,
+          image: fc.profileImage || null,
+          department: fc.department || null,
+          designation: fc.designation || "Faculty Coordinator",
+        });
+      }
+    }
+
+    if (list.length === 0 && club?.facultyName) {
+      list.push({
+        id: "legacy-faculty",
+        name: club.facultyName,
+        email: club.facultyEmail || null,
+        image: null,
+        department: null,
+        designation: "Faculty Coordinator",
+      });
+    }
+
+    return list;
+  }, [club?.facultyCoordinators, club?.facultyCoordinator, club?.facultyName, club?.facultyEmail]);
 
   // ── Derived leadership from club.memberships (loaded instantly with clubData) ──
   const studentHeads = useMemo(() => {
@@ -750,14 +809,14 @@ const ClubDetails = () => {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <ShimmerText text="Loading Club Details..." className="text-sm font-semibold tracking-wider" />
+        <ShimmerText text="Loading Club Details..." className="text-sm font-medium tracking-wider" />
       </div>
     );
 
   if (!club)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 font-bold text-lg">Club not found.</p>
+        <p className="text-red-600 font-medium text-lg">Club not found.</p>
       </div>
     );
 
@@ -830,7 +889,7 @@ const ClubDetails = () => {
               <div className="flex items-center gap-2 shrink-0 pb-1 mysans">
                 <button
                   onClick={handleShareClub}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl transition font-semibold text-xs uppercase tracking-wider shadow-2xs cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl transition font-medium text-xs uppercase tracking-wider shadow-2xs cursor-pointer"
                 >
                   <i className="ri-share-line text-sm" />
                   <span>Share</span>
@@ -839,7 +898,7 @@ const ClubDetails = () => {
                 {canEdit && (
                   <button
                     onClick={() => setAdminHubOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-bold text-xs uppercase tracking-wider shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:opacity-90 transition font-medium text-xs uppercase tracking-wider shadow-sm cursor-pointer"
                   >
                     <i className="ri-dashboard-line text-sm" />
                     <span>Manage Club</span>
@@ -853,23 +912,23 @@ const ClubDetails = () => {
               {/* Left Column: Category Badges, Club Title, Motto */}
               <div className="space-y-1.5 min-w-0 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-semibold mysans tracking-widest text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-500/10 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-medium mysans tracking-widest text-cn-blue-600 dark:text-cn-blue-400 bg-cn-blue-500/10 px-2.5 py-0.5 rounded-full">
                     {club.category || "Student Club"}
                   </span>
                   
                   {club.establishedYear && (
-                    <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full">
                       Est. {club.establishedYear}
                     </span>
                   )}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white leading-tight mysans">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-neutral-900 dark:text-white leading-tight mysans">
                   {club.clubName}
                 </h1>
 
                 {club.motto && (
-                  <p className="text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-400 italic tracking-wide">
+                  <p className="text-xs sm:text-sm font-medium text-brand-600 dark:text-brand-400 italic tracking-wide">
                     "{club.motto}"
                   </p>
                 )}
@@ -884,28 +943,28 @@ const ClubDetails = () => {
               {/* Right Column: Compact Stat Boxes */}
               <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0 mysans">
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {club?.stats?.membersCount ?? (regularMembersTotal + studentHeads.length + studentCoordinators.length)}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Members
                   </div>
                 </div>
 
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {upcomingEvents.length + liveEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Upcoming
                   </div>
                 </div>
 
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
-                  <div className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white leading-tight">
+                  <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {pastEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-semibold tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Past Events
                   </div>
                 </div>
@@ -917,7 +976,7 @@ const ClubDetails = () => {
               <div className="flex flex-wrap items-center gap-2 mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800/80">
                 <Link
                   to="/create"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-semibold text-xs uppercase tracking-wider shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium text-xs uppercase tracking-wider shadow-xs"
                 >
                   <i className="ri-add-line font-light" /> Create Event
                 </Link>
@@ -925,13 +984,13 @@ const ClubDetails = () => {
                   <>
                     <Link
                       to={`/club/edit/${club._id || club.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-medium text-xs uppercase tracking-wider"
                     >
                       <i className="ri-settings-3-line font-light" /> Club Settings
                     </Link>
                     <Link
                       to={`/club/${club._id || club.id}/team`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-semibold text-xs uppercase tracking-wider"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition font-medium text-xs uppercase tracking-wider"
                     >
                       <i className="ri-team-line font-light" /> Manage Members
                     </Link>
@@ -950,7 +1009,7 @@ const ClubDetails = () => {
 
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
-            <h2 className="text-xs font-semibold text-neutral-600 dark:text-neutral-500">
+            <h2 className="text-xs font-medium text-neutral-600 dark:text-neutral-500">
               About the Club
             </h2>
             
@@ -961,10 +1020,10 @@ const ClubDetails = () => {
             <div className="flex items-start gap-3.5 p-4 rounded-xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20 shadow-2xs">
              
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold tracking-wider text-brand-600 dark:text-brand-400 mb-0.5">
+                <p className="text-[10px] font-medium tracking-wider text-brand-600 dark:text-brand-400 mb-0.5">
                   Club Mission
                 </p>
-                <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 leading-relaxed italic">
+                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 leading-relaxed italic">
                   "{club.mission}"
                 </p>
               </div>
@@ -995,7 +1054,7 @@ const ClubDetails = () => {
                 {isLong && (
                   <button
                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                    className="mt-3 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline focus:outline-none inline-flex items-center gap-1 cursor-pointer"
+                    className="mt-3 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline focus:outline-none inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>{isDescriptionExpanded ? "Show less" : "Read full overview"}</span>
                     <i
@@ -1012,18 +1071,20 @@ const ClubDetails = () => {
           {/* Quick Pillars Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <div>
-              <p className="text-[11px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
-                Faculty Coordinator
+              <p className="text-[11px] font-medium tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+                Faculty Coordinator{allFacultyCoordinators.length > 1 ? `s (${allFacultyCoordinators.length})` : ""}
               </p>
-              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
-                {club.facultyName || club.facultyCoordinator?.name || "Not Assigned"}
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                {allFacultyCoordinators.length > 0
+                  ? allFacultyCoordinators.map((f) => f.name).join(", ")
+                  : "Not Assigned"}
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+              <p className="text-[11px] font-medium tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
                 Student Coordinator / Lead
               </p>
-              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mysans">
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 mysans">
                 {studentHeads.length > 0
                   ? studentHeads.map((h) => h.student?.name).filter(Boolean).join(", ")
                   : club.studentCoordinators && club.studentCoordinators.length > 0
@@ -1037,7 +1098,7 @@ const ClubDetails = () => {
         {club.socialLinks && club.socialLinks.length > 0 && (
           <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                 Connect with {club.clubName}
               </h3>
               <p className="text-xs text-neutral-400 mt-0.5">
@@ -1089,10 +1150,10 @@ const ClubDetails = () => {
             </div>
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-black uppercase tracking-widest text-brand-600">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-medium uppercase tracking-widest text-brand-600">
                   Featured Club Event
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-medium tracking-tight leading-tight">
                   {featuredEvent.title}
                 </h2>
                 <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-black pt-1">
@@ -1120,7 +1181,7 @@ const ClubDetails = () => {
 
               <Link
                 to={`/events/${featuredEvent.slug || featuredEvent._id || featuredEvent.id}`}
-                className="px-6 py-3 bg-white text-neutral-900 hover:bg-neutral-100 transition rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 flex-shrink-0"
+                className="px-5 py-2 bg-white text-neutral-900 hover:bg-neutral-100 transition rounded-xl font-medium text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 flex-shrink-0"
               >
                 View Event <i className="ri-arrow-right-line" />
               </Link>
@@ -1132,7 +1193,7 @@ const ClubDetails = () => {
         {(announcements.length > 0 || canEdit || isHead) && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                 <i className="ri-megaphone-line text-brand-600 font-light" /> Club Announcements
               </h2>
               <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600 mx-2"/>
@@ -1150,7 +1211,7 @@ const ClubDetails = () => {
                       setAdminTab("announcements");
                       setAdminHubOpen(true);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 hover:bg-brand-600 hover:text-white transition text-xs font-bold cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 hover:bg-brand-600 hover:text-white transition text-xs font-medium cursor-pointer"
                   >
                     <i className="ri-add-line" /> Post Announcement
                   </button>
@@ -1171,7 +1232,7 @@ const ClubDetails = () => {
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-1.5">
                           {item.isPinned && (
                             <i className="ri-pushpin-fill text-brand-600 text-xs" title="Pinned Announcement" />
                           )}
@@ -1188,7 +1249,7 @@ const ClubDetails = () => {
                         {item.content}
                       </p>
                       {item.authorName && (
-                        <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+                        <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
                           Posted by {item.authorName}
                         </p>
                       )}
@@ -1201,7 +1262,7 @@ const ClubDetails = () => {
                     <button
                       type="button"
                       onClick={() => setIsAnnouncementsExpanded((prev) => !prev)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                     >
                       <span>
                         {isAnnouncementsExpanded
@@ -1216,13 +1277,13 @@ const ClubDetails = () => {
             ) : (
               <div className="p-8 text-center rounded-2xl bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 space-y-2">
                 <i className="ri-megaphone-line text-2xl text-neutral-400 font-light" />
-                <p className="text-xs font-semibold text-neutral-500">No announcements posted yet.</p>
+                <p className="text-xs font-medium text-neutral-500">No announcements posted yet.</p>
                 <button
                   onClick={() => {
                     setAdminTab("announcements");
                     setAdminHubOpen(true);
                   }}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-brand-700 transition cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-medium shadow-xs hover:bg-brand-700 transition cursor-pointer"
                 >
                   <i className="ri-add-line" /> Post First Announcement
                 </button>
@@ -1234,7 +1295,7 @@ const ClubDetails = () => {
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 pb-4">
             <div>
-              <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
  Club Events & Calendar
               </h2>
               <p className="text-xs text-neutral-400">Browse schedules, workshops, and activities</p>
@@ -1244,7 +1305,7 @@ const ClubDetails = () => {
             <div className="inline-flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
               <button
                 onClick={() => setEventViewMode("list")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
                   eventViewMode === "list"
                     ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs"
                     : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
@@ -1254,7 +1315,7 @@ const ClubDetails = () => {
               </button>
               <button
                 onClick={() => setEventViewMode("calendar")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
                   eventViewMode === "calendar"
                     ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs"
                     : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
@@ -1272,7 +1333,7 @@ const ClubDetails = () => {
               {liveEvents.length > 0 && (
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-red-600 flex items-center gap-2">
+                    <h3 className="text-sm font-medium uppercase tracking-wider text-red-600 flex items-center gap-2">
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
@@ -1296,7 +1357,7 @@ const ClubDetails = () => {
                         <button
                           type="button"
                           onClick={() => setIsLiveEventsExpanded((prev) => !prev)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                         >
                           <span>
                             {isLiveEventsExpanded
@@ -1312,7 +1373,7 @@ const ClubDetails = () => {
               )}
 
               <div>
-                <h3 className="text-sm font-semibold mysans tracking-wider text-neutral-600 dark:text-neutral-500 mb-4">
+                <h3 className="text-sm font-medium mysans tracking-wider text-neutral-600 dark:text-neutral-500 mb-4">
                   Upcoming Events
                 </h3>
                 {upcomingEvents.length > 0 ? (
@@ -1332,7 +1393,7 @@ const ClubDetails = () => {
                         <button
                           type="button"
                           onClick={() => setIsUpcomingEventsExpanded((prev) => !prev)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                         >
                           <span>
                             {isUpcomingEventsExpanded
@@ -1346,7 +1407,7 @@ const ClubDetails = () => {
                   </div>
                 ) : (
                   <div className="bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-800 py-10 text-center rounded-2xl">
-                    <p className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+                    <p className="text-xs font-medium tracking-wider text-neutral-400 uppercase">
                       No upcoming events scheduled right now.
                     </p>
                   </div>
@@ -1355,7 +1416,7 @@ const ClubDetails = () => {
 
               {pastEvents.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
+                  <h3 className="text-sm font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
                     Past Events
                   </h3>
                   <div className="space-y-4">
@@ -1374,7 +1435,7 @@ const ClubDetails = () => {
                         <button
                           type="button"
                           onClick={() => setIsPastEventsExpanded((prev) => !prev)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                         >
                           <span>
                             {isPastEventsExpanded
@@ -1394,7 +1455,7 @@ const ClubDetails = () => {
 
       
 
-        {((club.facultyName || club.facultyCoordinator?.name) ||
+        {(allFacultyCoordinators.length > 0 ||
           studentHeads.length > 0 ||
           studentCoordinators.length > 0 ||
           membersInitialLoading ||
@@ -1402,7 +1463,7 @@ const ClubDetails = () => {
           <section className="w-full space-y-6 sm:space-y-8">
             <div className="flex items-center justify-between pb-2">
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
             Club Leadership & Team
                 </h2>
                 <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p>
@@ -1411,26 +1472,29 @@ const ClubDetails = () => {
 
             <div className="space-y-8 sm:space-y-10">
               {/* Leadership Row */}
-              {((club.facultyName || club.facultyCoordinator?.name) || studentHeads.length > 0) && (
+              {(allFacultyCoordinators.length > 0 || studentHeads.length > 0) && (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Leadership
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {(club.facultyName || club.facultyCoordinator?.name) && (
+                    {/* Faculty Coordinator Cards */}
+                    {allFacultyCoordinators.map((fac, fIdx) => (
                       <TeamMemberCard
-                        name={club.facultyName || club.facultyCoordinator?.name}
-                        role="Faculty Coordinator"
-                        image={club.facultyCoordinator?.profileImage}
-                        email={club.facultyEmail || club.facultyCoordinator?.email}
+                        key={fac.id || fac.email || fIdx}
+                        name={fac.name}
+                        role={fac.designation || "Faculty Coordinator"}
+                        image={fac.image}
+                        email={fac.email}
+                        subtitle={fac.department}
                         isLeadership={true}
                       />
-                    )}
+                    ))}
 
                     {/* Student Lead Cards */}
                     {studentHeads.map((m) => (
@@ -1453,7 +1517,7 @@ const ClubDetails = () => {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Coordinators
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
@@ -1477,7 +1541,7 @@ const ClubDetails = () => {
                       <button
                         type="button"
                         onClick={() => setIsCoordinatorsExpanded((prev) => !prev)}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                       >
                         <span>
                           {isCoordinatorsExpanded
@@ -1495,11 +1559,11 @@ const ClubDetails = () => {
               {(membersInitialLoading || regularMembers.length > 0 || regularMembersTotal > 0) && (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-[13px] font-semibold mysans tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[13px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Club Members
                     </h3>
                     {!membersInitialLoading && regularMembersTotal > 8 && (
-                      <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
                         Showing {regularMembers.length} of {regularMembersTotal}
                       </span>
                     )}
@@ -1539,7 +1603,7 @@ const ClubDetails = () => {
                             type="button"
                             onClick={handleLoadMoreMembers}
                             disabled={loadingMoreMembers}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             {loadingMoreMembers ? (
                               <>
@@ -1569,7 +1633,7 @@ const ClubDetails = () => {
         {achievements.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                 <i className="ri-trophy-line text-amber-500 font-light" /> Milestones & Achievements
               </h2>
             </div>
@@ -1583,11 +1647,11 @@ const ClubDetails = () => {
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
                           {item.date || "Milestone"}
                         </span>
                       </div>
-                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                         {item.title}
                       </h3>
                       {item.description && (
@@ -1602,7 +1666,7 @@ const ClubDetails = () => {
                         href={item.externalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+                        className="mt-4 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
                       >
                         Read more <i className="ri-external-link-line text-xs" />
                       </a>
@@ -1616,7 +1680,7 @@ const ClubDetails = () => {
                   <button
                     type="button"
                     onClick={() => setIsAchievementsExpanded((prev) => !prev)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                   >
                     <span>
                       {isAchievementsExpanded
@@ -1634,12 +1698,12 @@ const ClubDetails = () => {
         {galleryMedia.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
             Club Gallery
               </h2>
               <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600 mx-2"/>
               {galleryMedia.length > 0 && (
-                <span className="text-xs text-neutral-400 font-semibold">
+                <span className="text-xs text-neutral-400 font-medium">
                   {galleryMedia.length} {galleryMedia.length === 1 ? "photo" : "photos"}
                 </span>
               )}
@@ -1676,7 +1740,7 @@ const ClubDetails = () => {
                   <button
                     type="button"
                     onClick={() => setIsGalleryExpanded((prev) => !prev)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-brand-500/50 shadow-2xs transition-all cursor-pointer"
                   >
                     <span>
                       {isGalleryExpanded
@@ -1707,7 +1771,7 @@ const ClubDetails = () => {
             />
             <button
               onClick={() => setLightboxImage(null)}
-              className="absolute -top-10 right-0 text-white hover:text-brand-400 font-bold text-sm flex items-center gap-1"
+              className="absolute -top-10 right-0 text-white hover:text-brand-400 font-medium text-sm flex items-center gap-1"
             >
               <i className="ri-close-line text-xl" /> Close
             </button>
@@ -1724,7 +1788,7 @@ const ClubDetails = () => {
                   <i className="ri-settings-3-line" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
+                  <h3 className="text-base sm:text-lg font-medium text-cn-text leading-tight">
                     Club Management Hub
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Post updates, achievements, and curate gallery</p>
@@ -1749,7 +1813,7 @@ const ClubDetails = () => {
                 <button
                   key={tab.id}
                   onClick={() => setAdminTab(tab.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                     adminTab === tab.id
                       ? "bg-brand-50 text-brand-600 border border-brand-200 dark:bg-brand-950/40 dark:text-brand-400 dark:border-brand-900/60"
                       : "bg-transparent text-cn-text-secondary hover:bg-cn-surface-muted border border-transparent"
@@ -1765,7 +1829,7 @@ const ClubDetails = () => {
               {adminTab === "announcements" && (
                 <div className="space-y-6">
                   <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Publish New Announcement
                     </h4>
                     <input
@@ -1789,7 +1853,7 @@ const ClubDetails = () => {
                       required
                     />
                     <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-xs font-semibold text-cn-text-secondary cursor-pointer">
+                      <label className="inline-flex items-center gap-2 text-xs font-medium text-cn-text-secondary cursor-pointer">
                         <input
                           type="checkbox"
                           checked={announcementForm.isPinned}
@@ -1803,7 +1867,7 @@ const ClubDetails = () => {
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-medium text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Publishing..." : "Post Announcement"}
                       </button>
@@ -1811,7 +1875,7 @@ const ClubDetails = () => {
                   </form>
 
                   <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Existing Announcements
                     </h4>
                     {announcements.map((a) => (
@@ -1820,7 +1884,7 @@ const ClubDetails = () => {
                         className="p-3.5 rounded-xl border border-cn-border flex items-center justify-between gap-3 bg-cn-surface-muted"
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-cn-text truncate">
+                          <h5 className="text-xs font-medium text-cn-text truncate">
                             {a.title}
                           </h5>
                           <p className="text-[11px] text-cn-text-muted truncate">{a.content}</p>
@@ -1855,7 +1919,7 @@ const ClubDetails = () => {
               {adminTab === "achievements" && (
                 <div className="space-y-6">
                   <form onSubmit={handleCreateAchievement} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Add Club Achievement / Award
                     </h4>
                     <input
@@ -1901,7 +1965,7 @@ const ClubDetails = () => {
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-medium text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Adding..." : "Add Achievement"}
                       </button>
@@ -1909,7 +1973,7 @@ const ClubDetails = () => {
                   </form>
 
                   <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Existing Achievements
                     </h4>
                     {achievements.map((item) => (
@@ -1918,7 +1982,7 @@ const ClubDetails = () => {
                         className="p-3.5 rounded-xl border border-cn-border flex items-center justify-between gap-3 bg-cn-surface-muted"
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-cn-text truncate">
+                          <h5 className="text-xs font-medium text-cn-text truncate">
                             {item.title}
                           </h5>
                           <p className="text-[11px] text-cn-text-muted truncate">
@@ -1942,7 +2006,7 @@ const ClubDetails = () => {
               {adminTab === "gallery" && (
                 <div className="space-y-6">
                   <form onSubmit={handleAddGalleryMedia} className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Add Photo to Club Gallery
                     </h4>
                     <input
@@ -1964,7 +2028,7 @@ const ClubDetails = () => {
                       <button
                         type="submit"
                         disabled={submittingAdmin}
-                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white rounded-xl font-medium text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {submittingAdmin ? "Adding..." : "Add to Gallery"}
                       </button>
@@ -1973,7 +2037,7 @@ const ClubDetails = () => {
 
                   {/* Existing media items */}
                   <div className="space-y-3 pt-4 border-t border-cn-border-subtle">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Gallery Items
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
@@ -2007,7 +2071,7 @@ const ClubDetails = () => {
               {adminTab === "featured" && (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-cn-text-muted">
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                       Select Spotlight / Featured Event
                     </h4>
                     <p className="text-xs text-cn-text-muted mt-0.5">
@@ -2025,7 +2089,7 @@ const ClubDetails = () => {
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs font-bold text-cn-text truncate">
+                          <h5 className="text-xs font-medium text-cn-text truncate">
                             {ev.title}
                           </h5>
                           <p className="text-[11px] text-cn-text-muted">
@@ -2034,7 +2098,7 @@ const ClubDetails = () => {
                         </div>
                         <button
                           onClick={() => handleToggleFeatureEvent(ev._id || ev.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs ${
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors shadow-xs ${
                             ev.isFeatured
                               ? "bg-brand-500 text-white hover:bg-brand-600 dark:bg-brand-400 dark:text-cn-bg dark:hover:bg-brand-500"
                               : "bg-cn-surface border border-cn-border text-cn-text hover:bg-cn-surface-muted"

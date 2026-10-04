@@ -147,7 +147,7 @@ const Login = () => {
           
           {/* Card Header */}
           <div className="text-center mb-6">
-            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               <span>CampusNode NITJ</span>
             </div> */}
@@ -169,7 +169,7 @@ const Login = () => {
                       <Mail className="w-4 h-4" />
                     </div>
                     <div className="space-y-0.5">
-                      <strong className="block font-semibold text-xs text-amber-950 dark:text-amber-200">
+                      <strong className="block font-medium text-xs text-amber-950 dark:text-amber-200">
                         Email Verification Required
                       </strong>
                       <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">
@@ -190,7 +190,7 @@ const Login = () => {
                         type="button"
                         onClick={handleResendVerification}
                         disabled={resendStatus === 'sending'}
-                        className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline cursor-pointer disabled:opacity-50"
+                        className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline cursor-pointer disabled:opacity-50"
                       >
                         {resendStatus === 'sending' ? 'Sending link...' : 'Resend verification email'}
                       </button>
@@ -205,10 +205,10 @@ const Login = () => {
                   <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                   <div className="space-y-0.5 w-full">
                     <div className="flex items-center justify-between gap-2">
-                      <strong className="block font-semibold text-xs text-amber-950 dark:text-amber-100">
+                      <strong className="block font-medium text-xs text-amber-950 dark:text-amber-100">
                         {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].title}
                       </strong>
-                      <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                      <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
                         Attempt {failedAttempts}
                       </span>
                     </div>
@@ -231,7 +231,7 @@ const Login = () => {
 
               {/* Email Field */}
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Email Address
                 </label>
                 <input
@@ -248,7 +248,7 @@ const Login = () => {
               {/* Password Field */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Password
                   </label>
                   <Link
@@ -286,7 +286,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs mt-1"
+                className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs mt-1"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -305,7 +305,7 @@ const Login = () => {
                 <div className="w-10 h-10 rounded-2xl bg-cn-blue-500/10 text-cn-blue-600 dark:text-cn-blue-400 flex items-center justify-center mx-auto mb-2">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">2-Step Verification</h3>
+                <h3 className="text-lg font-medium text-zinc-900 dark:text-white">2-Step Verification</h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                   Enter the 6-digit code sent to your email.
                 </p>
@@ -333,7 +333,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   {isLoading ? 'Verifying...' : 'Verify & Sign In'}
                 </button>
@@ -364,7 +364,7 @@ const Login = () => {
           <div className="mt-5 flex justify-center">
             <Link
               to="/register"
-              className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-xs hover:border-cn-blue-500 dark:hover:border-cn-blue-500 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
+              className="w-full text-center py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-medium text-xs hover:border-cn-blue-500 dark:hover:border-cn-blue-500 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 bg-white/50 dark:bg-zinc-800/40 transition-all cursor-pointer"
             >
               Register Now
             </Link>

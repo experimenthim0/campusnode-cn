@@ -44,7 +44,7 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
 
     {/* Tooltip — collapsed mode */}
     {collapsed && (
-      <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-bold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+      <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
         {label}
         <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-black dark:bg-white rotate-45" />
       </span>
@@ -77,7 +77,7 @@ const AdminSidebarDropdown = ({
         onClick={() => !collapsed && onToggle(id)}
         className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer ${
           isAnyChildActive
-            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-semibold border border-neutral-200/60 dark:border-zinc-700/50"
+            ? "bg-neutral-100/80 dark:bg-zinc-800/80 text-black dark:text-white font-medium border border-neutral-200/60 dark:border-zinc-700/50"
             : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white border border-transparent"
         }`}
         title={collapsed ? label : undefined}
@@ -91,7 +91,7 @@ const AdminSidebarDropdown = ({
             }`} 
           />
           {!collapsed && (
-            <span className="text-[13px] font-semibold tracking-wide truncate ml-3">
+            <span className="text-[13px] font-medium tracking-wide truncate ml-3">
               {label}
             </span>
           )}
@@ -122,7 +122,7 @@ const AdminSidebarDropdown = ({
                 to={linkTo}
                 className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${
                   isActive
-                    ? "bg-black dark:bg-white text-white dark:text-black font-semibold shadow-xs"
+                    ? "bg-black dark:bg-white text-white dark:text-black font-medium shadow-xs"
                     : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-zinc-800/70 hover:text-black dark:hover:text-white font-medium"
                 }`}
               >
@@ -142,7 +142,7 @@ const AdminSidebarDropdown = ({
 const SectionDivider = ({ title, collapsed }) => (
   <div className="sidebar-divider my-2">
     {title && !collapsed && (
-      <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+      <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
         {title}
       </p>
     )}
@@ -186,7 +186,6 @@ const AdminSidebar = () => {
       label: "Clubs Management",
       items: [
         { label: "Clubs", tab: "club-heads" },
-        { label: "Coordinators", tab: "coordinators" },
       ]
     },
     {
@@ -262,7 +261,7 @@ const AdminSidebar = () => {
             <Shield size={16} strokeWidth={2.2} />
           </div>
           <div className="min-w-0 sidebar-brand-text">
-            <p className="text-[13px] font-semibold text-black dark:text-white truncate leading-tight tracking-tight">
+            <p className="text-[13px] font-medium text-black dark:text-white truncate leading-tight tracking-tight">
               Control Panel
             </p>
             
@@ -353,7 +352,7 @@ const AdminSidebar = () => {
                 <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate leading-tight">
                   {adminName}
                 </p>
                 <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate leading-tight mt-0.5">
@@ -381,7 +380,7 @@ const AdminSidebar = () => {
               <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-neutral-200 dark:ring-zinc-700 overflow-hidden">
                 <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
-              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-bold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                 {adminName}
                 <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-black dark:bg-white rotate-45" />
               </span>
@@ -394,7 +393,7 @@ const AdminSidebar = () => {
               aria-label="Logout"
             >
               <LogOut size={15} strokeWidth={2} />
-              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-red-600 text-white text-[11px] font-bold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-red-600 text-white text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                 Logout
                 <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-red-600 rotate-45" />
               </span>

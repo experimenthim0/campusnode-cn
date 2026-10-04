@@ -357,7 +357,7 @@ const SendNotification = () => {
             Broadcasting is restricted to official student club heads, coordinators, and faculty. Personal student broadcasts are not permitted.
           </CardDescription>
           <div className="pt-2">
-            <Button asChild className="font-semibold gap-2">
+            <Button asChild className="font-medium gap-2">
               <Link to="/clubs">
                 <Compass className="w-4 h-4" />
                 <span>Browse Clubs</span>
@@ -374,7 +374,7 @@ const SendNotification = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/30">
+          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider text-primary border-primary/30">
             Broadcasts & Communication
           </Badge>
         </div>
@@ -393,7 +393,7 @@ const SendNotification = () => {
           variant={currentTab === "notifications" ? "default" : "ghost"}
           size="sm"
           onClick={() => handleTabChange("notifications")}
-          className={`flex-1 gap-2 font-semibold ${currentTab === "notifications" ? "shadow-xs" : "text-muted-foreground"}`}
+          className={`flex-1 gap-2 font-medium ${currentTab === "notifications" ? "shadow-xs" : "text-muted-foreground"}`}
         >
           <Bell className="w-4 h-4" />
           <span>Push Notification</span>
@@ -404,12 +404,12 @@ const SendNotification = () => {
           variant={currentTab === "announcements" ? "default" : "ghost"}
           size="sm"
           onClick={() => handleTabChange("announcements")}
-          className={`flex-1 gap-2 font-semibold ${currentTab === "announcements" ? "shadow-xs" : "text-muted-foreground"}`}
+          className={`flex-1 gap-2 font-medium ${currentTab === "announcements" ? "shadow-xs" : "text-muted-foreground"}`}
         >
           <Megaphone className="w-4 h-4" />
           <span>Club Announcements</span>
           {activeClubData?.announcements?.length > 0 && (
-            <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-bold">
+            <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-semibold">
               {activeClubData.announcements.length}
             </Badge>
           )}
@@ -424,7 +424,7 @@ const SendNotification = () => {
               <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-muted/40 border border-border rounded-xl">
                 <div className="flex items-center gap-2">
                   <Building className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-semibold">
+                  <span className="text-xs font-medium">
                     Broadcasting on behalf of:
                   </span>
                 </div>
@@ -435,7 +435,7 @@ const SendNotification = () => {
                       setSelectedClubId(e.target.value);
                       setSearchParams({ ...(currentTab === "announcements" ? { tab: "announcements" } : {}), clubId: e.target.value });
                     }}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary cursor-pointer"
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary cursor-pointer"
                   >
                     {managedClubs.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -444,7 +444,7 @@ const SendNotification = () => {
                     ))}
                   </select>
                 ) : (
-                  <span className="px-3 py-1.5 text-xs font-bold rounded-lg border border-border bg-background text-foreground">
+                  <span className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground">
                     {managedClubs[0]?.name || currentClubName}
                   </span>
                 )}
@@ -463,14 +463,14 @@ const SendNotification = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
                       Sending As Official Club
                     </span>
-                    <Badge variant="outline" className="text-[9px] font-bold text-primary border-primary/30 py-0">
+                    <Badge variant="outline" className="text-[9px] font-semibold text-primary border-primary/30 py-0">
                       <ShieldCheck className="w-3 h-3 mr-1 text-primary" /> Verified
                     </Badge>
                   </div>
-                  <div className="text-sm font-bold truncate mt-0.5">
+                  <div className="text-sm font-semibold truncate mt-0.5">
                     {currentClubName}
                   </div>
                 </div>
@@ -483,13 +483,13 @@ const SendNotification = () => {
             )}
 
             {successMsg && (
-              <div className="mb-6 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-semibold text-xs sm:text-sm rounded-xl flex items-center gap-2">
+              <div className="mb-6 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-medium text-xs sm:text-sm rounded-xl flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
             {errorMsg && (
-              <div className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive font-semibold text-xs sm:text-sm rounded-xl flex items-center gap-2">
+              <div className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive font-medium text-xs sm:text-sm rounded-xl flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
@@ -498,7 +498,7 @@ const SendNotification = () => {
             <form onSubmit={handleSubmitNotification} className="space-y-5">
               {/* Target Audience */}
               <div className="space-y-2">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   Target Audience
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -535,7 +535,7 @@ const SendNotification = () => {
               {/* Event Selector (Conditional) */}
               {targetType === "REGISTERED_STUDENTS" && (
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     Select Event
                   </label>
                   <select
@@ -561,7 +561,7 @@ const SendNotification = () => {
 
               {/* Title */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   Notification Title
                 </label>
                 <Input
@@ -576,7 +576,7 @@ const SendNotification = () => {
 
               {/* Message */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   Message
                 </label>
                 <Textarea
@@ -592,7 +592,7 @@ const SendNotification = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full font-semibold uppercase tracking-wider text-xs gap-2 py-5"
+                className="w-full font-medium uppercase tracking-wider text-xs gap-2 py-5"
               >
                 {loading ? (
                   <>
@@ -611,7 +611,7 @@ const SendNotification = () => {
 
           {/* History */}
           <div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight mb-4">
+            <h2 className="text-base sm:text-lg font-semibold tracking-tight mb-4">
               Notification History
             </h2>
             {history.length === 0 ? (
@@ -630,7 +630,7 @@ const SendNotification = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge
                           variant={notif.targetType === "ALL_STUDENTS" ? "secondary" : "outline"}
-                          className="text-[10px] font-semibold"
+                          className="text-[10px] font-medium"
                         >
                           {notif.targetType === "ALL_STUDENTS"
                             ? "Sent to all students"
@@ -646,7 +646,7 @@ const SendNotification = () => {
                         {formatRelativeTime(notif.createdAt)}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold mb-1">{notif.title}</h3>
+                    <h3 className="text-sm font-semibold mb-1">{notif.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">{notif.message}</p>
                   </Card>
                 ))}
@@ -661,13 +661,13 @@ const SendNotification = () => {
           {/* Multiple Managed Clubs Selector if applicable */}
           {managedClubs.length > 1 && (
             <Card className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Select Club to Manage:
               </label>
               <select
                 value={selectedClubId || ""}
                 onChange={(e) => setSelectedClubId(e.target.value)}
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary"
+                className="px-3.5 py-1.5 text-xs font-medium rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary"
               >
                 {managedClubs.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -694,7 +694,7 @@ const SendNotification = () => {
           ) : (
             <Card className="border-dashed p-6 sm:p-8 text-center">
               <Building className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm font-semibold">
+              <p className="text-sm font-medium">
                 No club assigned to manage announcements.
               </p>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">

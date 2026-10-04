@@ -13,6 +13,7 @@ import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { invalidatePublicResponses } from "../utils/publicResponseCache.js";
 import { deleteImage, extractCloudinaryPublicId } from "../utils/cloudinary.js";
 import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
+import { canAssignClubHead } from "../controllers/clubMemberController.js";
 
 const router = express.Router();
 
@@ -194,17 +195,26 @@ router.get("/clubs-list", verifyToken, requirePermission(PERMISSIONS.CLUB_VIEW),
   try {
     const clubs = await prisma.club.findMany({
       include: {
-        facultyCoordinator: { select: { id: true, name: true, email: true } },
+        facultyCoordinator: { select: { id: true, name: true, email: true, department: true } },
+        facultyCoordinators: {
+          include: {
+            faculty: {
+              select: { id: true, name: true, email: true, department: true, designation: true },
+            },
+          },
+        },
         memberships: {
           where: { role: "CLUB_HEAD" },
           select: {
             id: true,
             role: true,
+            position: true,
             student: {
               select: {
                 id: true,
                 name: true,
                 email: true,
+                phone: true,
                 rollNo: true,
                 branch: true,
                 program: true,
@@ -220,13 +230,32 @@ router.get("/clubs-list", verifyToken, requirePermission(PERMISSIONS.CLUB_VIEW),
     });
 
     res.json(
-      clubs.map((club) => ({
-        ...club,
-        _id: club.id,
-        facultyCoordinators: club.facultyCoordinator
-          ? [{ ...club.facultyCoordinator, _id: club.facultyCoordinator.id }]
-          : [],
-      })),
+      clubs.map((club) => {
+        const coordinatorsMap = new Map();
+        if (club.facultyCoordinator) {
+          coordinatorsMap.set(club.facultyCoordinator.id, {
+            ...club.facultyCoordinator,
+            _id: club.facultyCoordinator.id,
+          });
+        }
+        if (Array.isArray(club.facultyCoordinators)) {
+          for (const item of club.facultyCoordinators) {
+            if (item.faculty && !coordinatorsMap.has(item.faculty.id)) {
+              coordinatorsMap.set(item.faculty.id, {
+                ...item.faculty,
+                _id: item.faculty.id,
+              });
+            }
+          }
+        }
+        const distinctCoordinators = Array.from(coordinatorsMap.values());
+
+        return {
+          ...club,
+          _id: club.id,
+          facultyCoordinators: distinctCoordinators,
+        };
+      }),
     );
   } catch {
     res.status(500).json({ message: "Failed to fetch clubs" });
@@ -310,14 +339,14 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
   try {
     const { clubName, facultyName, facultyEmail, clubEmail } = req.body;
 
-    if (!clubName || !facultyName || !facultyEmail || !clubEmail) {
-      return res.status(400).json({ message: "All fields are required: clubName, facultyName, facultyEmail, clubEmail" });
+    if (!clubName || !clubEmail) {
+      return res.status(400).json({ message: "Club Name and Club Email are required." });
     }
 
     const trimmedClubName = clubName.trim();
-    const trimmedFacultyEmail = facultyEmail.toLowerCase().trim();
     const trimmedClubEmail = clubEmail.toLowerCase().trim();
-    const trimmedFacultyName = facultyName.trim();
+    const trimmedFacultyEmail = facultyEmail ? facultyEmail.toLowerCase().trim() : null;
+    const trimmedFacultyName = facultyName ? facultyName.trim() : null;
 
     const existingClub = await prisma.club.findUnique({ where: { clubName: trimmedClubName } });
     if (existingClub) {
@@ -325,11 +354,13 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
     }
 
     // Role guard: Faculty coordinator cannot be a student account
-    const studentWithFacultyEmail = await prisma.studentUser.findUnique({ where: { email: trimmedFacultyEmail } });
-    if (studentWithFacultyEmail) {
-      return res.status(400).json({
-        message: `The email "${trimmedFacultyEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
-      });
+    if (trimmedFacultyEmail) {
+      const studentWithFacultyEmail = await prisma.studentUser.findUnique({ where: { email: trimmedFacultyEmail } });
+      if (studentWithFacultyEmail) {
+        return res.status(400).json({
+          message: `The email "${trimmedFacultyEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
+        });
+      }
     }
 
     // Uniqueness checks for clubEmail
@@ -344,27 +375,37 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
     }
 
     const slug = await slugifyUnique(trimmedClubName, 'club', 'slug');
-    const defaultPassword = `${slug}@him0148`;
-    const passwordHash = await bcrypt.hash(defaultPassword, 10);
-    let isNewFaculty = false;
 
     const result = await prisma.$transaction(async (tx) => {
-      let facultyUser = await tx.facultyUser.findFirst({
-        where: { email: { equals: trimmedFacultyEmail, mode: "insensitive" } },
-      });
-      if (!facultyUser) {
-        isNewFaculty = true;
-        facultyUser = await tx.facultyUser.create({
-          data: {
-            id: `fac_${createObjectId().slice(0, 20)}`,
-            name: trimmedFacultyName,
-            email: trimmedFacultyEmail,
-            department: "General",
-            password: passwordHash,
-            isVerified: true,
-          },
+      let facultyUser = null;
+      if (trimmedFacultyEmail) {
+        facultyUser = await tx.facultyUser.findFirst({
+          where: { email: { equals: trimmedFacultyEmail, mode: "insensitive" } },
         });
-      } else {
+        if (!facultyUser) {
+          throw new Error(
+            `No registered faculty account found with email "${trimmedFacultyEmail}". The faculty coordinator must have an active faculty account on CampusNode before being assigned to a club.`
+          );
+        }
+
+        const existingCoord = await tx.clubFacultyCoordinator.findFirst({
+          where: { facultyId: facultyUser.id },
+          include: { club: { select: { id: true, clubName: true } } },
+        });
+        const existingLegacy = !existingCoord
+          ? await tx.club.findFirst({
+              where: { facultyCoordinatorId: facultyUser.id },
+              select: { id: true, clubName: true },
+            })
+          : null;
+
+        const assignedClub = existingCoord?.club || existingLegacy;
+        if (assignedClub) {
+          throw new Error(
+            `${facultyUser.name} (${facultyUser.email}) is already the Faculty Coordinator for "${assignedClub.clubName}". A faculty member can be the faculty coordinator for only one club at a time.`
+          );
+        }
+
         if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
           facultyUser = await tx.facultyUser.update({
             where: { id: facultyUser.id },
@@ -378,44 +419,69 @@ router.post("/clubs", verifyToken, requirePermission(PERMISSIONS.CLUB_CREATE), a
           id: createObjectId(),
           clubName: trimmedClubName,
           slug,
-          facultyName: trimmedFacultyName,
-          facultyEmail: trimmedFacultyEmail,
+          facultyName: facultyUser ? (facultyUser.name || trimmedFacultyName) : null,
+          facultyEmail: facultyUser ? (facultyUser.email || trimmedFacultyEmail) : null,
           clubEmail: trimmedClubEmail,
-          facultyCoordinatorId: facultyUser.id,
+          facultyCoordinatorId: facultyUser ? facultyUser.id : null,
         },
       });
 
-      return club;
+      if (facultyUser) {
+        await tx.clubFacultyCoordinator.create({
+          data: {
+            id: createObjectId(),
+            clubId: club.id,
+            facultyId: facultyUser.id,
+          },
+        });
+      }
+
+      return { club, facultyUser };
     });
 
     invalidatePublicResponses(["clubs*", "events*"]);
 
     const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
 
-    try {
-      await sendEmail({
-        to: trimmedFacultyEmail,
-        template: "clubs:faculty-assigned",
-        data: {
-          facultyName: trimmedFacultyName,
-          clubName: trimmedClubName,
-          facultyEmail: trimmedFacultyEmail,
-          defaultPassword: isNewFaculty ? defaultPassword : null,
-          loginUrl: `${clientUrl}/admin-secret-login`,
-        },
-      });
-    } catch (emailErr) {
-      console.error("Failed to send faculty notification email:", emailErr?.message || emailErr);
+    if (result.facultyUser && trimmedFacultyEmail) {
+      try {
+        await sendEmail({
+          to: trimmedFacultyEmail,
+          template: "clubs:faculty-assigned",
+          data: {
+            facultyName: result.facultyUser.name || trimmedFacultyName,
+            clubName: trimmedClubName,
+            facultyEmail: trimmedFacultyEmail,
+            defaultPassword: null,
+            loginUrl: `${clientUrl}/login`,
+            dashboardUrl: `${clientUrl}/clubs/${slug}`,
+          },
+        });
+      } catch (emailErr) {
+        console.error("Failed to send faculty notification email:", emailErr?.message || emailErr);
+      }
     }
 
     res.status(201).json({
-      message: "Club and faculty coordinator created/assigned successfully.",
-      club: { ...result, _id: result.id },
+      message: result.facultyUser
+        ? "Club created and Faculty Coordinator assigned successfully."
+        : "Club created successfully.",
+      club: { ...result.club, _id: result.club.id },
     });
   } catch (error) {
     if (error.code === 'P2002') {
       const target = error.meta?.target;
-      return res.status(400).json({ message: `A record with this ${Array.isArray(target) ? target.join(', ') : 'value'} already exists.` });
+      const targetStr = Array.isArray(target) ? target.join(', ') : String(target || '');
+      if (targetStr.includes('facultyId')) {
+        return res.status(409).json({ message: "This faculty member is already the faculty coordinator for another club. A faculty member can only coordinate one club at a time." });
+      }
+      return res.status(400).json({ message: `A record with this ${targetStr || 'value'} already exists.` });
+    }
+    if (error.message && error.message.includes("No registered faculty account found")) {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message && error.message.includes("already the Faculty Coordinator")) {
+      return res.status(409).json({ message: error.message });
     }
     res.status(500).json({ message: error.message || "Failed to create club" });
   }
@@ -435,65 +501,9 @@ router.get("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_VIEW
 });
 
 router.post("/coordinators", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    if (!name || !email) {
-      return res.status(400).json({ message: "Name and email are required" });
-    }
-    const trimmedEmail = email.toLowerCase().trim();
-    const trimmedName = name.trim();
-
-    // Check if email belongs to student account
-    const studentUser = await prisma.studentUser.findUnique({ where: { email: trimmedEmail } });
-    if (studentUser) {
-      return res.status(400).json({
-        message: `The email "${trimmedEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`
-      });
-    }
-
-    const existingFaculty = await prisma.facultyUser.findUnique({ where: { email: trimmedEmail } });
-    if (existingFaculty) {
-      return res.status(400).json({ message: `An account with email "${trimmedEmail}" already exists.` });
-    }
-
-    const passwordHash = await bcrypt.hash(password || "coordinator123", 10);
-
-    const coordinator = await prisma.facultyUser.create({
-      data: {
-        id: `fac_${createObjectId().slice(0, 20)}`,
-        name: trimmedName,
-        email: trimmedEmail,
-        department: req.body.department ? String(req.body.department).trim() : "General",
-        password: passwordHash,
-        isVerified: true,
-      },
-    });
-
-    const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
-    const plainPassword = password || "coordinator123";
-
-    try {
-      await sendEmail({
-        to: trimmedEmail,
-        template: "clubs:faculty-assigned",
-        data: {
-          facultyName: trimmedName,
-          facultyEmail: trimmedEmail,
-          defaultPassword: plainPassword,
-          loginUrl: `${clientUrl}/admin-secret-login`,
-        },
-      });
-    } catch (emailErr) {
-      console.error("Failed to send coordinator welcome email:", emailErr?.message || emailErr);
-    }
-
-    res.status(201).json({
-      message: "Coordinator created successfully and welcome email sent",
-      coordinator: { ...coordinator, _id: coordinator.id },
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message || "Failed to create coordinator" });
-  }
+  return res.status(400).json({
+    message: "Faculty coordinators cannot be manually created. Faculty members must register their own accounts on CampusNode, and then be assigned to clubs."
+  });
 });
 
 router.put("/coordinators/:id", verifyToken, requirePermission(PERMISSIONS.USER_ASSIGN_ROLE), async (req, res) => {
@@ -594,6 +604,24 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
         let isNewFaculty = false;
 
         if (facultyUser) {
+          const existingCoord = await prisma.clubFacultyCoordinator.findFirst({
+            where: { facultyId: facultyUser.id, clubId: { not: targetClubId } },
+            include: { club: { select: { id: true, clubName: true } } },
+          });
+          const existingLegacy = !existingCoord
+            ? await prisma.club.findFirst({
+                where: { facultyCoordinatorId: facultyUser.id, id: { not: targetClubId } },
+                select: { id: true, clubName: true },
+              })
+            : null;
+
+          const assignedClub = existingCoord?.club || existingLegacy;
+          if (assignedClub) {
+            return res.status(409).json({
+              message: `${facultyUser.name} (${facultyUser.email}) is already the Faculty Coordinator for "${assignedClub.clubName}". A faculty member can be the faculty coordinator for only one club at a time.`,
+            });
+          }
+
           if (trimmedFacultyName && facultyUser.name !== trimmedFacultyName) {
             facultyUser = await prisma.facultyUser.update({
               where: { id: facultyUser.id },
@@ -601,50 +629,87 @@ router.put("/clubs/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE)
             });
           }
         } else {
-          isNewFaculty = true;
-          const slug = updates.slug || existingClub.slug || "club";
-          const defaultPassword = `${slug}@him0148`;
-          const passwordHash = await bcrypt.hash(defaultPassword, 10);
-          facultyUser = await prisma.facultyUser.create({
-            data: {
-              id: `fac_${createObjectId().slice(0, 20)}`,
-              name: trimmedFacultyName,
-              email: trimmedFacultyEmail,
-              department: "General",
-              password: passwordHash,
-              isVerified: true,
-            }
+          return res.status(404).json({
+            message: `No registered faculty account found with email "${trimmedFacultyEmail}". The faculty member must already have an account on CampusNode.`,
           });
-
-          const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
-          try {
-            await sendEmail({
-              to: trimmedFacultyEmail,
-              template: "clubs:faculty-assigned",
-              data: {
-                facultyName: trimmedFacultyName,
-                clubName: updates.clubName || existingClub.clubName,
-                facultyEmail: trimmedFacultyEmail,
-                defaultPassword,
-                loginUrl: `${clientUrl}/admin-secret-login`,
-              },
-            });
-          } catch (emailErr) {
-            console.error("Failed to send faculty email:", emailErr?.message || emailErr);
-          }
         }
 
         updates.facultyCoordinatorId = facultyUser.id;
         updates.facultyEmail = trimmedFacultyEmail;
         updates.facultyName = trimmedFacultyName;
+
+        const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
+        try {
+          await sendEmail({
+            to: trimmedFacultyEmail,
+            template: "clubs:faculty-assigned",
+            data: {
+              facultyName: trimmedFacultyName,
+              clubName: updates.clubName || existingClub.clubName,
+              facultyEmail: trimmedFacultyEmail,
+              defaultPassword: null,
+              loginUrl: `${clientUrl}/login`,
+              dashboardUrl: `${clientUrl}/clubs/${updates.slug || existingClub.slug || targetClubId}`,
+            },
+          });
+        } catch (emailErr) {
+          console.error("Failed to send faculty email:", emailErr?.message || emailErr);
+        }
+
+        await prisma.clubFacultyCoordinator.upsert({
+          where: {
+            facultyId: facultyUser.id,
+          },
+          update: {
+            clubId: targetClubId,
+          },
+          create: {
+            id: createObjectId(),
+            clubId: targetClubId,
+            facultyId: facultyUser.id,
+          },
+        });
       } else if (facultyCoordinatorId) {
         const facultyUser = await prisma.facultyUser.findUnique({ where: { id: facultyCoordinatorId } });
         if (!facultyUser) {
           return res.status(400).json({ message: "Faculty coordinator account not found." });
         }
+
+        const existingCoord = await prisma.clubFacultyCoordinator.findFirst({
+          where: { facultyId: facultyUser.id, clubId: { not: targetClubId } },
+          include: { club: { select: { id: true, clubName: true } } },
+        });
+        const existingLegacy = !existingCoord
+          ? await prisma.club.findFirst({
+              where: { facultyCoordinatorId: facultyUser.id, id: { not: targetClubId } },
+              select: { id: true, clubName: true },
+            })
+          : null;
+
+        const assignedClub = existingCoord?.club || existingLegacy;
+        if (assignedClub) {
+          return res.status(409).json({
+            message: `${facultyUser.name} (${facultyUser.email}) is already the Faculty Coordinator for "${assignedClub.clubName}". A faculty member can be the faculty coordinator for only one club at a time.`,
+          });
+        }
+
         updates.facultyCoordinatorId = facultyUser.id;
         updates.facultyEmail = facultyUser.email;
         updates.facultyName = trimmedFacultyName || facultyUser.name;
+
+        await prisma.clubFacultyCoordinator.upsert({
+          where: {
+            facultyId: facultyUser.id,
+          },
+          update: {
+            clubId: targetClubId,
+          },
+          create: {
+            id: createObjectId(),
+            clubId: targetClubId,
+            facultyId: facultyUser.id,
+          },
+        });
       }
     }
 
@@ -942,11 +1007,19 @@ router.get("/manual-payments", verifyToken, requirePermission(PERMISSIONS.PAYMEN
 
 import { createAuditLog, AUDIT_ACTIONS } from "../utils/auditLog.js";
 
+const requireClubLeadManager = async (req, res, next) => {
+  const allowed = await canAssignClubHead(req, req.params.id);
+  if (!allowed) {
+    return res.status(403).json({ message: "Access denied. Only administrators and assigned faculty coordinators can manage club lead." });
+  }
+  next();
+};
+
 // ==========================================
-// CLUB HEAD ASSIGNMENT (Admin routes)
+// CLUB HEAD ASSIGNMENT (Admin & Faculty Coordinator)
 // ==========================================
 
-router.get("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+router.get("/clubs/:id/club-head", verifyToken, requireClubLeadManager, async (req, res) => {
   try {
     const headMembership = await prisma.clubMembership.findFirst({
       where: { clubId: req.params.id, role: "CLUB_HEAD" },
@@ -956,6 +1029,7 @@ router.get("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN
             id: true,
             name: true,
             email: true,
+            phone: true,
             rollNo: true,
             branch: true,
             expectedGraduationYear: true,
@@ -971,7 +1045,7 @@ router.get("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN
   }
 });
 
-router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+router.post("/clubs/:id/club-head", verifyToken, requireClubLeadManager, async (req, res) => {
   try {
     const { studentId, studentEmail, position } = req.body;
     const clubId = req.params.id;
@@ -983,6 +1057,7 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
       id: true,
       name: true,
       email: true,
+      phone: true,
       rollNo: true,
       branch: true,
       expectedGraduationYear: true,
@@ -1091,7 +1166,7 @@ router.post("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMI
   }
 });
 
-router.delete("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+router.delete("/clubs/:id/club-head", verifyToken, requireClubLeadManager, async (req, res) => {
   try {
     const clubId = req.params.id;
     await prisma.clubMembership.updateMany({
@@ -1106,7 +1181,198 @@ router.delete("/clubs/:id/club-head", verifyToken, allowRoles("admin", "SUPER_AD
   }
 });
 
-router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+// ==========================================
+// CLUB FACULTY COORDINATOR ROUTES (Multi-coordinator)
+// ==========================================
+
+router.post("/clubs/:id/coordinators", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), async (req, res) => {
+  try {
+    const clubId = req.params.id;
+    const { facultyId, facultyEmail, facultyName, department } = req.body;
+
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (!club) return res.status(404).json({ message: "Club not found." });
+
+    let faculty = null;
+
+    if (facultyId) {
+      faculty = await prisma.facultyUser.findUnique({ where: { id: facultyId } });
+    } else if (facultyEmail) {
+      const trimmedEmail = facultyEmail.toLowerCase().trim();
+      const studentUser = await prisma.studentUser.findUnique({ where: { email: trimmedEmail } });
+      if (studentUser) {
+        return res.status(400).json({
+          message: `The email "${trimmedEmail}" belongs to a registered student account. Student accounts cannot be assigned as faculty coordinators.`,
+        });
+      }
+
+      faculty = await prisma.facultyUser.findFirst({
+        where: { email: { equals: trimmedEmail, mode: "insensitive" } },
+      });
+    }
+
+    if (!faculty) {
+      return res.status(404).json({
+        message: "No registered faculty account found. The faculty member must already have an account on CampusNode before being assigned as coordinator.",
+      });
+    }
+
+    // Check if faculty already coordinates any club
+    const existingCoordination = await prisma.clubFacultyCoordinator.findFirst({
+      where: {
+        facultyId: faculty.id,
+      },
+      include: {
+        club: { select: { id: true, clubName: true } },
+      },
+    });
+
+    const existingLegacy = !existingCoordination
+      ? await prisma.club.findFirst({
+          where: { facultyCoordinatorId: faculty.id },
+          select: { id: true, clubName: true },
+        })
+      : null;
+
+    const assignedClub = existingCoordination?.club || existingLegacy;
+    if (assignedClub) {
+      if (String(assignedClub.id) === String(clubId)) {
+        return res.status(400).json({
+          message: `${faculty.name || "This faculty member"} is already assigned as a coordinator for ${club.clubName}.`,
+        });
+      }
+      return res.status(409).json({
+        message: `${faculty.name || "This faculty member"} (${faculty.email}) is already the Faculty Coordinator for "${assignedClub.clubName}". A faculty member can be the faculty coordinator for only one club at a time.`,
+      });
+    }
+
+    await prisma.clubFacultyCoordinator.upsert({
+      where: {
+        facultyId: faculty.id,
+      },
+      update: {
+        clubId,
+      },
+      create: {
+        id: createObjectId(),
+        clubId,
+        facultyId: faculty.id,
+      },
+    });
+
+    if (!club.facultyCoordinatorId) {
+      await prisma.club.update({
+        where: { id: clubId },
+        data: {
+          facultyCoordinatorId: faculty.id,
+          facultyName: faculty.name,
+          facultyEmail: faculty.email,
+        },
+      });
+    }
+
+    invalidatePublicResponses(["clubs*"]);
+
+    const clientUrl = process.env.CLIENT_URL || "https://campusnode.vercel.app";
+    try {
+      await sendEmail({
+        to: faculty.email,
+        template: "clubs:faculty-assigned",
+        data: {
+          facultyName: faculty.name,
+          clubName: club.clubName,
+          facultyEmail: faculty.email,
+          defaultPassword: null,
+          loginUrl: `${clientUrl}/login`,
+          dashboardUrl: `${clientUrl}/clubs/${club.slug || club.id}`,
+        },
+      });
+    } catch (emailErr) {
+      console.error("Failed to send faculty appointment email:", emailErr?.message || emailErr);
+    }
+
+    const allCoordinators = await prisma.clubFacultyCoordinator.findMany({
+      where: { clubId },
+      include: {
+        faculty: {
+          select: { id: true, name: true, email: true, department: true, designation: true },
+        },
+      },
+    });
+
+    res.json({
+      message: `Assigned ${faculty.name} as Faculty Coordinator for ${club.clubName}`,
+      coordinator: faculty,
+      facultyCoordinators: allCoordinators.map((c) => ({ ...c.faculty, _id: c.faculty.id })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete("/clubs/:id/coordinators/:facultyId", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), async (req, res) => {
+  try {
+    const clubId = req.params.id;
+    const facultyId = req.params.facultyId;
+
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (!club) return res.status(404).json({ message: "Club not found." });
+
+    await prisma.clubFacultyCoordinator.deleteMany({
+      where: {
+        clubId,
+        facultyId,
+      },
+    });
+
+    if (club.facultyCoordinatorId === facultyId) {
+      const remaining = await prisma.clubFacultyCoordinator.findFirst({
+        where: { clubId },
+        include: { faculty: true },
+      });
+
+      if (remaining && remaining.faculty) {
+        await prisma.club.update({
+          where: { id: clubId },
+          data: {
+            facultyCoordinatorId: remaining.faculty.id,
+            facultyName: remaining.faculty.name,
+            facultyEmail: remaining.faculty.email,
+          },
+        });
+      } else {
+        await prisma.club.update({
+          where: { id: clubId },
+          data: {
+            facultyCoordinatorId: null,
+            facultyName: null,
+            facultyEmail: null,
+          },
+        });
+      }
+    }
+
+    invalidatePublicResponses(["clubs*"]);
+
+    const allCoordinators = await prisma.clubFacultyCoordinator.findMany({
+      where: { clubId },
+      include: {
+        faculty: {
+          select: { id: true, name: true, email: true, department: true, designation: true },
+        },
+      },
+    });
+
+    res.json({
+      message: "Faculty Coordinator removed from club successfully.",
+      facultyCoordinators: allCoordinators.map((c) => ({ ...c.faculty, _id: c.faculty.id })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN", "facultyCoordinator", "faculty"), async (req, res) => {
   try {
     const rawQuery = req.query.q || req.query.query;
     if (!rawQuery || String(rawQuery).trim().length < 1) {
@@ -1131,6 +1397,7 @@ router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), 
         id: true,
         name: true,
         email: true,
+        phone: true,
         rollNo: true,
         branch: true,
         expectedGraduationYear: true,
@@ -1164,7 +1431,7 @@ router.get("/students/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), 
   }
 });
 
-router.get("/faculty/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), async (req, res) => {
+router.get("/faculty/search", verifyToken, allowRoles("admin", "SUPER_ADMIN", "facultyCoordinator", "faculty"), async (req, res) => {
   try {
     const rawQuery = req.query.q || req.query.query;
     if (!rawQuery || String(rawQuery).trim().length < 1) {
@@ -1190,11 +1457,33 @@ router.get("/faculty/search", verifyToken, allowRoles("admin", "SUPER_ADMIN"), a
         coordinatedClubs: {
           select: { id: true, clubName: true },
         },
+        clubCoordinators: {
+          select: { club: { select: { id: true, clubName: true } } },
+        },
       },
       take: 15,
     });
 
-    res.json({ faculty: facultyList });
+    const enriched = facultyList.map((fac) => {
+      const clubsMap = new Map();
+      (fac.coordinatedClubs || []).forEach((c) => clubsMap.set(c.id, c));
+      (fac.clubCoordinators || []).forEach((cc) => {
+        if (cc.club) clubsMap.set(cc.club.id, cc.club);
+      });
+      const coordinatedClubs = Array.from(clubsMap.values());
+      return {
+        id: fac.id,
+        _id: fac.id,
+        name: fac.name,
+        email: fac.email,
+        department: fac.department,
+        designation: fac.designation,
+        coordinatedClubs,
+        currentCoordinatedClub: coordinatedClubs[0] || null,
+      };
+    });
+
+    res.json({ faculty: enriched });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

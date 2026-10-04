@@ -18,7 +18,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
   return (
     <section aria-label="Notable Attendee Feedback" className="space-y-4">
       <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800 pb-2">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <MessageCircle className="w-4 h-4 text-brand-500" aria-hidden="true" />
           <span>Notable Feedback (Verbatim Quotes)</span>
         </h4>
@@ -31,7 +31,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
         {/* Most Praised Quote */}
         {primaryPraised && (
           <div className="p-4 md:p-5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/15 border border-emerald-200/70 dark:border-emerald-900/40 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
               <Quote className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
               <span>Most Praised Highlight</span>
             </div>
@@ -49,7 +49,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
         {/* Most Actionable Criticism Quote */}
         {primaryCriticism && (
           <div className="p-4 md:p-5 rounded-2xl bg-amber-50/40 dark:bg-amber-950/15 border border-amber-200/70 dark:border-amber-900/40 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
               <Quote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
               <span>Most Actionable Criticism</span>
             </div>
@@ -108,7 +108,7 @@ const NotableFeedback = ({ positiveHighlights = [], constructiveHighlights = [] 
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-1 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-1 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
               <span>{expanded ? 'Show Less Quotes' : `View ${totalExtra} More Attendee Quotes`}</span>
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}

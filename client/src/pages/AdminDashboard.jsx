@@ -6,7 +6,6 @@ import api from '../services/api';
 import {
     getDashboardStats,
     getClubsList,
-    getCoordinators,
     getVenues
 } from '../services/adminService';
 import {
@@ -24,7 +23,6 @@ import {
     EventDataTable,
     VenuesTab,
     ClubsTab,
-    CoordinatorsTab,
     ManualPaymentsTab,
     BroadcastsTab,
     NotificationsTab,
@@ -46,10 +44,8 @@ const AdminDashboard = () => {
     const [showYearWise, setShowYearWise] = useState(false);
 
 
-    // Clubs & Coordinators states
-    const [coordinators, setCoordinators] = useState([]);
+    // Clubs states
     const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
-    const [isAddCoordModalOpen, setIsAddCoordModalOpen] = useState(false);
 
     // Payments Management States
     const [manualPayments, setManualPayments] = useState([]);
@@ -88,7 +84,9 @@ const AdminDashboard = () => {
 
     // Sync tab param with activeTab state
     useEffect(() => {
-        if (tabParam) {
+        if (tabParam === 'coordinators') {
+            setActiveTab('club-heads');
+        } else if (tabParam) {
             setActiveTab(tabParam);
         } else if (role) {
             if (role === 'paymentAdmin') {
@@ -108,10 +106,6 @@ const AdminDashboard = () => {
             setProfileEmail(adminUser.email || '');
             setProfile2FA(adminUser.isTwoStepEnabled || false);
 
-            if (authRole === 'lostFoundAdmin') {
-                navigate('/admin/lost-found');
-                return;
-            }
             if (authRole === 'facultyCoordinator') {
                 navigate('/');
                 return;
@@ -120,17 +114,15 @@ const AdminDashboard = () => {
             const fetchData = async () => {
                 try {
                     const query = new URLSearchParams(filters).toString();
-                    const [statsRes, clubsRes, coordsRes, paymentsRes, eventsRes] = await Promise.allSettled([
+                    const [statsRes, clubsRes, paymentsRes, eventsRes] = await Promise.allSettled([
                         getDashboardStats(),
                         getClubsList(),
-                        getCoordinators(),
                         api.get('/api/admin/manual-payments'),
                         api.get(`/api/admin/event-data-export?${query}`)
                     ]);
 
                     if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
                     if (clubsRes.status === 'fulfilled') setClubHeads(clubsRes.value.data);
-                    if (coordsRes.status === 'fulfilled') setCoordinators(coordsRes.value.data);
                     if (paymentsRes.status === 'fulfilled') {
                         setManualPayments(paymentsRes.value.data.participations || []);
                         setManualPaymentsSummary(paymentsRes.value.data.summary || null);
@@ -272,7 +264,6 @@ const AdminDashboard = () => {
         'calendar-schedule': { title: 'Event Calendar & Venue Scheduling', subtitle: 'Interactive month, week, day, and venue timeline scheduling grid' },
         venues: { title: 'Venues Management', subtitle: 'Manage campus event venues and configure their event booking availability' },
         'club-heads': { title: 'Clubs Management', subtitle: 'Create, edit, and configure registered student clubs' },
-        coordinators: { title: 'Coordinators Management', subtitle: 'Manage faculty coordinator accounts' },
         'payments-overview': { title: 'Transactions Management', subtitle: 'Overview of manual transaction registrations and UTR verifications' },
         broadcasts: { title: 'Outgoing Broadcasts', subtitle: 'Dispatch real-time broadcast announcements to all students or event participants' },
         notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
@@ -338,7 +329,7 @@ const AdminDashboard = () => {
                         {activeTab === 'broadcasts' && (
                             <button
                                 onClick={() => setBroadcastModalOpen(true)}
-                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
+                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-semibold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                             >
                                 <Plus size={16} />
                                 <span>New Broadcast</span>
@@ -348,7 +339,7 @@ const AdminDashboard = () => {
                         {activeTab === 'notifications' && (
                             <button
                                 onClick={handleMarkAllAsRead}
-                                className="px-3.5 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[11px] font-bold tracking-wide rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                                className="px-3.5 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[11px] font-semibold tracking-wide rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                                 <CheckCheck size={14} className="text-brand-500" />
                                 <span>Mark All Read</span>
@@ -358,7 +349,7 @@ const AdminDashboard = () => {
                         {activeTab === 'venues' && (
                             <button
                                 onClick={() => setIsAddVenueModalOpen(true)}
-                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-bold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
+                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-semibold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                             >
                                 <Plus size={16} />
                                 <span>Add Venue</span>
@@ -415,15 +406,6 @@ const AdminDashboard = () => {
                         refreshStats={refreshStats}
                         isCreateClubModalOpen={isCreateClubModalOpen}
                         setIsCreateClubModalOpen={setIsCreateClubModalOpen}
-                    />
-                )}
-
-                {activeTab === 'coordinators' && (
-                    <CoordinatorsTab
-                        coordinators={coordinators}
-                        setCoordinators={setCoordinators}
-                        isAddCoordModalOpen={isAddCoordModalOpen}
-                        setIsAddCoordModalOpen={setIsAddCoordModalOpen}
                     />
                 )}
 

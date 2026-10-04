@@ -68,19 +68,19 @@ const ManualPaymentsTab = ({
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatCard label="Total Payments" value={manualPaymentsSummary.total} />
                     <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Pending Approvals</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-cn-text-muted">Pending Approvals</p>
                         <p className="text-2xl font-black mt-1 text-amber-500">{manualPaymentsSummary.pending}</p>
                     </div>
                     <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Approved</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-cn-text-muted">Approved</p>
                         <p className="text-2xl font-black mt-1 text-emerald-500">{manualPaymentsSummary.approved}</p>
                     </div>
                     <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Rejected</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-cn-text-muted">Rejected</p>
                         <p className="text-2xl font-black mt-1 text-rose-500">{manualPaymentsSummary.rejected}</p>
                     </div>
                     <div className="p-5 rounded-2xl border bg-cn-surface border-cn-border transition-colors">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cn-text-muted">Need Details</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-cn-text-muted">Need Details</p>
                         <p className="text-2xl font-black mt-1 text-brand-500">{manualPaymentsSummary.needMoreDetails}</p>
                     </div>
                 </div>
@@ -148,17 +148,17 @@ const ManualPaymentsTab = ({
                                 <Td className="text-neutral-300 dark:text-neutral-600">{startIndex + idx + 1}</Td>
                                 
                                 <Td>
-                                    <p className="font-bold text-black dark:text-white text-sm">{p.eventName}</p>
-                                    <p className="text-[11px] text-brand-600 dark:text-brand-400 font-semibold mt-0.5" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>
+                                    <p className="font-semibold text-black dark:text-white text-sm">{p.eventName}</p>
+                                    <p className="text-[11px] text-brand-600 dark:text-brand-400 font-medium mt-0.5" title={displayClubName === 'ODSW' ? 'Office of DSW' : displayClubName}>
                                         {displayClubName}
                                     </p>
                                     {/* <div className="mt-1.5 flex items-center gap-1.5">
                                         {isTeam ? (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/70 dark:border-purple-800/40 uppercase tracking-wider">
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/70 dark:border-purple-800/40 uppercase tracking-wider">
                                                 <Users size={10} /> Team Event {p.eventMinTeamSize > 1 ? `(${p.eventMinTeamSize}-${p.eventMaxTeamSize})` : ''}
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/70 dark:border-blue-800/40 uppercase tracking-wider">
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/70 dark:border-blue-800/40 uppercase tracking-wider">
                                                 <User size={10} /> Individual
                                             </span>
                                         )}
@@ -169,16 +169,16 @@ const ManualPaymentsTab = ({
                                     {isTeam ? (
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-bold text-sm text-black dark:text-white truncate">
+                                                <span className="font-semibold text-sm text-black dark:text-white truncate">
                                                    Team {p.teamName || 'Team'}
                                                 </span>
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-bold text-[10px] uppercase tracking-wider border border-brand-200/60 dark:border-brand-900/40">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-[10px] uppercase tracking-wider border border-brand-200/60 dark:border-brand-900/40">
                                                     <Users size={11} /> {p.teamMemberCount || p.teamMembers?.length || 2}
                                                 </span>
                                                 
                                             </div>
                                             <p className="text-xs text-neutral-700 dark:text-neutral-300 font-medium">
-                                                Leader: <span className="font-semibold text-black dark:text-white">{p.studentName}</span>
+                                                Leader: <span className="font-medium text-black dark:text-white">{p.studentName}</span>
                                             </p>
                                             <p className='text-xs text-neutral-400 dark:text-neutral-500 '>
                                             {p.studentEmail !== 'N/A' && <span className=" text-black dark:text-white"> {p.studentEmail}</span>}
@@ -186,14 +186,14 @@ const ManualPaymentsTab = ({
                                             </p>
                                             {/* {p.teamMembers && p.teamMembers.length > 0 && (
                                                 <p className="text-[11px] text-neutral-400 dark:text-neutral-500 leading-tight">
-                                                    <span className="font-semibold">Teammates: </span>
+                                                    <span className="font-medium">Teammates: </span>
                                                     {p.teamMembers.map(m => m.name).filter(Boolean).join(', ')}
                                                 </p>
                                             )} */}
                                         </div>
                                     ) : (
                                         <div>
-                                            <p className="font-semibold text-black dark:text-white flex items-center gap-1.5">
+                                            <p className="font-medium text-black dark:text-white flex items-center gap-1.5">
                                                 
                                                 {p.studentName}
                                             </p>
@@ -207,7 +207,7 @@ const ManualPaymentsTab = ({
 
                                 <Td>
                                     {p.transactionId ? (
-                                        <span className="font-mono text-xs font-bold text-black dark:text-white">{p.transactionId}</span>
+                                        <span className="font-mono text-xs font-semibold text-black dark:text-white">{p.transactionId}</span>
                                     ) : (
                                         <span className="text-neutral-400 text-xs italic">No UTR submitted</span>
                                     )}
@@ -218,7 +218,7 @@ const ManualPaymentsTab = ({
                                 <Td className="font-mono font-black text-brand-600 dark:text-brand-400 text-base">₹{p.amountPaid}</Td>
 
                                 <Td>
-                                    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg border ${
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-lg border ${
                                         ['APPROVED', 'SUCCESS'].includes(p.paymentStatus)
                                             ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
                                             : p.paymentStatus === 'REJECTED'

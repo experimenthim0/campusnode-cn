@@ -12,13 +12,13 @@ const CentralStaffDelegation = ({
     return (
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center rounded-2xl shadow-xs">
         <Shield className="mx-auto text-neutral-400 mb-3" size={44} />
-        <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-200">No Central Events Available</h3>
+        <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">No Central Events Available</h3>
         <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
           Create a college-wide event first to delegate event staff and scanner operators.
         </p>
         <button
           onClick={onCreateClick}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
         >
           <PlusCircle size={15} />
           Create College Event
@@ -33,7 +33,7 @@ const CentralStaffDelegation = ({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
             Managing Staff For
           </p>
           <h3 className="text-base font-black text-neutral-900 dark:text-neutral-100">
@@ -48,7 +48,7 @@ const CentralStaffDelegation = ({
               const ev = events.find((x) => x.id === e.target.value);
               if (ev) setSelectedEvent(ev);
             }}
-            className="px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
           >
             {events.map((ev) => (
               <option key={ev.id} value={ev.id}>

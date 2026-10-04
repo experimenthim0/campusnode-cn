@@ -139,7 +139,7 @@ const VenueTimelineView = ({
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold">
           <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Technical
           </span>
@@ -212,7 +212,7 @@ const VenueTimelineView = ({
                   >
                     <div className="flex items-center gap-2 truncate">
                       <Building2 size={15} className="text-neutral-400 shrink-0" />
-                      <span className="text-xs font-bold text-black dark:text-white truncate">
+                      <span className="text-xs font-semibold text-black dark:text-white truncate">
                         {venueName}
                       </span>
                     </div>
@@ -241,7 +241,7 @@ const VenueTimelineView = ({
                         <div
                           key={b.id || b._id}
                           style={{ left: `${leftPx}px`, width: `${widthPx}px` }}
-                          className="absolute top-2 bottom-2 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 overflow-hidden shadow-sm"
+                          className="absolute top-2 bottom-2 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2 overflow-hidden shadow-sm"
                         >
                           <AlertTriangle size={14} className="text-rose-500 shrink-0" />
                           <div className="truncate">
@@ -271,7 +271,7 @@ const VenueTimelineView = ({
                           onDragStart={(e) => handleDragStart(e, event, "move")}
                           onClick={() => onSelectEvent(event)}
                           style={{ left: `${leftPx}px`, width: `${widthPx}px` }}
-                          className={`absolute top-2 bottom-2 z-10 p-2.5 rounded-2xl border text-xs font-semibold shadow-sm transition-all hover:scale-[1.01] hover:shadow-md cursor-grab active:cursor-grabbing flex flex-col justify-between overflow-hidden group/block ${colorClass}`}
+                          className={`absolute top-2 bottom-2 z-10 p-2.5 rounded-2xl border text-xs font-medium shadow-sm transition-all hover:scale-[1.01] hover:shadow-md cursor-grab active:cursor-grabbing flex flex-col justify-between overflow-hidden group/block ${colorClass}`}
                         >
                           <div className="flex items-center justify-between gap-1 leading-tight mb-1">
                             <h5 className="font-extrabold text-xs text-black dark:text-white truncate">
@@ -283,7 +283,7 @@ const VenueTimelineView = ({
                             />
                           </div>
 
-                          <div className="flex items-center justify-between text-[10px] font-bold opacity-90">
+                          <div className="flex items-center justify-between text-[10px] font-semibold opacity-90">
                             <span className="truncate">{event.club?.clubName || "Club"}</span>
                             <span className="shrink-0">{startStr} - {endStr}</span>
                           </div>

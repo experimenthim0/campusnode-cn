@@ -69,7 +69,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
           {showViewAll && (
             <Link
               to="/featured-events"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs group"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs group"
             >
               <span>View all featured</span>
               <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
@@ -79,13 +79,15 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
       </ScrollReveal>
 
       {/* 3 Cards in One Row on Desktop, Horizontal Scroll on Mobile with Scroll Animations */}
-      <div className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory p-1 pb-4 md:p-1.5 md:pb-2">
+      <div
+        className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y no-scrollbar snap-x snap-mandatory px-1 pt-2 pb-5 md:p-1.5 md:pb-2"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none", overflowY: "hidden" }}
+      >
         {events.map((event, i) => (
           <ScrollReveal
             key={event.id}
-            direction="up"
+            direction="none"
             delay={0.06 * (i % 3)}
-            distance={24}
             className="min-w-[290px] sm:min-w-[320px] md:min-w-0 flex-1 snap-start h-full"
           >
             <FeaturedEventCard event={event} />

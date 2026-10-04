@@ -128,7 +128,7 @@ export const ColorExtractorCard = ({
       </div>
 
       <div className="p-6 flex flex-col flex-grow relative z-10">
-        <h3 className="text-xl font-semibold text-white tracking-tight mb-2 group-hover:text-neutral-100 transition-colors duration-300">
+        <h3 className="text-xl font-medium text-white tracking-tight mb-2 group-hover:text-neutral-100 transition-colors duration-300">
           {title}
         </h3>
         <p className="text-sm text-neutral-400 leading-relaxed font-normal flex-grow">
@@ -138,7 +138,7 @@ export const ColorExtractorCard = ({
         {/* Decorative dynamic badge to show styling interaction */}
         {isColorLoaded && rgb && (
           <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold">
+            <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium">
               Dominant Palette
             </span>
             <div className="flex gap-1.5">

@@ -39,11 +39,11 @@ const RecommendedActions = ({ recommendations = [] }) => {
   return (
     <section aria-label="Actionable Recommendations for Next Event" className="p-5 md:p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/90 dark:border-neutral-700/60 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200/60 dark:border-neutral-700/60 pb-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Lightbulb className="w-4 h-4 text-amber-500" aria-hidden="true" />
           <span>Recommended Actions for Next Event</span>
         </h4>
-        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
           Ranked by operational priority
         </span>
       </div>
@@ -60,7 +60,7 @@ const RecommendedActions = ({ recommendations = [] }) => {
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <h5 className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                  <h5 className="text-xs font-semibold text-slate-900 dark:text-white leading-snug">
                     {rec.title}
                   </h5>
                   <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${pConfig.badge}`}>

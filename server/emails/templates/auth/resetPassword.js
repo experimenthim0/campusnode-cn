@@ -33,7 +33,7 @@ export const resetPasswordTemplate = {
       
 
       ${BodyText({
-      children: "We received a request to reset your CampusNode account password. Click the button above to choose a new password.",
+      children: "We received a request to reset your CampusNode account password. Click the button to choose a new password.",
       align: "center",
       style: "margin: 0 0 12px 0;",
     })}
@@ -53,7 +53,7 @@ export const resetPasswordTemplate = {
       style: "margin: 0 0 20px 0; word-break: break-all;",
     })}
 
-    
+      ${SecurityMetadataCard({ device, location, ipAddress, time: resolvedTime })}
     `.trim();
   },
 };

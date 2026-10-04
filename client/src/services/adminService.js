@@ -96,3 +96,10 @@ export const searchStudents = (query) =>
 
 export const searchFaculty = (query) =>
   api.get(`/api/admin/faculty/search?q=${encodeURIComponent(query)}`);
+
+// Club Faculty Coordinators (Multi-coordinator management)
+export const addClubFacultyCoordinator = (clubId, data) =>
+  api.post(`/api/admin/clubs/${clubId}/coordinators`, data);
+
+export const removeClubFacultyCoordinator = (clubId, facultyId) =>
+  api.delete(`/api/admin/clubs/${clubId}/coordinators/${facultyId}`);

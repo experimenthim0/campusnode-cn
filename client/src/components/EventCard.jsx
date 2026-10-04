@@ -234,18 +234,18 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 {/* Status Badge */}
                 <div className="absolute top-1 left-1.5">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">
+                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md uppercase">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
                     )}
                     {!isLive && status === 'UPCOMING' && (
-                        <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
+                        <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
                             Upcoming
                         </span>
                     )}
                     {isEnded && (
-                        <span className="inline-flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs">
+                        <span className="inline-flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs">
                             Ended
                         </span>
                     )}
@@ -276,7 +276,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                     ))}
                                 </div>
                                 <Handshake size={13} className="text-brand-500 shrink-0" />
-                                <span className="truncate text-brand-600 text-[11px] font-semibold">
+                                <span className="truncate text-brand-600 text-[11px] font-medium">
                                     {jointNames}
                                 </span>
                             </div>
@@ -296,7 +296,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                     }}
                                 />
                             </div>
-                            <span className="truncate text-brand-600 text-[12px] font-semibold">
+                            <span className="truncate text-brand-600 text-[12px] font-medium">
                                 {primaryClubName}
                             </span>
                         </div>
@@ -345,19 +345,19 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         <div className="w-5 flex items-center justify-center shrink-0">
                                             <i className="ri-trophy-fill text-brand-600 text-sm" />
                                         </div>
-                                        <span className="text-[11px] font-bold tracking-wider text-brand-600 uppercase">Winners</span>
+                                        <span className="text-[11px] font-semibold tracking-wider text-brand-600 uppercase">Winners</span>
                                     </div>
                                     {/* Winner Rows */}
                                     {event.winners.map((winner, index) => (
                                         <div key={index} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/40 p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
+                                                <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
                                                         winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
                                                             'bg-brand-100 dark:bg-brand-950/40 text-brand-855 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60'
                                                     }`}>
                                                     #{winner.rank}
                                                 </span>
-                                                <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
+                                                <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">{winner.name}</span>
                                             </div>
                                             {winner.rank === 1 && <i className="ri-medal-fill text-tier-gold" />}
                                             {winner.rank === 2 && <i className="ri-medal-fill text-tier-silver" />}
@@ -471,7 +471,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                
                     {entryFee !== 0 && (
                         <span
-                            className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
                         >
                             <i className="ri-money-rupee-circle-line" /> ₹{entryFee}
                         </span>
@@ -481,14 +481,14 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     {isRegistered ? (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className="flex-1 inline-flex items-center justify-center py-2.5 px-4 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer shadow-xs hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                            className="flex-1 inline-flex items-center justify-center py-2.5 px-4 bg-emerald-50 dark:bg-emerald-950/45 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 rounded-full text-xs font-medium uppercase tracking-wider cursor-pointer shadow-xs hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-950/80 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                         >
                             View Event
                         </Link>
                     ) : (
                         <Link
                             to={`/event/${slug || _id}`}
-                            className={`flex-1 inline-flex items-center justify-center py-2.5 px-4 rounded-full text-xs font-semibold tracking-wider border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer ${(isEnded || isLive)
+                            className={`flex-1 inline-flex items-center justify-center py-2.5 px-4 rounded-full text-xs font-medium tracking-wider border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer ${(isEnded || isLive)
                                     ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 shadow-xs hover:shadow-md'
                                     : event.registrationType === 'none'
                                         ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30'

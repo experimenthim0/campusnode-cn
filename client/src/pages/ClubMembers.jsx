@@ -75,7 +75,7 @@ const MemberAvatar = ({ name, image }) => {
     .toUpperCase() ?? "??";
 
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 text-xs font-semibold border border-brand-200/50 dark:border-brand-900/50">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 text-xs font-medium border border-brand-200/50 dark:border-brand-900/50">
       {initials}
     </div>
   );
@@ -108,11 +108,38 @@ const PermissionToggle = ({ active, onToggle, disabled = false, loading = false 
 const ClubMembers = () => {
   const { clubId } = useParams();
   const { user: authUser } = useAuth();
-  const isAdmin =
+  const role = localStorage.getItem("role") || authUser?.role;
+  const isAdmin = Boolean(
+    role === "admin" ||
+    role === "SUPER_ADMIN" ||
     authUser?.role === "admin" ||
     authUser?.role === "SUPER_ADMIN" ||
     authUser?.userType === "admin" ||
-    authUser?.principalType === "ADMIN";
+    authUser?.principalType === "ADMIN"
+  );
+
+  const isStudent = Boolean(
+    authUser?.principalType === "STUDENT" ||
+    authUser?.userType === "student" ||
+    authUser?.rollNo
+  );
+
+  const isFacultyCoordinator = Boolean(
+    !isStudent &&
+    (role === "facultyCoordinator" ||
+      role === "faculty" ||
+      authUser?.role === "facultyCoordinator" ||
+      authUser?.role === "faculty" ||
+      authUser?.userType === "faculty" ||
+      authUser?.principalType === "FACULTY" ||
+      authUser?.memberships?.some(
+        (m) => m.role === "FACULTY_COORDINATOR" || m.role === "facultyCoordinator" || m.role === "FACULTY"
+      )) &&
+    (String(authUser?.clubId) === String(clubId) ||
+      authUser?.memberships?.some((m) => String(m.clubId) === String(clubId)))
+  );
+
+  const canManageLead = !isStudent && (isAdmin || isFacultyCoordinator);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inviting, setInviting] = useState(false);
@@ -211,8 +238,8 @@ const ClubMembers = () => {
       return;
     }
     if (selectedRole === ClubMemberRole.CLUB_HEAD) {
-      if (!isAdmin) {
-        toast.error("Only administrators can assign the Student Lead role. Use the Admin Panel.");
+      if (!canManageLead) {
+        toast.error("Only administrators and faculty coordinators can assign the Student Lead role.");
         return;
       }
       if (activeStudentLead) {
@@ -247,6 +274,10 @@ const ClubMembers = () => {
 
   const handleTransferLeadership = async (e) => {
     e?.preventDefault();
+    if (!canManageLead) {
+      toast.error("Only faculty coordinators and administrators can transfer the Student Lead role.");
+      return;
+    }
     if (!selectedNewLeadId) {
       toast.error("Please select a member to transfer Student Lead role to.");
       return;
@@ -355,14 +386,14 @@ const ClubMembers = () => {
       return;
     }
 
-    if (member.role === ClubMemberRole.CLUB_HEAD && !isAdmin) {
-      toast.error("Student Lead role can only be changed by an administrator in the Admin Panel.");
+    if (member.role === ClubMemberRole.CLUB_HEAD && !canManageLead) {
+      toast.error("Student Lead role can only be changed by an administrator or faculty coordinator.");
       return;
     }
 
     if (newRole === ClubMemberRole.CLUB_HEAD) {
-      if (!isAdmin) {
-        toast.error("Only administrators can assign the Student Lead role.");
+      if (!canManageLead) {
+        toast.error("Only administrators and faculty coordinators can assign the Student Lead role.");
         return;
       }
       if (member.currentHeadClub) {
@@ -462,7 +493,7 @@ const ClubMembers = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <ShimmerText text="Loading members..." className="text-sm font-semibold tracking-wide" />
+        <ShimmerText text="Loading members..." className="text-sm font-medium tracking-wide" />
       </div>
     );
   }
@@ -476,7 +507,7 @@ const ClubMembers = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Team Management Restricted
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
@@ -500,22 +531,22 @@ const ClubMembers = () => {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 md:px-6 py-8 md:py-12">
+    <div className="mx-auto max-w-6xl px-4 md:px-6 py-8 md:py-12">
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <Link
             to={`/club-events/${clubId}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Club Events
           </Link>
-          <h1 className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">Team Management</h1>
+          <h1 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">Team Management</h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Manage club members, leadership designations, and event editing permissions.
           </p>
         </div>
-        {isAdmin && activeStudentLead && (
+        {canManageLead && activeStudentLead && (
           <Button
             variant="outline"
             size="sm"
@@ -534,33 +565,33 @@ const ClubMembers = () => {
       <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-3.5 border-border bg-card shadow-2xs">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">Student Lead</p>
+            <p className="text-[11px] font-medium tracking-wider text-muted-foreground">Student Lead</p>
             <Badge variant="outline" className="text-[9px] font-medium text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
-              Admin Designated
+              Faculty Designated
             </Badge>
           </div>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground truncate">
+            <span className="text-sm font-medium text-foreground truncate">
               {activeStudentLead?.student?.name || "Not assigned"}
             </span>
-            <Badge variant="secondary" className="text-[10px] font-semibold">
+            <Badge variant="secondary" className="text-[10px] font-medium">
               {activeStudentLead ? "1 / 1" : "0 / 1"}
             </Badge>
           </div>
           <p className="mt-1 text-[10px] text-muted-foreground truncate">
-            {activeStudentLead ? "Appointed by Institute Administration" : "Pending appointment in Admin Panel"}
+            {activeStudentLead ? "Appointed by Faculty Coordinator" : "Pending appointment by Faculty Coordinator"}
           </p>
         </Card>
 
         <Card className="p-3.5 border-border bg-card shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Coordinators</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Coordinators</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">
+            <span className="text-sm font-medium text-foreground">
               {coordinatorCount} Active
             </span>
             <Badge
               variant="outline"
-              className={`text-[10px] font-semibold ${
+              className={`text-[10px] font-medium ${
                 isCoordinatorLimitReached
                   ? "border-destructive text-destructive bg-destructive/10"
                   : "border-sky-200 text-sky-600 bg-sky-50 dark:bg-sky-950/30"
@@ -573,12 +604,12 @@ const ClubMembers = () => {
         </Card>
 
         <Card className="p-3.5 border-border bg-card shadow-2xs">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Team</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Total Team</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">
+            <span className="text-sm font-medium text-foreground">
               {members.filter((m) => !m.isClubAccount).length} Members
             </span>
-            <Badge variant="secondary" className="text-[10px] font-semibold">
+            <Badge variant="secondary" className="text-[10px] font-medium">
               Active
             </Badge>
           </div>
@@ -628,7 +659,7 @@ const ClubMembers = () => {
                       }`}
                     >
                       <div>
-                        <p className="text-xs font-semibold text-foreground">{st.name}</p>
+                        <p className="text-xs font-medium text-foreground">{st.name}</p>
                         <p className="text-[11px] text-muted-foreground">
                           {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
                         </p>
@@ -646,7 +677,7 @@ const ClubMembers = () => {
                           Already in team
                         </Badge>
                       ) : (
-                        <span className="text-[11px] font-semibold text-brand-600">
+                        <span className="text-[11px] font-medium text-brand-600">
                           Select
                         </span>
                       )}
@@ -681,7 +712,7 @@ const ClubMembers = () => {
               <option value={ClubMemberRole.COORDINATOR} disabled={isCoordinatorLimitReached}>
                 Coordinator {isCoordinatorLimitReached ? "(Max 5 reached)" : ""}
               </option>
-              {isAdmin && (
+              {canManageLead && (
                 <option value={ClubMemberRole.CLUB_HEAD} disabled={!!activeStudentLead}>
                   Student Lead {activeStudentLead ? "(Already Assigned)" : ""}
                 </option>
@@ -691,7 +722,7 @@ const ClubMembers = () => {
             <Button
               type="submit"
               disabled={inviting || (selectedRole === ClubMemberRole.CLUB_HEAD && !!selectedStudent?.currentHeadClub)}
-              className="h-10 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-10 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-xl shadow-xs gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {inviting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {inviting ? "Adding…" : "Add Member"}
@@ -702,7 +733,7 @@ const ClubMembers = () => {
           {selectedStudent && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs">
-                <span className="font-semibold text-emerald-800 dark:text-emerald-300">Selected Student:</span>
+                <span className="font-medium text-emerald-800 dark:text-emerald-300">Selected Student:</span>
                 <span className="text-foreground font-medium">{selectedStudent.name}</span>
                 <span className="text-muted-foreground">({selectedStudent.email})</span>
                 {selectedStudent.currentHeadClub && (
@@ -747,12 +778,12 @@ const ClubMembers = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border bg-muted/30">
-                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Member</TableHead>
-                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Role</TableHead>
-                <TableHead className="text-xs font-semibold tracking-wider text-muted-foreground">Designation</TableHead>
-                <TableHead className="text-center text-xs font-semibold tracking-wider text-muted-foreground">Attendance</TableHead>
-                <TableHead className="text-center text-xs font-semibold tracking-wider text-muted-foreground">Events</TableHead>
-                <TableHead className="text-right text-xs font-semibold tracking-wider text-muted-foreground">Actions</TableHead>
+                <TableHead className="text-xs font-medium tracking-wider text-muted-foreground">Member</TableHead>
+                <TableHead className="text-xs font-medium tracking-wider text-muted-foreground">Role</TableHead>
+                <TableHead className="text-xs font-medium tracking-wider text-muted-foreground">Designation</TableHead>
+                <TableHead className="text-center text-xs font-medium tracking-wider text-muted-foreground">Attendance</TableHead>
+                <TableHead className="text-center text-xs font-medium tracking-wider text-muted-foreground">Events</TableHead>
+                <TableHead className="text-right text-xs font-medium tracking-wider text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -789,7 +820,7 @@ const ClubMembers = () => {
                               </Badge>
                             )}
                             {member.isClubAccount && (
-                              <Badge variant="outline" className="text-[10px] font-semibold py-0 px-1.5 text-brand-600 border-brand-200">
+                              <Badge variant="outline" className="text-[10px] font-medium py-0 px-1.5 text-brand-600 border-brand-200">
                                 Primary Owner
                               </Badge>
                             )}
@@ -817,9 +848,9 @@ const ClubMembers = () => {
                           <Badge variant="outline" className="gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 border-amber-200 bg-amber-50 dark:bg-amber-950/30">
                             <Crown className="w-3.5 h-3.5 text-amber-500" /> Student Lead
                           </Badge>
-                          {!isAdmin && (
+                          {!canManageLead && (
                             <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline">
-                              (Admin assigned)
+                              (Designated)
                             </span>
                           )}
                         </div>
@@ -839,7 +870,7 @@ const ClubMembers = () => {
                           >
                             <option value={ClubMemberRole.COORDINATOR}>Coordinator</option>
                             <option value={ClubMemberRole.MEMBER}>Member</option>
-                            {isAdmin && (
+                            {canManageLead && (
                               <option
                                 value={ClubMemberRole.CLUB_HEAD}
                                 disabled={!!member.currentHeadClub}
@@ -988,12 +1019,12 @@ const ClubMembers = () => {
 
                     {/* Remove Action */}
                     <TableCell className="py-3.5 text-right">
-                      {member.isClubAccount || isSelf || (member.role === ClubMemberRole.CLUB_HEAD && !isAdmin) ? (
+                      {member.isClubAccount || isSelf || (member.role === ClubMemberRole.CLUB_HEAD && !canManageLead) ? (
                         <span
                           className="inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground/40 cursor-not-allowed"
                           title={
                             member.role === ClubMemberRole.CLUB_HEAD
-                              ? "Student Lead can only be removed or changed by an Administrator in the Admin Panel"
+                              ? "Student Lead can only be removed or changed by an Administrator or Faculty Coordinator"
                               : isSelf
                               ? "You cannot remove yourself from the club"
                               : "Official Club Account is permanent and cannot be removed"
@@ -1025,6 +1056,78 @@ const ClubMembers = () => {
           </Table>
         )}
       </Card>
+
+      {/* Transfer Leadership Modal */}
+      {canManageLead && isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 animate-in fade-in-0 zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">Transfer Leadership</h3>
+                  <p className="text-xs text-muted-foreground">Select a club member to become the new Student Lead</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTransferModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {activeStudentLead && (
+              <div className="p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300">
+                Current Lead: <span className="font-medium">{activeStudentLead.student?.name}</span> ({activeStudentLead.student?.email}) will revert to member status.
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-foreground">New Student Lead</label>
+              <select
+                value={selectedNewLeadId}
+                onChange={(e) => setSelectedNewLeadId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:border-brand-500 focus:outline-none"
+              >
+                <option value="">-- Choose Member --</option>
+                {members
+                  .filter((m) => !m.isClubAccount && m.role !== ClubMemberRole.CLUB_HEAD)
+                  .map((m) => (
+                    <option key={m.id || m._id} value={m.id || m._id} disabled={!!m.currentHeadClub}>
+                      {m.student?.name || m.email} ({m.student?.rollNo || m.role}) {m.currentHeadClub ? `[Already Lead of ${m.currentHeadClub.clubName}]` : ""}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTransferModalOpen(false)}
+                disabled={transferring}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleTransferLeadership}
+                disabled={!selectedNewLeadId || transferring}
+                className="bg-brand-500 hover:bg-brand-600 text-white gap-1.5"
+              >
+                {transferring && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{transferring ? "Transferring..." : "Confirm Transfer"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

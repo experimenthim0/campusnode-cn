@@ -87,10 +87,10 @@ const EventRowSection = ({
       {/* Row Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
         <div>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border ${badgeClass}`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 border ${badgeClass}`}>
             {badgeIcon}
             <span>{badgeText}</span>
-            <span className="opacity-60 text-[11px] font-semibold">({events.length})</span>
+            <span className="opacity-60 text-[11px] font-medium">({events.length})</span>
           </div>
           <h3 className="font-black text-xl sm:text-2xl text-neutral-900 dark:text-white leading-tight tracking-tight">
             {title}
@@ -125,7 +125,7 @@ const EventRowSection = ({
           {/* Direct link to filter in events page */}
           <Link
             to={statusParam ? `/events?status=${statusParam}` : '/events'}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:border-cn-blue-500/40 transition-all duration-200 shadow-2xs hover:shadow-xs group"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-200/90 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/90 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:border-cn-blue-500/40 transition-all duration-200 shadow-2xs hover:shadow-xs group"
           >
             <span>View All</span>
             <i className="ri-arrow-right-line text-xs transition-transform group-hover:translate-x-1" />
@@ -138,8 +138,8 @@ const EventRowSection = ({
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="flex gap-5 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory py-2 px-1 scroll-smooth"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex gap-5 sm:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-y no-scrollbar snap-x snap-mandatory pt-2 pb-5 px-1 scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'hidden' }}
         >
           {events.map(event => (
             <div
@@ -291,7 +291,7 @@ const EventsCarousel = () => {
     <div className="w-full">
       {/* Section Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-bold text-xs uppercase tracking-widest mb-1.5">
+        <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
           <span className="w-2 h-2 rounded-full bg-cn-blue-600 dark:bg-cn-blue-400" />
           <span>Latest Happenings</span>
         </div>

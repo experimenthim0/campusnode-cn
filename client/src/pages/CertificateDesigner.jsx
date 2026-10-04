@@ -813,7 +813,7 @@ const CertificateDesigner = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <ShimmerText text="Loading certificate designer..." className="text-sm font-semibold tracking-wide" />
+        <ShimmerText text="Loading certificate designer..." className="text-sm font-medium tracking-wide" />
       </div>
     );
   }
@@ -832,11 +832,11 @@ const CertificateDesigner = () => {
                 </div>
               </div>
 
-              <Badge variant="outline" className="gap-1.5 text-[11px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 mb-3">
+              <Badge variant="outline" className="gap-1.5 text-[11px] font-medium uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 mb-3">
                 <Laptop className="w-3 h-3" /> Desktop or Laptop Recommended
               </Badge>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-2">
+              <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight mb-2">
                 Precision Studio Workspace
               </h2>
 
@@ -902,7 +902,7 @@ const CertificateDesigner = () => {
             </span>
             <button
               onClick={() => setAllowMobileView(false)}
-              className="text-amber-900 dark:text-amber-200 font-semibold underline cursor-pointer ml-2 shrink-0"
+              className="text-amber-900 dark:text-amber-200 font-medium underline cursor-pointer ml-2 shrink-0"
             >
               Exit
             </button>
@@ -924,7 +924,7 @@ const CertificateDesigner = () => {
               </Button>
               <Separator orientation="vertical" className="h-5" />
               <div className="min-w-0 flex items-center gap-2">
-                <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
                   Certificate Designer
                 </span>
                 {event?.title && (
@@ -948,7 +948,7 @@ const CertificateDesigner = () => {
                 size="sm"
                 onClick={handleSave}
                 disabled={!canSave || saving}
-                className="h-8 text-xs font-semibold"
+                className="h-8 text-xs font-medium"
               >
                 {saving ? "Saving…" : "Save Template"}
               </Button>
@@ -970,7 +970,7 @@ const CertificateDesigner = () => {
               <Card className="border-border shadow-xs bg-card">
                 <CardHeader className="pb-3 pt-4 px-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       1 · Background Canvas
                     </CardTitle>
                     {imageUrl && (
@@ -1005,7 +1005,7 @@ const CertificateDesigner = () => {
                     ) : imageUrl ? (
                       <>
                         <Check className="w-5 h-5 text-emerald-500" />
-                        <span className="text-xs font-semibold text-foreground">
+                        <span className="text-xs font-medium text-foreground">
                           Replace Template Artwork
                         </span>
                         <span className="text-[11px] text-muted-foreground">
@@ -1015,7 +1015,7 @@ const CertificateDesigner = () => {
                     ) : (
                       <>
                         <Upload className="w-5 h-5 text-muted-foreground" />
-                        <span className="text-xs font-semibold text-foreground">
+                        <span className="text-xs font-medium text-foreground">
                           Upload Certificate Artwork
                         </span>
                         <span className="text-[11px] text-muted-foreground">
@@ -1031,7 +1031,7 @@ const CertificateDesigner = () => {
               <Card className="border-border shadow-xs bg-card">
                 <CardHeader className="pb-3 pt-4 px-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       2 · Active Element
                     </CardTitle>
                     <span className="text-[11px] text-muted-foreground">
@@ -1062,7 +1062,7 @@ const CertificateDesigner = () => {
                         <Type className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold leading-tight">Name</p>
+                        <p className="text-xs font-medium leading-tight">Name</p>
                         <p className="text-[10px] text-muted-foreground truncate">
                           {rect ? "Placed" : "Draw box"}
                         </p>
@@ -1089,7 +1089,7 @@ const CertificateDesigner = () => {
                         <Hash className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold leading-tight">Roll No</p>
+                        <p className="text-xs font-medium leading-tight">Roll No</p>
                         <p className="text-[10px] text-muted-foreground truncate">
                           {showRollNo ? (rollNoRect ? "Active" : "Enabled") : "Off"}
                         </p>
@@ -1116,7 +1116,7 @@ const CertificateDesigner = () => {
                         <Trophy className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold leading-tight">Award</p>
+                        <p className="text-xs font-medium leading-tight">Award</p>
                         <p className="text-[10px] text-muted-foreground truncate">
                           {showPosition ? (positionRect ? "Active" : "Enabled") : "Off"}
                         </p>
@@ -1143,7 +1143,7 @@ const CertificateDesigner = () => {
                         <QrIcon className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold leading-tight">QR Code</p>
+                        <p className="text-xs font-medium leading-tight">QR Code</p>
                         <p className="text-[10px] text-muted-foreground truncate">
                           {showQr ? (qrRect ? "Active" : "Enabled") : "Off"}
                         </p>
@@ -1159,7 +1159,7 @@ const CertificateDesigner = () => {
                   <div className="flex items-center justify-between pb-2 border-b border-border">
                     <div className="flex items-center gap-2">
                       <Sliders className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-foreground">
+                      <span className="text-xs font-medium text-foreground">
                         {activeElement === "name" && "Student Name Settings"}
                         {activeElement === "rollNo" && "Roll Number Settings"}
                         {activeElement === "position" && "Award Position Settings"}
@@ -1176,7 +1176,7 @@ const CertificateDesigner = () => {
                           onChange={(e) => setShowRollNo(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600" />
+                        <div className="w-8 h-4 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600" />
                       </label>
                     )}
                     {activeElement === "position" && (
@@ -1187,7 +1187,7 @@ const CertificateDesigner = () => {
                           onChange={(e) => setShowPosition(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-600" />
+                        <div className="w-8 h-4 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-600" />
                       </label>
                     )}
                     {activeElement === "qr" && (
@@ -1198,7 +1198,7 @@ const CertificateDesigner = () => {
                           onChange={(e) => setShowQr(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600" />
+                        <div className="w-8 h-4 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600" />
                       </label>
                     )}
                   </div>
@@ -1248,7 +1248,7 @@ const CertificateDesigner = () => {
                                     }}
                                     className={`w-full px-3 py-2 text-left text-xs sm:text-sm hover:bg-muted/60 transition-all border-b border-border/50 last:border-0 ${
                                       font === f.id
-                                        ? "bg-primary/10 text-primary font-semibold"
+                                        ? "bg-primary/10 text-primary font-medium"
                                         : "text-foreground"
                                     }`}
                                     style={{
@@ -1319,7 +1319,7 @@ const CertificateDesigner = () => {
                               onClick={() => setAlign(a)}
                               className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
                                 align === a
-                                  ? "bg-card text-foreground shadow-xs font-semibold"
+                                  ? "bg-neutral-200 text-foreground shadow-xs font-medium"
                                   : "text-muted-foreground hover:text-foreground"
                               }`}
                             >
@@ -1452,7 +1452,7 @@ const CertificateDesigner = () => {
                                   onClick={() => setRollNoAlign(a)}
                                   className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
                                     rollNoAlign === a
-                                      ? "bg-card text-foreground shadow-xs font-semibold"
+                                      ? "bg-card text-foreground shadow-xs font-medium"
                                       : "text-muted-foreground hover:text-foreground"
                                   }`}
                                 >
@@ -1635,7 +1635,7 @@ const CertificateDesigner = () => {
                                   onClick={() => setPositionAlign(a)}
                                   className={`py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer ${
                                     positionAlign === a
-                                      ? "bg-card text-foreground shadow-xs font-semibold"
+                                      ? "bg-card text-foreground shadow-xs font-medium"
                                       : "text-muted-foreground hover:text-foreground"
                                   }`}
                                 >
@@ -1659,7 +1659,7 @@ const CertificateDesigner = () => {
                                     onClick={() => setPreviewPosition(pos)}
                                     className={`py-1.5 px-2 text-[11px] font-medium rounded-md border transition-all cursor-pointer ${
                                       previewPosition === pos
-                                        ? "border-amber-500 bg-amber-500/10 text-foreground font-semibold"
+                                        ? "border-amber-500 bg-amber-500/10 text-foreground font-medium"
                                         : "border-border text-muted-foreground hover:text-foreground"
                                     }`}
                                   >
@@ -1776,7 +1776,7 @@ const CertificateDesigner = () => {
                           </div>
 
                           <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-[11px] text-purple-800 dark:text-purple-300 leading-relaxed space-y-1">
-                            <p className="font-semibold flex items-center gap-1.5">
+                            <p className="font-medium flex items-center gap-1.5">
                               <QrIcon className="w-3.5 h-3.5 shrink-0" />
                               Cryptographic Verification
                             </p>
@@ -1825,7 +1825,7 @@ const CertificateDesigner = () => {
                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
                         <span>
                           Editing:{" "}
-                          <strong className="text-foreground capitalize font-semibold">
+                          <strong className="text-foreground capitalize font-medium">
                             {activeElement === "name" && "Student Name"}
                             {activeElement === "rollNo" && "Roll Number"}
                             {activeElement === "position" && "Award Position"}
@@ -1859,7 +1859,7 @@ const CertificateDesigner = () => {
                       <div className="w-16 h-16 rounded-2xl bg-card shadow-xs border border-border flex items-center justify-center mx-auto mb-4 text-muted-foreground">
                         <Award className="w-8 h-8" />
                       </div>
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-medium text-foreground">
                         No Template Uploaded
                       </p>
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed">

@@ -35,6 +35,11 @@ const ClubCardSkeleton = ({ className }) => {
           <Skeleton className="w-36 sm:w-44 h-6 rounded-md" />
         </div>
 
+        {/* Category Badge Skeleton */}
+        <div className="flex justify-center mb-3">
+          <Skeleton className="w-20 h-5 rounded-full" />
+        </div>
+
         {/* Faculty Lead & Student Lead Section */}
         <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5 pb-2 text-left flex flex-row justify-between gap-3">
           <div className="space-y-1">

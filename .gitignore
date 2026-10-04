@@ -63,8 +63,17 @@ server/utils/__tests__/*
 server/services/__tests__/*
 server/scratch/*
 server/middleware/__tests__/*
+server/controllers/__tests__/*
 
 
 skills-lock.json
 
 FeatureTobeADDED.md
+
+# Server scripts (only track required operational tools and admin seeds)
+server/scripts/*
+!server/scripts/seed*admin*.js
+!server/scripts/db-safety-guard.js
+!server/scripts/generate-staging-secrets.js
+!server/scripts/rotate-key.js
+!server/scripts/generate-qr-keypair.js

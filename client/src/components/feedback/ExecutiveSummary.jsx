@@ -18,7 +18,7 @@ const ExecutiveSummary = ({ summary, sentiment, keyTakeaways }) => {
     <div className="space-y-4">
       <div className="p-5 md:p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/90 dark:border-neutral-700/60 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Executive Summary
           </span>
           <span className={`px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border ${sentimentBadgeClass}`}>
@@ -33,7 +33,7 @@ const ExecutiveSummary = ({ summary, sentiment, keyTakeaways }) => {
       {/* Key Takeaways Grid */}
       {Array.isArray(keyTakeaways) && keyTakeaways.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
             <span>Key Takeaways</span>
           </h4>

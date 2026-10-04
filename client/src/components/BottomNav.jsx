@@ -165,7 +165,7 @@ const BottomNav = () => {
                 <span
                   className={`text-[10px] tracking-wide transition-all duration-300 ${
                     active
-                      ? "font-bold text-black dark:text-white"
+                      ? "font-semibold text-black dark:text-white"
                       : "font-medium text-cn-text-muted"
                   }`}
                 >
@@ -224,9 +224,9 @@ const BottomNav = () => {
 
             <div className="flex justify-between items-center px-5 pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
-                <p className="text-[11px] font-bold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
+                <p className="text-[11px] font-semibold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
                 <p className="text-base font-black text-black dark:text-white">{user.name}</p>
-                <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-500 font-bold mt-0.5">
+                <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-500 font-semibold mt-0.5">
                   {Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member')
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
                       ? "Student • Student Lead"
@@ -250,7 +250,7 @@ const BottomNav = () => {
             </div>
 
             <div className="overflow-y-auto px-2 py-1 space-y-0.5">
-              <Link to="/profile" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+              <Link to="/profile" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                 <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
                   <User size={16} />
                 </div>
@@ -259,7 +259,7 @@ const BottomNav = () => {
 
               {/* My Events (Visible for all students, leads & coordinators; hidden for pure official club accounts) */}
               {(!(!user?.rollNo && role === "club") && Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
-                <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                    <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
                      <CalendarDaysIcon size={16} />
                    </div>
@@ -270,7 +270,7 @@ const BottomNav = () => {
 
 
               {!user?.rollNo && role === "club" && (
-                <Link to="/event-calendar" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                <Link to="/event-calendar" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                   <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                     <CalendarCogIcon size={16} />
                   </div>
@@ -282,7 +282,7 @@ const BottomNav = () => {
                 <Link
                   to="/admin-dashboard"
                   onClick={() => setDrawerOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                   <div className="w-7 h-7 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-brand-600 shrink-0">
                     <ShieldCheck size={16} />
@@ -293,7 +293,7 @@ const BottomNav = () => {
 
               {(role === "club" || Boolean(user?.clubId) || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
                 <div className="mt-1.5 pt-1.5 border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="px-3 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Management
                   </p>
 
@@ -302,7 +302,7 @@ const BottomNav = () => {
                       <Link
                         to={`/club-events/${user.clubId || user.id}`}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                           <CalendarCogIcon size={16} />
@@ -312,7 +312,7 @@ const BottomNav = () => {
                       <Link
                         to={`/club/${user.clubId || user.id}/team`}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                           <User size={16} />
@@ -322,7 +322,7 @@ const BottomNav = () => {
                       <Link
                         to={user.clubId || user.id ? `/payments?clubId=${user.clubId || user.id}` : "/payments"}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                           <IndianRupeeIcon size={16} />
@@ -332,7 +332,7 @@ const BottomNav = () => {
                       <Link
                         to={user.clubId || user.id ? `/send-notification?clubId=${user.clubId || user.id}` : "/send-notification"}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                           <ConciergeBellIcon size={16} />
@@ -342,7 +342,7 @@ const BottomNav = () => {
                       <Link
                         to={`/club/edit/${user.clubId || user.id}`}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                       >
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                           <LayoutGridIcon size={16} />
@@ -390,14 +390,14 @@ const BottomNav = () => {
                                 <button
                                   type="button"
                                   onClick={() => setOpenClubId(isOpen ? "" : clubId)}
-                                  className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-bold transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
+                                  className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-semibold transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
                                     <div className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
-                                    <span className="truncate text-neutral-900 dark:text-neutral-100 font-bold text-xs">
+                                    <span className="truncate text-neutral-900 dark:text-neutral-100 font-semibold text-xs">
                                       {m.clubName || "Club"}
                                     </span>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold shrink-0">
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-medium shrink-0">
                                       {isLead ? "Lead" : isCoord ? "Coord" : "Member"}
                                     </span>
                                   </div>
@@ -423,7 +423,7 @@ const BottomNav = () => {
                                         <Link
                                           to={`/club-events/${clubId}`}
                                           onClick={() => setDrawerOpen(false)}
-                                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                          className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                         >
                                           <CalendarCogIcon size={16} className="text-neutral-500 shrink-0" />
                                           Club Events
@@ -433,7 +433,7 @@ const BottomNav = () => {
                                           <Link
                                             to={`/club/${clubId}/team`}
                                             onClick={() => setDrawerOpen(false)}
-                                            className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                            className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                           >
                                             <User size={16} className="text-neutral-500 shrink-0" />
                                             Team Management
@@ -445,7 +445,7 @@ const BottomNav = () => {
                                             <Link
                                               to={`/payments?clubId=${clubId}`}
                                               onClick={() => setDrawerOpen(false)}
-                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                             >
                                               <IndianRupeeIcon size={16} className="text-neutral-500 shrink-0" />
                                               Payments
@@ -453,7 +453,7 @@ const BottomNav = () => {
                                             <Link
                                               to={`/send-notification?clubId=${clubId}`}
                                               onClick={() => setDrawerOpen(false)}
-                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                             >
                                               <ConciergeBellIcon size={16} className="text-neutral-500 shrink-0" />
                                               Notifications
@@ -461,7 +461,7 @@ const BottomNav = () => {
                                             <Link
                                               to={`/club/edit/${clubId}`}
                                               onClick={() => setDrawerOpen(false)}
-                                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                                              className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                                             >
                                               <LayoutGridIcon size={16} className="text-neutral-500 shrink-0" />
                                               Club Settings
@@ -487,11 +487,11 @@ const BottomNav = () => {
 
                     return (
                       <div key={clubId} className="space-y-0.5 mb-1.5 last:mb-0">
-                        <p className="px-3 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                        <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                           {m.clubName || "Club"}
                         </p>
 
-                        <Link to={`/club-events/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                        <Link to={`/club-events/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                           <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                             <CalendarCogIcon size={16} />
                           </div>
@@ -500,7 +500,7 @@ const BottomNav = () => {
 
                         {/* Team Management - For student lead or with club.manage_members permission */}
                         {(isLead || hasPermission(user, PERMISSIONS.CLUB_MANAGE_MEMBERS, { clubId })) && (
-                          <Link to={`/club/${clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                          <Link to={`/club/${clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                             <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                               <User size={16} />
                             </div>
@@ -511,19 +511,19 @@ const BottomNav = () => {
                         {/* Payments, Broadcasts & Settings - For both Student Lead and Coordinator */}
                         {canManageClub && (
                           <>
-                            <Link to={`/payments?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/payments?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <IndianRupeeIcon size={16} />
                               </div>
                               Payments
                             </Link>
-                            <Link to={`/send-notification?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/send-notification?clubId=${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <ConciergeBellIcon size={16} />
                               </div>
                               Broadcasts
                             </Link>
-                            <Link to={`/club/edit/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                            <Link to={`/club/edit/${clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                               <div className="w-7 h-7 rounded-lg bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-neutral-200 shrink-0">
                                 <LayoutGridIcon size={16} />
                               </div>
@@ -537,22 +537,22 @@ const BottomNav = () => {
 
                   {role === "facultyCoordinator" && user.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
                     <div className="space-y-0.5 mb-2">
-                      <p className="px-3 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                      <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                         Faculty Review
                       </p>
-                      <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                      <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                           <CalendarCogIcon size={16} />
                         </div>
                         Review Events
                       </Link>
-                      <Link to={`/club/${user.clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                      <Link to={`/club/${user.clubId}/team`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                           <User size={16} />
                         </div>
                         Team Management
                       </Link>
-                      <Link to={`/club/edit/${user.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-semibold text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                      <Link to={`/club/edit/${user.clubId}`} onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                         <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 shrink-0">
                           <LayoutGridIcon size={16} />
                         </div>
@@ -574,12 +574,12 @@ const BottomNav = () => {
                     onClick={() => setTheme("light")}
                     className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
                       theme === "light"
-                        ? "theme-toggle-active font-semibold shadow-xs"
+                        ? "theme-toggle-active font-medium shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
                     }`}
                   >
                     <Sun size={17} strokeWidth={2.2} />
-                    <span className="text-xs font-semibold">Light</span>
+                    <span className="text-xs font-medium">Light</span>
                   </button>
 
                   {/* Dark */}
@@ -588,12 +588,12 @@ const BottomNav = () => {
                     onClick={() => setTheme("dark")}
                     className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
                       theme === "dark"
-                        ? "theme-toggle-active font-semibold shadow-xs"
+                        ? "theme-toggle-active font-medium shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
                     }`}
                   >
                     <Moon size={17} strokeWidth={2.2} />
-                    <span className="text-xs font-semibold">Dark</span>
+                    <span className="text-xs font-medium">Dark</span>
                   </button>
 
                   {/* Auto */}
@@ -602,12 +602,12 @@ const BottomNav = () => {
                     onClick={() => setTheme("system")}
                     className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
                       theme === "system" || !theme
-                        ? "theme-toggle-active font-semibold shadow-xs"
+                        ? "theme-toggle-active font-medium shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
                     }`}
                   >
                     <Monitor size={17} strokeWidth={2.2} />
-                    <span className="text-xs font-semibold">Auto</span>
+                    <span className="text-xs font-medium">Auto</span>
                   </button>
 
                 </div>
@@ -615,7 +615,7 @@ const BottomNav = () => {
 
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 dark:bg-red-950/25 text-red-600 dark:text-red-400 font-bold text-sm rounded-xl hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 dark:bg-red-950/25 text-red-600 dark:text-red-400 font-semibold text-sm rounded-xl hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors"
               >
                 <LogoutIcon size={18} />
                 Logout

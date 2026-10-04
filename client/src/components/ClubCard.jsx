@@ -129,16 +129,26 @@ const ClubCard = ({ club }) => {
     }
     : {};
 
-  // Formatted coordinators
-  const facultyName = club.facultyCoordinators && club.facultyCoordinators.length > 0
-    ? club.facultyCoordinators.map((f) => (typeof f === "object" ? f.name : f)).join(", ")
-    : club.facultyName || "Not Assigned";
+  // Formatted coordinators list
+  const rawFaculty = (club.facultyCoordinators && club.facultyCoordinators.length > 0)
+    ? club.facultyCoordinators
+    : club.facultyName;
+  const facultyList = Array.isArray(rawFaculty)
+    ? rawFaculty.map((f) => (typeof f === "object" ? f?.name : f)).filter(Boolean)
+    : typeof rawFaculty === "string" && rawFaculty !== "Not Assigned"
+      ? rawFaculty.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
-  const studentName = club.studentHeads && club.studentHeads.length > 0
-    ? club.studentHeads.join(", ")
-    : club.studentCoordinators && club.studentCoordinators.length > 0
-      ? club.studentCoordinators.join(", ")
-      : club.studentLead || "Not Assigned";
+  const rawStudent = (club.studentHeads && club.studentHeads.length > 0)
+    ? club.studentHeads
+    : (club.studentCoordinators && club.studentCoordinators.length > 0)
+      ? club.studentCoordinators
+      : club.studentLead;
+  const studentList = Array.isArray(rawStudent)
+    ? rawStudent.map((s) => (typeof s === "object" ? s?.name : s)).filter(Boolean)
+    : typeof rawStudent === "string" && rawStudent !== "Not Assigned"
+      ? rawStudent.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
   return (
     <div
@@ -206,40 +216,55 @@ const ClubCard = ({ club }) => {
       <div className="p-5 pt-1 flex flex-col flex-grow relative z-10">
         {/* Club Name */}
         <h3
-          className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-white text-center leading-snug mb-1.5 line-clamp-1 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 transition-colors"
+          className="text-lg sm:text-xl font-semibold tracking-tight text-neutral-900 dark:text-white text-center leading-snug mb-1.5 line-clamp-1 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 transition-colors"
           title={club.clubName}
         >
           {club.clubName}
         </h3>
 
         {/* Category Pill Badge */}
-        {/* <div className="flex justify-center mb-4">
-          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-wide bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-            {club.category ? `${club.category.charAt(0).toUpperCase() + club.category.slice(1)} Club` : "Student Club"}
-          </span>
-        </div> */}
-
-        {/* Faculty Lead & Student Head (Left-aligned text block matching design) */}
-        <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5 pb-2 text-left space-y-1 flex flex-row justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block mb-1">
-              FACULTY LEAD
+        {club.category && (
+          <div className="flex justify-center mb-3">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-300 border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs group-hover:border-neutral-300 dark:group-hover:border-neutral-600 transition-colors">
+          
+              <span>{club.category}</span>
             </span>
-            <p className="text-sm font-bold text-neutral-900 dark:text-white truncate" title={facultyName}>
-              {facultyName}
-            </p>
+          </div>
+        )}
+
+        {/* Faculty Lead & Student Head */}
+        <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5 pb-2 text-left flex flex-row justify-between items-start gap-3">
+          <div className="flex-1 min-w-0 pr-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 block mb-1">
+              {facultyList.length > 1 ? "FACULTY COORDINATORS" : "FACULTY LEAD"}
+            </span>
+            {facultyList.length > 0 ? (
+              <div className="flex flex-col gap-0.5">
+                {facultyList.map((name, idx) => (
+                  <p key={idx} className="text-sm font-semibold text-neutral-900 dark:text-white truncate" title={name}>
+                    {name}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+                Not Assigned
+              </p>
+            )}
           </div>
 
-          {studentName && studentName !== "Not Assigned" && (
-            <div>
-
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block mb-1">
-                STUDENT LEAD
+          {studentList.length > 0 && (
+            <div className="shrink-0 text-right max-w-[48%]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 block mb-1">
+                {studentList.length > 1 ? "STUDENT LEADS" : "STUDENT LEAD"}
               </span>
-
-              <p className="text-sm font-bold text-neutral-900 dark:text-white truncate" title={studentName}>
-                {studentName}
-              </p>
+              <div className="flex flex-col gap-0.5 items-end">
+                {studentList.map((name, idx) => (
+                  <p key={idx} className="text-sm font-semibold text-neutral-900 dark:text-white truncate max-w-full" title={name}>
+                    {name}
+                  </p>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -285,7 +310,7 @@ const ClubCard = ({ club }) => {
             <Link
               to={`/club/${club.slug || club._id || club.id}`}
               style={buttonStyle}
-              className="py-2 px-5 rounded-full border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-bold transition-all duration-200 inline-flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+              className="py-2 px-5 rounded-full border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation"
             >
               <span>Explore Club</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />

@@ -401,7 +401,7 @@ const BusTracker = () => {
                 <Bus className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-white leading-tight">
+                <h1 className="text-base sm:text-lg font-semibold tracking-tight text-neutral-900 dark:text-white leading-tight">
                   NITJ Bus Tracker
                 </h1>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 hidden sm:block">
@@ -417,17 +417,17 @@ const BusTracker = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="font-mono text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              <span className="font-mono text-xs font-medium text-neutral-800 dark:text-neutral-200">
                 {clockStr}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-semibold uppercase tracking-wider bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-full">
                 {dayStr}
               </span>
             </div>
 
             <button
               onClick={() => setSimMode(!simMode)}
-              className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+              className={`p-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all border ${
                 simMode 
                   ? "bg-brand-600 text-white border-brand-600 shadow-sm" 
                   : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-brand-500"
@@ -446,7 +446,7 @@ const BusTracker = () => {
 
         {simMode && (
           <div className="bg-brand-500/5 border border-brand-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400">
+            <div className="flex items-center gap-2 text-xs font-semibold text-brand-600 dark:text-brand-400">
               <Clock className="w-4 h-4" />
               <span>TEST TIME SIMULATOR</span>
             </div>
@@ -478,7 +478,7 @@ const BusTracker = () => {
                 onClick={() => {
                   setSimMode(false);
                 }}
-                className="inline-flex items-center gap-1 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Real Time
@@ -503,7 +503,7 @@ const BusTracker = () => {
             </button>
             <button
               onClick={() => setIsExpandedMap(!isExpandedMap)}
-              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer text-xs font-semibold flex items-center gap-1.5"
+              className="bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 backdrop-blur-md transition-all cursor-pointer text-xs font-medium flex items-center gap-1.5"
             >
               {isExpandedMap ? (
                 <>
@@ -529,14 +529,14 @@ const BusTracker = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Active Buses
             </p>
             <div className="mt-2 flex items-baseline justify-between">
               <span className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
                 {activeBuses.length}
               </span>
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                 {activeBuses.length > 0 ? "Running" : "Idle"}
               </span>
             </div>
@@ -544,7 +544,7 @@ const BusTracker = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Next Departure
             </p>
             <div className="mt-2">
@@ -563,20 +563,20 @@ const BusTracker = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Est. Speed
             </p>
             <div className="mt-2 flex items-baseline gap-1">
               <span className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
                 {estSpeed}
               </span>
-              <span className="text-xs font-semibold text-neutral-500">km/h</span>
+              <span className="text-xs font-medium text-neutral-500">km/h</span>
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">average leg speed</p>
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               ETA to Campus
             </p>
             <div className="mt-2">
@@ -599,7 +599,7 @@ const BusTracker = () => {
         <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3">
           <button
             onClick={() => setActiveTab("live")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "live"
                 ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -611,7 +611,7 @@ const BusTracker = () => {
           
           <button
             onClick={() => setActiveTab("schedule")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "schedule"
                 ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -629,7 +629,7 @@ const BusTracker = () => {
                 <div className="w-12 h-12 rounded-full bg-brand-500/10 text-brand-600 flex items-center justify-center mx-auto mb-3">
                   <Bus className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-base text-neutral-900 dark:text-white mb-1">
+                <h3 className="font-semibold text-base text-neutral-900 dark:text-white mb-1">
                   No buses currently on route
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto leading-relaxed">
@@ -659,13 +659,13 @@ const BusTracker = () => {
                           className="w-3.5 h-3.5 rounded-full shrink-0" 
                           style={{ backgroundColor: leg.color }}
                         />
-                        <h4 className="font-bold text-sm text-neutral-900 dark:text-white">
+                        <h4 className="font-semibold text-sm text-neutral-900 dark:text-white">
                           {STOPS[leg.from].short} → {STOPS[leg.to].short}
                         </h4>
                       </div>
 
                       <span 
-                        className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                        className="text-xs font-medium px-2.5 py-0.5 rounded-full"
                         style={{ backgroundColor: `${leg.color}18`, color: leg.color }}
                       >
                         {leg.label}
@@ -692,7 +692,7 @@ const BusTracker = () => {
                         <MapPin className="w-3.5 h-3.5 text-neutral-400" />
                         <strong>{km.toFixed(1)}</strong> km
                       </span>
-                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 ml-auto">
+                      <span className="font-medium text-neutral-800 dark:text-neutral-200 ml-auto">
                         {pct}% completed
                       </span>
                     </div>
@@ -706,7 +706,7 @@ const BusTracker = () => {
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
-                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                <h3 className="font-semibold text-base text-neutral-900 dark:text-white">
                   Official Transport Schedule
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -715,14 +715,14 @@ const BusTracker = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 px-3 py-1 rounded-full">
+                <span className="text-[11px] font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 px-3 py-1 rounded-full">
                   Campus Service
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-500 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-500 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 Saturday & Sunday — Afternoon Batch 1
               </h4>
@@ -730,14 +730,14 @@ const BusTracker = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400">
-                      <th className="py-2 px-3 font-semibold">Departs</th>
-                      <th className="py-2 px-3 font-semibold">Stops & Route</th>
-                      <th className="py-2 px-3 font-semibold">Returns</th>
+                      <th className="py-2 px-3 font-medium">Departs</th>
+                      <th className="py-2 px-3 font-medium">Stops & Route</th>
+                      <th className="py-2 px-3 font-medium">Returns</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-bold text-brand-600 dark:text-brand-400">2:00 PM – Campus</td>
+                      <td className="py-3 px-3 font-semibold text-brand-600 dark:text-brand-400">2:00 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Patel Chowk</td>
                       <td className="py-3 px-3 font-medium">4:20 PM via Maqsudan, Bidhipur</td>
                     </tr>
@@ -747,7 +747,7 @@ const BusTracker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 Saturday & Sunday — Afternoon Batch 2
               </h4>
@@ -755,14 +755,14 @@ const BusTracker = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400">
-                      <th className="py-2 px-3 font-semibold">Departs</th>
-                      <th className="py-2 px-3 font-semibold">Stops & Route</th>
-                      <th className="py-2 px-3 font-semibold">Returns</th>
+                      <th className="py-2 px-3 font-medium">Departs</th>
+                      <th className="py-2 px-3 font-medium">Stops & Route</th>
+                      <th className="py-2 px-3 font-medium">Returns</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-bold text-emerald-600 dark:text-emerald-400">4:45 PM – Campus</td>
+                      <td className="py-3 px-3 font-semibold text-emerald-600 dark:text-emerald-400">4:45 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Maqsudan</td>
                       <td className="py-3 px-3 font-medium">6:10 PM via Bidhipur</td>
                     </tr>
@@ -772,7 +772,7 @@ const BusTracker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 All Week — Evening Batch
               </h4>
@@ -780,14 +780,14 @@ const BusTracker = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400">
-                      <th className="py-2 px-3 font-semibold">Departs</th>
-                      <th className="py-2 px-3 font-semibold">Stops & Route</th>
-                      <th className="py-2 px-3 font-semibold">Returns</th>
+                      <th className="py-2 px-3 font-medium">Departs</th>
+                      <th className="py-2 px-3 font-medium">Stops & Route</th>
+                      <th className="py-2 px-3 font-medium">Returns</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-bold text-rose-600 dark:text-rose-400">6:30 PM – Campus</td>
+                      <td className="py-3 px-3 font-semibold text-rose-600 dark:text-rose-400">6:30 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Patel Chowk</td>
                       <td className="py-3 px-3 font-medium">8:45 PM via Maqsudan, Bidhipur</td>
                     </tr>
@@ -805,14 +805,14 @@ const BusTracker = () => {
               <div className="flex flex-wrap items-center gap-3">
                 <a 
                   href="tel:+919876204794"
-                  className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-3 py-1.5 rounded-lg font-semibold transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-3 py-1.5 rounded-lg font-medium transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-500" />
                   +91 98762 04794
                 </a>
                 <a 
                   href="mailto:transportincharge@nitj.ac.in"
-                  className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-3 py-1.5 rounded-lg font-semibold transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-3 py-1.5 rounded-lg font-medium transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-brand-500" />
                   transportincharge@nitj.ac.in

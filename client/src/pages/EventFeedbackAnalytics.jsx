@@ -162,7 +162,7 @@ const EventFeedbackAnalytics = () => {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-cn-bg">
-        <ShimmerText text="Loading event feedback analytics..." className="text-sm font-semibold tracking-wide" />
+        <ShimmerText text="Loading event feedback analytics..." className="text-sm font-medium tracking-wide" />
       </div>
     );
   }
@@ -170,12 +170,12 @@ const EventFeedbackAnalytics = () => {
   if (error && !analytics) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-cn-surface px-4">
-        <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 p-8 rounded-3xl text-center text-rose-700 dark:text-rose-300 font-bold max-w-md space-y-4">
+        <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 p-8 rounded-3xl text-center text-rose-700 dark:text-rose-300 font-semibold max-w-md space-y-4">
           <i className="ri-error-warning-line text-4xl block text-rose-500" aria-hidden="true" />
           <p className="text-sm">{error}</p>
           <Link
             to="/my-events"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-xl hover:opacity-90 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold uppercase tracking-wider rounded-xl hover:opacity-90 transition-all cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Events
           </Link>

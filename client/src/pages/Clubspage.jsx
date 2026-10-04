@@ -253,7 +253,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       {/* Page Header - Hide if on Home */}
       {!isHome && (
         <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight titlefont">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
             NITJ Clubs & Societies
           </h1>
          
@@ -304,14 +304,14 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
 
           {isFilterActive && (
             <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
-              <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-bold truncate pr-2">
+              <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-semibold truncate pr-2">
                 {filteredClubs.length} club{filteredClubs.length !== 1 ? "s" : ""} found
                 {searchQuery && <span className="text-brand-600 dark:text-brand-400 ml-1">for "{searchQuery}"</span>}
                 {filterCategory !== "ALL" && <span className="text-brand-600 dark:text-brand-400 ml-1">in category "{filterCategory}"</span>}
               </span>
               <button
                 onClick={handleClearFilters}
-                className="mysans font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                className="mysans font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
               >
                 <i className="ri-close-line" /> Clear
               </button>
@@ -337,7 +337,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           {isFilterActive && filteredClubs.length === 0 && (
             <button
               onClick={handleClearFilters}
-              className="mysans text-brand-600 dark:text-brand-400 font-bold uppercase tracking-widest text-[10px] sm:text-[11px] hover:underline cursor-pointer inline-flex items-center gap-1"
+              className="mysans text-brand-600 dark:text-brand-400 font-semibold uppercase tracking-widest text-[10px] sm:text-[11px] hover:underline cursor-pointer inline-flex items-center gap-1"
             >
               <i className="ri-refresh-line text-xs" /> Clear all filters
             </button>
@@ -351,9 +351,8 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           <CardCarousel threshold={3}>
             {clubsToShow.map((club, index) => (
               <ScrollReveal
-                direction="up"
+                direction="none"
                 delay={(index % 3) * 0.06}
-                distance={24}
                 key={club._id || club.id || club.slug || index}
                 className="h-full"
               >

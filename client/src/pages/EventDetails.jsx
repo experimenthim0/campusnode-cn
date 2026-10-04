@@ -51,7 +51,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
       className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer select-none"
       aria-expanded={isOpen}
     >
-      <span className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
+      <span className="text-[14px] font-medium text-neutral-800 dark:text-neutral-200 pr-4 leading-snug">{question}</span>
       <div
         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
           isOpen
@@ -672,7 +672,7 @@ const EventDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
-        <ShimmerText text="Loading event..." className="text-sm font-bold uppercase tracking-[0.2em]" />
+        <ShimmerText text="Loading event..." className="text-sm font-semibold uppercase tracking-[0.2em]" />
       </div>
     );
   }
@@ -684,7 +684,7 @@ const EventDetails = () => {
           <div className="w-14 h-14 flex items-center justify-center text-yellow-500 text-4xl mx-auto mb-3">
             <i className="ri-error-warning-line" />
           </div>
-          <h2 className="font-semibold text-xl text-black dark:text-white mb-2">Oops!</h2>
+          <h2 className="font-medium text-xl text-black dark:text-white mb-2">Oops!</h2>
           <p className="text-neutral-500 text-[14px] mb-6">{error || 'Event not found'}</p>
           <button onClick={() => navigate('/events')} className="inline-flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-[12px] font-medium tracking-wide rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg border border-black dark:border-white">
             <i className="ri-arrow-left-line" /> Back to Events
@@ -823,15 +823,15 @@ const EventDetails = () => {
       answer: (
         <span>
           The event starts on{' '}
-          <strong className="font-bold text-black dark:text-white">
+          <strong className="font-semibold text-black dark:text-white">
             {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
           </strong>{' '}
           and ends on{' '}
-          <strong className="font-bold text-black dark:text-white">
+          <strong className="font-semibold text-black dark:text-white">
             {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
           </strong>
           . It will be held at{' '}
-          <strong className="font-bold text-black dark:text-white">
+          <strong className="font-semibold text-black dark:text-white">
             {venue}
           </strong>.
         </span>
@@ -844,7 +844,7 @@ const EventDetails = () => {
           {registrationDeadline ? (
             <>
               Registration closes on{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 {new Date(registrationDeadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(registrationDeadline).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
               </strong>.{' '}
             </>
@@ -854,7 +854,7 @@ const EventDetails = () => {
           {(event.registrationFee > 0 || entryFee > 0) ? (
             <>
               The entry fee is{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 ₹{event.registrationFee || entryFee}
               </strong>{' '}
               (non-refundable), payable securely via the event's designated payment method.{' '}
@@ -862,7 +862,7 @@ const EventDetails = () => {
           ) : (
             <>
               This event is{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 Completely Free
               </strong>{' '}
               to attend!{' '}
@@ -887,7 +887,7 @@ const EventDetails = () => {
           {isUnlimited ? (
             <>
               This event has{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 Unlimited Seats
               </strong>.{' '}
             </>
@@ -895,7 +895,7 @@ const EventDetails = () => {
             !allowWaitlist ? (
               <>
                 All{' '}
-                <strong className="font-bold text-black dark:text-white">
+                <strong className="font-semibold text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 are filled. Registration is currently closed.{' '}
@@ -903,7 +903,7 @@ const EventDetails = () => {
             ) : isWaitlistFull ? (
               <>
                 All{' '}
-                <strong className="font-bold text-black dark:text-white">
+                <strong className="font-semibold text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 and all 5 waitlist spots are filled. Registration is currently closed.{' '}
@@ -911,7 +911,7 @@ const EventDetails = () => {
             ) : (
               <>
                 All{' '}
-                <strong className="font-bold text-black dark:text-white">
+                <strong className="font-semibold text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 are filled. However, you can register to join the waitlist ({5 - waitlistCount} spots left).{' '}
@@ -920,7 +920,7 @@ const EventDetails = () => {
           ) : (
             <>
               There are{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 {Math.max(0, totalSeats - registeredCount)} spots remaining
               </strong>{' '}
               out of {totalSeats} total seats.{' '}
@@ -929,7 +929,7 @@ const EventDetails = () => {
           {!isAllPrograms && event.allowedPrograms && event.allowedPrograms.length > 0 ? (
             <>
               Eligibility is open to programs:{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 {programDisplay}
               </strong>.{' '}
             </>
@@ -939,7 +939,7 @@ const EventDetails = () => {
           {event.allowedBranches && event.allowedBranches.length > 0 && (
             <>
               Allowed branches:{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 {event.allowedBranches.join(', ')}
               </strong>.{' '}
             </>
@@ -947,14 +947,14 @@ const EventDetails = () => {
           {event.allowedYears && event.allowedYears.length > 0 && (
             <>
               Eligible batches:{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 Year {event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ')}
               </strong>.{' '}
             </>
           )}
           {event.provideCertificate ? (
             <>
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 Digital certificates
               </strong>{' '}
               will be issued to participants after the event closes.
@@ -972,14 +972,14 @@ const EventDetails = () => {
           {isCentralEvent ? (
             <>
               This event is organized centrally by the{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 Office of DSW (Dean Student Welfare)
               </strong>.
             </>
           ) : (
             <>
               This event is organized by{' '}
-              <strong className="font-bold text-black dark:text-white">
+              <strong className="font-semibold text-black dark:text-white">
                 {displayName}
               </strong>.
               {clubSlugOrId ? ' You can click the organizer name in the sidebar to visit their club page.' : ''}{' '}
@@ -1002,7 +1002,7 @@ const EventDetails = () => {
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[15px] font-bold text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[15px] font-semibold text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
@@ -1020,13 +1020,13 @@ const EventDetails = () => {
                   Event Proposal Rejected
                 </span>
                 {event.reviewedBy?.name && (
-                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                  <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
                     Reviewed by: {event.reviewedBy.name}
                   </span>
                 )}
               </div>
-              <p className="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-1">
-                <span className="font-bold">Feedback: </span>
+              <p className="text-sm font-medium text-rose-800 dark:text-rose-200 mt-1">
+                <span className="font-semibold">Feedback: </span>
                 {event.reviewComment || "No specific feedback comment provided. Please contact the faculty coordinator."}
               </p>
             </div>
@@ -1037,7 +1037,7 @@ const EventDetails = () => {
         {event.reviewStatus === 'PENDING' && (
           <div className="mb-6 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-xl p-4 shadow-xs flex items-center gap-3">
             <i className="ri-time-line text-amber-600 dark:text-amber-400 text-xl" />
-            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
               This event proposal is currently <span className="underline">PENDING REVIEW</span> by the faculty coordinator and is not yet public.
             </p>
           </div>
@@ -1071,7 +1071,7 @@ const EventDetails = () => {
                       e.stopPropagation();
                       handleShare();
                     }}
-                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-bold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
+                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-semibold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
                     title="Share Event"
                     aria-label="Share Event"
                   >
@@ -1154,7 +1154,7 @@ const EventDetails = () => {
                       <i className="ri-trophy-fill" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Event Results</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Event Results</p>
                       <p className="text-[15px] font-black text-black dark:text-white">
                         {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
                       </p>
@@ -1184,11 +1184,11 @@ const EventDetails = () => {
                           {/* Winner / Team Name & Members */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-bold text-black dark:text-white truncate">
+                              <p className="text-sm font-semibold text-black dark:text-white truncate">
                                 {winner.name}
                               </p>
                               {isTeamWinner && (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
                                   <i className="ri-team-line text-[10px]" /> Team
                                 </span>
                               )}
@@ -1202,7 +1202,7 @@ const EventDetails = () => {
                               if (uniqueNames.length === 0) return null;
                               return (
                                 <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-0.5 truncate">
-                                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
+                                  <span className="font-medium text-neutral-700 dark:text-neutral-300">Members:</span>{' '}
                                   {uniqueNames.join(', ')}
                                 </p>
                               );
@@ -1210,7 +1210,7 @@ const EventDetails = () => {
                           </div>
 
                           {/* Rank Label */}
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
                             {medal ? `${medal.label} Place` : `#${winner.rank}`}
                           </span>
                         </div>
@@ -1224,7 +1224,7 @@ const EventDetails = () => {
             {description && (
               <ScrollReveal direction="up" distance={20} delay={0.04}>
                 <div className="mb-8">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
                     About this Event
                   </h2>
                   <div 
@@ -1237,7 +1237,7 @@ const EventDetails = () => {
 
             <div className="mb-8">
               <ScrollReveal direction="up" distance={15}>
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Event Highlights
                 </h3>
               </ScrollReveal>
@@ -1251,8 +1251,8 @@ const EventDetails = () => {
                         <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
-                        <p className="text-[13px] font-semibold text-black dark:text-white leading-snug">{h.value}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                        <p className="text-[13px] font-medium text-black dark:text-white leading-snug">{h.value}</p>
                       </div>
                     </div>
                   </ScrollReveal>
@@ -1265,7 +1265,7 @@ const EventDetails = () => {
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
                 <ScrollReveal direction="up" distance={15}>
-                  <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                     Gallery
                   </h3>
                 </ScrollReveal>
@@ -1310,7 +1310,7 @@ const EventDetails = () => {
 
             <div className="mb-8">
               <ScrollReveal direction="up" distance={15}>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Frequently Asked Questions
                 </h2>
               </ScrollReveal>
@@ -1339,18 +1339,18 @@ const EventDetails = () => {
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    {/* <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p> */}
-                    <p className="text-[16px] font-bold text-black dark:text-white leading-snug">
+                    {/* <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p> */}
+                    <p className="text-[16px] font-semibold text-black dark:text-white leading-snug">
                       {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
-                    <p className="text-[14px] font-semibold text-brand-600">
+                    <p className="text-[14px] font-medium text-brand-600">
                       {new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                     </p>
                   </div>
                   {/* <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" /> */}
                   {/* <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
-                    <p className="text-[14px] font-semibold text-neutral-700 dark:text-neutral-300">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
+                    <p className="text-[14px] font-medium text-neutral-700 dark:text-neutral-300">
                       {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' })}
                       {' · '}
                       {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
@@ -1362,8 +1362,8 @@ const EventDetails = () => {
               {!isUnlimited && (
                 <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
                   </div>
                   <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div
@@ -1376,11 +1376,11 @@ const EventDetails = () => {
                   </p>
                   {isFull && (
                     !allowWaitlist ? (
-                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats are filled. Registration closed.</p>
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-1">All seats are filled. Registration closed.</p>
                     ) : isWaitlistFull ? (
-                      <p className="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1">All seats and waitlist spots are filled (5/5). Registration closed.</p>
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-1">All seats and waitlist spots are filled (5/5). Registration closed.</p>
                     ) : (
-                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">All regular seats filled — join the waitlist ({5 - waitlistCount} spots left).</p>
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">All regular seats filled — join the waitlist ({5 - waitlistCount} spots left).</p>
                     )
                   )}
                 </div>
@@ -1389,7 +1389,7 @@ const EventDetails = () => {
               {alreadyRegistered && (
                 <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 bg-cn-teal-50 dark:bg-cn-teal-950/30 border border-cn-teal-200 dark:border-cn-teal-800/50 rounded-full">
                   <i className="ri-checkbox-circle-line text-cn-teal-600 dark:text-cn-teal-400 text-lg shrink-0" />
-                  <p className="text-[13px] font-semibold text-cn-teal-700 dark:text-cn-teal-400">You are already registered for this event.</p>
+                  <p className="text-[13px] font-medium text-cn-teal-700 dark:text-cn-teal-400">You are already registered for this event.</p>
                 </div>
               )}
 
@@ -1404,7 +1404,7 @@ const EventDetails = () => {
                   </div>
                   
                   <div className="w-full bg-white dark:bg-neutral-950 border border-neutral-100 dark:border-neutral-850 p-4 rounded-xl text-center shadow-sm">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
                     <p className="text-base font-black text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
                       {registrationId}
                     </p>
@@ -1412,7 +1412,7 @@ const EventDetails = () => {
 
                   <Link 
                     to="/my-events" 
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
                   >
                     View My Tickets <i className="ri-arrow-right-s-line" />
                   </Link>
@@ -1442,7 +1442,7 @@ const EventDetails = () => {
                         : handleRegister)
                       : undefined}
                     disabled={btnConfig.disabled || isRegistering}
-                    className={`flex-1 py-2 px-4 text-md font-semibold mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
+                    className={`flex-1 py-2 px-4 text-md font-medium mysans tracking-wide border rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation flex items-center justify-center gap-2 ${btnConfig.cls} ${(btnConfig.disabled || isRegistering) ? 'opacity-50 cursor-not-allowed hover:translate-y-0 active:scale-100' : 'cursor-pointer'}`}
                   >
                     {isRegistering ? (
                       <><i className="ri-loader-4-line animate-spin text-base" /> Processing…</>
@@ -1472,14 +1472,14 @@ const EventDetails = () => {
                       <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
                    
                     </div>
                   </div>
 
                   {event.participatingClubs?.length > 0 && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
                         Participating Clubs
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1487,7 +1487,7 @@ const EventDetails = () => {
                           <Link
                             key={pc.id}
                             to={`/club/${pc.club?.slug || pc.club?.id}`}
-                            className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-cn-blue-50 dark:hover:bg-cn-blue-950/40 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-lg transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 hover:bg-cn-blue-50 dark:hover:bg-cn-blue-950/40 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-lg transition-colors"
                           >
                             {pc.club?.clubName}
                           </Link>
@@ -1516,16 +1516,16 @@ const EventDetails = () => {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-bold text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-semibold text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
                       ) : (
-                        <p className="text-[13px] font-bold text-black dark:text-white truncate">{displayName}</p>
+                        <p className="text-[13px] font-semibold text-black dark:text-white truncate">{displayName}</p>
                       )}
 
                     </div>
@@ -1533,7 +1533,7 @@ const EventDetails = () => {
 
                   {isJointEvent && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
                         Co-Organizers
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1541,7 +1541,7 @@ const EventDetails = () => {
                           <Link
                             key={c.id || i}
                             to={`/club/${c.slug || c.id}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
                           >
                             {c.clubLogo && <img src={c.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />}
                             {c.clubName}
@@ -1564,10 +1564,10 @@ const EventDetails = () => {
                     <i className="ri-question-answer-line text-base" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                       Questions?
                     </p>
-                    <h3 className="text-[13px] font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                    <h3 className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                       Contact Organizer
                     </h3>
                   </div>
@@ -1575,7 +1575,7 @@ const EventDetails = () => {
 
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3.5">
                   Have questions or need assistance with this event?
-                  {/* <span className="font-semibold text-neutral-900 dark:text-neutral-200">
+                  {/* <span className="font-medium text-neutral-900 dark:text-neutral-200">
                     {isCentralEvent ? 'Office of DSW' : displayName}
                   </span>. */}
                 </p>
@@ -1586,7 +1586,7 @@ const EventDetails = () => {
                       ? 'dsw@nitj.ac.in'
                       : (allOrganizingClubs[0]?.clubEmail || event.club?.clubEmail || event.createdBy?.email || 'clubsetu@nikhim.me')
                   }?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
-                  className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
+                  className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
                 >
                   <i className="ri-mail-send-line text-sm" />
                   <span>Contact Organizer</span>
@@ -1594,7 +1594,7 @@ const EventDetails = () => {
 
                 {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                   <div className="mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
                       Connect with {displayName}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1638,7 +1638,7 @@ const EventDetails = () => {
             {event.sponsors && event.sponsors.length > 0 && (
               <ScrollReveal direction="up" distance={20} delay={0.15}>
                 <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                     Sponsors/Partners
                   </h3>
                   <div className="flex flex-wrap gap-5 items-center">
@@ -1693,7 +1693,7 @@ const EventDetails = () => {
                   : handleRegister)
                 : undefined}
               disabled={btnConfig.disabled || isRegistering}
-              className={`w-full py-2.5 px-4 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md text-neutral-950 dark:text-neutral-50 border border-neutral-300/80 dark:border-neutral-700/80 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.45)] ring-1 ring-black/5 dark:ring-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-neutral-50 dark:hover:bg-neutral-850 hover:border-neutral-400/80 dark:hover:border-neutral-600 hover:shadow-[0_6px_28px_rgba(0,0,0,0.12)] active:scale-[0.98] touch-manipulation flex items-center justify-center gap-2.5 font-semibold mysans text-[14px] tracking-tight ${
+              className={`w-full py-2.5 px-4 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md text-neutral-950 dark:text-neutral-50 border border-neutral-300/80 dark:border-neutral-700/80 shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.45)] ring-1 ring-black/5 dark:ring-white/5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-neutral-50 dark:hover:bg-neutral-850 hover:border-neutral-400/80 dark:hover:border-neutral-600 hover:shadow-[0_6px_28px_rgba(0,0,0,0.12)] active:scale-[0.98] touch-manipulation flex items-center justify-center gap-2.5 font-medium mysans text-[14px] tracking-tight ${
                 (btnConfig.disabled || isRegistering)
                   ? 'opacity-60 cursor-not-allowed active:scale-100'
                   : 'cursor-pointer'
@@ -1727,7 +1727,7 @@ const EventDetails = () => {
                   <i className="ri-information-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
                     Complete Your Profile
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">
@@ -1754,7 +1754,7 @@ const EventDetails = () => {
                   const placeholder = field === 'portfolioUrl' ? 'https://yourportfolio.com' : `https://${fieldLabel.toLowerCase()}.com/yourprofile`;
                   return (
                     <div key={field}>
-                      <label className="block text-xs font-bold text-cn-text mb-1.5 capitalize">
+                      <label className="block text-xs font-semibold text-cn-text mb-1.5 capitalize">
                         {fieldLabel} <span className="text-brand-500">*</span>
                       </label>
                       <input type="url" placeholder={placeholder} value={modalInputs[field] || ''} onChange={(e) => setModalInputs({ ...modalInputs, [field]: e.target.value })}
@@ -1765,10 +1765,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1785,7 +1785,7 @@ const EventDetails = () => {
                   <i className="ri-file-list-3-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
                     Registration Form
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Fill in the details to complete your registration</p>
@@ -1802,7 +1802,7 @@ const EventDetails = () => {
             </div>
             <div className="p-6 overflow-y-auto flex-1 text-cn-text-secondary">
               <div className="mb-6">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1813,18 +1813,18 @@ const EventDetails = () => {
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
                     <div key={i} className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted">{item.label}</p>
-                      <p className="text-xs sm:text-[13px] font-semibold text-cn-text truncate">{item.value || '—'}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted">{item.label}</p>
+                      <p className="text-xs sm:text-[13px] font-medium text-cn-text truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="border-t border-cn-border-subtle mb-6" />
-              <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
-                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                    <label className="block text-xs font-semibold text-cn-text mb-1.5">
                       {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                     </label>
                     {field.type === 'text' && (
@@ -1847,10 +1847,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
+              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
+              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-semibold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
                 {isRegistering ? 'Processing...' : (event.paymentMethod && event.paymentMethod !== 'FREE' ? 'Pay & Register' : 'Register')}
               </button>
             </div>
@@ -1867,7 +1867,7 @@ const EventDetails = () => {
                   <i className="ri-question-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
                     Confirm Registration
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Please review the event details below.</p>
@@ -1883,11 +1883,11 @@ const EventDetails = () => {
               </button>
             </div>
             <div className="p-6 text-cn-text-secondary">
-              <p className="text-sm font-bold text-cn-text mb-3">
+              <p className="text-sm font-semibold text-cn-text mb-3">
                 Are you sure you want to register for this event?
               </p>
               <div className="bg-cn-surface-muted border border-cn-border rounded-xl p-4 mb-4 space-y-2">
-                <p className="text-sm font-bold text-cn-text truncate">
+                <p className="text-sm font-semibold text-cn-text truncate">
                   {event.title}
                 </p>
                 <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
@@ -1900,11 +1900,11 @@ const EventDetails = () => {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
                   <i className="ri-ticket-2-line text-brand-500" />
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
               {isFull && allowWaitlist && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                   Note: All regular seats are filled. Confirming will place you on the waitlist ({5 - waitlistCount} spots left).
                 </p>
               )}
@@ -1912,14 +1912,14 @@ const EventDetails = () => {
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1940,7 +1940,7 @@ const EventDetails = () => {
               const isWhatsApp = part.includes('chat.whatsapp.com') || part.includes('wa.me');
               return (
                 <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-brand-500 font-semibold underline underline-offset-2 hover:opacity-80 break-all"
+                  className="inline-flex items-center gap-1 text-brand-500 font-medium underline underline-offset-2 hover:opacity-80 break-all"
                 >
                   {isWhatsApp && <i className="ri-whatsapp-line text-green-500" />}
                   {isWhatsApp ? 'Join WhatsApp Group' : 'Open Link'}
@@ -1959,7 +1959,7 @@ const EventDetails = () => {
                 <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-40 h-40 mx-auto animate-bounce-slow" />
               </div>
               
-              <h3 className="text-lg font-bold text-cn-text mt-4">
+              <h3 className="text-lg font-semibold text-cn-text mt-4">
                 {isPendingPayment ? 'Registration Received!' : 'Registration Successful!'}
               </h3>
 
@@ -1968,10 +1968,10 @@ const EventDetails = () => {
                   <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
                     <div className="flex items-center gap-2 mb-1.5">
                       <i className="ri-time-line text-brand-500 text-base" />
-                      <p className="text-xs font-bold text-cn-text">Payment Under Review</p>
+                      <p className="text-xs font-semibold text-cn-text">Payment Under Review</p>
                     </div>
                     <p className="text-xs text-cn-text-secondary leading-relaxed">
-                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-cn-text font-semibold">My Events</strong> section.
+                      The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-cn-text font-medium">My Events</strong> section.
                     </p>
                   </div>
                 </>
@@ -1983,8 +1983,8 @@ const EventDetails = () => {
                   
                   {registrationId && (
                     <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
-                      <p className="text-base font-bold text-cn-text tracking-wider font-mono select-all">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
+                      <p className="text-base font-semibold text-cn-text tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
                     </div>
@@ -1995,7 +1995,7 @@ const EventDetails = () => {
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
                 <div className="my-3 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
                     <i className="ri-information-line text-brand-500 text-xs" />
                     Message from Club
                   </p>
@@ -2009,7 +2009,7 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setShowSuccessModal(false); navigate('/my-events'); }}
-                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-bold py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
+                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-semibold py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
                 >
                   Go to My Events
                 </button>
@@ -2029,7 +2029,7 @@ const EventDetails = () => {
       {teamChoiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
           <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
-            <h3 className="font-bold text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
+            <h3 className="font-semibold text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
             <p className="text-cn-text-muted text-xs mb-6">Choose how you want to participate in this event.</p>
             <div className="flex flex-col gap-3">
               <button
@@ -2038,14 +2038,14 @@ const EventDetails = () => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
+                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 Register as Individual
               </button>
               <button
                 type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 Register as Team
               </button>
@@ -2070,7 +2070,7 @@ const EventDetails = () => {
                   <i className="ri-group-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
                     Create Team
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Form a team to register for {event.title}</p>
@@ -2089,7 +2089,7 @@ const EventDetails = () => {
             <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-cn-text-secondary">
               {/* Team Name */}
               <div>
-                <label className="block text-xs font-bold text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
+                <label className="block text-xs font-semibold text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
                 <input
                   type="text"
                   required
@@ -2102,7 +2102,7 @@ const EventDetails = () => {
 
               {/* Members/Teammates selection */}
               <div>
-                <label className="block text-xs font-bold text-cn-text mb-1.5">
+                <label className="block text-xs font-semibold text-cn-text mb-1.5">
                   Add Teammates <span className="text-xs text-cn-text-muted font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
@@ -2135,10 +2135,10 @@ const EventDetails = () => {
                         className="p-3 text-xs hover:bg-brand-50 dark:hover:bg-brand-950/30 cursor-pointer flex justify-between items-center transition-colors"
                       >
                         <div className="text-left">
-                          <p className="font-bold text-cn-text">{s.name}</p>
+                          <p className="font-semibold text-cn-text">{s.name}</p>
                           <p className="text-cn-text-muted font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-brand-500 font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
+                        <span className="text-brand-500 font-semibold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>
@@ -2146,27 +2146,27 @@ const EventDetails = () => {
               </div>
 
               <div className="bg-cn-surface-muted p-4 border border-cn-border rounded-xl space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
                 <div className="divide-y divide-cn-border-subtle">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <p className="font-bold text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-bold">(You)</span></p>
+                      <p className="font-semibold text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-semibold">(You)</span></p>
                       <p className="text-cn-text-muted font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-bold text-cn-text-muted uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-semibold text-cn-text-muted uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
-                        <p className="font-bold text-cn-text">{member.name}</p>
+                        <p className="font-semibold text-cn-text">{member.name}</p>
                         <p className="text-cn-text-muted font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setTeammates(teammates.filter(t => t.id !== member.id))}
-                        className="px-3 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
+                        className="px-3 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
                       >
                         Remove
                       </button>
@@ -2183,10 +2183,10 @@ const EventDetails = () => {
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
                 <div className="space-y-4 pt-3 border-t border-cn-border-subtle">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
-                      <label className="block text-xs font-bold text-cn-text mb-1.5 text-left">
+                      <label className="block text-xs font-semibold text-cn-text mb-1.5 text-left">
                         {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                       </label>
                       {field.type === 'text' && (
@@ -2213,14 +2213,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

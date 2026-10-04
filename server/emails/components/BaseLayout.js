@@ -65,7 +65,7 @@ export const BaseLayout = ({
       padding: 0 !important;
       width: 100% !important;
       min-width: 100% !important;
-      background-color: ${colors.bgApp};
+      background-color: ${colors.bgCard};
       font-family: ${typography.fontFamily};
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
@@ -95,9 +95,9 @@ export const BaseLayout = ({
 
     /* ── Responsive Mobile Rules ── */
     @media screen and (max-width: 600px) {
-      .email-wrapper-cell { padding: 16px 8px !important; }
-      .email-container { width: 100% !important; max-width: 100% !important; min-width: 100% !important; border-radius: 12px !important; }
-      .content-card { padding: 28px 20px !important; }
+      .email-wrapper-cell { padding: 12px 6px !important; }
+      .email-container { width: 100% !important; max-width: 100% !important; min-width: 100% !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; }
+      .content-card { padding: 20px 14px !important; border: none !important; border-radius: 0 !important; }
       .metadata-cell-label, .info-cell-label { padding: 10px 8px !important; font-size: 11px !important; }
       .metadata-cell-value, .info-cell-value { padding: 10px 8px !important; font-size: 12px !important; }
     }
@@ -106,13 +106,13 @@ export const BaseLayout = ({
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) body,
       html:not([data-theme="light"]) .email-body,
-      html:not([data-theme="light"]) .email-wrapper-cell {
-        background-color: ${colors.darkApp} !important;
-      }
+      html:not([data-theme="light"]) .email-body-table,
+      html:not([data-theme="light"]) .email-wrapper-cell,
       html:not([data-theme="light"]) .email-container,
       html:not([data-theme="light"]) .content-card {
-        background-color: ${colors.darkCard} !important;
-        border-color: ${colors.darkBorder} !important;
+        background-color: ${colors.darkApp} !important;
+        border: none !important;
+        box-shadow: none !important;
       }
 
       html:not([data-theme="light"]) .email-heading,
@@ -192,18 +192,19 @@ export const BaseLayout = ({
     /* ── Forced Dark Mode ── */
     html[data-theme="dark"] body,
     html[data-theme="dark"] .email-body,
+    html[data-theme="dark"] .email-body-table,
     html[data-theme="dark"] .email-wrapper-cell,
-    .dark-theme body,
-    .dark-theme .email-body,
-    .dark-theme .email-wrapper-cell {
-      background-color: ${colors.darkApp} !important;
-    }
     html[data-theme="dark"] .email-container,
     html[data-theme="dark"] .content-card,
+    .dark-theme body,
+    .dark-theme .email-body,
+    .dark-theme .email-body-table,
+    .dark-theme .email-wrapper-cell,
     .dark-theme .email-container,
     .dark-theme .content-card {
-      background-color: ${colors.darkCard} !important;
-      border-color: ${colors.darkBorder} !important;
+      background-color: ${colors.darkApp} !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     html[data-theme="dark"] .email-heading,
@@ -313,18 +314,19 @@ export const BaseLayout = ({
     }
     html[data-theme="light"] body,
     html[data-theme="light"] .email-body,
+    html[data-theme="light"] .email-body-table,
     html[data-theme="light"] .email-wrapper-cell,
-    .light-theme body,
-    .light-theme .email-body,
-    .light-theme .email-wrapper-cell {
-      background-color: ${colors.bgApp} !important;
-    }
     html[data-theme="light"] .email-container,
     html[data-theme="light"] .content-card,
+    .light-theme body,
+    .light-theme .email-body,
+    .light-theme .email-body-table,
+    .light-theme .email-wrapper-cell,
     .light-theme .email-container,
     .light-theme .content-card {
       background-color: ${colors.bgCard} !important;
-      border-color: ${colors.border} !important;
+      border: none !important;
+      box-shadow: none !important;
     }
     html[data-theme="light"] .email-heading,
     .light-theme .email-heading {
@@ -383,19 +385,19 @@ export const BaseLayout = ({
     }
   </style>
 </head>
-<body class="email-body" style="margin: 0; padding: 0; background-color: ${colors.bgApp}; font-family: ${typography.fontFamily}; font-weight: ${typography.weights.regular}; width: 100% !important; min-width: 100%;">
+<body class="email-body" style="margin: 0; padding: 0; background-color: ${colors.bgCard}; font-family: ${typography.fontFamily}; font-weight: ${typography.weights.regular}; width: 100% !important; min-width: 100%;">
   ${preheaderHtml}
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-body-table" style="background-color: ${colors.bgApp}; min-height: 100vh; width: 100% !important; margin: 0; padding: 0;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-body-table" style="background-color: ${colors.bgCard}; min-height: 100vh; width: 100% !important; margin: 0; padding: 0;">
     <tr>
-      <td align="center" class="email-wrapper-cell" style="padding: 36px 12px; background-color: ${colors.bgApp};">
+      <td align="center" class="email-wrapper-cell" style="padding: 20px 8px; background-color: ${colors.bgCard};">
         <!--[if (gte mso 9)|(IE)]>
-        <table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width: 600px;">
+        <table align="center" border="0" cellspacing="0" cellpadding="0" width="640" style="width: 640px;">
         <tr>
-        <td align="center" valign="top" width="600" style="width: 600px;">
+        <td align="center" valign="top" width="640" style="width: 640px;">
         <![endif]-->
-        <table role="presentation" class="email-container" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; width: 100%; margin: 0 auto; background-color: ${colors.bgCard}; border: 1px solid ${colors.border}; border-radius: ${radii.xxl}; box-shadow: ${shadows.card}; overflow: hidden; table-layout: fixed;">
+        <table role="presentation" class="email-container" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 640px; width: 100%; margin: 0 auto; background-color: ${colors.bgCard}; border: none; border-radius: 0; box-shadow: none; table-layout: fixed;">
           <tr>
-            <td class="content-card" style="padding: 36px 32px; background-color: ${colors.bgCard}; border-radius: ${radii.xxl}; font-family: ${typography.fontFamily};">
+            <td class="content-card" style="padding: 24px 20px; background-color: ${colors.bgCard}; border: none; border-radius: 0; font-family: ${typography.fontFamily};">
               ${Header({ badgeText: headerBadge, subtitle: headerSubtitle })}
               <div class="email-body-text" style="font-size: ${typography.sizes.base}; line-height: ${typography.lineHeights.relaxed}; color: ${colors.body}; width: 100%;">
                 ${content}

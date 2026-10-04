@@ -87,7 +87,7 @@ const CalendarDropdown = ({ event, btnClassName }) => {
 
             {isOpen && (
                 <div className="absolute right-0 bottom-full mb-2 w-52 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border border-neutral-200/90 dark:border-neutral-800/90 shadow-lg dark:shadow-neutral-950/60 rounded-xl z-50 overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3.5 py-1.5 border-b border-neutral-100 dark:border-neutral-800 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <div className="px-3.5 py-1.5 border-b border-neutral-100 dark:border-neutral-800 text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Add to Calendar
                     </div>
                     <button

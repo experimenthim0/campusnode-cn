@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const DataPrivacy = () => {
     return (
         <div className="max-w-4xl mx-auto px-4 py-16">
-            <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-black uppercase tracking-widest mb-8">
+            <Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-500 hover:text-black uppercase tracking-widest mb-8">
                 <i className="ri-arrow-left-line" /> Back to Home
             </Link>
 
@@ -15,7 +15,7 @@ const DataPrivacy = () => {
                     </div>
                     <h1 className="text-3xl font-black text-black tracking-tight">Data Privacy Rules</h1>
                 </div>
-                <p className="text-xs text-neutral-400 font-bold uppercase tracking-widest mb-8">Last updated: MARCH 2026</p>
+                <p className="text-xs text-neutral-400 font-semibold uppercase tracking-widest mb-8">Last updated: MARCH 2026</p>
 
                 <div className="space-y-8 text-sm text-neutral-700 leading-relaxed">
                     <section>
@@ -24,9 +24,9 @@ const DataPrivacy = () => {
                             <table className="w-full border-collapse text-sm">
                                 <thead>
                                     <tr className="bg-neutral-100">
-                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-bold text-black">Data Type</th>
-                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-bold text-black">Purpose</th>
-                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-bold text-black">Visible To</th>
+                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-semibold text-black">Data Type</th>
+                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-semibold text-black">Purpose</th>
+                                        <th className="border-2 border-neutral-200 px-4 py-2 text-left font-semibold text-black">Visible To</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -73,7 +73,7 @@ const DataPrivacy = () => {
                     <section>
                         <h2 className="text-lg font-black text-black mb-3">3. Data Access by Event Organizers</h2>
                         <div className="bg-brand-50 border-2 border-brand-300 rounded-sm p-4 mb-3">
-                            <p className="text-brand-800 font-bold text-sm"><i className="ri-alert-line mr-1" /> For Club Heads</p>
+                            <p className="text-brand-800 font-semibold text-sm"><i className="ri-alert-line mr-1" /> For Club Heads</p>
                             <p className="text-brand-700 text-xs mt-1">You may only use participant data for the purpose of managing your event. Sharing, selling, or misusing participant data is strictly prohibited and may result in account termination.</p>
                         </div>
                         <ul className="list-disc pl-6 space-y-1.5">
@@ -112,7 +112,7 @@ const DataPrivacy = () => {
 
                     <section>
                         <h2 className="text-lg font-black text-black mb-3">7. Contact</h2>
-                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:contact.nikhim@gmail.com" className="text-brand-600 font-bold hover:underline">contact.nikhim@gmail.com</a>.</p>
+                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:contact.nikhim@gmail.com" className="text-brand-600 font-semibold hover:underline">contact.nikhim@gmail.com</a>.</p>
                     </section>
                 </div>
             </div>

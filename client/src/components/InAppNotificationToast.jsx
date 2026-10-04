@@ -184,11 +184,11 @@ const InAppNotificationToast = ({ toast, onClose, preview = false, inline = fals
               </div>
               <div className="min-w-0 flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-foreground truncate">
+                  <span className="text-xs font-medium text-foreground truncate">
                     {displaySender}
                   </span>
                   {isClubBroadcast && (
-                    <Badge variant="outline" className="text-[9px] font-semibold tracking-wide px-1.5 py-0 text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-900/50 bg-brand-50/50 dark:bg-brand-950/30">
+                    <Badge variant="outline" className="text-[9px] font-medium tracking-wide px-1.5 py-0 text-brand-600 dark:text-brand-400 border-brand-200 dark:border-brand-900/50 bg-brand-50/50 dark:bg-brand-950/30">
                       Club
                     </Badge>
                   )}
@@ -213,7 +213,7 @@ const InAppNotificationToast = ({ toast, onClose, preview = false, inline = fals
           {/* Notification Title */}
           <h4
             onClick={handleNavigate}
-            className="text-sm font-semibold text-foreground leading-snug mb-1 cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors line-clamp-2"
+            className="text-sm font-medium text-foreground leading-snug mb-1 cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors line-clamp-2"
           >
             {activeToast.title}
           </h4>

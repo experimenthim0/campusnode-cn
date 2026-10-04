@@ -84,7 +84,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
           {HOURS.map((h) => (
             <div
               key={h}
-              className="h-[70px] pr-3 flex items-start justify-end text-xs font-bold text-neutral-400 pt-1"
+              className="h-[70px] pr-3 flex items-start justify-end text-xs font-semibold text-neutral-400 pt-1"
             >
               {formatHour(h)}
             </div>
@@ -114,7 +114,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
               <div
                 key={b.id || b._id}
                 style={style}
-                className="absolute left-3 right-3 z-10 bg-rose-500/15 border-2 border-rose-500/40 rounded-2xl p-3 text-xs font-bold text-rose-600 dark:text-rose-400 flex flex-col justify-between"
+                className="absolute left-3 right-3 z-10 bg-rose-500/15 border-2 border-rose-500/40 rounded-2xl p-3 text-xs font-semibold text-rose-600 dark:text-rose-400 flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2">
                   <AlertTriangle size={16} className="text-rose-500 shrink-0" />
@@ -151,12 +151,12 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
                     <p className="text-xs opacity-80">{event.club?.clubName}</p>
                   </div>
 
-                  <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-[11px] font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-zinc-700">
+                  <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-zinc-700">
                     {event.venue}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs font-bold pt-2 border-t border-black/5 dark:border-white/5">
+                <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-1.5 opacity-90">
                     <Clock size={13} />
                     <span>

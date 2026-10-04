@@ -355,12 +355,12 @@ const EventRegistrations = () => {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-cn-bg">
-            <ShimmerText text="Loading registrations..." className="text-sm font-semibold tracking-wide" />
+            <ShimmerText text="Loading registrations..." className="text-sm font-medium tracking-wide" />
         </div>
     );
     if (error) return (
         <div className="min-h-screen flex items-center justify-center bg-cn-bg">
-            <div className="bg-danger-50 dark:bg-danger-950/20 border border-danger-200 dark:border-danger-900/40 p-6 rounded-2xl text-center text-danger-600 dark:text-danger-400 font-bold max-w-md">
+            <div className="bg-danger-50 dark:bg-danger-950/20 border border-danger-200 dark:border-danger-900/40 p-6 rounded-2xl text-center text-danger-600 dark:text-danger-400 font-semibold max-w-md">
                 <i className="ri-error-warning-line text-3xl block mb-2" />
                 {error}
             </div>
@@ -373,7 +373,7 @@ const EventRegistrations = () => {
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-semibold text-black dark:text-white tracking-tight">
+                        <h1 className="text-2xl md:text-3xl font-medium text-black dark:text-white tracking-tight">
                             {eventData?.title || 'Event Registrations'}
                         </h1>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
@@ -384,13 +384,13 @@ const EventRegistrations = () => {
                         <button
                             onClick={handleExportExcel}
                             disabled={registrations.length === 0}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium text-xs uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         >
                             <i className="ri-file-excel-2-line text-sm" /> Export Excel
                         </button>
                         <Link
                             to="/my-events"
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 font-semibold text-xs uppercase tracking-wider rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 font-medium text-xs uppercase tracking-wider rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                         >
                             <i className="ri-arrow-left-line text-sm" /> Back
                         </Link>
@@ -414,10 +414,10 @@ const EventRegistrations = () => {
                     return (
                         <div className={`grid grid-cols-1 ${entryFee > 0 ? 'sm:grid-cols-2 lg:grid-cols-4' : (eventHasStarted ? 'sm:grid-cols-2' : 'grid-cols-1')} gap-5 mb-8`}>
                             <div className="bg-white dark:bg-neutral-900 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                                <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                                     Total Registered
                                 </p>
-                                <p className="text-3xl font-semibold text-black dark:text-white">{registeredCount}</p>
+                                <p className="text-3xl font-medium text-black dark:text-white">{registeredCount}</p>
                                 <p className="text-[11px] text-neutral-500 mt-2">
                                     {isTeamEvent
                                         ? `${teamCount} team${teamCount !== 1 ? 's' : ''} · ${indivCount} individual${indivCount !== 1 ? 's' : ''}`
@@ -428,10 +428,10 @@ const EventRegistrations = () => {
 
                             {eventHasStarted && (
                                 <div className="bg-white dark:bg-neutral-900 p-6 border border-green-200 dark:border-green-900/40 rounded-2xl shadow-sm">
-                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-green-600 mb-1">
+                                    <p className="text-[10px] font-medium uppercase tracking-widest text-green-600 mb-1">
                                         Attended
                                     </p>
-                                    <p className="text-3xl font-semibold text-green-600">{attendedCount}</p>
+                                    <p className="text-3xl font-medium text-green-600">{attendedCount}</p>
                                     <p className="text-[11px] text-neutral-500 mt-2">
                                         {registeredCount > 0 ? Math.round((attendedCount / registeredCount) * 100) : 0}% check-in rate
                                     </p>
@@ -441,7 +441,7 @@ const EventRegistrations = () => {
                             {entryFee > 0 && (
                                 <>
                                     <div className="bg-white dark:bg-neutral-900 p-6 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                                        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                                             Money Collected
                                         </p>
                                         <p className="text-3xl font-black text-brand-600">
@@ -453,7 +453,7 @@ const EventRegistrations = () => {
                                     </div>
 
                                     <div className="bg-brand-600 p-6 rounded-2xl text-white shadow-sm">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">
+                                        <p className="text-[10px] font-semibold uppercase tracking-widest opacity-80 mb-1">
                                             Entry Fee
                                         </p>
                                         <p className="text-3xl font-black">₹{entryFee}</p>
@@ -470,7 +470,7 @@ const EventRegistrations = () => {
                     <div className="bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 p-4 rounded-xl flex gap-3 items-start mb-8">
                         <i className="ri-information-fill text-brand-600 dark:text-brand-500 text-lg mt-0.5" />
                         <div>
-                            <p className="text-sm font-bold text-brand-800 dark:text-brand-400">Payment Collection Notice</p>
+                            <p className="text-sm font-semibold text-brand-800 dark:text-brand-400">Payment Collection Notice</p>
                             <p className="text-xs text-brand-700 dark:text-brand-500 mt-1 leading-relaxed">
                                 Registration fees for this event are collected directly via your configured payment account (club UPI or college payment portal).
                             </p>
@@ -509,7 +509,7 @@ const EventRegistrations = () => {
                     <div className="flex border-b border-neutral-200 dark:border-neutral-850 mb-6">
                         <button
                             onClick={() => setActiveTab('individual')}
-                            className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                            className={`px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
                                 activeTab === 'individual'
                                     ? 'border-brand-600 text-brand-600 font-extrabold'
                                     : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
@@ -519,7 +519,7 @@ const EventRegistrations = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('team')}
-                            className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                            className={`px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
                                 activeTab === 'team'
                                     ? 'border-brand-600 text-brand-600 font-extrabold'
                                     : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
@@ -550,18 +550,18 @@ const EventRegistrations = () => {
                                         className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-850/40 transition-colors cursor-pointer"
                                     >
                                         <div className="text-left">
-                                            <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                                            <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                                                 Team: <span className="text-brand-600 font-extrabold">{team.teamName}</span>
                                             </h4>
                                             <p className="text-[11px] text-neutral-500 mt-1">
-                                                Leader: <span className="font-semibold">{team.leader?.name}</span> • {team.members.length} members
+                                                Leader: <span className="font-medium">{team.leader?.name}</span> • {team.members.length} members
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
                                             <span className="text-[11px] text-neutral-400 font-mono">
                                                 Registered: {new Date(team.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </span>
-                                            <span className={`px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider rounded-lg ${
+                                            <span className={`px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider rounded-lg ${
                                                 team.status === 'CONFIRMED' || team.status === 'REGISTERED'
                                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-450'
                                                     : 'bg-brand-50 text-brand-700 dark:bg-brand-950/25 dark:text-brand-450'
@@ -583,7 +583,7 @@ const EventRegistrations = () => {
                                                 return (
                                                     <div className="p-4 bg-brand-50/20 dark:bg-neutral-900 border-b border-neutral-150 dark:border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                         <div className="text-xs space-y-1 text-left">
-                                                            <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+                                                            <div className="font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
                                                                 <span>Payment Status:</span>
                                                                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] uppercase font-black ${
                                                                     isApproved
@@ -600,7 +600,7 @@ const EventRegistrations = () => {
                                                             </div>
                                                             {leaderPart.transactionId && (
                                                                 <p className="text-neutral-500 dark:text-neutral-400">
-                                                                    UTR/Transaction ID: <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300 select-all">{leaderPart.transactionId}</span>
+                                                                    UTR/Transaction ID: <span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300 select-all">{leaderPart.transactionId}</span>
                                                                 </p>
                                                             )}
                                                             {leaderPart.payerName && (
@@ -614,7 +614,7 @@ const EventRegistrations = () => {
                                                                 </p>
                                                             )}
                                                             {leaderPart.paymentReviewMessage && (
-                                                                <p className="text-rose-600 dark:text-rose-400 font-bold">
+                                                                <p className="text-rose-600 dark:text-rose-400 font-semibold">
                                                                     Comment: {leaderPart.paymentReviewMessage}
                                                                 </p>
                                                             )}
@@ -622,7 +622,7 @@ const EventRegistrations = () => {
 
                                                         {isApproved ? (
                                                             <div className="flex items-center">
-                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
                                                                     <i className="ri-checkbox-circle-fill text-emerald-600 dark:text-emerald-400 text-sm" />
                                                                     Approved already
                                                                 </span>
@@ -632,21 +632,21 @@ const EventRegistrations = () => {
                                                                 <button
                                                                     disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'APPROVED')}
-                                                                    className="px-3.5 py-1.5 bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                    className="px-3.5 py-1.5 bg-emerald-600 text-white font-semibold text-xs uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Approve
                                                                 </button>
                                                                 <button
                                                                     disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'REJECTED')}
-                                                                    className="px-3.5 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                    className="px-3.5 py-1.5 bg-rose-600 text-white font-semibold text-xs uppercase tracking-wider rounded-lg hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Reject
                                                                 </button>
                                                                 <button
                                                                     disabled={submittingReview}
                                                                     onClick={() => openReviewModal(leaderPart, 'NEED_MORE_DETAILS')}
-                                                                    className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                    className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700 font-semibold text-xs uppercase tracking-wider rounded-lg hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                 >
                                                                     Need Info
                                                                 </button>
@@ -658,15 +658,15 @@ const EventRegistrations = () => {
                                             <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/20">
                                                 <thead className="bg-neutral-50/80 dark:bg-neutral-950/80">
                                                     <tr>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Role</th>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Name</th>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Roll No</th>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Academic Info</th>
-                                                        <th className="px-5 py-3 text-left text-[10px] font-bold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Status</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Role</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Name</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Roll No</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Academic Info</th>
+                                                        <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 dark:text-neutral-405 uppercase tracking-wider">Status</th>
                                                         {customFields.map((cf, i) => (
                                                             <th
                                                                 key={`team-cf-${i}`}
-                                                                className="px-5 py-3 text-left text-[10px] font-bold text-brand-600 uppercase tracking-wider whitespace-nowrap"
+                                                                className="px-5 py-3 text-left text-[10px] font-semibold text-brand-600 uppercase tracking-wider whitespace-nowrap"
                                                                 title={cf.label || 'Custom Field'}
                                                             >
                                                                 <span className="inline-flex items-center gap-1 cursor-help border-b border-dotted border-brand-400/60 pb-0.5">
@@ -682,7 +682,7 @@ const EventRegistrations = () => {
                                                         const isLeader = m.studentId === team.leader?.id;
                                                         return (
                                                             <tr key={m.id} className="hover:bg-neutral-100/30 dark:hover:bg-neutral-800/50 transition-colors">
-                                                                <td className="px-5 py-3 font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-[10px] text-left">
+                                                                <td className="px-5 py-3 font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-[10px] text-left">
                                                                     {isLeader ? (
                                                                         <span className="text-brand-600 font-extrabold bg-brand-50 dark:bg-brand-950/20 border border-brand-200/50 rounded px-1.5 py-0.5">Leader</span>
                                                                     ) : (
@@ -691,7 +691,7 @@ const EventRegistrations = () => {
                                                                 </td>
                                                                 <td className="px-5 py-3 text-left">
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-bold text-neutral-800 dark:text-neutral-200">{m.student?.name}</span>
+                                                                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{m.student?.name}</span>
                                                                         <span className="text-neutral-400 dark:text-neutral-500 text-[10px] font-mono mt-0.5">{m.student?.email}</span>
                                                                     </div>
                                                                 </td>
@@ -704,7 +704,7 @@ const EventRegistrations = () => {
                                                                         : `${m.student?.program || '-'} • ${m.student?.branch || '-'} (${m.student?.year || m.student?.academicYearLabel || '-'})`}
                                                                 </td>
                                                                 <td className="px-5 py-3 text-left">
-                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-405 border-0">
+                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-405 border-0">
                                                                         {m.status}
                                                                     </span>
                                                                 </td>
@@ -713,7 +713,7 @@ const EventRegistrations = () => {
                                                                     return (
                                                                         <td key={`team-cf-val-${i}`} className="px-5 py-3 text-neutral-600 dark:text-neutral-350 text-left">
                                                                             {cf.type === 'url' && val ? (
-                                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-semibold inline-flex items-center gap-1">
+                                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-medium inline-flex items-center gap-1">
                                                                                     Link <i className="ri-external-link-line text-[10px]" />
                                                                                 </a>
                                                                             ) : (
@@ -751,22 +751,22 @@ const EventRegistrations = () => {
                             <table className="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800">
                                 <thead className="bg-neutral-50 dark:bg-neutral-950">
                                     <tr>
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">#</th>
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Student Details</th>
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Roll No</th>
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Program / Academics</th>
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">#</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Student Details</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Roll No</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Program / Academics</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
                                         {eventData?.paymentMethod && eventData?.paymentMethod !== 'FREE' && (
                                             <>
-                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Payment Info</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Actions</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Payment Info</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Actions</th>
                                             </>
                                         )}
-                                        <th className="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Registered At</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Registered At</th>
                                         {customFields.map((cf, i) => (
                                             <th
                                                 key={`cf-${i}`}
-                                                className="px-5 py-3.5 text-left text-xs font-semibold text-brand-600 uppercase tracking-wider whitespace-nowrap"
+                                                className="px-5 py-3.5 text-left text-xs font-medium text-brand-600 uppercase tracking-wider whitespace-nowrap"
                                                 title={cf.label || 'Custom Field'}
                                             >
                                                 <span className="inline-flex items-center gap-1 cursor-help border-b border-dotted border-brand-400/60 pb-0.5">
@@ -802,17 +802,17 @@ const EventRegistrations = () => {
 
                                         return (
                                             <tr key={reg.id || reg._id} className="hover:bg-neutral-100/80 dark:hover:bg-neutral-900/40 transition-colors">
-                                                <td className="px-5 py-4 whitespace-nowrap text-xs font-bold text-neutral-400">
+                                                <td className="px-5 py-4 whitespace-nowrap text-xs font-semibold text-neutral-400">
                                                     {indivStartIndex + idx + 1}
                                                 </td>
                                                 <td className="px-5 py-4 whitespace-nowrap">
                                                     <div className="flex flex-col">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                                                            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                                                                 {studentName}
                                                             </span>
                                                             {isFaculty && (
-                                                                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300/40">
+                                                                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300/40">
                                                                     Faculty
                                                                 </span>
                                                             )}
@@ -829,7 +829,7 @@ const EventRegistrations = () => {
                                                     {programInfo}
                                                 </td>
                                                 <td className="px-5 py-4 whitespace-nowrap">
-                                                    <span className={`px-2.5 py-1 inline-flex text-[10px] font-bold uppercase tracking-wider rounded-lg ${
+                                                    <span className={`px-2.5 py-1 inline-flex text-[10px] font-semibold uppercase tracking-wider rounded-lg ${
                                                         {
                                                             [ParticipationStatus.REGISTERED]: 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 border border-blue-200/50 dark:border-blue-900/40',
                                                             [ParticipationStatus.ATTENDED]:   'bg-green-50 dark:bg-green-950/20 text-green-600 border border-green-200/50 dark:border-green-900/40',
@@ -844,7 +844,7 @@ const EventRegistrations = () => {
                                                     <>
                                                         <td className="px-5 py-4 text-left">
                                                             <div className="flex flex-col gap-1 text-xs">
-                                                                <span className={`px-2 py-0.5 inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider rounded-md border w-fit ${
+                                                                <span className={`px-2 py-0.5 inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-wider rounded-md border w-fit ${
                                                                     isApproved
                                                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60'
                                                                         : isRejected
@@ -867,7 +867,7 @@ const EventRegistrations = () => {
                                                                     </span>
                                                                 )}
                                                                 {reg.paymentReviewMessage && (
-                                                                    <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold">
+                                                                    <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">
                                                                         Msg: {reg.paymentReviewMessage}
                                                                     </span>
                                                                 )}
@@ -875,7 +875,7 @@ const EventRegistrations = () => {
                                                         </td>
                                                         <td className="px-5 py-4 whitespace-nowrap text-left">
                                                             {isApproved ? (
-                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50">
                                                                     <i className="ri-checkbox-circle-fill text-emerald-600 dark:text-emerald-400 text-xs" />
                                                                     Approved already
                                                                 </span>
@@ -884,21 +884,21 @@ const EventRegistrations = () => {
                                                                     <button
                                                                         disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'APPROVED')}
-                                                                        className="px-2.5 py-1 bg-emerald-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                        className="px-2.5 py-1 bg-emerald-600 text-white font-semibold text-[9px] uppercase tracking-wider rounded hover:bg-emerald-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                     >
                                                                         Approve
                                                                     </button>
                                                                     <button
                                                                         disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'REJECTED')}
-                                                                        className="px-2.5 py-1 bg-rose-600 text-white font-bold text-[9px] uppercase tracking-wider rounded hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                        className="px-2.5 py-1 bg-rose-600 text-white font-semibold text-[9px] uppercase tracking-wider rounded hover:bg-rose-700 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                     >
                                                                         Reject
                                                                     </button>
                                                                     <button
                                                                         disabled={submittingReview}
                                                                         onClick={() => openReviewModal(reg, 'NEED_MORE_DETAILS')}
-                                                                        className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-350 dark:border-neutral-700 font-bold text-[9px] uppercase tracking-wider rounded hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
+                                                                        className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-350 dark:border-neutral-700 font-semibold text-[9px] uppercase tracking-wider rounded hover:bg-neutral-200 transition cursor-pointer border-0 outline-none disabled:opacity-50"
                                                                         title="Need Info"
                                                                     >
                                                                         Info
@@ -916,7 +916,7 @@ const EventRegistrations = () => {
                                                     return (
                                                         <td key={`cf-${i}`} className="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
                                                             {cf.type === 'url' && val ? (
-                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-semibold inline-flex items-center gap-1">
+                                                                <a href={val} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:text-brand-700 underline font-medium inline-flex items-center gap-1">
                                                                     Link <i className="ri-external-link-line text-xs" />
                                                                 </a>
                                                             ) : (
@@ -952,17 +952,17 @@ const EventRegistrations = () => {
                         <div ref={exportModalRef} tabIndex="-1" role="dialog" aria-modal="true" aria-labelledby="export-registrations-title" className="flex max-h-[min(720px,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-cn-border bg-cn-surface shadow-2xl outline-none transition-colors">
                             <div className="flex items-center justify-between gap-4 border-b border-cn-border-subtle px-6 py-4">
                                 <div>
-                                    <h2 id="export-registrations-title" className="text-base sm:text-lg font-bold text-cn-text leading-tight">Export Registrations</h2>
+                                    <h2 id="export-registrations-title" className="text-base sm:text-lg font-semibold text-cn-text leading-tight">Export Registrations</h2>
                                     <p className="mt-0.5 text-xs text-cn-text-muted">Choose the information you want to include in your Excel file.</p>
                                 </div>
                                 <button type="button" aria-label="Close export dialog" onClick={() => !isExporting && setExportModalOpen(false)} disabled={isExporting} className="w-8 h-8 rounded-xl flex items-center justify-center text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted transition-colors cursor-pointer disabled:opacity-40"><i className="ri-close-line text-lg" /></button>
                             </div>
                             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cn-border-subtle px-6 py-3">
                                 <div className="flex gap-2">
-                                    <button type="button" onClick={() => setSelectedExportColumns(exportColumns.map(column => column.key))} className="rounded-xl border border-cn-border px-3 py-1.5 text-[11px] font-bold text-cn-text bg-cn-surface hover:bg-cn-surface-muted transition-colors cursor-pointer">Select All</button>
-                                    <button type="button" onClick={() => setSelectedExportColumns([])} className="rounded-xl border border-cn-border px-3 py-1.5 text-[11px] font-bold text-cn-text bg-cn-surface hover:bg-cn-surface-muted transition-colors cursor-pointer">Clear All</button>
+                                    <button type="button" onClick={() => setSelectedExportColumns(exportColumns.map(column => column.key))} className="rounded-xl border border-cn-border px-3 py-1.5 text-[11px] font-semibold text-cn-text bg-cn-surface hover:bg-cn-surface-muted transition-colors cursor-pointer">Select All</button>
+                                    <button type="button" onClick={() => setSelectedExportColumns([])} className="rounded-xl border border-cn-border px-3 py-1.5 text-[11px] font-semibold text-cn-text bg-cn-surface hover:bg-cn-surface-muted transition-colors cursor-pointer">Clear All</button>
                                 </div>
-                                <span className="text-xs font-semibold text-cn-text-muted">{selectedExportColumns.length} of {exportColumns.length} columns selected</span>
+                                <span className="text-xs font-medium text-cn-text-muted">{selectedExportColumns.length} of {exportColumns.length} columns selected</span>
                             </div>
                             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-3">
                                 <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
@@ -971,16 +971,16 @@ const EventRegistrations = () => {
                                         return (
                                             <label key={column.key} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-brand-200/80 hover:bg-brand-50 dark:hover:border-brand-900/40 dark:hover:bg-brand-950/40 transition-colors">
                                                 <input type="checkbox" checked={checked} onChange={() => setSelectedExportColumns(current => checked ? current.filter(key => key !== column.key) : [...current, column.key])} className="mt-1 h-4 w-4 accent-brand-500" />
-                                                <span><span className="block text-xs sm:text-[13px] font-bold text-cn-text">{column.label}</span>{column.description && <span className="mt-0.5 block text-[11px] text-cn-text-muted">{column.description}</span>}</span>
+                                                <span><span className="block text-xs sm:text-[13px] font-semibold text-cn-text">{column.label}</span>{column.description && <span className="mt-0.5 block text-[11px] text-cn-text-muted">{column.description}</span>}</span>
                                             </label>
                                         );
                                     })}
                                 </div>
                             </div>
-                            {exportError && <p role="alert" className="px-6 pb-2 text-xs font-semibold text-danger-600">{exportError}</p>}
+                            {exportError && <p role="alert" className="px-6 pb-2 text-xs font-medium text-danger-600">{exportError}</p>}
                             <div className="flex flex-col-reverse gap-3 border-t border-cn-border-subtle px-6 py-4 sm:flex-row sm:justify-end bg-transparent">
-                                <button type="button" onClick={() => setExportModalOpen(false)} disabled={isExporting} className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-40">Cancel</button>
-                                <button type="button" onClick={exportSelectedRegistrations} disabled={isExporting || selectedExportColumns.length === 0} className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs disabled:cursor-not-allowed disabled:opacity-40 flex items-center justify-center gap-1.5"><i className={`${isExporting ? 'ri-loader-4-line animate-spin' : 'ri-file-excel-2-line'}`} />{isExporting ? 'Exporting...' : 'Export Excel'}</button>
+                                <button type="button" onClick={() => setExportModalOpen(false)} disabled={isExporting} className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-semibold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-40">Cancel</button>
+                                <button type="button" onClick={exportSelectedRegistrations} disabled={isExporting || selectedExportColumns.length === 0} className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer shadow-xs disabled:cursor-not-allowed disabled:opacity-40 flex items-center justify-center gap-1.5"><i className={`${isExporting ? 'ri-loader-4-line animate-spin' : 'ri-file-excel-2-line'}`} />{isExporting ? 'Exporting...' : 'Export Excel'}</button>
                             </div>
                         </div>
                     </div>
@@ -995,7 +995,7 @@ const EventRegistrations = () => {
                                         <i className="ri-shield-check-line text-lg" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-base sm:text-lg text-cn-text leading-tight">
+                                        <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
                                             Review Registration Payment
                                         </h3>
                                         <p className="text-xs text-cn-text-muted font-normal mt-0.5">Review student transaction reference details</p>
@@ -1013,17 +1013,17 @@ const EventRegistrations = () => {
                             
                             <div className="p-6 space-y-4 text-left text-cn-text-secondary">
                                 <div className="bg-cn-surface-muted border border-cn-border p-4 rounded-xl space-y-2 text-xs text-cn-text-secondary">
-                                    <p><span className="font-bold text-cn-text-muted">Student:</span> <strong className="text-cn-text font-semibold">{selectedReg.student?.name || 'Participant'}</strong></p>
-                                    {selectedReg.student?.rollNo && <p><span className="font-bold text-cn-text-muted">Roll No:</span> <strong className="text-cn-text font-mono font-semibold">{selectedReg.student.rollNo}</strong></p>}
-                                    <p><span className="font-bold text-cn-text-muted">Registration Fee:</span> ₹{eventData?.registrationFee || eventData?.entryFee}</p>
-                                    <p><span className="font-bold text-cn-text-muted">UTR / Transaction ID:</span> <span className="font-mono font-bold select-all text-cn-text">{selectedReg.transactionId}</span></p>
-                                    <p><span className="font-bold text-cn-text-muted">Payer Name:</span> {selectedReg.payerName || 'N/A'}</p>
-                                    {selectedReg.paymentRemarks && <p><span className="font-bold text-cn-text-muted">Payer Remarks:</span> {selectedReg.paymentRemarks}</p>}
-                                    <p><span className="font-bold text-cn-text-muted">Action:</span> <span className={`font-bold ${reviewStatus === 'APPROVED' ? 'text-success-600 dark:text-success-400' : reviewStatus === 'REJECTED' ? 'text-danger-600 dark:text-danger-400' : 'text-brand-500 dark:text-brand-400'}`}>{reviewStatus}</span></p>
+                                    <p><span className="font-semibold text-cn-text-muted">Student:</span> <strong className="text-cn-text font-medium">{selectedReg.student?.name || 'Participant'}</strong></p>
+                                    {selectedReg.student?.rollNo && <p><span className="font-semibold text-cn-text-muted">Roll No:</span> <strong className="text-cn-text font-mono font-medium">{selectedReg.student.rollNo}</strong></p>}
+                                    <p><span className="font-semibold text-cn-text-muted">Registration Fee:</span> ₹{eventData?.registrationFee || eventData?.entryFee}</p>
+                                    <p><span className="font-semibold text-cn-text-muted">UTR / Transaction ID:</span> <span className="font-mono font-semibold select-all text-cn-text">{selectedReg.transactionId}</span></p>
+                                    <p><span className="font-semibold text-cn-text-muted">Payer Name:</span> {selectedReg.payerName || 'N/A'}</p>
+                                    {selectedReg.paymentRemarks && <p><span className="font-semibold text-cn-text-muted">Payer Remarks:</span> {selectedReg.paymentRemarks}</p>}
+                                    <p><span className="font-semibold text-cn-text-muted">Action:</span> <span className={`font-semibold ${reviewStatus === 'APPROVED' ? 'text-success-600 dark:text-success-400' : reviewStatus === 'REJECTED' ? 'text-danger-600 dark:text-danger-400' : 'text-brand-500 dark:text-brand-400'}`}>{reviewStatus}</span></p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-cn-text mb-1.5">
+                                    <label className="block text-xs font-semibold text-cn-text mb-1.5">
                                         Review Comment / Message <span className="text-xs text-cn-text-muted font-normal">(Optional for approval, recommended for rejection)</span>
                                     </label>
                                     <textarea
@@ -1040,7 +1040,7 @@ const EventRegistrations = () => {
                                 <button
                                     type="button"
                                     onClick={() => setReviewModalOpen(false)}
-                                    className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                                    className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border font-semibold text-xs rounded-xl transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -1048,7 +1048,7 @@ const EventRegistrations = () => {
                                     type="button"
                                     onClick={submitReview}
                                     disabled={submittingReview}
-                                    className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                                    className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
                                 >
                                     {submittingReview ? 'Submitting...' : 'Submit Review'}
                                 </button>

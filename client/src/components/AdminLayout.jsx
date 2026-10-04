@@ -65,7 +65,7 @@ const AdminLayout = () => {
             <span className="font-light text-[20px] tracking-wider text-black dark:text-white leading-none select-none logofont">
               Cam<span className="uppercase">P</span>usnode
             </span>
-            <span className="px-2 py-0.5 bg-neutral-200/70 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-[9px] font-bold uppercase tracking-wider rounded-md shrink-0">
+            <span className="px-2 py-0.5 bg-neutral-200/70 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-[9px] font-semibold uppercase tracking-wider rounded-md shrink-0">
               Admin
             </span>
           </div>
@@ -96,12 +96,12 @@ const AdminLayout = () => {
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-semibold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-medium mb-3">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
             <span>Desktop Display Required</span>
           </div>
 
-          <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white mb-2 leading-snug">
+          <h1 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-2 leading-snug">
             Sorry, this page is not designed for smaller screens
           </h1>
 
@@ -113,17 +113,17 @@ const AdminLayout = () => {
           {user && (
             <div className="w-full p-3 mb-6 rounded-xl bg-white dark:bg-zinc-900/80 border border-neutral-200 dark:border-zinc-800 shadow-2xs flex items-center justify-between text-left gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500">
+                <p className="text-[10px] uppercase tracking-wider font-medium text-neutral-400 dark:text-neutral-500">
                   Signed In As
                 </p>
-                <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                   {user?.name || "Administrator"}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                   {user?.email || (role === "paymentAdmin" ? "payment@admin.system" : "admin@college.edu")}
                 </p>
               </div>
-              <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase">
+              <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase">
                 {role === "paymentAdmin" ? "Finance" : "Admin"}
               </span>
             </div>
@@ -135,7 +135,7 @@ const AdminLayout = () => {
               type="button"
               variant="destructive"
               onClick={handleLogout}
-              className="w-full h-11 text-xs font-semibold rounded-xl gap-2 shadow-xs cursor-pointer shrink-0"
+              className="w-full h-11 text-xs font-medium rounded-xl gap-2 shadow-xs cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4 shrink-0" />
               Log Out

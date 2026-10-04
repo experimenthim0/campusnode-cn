@@ -174,7 +174,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition-all duration-200 cursor-pointer ${isAnyChildActive
-            ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold"
+            ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium"
             : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
           }`}
       >
@@ -206,7 +206,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
               <Link
                 key={idx}
                 to={item.to}
-                className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-150 ${isActive
+                className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-150 ${isActive
                     ? "bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium"
                     : "text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-800/60 hover:text-black dark:hover:text-white"
                   }`}
@@ -231,7 +231,7 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
 const SectionLabel = ({ children, isCollapsed }) => {
   if (isCollapsed) return <hr className="border-gray-200 dark:border-zinc-800 my-3 mx-2" />;
   return (
-    <p className="px-3 mb-2 mt-4 text-[10px] font-semibold uppercase tracking-widest text-slate-700 dark:text-slate-400">
+    <p className="px-3 mb-2 mt-4 text-[10px] font-medium uppercase tracking-widest text-slate-700 dark:text-slate-400">
       {children}
     </p>
   );
@@ -243,7 +243,7 @@ const SectionLabel = ({ children, isCollapsed }) => {
 const ClubHeader = ({ name, isCollapsed }) => {
   if (isCollapsed) return null;
   return (
-    <p className="px-3 py-1.5 mb-1 text-[10px] font-semibold uppercase tracking-widest text-brand-600 bg-white dark:bg-zinc-900 rounded-md">
+    <p className="px-3 py-1.5 mb-1 text-[10px] font-medium uppercase tracking-widest text-brand-600 bg-white dark:bg-zinc-900 rounded-md">
       {name}
     </p>
   );
@@ -322,7 +322,7 @@ const DynamicSidebar = ({ user }) => {
       <div className="px-3 py-4 border-b border-cn-border shrink-0">
         <div className={`flex items-center justify-between ${isCollapsed ? "flex-col gap-3 items-center" : "px-1"}`}>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full overflow-hidden text-black dark:text-white bg-gray-200 dark:bg-zinc-800 flex items-center justify-center font-semibold text-xs shrink-0 select-none border border-neutral-200 dark:border-zinc-800">
+            <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full overflow-hidden text-black dark:text-white bg-gray-200 dark:bg-zinc-800 flex items-center justify-center font-medium text-xs shrink-0 select-none border border-neutral-200 dark:border-zinc-800">
               {(user?.profileImage || user?.picture || user?.clubLogo) ? (
                 <img
                   src={user.profileImage || user.picture || user.clubLogo}
@@ -338,10 +338,10 @@ const DynamicSidebar = ({ user }) => {
             </div>
             {!isCollapsed && (
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-black dark:text-white truncate">
+                <p className="text-sm font-medium text-black dark:text-white truncate">
                   {userName}
                 </p>
-                <p className="text-[11px] text-brand-400 font-semibold tracking-wide">
+                <p className="text-[11px] text-brand-400 font-medium tracking-wide">
                   {getRoleLabel(role, user)}
                 </p>
               </div>

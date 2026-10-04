@@ -41,8 +41,19 @@ async function verifyClubAdminAccess(user, clubId) {
   if (!user) return false;
   if (user.role === "admin" || user.role === "SUPER_ADMIN") return true;
   if ((user.role === "faculty" || user.role === "facultyCoordinator") && (user.clubId === clubId || user.id)) {
-    const club = await prisma.club.findUnique({ where: { id: clubId }, select: { facultyCoordinatorId: true } });
-    if (club?.facultyCoordinatorId === user.id) return true;
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: {
+        facultyCoordinatorId: true,
+        facultyCoordinators: {
+          where: { facultyId: user.id },
+          select: { id: true },
+        },
+      },
+    });
+    if (club?.facultyCoordinatorId === user.id || (club?.facultyCoordinators && club.facultyCoordinators.length > 0)) {
+      return true;
+    }
   }
   if ((user.role === "club" || user.role === "CLUB") && String(user.clubId) === String(clubId)) {
     return true;
@@ -70,18 +81,28 @@ const publicClubSelect = {
   clubLogo: true,
   bannerImage: true,
   facultyName: true,
+  facultyEmail: true,
   studentcoordinators: true,
   motto: true,
   mission: true,
   establishedYear: true,
   clubEmail: true,
-  facultyCoordinator: { select: { id: true, name: true, email: true } },
+  facultyCoordinator: {
+    select: { id: true, name: true, email: true, department: true, designation: true, profileImage: true },
+  },
+  facultyCoordinators: {
+    include: {
+      faculty: {
+        select: { id: true, name: true, email: true, department: true, designation: true, profileImage: true },
+      },
+    },
+  },
   socialLinks: true,
   memberships: {
     where: { role: { in: ["CLUB_HEAD", "COORDINATOR"] } },
     include: {
-      student: { select: { id: true, name: true, email: true, branch: true, profileImage: true } }
-    }
+      student: { select: { id: true, name: true, email: true, branch: true, profileImage: true } },
+    },
   },
 };
 
@@ -114,12 +135,40 @@ router.get("/", async (req, res) => {
           ? roleHeads
           : roleCoords;
 
+      const coordinatorsMap = new Map();
+      if (club.facultyCoordinator) {
+        coordinatorsMap.set(club.facultyCoordinator.id, {
+          ...club.facultyCoordinator,
+          _id: club.facultyCoordinator.id,
+        });
+      }
+      if (Array.isArray(club.facultyCoordinators)) {
+        for (const item of club.facultyCoordinators) {
+          if (item?.faculty && !coordinatorsMap.has(item.faculty.id)) {
+            coordinatorsMap.set(item.faculty.id, {
+              ...item.faculty,
+              _id: item.faculty.id,
+            });
+          }
+        }
+      }
+      if (coordinatorsMap.size === 0 && club.facultyName) {
+        coordinatorsMap.set("legacy-faculty", {
+          id: "legacy-faculty",
+          _id: "legacy-faculty",
+          name: club.facultyName,
+          email: club.facultyEmail || "",
+          department: "",
+          designation: "Faculty Coordinator",
+        });
+      }
+      const resolvedFacultyCoordinators = Array.from(coordinatorsMap.values());
+
       return {
         ...club,
         _id: club.id,
-        facultyCoordinators: club.facultyCoordinator
-          ? [{ ...club.facultyCoordinator, _id: club.facultyCoordinator.id }]
-          : [],
+        facultyCoordinators: resolvedFacultyCoordinators,
+        facultyCoordinator: resolvedFacultyCoordinators[0] || club.facultyCoordinator || null,
         studentHeads: roleHeads,
         studentCoordinators: resolvedStudentCoordinators,
         roleCoordinators: roleCoords,
@@ -338,7 +387,16 @@ router.get("/:id", async (req, res) => {
         ],
       },
       include: {
-        facultyCoordinator: { select: { id: true, name: true, email: true, profileImage: true, department: true } },
+        facultyCoordinator: {
+          select: { id: true, name: true, email: true, profileImage: true, department: true, designation: true },
+        },
+        facultyCoordinators: {
+          include: {
+            faculty: {
+              select: { id: true, name: true, email: true, department: true, designation: true, profileImage: true },
+            },
+          },
+        },
         socialLinks: true,
         media: { where: { eventId: null }, orderBy: { id: "desc" } },
         announcements: {
@@ -445,10 +503,41 @@ router.get("/:id", async (req, res) => {
       };
     });
 
+    const coordinatorsMap = new Map();
+    if (club.facultyCoordinator) {
+      coordinatorsMap.set(club.facultyCoordinator.id, {
+        ...club.facultyCoordinator,
+        _id: club.facultyCoordinator.id,
+      });
+    }
+    if (Array.isArray(club.facultyCoordinators)) {
+      for (const item of club.facultyCoordinators) {
+        if (item?.faculty && !coordinatorsMap.has(item.faculty.id)) {
+          coordinatorsMap.set(item.faculty.id, {
+            ...item.faculty,
+            _id: item.faculty.id,
+          });
+        }
+      }
+    }
+    if (coordinatorsMap.size === 0 && club.facultyName) {
+      coordinatorsMap.set("legacy-faculty", {
+        id: "legacy-faculty",
+        _id: "legacy-faculty",
+        name: club.facultyName,
+        email: club.facultyEmail || "",
+        department: "",
+        designation: "Faculty Coordinator",
+      });
+    }
+    const resolvedFacultyCoordinators = Array.from(coordinatorsMap.values());
+
     const response = {
       club: {
         ...club,
         _id: club.id,
+        facultyCoordinators: resolvedFacultyCoordinators,
+        facultyCoordinator: resolvedFacultyCoordinators[0] || club.facultyCoordinator || null,
         memberships: normalizedMemberships,
         studentCoordinators: resolvedStudentCoordinators,
         studentHeads: roleHeads,
@@ -604,6 +693,8 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.CLUB_UPDATE), asyn
         },
       });
     });
+
+    invalidatePublicResponses(["clubs*"]);
 
     res.json({
       message: "Club updated successfully",

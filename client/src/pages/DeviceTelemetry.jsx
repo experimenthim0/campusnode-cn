@@ -604,7 +604,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-neutral-200 dark:border-zinc-800">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-black dark:text-white">
               What Websites Can Access About You
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-2 max-w-2xl leading-relaxed">
@@ -616,7 +616,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
             <button
               onClick={fetchServerTelemetry}
               disabled={loadingBackend}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-cn-surface hover:bg-neutral-100 dark:hover:bg-zinc-800 text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-200 dark:border-zinc-800 bg-cn-surface hover:bg-neutral-100 dark:hover:bg-zinc-800 text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
             >
               <RefreshCw size={13} className={loadingBackend ? "animate-spin text-brand-600" : ""} />
               <span>Refresh</span>
@@ -624,7 +624,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
 
             <button
               onClick={handleCopyReport}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition-colors cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition-colors cursor-pointer shadow-xs"
             >
               {copied ? <Check size={13} /> : <Copy size={13} />}
               <span>{copied ? "Copied" : "Copy Diagnostic Report"}</span>
@@ -635,32 +635,32 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         {/* Overview Tiles (Public IP, Approximate Location, Browser, Device) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Public IP</span>
-            <p className="font-mono text-base font-semibold text-neutral-900 dark:text-neutral-100 truncate select-all">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Public IP</span>
+            <p className="font-mono text-base font-medium text-neutral-900 dark:text-neutral-100 truncate select-all">
               {serverMeta.ip}
             </p>
             <span className="text-[10px] text-neutral-400 block truncate">Server-derived request address</span>
           </div>
 
           <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Approximate Location</span>
-            <p className="text-base font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Approximate Location</span>
+            <p className="text-base font-medium text-neutral-900 dark:text-neutral-100 truncate">
               {serverMeta.location}
             </p>
             <span className="text-[10px] text-neutral-400 block truncate">Server-resolved IP geolocation</span>
           </div>
 
           <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Browser</span>
-            <p className="text-base font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Browser</span>
+            <p className="text-base font-medium text-neutral-900 dark:text-neutral-100 truncate">
               {identityInfo.browser}
             </p>
             <span className="text-[10px] text-neutral-400 block truncate">Inferred from User-Agent</span>
           </div>
 
           <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Device</span>
-            <p className="text-base font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Device</span>
+            <p className="text-base font-medium text-neutral-900 dark:text-neutral-100 truncate">
               {identityInfo.classification}
             </p>
             <span className="text-[10px] text-neutral-400 block truncate">Inferred classification</span>
@@ -671,7 +671,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Wifi size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               01. Network & Server
             </h2>
           </div>
@@ -769,7 +769,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
               <Cpu size={16} className="text-brand-600 dark:text-brand-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
                 02. Device & Hardware
               </h2>
             </div>
@@ -831,7 +831,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
               <Monitor size={16} className="text-brand-600 dark:text-brand-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
                 03. Display
               </h2>
             </div>
@@ -876,7 +876,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Sliders size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               04. Graphics / WebGL
             </h2>
           </div>
@@ -941,28 +941,28 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Eye size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               05. Browser Identity
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="p-3 rounded-lg border border-neutral-100 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/50">
-              <span className="text-neutral-400 block text-[10px] font-bold uppercase tracking-wider">Inferred Browser</span>
-              <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm mt-0.5 block">
+              <span className="text-neutral-400 block text-[10px] font-semibold uppercase tracking-wider">Inferred Browser</span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-100 text-sm mt-0.5 block">
                 {identityInfo.browser}
               </span>
             </div>
 
             <div className="p-3 rounded-lg border border-neutral-100 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/50">
-              <span className="text-neutral-400 block text-[10px] font-bold uppercase tracking-wider">Inferred Operating System</span>
-              <span className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm mt-0.5 block">
+              <span className="text-neutral-400 block text-[10px] font-semibold uppercase tracking-wider">Inferred Operating System</span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-100 text-sm mt-0.5 block">
                 {identityInfo.os}
               </span>
             </div>
 
             <div className="p-3 rounded-lg border border-neutral-100 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/50">
-              <span className="text-neutral-400 block text-[10px] font-bold uppercase tracking-wider">Platform</span>
+              <span className="text-neutral-400 block text-[10px] font-semibold uppercase tracking-wider">Platform</span>
               <span className="font-mono text-neutral-900 dark:text-neutral-100 text-sm mt-0.5 block">
                 {hardwareInfo.platform}
               </span>
@@ -986,7 +986,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Sliders size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               06. Browser Capabilities
             </h2>
           </div>
@@ -1013,7 +1013,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Lock size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               07. Permissions
             </h2>
           </div>
@@ -1040,7 +1040,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
                   className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30"
                 >
                   <span className="text-neutral-600 dark:text-neutral-400">{label}</span>
-                  <span className={`font-semibold ${statusColor}`}>
+                  <span className={`font-medium ${statusColor}`}>
                     {status}
                   </span>
                 </div>
@@ -1060,7 +1060,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <HardDrive size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               08. Storage
             </h2>
           </div>
@@ -1125,7 +1125,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Battery size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               09. Battery & Sensors
             </h2>
           </div>
@@ -1187,7 +1187,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Eye size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               10. Browser Fingerprinting Surface
             </h2>
           </div>
@@ -1229,7 +1229,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               11. What Websites Cannot Directly Access
             </h2>
           </div>
@@ -1264,14 +1264,14 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
         <section className="p-5 sm:p-6 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-cn-surface space-y-5">
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800">
             <Terminal size={16} className="text-brand-600 dark:text-brand-400" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
               12. CampusNode Data Handling
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
                 CampusNode Receives
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
@@ -1280,7 +1280,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
             </div>
 
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
                 CampusNode Processes
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
@@ -1289,7 +1289,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
             </div>
 
             <div className="p-4 rounded-xl border border-neutral-100 dark:border-zinc-800 bg-neutral-50/60 dark:bg-zinc-900/40 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
                 CampusNode Stores
               </span>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
@@ -1299,7 +1299,7 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           </div>
 
           <div className="pt-2 border-t border-neutral-100 dark:border-zinc-800">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
               Not Collected by CampusNode
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-neutral-600 dark:text-neutral-300">
@@ -1315,10 +1315,10 @@ Not Collected             : Battery status, GPU renderer, exact GPS location, ca
           <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500">
             <span>For complete legal and compliance disclosures, consult our policy documents.</span>
             <div className="flex items-center gap-4">
-              <Link to="/data-privacy" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+              <Link to="/data-privacy" className="text-brand-600 dark:text-brand-400 font-medium hover:underline">
                 Data Privacy Rules →
               </Link>
-              <Link to="/privacy" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+              <Link to="/privacy" className="text-brand-600 dark:text-brand-400 font-medium hover:underline">
                 Privacy Policy →
               </Link>
             </div>

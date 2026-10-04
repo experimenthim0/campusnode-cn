@@ -18,7 +18,7 @@ const CalendarViewSwitch = ({ activeView, onViewChange }) => {
             key={v.id}
             type="button"
             onClick={() => onViewChange(v.id)}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer ${
               isActive
                 ? "bg-white dark:bg-zinc-800 text-black dark:text-white shadow-sm"
                 : "text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white"

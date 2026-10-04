@@ -71,7 +71,7 @@ export const sendEmailDirect = async (options = {}) => {
 
   // 2. Fallback to legacy raw HTML invocation ({ email, subject, message })
   const legacyTo = options.email || options.to;
-  const legacySubject = options.subject || "CampusNode Notification";
+  const legacySubject = options.subject || "Campusnode Notification";
   const legacyHtml = options.message || options.html || "";
 
   if (!legacyTo) {

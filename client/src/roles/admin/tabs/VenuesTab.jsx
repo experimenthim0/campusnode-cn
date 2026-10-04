@@ -162,7 +162,7 @@ const VenuesTab = ({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl border border-cn-border bg-cn-surface flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Total Campus Venues</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Total Campus Venues</p>
                         <p className="text-xl font-black text-black dark:text-white mt-0.5">{venues.length}</p>
                     </div>
                     <div className="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-zinc-800/70 flex items-center justify-center text-neutral-500 dark:text-neutral-400">
@@ -171,7 +171,7 @@ const VenuesTab = ({
                 </div>
                 <div className="p-4 rounded-xl border border-emerald-200/60 dark:border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/10 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Open for Events</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Open for Events</p>
                         <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{openCount}</p>
                     </div>
                     <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
@@ -180,7 +180,7 @@ const VenuesTab = ({
                 </div>
                 <div className="p-4 rounded-xl border border-cn-border bg-cn-surface flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Closed / Unavailable</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Closed / Unavailable</p>
                         <p className="text-xl font-black text-neutral-600 dark:text-neutral-400 mt-0.5">{closedCount}</p>
                     </div>
                     <div className="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-zinc-800/70 flex items-center justify-center text-neutral-400">
@@ -216,7 +216,7 @@ const VenuesTab = ({
                         type="button"
                         onClick={fetchVenues}
                         disabled={venuesLoading}
-                        className="text-xs text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 font-semibold px-2 py-1 transition-colors cursor-pointer disabled:opacity-50"
+                        className="text-xs text-neutral-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium px-2 py-1 transition-colors cursor-pointer disabled:opacity-50"
                         title="Refresh venue list"
                     >
                         {venuesLoading ? 'Refreshing...' : 'Refresh'}
@@ -237,7 +237,7 @@ const VenuesTab = ({
                     {filteredVenues.map((v, idx) => (
                         <tr key={v.id || idx} className="border-b border-neutral-100 dark:border-zinc-800/50 hover:bg-neutral-50/70 dark:hover:bg-neutral-900/40 transition-colors">
                             {/* Column 1: Venue Name */}
-                            <Td className="py-3.5 font-semibold text-sm text-neutral-900 dark:text-white">
+                            <Td className="py-3.5 font-medium text-sm text-neutral-900 dark:text-white">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-zinc-800 flex items-center justify-center text-neutral-500 dark:text-neutral-400 shrink-0">
                                         <Building2 size={14} />
@@ -249,7 +249,7 @@ const VenuesTab = ({
                             {/* Column 2: Status Badge + Instant iOS Switch */}
                             <Td className="py-3.5">
                                 <div className="flex items-center gap-3">
-                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold tracking-wide rounded-full ${
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold tracking-wide rounded-full ${
                                         v.isOpen
                                             ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-500/20'
                                             : 'bg-neutral-100 dark:bg-zinc-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-zinc-700'
@@ -283,7 +283,7 @@ const VenuesTab = ({
                                     <button
                                         type="button"
                                         onClick={() => handleOpenEditModal(v)}
-                                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white bg-neutral-100/80 hover:bg-neutral-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white bg-neutral-100/80 hover:bg-neutral-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                                         title="Edit venue details"
                                     >
                                         <Edit2 size={13} className="text-neutral-500 dark:text-neutral-400" />
@@ -335,7 +335,7 @@ const VenuesTab = ({
                 >
                     <form onSubmit={handleUpdateVenue} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
+                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-1.5">
                                 Venue Name <span className="text-brand-600">*</span>
                             </label>
                             <input
@@ -351,7 +351,7 @@ const VenuesTab = ({
 
                         {/* Availability Radio / Pill Selectors */}
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-2">
+                            <label className="block text-xs font-semibold text-cn-text mb-2">
                                 Booking Availability Status
                             </label>
                             <div className="grid grid-cols-2 gap-2.5">
@@ -365,7 +365,7 @@ const VenuesTab = ({
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold flex items-center gap-1.5">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                                             Open for Events
                                         </span>
@@ -384,7 +384,7 @@ const VenuesTab = ({
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold flex items-center gap-1.5">
                                             <span className="w-2 h-2 rounded-full bg-amber-500" />
                                             Closed / In Maintenance
                                         </span>
@@ -403,14 +403,14 @@ const VenuesTab = ({
                                     setIsEditVenueModalOpen(false);
                                     setEditingVenue(null);
                                 }}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isUpdatingVenue}
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                             >
                                 {isUpdatingVenue && <Loader2 size={13} className="animate-spin" />}
                                 <span>{isUpdatingVenue ? 'Saving...' : 'Save Changes'}</span>
@@ -431,7 +431,7 @@ const VenuesTab = ({
                 >
                     <form onSubmit={handleCreateVenue} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-1.5">
+                            <label className="block text-xs font-semibold text-cn-text mb-1.5">
                                 Venue Name <span className="text-brand-600">*</span>
                             </label>
                             <input
@@ -447,7 +447,7 @@ const VenuesTab = ({
 
                         {/* Availability Radio / Pill Selectors */}
                         <div>
-                            <label className="block text-xs font-bold text-cn-text mb-2">
+                            <label className="block text-xs font-semibold text-cn-text mb-2">
                                 Initial Availability Status
                             </label>
                             <div className="grid grid-cols-2 gap-2.5">
@@ -461,7 +461,7 @@ const VenuesTab = ({
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold flex items-center gap-1.5">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                                             Open for Events
                                         </span>
@@ -480,7 +480,7 @@ const VenuesTab = ({
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold flex items-center gap-1.5">
                                             <span className="w-2 h-2 rounded-full bg-amber-500" />
                                             Closed / In Maintenance
                                         </span>
@@ -496,14 +496,14 @@ const VenuesTab = ({
                                 type="button"
                                 disabled={isCreatingVenue}
                                 onClick={() => setIsAddVenueModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isCreatingVenue}
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                             >
                                 {isCreatingVenue && <Loader2 size={13} className="animate-spin" />}
                                 <span>{isCreatingVenue ? 'Adding...' : 'Add Venue'}</span>

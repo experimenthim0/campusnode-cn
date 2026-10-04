@@ -675,7 +675,7 @@ const WysiwygMarkdownEditor = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setIsHeadingMenuOpen((prev) => !prev)}
-              className="h-7 text-xs font-semibold gap-1.5 px-2.5"
+              className="h-7 text-xs font-medium gap-1.5 px-2.5"
             >
               <span>
                 {activeFormats.blockType === 'h1'
@@ -707,7 +707,7 @@ const WysiwygMarkdownEditor = ({
                     onClick={() => setBlockFormat(item.tag)}
                     className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md flex items-center justify-between transition-colors cursor-pointer ${
                       activeFormats.blockType === item.tag
-                        ? 'bg-primary/10 text-primary font-bold'
+                        ? 'bg-primary/10 text-primary font-semibold'
                         : 'hover:bg-muted text-foreground'
                     }`}
                   >
@@ -806,7 +806,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={openLinkPopover}
-            className="h-7 px-2 text-xs gap-1 font-semibold"
+            className="h-7 px-2 text-xs gap-1 font-medium"
             title="Insert Link (Ctrl+K)"
           >
             <LinkIcon className="w-3.5 h-3.5" />
@@ -819,7 +819,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={openImagePopover}
-            className="h-7 px-2 text-xs gap-1 font-semibold"
+            className="h-7 px-2 text-xs gap-1 font-medium"
             title="Insert Image"
           >
             <ImageIcon className="w-3.5 h-3.5" />
@@ -917,7 +917,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h2' ? 'p' : 'h2')}
-            className="h-6 px-1.5 text-[11px] font-bold"
+            className="h-6 px-1.5 text-[11px] font-semibold"
           >
             H2
           </Button>
@@ -927,7 +927,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h3' ? 'p' : 'h3')}
-            className="h-6 px-1.5 text-[11px] font-bold"
+            className="h-6 px-1.5 text-[11px] font-semibold"
           >
             H3
           </Button>
@@ -1041,7 +1041,7 @@ const WysiwygMarkdownEditor = ({
               type="button"
               size="sm"
               onClick={handleApplyLink}
-              className="h-8 px-2.5 text-xs font-semibold"
+              className="h-8 px-2.5 text-xs font-medium"
             >
               Apply
             </Button>
@@ -1071,7 +1071,7 @@ const WysiwygMarkdownEditor = ({
           </div>
 
           {linkError && (
-            <span className="text-[10px] font-semibold text-destructive px-1">
+            <span className="text-[10px] font-medium text-destructive px-1">
               {linkError}
             </span>
           )}
@@ -1090,7 +1090,7 @@ const WysiwygMarkdownEditor = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between pb-1 border-b border-border">
-            <span className="text-xs font-semibold flex items-center gap-1.5">
+            <span className="text-xs font-medium flex items-center gap-1.5">
               <ImageIcon className="w-3.5 h-3.5 text-primary" />
               <span>{imagePopover.isExistingImage ? 'Edit Image & Sizing' : 'Insert Image via Link'}</span>
             </span>
@@ -1159,7 +1159,7 @@ const WysiwygMarkdownEditor = ({
 
           {/* Width Presets */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               <span>Width Presets</span>
               <span className="font-mono">{imageWidth}</span>
             </div>
@@ -1177,7 +1177,7 @@ const WysiwygMarkdownEditor = ({
                   variant={imageWidth === p.val ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleSizePresetSelect(p.val)}
-                  className="h-6 text-[10px] font-semibold px-1"
+                  className="h-6 text-[10px] font-medium px-1"
                 >
                   {p.label}
                 </Button>
@@ -1188,7 +1188,7 @@ const WysiwygMarkdownEditor = ({
           {/* Custom Dimensions & Alignment */}
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Width</label>
+              <label className="block text-[10px] font-medium text-muted-foreground mb-0.5">Width</label>
               <Input
                 type="text"
                 placeholder="100%"
@@ -1202,7 +1202,7 @@ const WysiwygMarkdownEditor = ({
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Height</label>
+              <label className="block text-[10px] font-medium text-muted-foreground mb-0.5">Height</label>
               <Input
                 type="text"
                 placeholder="auto"
@@ -1213,7 +1213,7 @@ const WysiwygMarkdownEditor = ({
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-muted-foreground mb-0.5">Align</label>
+              <label className="block text-[10px] font-medium text-muted-foreground mb-0.5">Align</label>
               <div className="flex rounded-md border border-border overflow-hidden">
                 {[
                   { align: 'left', icon: AlignLeft },
@@ -1242,7 +1242,7 @@ const WysiwygMarkdownEditor = ({
           </div>
 
           {imageError && (
-            <span className="text-[10px] font-semibold text-destructive px-1">
+            <span className="text-[10px] font-medium text-destructive px-1">
               {imageError}
             </span>
           )}
@@ -1265,7 +1265,7 @@ const WysiwygMarkdownEditor = ({
               type="button"
               size="sm"
               onClick={handleInsertOrUpdateImage}
-              className="h-7 text-xs font-semibold"
+              className="h-7 text-xs font-medium"
             >
               {imagePopover.isExistingImage ? 'Update Image' : 'Insert Image'}
             </Button>

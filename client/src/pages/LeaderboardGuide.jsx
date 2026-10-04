@@ -10,12 +10,12 @@ const LeaderboardGuide = () => {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full border border-brand-500/20">
+          <span className="text-[11px] font-semibold uppercase tracking-widest px-3 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full border border-brand-500/20">
             Official Ranking Methodology
           </span>
         </div>
@@ -24,9 +24,9 @@ const LeaderboardGuide = () => {
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-brand-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-medium text-brand-300">
               <Award className="w-3.5 h-3.5 text-amber-400" />
-              <span>CampusNode Club Hall of Fame</span>
+              <span>Campusnode Club Hall of Fame</span>
             </div>
             
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
@@ -58,10 +58,10 @@ const LeaderboardGuide = () => {
                 <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                   <Calendar className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                <div className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                   PILLAR 1
                 </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                   Event Hosting
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed mb-4">
@@ -82,10 +82,10 @@ const LeaderboardGuide = () => {
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
                   <Users className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                <div className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                   PILLAR 2
                 </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                   Student Participation
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed mb-4">
@@ -106,10 +106,10 @@ const LeaderboardGuide = () => {
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4">
                   <Star className="w-5 h-5 fill-current" />
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
+                <div className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-1">
                   PILLAR 3
                 </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                   Feedback Quality
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed mb-4">
@@ -140,7 +140,7 @@ const LeaderboardGuide = () => {
 
           <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-neutral-100 dark:bg-neutral-850 text-neutral-700 dark:text-neutral-300 font-bold border-b border-neutral-200 dark:border-neutral-800">
+              <thead className="bg-neutral-100 dark:bg-neutral-850 text-neutral-700 dark:text-neutral-300 font-semibold border-b border-neutral-200 dark:border-neutral-800">
                 <tr>
                   <th className="py-3 px-4 sm:px-6">Attendee Satisfaction %</th>
                   <th className="py-3 px-4 sm:px-6">Average Rating</th>
@@ -149,29 +149,29 @@ const LeaderboardGuide = () => {
               </thead>
               <tbody className="divide-y divide-neutral-150 dark:divide-neutral-800 text-neutral-800 dark:text-neutral-200">
                 <tr className="bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors font-medium">
-                  <td className="py-3.5 px-4 sm:px-6 font-bold text-emerald-600 dark:text-emerald-400">90% – 100%</td>
+                  <td className="py-3.5 px-4 sm:px-6 font-semibold text-emerald-600 dark:text-emerald-400">90% – 100%</td>
                   <td className="py-3.5 px-4 sm:px-6 text-neutral-500">4.5 – 5.0 ★</td>
                   <td className="py-3.5 px-4 sm:px-6 text-right font-black text-emerald-600 dark:text-emerald-400">+20 Points</td>
                 </tr>
                 <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-850/50 transition-colors">
-                  <td className="py-3.5 px-4 sm:px-6 font-semibold">80% – 89%</td>
+                  <td className="py-3.5 px-4 sm:px-6 font-medium">80% – 89%</td>
                   <td className="py-3.5 px-4 sm:px-6 text-neutral-500">4.0 – 4.4 ★</td>
-                  <td className="py-3.5 px-4 sm:px-6 text-right font-bold text-neutral-900 dark:text-white">+15 Points</td>
+                  <td className="py-3.5 px-4 sm:px-6 text-right font-semibold text-neutral-900 dark:text-white">+15 Points</td>
                 </tr>
                 <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-850/50 transition-colors">
-                  <td className="py-3.5 px-4 sm:px-6 font-semibold">70% – 79%</td>
+                  <td className="py-3.5 px-4 sm:px-6 font-medium">70% – 79%</td>
                   <td className="py-3.5 px-4 sm:px-6 text-neutral-500">3.5 – 3.9 ★</td>
-                  <td className="py-3.5 px-4 sm:px-6 text-right font-bold text-neutral-900 dark:text-white">+10 Points</td>
+                  <td className="py-3.5 px-4 sm:px-6 text-right font-semibold text-neutral-900 dark:text-white">+10 Points</td>
                 </tr>
                 <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-850/50 transition-colors">
-                  <td className="py-3.5 px-4 sm:px-6 font-semibold">60% – 69%</td>
+                  <td className="py-3.5 px-4 sm:px-6 font-medium">60% – 69%</td>
                   <td className="py-3.5 px-4 sm:px-6 text-neutral-500">3.0 – 3.4 ★</td>
-                  <td className="py-3.5 px-4 sm:px-6 text-right font-bold text-neutral-900 dark:text-white">+5 Points</td>
+                  <td className="py-3.5 px-4 sm:px-6 text-right font-semibold text-neutral-900 dark:text-white">+5 Points</td>
                 </tr>
                 <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-850/50 transition-colors text-neutral-400">
                   <td className="py-3.5 px-4 sm:px-6">Below 60%</td>
                   <td className="py-3.5 px-4 sm:px-6">&lt; 3.0 ★</td>
-                  <td className="py-3.5 px-4 sm:px-6 text-right font-semibold">0 Points</td>
+                  <td className="py-3.5 px-4 sm:px-6 text-right font-medium">0 Points</td>
                 </tr>
               </tbody>
             </table>
@@ -180,7 +180,7 @@ const LeaderboardGuide = () => {
           <div className="p-4 bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-2xl text-xs text-brand-900 dark:text-brand-300 flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="block font-bold mb-0.5">Minimum 10 Feedback Submissions Threshold:</strong>
+              <strong className="block font-semibold mb-0.5">Minimum 10 Feedback Submissions Threshold:</strong>
               To prevent artificial skewing (such as 2 responses yielding 100%), the feedback bonus activates only when an event receives at least <strong>10 verified attendee responses</strong>.
             </div>
           </div>
@@ -205,15 +205,15 @@ const LeaderboardGuide = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-bold">Event Hosting</span>
+              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-semibold">Event Hosting</span>
               <span className="text-lg font-black text-white">Max 10 pts</span>
             </div>
             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-bold">Verified Attendance</span>
+              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-semibold">Verified Attendance</span>
               <span className="text-lg font-black text-blue-400">Max 20 pts</span>
             </div>
             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-bold">Feedback Quality</span>
+              <span className="text-neutral-400 block text-[10px] uppercase font-sans font-semibold">Feedback Quality</span>
               <span className="text-lg font-black text-amber-400">Max 20 pts</span>
             </div>
           </div>
@@ -228,26 +228,26 @@ const LeaderboardGuide = () => {
 
           <div className="p-5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-750 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Scenario: Debate Championship</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full">Completed Event</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">Scenario: Debate Championship</span>
+              <span className="text-xs font-medium px-2.5 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full">Completed Event</span>
             </div>
 
             <ul className="text-xs sm:text-sm space-y-2.5 text-neutral-700 dark:text-neutral-300">
               <li className="flex items-center justify-between">
                 <span>1. Event successfully conducted:</span>
-                <span className="font-bold text-neutral-900 dark:text-white font-mono">+10 pts</span>
+                <span className="font-semibold text-neutral-900 dark:text-white font-mono">+10 pts</span>
               </li>
               <li className="flex items-center justify-between">
                 <span>2. 35 verified attendees (capped at 20):</span>
-                <span className="font-bold text-blue-600 dark:text-blue-400 font-mono">+20 pts</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">+20 pts</span>
               </li>
               <li className="flex items-center justify-between">
                 <span>3. 24 feedback responses with 87% satisfaction:</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">+15 pts</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400 font-mono">+15 pts</span>
               </li>
             </ul>
 
-            <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between font-bold text-sm sm:text-base">
+            <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between font-semibold text-sm sm:text-base">
               <span className="text-neutral-900 dark:text-white">Total Event Score Earned:</span>
               <span className="text-brand-600 dark:text-brand-400 font-black font-mono">10 + 20 + 15 = 45 Points</span>
             </div>
@@ -260,7 +260,7 @@ const LeaderboardGuide = () => {
             <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               72-Hour Quality Lock Rule
             </h3>
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -272,7 +272,7 @@ const LeaderboardGuide = () => {
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               Verified Attendance Enforcement
             </h3>
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -285,7 +285,7 @@ const LeaderboardGuide = () => {
         <div className="text-center pt-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-bold mysans text-xs rounded-full shadow-xs shadow-brand-500/20 hover:shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full shadow-xs shadow-brand-500/20 hover:shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
           >
             <Award className="w-4 h-4" />
             View Live Club Leaderboard

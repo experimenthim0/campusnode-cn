@@ -16,24 +16,24 @@ import CampusNodeIntroAnimation from '../components/CampusNodeIntroAnimation';
 import RegistrationTermsNotice from '../components/RegistrationTermsNotice';
 
 const DEPARTMENTS = [
-  'Computer Science & Engineering',
-  'Information Technology',
-  'Electronics & Communication Engineering',
-  'Electrical Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Chemical Engineering',
-  'Biotechnology',
-  'Instrumentation & Control Engineering',
-  'Industrial & Production Engineering',
-  'Textile Technology',
-  'Mathematics & Computing',
-  'Physics',
-  'Chemistry',
-  'Humanities & Management',
-  'Other / Administration',
+  "Computer Science & Engineering",
+  "Information Technology",
+  "Data Science & Engineering",
+  "Electronics & Communication Engineering",
+  "Electronics & VLSI Engineering",
+  "Electrical Engineering",
+  "Instrumentation & Control Engineering",
+  "Mechanical Engineering",
+  "Civil Engineering",
+  "Chemical Engineering",
+  "Biotechnology",
+  "Industrial & Production Engineering",
+  "Textile Technology",
+  "Mathematics & Computing",
+  "Physics",
+  "Chemistry",
+  "Humanities & Management",
 ];
-
 const RegisterFaculty = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
@@ -385,7 +385,7 @@ const RegisterFaculty = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-4 rounded-xl bg-cn-blue-600 hover:bg-cn-blue-700 text-white text-xs font-semibold uppercase tracking-wider shadow-lg shadow-cn-blue-600/25 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                    className="w-full py-3 px-4 rounded-xl bg-cn-blue-600 hover:bg-cn-blue-700 text-white text-xs font-medium uppercase tracking-wider shadow-lg shadow-cn-blue-600/25 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                   >
                     {loading ? (
                       <>
@@ -404,7 +404,7 @@ const RegisterFaculty = () => {
                 <div className="mt-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
                   <span>
                     Already have an account?{' '}
-                    <Link to="/login" className="font-semibold text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
+                    <Link to="/login" className="font-medium text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
                       Log in
                     </Link>
                   </span>

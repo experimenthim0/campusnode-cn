@@ -39,7 +39,7 @@ export const studentHeadAssignedTemplate = {
         level: 2,
         align: "left",
         color: colors.primary,
-        style: "margin: 0 0 4px 0; font-size: 22px;",
+        style: "margin: 0 0 4px 0; font-size: 20px;",
       })}
       
       ${BodyText({
@@ -83,12 +83,6 @@ export const studentHeadAssignedTemplate = {
         </tr>`
             : ""
         }
-        <tr class="info-row">
-          <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Status</td>
-          <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; text-align: right; vertical-align: middle;">
-            <span class="status-badge-active" style="display: inline-block; background: ${colors.successBg}; color: ${colors.successText}; border: 1px solid ${colors.successBorder}; padding: 3px 10px; border-radius: ${radii.sm}; font-size: 12px; font-weight: 600;">Active Leadership</span>
-          </td>
-        </tr>
       </table>
 
       <p class="email-body-text" style="font-family: ${typography.fontFamily}; font-size: 14px; font-weight: 600; color: ${colors.heading}; margin: 24px 0 8px 0;">

@@ -44,13 +44,13 @@ const CentralEventList = ({
     return (
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center rounded-2xl shadow-xs">
         <Calendar className="mx-auto text-neutral-400 mb-3" size={44} />
-        <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-200">No Central Events Yet</h3>
+        <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">No Central Events Yet</h3>
         <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
           Create your first college-wide event to coordinate participating clubs and staff members.
         </p>
         <button
           onClick={onCreateClick}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
         >
           <PlusCircle size={15} />
           Create College Event
@@ -76,12 +76,12 @@ const CentralEventList = ({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs text-neutral-500 pl-1">
             <Filter size={14} />
-            <span className="font-semibold hidden sm:inline">Status:</span>
+            <span className="font-medium hidden sm:inline">Status:</span>
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs font-bold rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
+            className="px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
           >
             <option value="ALL">All ({events.length})</option>
             <option value="PUBLISHED">Live ({events.filter((e) => e.reviewStatus === "PUBLISHED").length})</option>
@@ -92,7 +92,7 @@ const CentralEventList = ({
 
       {filteredEvents.length === 0 ? (
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 text-center rounded-2xl">
-          <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">No events matched your search</p>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">No events matched your search</p>
           <p className="text-xs text-neutral-500 mt-1">Try searching with a different keyword or filter.</p>
         </div>
       ) : (

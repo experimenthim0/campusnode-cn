@@ -44,7 +44,7 @@ const FeaturedEventsPage = () => {
         <div className="mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
           >
             <ArrowLeft size={14} />
             <span>Back to Home</span>
@@ -87,7 +87,7 @@ const FeaturedEventsPage = () => {
             <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4">
               <Calendar size={22} />
             </div>
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
               No Featured Events Right Now
             </h3>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 mb-6">
@@ -95,7 +95,7 @@ const FeaturedEventsPage = () => {
             </p>
             <Link
               to="/events"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors"
             >
               Browse All Events
             </Link>

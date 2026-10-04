@@ -83,7 +83,7 @@ const ClubDescription = ({ description }) => {
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
+          className="mt-2 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
         >
           <span>{isExpanded ? 'Show less' : 'Expand description'}</span>
           <i
@@ -99,7 +99,7 @@ const ClubDescription = ({ description }) => {
 
 const SocialProfilesSection = ({ user }) => (
   <div className="mt-8 pt-6 border-t border-border">
-    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Social Profiles</h3>
+    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Social Profiles</h3>
     <div className="flex flex-wrap gap-2">
       {user?.githubProfile && (
         <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 text-xs font-medium border-border">
@@ -167,10 +167,10 @@ const AchievementsSection = ({ winnings }) => (
                 <i className="ri-award-fill text-amber-500 text-lg" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider leading-none mb-1">
+                <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider leading-none mb-1">
                   {w.rank === 1 ? '🥇 1st Place / Winner' : w.rank === 2 ? '🥈 2nd Place / Runner Up' : w.rank === 3 ? '🥉 3rd Place' : `#${w.rank} Position`}
                 </p>
-                <Link to={`/event/${w.eventSlug}`} className="text-sm font-semibold text-foreground hover:text-primary hover:underline truncate block">
+                <Link to={`/event/${w.eventSlug}`} className="text-sm font-medium text-foreground hover:text-primary hover:underline truncate block">
                   {w.eventTitle}
                 </Link>
                 {w.clubName && (
@@ -183,7 +183,7 @@ const AchievementsSection = ({ winnings }) => (
       ) : (
         <div className="bg-muted/20 p-6 rounded-xl border border-border text-center">
           <img src="/trophy_3d.png" alt="Trophy" className="w-20 h-20 mx-auto mb-2" />
-          <p className="text-sm font-semibold text-foreground">No achievements recorded yet</p>
+          <p className="text-sm font-medium text-foreground">No achievements recorded yet</p>
           <p className="text-xs text-muted-foreground mt-1">Participate and win in campus events to earn trophies and appear on the leaderboard!</p>
         </div>
       )}
@@ -225,9 +225,9 @@ const ClubsSection = ({ user, clubsMap }) => {
         {memberships.length === 0 && (
           <div className="bg-muted/20 p-6 border border-border rounded-xl text-center">
             <i className="ri-building-4-line text-3xl text-muted-foreground mb-2 inline-block" />
-            <p className="text-sm font-semibold text-foreground">Not enrolled in any clubs yet</p>
+            <p className="text-sm font-medium text-foreground">Not enrolled in any clubs yet</p>
             <p className="text-xs text-muted-foreground mt-1 mb-4">Discover campus clubs, join events, and get involved!</p>
-            <Button asChild size="sm" className="font-semibold shadow-xs">
+            <Button asChild size="sm" className="font-medium shadow-xs">
               <Link to="/clubs">
                 <i className="ri-compass-3-line text-sm mr-1" /> Explore Clubs
               </Link>
@@ -256,8 +256,8 @@ const ClubsSection = ({ user, clubsMap }) => {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">{m.clubName || 'Club'}</h3>
-                        <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full border ${
+                        <h3 className="font-medium text-neutral-900 dark:text-white text-sm">{m.clubName || 'Club'}</h3>
+                        <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold rounded-full border ${
                           isLead
                             ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
                             : 'bg-brand-50 text-brand-800 border-brand-300 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800'
@@ -277,14 +277,14 @@ const ClubsSection = ({ user, clubsMap }) => {
                   <div className="flex flex-wrap items-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-neutral-200 dark:border-neutral-800 shrink-0">
                     <Link
                       to={`/club-events/${m.clubId}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold rounded-lg transition-colors shadow-2xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-medium rounded-lg transition-colors shadow-2xs"
                     >
                       <i className="ri-calendar-event-line text-xs font-light" /> Events
                     </Link>
                      {isLead && (
                     <Link
                       to={`/club/${m.clubId}/team`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
                     >
                       <i className="ri-team-line text-xs font-light" /> Team
                     </Link>
@@ -292,7 +292,7 @@ const ClubsSection = ({ user, clubsMap }) => {
                    
                       <Link
                         to={`/club/edit/${m.clubId}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
                       >
                         <i className="ri-settings-4-line text-xs text-neutral-500 font-light" /> Settings
                       </Link>
@@ -314,7 +314,7 @@ const ClubsSection = ({ user, clubsMap }) => {
         {memberOnlyMemberships.length > 0 && (
           <div className="space-y-3">
             {managementMemberships.length > 0 && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                 Also a member of
               </p>
             )}
@@ -330,10 +330,10 @@ const ClubsSection = ({ user, clubsMap }) => {
                     <div className="size-12 rounded-full border border-border overflow-hidden flex items-center justify-center bg-card mb-2.5">
                       <ClubLogoImage clubLogo={logo} clubName={m.clubName} />
                     </div>
-                    <h3 className="font-semibold text-foreground text-xs leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                    <h3 className="font-medium text-foreground text-xs leading-snug line-clamp-1 group-hover:text-primary transition-colors">
                       {m.clubName || 'Club Details'}
                     </h3>
-                    <Badge variant="secondary" className="mt-2 text-[10px] uppercase font-semibold px-2 py-0">
+                    <Badge variant="secondary" className="mt-2 text-[10px] uppercase font-medium px-2 py-0">
                       Member
                     </Badge>
                   </Link>
@@ -563,7 +563,7 @@ const Profile = () => {
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-medium text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
@@ -573,7 +573,7 @@ const Profile = () => {
                     <h1 className="text-2xl md:text-3xl font-semiold text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                    <Badge variant="secondary" className="font-medium text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
                       Faculty Coordinator
                     </Badge>
                   </div>
@@ -598,32 +598,32 @@ const Profile = () => {
             {/* Faculty Details */}
             {(user.department || user.branch || user.designation || user.phone) && (
               <div className="pt-8">
-                <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+                <h3 className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                   Faculty & Account Details
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {user.department && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                      <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Department</p>
-                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.department}</p>
+                      <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Department</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.department}</p>
                     </div>
                   )}
                   {user.branch && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                      <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Branch / Dept</p>
-                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.branch}</p>
+                      <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Branch / Dept</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.branch}</p>
                     </div>
                   )}
                   {user.designation && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                      <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Designation</p>
-                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.designation}</p>
+                      <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Designation</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.designation}</p>
                     </div>
                   )}
                   {user.phone && (
                     <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                      <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
-                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
+                      <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.phone}</p>
                     </div>
                   )}
                 </div>
@@ -638,7 +638,7 @@ const Profile = () => {
           <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-wider flex items-center gap-2">
+                <h2 className="text-lg font-medium text-neutral-900 dark:text-white tracking-wider flex items-center gap-2">
                   <i className="ri-shield-user-line text-brand-600 dark:text-brand-400" />
                   Assigned Club
                 </h2>
@@ -667,10 +667,10 @@ const Profile = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold text-neutral-900 dark:text-white text-base leading-snug">
+                            <h3 className="font-medium text-neutral-900 dark:text-white text-base leading-snug">
                               {club.clubName || "Assigned Club"}
                             </h3>
-                            <span className="px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full border border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800">
+                            <span className="px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-semibold rounded-full border border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800">
                               Faculty In-Charge
                             </span>
                           </div>
@@ -691,13 +691,13 @@ const Profile = () => {
                       <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-neutral-200/60 dark:border-neutral-800">
                         <Link
                           to={`/club-events/${clubId}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold rounded-lg transition-colors shadow-2xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-medium rounded-lg transition-colors shadow-2xs"
                         >
                           <i className="ri-calendar-event-line text-xs" /> Club Events
                         </Link>
                         <Link
                           to={`/club/${clubId}/team`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
                         >
                           <i className="ri-team-line text-xs" /> Team Management
                         </Link>
@@ -715,7 +715,7 @@ const Profile = () => {
             ) : (
               <div className="bg-neutral-50 dark:bg-neutral-800/40 p-6 border border-neutral-200 dark:border-neutral-800 rounded-xl text-center">
                 <i className="ri-shield-user-line text-3xl text-neutral-400 mb-2 inline-block" />
-                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">No club assigned yet</p>
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">No club assigned yet</p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">You will be assigned as coordinator for campus clubs by administration.</p>
               </div>
             )}
@@ -736,29 +736,29 @@ const Profile = () => {
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-medium text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
                 {/* Identity details & Header Action Buttons */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-medium text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                    <Badge variant="secondary" className="font-medium text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
                       External Participant
                     </Badge>
                   </div>
                   <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1 break-all">{user.email}</p>
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
-                    <Button asChild size="sm" className="font-semibold shadow-xs">
+                    <Button asChild size="sm" className="font-medium shadow-xs">
                       <Link to="/profile/edit">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="font-semibold border-border">
+                    <Button asChild variant="outline" size="sm" className="font-medium border-border">
                       <Link to="/my-events">
                         <Calendar className="size-3.5 mr-1" /> View My Events
                       </Link>
@@ -770,20 +770,20 @@ const Profile = () => {
 
             {/* Participant & Institution Details */}
             <div className="pt-8">
-              <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+              <h3 className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                 Participant & Institution Details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(user.collegeName || user.college) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">College / Institution</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.collegeName || user.college}</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">College / Institution</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.collegeName || user.college}</p>
                   </div>
                 )}
                 {user.phone && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{user.phone}</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Contact Phone</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.phone}</p>
                   </div>
                 )}
               </div>
@@ -811,17 +811,17 @@ const Profile = () => {
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl md:text-4xl font-semibold text-black dark:text-white select-none">{profileInitials}</span>
+                    <span className="text-3xl md:text-4xl font-medium text-black dark:text-white select-none">{profileInitials}</span>
                   )}
                 </div>
 
                 {/* Identity details & Header Action Buttons */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl md:text-3xl font-medium text-neutral-900 dark:text-white tracking-tight">
                       {user.name}
                     </h1>
-                    <Badge variant="secondary" className="font-semibold text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
+                    <Badge variant="secondary" className="font-medium text-primary bg-primary/10 border-primary/20 text-[10px] uppercase">
                       {isStudentLeadAccount ? 'Student • Student Lead' : isCoordinatorAccount ? 'Student • Coordinator' : 'Student'}
                     </Badge>
                   </div>
@@ -845,25 +845,25 @@ const Profile = () => {
 
             {/* Academic & Account Attributes */}
             <div className="pt-8">
-              <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
+              <h3 className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                 Academic & Account Attributes
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {user.rollNo && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Roll No</p>
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 ">{user.rollNo}</p>
                   </div>
                 )}
                 {(user.program || user.branch) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
                   </div>
                 )}
                 {displayAcademicStanding && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Academic Standing</p>
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                       {displayAcademicStanding}
                     </p>
@@ -871,7 +871,7 @@ const Profile = () => {
                 )}
                 {(user.graduationYear || displayGraduationYear) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
-                    <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Graduation Year</p>
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.graduationYear || displayGraduationYear}</p>
                   </div>
                 )}

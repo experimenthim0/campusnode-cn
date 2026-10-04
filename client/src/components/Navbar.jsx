@@ -227,7 +227,7 @@ const Navbar = () => {
 
   const navLinkCls = (path) =>
     `relative py-1 text-[14px] font-semibold tracking-wide transition-colors duration-200 group flex items-center justify-center ${isActive(path)
-      ? "text-cn-blue-600 dark:text-cn-blue-400 font-bold"
+      ? "text-cn-blue-600 dark:text-cn-blue-400 font-semibold"
       : "text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
     }`;
 
@@ -273,7 +273,7 @@ const Navbar = () => {
               className="flex items-center gap-2.5 shrink-0 group logofont hidden sm:block"
             >
               <span className="font-light text-[24px] tracking-wider text-black  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                Cam<span className="uppercase text-[18px] font-extrabold">P</span>usnode
+                Campusnode
               </span>
             </Link>
           </div>
@@ -283,7 +283,7 @@ const Navbar = () => {
             className="flex items-center gap-2.5 shrink-0 group logofont sm:hidden block"
           >
             <span className="font-light text-[24px] tracking-wider text-black  dark:text-neutral-200 leading-none select-none group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                Cam<span className="uppercase text-[18px] font-medium">P</span>usnode
+                Campusnode
               </span>
           </Link>
 
@@ -358,7 +358,7 @@ const Navbar = () => {
               title="Search (Ctrl+K)"
             >
               <i className={`${searchOpen ? "ri-close-line text-cn-blue-600" : "ri-search-line group-hover:scale-110"} text-base transition-transform duration-200`} />
-              <span className="hidden xl:inline-block text-[10px] font-bold uppercase tracking-wider text-cn-text-muted group-hover:text-cn-text bg-cn-surface-muted px-1.5 py-0.5 rounded border border-cn-border">⌘K</span>
+              <span className="hidden xl:inline-block text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted group-hover:text-cn-text bg-cn-surface-muted px-1.5 py-0.5 rounded border border-cn-border">⌘K</span>
             </button>
 
             {/* Theme toggle */}
@@ -404,7 +404,7 @@ const Navbar = () => {
                               <button
                                 type="button"
                                 onClick={handleMarkAllNotificationsRead}
-                                className="text-[11px] font-bold text-cn-text-muted hover:text-cn-text transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                                className="text-[11px] font-semibold text-cn-text-muted hover:text-cn-text transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                               >
                                 Mark all read
                               </button>
@@ -412,7 +412,7 @@ const Navbar = () => {
                             <Link
                               to="/notifications"
                               onClick={() => setNotifDropdownOpen(false)}
-                              className="inline-flex items-center gap-1 text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-xs font-bold uppercase tracking-wider group"
+                              className="inline-flex items-center gap-1 text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-xs font-semibold uppercase tracking-wider group"
                             >
                               See All
                               <i className="ri-arrow-right-line text-sm text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -429,19 +429,19 @@ const Navbar = () => {
                                 className={`block p-3.5 transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-transparent'}`}
                               >
                                 <div className="flex justify-between items-start mb-1">
-                                  <span className="text-[10px] font-bold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
+                                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
                                     {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
                                       ? 'CampusNode'
                                       : (notif.sender?.clubName || notif.sender?.name || 'CampusNode')}
                                   </span>
                                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap ml-2">{formatDate(notif.createdAt)}</span>
                                 </div>
-                                <h4 className="text-xs font-bold text-neutral-900 dark:text-neutral-100 mb-0.5 line-clamp-1">{notif.title}</h4>
+                                <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5 line-clamp-1">{notif.title}</h4>
                                 <p className="text-[11.5px] text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">{notif.message}</p>
                               </Link>
                             ))
                           ) : (
-                            <div className="p-8 text-center text-neutral-400 dark:text-neutral-500 text-xs font-bold uppercase tracking-wider">
+                            <div className="p-8 text-center text-neutral-400 dark:text-neutral-500 text-xs font-semibold uppercase tracking-wider">
                               No notifications yet
                             </div>
                           )}
@@ -468,7 +468,7 @@ const Navbar = () => {
                       alt="Profile"
                       className="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm border-2 border-white dark:border-neutral-900 group-hover:border-brand-500/40 transition-colors duration-200"
                     />
-                    <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 max-w-[90px] truncate hidden lg:block group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 max-w-[90px] truncate hidden lg:block group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                       {user.name?.split(" ")[0]}
                     </span>
                     <i
@@ -483,13 +483,13 @@ const Navbar = () => {
                       role="menu"
                     >
                       <div className="px-3 py-2.5 mb-1 rounded-xl bg-neutral-50 dark:bg-neutral-850/60 border border-neutral-100 dark:border-neutral-800/80">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                           Logged in as
                         </p>
                         <p className="text-xs font-black text-neutral-900 dark:text-neutral-100 truncate mt-0.5">
                           {user.name}
                         </p>
-                        <p className="text-[10px] tracking-wide text-brand-600 dark:text-brand-400 font-semibold truncate mt-0.5">
+                        <p className="text-[10px] tracking-wide text-brand-600 dark:text-brand-400 font-medium truncate mt-0.5">
                           {user?.memberships?.some(m => m.role === "CLUB_HEAD")
                             ? "Student • Student Lead"
                             : user?.memberships?.some(m => m.role === "COORDINATOR")
@@ -514,7 +514,7 @@ const Navbar = () => {
                           <Link
                             to="/admin-dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
+                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                             role="menuitem"
                           >
                             <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -524,7 +524,7 @@ const Navbar = () => {
                             <Link
                               to="/profile"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                               role="menuitem"
                             >
                               <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -537,7 +537,7 @@ const Navbar = () => {
                       <div className="mt-1 pt-1 border-t border-neutral-100 dark:border-neutral-800">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                           role="menuitem"
                         >
                           <LogoutIcon size={16} className="text-red-500 group-hover:translate-x-0.5 transition-transform duration-150">
@@ -644,12 +644,12 @@ const Navbar = () => {
                                 </span>
                                 <span className="text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(notif.createdAt)} </span>
                               </div>
-                              <h4 className="text-[13px] font-bold text-black dark:text-neutral-100 mb-1">{notif.title}</h4>
+                              <h4 className="text-[13px] font-semibold text-black dark:text-neutral-100 mb-1">{notif.title}</h4>
                               <p className="text-[12px] text-neutral-600 dark:text-neutral-400">{notif.message}</p>
                             </Link>
                           ))
                         ) : (
-                          <div className="p-6 text-center text-neutral-500 dark:text-neutral-450 text-[12px] font-bold tracking-widest">
+                          <div className="p-6 text-center text-neutral-500 dark:text-neutral-450 text-[12px] font-semibold tracking-widest">
                             No notifications yet
                           </div>
                         )}

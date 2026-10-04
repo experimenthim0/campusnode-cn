@@ -116,10 +116,10 @@ const CentralOrganizerTab = ({
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-zinc-800">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
+                            <span className="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
                                 Institutional Account (DSW)
                             </span>
-                            <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-md">
+                            <span className="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-md">
                                 System Account
                             </span>
                         </div>
@@ -152,8 +152,8 @@ const CentralOrganizerTab = ({
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">{centralOrganizer.name}</h3>
-                                    <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded-full">
+                                    <h3 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{centralOrganizer.name}</h3>
+                                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-600 text-white rounded-full">
                                         {centralOrganizer.assignment?.role || 'Lead Organiser'}
                                     </span>
                                 </div>
@@ -163,22 +163,22 @@ const CentralOrganizerTab = ({
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 mt-2">
                                     {centralOrganizer.assignment?.canManageEvents && (
-                                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-semibold rounded">
+                                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-medium rounded">
                                             Events
                                         </span>
                                     )}
                                     {centralOrganizer.assignment?.canTakeAttendance && (
-                                        <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] font-semibold rounded">
+                                        <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] font-medium rounded">
                                             Attendance
                                         </span>
                                     )}
                                     {centralOrganizer.assignment?.canVerifyPayments && (
-                                        <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold rounded">
+                                        <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium rounded">
                                             Payments
                                         </span>
                                     )}
                                     {centralOrganizer.assignment?.canDelegateStaff && (
-                                        <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-[10px] font-semibold rounded">
+                                        <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-[10px] font-medium rounded">
                                             Staff Delegation
                                         </span>
                                     )}
@@ -189,14 +189,14 @@ const CentralOrganizerTab = ({
                         <button
                             type="button"
                             onClick={() => handleRevokeCO(centralOrganizer.id, centralOrganizer.name)}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
                         >
                             Revoke Role
                         </button>
                     </div>
                 ) : (
                     <div className="mt-5 p-6 rounded-xl border border-dashed border-neutral-300 dark:border-zinc-800 text-center space-y-2">
-                        <p className="text-sm font-bold text-neutral-700 dark:text-neutral-300">No Lead Central Event Organiser Currently Assigned</p>
+                        <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">No Lead Central Event Organiser Currently Assigned</p>
                         <p className="text-xs text-neutral-400 max-w-md mx-auto">
                             Search an existing registered student below to assign them institutional responsibilities under DSW.
                         </p>
@@ -209,11 +209,11 @@ const CentralOrganizerTab = ({
                 <div className="border border-cn-border rounded-2xl p-6 bg-cn-surface dark:bg-cn-surface-muted shadow-lg space-y-5">
                     <div className="flex items-center justify-between pb-3 border-b border-cn-border-subtle">
                         <div>
-                            <h3 className="text-sm font-bold text-cn-text">
+                            <h3 className="text-sm font-semibold text-cn-text">
                                 Configure DSW Role &amp; Capabilities
                             </h3>
                             <p className="text-xs text-cn-text-muted mt-0.5">
-                                Assigning capabilities to <span className="font-bold text-cn-text">{selectedStudent.name}</span> ({selectedStudent.email})
+                                Assigning capabilities to <span className="font-semibold text-cn-text">{selectedStudent.name}</span> ({selectedStudent.email})
                             </p>
                         </div>
                         <button
@@ -227,7 +227,7 @@ const CentralOrganizerTab = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs font-bold text-cn-text block mb-1.5">
+                            <label className="text-xs font-semibold text-cn-text block mb-1.5">
                                 Institutional Role
                             </label>
                             <select
@@ -244,7 +244,7 @@ const CentralOrganizerTab = ({
                         </div>
 
                         <div>
-                            <label className="text-xs font-bold text-cn-text block mb-1.5">
+                            <label className="text-xs font-semibold text-cn-text block mb-1.5">
                                 Specific Capability Toggles
                             </label>
                             <div className="grid grid-cols-2 gap-2">
@@ -292,7 +292,7 @@ const CentralOrganizerTab = ({
                         <button
                             type="button"
                             onClick={() => setSelectedStudent(null)}
-                            className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                            className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                         >
                             Cancel
                         </button>
@@ -300,7 +300,7 @@ const CentralOrganizerTab = ({
                             type="button"
                             disabled={assigningCO}
                             onClick={handleConfirmAssign}
-                            className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-bold rounded-xl shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
+                            className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
                         >
                             {assigningCO ? 'Assigning...' : 'Save & Assign'}
                         </button>
@@ -336,20 +336,20 @@ const CentralOrganizerTab = ({
                         {studentSearchResults.map((st) => (
                             <div key={st.id} className="p-3.5 flex items-center justify-between gap-4 hover:bg-neutral-50 dark:hover:bg-zinc-900/50 transition-colors">
                                 <div>
-                                    <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{st.name}</p>
+                                    <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">{st.name}</p>
                                     <p className="text-[11px] text-neutral-400">{st.email} {st.rollNo ? `• ${st.rollNo}` : ''}</p>
                                     <p className="text-[10px] text-neutral-500">{st.branch} • Year {st.year}</p>
                                 </div>
 
                                 {st.accessLevel === 'central_organizer' ? (
-                                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-bold rounded-lg">
+                                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-semibold rounded-lg">
                                         Current Lead
                                     </span>
                                 ) : (
                                     <button
                                         type="button"
                                         onClick={() => handleOpenAssignModal(st)}
-                                        className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                                        className="px-3.5 py-1.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                                     >
                                         Configure & Assign
                                     </button>

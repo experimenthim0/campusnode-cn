@@ -82,7 +82,7 @@ const ProfileTab = ({
                 <CardHeader className="pb-4">
                     <div className="flex items-center gap-2">
                         <User className="size-4 text-primary" />
-                        <CardTitle className="text-base font-bold">Admin Profile</CardTitle>
+                        <CardTitle className="text-base font-semibold">Admin Profile</CardTitle>
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
                         Update your administrator identity and security preferences.
@@ -92,7 +92,7 @@ const ProfileTab = ({
                 <form onSubmit={handleUpdateProfile}>
                     <CardContent className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="block text-xs font-semibold text-foreground">
+                            <label className="block text-xs font-medium text-foreground">
                                 Display Name
                             </label>
                             <Input 
@@ -105,7 +105,7 @@ const ProfileTab = ({
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-xs font-semibold text-foreground">
+                            <label className="block text-xs font-medium text-foreground">
                                 Email Address
                             </label>
                             <Input 
@@ -125,7 +125,7 @@ const ProfileTab = ({
                                     className="mt-0.5 size-4 rounded accent-primary cursor-pointer" 
                                 />
                                 <div className="space-y-0.5">
-                                    <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                    <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
                                         <ShieldCheck className="size-3.5 text-primary" />
                                         Enable Two-Factor Authentication (2FA)
                                     </p>
@@ -141,7 +141,7 @@ const ProfileTab = ({
                         <Button 
                             type="submit" 
                             disabled={isSavingProfile}
-                            className="gap-2 cursor-pointer font-semibold shadow-xs"
+                            className="gap-2 cursor-pointer font-medium shadow-xs"
                         >
                             {isSavingProfile && <Loader2 className="size-3.5 animate-spin" />}
                             {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
@@ -154,7 +154,7 @@ const ProfileTab = ({
                 <CardHeader className="pb-4">
                     <div className="flex items-center gap-2">
                         <KeyRound className="size-4 text-primary" />
-                        <CardTitle className="text-base font-bold">Change Password</CardTitle>
+                        <CardTitle className="text-base font-semibold">Change Password</CardTitle>
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
                         Ensure your administrative password is unique, strong, and stored securely.
@@ -164,7 +164,7 @@ const ProfileTab = ({
                 <form onSubmit={handleChangePassword}>
                     <CardContent className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="block text-xs font-semibold text-foreground">
+                            <label className="block text-xs font-medium text-foreground">
                                 Current Password
                             </label>
                             <Input 
@@ -178,7 +178,7 @@ const ProfileTab = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-foreground">
+                                <label className="block text-xs font-medium text-foreground">
                                     New Password
                                 </label>
                                 <Input 
@@ -195,7 +195,7 @@ const ProfileTab = ({
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-foreground">
+                                <label className="block text-xs font-medium text-foreground">
                                     Confirm New Password
                                 </label>
                                 <Input 
@@ -213,7 +213,7 @@ const ProfileTab = ({
                         <Button 
                             type="submit" 
                             disabled={isSavingPassword}
-                            className="gap-2 cursor-pointer font-semibold shadow-xs"
+                            className="gap-2 cursor-pointer font-medium shadow-xs"
                         >
                             {isSavingPassword && <Loader2 className="size-3.5 animate-spin" />}
                             {isSavingPassword ? 'Updating Password...' : 'Update Password'}

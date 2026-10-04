@@ -111,11 +111,11 @@ const BlackoutModal = ({
       <div className="w-full max-w-md bg-cn-surface border border-cn-border rounded-2xl shadow-2xl overflow-hidden transition-colors">
         <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 font-bold">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 font-semibold">
               <Building2 size={18} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-cn-text leading-tight">
+              <h3 className="text-base sm:text-lg font-semibold text-cn-text leading-tight">
                 {editingBlackout ? "Edit Venue Blackout" : "Add Venue Blackout"}
               </h3>
               <p className="text-xs text-cn-text-muted font-normal mt-0.5">
@@ -135,13 +135,13 @@ const BlackoutModal = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-cn-text-secondary">
           <div>
-            <label className="block text-xs font-bold text-cn-text mb-1.5">
+            <label className="block text-xs font-semibold text-cn-text mb-1.5">
               Select Venue <span className="text-brand-500">*</span>
             </label>
             <select
               value={venue}
               onChange={(e) => setVenue(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-bold text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
+              className="w-full px-3.5 py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl text-xs sm:text-[13px] font-semibold text-cn-text outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors"
               required
             >
               {venueList.map((v) => (
@@ -153,7 +153,7 @@ const BlackoutModal = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-cn-text mb-1.5">
+            <label className="block text-xs font-semibold text-cn-text mb-1.5">
               Blackout Title / Reason <span className="text-brand-500">*</span>
             </label>
             <input
@@ -167,7 +167,7 @@ const BlackoutModal = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-cn-text mb-1.5">
+            <label className="block text-xs font-semibold text-cn-text mb-1.5">
               Additional Details / Description
             </label>
             <textarea
@@ -181,7 +181,7 @@ const BlackoutModal = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-cn-text mb-1.5">
+              <label className="block text-xs font-semibold text-cn-text mb-1.5">
                 Start Date & Time <span className="text-brand-500">*</span>
               </label>
               <input
@@ -194,7 +194,7 @@ const BlackoutModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-cn-text mb-1.5">
+              <label className="block text-xs font-semibold text-cn-text mb-1.5">
                 End Date & Time <span className="text-brand-500">*</span>
               </label>
               <input
@@ -213,7 +213,7 @@ const BlackoutModal = ({
                 type="button"
                 onClick={handleDelete}
                 disabled={submitting}
-                className="px-3.5 py-2.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/40 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="px-3.5 py-2.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/40 text-xs font-semibold rounded-xl transition-all cursor-pointer"
               >
                 Remove
               </button>
@@ -226,14 +226,14 @@ const BlackoutModal = ({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted dark:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-semibold rounded-xl transition-colors shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {submitting ? "Saving..." : editingBlackout ? "Update Blackout" : "Save Blackout"}
               </button>

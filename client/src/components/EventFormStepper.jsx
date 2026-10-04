@@ -131,7 +131,7 @@ const EventFormStepper = ({
               >
                 {/* Step indicator circle */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all shrink-0 ${
                     hasError
                       ? 'bg-rose-100 border-2 border-rose-500 text-rose-700'
                       : isActive
@@ -154,7 +154,7 @@ const EventFormStepper = ({
                 <div className="min-w-0">
                   <div className="flex items-center space-x-1.5">
                     <span
-                      className={`text-xs font-semibold tracking-wide uppercase ${
+                      className={`text-xs font-medium tracking-wide uppercase ${
                         isActive
                           ? 'text-neutral-900'
                           : hasError

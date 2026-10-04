@@ -542,7 +542,7 @@ const CreateEvent = () => {
     const inputCls =
         'w-full px-4 py-2.5 border border-neutral-200 dark:border-zinc-800 rounded-lg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all bg-cn-surface text-black dark:text-white placeholder:text-neutral-400';
     const labelCls =
-        'block text-sm font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider mb-1.5';
+        'block text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wider mb-1.5';
 
     const getFieldCls = (fieldName) =>
         `${inputCls} ${fieldErrors[fieldName] ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40' : ''}`;
@@ -554,7 +554,7 @@ const CreateEvent = () => {
                     <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
                         <AlertCircle className="w-7 h-7" />
                     </div>
-                    <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Access Restricted</h2>
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Access Restricted</h2>
                     <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
                         Faculty coordinators cannot create events. Event creation is reserved for student club heads and coordinators.
                     </p>
@@ -606,7 +606,7 @@ const CreateEvent = () => {
                         <div className="flex items-center space-x-3">
                             <RotateCcw className="w-5 h-5 text-brand-600 shrink-0" />
                             <div>
-                                <h4 className="text-xs font-bold text-brand-900 dark:text-brand-200 uppercase tracking-wider">
+                                <h4 className="text-xs font-semibold text-brand-900 dark:text-brand-200 uppercase tracking-wider">
                                     Unsaved Draft Found
                                 </h4>
                                 <p className="text-xs text-brand-700 dark:text-brand-300">
@@ -693,7 +693,7 @@ const CreateEvent = () => {
                                             <Handshake className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <label htmlFor="joint-event-toggle" className="text-xs font-semibold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                            <label htmlFor="joint-event-toggle" className="text-xs font-medium text-neutral-900 dark:text-white cursor-pointer select-none">
                                                 Joint Event (Club Collaboration)
                                             </label>
                                             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -715,7 +715,7 @@ const CreateEvent = () => {
 
                                 {isJointEvent && (
                                     <div className="mt-4 pt-3 border-t border-neutral-200/80 dark:border-neutral-800 space-y-3">
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                                             Select Collaborating Club(s)
                                         </label>
                                         <select
@@ -745,7 +745,7 @@ const CreateEvent = () => {
                                                     return (
                                                         <span
                                                             key={cid}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-medium"
                                                         >
                                                             {club?.clubLogo && (
                                                                 <img src={club.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
@@ -840,10 +840,10 @@ const CreateEvent = () => {
                                     <Calendar className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-semibold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 2
                                     </span>
-                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                    <h2 className="text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                                         Schedule & Access
                                     </h2>
                                 </div>
@@ -900,7 +900,7 @@ const CreateEvent = () => {
                                                 key={prog}
                                                 type="button"
                                                 onClick={() => handleProgramToggle(prog)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                                                     isSelected
                                                         ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
                                                         : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
@@ -937,7 +937,7 @@ const CreateEvent = () => {
                                                     key={yr}
                                                     type="button"
                                                     onClick={() => handleYearToggle(yr)}
-                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                                                         isSelected
                                                             ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-900'
                                                             : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
@@ -975,7 +975,7 @@ const CreateEvent = () => {
                                                     key={br}
                                                     type="button"
                                                     onClick={() => handleBranchToggle(br)}
-                                                    className={`px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
+                                                    className={`px-2.5 py-1 rounded text-xs font-medium border transition-all cursor-pointer ${
                                                         isSelected
                                                             ? 'bg-neutral-900 text-white border-neutral-900'
                                                             : 'bg-white dark:bg-neutral-800 text-neutral-600 border-neutral-200'
@@ -1000,7 +1000,7 @@ const CreateEvent = () => {
                                         onChange={(e) => setFormData(prev => ({ ...prev, allowExternal: e.target.checked }))}
                                         className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                     />
-                                    <span className="font-semibold">Allow External (Non-Campus) Participants</span>
+                                    <span className="font-medium">Allow External (Non-Campus) Participants</span>
                                 </label>
                                 <p className="text-xs text-neutral-400 mt-0.5 ml-6">
                                     Enables students from other institutions to register with external credentials.
@@ -1017,10 +1017,10 @@ const CreateEvent = () => {
                                     <CreditCard className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-semibold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 3
                                     </span>
-                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                    <h2 className="text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                                         Registration & Payment
                                     </h2>
                                 </div>
@@ -1113,7 +1113,7 @@ const CreateEvent = () => {
                                             onChange={(e) => setFormData(prev => ({ ...prev, allowWaitlist: e.target.checked }))}
                                             className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
                                         />
-                                        <span className="font-semibold">Enable Waiting List</span>
+                                        <span className="font-medium">Enable Waiting List</span>
                                     </label>
                                     <p className="text-xs text-neutral-400 mt-0.5 ml-6">
                                         Attendees can join a waitlist once seats are full.
@@ -1149,7 +1149,7 @@ const CreateEvent = () => {
                                                     : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300'
                                             }`}
                                         >
-                                            <span className="text-xs font-bold block text-neutral-900 dark:text-white">
+                                            <span className="text-xs font-semibold block text-neutral-900 dark:text-white">
                                                 {opt.title}
                                             </span>
                                             <span className="text-[11px] text-neutral-500 mt-0.5 block">
@@ -1256,7 +1256,7 @@ const CreateEvent = () => {
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
                                             Custom Registration Questions
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1266,7 +1266,7 @@ const CreateEvent = () => {
                                     <button
                                         type="button"
                                         onClick={addCustomField}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
                                     >
                                         <Plus className="w-3.5 h-3.5" /> Add Question
                                     </button>
@@ -1278,7 +1278,7 @@ const CreateEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-neutral-500">Question #{idx + 1}</span>
+                                            <span className="text-xs font-semibold text-neutral-500">Question #{idx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(idx)}
@@ -1313,7 +1313,7 @@ const CreateEvent = () => {
 
                                         {cf.type === 'select' && (
                                             <div className="pl-2 border-l-2 border-brand-500 space-y-2 mt-2">
-                                                <span className="text-[11px] font-semibold text-neutral-400 block">
+                                                <span className="text-[11px] font-medium text-neutral-400 block">
                                                     Dropdown Choices:
                                                 </span>
                                                 {(cf.options || []).map((opt, oIdx) => (
@@ -1337,7 +1337,7 @@ const CreateEvent = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => addOptionToField(idx)}
-                                                    className="text-xs text-brand-600 hover:underline font-semibold cursor-pointer"
+                                                    className="text-xs text-brand-600 hover:underline font-medium cursor-pointer"
                                                 >
                                                     + Add Choice
                                                 </button>
@@ -1383,10 +1383,10 @@ const CreateEvent = () => {
                                     <Sparkles className="w-4 h-4 text-brand-600" />
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-bold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <span className="block text-[10px] font-semibold text-brand-600 uppercase tracking-widest leading-none mb-0.5">
                                         Step 4
                                     </span>
-                                    <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight">
+                                    <h2 className="text-base font-semibold text-neutral-900 dark:text-white leading-tight">
                                         Extras & Settings
                                     </h2>
                                 </div>
@@ -1395,7 +1395,7 @@ const CreateEvent = () => {
                             {/* Additional Settings Toggles */}
                             <div className="space-y-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
                                 <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
-                                    <span className="font-semibold">Provide Certificates to Attendees</span>
+                                    <span className="font-medium">Provide Certificates to Attendees</span>
                                     <input
                                         type="checkbox"
                                         checked={Boolean(formData.provideCertificate)}
@@ -1405,7 +1405,7 @@ const CreateEvent = () => {
                                 </label>
 
                                 <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
-                                    <span className="font-semibold">Enable Attendee Post-Event Feedback</span>
+                                    <span className="font-medium">Enable Attendee Post-Event Feedback</span>
                                     <input
                                         type="checkbox"
                                         checked={Boolean(formData.feedbackEnabled)}
@@ -1415,7 +1415,7 @@ const CreateEvent = () => {
                                 </label>
 
                                 <label className="flex items-center justify-between text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer pt-2 border-t border-neutral-200 dark:border-neutral-700">
-                                    <span className="font-semibold">Publicly Display Winners After Event</span>
+                                    <span className="font-medium">Publicly Display Winners After Event</span>
                                     <input
                                         type="checkbox"
                                         checked={Boolean(formData.showWinner)}
@@ -1429,7 +1429,7 @@ const CreateEvent = () => {
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
                                             Event Sponsors
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1439,7 +1439,7 @@ const CreateEvent = () => {
                                     <button
                                         type="button"
                                         onClick={addSponsor}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
                                     >
                                         <Plus className="w-3.5 h-3.5" /> Add Sponsor
                                     </button>
@@ -1451,7 +1451,7 @@ const CreateEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-neutral-500">Sponsor #{sIdx + 1}</span>
+                                            <span className="text-xs font-semibold text-neutral-500">Sponsor #{sIdx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeSponsor(sIdx)}
@@ -1491,7 +1491,7 @@ const CreateEvent = () => {
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
                                             Media Gallery
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1501,7 +1501,7 @@ const CreateEvent = () => {
                                     <button
                                         type="button"
                                         onClick={addMedia}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
                                     >
                                         <Plus className="w-3.5 h-3.5" /> Add Media
                                     </button>
@@ -1513,7 +1513,7 @@ const CreateEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-neutral-500">Media #{mIdx + 1}</span>
+                                            <span className="text-xs font-semibold text-neutral-500">Media #{mIdx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeMedia(mIdx)}
@@ -1558,14 +1558,14 @@ const CreateEvent = () => {
                                 <button
                                     type="button"
                                     onClick={handlePrevStep}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" /> Previous Step
                                 </button>
                             ) : (
                                 <Link
                                     to="/profile"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </Link>
@@ -1579,7 +1579,7 @@ const CreateEvent = () => {
                                 type="button"
                                 disabled={isSavingDraft}
                                 onClick={handleSaveServerDraft}
-                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-medium text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
                             >
                                 <Save className="w-3.5 h-3.5" />
                                 Save Draft
@@ -1589,7 +1589,7 @@ const CreateEvent = () => {
                                 <button
                                     type="button"
                                     onClick={handleNextStep}
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm cursor-pointer"
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm cursor-pointer"
                                 >
                                     Continue <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
@@ -1597,7 +1597,7 @@ const CreateEvent = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium transition-all shadow-sm cursor-pointer disabled:opacity-50"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
                                     {isSubmitting ? 'Creating Event...' : 'Preview Event →'}

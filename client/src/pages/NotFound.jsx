@@ -130,7 +130,7 @@ const NotFound = () => {
         
         {/* Subtle Brand Tag */}
         <div className="inline-flex items-center gap-2">
-          <Badge variant="outline" className="border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px] px-2.5 py-0.5">
+          <Badge variant="outline" className="border-border text-muted-foreground font-medium uppercase tracking-wider text-[10px] px-2.5 py-0.5">
             <Compass className="size-3 text-primary mr-1" />
             Error 404 • Destination Unknown
           </Badge>
@@ -141,7 +141,7 @@ const NotFound = () => {
           <h1 className="text-7xl md:text-8xl font-black tracking-tight text-foreground select-none font-mono">
             404
           </h1>
-          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
             Page Not Found
           </p>
         </div>
@@ -150,7 +150,7 @@ const NotFound = () => {
         <Card className="border-border bg-card shadow-xs text-left">
           <CardContent className="p-5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
                 Campus Dispatch
               </span>
               <span className="text-[10px] text-muted-foreground font-mono">
@@ -166,7 +166,7 @@ const NotFound = () => {
         {/* Auto Redirect Notice */}
         <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1.5">
           Redirecting to home in{' '}
-          <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 font-bold">
+          <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 font-semibold">
             {countdown}s
           </Badge>
         </p>
@@ -175,7 +175,7 @@ const NotFound = () => {
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <Button
             onClick={() => navigate('/')}
-            className="gap-2 cursor-pointer font-semibold shadow-xs"
+            className="gap-2 cursor-pointer font-medium shadow-xs"
           >
             <Home className="size-4" />
             Take Me Home
@@ -183,7 +183,7 @@ const NotFound = () => {
           <Button
             variant="outline"
             onClick={() => navigate('/events')}
-            className="gap-2 cursor-pointer font-semibold"
+            className="gap-2 cursor-pointer font-medium"
           >
             <CalendarDays className="size-4" />
             Browse Events

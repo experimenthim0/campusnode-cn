@@ -77,7 +77,7 @@ const CentralEventForm = ({
           <button
             type="button"
             onClick={onSwitchToCreate}
-            className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer flex items-center gap-1"
+            className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline cursor-pointer flex items-center gap-1"
           >
             <PlusCircle size={14} />
             Switch to Create New
@@ -93,12 +93,12 @@ const CentralEventForm = ({
       <form onSubmit={onSubmit} className="space-y-6">
         {/* Registration Requirement Setting */}
         <div className="p-4 bg-brand-50/60 dark:bg-brand-950/20 border border-brand-200/80 dark:border-brand-900/50 rounded-xl space-y-2">
-          <label className="block text-xs font-bold uppercase tracking-wider text-brand-900 dark:text-brand-300">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-brand-900 dark:text-brand-300">
             Registration Requirement *
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             <label
-              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                 formData.registrationType === "none"
                   ? "bg-white dark:bg-neutral-900 border-brand-600 text-brand-600 dark:text-brand-400 shadow-xs"
                   : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300"
@@ -116,7 +116,7 @@ const CentralEventForm = ({
             </label>
 
             <label
-              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                 formData.registrationType === "individual"
                   ? "bg-white dark:bg-neutral-900 border-brand-600 text-brand-600 dark:text-brand-400 shadow-xs"
                   : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300"
@@ -134,7 +134,7 @@ const CentralEventForm = ({
             </label>
 
             <label
-              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+              className={`flex items-center gap-2.5 p-3 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                 formData.registrationType === "team"
                   ? "bg-white dark:bg-neutral-900 border-brand-600 text-brand-600 dark:text-brand-400 shadow-xs"
                   : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300"
@@ -160,7 +160,7 @@ const CentralEventForm = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Event Title *
             </label>
             <input
@@ -174,7 +174,7 @@ const CentralEventForm = ({
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Description
             </label>
             <WysiwygMarkdownEditor
@@ -186,7 +186,7 @@ const CentralEventForm = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Venue *
             </label>
             <div className="relative">
@@ -209,7 +209,7 @@ const CentralEventForm = ({
 
           {formData.registrationType !== "none" ? (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                 Total Seats (0 = Unlimited)
               </label>
               <input
@@ -222,7 +222,7 @@ const CentralEventForm = ({
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                 Capacity
               </label>
               <input
@@ -235,7 +235,7 @@ const CentralEventForm = ({
           )}
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Start Time *
             </label>
             <input
@@ -248,7 +248,7 @@ const CentralEventForm = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               End Time *
             </label>
             <input
@@ -262,7 +262,7 @@ const CentralEventForm = ({
 
           {formData.registrationType !== "none" && (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
                 Registration Deadline
               </label>
               <input
@@ -277,7 +277,7 @@ const CentralEventForm = ({
           {/* Event Poster: Upload File + Direct Image URL */}
           <div className="md:col-span-2 space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                 Event Poster
               </label>
               <span className="text-[11px] text-neutral-500">
@@ -303,7 +303,7 @@ const CentralEventForm = ({
                   {uploadingPoster ? (
                     <div className="flex flex-col items-center gap-2 py-2">
                       <Loader2 size={24} className="animate-spin text-brand-600" />
-                      <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                      <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
                         Uploading poster...
                       </span>
                     </div>
@@ -313,7 +313,7 @@ const CentralEventForm = ({
                         <Upload size={18} />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                        <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                           <span className="text-brand-600 underline">Click to upload</span> or drag & drop
                         </p>
                         <p className="text-[10px] text-neutral-400 mt-0.5">PNG, JPG, JPEG, WEBP (Max 5MB)</p>
@@ -347,7 +347,7 @@ const CentralEventForm = ({
                       }}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">
+                      <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">
                         Poster Selected
                       </p>
                       <p className="text-[10px] text-neutral-400 truncate mt-0.5">
@@ -379,7 +379,7 @@ const CentralEventForm = ({
                 <GraduationCap size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider">
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider">
                   Eligibility & Audience Restrictions
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -390,7 +390,7 @@ const CentralEventForm = ({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                   Allowed Programs <span className="text-brand-600">*</span>
                 </label>
                 <span className="text-[11px] text-neutral-400">Select at least one</span>
@@ -403,7 +403,7 @@ const CentralEventForm = ({
                       key={prog}
                       type="button"
                       onClick={() => handleProgramToggle(prog)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
                         isChecked
                           ? "bg-brand-600 border-brand-600 text-white shadow-xs"
                           : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300"
@@ -418,7 +418,7 @@ const CentralEventForm = ({
 
             <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-850">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                   Target Academic Years
                 </label>
                 <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -432,7 +432,7 @@ const CentralEventForm = ({
                       if (val) setFormData((prev) => ({ ...prev, allowedYears: [] }));
                     }}
                   />
-                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     Allow All Years (Open to all batches)
                   </span>
                 </label>
@@ -447,7 +447,7 @@ const CentralEventForm = ({
                         key={yr}
                         type="button"
                         onClick={() => handleYearToggle(yr)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
                           isChecked
                             ? "bg-brand-600 border-brand-600 text-white"
                             : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-750 text-neutral-700 dark:text-neutral-300 hover:border-brand-400"
@@ -463,7 +463,7 @@ const CentralEventForm = ({
 
             <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-850">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                   Eligible Branches / Departments
                 </label>
                 <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -477,7 +477,7 @@ const CentralEventForm = ({
                       if (val) setFormData((prev) => ({ ...prev, allowedBranches: [] }));
                     }}
                   />
-                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     Allow All Branches
                   </span>
                 </label>
@@ -492,7 +492,7 @@ const CentralEventForm = ({
                         key={branch}
                         type="button"
                         onClick={() => handleBranchToggle(branch)}
-                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border text-center truncate ${
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border text-center truncate ${
                           isChecked
                             ? "bg-brand-600 border-brand-600 text-white"
                             : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-750 text-neutral-700 dark:text-neutral-300 hover:border-brand-400"
@@ -524,7 +524,7 @@ const CentralEventForm = ({
                 className="mt-0.5 w-4 h-4 accent-brand-600 rounded cursor-pointer"
               />
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   <Award size={14} className="text-brand-600" />
                   Provide Digital Certificates
                 </div>
@@ -548,7 +548,7 @@ const CentralEventForm = ({
                 className="mt-0.5 w-4 h-4 accent-brand-600 rounded cursor-pointer"
               />
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   <Trophy size={14} className="text-brand-600" />
                   Announce Competition Winners
                 </div>
@@ -572,7 +572,7 @@ const CentralEventForm = ({
                 className="mt-0.5 w-4 h-4 accent-brand-600 rounded cursor-pointer"
               />
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   <Star size={14} className="text-brand-600 fill-brand-500" />
                   Collect Attendee Feedback
                 </div>
@@ -585,7 +585,7 @@ const CentralEventForm = ({
 
           {/* Publish Mode */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-1.5">
               Publish Status
             </label>
             <select
@@ -603,14 +603,14 @@ const CentralEventForm = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 text-sm font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors"
+            className="px-5 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={creating}
-            className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl shadow-md cursor-pointer transition-colors"
+            className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-md cursor-pointer transition-colors"
           >
             {creating
               ? (editingEventId ? "Saving Changes..." : "Creating Event...")

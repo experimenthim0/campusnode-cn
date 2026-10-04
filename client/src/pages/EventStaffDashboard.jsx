@@ -129,14 +129,14 @@ const EventStaffDashboard = () => {
                       className="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-5 shadow-xs space-y-4"
                     >
                       <div>
-                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded">
+                        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded">
                           Staff Invitation
                         </span>
-                        <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mt-1">
+                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mt-1">
                           {inv.event?.title}
                         </h3>
                         <p className="text-xs text-neutral-500 mt-0.5">
-                          Invited by: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{inv.invitedBy?.name}</span> ({inv.invitedBy?.email})
+                          Invited by: <span className="font-medium text-neutral-700 dark:text-neutral-300">{inv.invitedBy?.name}</span> ({inv.invitedBy?.email})
                         </p>
                       </div>
 
@@ -152,14 +152,14 @@ const EventStaffDashboard = () => {
                       </div>
 
                       <div>
-                        <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
+                        <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                           Assigned Permissions:
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {inv.permissions.map((p) => (
                             <span
                               key={p}
-                              className="px-2 py-0.5 text-[11px] font-semibold bg-white dark:bg-neutral-800 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 rounded"
+                              className="px-2 py-0.5 text-[11px] font-medium bg-white dark:bg-neutral-800 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 rounded"
                             >
                               {p.replace(/_/g, " ")}
                             </span>
@@ -171,14 +171,14 @@ const EventStaffDashboard = () => {
                         <button
                           onClick={() => handleAccept(inv.id)}
                           disabled={processingId === inv.id}
-                          className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                          className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
                         >
                           {processingId === inv.id ? "Accepting..." : "Accept Invitation"}
                         </button>
                         <button
                           onClick={() => handleReject(inv.id)}
                           disabled={processingId === inv.id}
-                          className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 disabled:opacity-50 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                          className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 disabled:opacity-50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                         >
                           Reject
                         </button>
@@ -197,7 +197,7 @@ const EventStaffDashboard = () => {
               {activeStaff.length === 0 ? (
                 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-10 text-center rounded-2xl">
                   <Shield className="mx-auto text-neutral-400 mb-2" size={32} />
-                  <p className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                     No Active Staff Assignments
                   </p>
                   <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
@@ -218,10 +218,10 @@ const EventStaffDashboard = () => {
                         <div>
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded">
+                              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded">
                                 Active Staff
                               </span>
-                              <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mt-1.5">
+                              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mt-1.5">
                                 {staff.event?.title}
                               </h3>
                             </div>
@@ -245,14 +245,14 @@ const EventStaffDashboard = () => {
                           </div>
 
                           <div className="mt-4">
-                            <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                            <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                               Your Assigned Roles:
                             </p>
                             <div className="flex flex-wrap gap-1.5">
                               {staff.permissions.map((p) => (
                                 <span
                                   key={p}
-                                  className="px-2 py-0.5 text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded"
+                                  className="px-2 py-0.5 text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded"
                                 >
                                   {p.replace(/_/g, " ")}
                                 </span>
@@ -266,7 +266,7 @@ const EventStaffDashboard = () => {
                           {hasAttendance && (
                             <Link
                               to={`/event-staff/${staff.event?.id}/attendance`}
-                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
                             >
                               <QrCode size={14} />
                               Open Attendance Scanner
@@ -275,7 +275,7 @@ const EventStaffDashboard = () => {
                           {hasRegistration && (
                             <Link
                               to={`/event/${staff.event?.id}/registrations`}
-                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-bold rounded-xl transition-colors"
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-xl transition-colors"
                             >
                               <Users size={14} />
                               Registrations
@@ -291,7 +291,7 @@ const EventStaffDashboard = () => {
 
             {pastStaff.length > 0 && (
               <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
                   Past / Revoked Assignments ({pastStaff.length})
                 </h3>
                 <div className="space-y-2">
@@ -300,8 +300,8 @@ const EventStaffDashboard = () => {
                       key={p.id}
                       className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl text-xs flex items-center justify-between text-neutral-500"
                     >
-                      <span className="font-semibold">{p.event?.title}</span>
-                      <span className="uppercase text-[10px] font-bold px-2 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded">
+                      <span className="font-medium">{p.event?.title}</span>
+                      <span className="uppercase text-[10px] font-semibold px-2 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded">
                         {p.status}
                       </span>
                     </div>

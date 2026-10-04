@@ -26,7 +26,7 @@ export const ColorExtractorDemo = () => {
   return (
     <div className="min-h-screen bg-cn-bg text-cn-text py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       <div className="max-w-4xl mx-auto text-center mb-16">
-        <span className="px-3 py-1 text-xs font-semibold tracking-wider text-purple-400 uppercase bg-purple-950/40 rounded-full border border-purple-800/30">
+        <span className="px-3 py-1 text-xs font-medium tracking-wider text-purple-400 uppercase bg-purple-950/40 rounded-full border border-purple-800/30">
           Component Showcase
         </span>
         <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
@@ -51,7 +51,7 @@ export const ColorExtractorDemo = () => {
 
       {/* Technical Details & CORS Caveats Section */}
       <div className="max-w-3xl mx-auto bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-6 sm:p-8 backdrop-blur-md">
-        <h2 className="text-xl font-semibold mb-4 text-neutral-100 flex items-center gap-2">
+        <h2 className="text-xl font-medium mb-4 text-neutral-100 flex items-center gap-2">
           <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>

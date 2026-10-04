@@ -9,9 +9,9 @@ const EventGuide = () => {
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3 text-brand-600">
             <span className="block w-6 h-[1px] bg-brand-600" />
-            <span className="text-[10px] font-semibold tracking-wider">Documentation</span>
+            <span className="text-[10px] font-medium tracking-wider">Documentation</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-medium text-neutral-900 dark:text-white tracking-tight">
             Event <span className="text-brand-600">Creation</span> Guide
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-xl text-sm md:text-base leading-relaxed">
@@ -21,7 +21,7 @@ const EventGuide = () => {
 
         {/* Who can create */}
         <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+          <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-user-star-line text-brand-600 text-xl" />
             Who Can Create Events?
           </h2>
@@ -37,7 +37,7 @@ const EventGuide = () => {
         {/* 4-Step Creation Workflow */}
         <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
              <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2.5">
+          <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-2 flex items-center gap-2.5">
             <i className="ri-git-commit-line text-brand-600 text-xl font-medium" />
             The 4-Step Event Creation Wizard
           </h2>
@@ -92,7 +92,7 @@ const EventGuide = () => {
 
         <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
              <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
+          <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
             <i className="ri-layout-grid-line text-brand-600 text-xl font-medium" />
             Supported Event Types
           </h2>
@@ -145,7 +145,7 @@ const EventGuide = () => {
         {/* All Fields Explained */}
         <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
              <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
+          <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-6 flex items-center gap-2.5">
             <i className="ri-file-list-3-line text-brand-600 text-xl font-medium" />
             Event Form Fields — Complete Reference
           </h2>
@@ -153,10 +153,10 @@ const EventGuide = () => {
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2.5 py-0.5 text-[13px] font-semibold tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
+                <span className="px-2.5 py-0.5 text-[13px] font-medium tracking-wide bg-brand-100 dark:bg-brand-950/60 text-brand-600 rounded-md">
                   Step 1
                 </span>
-                <span className="text-sm font-semibold tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span className="text-sm font-medium tracking-wider text-neutral-400 dark:text-neutral-500">
                   Basic Details
                 </span>
               </div>
@@ -329,7 +329,7 @@ const EventGuide = () => {
         {/* Custom Field Types */}
         <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
              <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-magic-line text-brand-600 text-xl" />
             Custom Registration Field Types
           </h2>
@@ -348,22 +348,22 @@ const EventGuide = () => {
                 </thead>
                 <tbody className="divide-y divide-cn-border-subtle text-sm">
                   <tr>
-                    <td className="px-5 py-3.5 font-semibold text-neutral-800 dark:text-neutral-200">Text</td>
+                    <td className="px-5 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">Text</td>
                     <td className="px-5 py-3.5 text-neutral-600 dark:text-neutral-400">Short single-line answers</td>
                     <td className="px-5 py-3.5 text-neutral-400 dark:text-neutral-500 italic">Team Name, Valorant Riot ID</td>
                   </tr>
                   <tr>
-                    <td className="px-5 py-3.5 font-semibold text-neutral-800 dark:text-neutral-200">Link / URL</td>
+                    <td className="px-5 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">Link / URL</td>
                     <td className="px-5 py-3.5 text-neutral-600 dark:text-neutral-400">Validated HTTP/HTTPS web links</td>
                     <td className="px-5 py-3.5 text-neutral-400 dark:text-neutral-500 italic">GitHub Project Repo, Figma Design Link</td>
                   </tr>
                   <tr>
-                    <td className="px-5 py-3.5 font-semibold text-neutral-800 dark:text-neutral-200">Long Text</td>
+                    <td className="px-5 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">Long Text</td>
                     <td className="px-5 py-3.5 text-neutral-600 dark:text-neutral-400">Multi-line text area for details</td>
                     <td className="px-5 py-3.5 text-neutral-400 dark:text-neutral-500 italic">Project pitch summary, Why join us?</td>
                   </tr>
                   <tr>
-                    <td className="px-5 py-3.5 font-semibold text-neutral-800 dark:text-neutral-200">Dropdown</td>
+                    <td className="px-5 py-3.5 font-medium text-neutral-800 dark:text-neutral-200">Dropdown</td>
                     <td className="px-5 py-3.5 text-neutral-600 dark:text-neutral-400">Select from custom options list</td>
                     <td className="px-5 py-3.5 text-neutral-400 dark:text-neutral-500 italic">T-Shirt Size (S, M, L, XL), Domain Choice</td>
                   </tr>
@@ -377,7 +377,7 @@ const EventGuide = () => {
         <section className="bg-cn-surface-elevated text-cn-text border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
           
-          <h2 className="text-lg font-semibold mb-5 flex items-center gap-2.5 text-cn-text relative z-10">
+          <h2 className="text-lg font-medium mb-5 flex items-center gap-2.5 text-cn-text relative z-10">
             <i className="ri-lightbulb-line text-amber-400 text-xl font-medium" />
             Pro Tips for Event Organizers
           </h2>
@@ -407,7 +407,7 @@ const EventGuide = () => {
 const FieldRow = ({ name, required, type, desc, example }) => (
   <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 py-4 border-b border-neutral-100/70 dark:border-neutral-800/70">
     <div className="sm:w-48 flex-shrink-0">
-      <span className="font-semibold text-sm text-neutral-800 dark:text-neutral-200">{name}</span>
+      <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200">{name}</span>
       {required && <span className="text-brand-600 ml-0.5">*</span>}
       <span className="block text-[11px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-1">{type}</span>
     </div>

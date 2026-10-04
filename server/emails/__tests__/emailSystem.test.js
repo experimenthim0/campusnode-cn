@@ -305,15 +305,14 @@ describe("CampusNode Centralized Email Subsystem", () => {
         facultyName: "Dr. Sharma",
         clubName: "Robotics Club",
         facultyEmail: "sharma@nitj.ac.in",
-        defaultPassword: "tempPassword!",
-        loginUrl: "https://campusnode.vercel.app/admin-secret-login",
+        loginUrl: "https://campusnode.vercel.app/login",
       });
 
       expect(rendered.subject).toBe("CampusNode - Assigned as Faculty Coordinator for Robotics Club");
       expect(rendered.html).toContain("Dr. Sharma");
       expect(rendered.html).toContain("Robotics Club");
       expect(rendered.html).toContain("sharma@nitj.ac.in");
-      expect(rendered.html).toContain("tempPassword!");
+      expect(rendered.html).toContain("No Separate Password Needed");
     });
   });
 

@@ -45,7 +45,7 @@ const FeaturedEventCard = ({ event, isPreview = false, className = "" }) => {
         </h3>
 
         {/* Date & Time */}
-        <div className="mt-3 text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+        <div className="mt-3 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
           {combinedStr || "Date & Time TBA"}
         </div>
 
@@ -74,7 +74,7 @@ const FeaturedEventCard = ({ event, isPreview = false, className = "" }) => {
             <div className="flex items-center gap-2.5 overflow-hidden flex-wrap">
               {event.sponsors && event.sponsors.length > 0 ? (
                 event.sponsors.map((s, idx) => (
-                  <span key={s.id || idx} className="inline-flex items-center font-semibold text-neutral-700 dark:text-neutral-300">
+                  <span key={s.id || idx} className="inline-flex items-center font-medium text-neutral-700 dark:text-neutral-300">
                     {/* {s.name?.trim()} */}
                     {s.logoUrl ? (
                       <img
@@ -86,7 +86,7 @@ const FeaturedEventCard = ({ event, isPreview = false, className = "" }) => {
                   </span>
                 ))
               ) : (
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300 truncate flex items-center">
+                <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate flex items-center">
                   {/* {event.sponsorName?.trim()} */}
                   {event.sponsor?.logoUrl && (
                     <img

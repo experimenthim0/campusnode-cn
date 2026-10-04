@@ -33,11 +33,11 @@ const CategoryRatings = ({ averageRatings = {} }) => {
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-5">
       <div className="border-b border-neutral-100 dark:border-neutral-800 pb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-brand-500" aria-hidden="true" />
           <span>Category Ratings Breakdown</span>
         </h3>
-        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
           Scale: 0.0 – 5.0
         </span>
       </div>
@@ -48,9 +48,9 @@ const CategoryRatings = ({ averageRatings = {} }) => {
           const pct = Math.min(100, Math.max(0, (cat.score / 5) * 100));
           return (
             <div key={idx} className="space-y-1.5">
-              <div className="flex justify-between items-baseline text-xs font-semibold">
+              <div className="flex justify-between items-baseline text-xs font-medium">
                 <span className="text-slate-800 dark:text-slate-200">{cat.label}</span>
-                <span className="font-bold text-slate-900 dark:text-white tracking-tight">
+                <span className="font-semibold text-slate-900 dark:text-white tracking-tight">
                   {cat.score.toFixed(1)}{' '}
                   <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500">/ 5</span>
                 </span>
@@ -73,7 +73,7 @@ const CategoryRatings = ({ averageRatings = {} }) => {
 
       {/* 0 to 5 Scale Indicator */}
       <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
-        <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 px-0.5" aria-hidden="true">
+        <div className="flex justify-between text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-0.5" aria-hidden="true">
           <span>0.0</span>
           <span>1.0</span>
           <span>2.0</span>
@@ -87,11 +87,11 @@ const CategoryRatings = ({ averageRatings = {} }) => {
         <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 flex items-start gap-3">
           <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
           <div className="text-xs">
-            <span className="font-bold text-amber-900 dark:text-amber-300 block uppercase tracking-wider text-[10px]">
+            <span className="font-semibold text-amber-900 dark:text-amber-300 block uppercase tracking-wider text-[10px]">
               Biggest Satisfaction Gap
             </span>
             <p className="text-slate-700 dark:text-slate-300 mt-0.5 font-medium">
-              <strong className="text-slate-900 dark:text-white font-bold">{weakestCategory.label}</strong> ({weakestCategory.score.toFixed(1)} / 5) is{' '}
+              <strong className="text-slate-900 dark:text-white font-semibold">{weakestCategory.label}</strong> ({weakestCategory.score.toFixed(1)} / 5) is{' '}
               <strong className="text-amber-800 dark:text-amber-300">{gap} points</strong> below overall satisfaction.
             </p>
           </div>

@@ -44,8 +44,8 @@ const RegisterLanding = () => {
                   <i className="ri-user-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-blue-600 dark:text-blue-400 mb-0.5">NITJ Student</div>
-                  <div className="font-bold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Student Account</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-600 dark:text-blue-400 mb-0.5">NITJ Student</div>
+                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Student Account</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>
@@ -59,8 +59,8 @@ const RegisterLanding = () => {
                   <i className="ri-building-4-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-purple-600 dark:text-purple-400 mb-0.5">Faculty & Staff</div>
-                  <div className="font-bold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Faculty Account</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-purple-600 dark:text-purple-400 mb-0.5">Faculty & Staff</div>
+                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Faculty Account</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>
@@ -74,8 +74,8 @@ const RegisterLanding = () => {
                   <i className="ri-global-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400 mb-0.5">Other Institutions</div>
-                  <div className="font-bold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">External Participant</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400 mb-0.5">Other Institutions</div>
+                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">External Participant</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>
@@ -85,7 +85,7 @@ const RegisterLanding = () => {
             <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
               <span>
                 Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
+                <Link to="/login" className="font-medium text-cn-blue-600 dark:text-cn-blue-400 hover:underline">
                   Log in
                 </Link>
               </span>

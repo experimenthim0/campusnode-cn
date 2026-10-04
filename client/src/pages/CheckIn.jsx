@@ -466,7 +466,7 @@ const CheckIn = () => {
                 <span>/</span>
                 <span className="font-medium text-primary text-[10px] uppercase tracking-wider">Attendance Check-In</span>
               </div>
-              <h1 className="text-base sm:text-lg font-bold truncate leading-tight">
+              <h1 className="text-base sm:text-lg font-semibold truncate leading-tight">
                 {event?.title}
               </h1>
               {startTime && (
@@ -520,7 +520,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Registrations
                     </p>
-                    <p className="text-2xl font-bold font-mono tracking-tight">
+                    <p className="text-2xl font-semibold font-mono tracking-tight">
                       {event?.registeredCount ?? '—'}
                     </p>
                   </div>
@@ -536,7 +536,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Attended
                     </p>
-                    <p className="text-2xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                    <p className="text-2xl font-semibold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
                       {attendedCount}
                     </p>
                   </div>
@@ -552,7 +552,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Check-in Rate
                     </p>
-                    <p className="text-2xl font-bold font-mono tracking-tight">
+                    <p className="text-2xl font-semibold font-mono tracking-tight">
                       {attendRate}%
                     </p>
                   </div>
@@ -564,10 +564,10 @@ const CheckIn = () => {
             <Card>
               <CardContent className="p-5">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Attendance Progress
                   </span>
-                  <span className="text-xs font-mono font-bold text-primary">
+                  <span className="text-xs font-mono font-semibold text-primary">
                     {attendedCount} / {event?.registeredCount ?? 0}
                   </span>
                 </div>
@@ -587,7 +587,7 @@ const CheckIn = () => {
               <CardHeader className="py-3 px-5 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wider">
                     Session Log
                   </CardTitle>
                 </div>
@@ -659,7 +659,7 @@ const CheckIn = () => {
                     type="button"
                     variant={activeTab === 'scan' ? 'default' : 'ghost'}
                     size="sm"
-                    className={`h-8 text-xs font-semibold ${activeTab === 'scan' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    className={`h-8 text-xs font-medium ${activeTab === 'scan' ? 'shadow-xs' : 'text-muted-foreground'}`}
                     onClick={() => setActiveTab('scan')}
                   >
                     <ScanLine className="w-3.5 h-3.5 mr-1.5" />
@@ -669,7 +669,7 @@ const CheckIn = () => {
                     type="button"
                     variant={activeTab === 'manual' ? 'default' : 'ghost'}
                     size="sm"
-                    className={`h-8 text-xs font-semibold ${activeTab === 'manual' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    className={`h-8 text-xs font-medium ${activeTab === 'manual' ? 'shadow-xs' : 'text-muted-foreground'}`}
                     onClick={() => setActiveTab('manual')}
                   >
                     <Hash className="w-3.5 h-3.5 mr-1.5" />
@@ -685,7 +685,7 @@ const CheckIn = () => {
                       <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
                         <Clock className="w-6 h-6 animate-pulse" />
                       </div>
-                      <p className="text-sm font-bold mb-1">
+                      <p className="text-sm font-semibold mb-1">
                         Check-in opens in {formatCountdown(opensAt, currentTime)}
                       </p>
                       <p className="text-xs text-muted-foreground max-w-xs">
@@ -697,7 +697,7 @@ const CheckIn = () => {
                       <div className="w-12 h-12 rounded-xl bg-muted border border-border text-muted-foreground flex items-center justify-center mb-3">
                         <Lock className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-bold mb-1">Check-in Closed</p>
+                      <p className="text-sm font-semibold mb-1">Check-in Closed</p>
                       <p className="text-xs text-muted-foreground max-w-xs">
                         Event concluded at {endTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
@@ -726,7 +726,7 @@ const CheckIn = () => {
                 /* Roll Number Check-in Tab */
                 <div className="p-5">
                   <div className="mb-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-foreground mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground mb-1">
                       Roll Number Lookup
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
@@ -767,7 +767,7 @@ const CheckIn = () => {
 
                     <Button
                       type="submit"
-                      className="w-full font-semibold"
+                      className="w-full font-medium"
                       disabled={manualLoading || windowStatus !== 'OPEN' || !manualId.trim()}
                     >
                       {windowStatus === 'NOT_OPEN' ? (
@@ -789,7 +789,7 @@ const CheckIn = () => {
                   {manualId.trim() && (
                     <div className="mt-5 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                           Registered Attendees {searchLoading ? '...' : `(${searchResults.length})`}
                         </span>
                         {searchLoading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
@@ -816,7 +816,7 @@ const CheckIn = () => {
                               >
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-sm font-semibold truncate">
+                                    <p className="text-sm font-medium truncate">
                                       {item.student?.name || 'Registered Attendee'}
                                     </p>
                                     {item.student?.rollNo && (
@@ -856,7 +856,7 @@ const CheckIn = () => {
                         </div>
                       ) : (
                         <div className="p-4 text-center bg-muted/30 border border-border rounded-xl">
-                          <p className="text-xs font-semibold mb-1">
+                          <p className="text-xs font-medium mb-1">
                             No registered attendees found
                           </p>
                           <p className="text-[11px] text-muted-foreground">
@@ -880,7 +880,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl">
                             <CheckCircle2 className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold">Successfully Checked In</p>
+                              <p className="text-xs font-semibold">Successfully Checked In</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.participantName} — {scanResult?.rollNo || scanResult?.branch || 'Checked In'}
                               </p>
@@ -891,7 +891,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
                             <AlertTriangle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold">Attendance Already Recorded</p>
+                              <p className="text-xs font-semibold">Attendance Already Recorded</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.message || 'Attendance is already recorded.'}
                               </p>
@@ -902,7 +902,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
                             <Clock className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold">
+                              <p className="text-xs font-semibold">
                                 {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
                               </p>
                               <p className="text-xs font-medium opacity-90">
@@ -915,7 +915,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
                             <XCircle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold">Wrong Event</p>
+                              <p className="text-xs font-semibold">Wrong Event</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.message || 'This pass is for a different event.'}
                               </p>
@@ -926,7 +926,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
                             <XCircle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold">
+                              <p className="text-xs font-semibold">
                                 {scanState === 'unauthorized'
                                   ? 'Access Denied'
                                   : scanState === 'invalid_signature'
@@ -970,7 +970,7 @@ function ScanOverlay({ scanState, scanResult }) {
       {scanState === 'processing' && (
         <Card className="p-6 text-center max-w-[280px] w-full flex flex-col items-center gap-2.5 shadow-lg">
           <Loader2 className="w-7 h-7 animate-spin text-primary" />
-          <p className="text-xs font-semibold">Validating pass...</p>
+          <p className="text-xs font-medium">Validating pass...</p>
         </Card>
       )}
 
@@ -987,12 +987,12 @@ function ScanOverlay({ scanState, scanResult }) {
             <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 uppercase tracking-wider text-[10px]">
               Checked In
             </Badge>
-            <p className="text-sm font-bold truncate max-w-full">
+            <p className="text-sm font-semibold truncate max-w-full">
               {scanResult?.participantName || 'Attendee'}
             </p>
             <div className="w-full bg-muted/60 rounded-lg p-2.5 border border-border">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase">
                   {scanResult?.rollNo ? 'Roll No' : scanResult?.branch ? 'Branch' : 'Email'}
                 </span>
                 <span className="font-mono font-medium truncate ml-2">

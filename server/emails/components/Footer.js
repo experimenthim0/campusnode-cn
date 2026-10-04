@@ -11,7 +11,7 @@ import { colors, typography, spacing } from "../config/designTokens.js";
  * @returns {string} HTML markup
  */
 export const Footer = ({
-  disclaimerText = "If you didn't request this email from CampusNode, you can safely ignore it.",
+  disclaimerText = "If you didn't request this email from Campusnode, you can safely ignore it.",
   includeCopyright = true,
 } = {}) => {
   const currentYear = new Date().getFullYear();

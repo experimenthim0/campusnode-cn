@@ -243,10 +243,14 @@ router.get("/:templateId", (req, res) => {
               height: 100%;
               min-height: 600px;
               transition: max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-              box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-              border-radius: 12px;
+              box-shadow: none;
+              border: none;
+              border-radius: 0;
               overflow: hidden;
-              background: transparent;
+              background: #ffffff;
+            }
+            .studio-viewport-area.dark-canvas .iframe-wrapper {
+              background: #0b1120;
             }
             iframe#emailFrame {
               width: 100%;

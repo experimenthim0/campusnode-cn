@@ -15,7 +15,7 @@ const Maintainance = () => {
         </div>
 
         {/* Live Status Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 text-xs font-bold uppercase tracking-wider mb-4 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 text-xs font-semibold uppercase tracking-wider mb-4 shadow-xs">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
@@ -30,7 +30,7 @@ const Maintainance = () => {
 
         {/* Themed Message without time */}
         <p className="mt-3 text-cn-text-muted text-sm sm:text-base font-medium leading-relaxed max-w-lg">
-          Campus<span className="text-brand-500 dark:text-brand-400 font-bold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
+          Campus<span className="text-brand-500 dark:text-brand-400 font-semibold">Node</span> is currently undergoing scheduled improvements. We’re upgrading our servers and tuning features to give you a smoother campus experience.
         </p>
 
 
