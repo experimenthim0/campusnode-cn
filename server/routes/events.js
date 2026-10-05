@@ -20,6 +20,7 @@ import { validateCustomFields } from "../utils/customFields.js";
 import { generateEventSocialHtml, generateDefaultSocialHtml } from "../utils/eventSocialMetadata.js";
 import { MAX_WAITLIST_CAPACITY, promoteWaitlistCandidates, notifyWaitlistCleared } from "../services/waitlistService.js";
 import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
+import viewCounter from "../services/viewCounterService.js";
 
 const router = express.Router();
 
@@ -1721,7 +1722,10 @@ router.get("/:id", async (req, res) => {
       const cached = await getPublicResponse(cacheKey);
       if (cached) {
         if (cached.id) {
-          prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${cached.id}`.catch(() => {});
+          viewCounter.recordView(cached.id);
+          const liveViews = await viewCounter.getLiveViews(cached.id, cached.views);
+          res.set("X-Public-Cache", "HIT");
+          return res.json({ ...cached, views: liveViews });
         }
         res.set("X-Public-Cache", "HIT");
         return res.json(cached);
@@ -1786,15 +1790,16 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    // Fire-and-forget views count increment asynchronously via raw SQL to prevent modifying event.updatedAt
+    // Fast view counter increment via Redis (persisted to PostgreSQL in background batches)
     if (req.query.skipIncrement !== 'true') {
-      prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${event.id}`.catch((err) =>
-        console.error("Async view increment error:", err.message)
-      );
+      viewCounter.recordView(event.id);
     }
+
+    const liveViews = await viewCounter.getLiveViews(event.id, event.views);
 
     const response = {
       ...serializeEvent(event),
+      views: liveViews,
       attendedCount
     };
 

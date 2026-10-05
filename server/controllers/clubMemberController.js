@@ -276,6 +276,10 @@ export const addClubMember = async (req, res) => {
 
 export const getClubMembers = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+
     const { clubId } = req.params;
     const { limit, offset, role, format } = req.query;
 
@@ -712,7 +716,7 @@ export const removeClubMember = async (req, res) => {
       role: membership.role,
     });
 
-    await invalidatePublicResponses(`/api/club-members/${membership.clubId}/members`);
+    await invalidatePublicResponses(["clubs:*", "clubs:public", `/api/club-members/${membership.clubId}/members`]);
 
     res.json({ message: "Member removed from club successfully." });
   } catch (err) {

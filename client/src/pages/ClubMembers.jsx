@@ -202,7 +202,7 @@ const ClubMembers = () => {
   const fetchMembers = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      const res = await getClubMembers(clubId);
+      const res = await getClubMembers(clubId, { _t: Date.now() });
       setMembers(res.data);
     } catch {
       if (!silent) toast.error("Failed to fetch members");
@@ -263,7 +263,7 @@ const ClubMembers = () => {
       setInviteEmail("");
       setInvitePosition("");
       setSelectedStudent(null);
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add member", { id: toastId });
@@ -294,7 +294,7 @@ const ClubMembers = () => {
       toast.success(res.data?.message || "Leadership successfully transferred!", { id: toastId });
       setIsTransferModalOpen(false);
       setSelectedNewLeadId("");
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to transfer leadership", { id: toastId });
@@ -340,7 +340,14 @@ const ClubMembers = () => {
         res.data.message || `'${fieldLabel}' permission ${newPermValue ? "granted to" : "revoked from"} ${member.student?.name || "member"}!`,
         { id: toastId }
       );
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      if (res.data?.membership) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            (m.id || m._id) === membershipId ? { ...m, ...res.data.membership } : m
+          )
+        );
+      }
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);
@@ -366,7 +373,7 @@ const ClubMembers = () => {
       );
       toast.success("Designation updated successfully");
       setEditingPositionId(null);
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update designation");
@@ -440,7 +447,16 @@ const ClubMembers = () => {
         res.data.message || `Role updated to ${targetRoleLabel} for ${member.student?.name || "member"}!`,
         { id: toastId }
       );
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      if (res.data?.membership) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            (m.id || m._id) === membershipId
+              ? { ...m, ...res.data.membership, role: res.data.membership.role || newRole }
+              : m
+          )
+        );
+      }
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);
@@ -476,7 +492,7 @@ const ClubMembers = () => {
     try {
       await removeClubMember(membershipId);
       toast.success(`Member ${member.student?.name || ""} removed successfully`, { id: toastId });
-      await invalidateCache(['/api/clubs*', '/api/users/*']);
+      await invalidateCache(['/api/clubs*', '/api/users/*', '/api/club-members*']);
       fetchMembers(true);
     } catch (err) {
       setMembers(previousMembers);

@@ -147,6 +147,10 @@ const CACHE_RULES = [
     header: "private, no-cache, no-store",
   },
   {
+    test: (_, path) => path.startsWith("/api/club-members/"),
+    header: "private, no-cache, no-store, must-revalidate",
+  },
+  {
     test: (_, path) => path.startsWith("/api/notifications"),
     header: "private, max-age=30, must-revalidate",
   },
@@ -225,6 +229,7 @@ export const etagSupport = (req, res, next) => {
     req.path.startsWith("/api/auth/") ||
     req.path.startsWith("/api/admin/") ||
     req.path.startsWith("/api/payment/") ||
+    req.path.startsWith("/api/club-members/") ||
     req.path.includes("/download") ||
     req.path.includes("/export") ||
     req.path.includes("/register") ||

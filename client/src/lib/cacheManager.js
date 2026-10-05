@@ -58,6 +58,7 @@ const NEVER_CACHE_PATTERNS = [
   '/register',
   '/api/payment/',
   '/api/events/user/',
+  '/api/club-members',
   '/verify-2fa',
   '/forgot-password',
   '/reset-password',
