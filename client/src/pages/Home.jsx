@@ -770,7 +770,7 @@ const Home = () => {
               <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
                 
                 <ScrollReveal delay={0.2}>
-                  <h1 className="font-semibold  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight text-neutral-900 dark:text-white drop-shadow-2xs">
+                  <h1 className="font-semibold  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight text-white drop-shadow-2xs">
                     Never Miss What's Happening
                     <br />
                     <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
@@ -779,7 +779,7 @@ const Home = () => {
 
                 <ScrollReveal delay={0.3} className="w-full">
                   <div className="flex flex-col items-center gap-8 mt-6">
-                    <p className="text-base md:text-lg font-normal text-neutral-900 dark:text-neutral-200 leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
+                    <p className="text-base md:text-lg font-normal text-white leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
                       Find events, discover clubs, follow campus updates, and take part in the communities that make NIT Jalandhar more than just a campus.
                     </p>
 
