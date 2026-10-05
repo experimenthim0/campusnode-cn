@@ -9,7 +9,7 @@ const EventCardSkeleton = ({ className }) => {
   return (
     <div
       className={cn(
-        "border border-neutral-200 dark:border-neutral-800/80 rounded-xl overflow-hidden flex flex-col h-full shadow-sm bg-white dark:bg-[#0d0d0d]",
+        "relative border border-neutral-200 dark:border-neutral-800/80 rounded-xl overflow-hidden flex flex-col h-full shadow-sm bg-white dark:bg-[#0d0d0d]",
         className
       )}
     >
@@ -86,14 +86,6 @@ const EventCardSkeleton = ({ className }) => {
           {/* Share Button */}
           <Skeleton className="w-9 h-9 rounded-full shrink-0" />
         </div>
-      </div>
-
-      {/* Bottom ambient light blue shade (subtle height & gentle intensity) */}
-      <div
-        className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-0 overflow-hidden rounded-b-xl"
-        aria-hidden="true"
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-[#C9EBFF]/40 via-[#C9EBFF]/10 to-transparent dark:from-cn-blue-950/20 dark:via-cn-blue-950/5 dark:to-transparent" />
       </div>
     </div>
   );
