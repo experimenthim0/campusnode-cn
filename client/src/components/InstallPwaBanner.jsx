@@ -4,7 +4,7 @@ import { usePwaInstall } from '../hooks/usePwaInstall';
 
 /**
  * InstallPwaBanner
- * Sleek bottom floating banner prompting user to install CampusNode as a native app.
+ * Sleek top floating banner prompting user to install CampusNode as a native app.
  */
 export const InstallPwaBanner = () => {
   const { isInstallable, installApp, isInstalled } = usePwaInstall();
@@ -29,7 +29,7 @@ export const InstallPwaBanner = () => {
   }
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:max-w-md z-40 animate-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed top-[calc(1rem+env(safe-area-inset-top,0px))] md:top-6 right-4 left-4 md:left-auto md:max-w-md z-50 animate-in slide-in-from-top-5 duration-300">
       <div className="bg-neutral-100 dark:bg-neutral-900/95 text-black dark:text-white p-4 rounded-2xl shadow-2xl border border-neutral-300 dark:border-neutral-800 backdrop-blur-md flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-10 h-10 rounded-xl  flex items-center justify-center shrink-0 text-brand-500">
