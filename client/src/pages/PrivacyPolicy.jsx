@@ -188,7 +188,7 @@ const PrivacyPolicy = () => {
                             You maintain full control over your stored credentials and profile:
                         </p>
                         <ul className="space-y-2 text-xs md:text-sm text-neutral-600 dark:text-neutral-400 list-disc pl-5">
-                            <li>View and update your academic details, social handles, and avatar via <Link to="/profile/edit" className="text-cn-blue-600 dark:text-cn-blue-400 font-medium hover:underline">Profile Settings</Link>.</li>
+                            <li>View and update your academic details, social handles, and avatar via <Link to="/settings" className="text-cn-blue-600 dark:text-cn-blue-400 font-medium hover:underline">Profile Settings</Link>.</li>
                             <li>Request account deactivation or data removal by contacting system admins.</li>
                         </ul>
                     </section>

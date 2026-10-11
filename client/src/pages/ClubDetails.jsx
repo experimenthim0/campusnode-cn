@@ -65,12 +65,7 @@ const MemberSocials = ({ student }) => {
       icon: <InstagramIcon size={15} className="shrink-0 flex items-center justify-center" />,
       title: "Instagram",
     });
-  if (student.whatsappNumber)
-    links.push({
-      url: `https://wa.me/${student.whatsappNumber.replace(/[^\d+]/g, "")}`,
-      icon: <MessageCircleIcon size={15} className="shrink-0 flex items-center justify-center" />,
-      title: "WhatsApp",
-    });
+ 
   if (student.portfolioUrl)
     links.push({
       url: formatUrl(student.portfolioUrl),
@@ -386,7 +381,7 @@ const TeamMemberCard = ({
               student?.whatsappNumber ||
               student?.portfolioUrl
           )) && (
-          <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+          <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-center">
             {email ? (
               <a
                 href={`mailto:${email}`}
@@ -941,12 +936,12 @@ const ClubDetails = () => {
               </div>
 
               {/* Right Column: Compact Stat Boxes */}
-              <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 shrink-0 pt-1 md:pt-0 mysans">
+              <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-4 sm:gap-2.5 shrink-0 pt-1 md:pt-0 mysans">
                 <div className="text-center px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs min-w-[76px]">
                   <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {club?.stats?.membersCount ?? (regularMembersTotal + studentHeads.length + studentCoordinators.length)}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[10px] sm:text-[11px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
                     Members
                   </div>
                 </div>
@@ -955,7 +950,7 @@ const ClubDetails = () => {
                   <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {upcomingEvents.length + liveEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[10px] sm:text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400 mt-0.5">
                     Upcoming
                   </div>
                 </div>
@@ -964,7 +959,7 @@ const ClubDetails = () => {
                   <div className="text-sm sm:text-base font-medium text-neutral-900 dark:text-white leading-tight">
                     {pastEvents.length}
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-medium tracking-wide text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <div className="text-[10px] sm:text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400 mt-0.5">
                     Past Events
                   </div>
                 </div>
@@ -1298,7 +1293,7 @@ const ClubDetails = () => {
               <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
  Club Events & Calendar
               </h2>
-              <p className="text-xs text-neutral-400">Browse schedules, workshops, and activities</p>
+              {/* <p className="text-xs text-neutral-400">Browse schedules, workshops, and activities</p> */}
             </div>
 
             {/* View Switcher */}
@@ -1466,7 +1461,7 @@ const ClubDetails = () => {
                 <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
             Club Leadership & Team
                 </h2>
-                <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p>
+                {/* <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p> */}
               </div>
             </div>
 

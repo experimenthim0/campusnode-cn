@@ -225,7 +225,7 @@ const BottomNav = () => {
             <div className="flex justify-between items-center px-5 pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <p className="text-[11px] font-semibold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
-                <p className="text-base font-black text-black dark:text-white">{user.name}</p>
+                <p className="text-base font-medium text-black dark:text-white">{user.name}</p>
                 <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-500 font-semibold mt-0.5">
                   {Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member')
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
@@ -397,7 +397,7 @@ const BottomNav = () => {
                                     <span className="truncate text-neutral-900 dark:text-neutral-100 font-semibold text-xs">
                                       {m.clubName || "Club"}
                                     </span>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-medium shrink-0">
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-xl bg-brand-200/40 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-medium shrink-0">
                                       {isLead ? "Lead" : isCoord ? "Coord" : "Member"}
                                     </span>
                                   </div>

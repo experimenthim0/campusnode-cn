@@ -14,6 +14,7 @@ import InstallPwaBanner from "./InstallPwaBanner";
  */
 const SIDEBAR_ROUTE_PREFIXES = [
   "/profile",
+  "/settings",
   "/my-events",
   "/club-events",
   "/payments",

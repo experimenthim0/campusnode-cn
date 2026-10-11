@@ -311,479 +311,448 @@ const EditProfile = () => {
     );
 
     return (
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12 space-y-8">
 
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-                        Account Settings
-                    </h1>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                        Manage your personal profile details and security credentials.
-                    </p>
-                </div>
-                <Link
-                    to="/profile"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-colors shadow-2xs"
-                >
-                    <ArrowLeft size={14} /> Back to Profile
-                </Link>
+            {/* Page Header */}
+            <div>
+                <h1 className="text-2xl md:text-3xl font-medium text-neutral-900 dark:text-white tracking-tight">
+                    Account Settings
+                </h1>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    Manage your personal profile details and security credentials.
+                </p>
             </div>
 
-            {/* Navigation Tabs (Profile vs Security) */}
-            <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-8">
-                <button
-                    type="button"
-                    onClick={() => setSearchParams({ tab: 'profile' })}
-                    className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${activeTab === 'profile'
-                            ? 'border-brand-600 text-brand-600 dark:text-brand-500'
-                            : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                        }`}
-                >
-                    <User size={16} />
-                    Profile Details
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setSearchParams({ tab: 'security' })}
-                    className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${activeTab === 'security'
-                            ? 'border-brand-600 text-brand-600 dark:text-brand-500'
-                            : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                        }`}
-                >
-                    <Lock size={16} />
-                    Security & Password
-                </button>
-            </div>
+            {/* ─── SECTION 1: PROFILE DETAILS ─── */}
+            <form onSubmit={handleProfileSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
 
-            {/* TAB 1: PROFILE DETAILS FORM */}
-            {activeTab === 'profile' && (
-                <form onSubmit={handleProfileSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
-
-                    {/* Profile Photo Upload */}
-                    <div className="flex justify-center pb-6 border-b border-neutral-100 dark:border-neutral-800">
-                        <ProfilePhotoUpload
-                            user={user}
-                            onPhotoUpdate={async (newUrl) => {
-                                const updatedUser = {
-                                    ...user,
-                                    profileImage: newUrl,
-                                    clubLogo: newUrl,
-                                    club: user?.club ? { ...user.club, clubLogo: newUrl } : user?.club
-                                };
-                                setUser(updatedUser);
-                                setSession(updatedUser, role);
-                                await invalidateCache(['/api/clubs/*', '/api/users/*']);
-                            }}
-                        />
+                <div className="flex items-center gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0">
+                        <User size={20} />
                     </div>
+                    <div>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Profile Details</h2>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">Update your personal information and social links.</p>
+                    </div>
+                </div>
 
-                    {/* Read Only Academic & Core Fields (Immutability enforced) */}
-                    {isFacultyAccount ? (
+                {/* Profile Photo Upload */}
+                <div className="flex justify-center pb-6 border-b border-neutral-100 dark:border-neutral-800">
+                    <ProfilePhotoUpload
+                        user={user}
+                        onPhotoUpdate={async (newUrl) => {
+                            const updatedUser = {
+                                ...user,
+                                profileImage: newUrl,
+                                clubLogo: newUrl,
+                                club: user?.club ? { ...user.club, clubLogo: newUrl } : user?.club
+                            };
+                            setUser(updatedUser);
+                            setSession(updatedUser, role);
+                            await invalidateCache(['/api/clubs/*', '/api/users/*']);
+                        }}
+                    />
+                </div>
+
+                {/* Read Only Academic & Core Fields (Immutability enforced) */}
+                {isFacultyAccount ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Faculty Name</label>
+                            <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
+                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Role Designation</label>
+                            <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">Faculty Coordinator</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Assigned Club</label>
+                            <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">
+                                {user.clubName || user.club?.clubName || user.memberships?.[0]?.clubName || user.clubId || 'Assigned Club'}
+                            </p>
+                        </div>
+                    </div>
+                ) : isExternalAccount ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Participant Name</label>
+                            <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
+                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">College / Institution</label>
+                            <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate" title={user.collegeName || user.college || 'External Institution'}>
+                                {user.collegeName || user.college || user.institution || 'External Institution'}
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Graduation</label>
+                            <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">
+                                {[user.program || user.branch, user.graduationYear || user.expectedGraduationYear].filter(Boolean).join(" • ") || 'External Participant'}
+                            </p>
+                        </div>
+                    </div>
+                ) : isClubAccount ? (
+                    <div className="space-y-3">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
                             <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Faculty Name</label>
-                                <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
+                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club Name</label>
+                                <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.clubName || user.name || 'N/A'}</p>
                             </div>
                             <div>
                                 <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
                                 <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Role Designation</label>
-                                <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">Faculty Coordinator</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Assigned Club</label>
+                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Category</label>
                                 <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">
-                                    {user.clubName || user.club?.clubName || user.memberships?.[0]?.clubName || user.clubId || 'Assigned Club'}
-                                </p>
-                            </div>
-                        </div>
-                    ) : isExternalAccount ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Participant Name</label>
-                                <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.name || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
-                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">College / Institution</label>
-                                <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate" title={user.collegeName || user.college || 'External Institution'}>
-                                    {user.collegeName || user.college || user.institution || 'External Institution'}
+                                    {user.category || user.club?.category || 'General'}
                                 </p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Graduation</label>
-                                <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">
-                                    {[user.program || user.branch, user.graduationYear || user.expectedGraduationYear].filter(Boolean).join(" • ") || 'External Participant'}
-                                </p>
+                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club ID / Slug</label>
+                                <p className="font-mono font-medium text-brand-600 dark:text-brand-400 text-xs truncate">{user.slug || user.clubId || 'N/A'}</p>
                             </div>
                         </div>
-                    ) : isClubAccount ? (
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
-                                <div>
-                                    <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club Name</label>
-                                    <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">{user.clubName || user.name || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Official Email</label>
-                                    <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Category</label>
-                                    <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">
-                                        {user.category || user.club?.category || 'General'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Club ID / Slug</label>
-                                    <p className="font-mono font-medium text-brand-600 dark:text-brand-400 text-xs truncate">{user.slug || user.clubId || 'N/A'}</p>
-                                </div>
+                        {(user.motto || user.club?.motto) && (
+                            <div className="bg-neutral-50/40 dark:bg-neutral-800/20 px-4 py-2.5 border border-neutral-200/60 dark:border-neutral-700/60 rounded-xl flex items-center gap-2">
+                                <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider shrink-0">Club Motto:</span>
+                                <span className="text-xs italic text-neutral-700 dark:text-neutral-300 truncate">"{user.motto || user.club?.motto}"</span>
                             </div>
-                            {(user.motto || user.club?.motto) && (
-                                <div className="bg-neutral-50/40 dark:bg-neutral-800/20 px-4 py-2.5 border border-neutral-200/60 dark:border-neutral-700/60 rounded-xl flex items-center gap-2">
-                                    <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider shrink-0">Club Motto:</span>
-                                    <span className="text-xs italic text-neutral-700 dark:text-neutral-300 truncate">"{user.motto || user.club?.motto}"</span>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Roll No</label>
-                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate">{user.rollNo || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Email</label>
-                                <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Branch</label>
-                                <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">
-                                    {user.program || 'N/A'}{user.branch ? ` • ${user.branch}` : ''}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Standing</label>
-                                <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">{displayAcademicStanding || 'N/A'}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Editable Profile Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {isClubAccount ? (
-                            <div className="md:col-span-2 p-5 bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-800/40 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-semibold text-brand-900 dark:text-brand-300">Club Details & Public Information</p>
-                                    <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                                        Official club details — including <strong>Club Name</strong>, <strong>Club Motto / Slogan</strong>, Category, Description, and <strong>Social Media links</strong> — are managed exclusively via Club Settings.
-                                    </p>
-                                </div>
-                                <Link
-                                    to={`/club/edit/${user?.clubId || user?.club?.id || user?.id}`}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium shrink-0 transition-colors shadow-2xs"
-                                >
-                                    Edit in Club Settings →
-                                </Link>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="md:col-span-1">
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleProfileChange}
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-1">
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                        Phone Number
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleProfileChange}
-                                        placeholder="+91 9876543210"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">Instagram URL</label>
-                                    <input
-                                        type="url"
-                                        name="instagramProfile"
-                                        value={formData.instagramProfile}
-                                        onChange={handleProfileChange}
-                                        placeholder="https://instagram.com/handle"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">LinkedIn URL</label>
-                                    <input
-                                        type="url"
-                                        name="linkedinProfile"
-                                        value={formData.linkedinProfile}
-                                        onChange={handleProfileChange}
-                                        placeholder="https://linkedin.com/in/handle"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">X (Twitter) URL</label>
-                                    <input
-                                        type="url"
-                                        name="xProfile"
-                                        value={formData.xProfile}
-                                        onChange={handleProfileChange}
-                                        placeholder="https://x.com/handle"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                        Portfolio Website
-                                    </label>
-                                    <input
-                                        type="url"
-                                        name="portfolioUrl"
-                                        value={formData.portfolioUrl}
-                                        onChange={handleProfileChange}
-                                        placeholder="https://yourportfolio.com"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">WhatsApp Number / Group</label>
-                                    <input
-                                        type="tel"
-                                        name="whatsappNumber"
-                                        value={formData.whatsappNumber}
-                                        onChange={handleProfileChange}
-                                        placeholder="+91 98765 43210"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">GitHub URL</label>
-                                    <input
-                                        type="url"
-                                        name="githubProfile"
-                                        value={formData.githubProfile}
-                                        onChange={handleProfileChange}
-                                        placeholder="https://github.com/username"
-                                        className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                    />
-                                </div>
-                            </>
                         )}
                     </div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-neutral-50/60 dark:bg-neutral-800/40 p-4 border border-neutral-200/80 dark:border-neutral-700/80 rounded-xl">
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Roll No</label>
+                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate">{user.rollNo || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Email</label>
+                            <p className="font-mono text-neutral-800 dark:text-neutral-100 font-medium text-xs truncate" title={user.email}>{user.email}</p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Program & Branch</label>
+                            <p className="font-medium text-neutral-800 dark:text-neutral-100 text-xs truncate">
+                                {user.program || 'N/A'}{user.branch ? ` • ${user.branch}` : ''}
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">Academic Standing</label>
+                            <p className="font-medium text-brand-600 dark:text-brand-400 text-xs truncate">{displayAcademicStanding || 'N/A'}</p>
+                        </div>
+                    </div>
+                )}
 
-
+                {/* Editable Profile Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {isClubAccount ? (
-                        <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-neutral-100 dark:border-neutral-800">
-                            <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                                Need to update club name, motto, description, or social links?
-                            </span>
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/profile')}
-                                    className="flex-1 sm:flex-none py-2.5 px-6 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs text-center"
-                                >
-                                    Back to Profile
-                                </button>
-                                <Link
-                                    to={`/club/edit/${user?.clubId || user?.club?.id || user?.id}`}
-                                    className="flex-1 sm:flex-none py-2.5 px-6 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all text-center"
-                                >
-                                    Open Club Settings →
-                                </Link>
+                        <div className="md:col-span-2 p-5 bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-800/40 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <p className="text-sm font-semibold text-brand-900 dark:text-brand-300">Club Details & Public Information</p>
+                                <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                                    Official club details — including <strong>Club Name</strong>, <strong>Club Motto / Slogan</strong>, Category, Description, and <strong>Social Media links</strong> — are managed exclusively via Club Settings.
+                                </p>
                             </div>
+                            <Link
+                                to={`/club/edit/${user?.clubId || user?.club?.id || user?.id}`}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium shrink-0 transition-colors shadow-2xs"
+                            >
+                                Edit in Club Settings →
+                            </Link>
                         </div>
                     ) : (
-                        <div className="pt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
+                        <>
+                            <div className="md:col-span-1">
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                    Full Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleProfileChange}
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div className="md:col-span-1">
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleProfileChange}
+                                    placeholder="+91 9876543210"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">Instagram URL</label>
+                                <input
+                                    type="url"
+                                    name="instagramProfile"
+                                    value={formData.instagramProfile}
+                                    onChange={handleProfileChange}
+                                    placeholder="https://instagram.com/handle"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">LinkedIn URL</label>
+                                <input
+                                    type="url"
+                                    name="linkedinProfile"
+                                    value={formData.linkedinProfile}
+                                    onChange={handleProfileChange}
+                                    placeholder="https://linkedin.com/in/handle"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">X (Twitter) URL</label>
+                                <input
+                                    type="url"
+                                    name="xProfile"
+                                    value={formData.xProfile}
+                                    onChange={handleProfileChange}
+                                    placeholder="https://x.com/handle"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                    Portfolio Website
+                                </label>
+                                <input
+                                    type="url"
+                                    name="portfolioUrl"
+                                    value={formData.portfolioUrl}
+                                    onChange={handleProfileChange}
+                                    placeholder="https://yourportfolio.com"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">WhatsApp Number / Group</label>
+                                <input
+                                    type="tel"
+                                    name="whatsappNumber"
+                                    value={formData.whatsappNumber}
+                                    onChange={handleProfileChange}
+                                    placeholder="+91 98765 43210"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">GitHub URL</label>
+                                <input
+                                    type="url"
+                                    name="githubProfile"
+                                    value={formData.githubProfile}
+                                    onChange={handleProfileChange}
+                                    placeholder="https://github.com/username"
+                                    className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+
+
+                {isClubAccount ? (
+                    <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-neutral-100 dark:border-neutral-800">
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                            Need to update club name, motto, description, or social links?
+                        </span>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
                             <button
                                 type="button"
                                 onClick={() => navigate('/profile')}
-                                className="py-2.5 px-6 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs"
+                                className="flex-1 sm:flex-none py-2.5 px-6 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs text-center"
                             >
-                                Cancel
+                                Back to Profile
                             </button>
-                            <button
-                                type="submit"
-                                disabled={isSavingProfile}
-                                className={`py-2.5 px-7 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer ${isSavingProfile
-                                        ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
-                                        : 'bg-brand-600 hover:bg-brand-700'
-                                    }`}
+                            <Link
+                                to={`/club/edit/${user?.clubId || user?.club?.id || user?.id}`}
+                                className="flex-1 sm:flex-none py-2.5 px-6 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all text-center"
                             >
-                                {isSavingProfile ? 'Saving Changes…' : 'Save Profile Details'}
-                            </button>
+                                Open Club Settings →
+                            </Link>
                         </div>
-                    )}
-                </form>
-            )}
+                    </div>
+                ) : (
+                    <div className="pt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/profile')}
+                            className="py-2.5 px-6 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSavingProfile}
+                            className={`py-2.5 px-7 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer ${isSavingProfile
+                                    ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
+                                    : 'bg-brand-600 hover:bg-brand-700'
+                                }`}
+                        >
+                            {isSavingProfile ? 'Saving Changes…' : 'Save Profile Details'}
+                        </button>
+                    </div>
+                )}
+            </form>
 
-            {/* TAB 2: SECURITY & PASSWORD FORM */}
-            {activeTab === 'security' && (
-                <div className="space-y-6">
+            {/* ─── SECTION 2: SECURITY & PASSWORD ─── */}
+            <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
+                <div className="flex items-center gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0">
+                        <Lock size={20} />
+                    </div>
+                    <div>
+                        <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Change Account Password</h2>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">Choose a secure password that you haven't used elsewhere.</p>
+                    </div>
+                </div>
 
-                    <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-6 shadow-xs">
-                        <div className="flex items-center gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
-                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center shrink-0">
-                                <Lock size={20} />
-                            </div>
-                            <div>
-                                <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Change Account Password</h2>
-                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Choose a secure password that you haven't used elsewhere.</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                    Current Password <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showCurrentPassword ? "text" : "password"}
-                                        name="currentPassword"
-                                        value={passwordData.currentPassword}
-                                        onChange={handlePasswordChange}
-                                        placeholder="Enter your current password"
-                                        className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                        autoComplete="current-password"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
-                                    >
-                                        {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                        New Password <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showNewPassword ? "text" : "password"}
-                                            name="newPassword"
-                                            value={passwordData.newPassword}
-                                            onChange={handlePasswordChange}
-                                            placeholder="At least 6 characters"
-                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                            autoComplete="new-password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewPassword(!showNewPassword)}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
-                                        >
-                                            {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                        </button>
-                                    </div>
-                                    <PasswordStrengthChecker
-                                        password={passwordData.newPassword}
-                                        userInputs={[formData.name, user?.name, user?.email]}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
-                                        Confirm New Password <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            name="confirmPassword"
-                                            value={passwordData.confirmPassword}
-                                            onChange={handlePasswordChange}
-                                            placeholder="Re-enter new password"
-                                            className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
-                                            autoComplete="new-password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
-                                        >
-                                            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                            <p className="text-[11px] text-neutral-400 dark:text-neutral-500 italic">
-                                * Rate Limit: Maximum 2 password updates per 24 hours.
-                            </p>
-                            <button
-                                type="submit"
-                                disabled={isSavingPassword}
-                                className={`py-2.5 px-6 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto ${isSavingPassword
-                                        ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
-                                        : 'bg-brand-600 hover:bg-brand-700'
-                                    }`}
-                            >
-                                {isSavingPassword ? 'Updating Password…' : 'Update Password'}
-                            </button>
-                        </div>
-                    </form>
-
-                    {/* 2-Step Verification Card (Available for all accounts) */}
-                    <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
-                        <label className="flex items-center justify-between p-4 bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-xl cursor-pointer group hover:border-brand-500 transition-colors">
-                            <div className="flex items-center gap-3.5">
-                                <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
-                                    <ShieldCheck size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Two-Factor Authentication (2FA)</p>
-                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Requires a secure email OTP code whenever you log in.</p>
-                                </div>
-                            </div>
-                            <div className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.isTwoStepEnabled}
-                                    disabled={isSaving2FA}
-                                    onChange={(e) => handleToggle2FA(e.target.checked)}
-                                    className="sr-only peer"
-                                    id="isTwoStepEnabledToggle"
-                                />
-                                <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
-                            </div>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                            Current Password <span className="text-red-500">*</span>
                         </label>
+                        <div className="relative">
+                            <input
+                                type={showCurrentPassword ? "text" : "password"}
+                                name="currentPassword"
+                                value={passwordData.currentPassword}
+                                onChange={handlePasswordChange}
+                                placeholder="Enter your current password"
+                                className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                autoComplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
+                            >
+                                {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
                     </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                New Password <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    name="newPassword"
+                                    value={passwordData.newPassword}
+                                    onChange={handlePasswordChange}
+                                    placeholder="At least 6 characters"
+                                    className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
+                                >
+                                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                            <PasswordStrengthChecker
+                                password={passwordData.newPassword}
+                                userInputs={[formData.name, user?.name, user?.email]}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wider mb-2">
+                                Confirm New Password <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={passwordData.confirmPassword}
+                                    onChange={handlePasswordChange}
+                                    placeholder="Re-enter new password"
+                                    className="w-full px-4 py-2.5 pr-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-xl focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all text-sm font-medium text-neutral-900 dark:text-white"
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer focus:outline-none"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            )}
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                    <p className="text-[11px] text-neutral-400 dark:text-neutral-500 italic">
+                        * Rate Limit: Maximum 2 password updates per 24 hours.
+                    </p>
+                    <button
+                        type="submit"
+                        disabled={isSavingPassword}
+                        className={`py-2.5 px-6 text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto ${isSavingPassword
+                                ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed shadow-none'
+                                : 'bg-brand-600 hover:bg-brand-700'
+                            }`}
+                    >
+                        {isSavingPassword ? 'Updating Password…' : 'Update Password'}
+                    </button>
+                </div>
+            </form>
+
+            {/* ─── SECTION 3: TWO-FACTOR AUTHENTICATION ─── */}
+            <div className="bg-white dark:bg-neutral-900 p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs">
+                <label className="flex items-center justify-between p-4 bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 rounded-xl cursor-pointer group hover:border-brand-500 transition-colors">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                            <ShieldCheck size={20} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Two-Factor Authentication (2FA)</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Requires a secure email OTP code whenever you log in.</p>
+                        </div>
+                    </div>
+                    <div className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.isTwoStepEnabled}
+                            disabled={isSaving2FA}
+                            onChange={(e) => handleToggle2FA(e.target.checked)}
+                            className="sr-only peer"
+                            id="isTwoStepEnabledToggle"
+                        />
+                        <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                    </div>
+                </label>
+            </div>
 
         </div>
     );

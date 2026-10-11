@@ -192,11 +192,7 @@ const CampusNodeIntroAnimation = () => {
       <div>
         <div className="flex items-center gap-2.5 ">
           <span className="font-light text-2xl sm:text-3xl lg:text-[32px] xl:text-[38px] tracking-wider text-zinc-900 dark:text-white leading-none logofont">
-            Cam
-            <span className="uppercase text-[22px] sm:text-[24px] lg:text-[26px] xl:text-[28px] font-semibold">
-              P
-            </span>
-            usnode
+            Campusnode
           </span>
         </div>
 

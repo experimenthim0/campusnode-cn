@@ -33,7 +33,7 @@ const SocialButton = ({ href, label, icon: Icon, hoverColor }) => (
     target="_blank"
     rel="noopener noreferrer"
     aria-label={label}
-    className={`group/btn relative flex items-center justify-center w-9 h-9 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${hoverColor}`}
+    className={`group/btn relative flex items-center justify-center w-9 h-9  text-zinc-500 dark:text-zinc-400 transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${hoverColor}`}
   >
     <Icon className="w-4 h-4 transition-transform duration-200 group-hover/btn:scale-110" />
   </a>
@@ -111,7 +111,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                   href={item.socials.linkedin}
                   label={`${item.name}'s LinkedIn`}
                   icon={Linkedin}
-                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400  hover:bg-blue-50 dark:hover:bg-blue-950/30"
                 />
               )}
               {item.socials?.portfolio && (
@@ -119,7 +119,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                   href={item.socials.portfolio}
                   label={`${item.name}'s Portfolio`}
                   icon={Globe}
-                  hoverColor="hover:text-pink-600 dark:hover:text-pink-400 hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50 dark:hover:bg-pink-950/30"
+                  hoverColor="hover:text-pink-600 dark:hover:text-pink-400  hover:bg-pink-50 dark:hover:bg-pink-950/30"
                 />
               )}
               {item.socials?.email && (
@@ -213,11 +213,11 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
             {item.name}
           </h3>
 
-          {item.designation && (
+          {/* {item.designation && (
             <p className="text-[12px] font-medium text-brand-600 dark:text-brand-400 leading-snug">
               {item.designation}
             </p>
-          )}
+          )} */}
 
           {item.department && (
             <p className="text-[11.5px] text-zinc-500 dark:text-zinc-400 leading-snug">
@@ -240,7 +240,7 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
                   href={item.socials.linkedin}
                   label={`${item.name}'s LinkedIn`}
                   icon={Linkedin}
-                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                 />
               )}
               {item.socials?.email && (
@@ -248,7 +248,7 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
                   href={`mailto:${item.socials.email}`}
                   label={`Email ${item.name}`}
                   icon={Mail}
-                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 />
               )}
             </div>

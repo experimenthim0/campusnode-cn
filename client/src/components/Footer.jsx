@@ -7,19 +7,19 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <div className="flex sm:flex-row items-center justify-between gap-4">
           <p className="text-[12px] text-cn-text-muted tracking-wide">
-            © {new Date().getFullYear()} <span className="font-light text-cn-text logofont tracking-wider select-none">Campusnode</span>
+            &#9400; {new Date().getFullYear()} <span className="font-light text-cn-text logofont tracking-wider select-none">Campusnode</span>
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
           
-            <Link to='/Team' className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
+            <Link to='/Team' className="text-[11px] text-cn-text-secondary hover:text-cn-text font-light transition-colors">
               Team
             </Link>
-            <Link to="/contact" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
+            <Link to="/contact" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-light transition-colors">
               Contact
             </Link>
            
-            <Link to="/faq" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-medium transition-colors">
+            <Link to="/faq" className="text-[11px] text-cn-text-secondary hover:text-cn-text font-light transition-colors">
               FAQ
             </Link>
               

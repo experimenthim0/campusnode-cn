@@ -390,7 +390,7 @@ const Home = () => {
                       <Link
                         key={idx}
                         to={action.to}
-                        className="group flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-medium tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 bg-white/40 dark:bg-slate-900/40 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 text-neutral-800 dark:text-neutral-200 hover:text-brand-600 dark:hover:text-brand-400 border border-brand-500/15 dark:border-brand-400/15 hover:border-brand-500/30 dark:hover:border-brand-400/30 shadow-2xs hover:shadow-xs backdrop-blur-sm"
+                        className="group flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-full text-[11px] sm:text-xs font-medium tracking-wider transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer min-w-0 bg-white/40 dark:bg-slate-900/40 hover:bg-brand-500/10 dark:hover:bg-brand-400/10 text-neutral-900 dark:text-neutral-100 hover:text-brand-600 dark:hover:text-brand-400 border border-brand-500/15 dark:border-brand-400/15 hover:border-brand-500/30 dark:hover:border-brand-400/30 shadow-2xs hover:shadow-xs backdrop-blur-sm"
                       >
                         <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 dark:text-brand-400 shrink-0 group-hover:scale-110 transition-transform" />
                         <span className="truncate">{action.label}</span>
@@ -908,7 +908,7 @@ const Home = () => {
                   Recognition for the top student organizations at NITJ. Rankings and points are calculated based on hosted events, student participation, and attendee feedback satisfaction ratings.
                 </p>
                 <Link
-                  to="/leaderboard/how-it-works"
+                  to="/ranking-guide"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-medium text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation mysans tracking-wider group mb-8 shadow-xs hover:shadow-md"
                 >
                   <span>How Points Are Calculated</span>

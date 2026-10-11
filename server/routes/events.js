@@ -991,6 +991,10 @@ router.get(
   verifyToken,
   async (req, res) => {
     try {
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+
       const { clubId } = req.params;
       const events = await prisma.event.findMany({
         where: {
@@ -1463,7 +1467,11 @@ router.put(
   requirePermission(PERMISSIONS.EVENT_APPROVE),
   async (req, res) => {
     try {
-      const { status, comment } = req.body;
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.set("Pragma", "no-cache");
+
+      const { status } = req.body;
+      const comment = (req.body.comment || req.body.reason || "").trim();
       if (!["PUBLISHED", "REJECTED"].includes(status)) {
         return res.status(400).json({ message: "Invalid review status." });
       }
@@ -1473,6 +1481,12 @@ router.put(
         include: { organizers: true },
       });
       if (!event) return res.status(404).json({ message: "Event not found" });
+
+      if (event.reviewStatus === "PUBLISHED" && status === "REJECTED") {
+        return res.status(400).json({
+          message: "Cannot reject an event that has already been approved and published.",
+        });
+      }
 
       const eventClubIds = event.organizers.map(o => o.clubId);
       if (req.user.role !== "admin" && (!req.user.clubId || !eventClubIds.includes(req.user.clubId))) {
@@ -1485,7 +1499,7 @@ router.put(
         where: { id: req.params.id },
         data: {
           reviewStatus: status,
-          reviewComment: comment,
+          reviewComment: comment || null,
           reviewedById: req.user.userId,
         },
         include: eventInclude,
@@ -1718,17 +1732,16 @@ router.get("/:id", async (req, res) => {
     const isAnonymous = !req.headers.authorization && !req.cookies?.token;
 
     // Use cached response for anonymous public requests
-    if (isAnonymous && req.query.skipIncrement !== "true") {
+    if (isAnonymous) {
       const cached = await getPublicResponse(cacheKey);
       if (cached) {
-        if (cached.id) {
+        let liveViews = cached.views;
+        if (cached.id && req.query.skipIncrement !== "true") {
           viewCounter.recordView(cached.id);
-          const liveViews = await viewCounter.getLiveViews(cached.id, cached.views);
-          res.set("X-Public-Cache", "HIT");
-          return res.json({ ...cached, views: liveViews });
+          liveViews = await viewCounter.getLiveViews(cached.id, cached.views);
         }
         res.set("X-Public-Cache", "HIT");
-        return res.json(cached);
+        return res.json({ ...cached, views: liveViews });
       }
     }
 

@@ -581,7 +581,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
@@ -754,7 +754,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
@@ -829,7 +829,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>

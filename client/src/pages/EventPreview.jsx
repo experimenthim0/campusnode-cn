@@ -23,6 +23,8 @@ import '../components/WysiwygMarkdownEditor.css';
 import { getEventById, reviewEvent, submitEventForReview } from '../services/eventService';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import EventRejectionModal from '../components/EventRejectionModal';
+import { invalidateCache } from '../lib/cacheManager';
 import CalendarDropdown from '../components/CalendarDropdown';
 import ImageZoomModal from '../components/ImageZoomModal';
 import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
@@ -80,6 +82,7 @@ const EventPreview = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [openFAQ, setOpenFAQ] = useState(null);
 
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -161,8 +164,11 @@ const EventPreview = () => {
     if (!event) return;
     try {
       setSubmitting(true);
-      await reviewEvent(event.id || event._id, { status, reason });
+      await reviewEvent(event.id || event._id, { status, reason, comment: reason });
       showNotification(`Event ${status === 'PUBLISHED' ? 'approved' : 'rejected'} successfully!`, 'success');
+      try {
+        await invalidateCache(['/api/events', '/api/events/*']);
+      } catch {}
       // Refresh event
       const res = await getEventById(id);
       setEvent(res.data);
@@ -507,10 +513,7 @@ const EventPreview = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    const reason = prompt('Enter rejection reason:');
-                    if (reason) handleReview('REJECTED', reason);
-                  }}
+                  onClick={() => setRejectModalOpen(true)}
                   disabled={submitting}
                   className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white rounded-lg transition font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
@@ -1057,6 +1060,14 @@ const EventPreview = () => {
 
         </div>
       </div>
+
+      <EventRejectionModal
+        isOpen={rejectModalOpen}
+        event={event}
+        isSubmitting={submitting}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={(reason) => handleReview('REJECTED', reason)}
+      />
 
       {/* Image Zoom Modal for posters and gallery */}
       <ImageZoomModal

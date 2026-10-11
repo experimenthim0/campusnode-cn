@@ -10,7 +10,7 @@ import {
 } from "../lib/observability.js";
 import { updateInFlightRequests } from "../lib/telemetry/metrics.js";
 
-const DEFAULT_MAX_IN_FLIGHT = 250;
+const DEFAULT_MAX_IN_FLIGHT = 500;
 let inFlightRequests = 0;
 
 const numberFromEnv = (name, fallback) => {
@@ -131,7 +131,10 @@ const CACHE_RULES = [
     test: (_, path) =>
       path.includes("/register") ||
       path.includes("/check-in") ||
-      path.includes("/verify"),
+      path.includes("/verify") ||
+      path.includes("/club-manage") ||
+      path.includes("/review") ||
+      path.includes("/registrations"),
     header: "no-cache, no-store, must-revalidate",
   },
   {

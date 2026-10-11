@@ -21,7 +21,7 @@ const ClubCard = ({ club }) => {
   const cardRef = useRef(null);
 
   // Use fallback logo instantly, preload real clubLogo in background
-  const fallbackLogo = isDark ? "/lightthemelogo2.png" : "/darkthemelogo.png";
+  const fallbackLogo = "/lightthemelogo2.png";
   const [logoSrc, setLogoSrc] = useState(fallbackLogo);
 
   useEffect(() => {
@@ -195,8 +195,8 @@ const ClubCard = ({ club }) => {
       </div>
 
       {/* Floating Circular Club Logo */}
-      <div className="-mt-8 sm:-mt-9 flex justify-center relative z-10">
-        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-neutral-900 border-1 border-neutral-700/80 shadow-lg flex items-center justify-center overflow-hidden p-1 group-hover:scale-105 transition-transform duration-300">
+      <div className="-mt-8 sm:-mt-9 flex justify-center relative z-10 items-center">
+        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-neutral-100  shadow-lg flex items-center justify-center overflow-hidden p-0.5">
           <img
             ref={imgRef}
             src={displayUrl}

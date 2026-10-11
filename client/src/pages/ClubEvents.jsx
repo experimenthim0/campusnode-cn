@@ -33,6 +33,8 @@ import {
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
 import ColumnExportModal from '../components/ColumnExportModal';
+import EventRejectionModal from '../components/EventRejectionModal';
+import { invalidateCache } from '../lib/cacheManager';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -58,6 +60,8 @@ const ClubEvents = () => {
   const [canScan, setCanScan] = useState(false);
   const [canCheckReg, setCanCheckReg] = useState(false);
   const [canReview, setCanReview] = useState(false);
+  const [reviewingEventId, setReviewingEventId] = useState(null);
+  const [rejectModalEvent, setRejectModalEvent] = useState(null);
   const [openMenuEventId, setOpenMenuEventId] = useState(null);
   const [menuPlacement, setMenuPlacement] = useState({ openUpward: false, alignRight: true });
   const [winnerModalEvent, setWinnerModalEvent] = useState(null);
@@ -175,12 +179,47 @@ const ClubEvents = () => {
   };
 
   const handleReview = async (eventId, status, comment = '') => {
+    const eventIdStr = String(eventId);
+    if (reviewingEventId) return;
+
+    // Snapshot for rollback in case of error
+    const previousEvents = createdEvents;
+
+    // Optimistically update local state immediately so buttons hide and badge updates
+    setCreatedEvents((prevEvents) =>
+      prevEvents.map((e) => {
+        const idStr = String(e.id || e._id);
+        if (idStr === eventIdStr) {
+          return {
+            ...e,
+            reviewStatus: status,
+            reviewComment: comment || (status === 'PUBLISHED' ? null : e.reviewComment),
+          };
+        }
+        return e;
+      })
+    );
+
+    setReviewingEventId(eventIdStr);
     try {
-      await reviewEvent(eventId, { status, comment });
+      await reviewEvent(eventIdStr, { status, comment });
       showNotification(`Event ${status === 'PUBLISHED' ? 'Approved' : 'Rejected'} successfully`, 'success');
-      fetchClubEvents(clubId);
+
+      // Purge cached event queries across all tabs
+      try {
+        await invalidateCache(['/api/events', '/api/events/*']);
+      } catch (cacheErr) {
+        console.warn('Cache invalidation warning:', cacheErr);
+      }
+
+      // Re-fetch fresh events from server using cache-busting timestamp
+      await fetchClubEvents(clubId);
     } catch (err) {
+      // Rollback optimistic update on error
+      setCreatedEvents(previousEvents);
       showNotification(err.response?.data?.message || 'Review failed', 'error');
+    } finally {
+      setReviewingEventId(null);
     }
   };
 
@@ -660,6 +699,7 @@ const ClubEvents = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={Boolean(reviewingEventId)}
                           onClick={() => window.open(`/event/${event.slug || eventIdStr}/preview`, '_blank', 'noopener,noreferrer')}
                           className="h-8 gap-1.5 text-xs font-medium cursor-pointer"
                           title="Preview all event and payment details before approving"
@@ -668,19 +708,23 @@ const ClubEvents = () => {
                         </Button>
                         <Button
                           size="sm"
+                          disabled={Boolean(reviewingEventId)}
                           onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs"
+                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs disabled:opacity-50"
                         >
-                          <Check className="w-3.5 h-3.5" /> Approve
+                          {reviewingEventId === eventIdStr ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                          Approve
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => {
-                            const reason = prompt('Enter rejection reason:');
-                            if (reason) handleReview(eventIdStr, 'REJECTED', reason);
-                          }}
-                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs"
+                          disabled={Boolean(reviewingEventId)}
+                          onClick={() => setRejectModalEvent(event)}
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs disabled:opacity-50"
                         >
                           <X className="w-3.5 h-3.5" /> Reject
                         </Button>
@@ -690,6 +734,7 @@ const ClubEvents = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={Boolean(reviewingEventId)}
                           onClick={() => window.open(`/event/${event.slug || eventIdStr}/preview`, '_blank', 'noopener,noreferrer')}
                           className="h-8 gap-1.5 text-xs font-medium cursor-pointer"
                         >
@@ -698,17 +743,24 @@ const ClubEvents = () => {
                         <Button
                           variant="destructive"
                           size="sm"
+                          disabled={Boolean(reviewingEventId)}
                           onClick={() => handleDelete(eventIdStr)}
-                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs"
+                          className="h-8 gap-1.5 text-xs font-medium cursor-pointer shadow-xs disabled:opacity-50"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Approve Deletion
                         </Button>
                         <Button
                           size="sm"
+                          disabled={Boolean(reviewingEventId)}
                           onClick={() => handleReview(eventIdStr, 'PUBLISHED')}
-                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs"
+                          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium cursor-pointer shadow-xs disabled:opacity-50"
                         >
-                          <RotateCcw className="w-3.5 h-3.5" /> Restore Event
+                          {reviewingEventId === eventIdStr ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          )}
+                          Restore Event
                         </Button>
                       </div>
                     ) : (
@@ -969,6 +1021,17 @@ const ClubEvents = () => {
           </Card>
         </div>
       )}
+
+      <EventRejectionModal
+        isOpen={Boolean(rejectModalEvent)}
+        event={rejectModalEvent}
+        isSubmitting={reviewingEventId === String(rejectModalEvent?.id || rejectModalEvent?._id)}
+        onClose={() => setRejectModalEvent(null)}
+        onConfirm={(reason) => {
+          const idToReject = String(rejectModalEvent?.id || rejectModalEvent?._id);
+          return handleReview(idToReject, 'REJECTED', reason);
+        }}
+      />
 
       <WinnerModal
         isOpen={!!winnerModalEvent}

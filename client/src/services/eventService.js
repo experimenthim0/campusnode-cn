@@ -22,8 +22,17 @@ export const getEventById = (id, params = {}) =>
 export const getClubEvents = (clubId) =>
   api.get(`/api/events/club/${clubId}`);
 
-export const getClubManagedEvents = (clubId) =>
-  api.get(`/api/events/club-manage/${clubId}`);
+export const getClubManagedEvents = (clubId, params = {}) =>
+  api.get(`/api/events/club-manage/${clubId}`, {
+    params: {
+      ...params,
+      _t: Date.now(),
+    },
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+    },
+  });
 
 export const exportClubEvents = (clubId, query) =>
   api.get(`/api/events/club-manage/${clubId}/export?${query}`);
@@ -42,8 +51,14 @@ export const updateEvent = (id, data) =>
 export const deleteEvent = (id) =>
   api.delete(`/api/events/${id}`);
 
-export const reviewEvent = (id, payload) =>
-  api.put(`/api/events/${id}/review`, typeof payload === 'object' ? payload : { status: payload });
+export const reviewEvent = (id, payload) => {
+  const normalized = typeof payload === 'object' ? {
+    status: payload.status,
+    comment: payload.comment || payload.reason || '',
+    reason: payload.reason || payload.comment || '',
+  } : { status: payload, comment: '', reason: '' };
+  return api.put(`/api/events/${id}/review`, normalized);
+};
 
 export const submitEventForReview = (id, data = {}) =>
   api.post(`/api/events/${id}/submit`, data);

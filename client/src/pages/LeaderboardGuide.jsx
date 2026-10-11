@@ -15,9 +15,7 @@ const LeaderboardGuide = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <span className="text-[11px] font-semibold uppercase tracking-widest px-3 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-full border border-brand-500/20">
-            Official Ranking Methodology
-          </span>
+          
         </div>
 
         <div className="relative overflow-hidden bg-neutral-900 dark:bg-zinc-900 border border-neutral-800 dark:border-zinc-800 rounded-3xl p-8 sm:p-12 text-white shadow-xl">

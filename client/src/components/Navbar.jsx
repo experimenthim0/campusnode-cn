@@ -291,12 +291,12 @@ const Navbar = () => {
             <Link to="/" className={navLinkCls("/")}>
               <span className="relative inline-block leading-none">
                 Home
-                {isActive("/") && (
+                {/* {isActive("/") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
@@ -309,12 +309,12 @@ const Navbar = () => {
             <Link to="/clubs" className={navLinkCls("/clubs")}>
               <span className="relative inline-block leading-none">
                 Clubs
-                {isActive("/clubs") && (
+                {/* {isActive("/clubs") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
@@ -327,12 +327,12 @@ const Navbar = () => {
             <Link to="/events" className={navLinkCls("/events")}>
               <span className="relative inline-block leading-none">
                 Events
-                {isActive("/events") && (
+                {/* {isActive("/events") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${

@@ -18,6 +18,7 @@ import {
   Radio,
   Sparkles,
   BookOpen,
+  Settings,
 } from "lucide-react";
 import { hasPermission, PERMISSIONS, isStudentLeadRole } from "../utils/rbac";
 import { useSocket } from "../context/SocketContext";
@@ -570,6 +571,13 @@ const DynamicSidebar = ({ user }) => {
 
 
       <div className={`pb-2 pt-2 border-t border-gray-200 dark:border-zinc-800 mt-auto shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+        <SidebarLink
+          to="/settings"
+          icon={Settings}
+          label="Account Settings"
+          isActive={isActive("/settings")}
+          isCollapsed={isCollapsed}
+        />
         <Link
           to="/"
           title={isCollapsed ? "Exit Dashboard" : undefined}

@@ -150,7 +150,8 @@ function App() {
                     <Route path="/create" element={<ProtectedRoute disallowedRoles={['facultyCoordinator', 'faculty']}><CreateEvent /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
-                    <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+                    <Route path="/profile/edit" element={<Navigate to="/settings" replace />} />
                     <Route path="/events/edit/:id" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
                     <Route path="/club/edit/:id" element={<ProtectedRoute><EditClub /></ProtectedRoute>} />
                     <Route path="/club/:clubId/team" element={<ProtectedRoute><ClubMembers /></ProtectedRoute>} />
