@@ -75,6 +75,18 @@ export function serializeParticipation(participation) {
       phone: rawExternal?.phone || null,
       isExternal: true,
     };
+  } else if (participation.faculty) {
+    const rawFaculty = participation.faculty;
+    user = {
+      id: participation.facultyId || rawFaculty?.id || null,
+      _id: participation.facultyId || rawFaculty?.id || null,
+      name: rawFaculty?.name || "Faculty Member",
+      email: rawFaculty?.email || "",
+      department: rawFaculty?.department || "",
+      designation: rawFaculty?.designation || "",
+      profileImage: rawFaculty?.profileImage || null,
+      isFaculty: true,
+    };
   }
 
   const fee = participation.event?.registrationFee ?? participation.event?.entryFee ?? 0;

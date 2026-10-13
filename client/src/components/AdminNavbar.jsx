@@ -1,9 +1,8 @@
 import React from "react";
-import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 const AdminNavbar = () => {
-  const { isDark, toggleTheme } = useTheme();
   const { user: admin, logout } = useAuth();
 
   const handleLogout = () => {
@@ -43,22 +42,8 @@ const AdminNavbar = () => {
           </button>
 
           {/* Theme toggle */}
-          <button
-            onClick={() => {
-              document.documentElement.classList.add('dark-transition');
-              toggleTheme();
-              setTimeout(() => document.documentElement.classList.remove('dark-transition'), 400);
-            }}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-cn-text-muted hover:bg-cn-surface-muted hover:text-cn-text transition-colors duration-150 cursor-pointer"
-            aria-label="Toggle dark mode"
-            title={isDark ? 'Light mode' : 'Dark mode'}
-          >
-            {isDark ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
-            )}
-          </button>
+          <ThemeToggle size="sm" />
+
 
           <div className="w-px h-5 bg-cn-border" />
 

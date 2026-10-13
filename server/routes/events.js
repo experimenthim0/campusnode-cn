@@ -28,21 +28,35 @@ const router = express.Router();
 // are read so every ticket returned to the web app or scanner is usable and
 // the generated payload is persisted for future requests.
 const ensureParticipationTicket = async (participation) => {
-  if (participation?.qrCode && participation?.qrPayload) return participation;
+  if (!participation) return participation;
+  if (participation.qrCode && participation.qrPayload) return participation;
 
-  const ticketId = participation?.qrCode || crypto.randomBytes(12).toString("base64url");
-  const signed = signTicket(participation.eventId, ticketId);
-  const updated = await prisma.participation.update({
-    where: { id: participation.id },
-    data: {
-      qrCode: ticketId,
-      qrPayload: signed.qrPayload,
-      qrVersion: signed.qrVersion,
-      qrKeyId: signed.qrKeyId,
-    },
-  });
+  // Synthetic records (such as winning projections: "win_...") do not exist
+  // in the Prisma Participation table. Skip updating them in the database.
+  if (!participation.id || String(participation.id).startsWith("win_")) {
+    return participation;
+  }
 
-  return { ...participation, ...updated };
+  try {
+    const ticketId = participation.qrCode || crypto.randomBytes(12).toString("base64url");
+    const signed = signTicket(participation.eventId, ticketId);
+    const updated = await prisma.participation.update({
+      where: { id: participation.id },
+      data: {
+        qrCode: ticketId,
+        qrPayload: signed.qrPayload,
+        qrVersion: signed.qrVersion,
+        qrKeyId: signed.qrKeyId,
+      },
+    });
+
+    return { ...participation, ...updated };
+  } catch (err) {
+    // If the record was removed or update fails, return participation gracefully
+    // rather than failing the entire request with an unhandled 500.
+    console.warn(`[ensureParticipationTicket] Could not update ticket for participation ${participation.id}:`, err?.message);
+    return participation;
+  }
 };
 
 const upload = multer({
@@ -1186,43 +1200,47 @@ router.get(
           },
         });
         if (studentInfo) {
-          const eventsWithWinners = await prisma.event.findMany({
-            where: {
-              winners: { not: null },
-              id: { notIn: Array.from(registeredEventIds) },
-            },
-            select: {
-              ...publicEventSelect,
-              customFields: true,
-              postRegistrationMessage: true,
-              paymentInstructions: true,
-              collegePaymentUrl: true,
-              accountHolderName: true,
-              certificateTemplate: true,
-            },
-          });
-          for (const ev of eventsWithWinners) {
-            if (Array.isArray(ev.winners) && ev.winners.length > 0) {
-              const isWinner = ev.winners.some((w) =>
-                (w.studentId && String(w.studentId) === String(studentInfo.id)) ||
-                (w.rollNo && studentInfo.rollNo && String(w.rollNo).trim().toLowerCase() === studentInfo.rollNo.trim().toLowerCase()) ||
-                (w.email && studentInfo.email && String(w.email).trim().toLowerCase() === studentInfo.email.trim().toLowerCase()) ||
-                (w.name && studentInfo.name && String(w.name).toLowerCase().includes(studentInfo.name.toLowerCase()))
-              );
-              if (isWinner) {
-                participations.push({
-                  id: `win_${ev.id}_${studentInfo.id}`,
-                  eventId: ev.id,
-                  studentId: studentInfo.id,
-                  status: "ATTENDED",
-                  paymentStatus: "SUCCESS",
-                  createdAt: ev.createdAt,
-                  updatedAt: ev.updatedAt,
-                  event: ev,
-                  student: studentInfo,
-                });
+          try {
+            const eventsWithWinners = await prisma.event.findMany({
+              where: {
+                showWinner: true,
+                id: { notIn: Array.from(registeredEventIds) },
+              },
+              select: {
+                ...publicEventSelect,
+                customFields: true,
+                postRegistrationMessage: true,
+                paymentInstructions: true,
+                collegePaymentUrl: true,
+                accountHolderName: true,
+                certificateTemplate: true,
+              },
+            });
+            for (const ev of eventsWithWinners) {
+              if (Array.isArray(ev.winners) && ev.winners.length > 0) {
+                const isWinner = ev.winners.some((w) =>
+                  (w.studentId && String(w.studentId) === String(studentInfo.id)) ||
+                  (w.rollNo && studentInfo.rollNo && String(w.rollNo).trim().toLowerCase() === studentInfo.rollNo.trim().toLowerCase()) ||
+                  (w.email && studentInfo.email && String(w.email).trim().toLowerCase() === studentInfo.email.trim().toLowerCase()) ||
+                  (w.name && studentInfo.name && String(w.name).toLowerCase().includes(studentInfo.name.toLowerCase()))
+                );
+                if (isWinner) {
+                  participations.push({
+                    id: `win_${ev.id}_${studentInfo.id}`,
+                    eventId: ev.id,
+                    studentId: studentInfo.id,
+                    status: "ATTENDED",
+                    paymentStatus: "SUCCESS",
+                    createdAt: ev.createdAt,
+                    updatedAt: ev.updatedAt,
+                    event: ev,
+                    student: studentInfo,
+                  });
+                }
               }
             }
+          } catch (winnerQueryErr) {
+            console.warn("[getUserEvents] Error checking external winners:", winnerQueryErr?.message);
           }
         }
       }

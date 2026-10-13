@@ -571,41 +571,62 @@ const BottomNav = () => {
                   {/* Light */}
                   <button
                     type="button"
-                    onClick={() => setTheme("light")}
-                    className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
+                    onClick={(e) => setTheme("light", e)}
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
                       theme === "light"
-                        ? "theme-toggle-active font-medium shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
+                        ? "text-neutral-900 font-semibold"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
                     }`}
                   >
-                    <Sun size={17} strokeWidth={2.2} />
+                    {theme === "light" && (
+                      <motion.div
+                        layoutId="bottomNavThemePill"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs -z-10"
+                        transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                      />
+                    )}
+                    <Sun size={17} strokeWidth={2.2} className={theme === "light" ? "text-amber-500" : ""} />
                     <span className="text-xs font-medium">Light</span>
                   </button>
 
                   {/* Dark */}
                   <button
                     type="button"
-                    onClick={() => setTheme("dark")}
-                    className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
+                    onClick={(e) => setTheme("dark", e)}
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
                       theme === "dark"
-                        ? "theme-toggle-active font-medium shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
+                        ? "text-neutral-900 font-semibold"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
                     }`}
                   >
-                    <Moon size={17} strokeWidth={2.2} />
+                    {theme === "dark" && (
+                      <motion.div
+                        layoutId="bottomNavThemePill"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs -z-10"
+                        transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                      />
+                    )}
+                    <Moon size={17} strokeWidth={2.2} className={theme === "dark" ? "text-indigo-600" : ""} />
                     <span className="text-xs font-medium">Dark</span>
                   </button>
 
                   {/* Auto */}
                   <button
                     type="button"
-                    onClick={() => setTheme("system")}
-                    className={`flex flex-row items-center justify-center gap-1.5 rounded-lg py-1 transition-all duration-200 cursor-pointer select-none ${
+                    onClick={(e) => setTheme("system", e)}
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
                       theme === "system" || !theme
-                        ? "theme-toggle-active font-medium shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-300/50 dark:hover:bg-neutral-800/70"
+                        ? "text-neutral-900 dark:text-white font-semibold"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
                     }`}
                   >
+                    {(theme === "system" || !theme) && (
+                      <motion.div
+                        layoutId="bottomNavThemePill"
+                        className="absolute inset-0 bg-white dark:bg-[#252525] rounded-lg shadow-xs -z-10"
+                        transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                      />
+                    )}
                     <Monitor size={17} strokeWidth={2.2} />
                     <span className="text-xs font-medium">Auto</span>
                   </button>

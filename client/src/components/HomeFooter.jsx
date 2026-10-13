@@ -87,7 +87,7 @@ const HomeFooter = () => {
   const currentSlide = CAMPUS_SLIDES[activeSlideIndex];
 
   return (
-    <footer className="bg-cn-bg text-cn-text border-t border-cn-border transition-colors duration-300 overflow-hidden">
+    <footer className="bg-white dark:bg-[#0a0f1d] text-cn-text border-t border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 overflow-hidden">
       {/* Upper Navigation Section */}
       <Section className="py-12 sm:py-12 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
@@ -187,7 +187,7 @@ const HomeFooter = () => {
 
       {/* Grand Typographic Showcase Banner (Sarvam-inspired masked text with changing campus backgrounds) */}
       <div
-        className="hidden sm:block relative w-full border-t border-cn-border/60 bg-gradient-to-b from-transparent via-cn-surface/20 to-cn-surface/50 pb-2 transition-colors select-none"
+        className=" relative w-full border-t border-cn-border/60 bg-gradient-to-b from-transparent via-cn-surface/20 to-cn-surface/50 pb-2 transition-colors select-none"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Subtle landmark indicator & interactive selectors */}
@@ -201,7 +201,7 @@ const HomeFooter = () => {
              
               aria-hidden="true"
             >
-              cam<span className='text-[10.5vw] uppercase'>P</span>usnode
+              campusnode
             </span>
 
             {/* Crossfading Clipped Campus Image Layers */}
@@ -231,7 +231,7 @@ const HomeFooter = () => {
                       transform: isActive ? 'scale(1.02)' : 'scale(1.0)',
                     }}
                   >
-                    cam<span className='uppercase text-[9.5vw]'>P</span>usnode
+                    campusnode
                   </span>
                 </div>
               );

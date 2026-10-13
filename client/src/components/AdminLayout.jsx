@@ -4,7 +4,7 @@ import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
 import DashboardFooter from "./DashboardFooter";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import ThemeToggle from "./ThemeToggle";
 import { Button } from "./ui/button";
 import {
   Laptop,
@@ -12,8 +12,6 @@ import {
   LogOut,
   ExternalLink,
   AlertTriangle,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 /**
@@ -25,7 +23,6 @@ import {
  */
 const AdminLayout = () => {
   const { user, role, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
 
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== "undefined") {
@@ -46,12 +43,6 @@ const AdminLayout = () => {
     logout("/admin-secret-login");
   };
 
-  const handleToggleTheme = () => {
-    document.documentElement.classList.add("dark-transition");
-    toggleTheme();
-    setTimeout(() => document.documentElement.classList.remove("dark-transition"), 400);
-  };
-
   return (
     <div className="cn-app-height flex min-w-0 flex-col bg-cn-bg text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       {/* ========================================================= */}
@@ -70,18 +61,7 @@ const AdminLayout = () => {
             </span>
           </div>
 
-          <button
-            onClick={handleToggleTheme}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer shrink-0"
-            aria-label="Toggle dark mode"
-            title={isDark ? "Light mode" : "Dark mode"}
-          >
-            {isDark ? (
-              <Sun className="w-4 h-4 shrink-0 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 shrink-0 text-neutral-700" />
-            )}
-          </button>
+          <ThemeToggle size="sm" />
         </div>
 
         {/* Center Card */}

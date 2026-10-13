@@ -102,14 +102,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
   }
 
   return (
-    <section className={`py-9 sm:py-11 lg:py-14 bg-gradient-to-b from-neutral-50/90 via-white to-neutral-50/60 dark:from-neutral-950/90 dark:via-neutral-900/30 dark:to-neutral-950/90 border-b border-neutral-200/80 dark:border-neutral-800/80 transition-colors duration-300 relative overflow-hidden ${className}`}>
-      {/* Subtle ambient brand blue glow matching Hero and SectionGlow */}
-      <div className="dark:hidden absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none" aria-hidden="true">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#C9EBFF] opacity-35 blur-[100px]" />
-      </div>
-      <div className="hidden dark:block absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none" aria-hidden="true">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#0094FF] opacity-[0.24] blur-[95px]" />
-      </div>
+    <section className={`py-9 sm:py-11 lg:py-14 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
       <Section className="relative z-10">{Content}</Section>
     </section>
   );

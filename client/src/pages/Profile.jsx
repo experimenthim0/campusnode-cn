@@ -440,8 +440,8 @@ const Profile = () => {
       user.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'FACULTY_COORDINATOR' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
       user.memberships?.[0]?.clubId;
 
-    if (effectiveClubId) {
-      getClubById(effectiveClubId)
+    if (effectiveClubId && typeof effectiveClubId === 'string' && effectiveClubId !== 'undefined' && effectiveClubId !== 'null' && effectiveClubId.trim()) {
+      getClubById(effectiveClubId.trim())
         .then(res => {
           if (!isMounted) return;
           const fetchedClub = res.data?.club || res.data;
@@ -464,8 +464,10 @@ const Profile = () => {
       user.principalType === 'FACULTY'
     );
 
-    if (canFetchEvents) {
-      getUserEvents(user.id || user._id)
+    const targetUserId = user.id || user._id;
+
+    if (canFetchEvents && targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null') {
+      getUserEvents(targetUserId)
         .then(res => {
           if (!isMounted) return;
           const participations = res.data || [];

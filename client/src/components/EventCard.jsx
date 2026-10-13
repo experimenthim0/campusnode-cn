@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CalendarDropdown from './CalendarDropdown';
 import { getColorSync } from 'colorthief';
 import { useImageBlob } from '../hooks/useImageBlob';
 import { useTheme } from '../context/ThemeContext';
+import { adaptExtractedColor } from '../utils/themeColorAdapter';
 import { useNotification } from '../context/NotificationContext';
 import { prefetchEventDetail } from '../lib/prefetchManager';
 import { HandHeart, Handshake } from 'lucide-react';
@@ -139,21 +140,26 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             ? (allowWaitlist && waitlistCount > 0 ? `${waitlistCount} waitlisted` : '0 left')
             : `${remainingSeats} left`;
 
-    // Construct premium card styles dynamically (clean static background, no image-tinted bg on hover)
+    const effectiveRgb = useMemo(() => {
+        if (!rgb) return isDark ? [96, 165, 250] : [0, 148, 255];
+        return adaptExtractedColor(rgb, isDark);
+    }, [rgb, isDark]);
+
+    // Construct premium card styles dynamically (harmonious slight minimal blue in dark mode, theme-adapted glow)
     const customStyles = (isHovered && rgb)
         ? {
             backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
             boxShadow: isDark
-                ? `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.25)`
-                : `0 20px 40px -15px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`,
-            borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`,
+                ? `0 20px 40px -15px rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.35)`
+                : `0 20px 40px -15px rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.15)`,
+            borderColor: `rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.35)`,
         }
         : {
             backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
             borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgb(229, 231, 235)', // border-gray-200
         };
 
-    const activeRgb = rgb || (isDark ? [59, 130, 246] : [201, 235, 255]);
+    const activeRgb = effectiveRgb;
 
     const navigate = useNavigate();
 
@@ -231,18 +237,31 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     }}
                 />
 
-                {/* Status Badge */}
-                <div className="absolute top-1 left-1.5">
+                {/* Status / Date Badge */}
+                <div className="absolute top-1.5 left-1.5 z-10">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md uppercase">
+                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md uppercase shadow-xs">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
                     )}
                     {!isLive && status === 'UPCOMING' && (
-                        <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
-                            Upcoming
-                        </span>
+                        dayNumber && monthName ? (
+                            <div className="flex flex-col items-center justify-center min-w-[34px] rounded-md overflow-hidden bg-white/95 dark:bg-neutral-900/95 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs backdrop-blur-xs select-none">
+                                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[8px] font-black uppercase tracking-wider text-center px-1.5 py-0.5 leading-none">
+                                    {monthName}
+                                </div>
+                                <div className="w-full flex items-center justify-center px-1.5 py-0.5 bg-neutral-50/90 dark:bg-neutral-900/90">
+                                    <span className="text-xs sm:text-[13px] font-black text-neutral-900 dark:text-white tracking-tight leading-none">
+                                        {dayNumber}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
+                                Upcoming
+                            </span>
+                        )
                     )}
                     {isEnded && (
                         <span className="inline-flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs">
@@ -254,54 +273,54 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
 
             <div className="px-4 pt-2 flex flex-auto flex-col relative z-10">
                 <div className="flex items-center justify-between gap-2 min-w-0 mb-1">
-                {(() => {
-                    const organizers = event.organizers || [];
-                    const isJoint = organizers.length > 1;
-                    const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
+                    {(() => {
+                        const organizers = event.organizers || [];
+                        const isJoint = organizers.length > 1;
+                        const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
 
-                    if (isJoint) {
-                        const jointNames = organizers.map(o => o.club?.clubName).filter(Boolean).join(' × ');
-                        return (
-                            <div className="flex items-center min-w-0 gap-1.5">
-                                <div className="flex items-center -space-x-1.5 shrink-0">
-                                    {organizers.slice(0, 3).map((o, i) => (
-                                        <div key={o.club?.id || i} className="w-5 h-5 rounded-full overflow-hidden border-2 border-white dark:border-neutral-900 shrink-0" title={o.club?.clubName}>
-                                            <img
-                                                src={o.club?.clubLogo || fallbackLogo}
-                                                alt={o.club?.clubName || 'Club'}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => { e.target.onerror = null; e.target.src = fallbackLogo; }}
-                                            />
-                                        </div>
-                                    ))}
+                        if (isJoint) {
+                            const jointNames = organizers.map(o => o.club?.clubName).filter(Boolean).join(' × ');
+                            return (
+                                <div className="flex items-center min-w-0 gap-1.5">
+                                    <div className="flex items-center -space-x-1.5 shrink-0">
+                                        {organizers.slice(0, 3).map((o, i) => (
+                                            <div key={o.club?.id || i} className="w-5 h-5 rounded-full overflow-hidden border-2 border-white dark:border-neutral-900 shrink-0" title={o.club?.clubName}>
+                                                <img
+                                                    src={o.club?.clubLogo || fallbackLogo}
+                                                    alt={o.club?.clubName || 'Club'}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = fallbackLogo; }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <Handshake size={13} className="text-brand-500 shrink-0" />
+                                    <span className="truncate text-brand-600 text-[11px] font-medium">
+                                        {jointNames}
+                                    </span>
                                 </div>
-                                <Handshake size={13} className="text-brand-500 shrink-0" />
-                                <span className="truncate text-brand-600 text-[11px] font-medium">
-                                    {jointNames}
+                            );
+                        }
+
+                        return primaryClubName ? (
+                            <div className="flex items-center min-w-0">
+                                <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700 shrink-0">
+                                    <img
+                                        src={clubLogoSrc}
+                                        alt={primaryClubName || 'Club Logo'}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = fallbackLogo;
+                                        }}
+                                    />
+                                </div>
+                                <span className="truncate text-brand-600 text-[12px] font-medium">
+                                    {primaryClubName}
                                 </span>
                             </div>
-                        );
-                    }
-
-                    return primaryClubName ? (
-                        <div className="flex items-center min-w-0">
-                            <div className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-neutral-300 dark:border-neutral-700 shrink-0">
-                                <img
-                                    src={clubLogoSrc}
-                                    alt={primaryClubName || 'Club Logo'}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = fallbackLogo;
-                                    }}
-                                />
-                            </div>
-                            <span className="truncate text-brand-600 text-[12px] font-medium">
-                                {primaryClubName}
-                            </span>
-                        </div>
-                    ) : <div />;
-                })()}
+                        ) : <div />;
+                    })()}
 
                     {/* Sponsors (max 2) in blank space of club name row */}
                     {event.sponsors && event.sponsors.length > 0 && (
@@ -352,8 +371,8 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         <div key={index} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/40 p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
-                                                        winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
-                                                            'bg-brand-100 dark:bg-brand-950/40 text-brand-855 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60'
+                                                    winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
+                                                        'bg-brand-100 dark:bg-brand-950/40 text-brand-855 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60'
                                                     }`}>
                                                     #{winner.rank}
                                                 </span>
@@ -436,39 +455,16 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                             </div>
 
-                          
+
                         </div>
-
-                        {/* Right Section: Big Calendar Date Badge */}
-                        {/* <div className="shrink-0 self-center pl-1">
-                            <div className="relative flex flex-col items-center justify-center min-w-[50px] sm:min-w-[54px] bg-white dark:bg-neutral-900 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-xs group-hover:scale-105 transition-transform duration-300">
-                                {/* Top Binder Rings */}
-                                {/* <div className="absolute -top-1 left-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" />
-                                <div className="absolute -top-1 right-2.5 w-1.5 h-2.5 bg-neutral-800 dark:bg-neutral-300 rounded-full z-10 shadow-2xs" /> 
-
-                                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center pt-1.5 pb-0.5 px-1.5 leading-none">
-                                    {dayName}
-                                </div>
-
-                                
-                                <div className="w-full flex items-center justify-center py-1 sm:py-1.5 bg-neutral-50 dark:bg-neutral-900/90">
-                                    <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight leading-none">
-                                        {dayNumber}
-                                    </span>
-                                </div>
-                                <div className="w-full text-blue-400 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center  pb-0.5 px-1.5 leading-none">
-                                    {monthName}
-                                </div>
-                            </div>
-                        </div>*/}
-                    </div> 
+                    </div>
                 )}
             </div>
 
-          
+
             <div className="px-5 pb-4 mt-auto relative z-10">
                 <div className="flex items-center gap-2 border-t border-neutral-100 dark:border-neutral-800/80 pt-3">
-               
+
                     {entryFee !== 0 && (
                         <span
                             className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
@@ -477,7 +473,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </span>
                     )}
 
-               
+
                     {isRegistered ? (
                         <Link
                             to={`/event/${slug || _id}`}
@@ -489,11 +485,11 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         <Link
                             to={`/event/${slug || _id}`}
                             className={`flex-1 inline-flex items-center justify-center py-2.5 px-4 rounded-full text-xs font-medium tracking-wider border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer ${(isEnded || isLive)
-                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 shadow-xs hover:shadow-md'
-                                    : event.registrationType === 'none'
-                                        ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30'
-                                        : isFull && !allowWaitlist
-                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
+                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 shadow-xs hover:shadow-md'
+                                : event.registrationType === 'none'
+                                    ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30'
+                                    : isFull && !allowWaitlist
+                                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
                                         : isWaitlistFull
                                             ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed shadow-xs'
                                             : isFull

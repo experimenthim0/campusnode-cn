@@ -30,7 +30,8 @@ import {
   Calendar,
   Ticket,
   CheckCircle2,
-  Search
+  Search,
+  Handshake
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
@@ -100,20 +101,20 @@ const MyRegisteredEventCard = ({
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
   const { isDark } = useTheme();
 const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
-    const rawClubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
-    const [clubLogoSrc, setClubLogoSrc] = useState(fallbackLogo);
+  const rawClubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
+  const [clubLogoSrc, setClubLogoSrc] = useState(fallbackLogo);
 
-    useEffect(() => {
-        if (!rawClubLogo) {
-            setClubLogoSrc(fallbackLogo);
-            return;
-        }
-        setClubLogoSrc(fallbackLogo);
-        const img = new Image();
-        img.src = rawClubLogo;
-        img.onload = () => setClubLogoSrc(rawClubLogo);
-        img.onerror = () => setClubLogoSrc(fallbackLogo);
-    }, [rawClubLogo, fallbackLogo]);
+  useEffect(() => {
+    if (!rawClubLogo) {
+      setClubLogoSrc(fallbackLogo);
+      return;
+    }
+    setClubLogoSrc(fallbackLogo);
+    const img = new Image();
+    img.src = rawClubLogo;
+    img.onload = () => setClubLogoSrc(rawClubLogo);
+    img.onerror = () => setClubLogoSrc(fallbackLogo);
+  }, [rawClubLogo, fallbackLogo]);
 
   // Only allow feedback when club explicitly wants to collect feedback, event has ended or user attended, and not yet submitted
   const canGiveFeedback = Boolean(clubWantsFeedback) && (isPast || isAttended) && !hasSubmittedFeedback;
@@ -127,8 +128,10 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
         : (event.certificateTemplate.imageUrl || Object.keys(event.certificateTemplate).length > 0)))
   );
 
-  const clubName = event.club?.clubName || event.organizers?.[0]?.club?.clubName || event.createdBy?.clubName;
-  const clubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
+  const organizers = event.organizers || [];
+  const isJoint = organizers.length > 1;
+  const jointNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : '';
+  const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
 
   return (
     <div
@@ -194,20 +197,51 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
       <div className="p-5 flex flex-col flex-1 gap-3">
         {/* Club line & Payment pill */}
         <div className="flex items-center justify-between gap-2 min-w-0">
-          {clubName ? (
+          {isJoint ? (
+            <div className="flex items-center min-w-0 gap-1.5">
+              <div className="flex items-center -space-x-1.5 shrink-0">
+                {organizers.slice(0, 3).map((o, i) => (
+                  <div
+                    key={o.club?.id || i}
+                    className="w-5 h-5 rounded-full overflow-hidden border border-white dark:border-neutral-900 shrink-0 bg-neutral-100 dark:bg-neutral-800 shadow-2xs"
+                    title={o.club?.clubName}
+                  >
+                    <img
+                      src={o.club?.clubLogo || fallbackLogo}
+                      alt={o.club?.clubName || 'Club'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = fallbackLogo;
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <Handshake size={13} className="text-brand-500 shrink-0" />
+              <span
+                className="text-xs font-medium text-brand-600 dark:text-brand-400 truncate hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                title={jointNames}
+              >
+                {jointNames}
+              </span>
+            </div>
+          ) : primaryClubName ? (
             <div className="flex items-center min-w-0 gap-2">
               <div className="w-5 h-5 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-neutral-100 dark:bg-neutral-800">
                 <img
                   src={clubLogoSrc}
-                  alt={clubName}
+                  alt={primaryClubName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = '/lightthemelogo.png';
+                    e.target.src = fallbackLogo;
                   }}
                 />
               </div>
-              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 truncate hover:text-neutral-900 dark:hover:text-white transition-colors">{clubName}</span>
+              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 truncate hover:text-neutral-900 dark:hover:text-white transition-colors">
+                {primaryClubName}
+              </span>
             </div>
           ) : <div />}
 
@@ -471,7 +505,7 @@ const MyEvents = () => {
     if (authUser) {
       setUser(authUser);
       const userId = authUser.id || authUser._id;
-      if (userId && !isClubAccount) {
+      if (userId && userId !== 'undefined' && userId !== 'null' && !isClubAccount) {
         fetchRegistrations(userId);
         fetchFeedbackHistory();
         fetchPendingFeedbackEvents();
@@ -1012,7 +1046,12 @@ const MyEvents = () => {
       <AnimatePresence>
         {ticketModalOpen && selectedTicket && (() => {
           const ev = selectedTicket.eventId || selectedTicket.event || {};
+          const organizers = ev.organizers || [];
+          const isJoint = organizers.length > 1;
+          const jointNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : null;
+
           const organizerName =
+            jointNames ||
             ev.club?.clubName ||
             ev.club?.name ||
             ev.organizers?.[0]?.club?.clubName ||
@@ -1105,8 +1144,10 @@ const MyEvents = () => {
                       {ev.title || "Event Pass"}
                     </h3>
 
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Organized by <span className="font-medium text-foreground">{organizerName}</span>
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span>Organized by</span>
+                      {isJoint && <Handshake size={13} className="text-brand-500 shrink-0 inline" />}
+                      <span className="font-medium text-foreground">{organizerName}</span>
                     </p>
                   </div>
 

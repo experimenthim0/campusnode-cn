@@ -283,7 +283,7 @@ html {
 
 html.dark,
 html.dark body {
-  background-color: #0a0a0a;
+  background-color: #0a0f1d;
   color: #ffffff;
 }
 
@@ -625,12 +625,12 @@ body {
 }
 
 .dark {
-  /* ── CampusNode 60-70% Foundation: Deep Navy System (No Pure Black) ── */
-  --cn-bg: #121212;
-  --cn-surface: #121212;
-  --cn-surface-muted: #181818;
-  --cn-surface-card: #161616;
-  --cn-surface-elevated: #1e1e1e;
+  /* ── CampusNode 60-70% Foundation: Slight Minimal Blue System ── */
+  --cn-bg: #0a0f1d;
+  --cn-surface: #0a0f1d;
+  --cn-surface-muted: #0e1528;
+  --cn-surface-card: #101930;
+  --cn-surface-elevated: #16223f;
 
   /* ── Dark Mode Typography ── */
   --cn-text: #F4F6F8;
@@ -679,11 +679,11 @@ body {
   --alert-info-text: #7CCAFF;
   --alert-info-border: rgba(0, 148, 255, 0.3);
 
-  --background: #121212;
+  --background: #0a0f1d;
   --foreground: #F4F6F8;
-  --card: #161616;
+  --card: #101930;
   --card-foreground: #F4F6F8;
-  --popover: #161616;
+  --popover: #101930;
   --popover-foreground: #F4F6F8;
   --primary: #0094FF;
   --primary-foreground: #FFFFFF;
@@ -723,6 +723,8 @@ body {
 
   html {
     @apply font-sans;
+    background-color: var(--cn-bg);
+    color: var(--cn-text);
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     min-height: 100%;
@@ -1541,13 +1543,31 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* ── Smooth transition on theme change ─────────────────────────────────── */
+/* ── Smooth transition on theme change (fallback when View Transitions not supported) ─── */
 html.dark-transition,
 html.dark-transition *,
 html.dark-transition *::before,
 html.dark-transition *::after {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
+
+/* ── View Transitions: Full-Screen Circular Reveal Ripple ───────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 99999;
+  /* Crucial: starts clipped at 0px so text/content never flashes before the wave sweeps across */
+  clip-path: circle(0px at var(--theme-x, 50%) var(--theme-y, 50%));
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SEARCH BAR — Styles & Animations (Updated with Blue / Teal Tokens)

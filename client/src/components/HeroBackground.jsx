@@ -43,7 +43,7 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
       aria-hidden="true"
     >
       {/* ── Base canvas background ──────────────────────────────────── */}
-      <div className="absolute inset-0 bg-neutral-100 dark:bg-slate-950" />
+      <div className="absolute inset-0 bg-white dark:bg-[#0a0f1d]" />
 
       {/* ── Campus Images with Silky Crossfade & Micro-Zoom ───────── */}
       {HERO_BG_IMAGES.map((item, idx) => {
@@ -66,32 +66,11 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
         );
       })}
 
-      {/* ── LIGHT MODE OVERLAY: Softer, reduced-contrast scrim for gentle harmony ── */}
-      {/* ── LIGHT MODE OVERLAY: Preserve campus imagery while keeping text readable ── */}
-<div
-  className="dark:hidden absolute inset-0 z-2 pointer-events-none"
-  style={{
-    background:
-      'linear-gradient(to bottom, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 35%, rgba(255,255,255,0.22) 70%, rgba(255,255,255,0.72) 100%)',
-  }}
-/>
+      {/* ── LIGHT MODE OVERLAY: Uniform clean scrim without gradient banding or glow blobs ── */}
+      <div className="dark:hidden absolute inset-0 z-2 pointer-events-none bg-white/70" />
 
-<div
-  className={`dark:hidden absolute left-1/2 ${glowTop} -translate-x-1/2 pointer-events-none z-2`}
->
-  <div className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#C9EBFF] opacity-20 blur-[50px]" />
-</div>
-
-      {/* ── DARK MODE OVERLAY: Rich cinema scrim keeping photo vibrant while white text pops ── */}
-      <div
-        className="hidden dark:block absolute inset-0 z-2 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(2, 6, 23, 0.65) 0%, rgba(2, 6, 23, 0.35) 35%, rgba(2, 6, 23, 0.70) 80%, rgba(2, 6, 23, 0.98) 100%)',
-        }}
-      />
-      <div className={`hidden dark:block absolute left-1/2 ${glowTop} -translate-x-1/2 pointer-events-none z-2`}>
-        <div className="campus-glow-flow h-[500px] w-[900px] max-w-[90vw] rounded-full bg-[#0094FF] opacity-[0.20] blur-[105px]" />
-      </div>
+      {/* ── DARK MODE OVERLAY: Uniform slight blue scrim without gradient banding or glow blobs ── */}
+      <div className="hidden dark:block absolute inset-0 z-2 pointer-events-none bg-[#0a0f1d]/75" />
 
       {/* ── Subtle Campus Spot Pill in Corner (informative & elegant) ── */}
       {showLocationTag && (

@@ -226,7 +226,7 @@ const ClubCard = ({ club }) => {
         {club.category && (
           <div className="flex justify-center mb-3">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-300 border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs group-hover:border-neutral-300 dark:group-hover:border-neutral-600 transition-colors">
-          
+
               <span>{club.category}</span>
             </span>
           </div>

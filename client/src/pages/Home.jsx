@@ -132,23 +132,7 @@ const SectionLabel = ({ children }) => (
   </div>
 );
 
-const SectionGlow = ({ className = '' }) => (
-  <div className={`absolute inset-0 pointer-events-none overflow-hidden select-none z-0 ${className}`} aria-hidden="true">
-    {/* Light Mode: Centered floating soft brand-blue glow tint */}
-    <div className="dark:hidden absolute inset-0 pointer-events-none">
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#C9EBFF] opacity-35 blur-[100px]" />
-      </div>
-    </div>
-
-    {/* Dark Mode: Centered floating brand-blue glow matching Hero */}
-    <div className="hidden dark:block absolute inset-0 pointer-events-none">
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#0094FF] opacity-[0.24] blur-[95px]" />
-      </div>
-    </div>
-  </div>
-);
+const SectionGlow = () => null;
 
 const BtnPrimary = ({ to, children }) => (
   <Link
@@ -322,18 +306,18 @@ const Home = () => {
           ];
 
   return (
-    <div className="myfont text-cn-text bg-cn-bg transition-colors duration-300 -mt-12">
+    <div className="myfont text-cn-text bg-white dark:bg-[#0a0f1d] transition-colors duration-300 -mt-12">
 
       {user ? (
         <>
           {/* ── Hero: Welcome Banner ────────────────────────────────────── */}
-          <section className="relative pt-24 sm:pt-28 pb-10 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 text-cn-text transition-colors duration-300 overflow-hidden">
+          <section className="relative pt-24 sm:pt-28 pb-10 bg-transparent dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] text-cn-text transition-colors duration-300 overflow-hidden">
             {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
        
 
             <Section className="relative z-10 w-full">
               {/* Top row: greeting + role badge */}
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-brand-500/10 dark:border-brand-400/10">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-neutral-200/50 dark:border-white/[0.05]">
                 <div className="flex flex-col gap-2">
                   {/* Role badge */}
                   <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
@@ -404,7 +388,7 @@ const Home = () => {
 
           {/* ── Section A: My Campus Journey (all students, including leads) ─ */}
           {isStudent && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -526,7 +510,7 @@ const Home = () => {
 
           {/* ── Section B: Club Operations Desk (Student Leads & Coordinators only) ── */}
           {isStudent && (isStudentLead || isCoordinator || operationalMemberships.length > 0) && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10">
@@ -662,7 +646,7 @@ const Home = () => {
 
           {/* ── Section C: Faculty Coordinator Desk ───────────────────────── */}
           {isFaculty && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8">
@@ -710,7 +694,7 @@ const Home = () => {
 
           {/* ── Section D: Admin Command Center ───────────────────────────── */}
           {isAdmin && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-transparent border-b border-brand-500/10 dark:border-brand-400/10 transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8">
@@ -762,7 +746,7 @@ const Home = () => {
         </>
       ) : (
         <>
-          <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-white dark:bg-slate-950 overflow-hidden">
+          <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] overflow-hidden">
             {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
             <HeroBackground glowTop="top-[40px]" showLocationTag={false} />
 
@@ -830,7 +814,7 @@ const Home = () => {
       {/* NEW Featured Events Section */}
       <FeaturedEventsSection />
 
-      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <ScrollReveal direction="up">
@@ -855,7 +839,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-10 sm:py-10 lg:py-10 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+      <section className="py-10 sm:py-10 lg:py-10 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <ScrollReveal direction="up">
@@ -895,7 +879,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
@@ -928,7 +912,7 @@ const Home = () => {
       {!user && (
         <>
           {/* Section 1: For Students */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <ScrollReveal direction="up">
@@ -987,7 +971,7 @@ const Home = () => {
           </section>
 
           {/* Section 2: For Clubs & Societies */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <ScrollReveal direction="up">
@@ -1028,7 +1012,7 @@ const Home = () => {
             </Section>
           </section>
 
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -1065,7 +1049,7 @@ const Home = () => {
       )}
 
 
-      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-cn-bg border-b border-neutral-200 dark:border-neutral-800 scroll-mt-20 relative overflow-hidden transition-colors duration-300">
+      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Brand blue glow accent matching Hero vibe */}
         <SectionGlow />
 
@@ -1109,11 +1093,11 @@ const Home = () => {
 
           {/* Divider */}
           <div className="relative flex py-4 items-center max-w-4xl mx-auto mb-10">
-            <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
+            <div className="flex-grow border-t border-neutral-200/50 dark:border-white/[0.05]" />
             <span className="shrink-0 mx-3 text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Student Creators
             </span>
-            <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
+            <div className="flex-grow border-t border-neutral-200/50 dark:border-white/[0.05]" />
           </div>
 
           {/* Frosted Team Cards Responsive Grid */}
@@ -1139,7 +1123,7 @@ const Home = () => {
       </section>
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
-        <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors duration-300">
+        <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] relative overflow-hidden transition-colors duration-300">
           <SectionGlow />
 
           <Section className="relative z-10">
