@@ -12,6 +12,7 @@ import Section from '../components/layout/Section';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import CardCarousel from '../components/CardCarousel';
 import ScrollReveal from '../components/ScrollReveal';
+import MonthView from '../components/calendar/MonthView';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -84,6 +85,12 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   const [filterYear, setFilterYear] = useState(initialYear);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+
+  const initialViewMode = searchParams.get('view') === 'calendar' ? 'calendar' : 'feed';
+  const [viewMode, setViewMode] = useState(initialViewMode);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
   const [events, setEvents] = useState([]);
   const [pagination, setPagination] = useState({
@@ -223,8 +230,39 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
     if (filterYear !== 'ALL') params.set('year', String(filterYear));
     if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
+    if (viewMode === 'calendar') params.set('view', 'calendar');
+
     setSearchParams(params, { replace: true });
-  }, [page, filterStatus, filterClub, filterMonth, filterYear, debouncedSearch, hideHeader, setSearchParams]);
+  }, [page, filterStatus, filterClub, filterMonth, filterYear, debouncedSearch, viewMode, hideHeader, setSearchParams]);
+
+  // Fetch full month events when calendar view is active
+  useEffect(() => {
+    if (viewMode !== 'calendar') return;
+    let isMounted = true;
+    const loadCalendarEvents = async () => {
+      setCalendarLoading(true);
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.set('page', '1');
+        queryParams.set('limit', '250');
+        if (filterClub !== 'ALL') queryParams.set('club', filterClub);
+        if (debouncedSearch.trim()) queryParams.set('search', debouncedSearch.trim());
+        const url = `${eventsUrl}?${queryParams.toString()}`;
+        const resData = await getPublicJson(url);
+        if (!isMounted) return;
+        const list = Array.isArray(resData) ? resData : (resData?.events || []);
+        setCalendarEvents(list);
+      } catch (err) {
+        console.error('Failed to load calendar events:', err);
+      } finally {
+        if (isMounted) setCalendarLoading(false);
+      }
+    };
+    loadCalendarEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, [viewMode, filterClub, debouncedSearch, eventsUrl]);
 
   // Core server-side query fetcher with AbortController and race condition guard
   const fetchEvents = useCallback(async () => {
@@ -453,10 +491,42 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   return (
     <Container {...containerProps}>
       {!hideHeader && (
-        <div className="mb-8 sm:mb-10 text-center">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-            Events & Activities
-          </h1>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 sm:mb-10">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+              Events &amp; Activities
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+              Explore university events, student club activities, hackathons, and cultural fests.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center p-1 bg-neutral-100 dark:bg-zinc-800/80 rounded-xl border border-neutral-200 dark:border-zinc-700/60 shadow-2xs shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('feed')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'feed'
+                  ? 'bg-white dark:bg-zinc-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+              }`}
+            >
+              <i className="ri-layout-grid-line" />
+              <span>Feed View</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('calendar')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'calendar'
+                  ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+              }`}
+            >
+              <i className="ri-calendar-2-line" />
+              <span>Calendar View</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -644,25 +714,42 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         </div>
       )}
 
-      {liveEvents.length > 0 && (
+      {viewMode === 'calendar' ? (
         <div className="mb-14">
-          {!hideHeader && (
-            <h2 className="text-lg font-medium text-red-500 mb-6 flex items-center gap-2">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-              </span>
-              Happening Now
-            </h2>
+          {calendarLoading ? (
+            <div className="p-12 text-center bg-cn-surface rounded-2xl border border-cn-border">
+              <i className="ri-loader-4-line text-2xl animate-spin text-brand-500 mb-2 block" />
+              <p className="text-xs text-cn-text-muted font-medium">Loading calendar events...</p>
+            </div>
+          ) : (
+            <MonthView
+              currentDate={calendarDate}
+              onDateChange={setCalendarDate}
+              events={calendarEvents}
+            />
           )}
-          {hideHeader && (
-            <h3 className="text-md font-semibold text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
-              <span className="relative flex h-3 w-3">
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-              </span>
-              Live Now
-            </h3>
-          )}
+        </div>
+      ) : (
+        <>
+          {liveEvents.length > 0 && (
+            <div className="mb-14">
+              {!hideHeader && (
+                <h2 className="text-lg font-medium text-red-500 mb-6 flex items-center gap-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  Happening Now
+                </h2>
+              )}
+              {hideHeader && (
+                <h3 className="text-md font-semibold text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                  <span className="relative flex h-3 w-3">
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  Live Now
+                </h3>
+              )}
 
           {isCarousel || (hideHeader && liveEvents.length > 3) ? (
             <CardCarousel threshold={3}>
@@ -854,6 +941,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div className="mt-8 mb-4 text-center text-xs text-neutral-400 dark:text-neutral-500 font-medium">
           All {pagination.total} {pagination.total === 1 ? 'event' : 'events'} loaded
         </div>
+      )}
+        </>
       )}
     </Container>
   );

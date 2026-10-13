@@ -122,7 +122,7 @@ const BottomNav = () => {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/95 dark:bg-[#121212]/95 backdrop-blur-md border-t border-cn-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/95 dark:bg-[#001F3F]/95 backdrop-blur-md border-t border-cn-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex justify-around items-center h-16 px-2 mysans">
           {navItems.map((item, index) => {
             const Icon = item.icon;
@@ -153,7 +153,7 @@ const BottomNav = () => {
                       alt={user?.name || item.label}
                       className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${
                         active
-                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-[#121212]"
+                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-[#001F3F]"
                           : "border border-neutral-300 dark:border-neutral-700"
                       }`}
                       onError={() => setImageError(true)}

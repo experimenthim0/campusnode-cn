@@ -283,7 +283,7 @@ html {
 
 html.dark,
 html.dark body {
-  background-color: #0a0f1d;
+  background-color: #001F3F;
   color: #ffffff;
 }
 
@@ -625,10 +625,11 @@ body {
 }
 
 .dark {
-  /* ── CampusNode 60-70% Foundation: Slight Minimal Blue System ── */
-  --cn-bg: #0a0f1d;
-  --cn-surface: #0a0f1d;
-  --cn-surface-muted: #0e1528;
+  /* ── CampusNode 60-70% Foundation: Navy Foundation System ── */
+
+--cn-bg: #0F1117;
+--cn-surface: #181B23;
+--cn-surface-muted: #222631;
   --cn-surface-card: #101930;
   --cn-surface-elevated: #16223f;
 
@@ -679,7 +680,7 @@ body {
   --alert-info-text: #7CCAFF;
   --alert-info-border: rgba(0, 148, 255, 0.3);
 
-  --background: #0a0f1d;
+  --background: #0F1117;
   --foreground: #F4F6F8;
   --card: #101930;
   --card-foreground: #F4F6F8;
@@ -899,13 +900,23 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  --bg-color: #0D182A;
+  --bg-color: #0F1117;
   --text-color: #F4F6F8;
 }
 
 /* ── Neutral Surface Hierarchy Overrides (Dark Mode #121212 Foundation) ──── */
 .dark .bg-white {
-  background-color: #161616 !important;
+  background-color: #0F1117 !important;
+}
+
+/* Ensure page sections, footers, and main containers use #001F3F navy in dark mode (not cards/boxes) */
+.dark section.bg-white,
+.dark section.bg-cn-surface,
+.dark footer.bg-white,
+.dark footer.bg-cn-surface,
+.dark main.bg-white,
+.dark main.bg-cn-surface {
+  background-color: #0F1117 !important;
 }
 
 .dark .bg-gray-50 {
@@ -2522,4 +2533,4 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
 
 .animate-upload-pulse {
   animation: uploadPulseGlow 2s ease-in-out infinite;
-}
+}

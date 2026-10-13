@@ -217,6 +217,18 @@ const EventQuickViewDrawer = ({
         </div>
 
         <div className="p-6 border-t border-cn-border-subtle bg-transparent dark:bg-cn-surface space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate(`/event/${event.slug || event.id || event._id}`);
+            }}
+            className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs mb-2"
+          >
+            <ExternalLink size={14} />
+            <span>Open Event Page</span>
+          </button>
+
           {onOpenPreview && (
             <button
               type="button"
@@ -224,7 +236,7 @@ const EventQuickViewDrawer = ({
                 onClose();
                 onOpenPreview(event);
               }}
-              className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs mb-2"
+              className="w-full py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-cn-text text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs mb-2"
             >
               <ExternalLink size={14} />
               <span>Full Event &amp; Payment Preview</span>

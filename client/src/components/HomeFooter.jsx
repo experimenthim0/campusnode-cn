@@ -87,7 +87,7 @@ const HomeFooter = () => {
   const currentSlide = CAMPUS_SLIDES[activeSlideIndex];
 
   return (
-    <footer className="bg-white dark:bg-[#0a0f1d] text-cn-text border-t border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 overflow-hidden">
+    <footer className="bg-cn-surface dark:bg-[#001F3F] text-cn-text border-t border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 overflow-hidden">
       {/* Upper Navigation Section */}
       <Section className="py-12 sm:py-12 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">

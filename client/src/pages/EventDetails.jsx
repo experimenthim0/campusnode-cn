@@ -671,7 +671,7 @@ const EventDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] flex items-center justify-center">
         <ShimmerText text="Loading event..." className="text-sm font-semibold uppercase tracking-[0.2em]" />
       </div>
     );
@@ -679,7 +679,7 @@ const EventDetails = () => {
 
   if (error || !event) {
     return (
-      <div className="min-h-[80vh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-6">
+      <div className="min-h-[80vh] bg-neutral-50 dark:bg-[#001F3F] flex items-center justify-center px-6">
         <div className="border-2 border-neutral-200 dark:border-neutral-700 rounded-md p-10 text-center max-w-sm bg-white dark:bg-neutral-900">
           <div className="w-14 h-14 flex items-center justify-center text-yellow-500 text-4xl mx-auto mb-3">
             <i className="ri-error-warning-line" />
@@ -992,9 +992,9 @@ const EventDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 myfont text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] myfont text-neutral-900 dark:text-neutral-100">
 
-      <div className="hidden sm:block top-0 z-30 bg-neutral-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <div className="hidden sm:block top-0 z-30 bg-neutral-50/80 dark:bg-[#001F3F]/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}

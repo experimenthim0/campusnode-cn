@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getClubMembers, getClubById } from '../services/clubService';
 import { CLUB_EVENT_EXPORT_COLUMNS, downloadClubEventExport } from '../utils/clubEventExport';
-import { getClubManagedEvents, reviewEvent, deleteEvent } from '../services/eventService';
+import { getClubManagedEvents, getClubEvents, reviewEvent, deleteEvent } from '../services/eventService';
 import { useNotification } from '../context/NotificationContext';
+import MonthView from '../components/calendar/MonthView';
+import { getClubColorPalette } from '../components/calendar/calendarColorUtils';
 import {
   Clock,
   MapPin,
@@ -70,6 +72,123 @@ const ClubEvents = () => {
   const [selectedEventExportColumns, setSelectedEventExportColumns] = useState(CLUB_EVENT_EXPORT_COLUMNS.map(column => column.key));
   const [eventExporting, setEventExporting] = useState(false);
   const [eventExportError, setEventExportError] = useState('');
+
+  // Calendar view mode state
+  const [dashboardViewMode, setDashboardViewMode] = useState('list'); // 'list' | 'calendar'
+  const [multiClubEvents, setMultiClubEvents] = useState([]);
+  const [multiClubLoading, setMultiClubLoading] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarClubFilter, setCalendarClubFilter] = useState("all");
+
+  // Determine all clubs where the user is an active member, in team, or has any club role
+  const userClubs = useMemo(() => {
+    const clubsMap = new Map();
+
+    // 1. Current route club
+    if (clubId) {
+      clubsMap.set(String(clubId), {
+        id: String(clubId),
+        name: clubName || "Active Club",
+        role: "ACTIVE",
+      });
+    }
+
+    // 2. User assigned club
+    if (user?.clubId) {
+      const cid = String(user.clubId);
+      if (!clubsMap.has(cid)) {
+        clubsMap.set(cid, {
+          id: cid,
+          name: user.clubName || "My Assigned Club",
+          role: user.clubRole || "MEMBER",
+        });
+      }
+    }
+
+    // 3. User memberships array (member, team, coordinator, club head, faculty coordinator, etc.)
+    if (Array.isArray(user?.memberships)) {
+      user.memberships.forEach((m) => {
+        const cid = String(m.clubId || m.club?._id || m.club?.id || m.id || "");
+        if (cid && m.status !== "INACTIVE") {
+          clubsMap.set(cid, {
+            id: cid,
+            name: m.clubName || m.club?.clubName || clubsMap.get(cid)?.name || `Club ${cid.slice(-4)}`,
+            role: m.role || "MEMBER",
+          });
+        }
+      });
+    }
+
+    return Array.from(clubsMap.values());
+  }, [user, clubId, clubName]);
+
+  // Fetch events across all clubs the user is a member of / has a role in when calendar view is open
+  useEffect(() => {
+    if (dashboardViewMode !== 'calendar' || userClubs.length === 0) return;
+    let isMounted = true;
+
+    const fetchMultiClubEvents = async () => {
+      setMultiClubLoading(true);
+      try {
+        const promises = userClubs.map(async (c) => {
+          try {
+            const res = await getClubManagedEvents(c.id);
+            const list = Array.isArray(res.data) ? res.data : [];
+            return list.map((ev) => ({
+              ...ev,
+              clubId: ev.clubId || c.id,
+              club: ev.club || { _id: c.id, id: c.id, clubName: c.name },
+            }));
+          } catch {
+            try {
+              const res2 = await getClubEvents(c.id);
+              const list2 = Array.isArray(res2.data) ? res2.data : [];
+              return list2.map((ev) => ({
+                ...ev,
+                clubId: ev.clubId || c.id,
+                club: ev.club || { _id: c.id, id: c.id, clubName: c.name },
+              }));
+            } catch {
+              return [];
+            }
+          }
+        });
+
+        const allResults = await Promise.all(promises);
+        if (!isMounted) return;
+
+        const merged = allResults.flat();
+        const seen = new Set();
+        const unique = [];
+        merged.forEach((item) => {
+          const id = String(item.id || item._id);
+          if (!seen.has(id)) {
+            seen.add(id);
+            unique.push(item);
+          }
+        });
+
+        setMultiClubEvents(unique);
+      } catch (err) {
+        console.error("Failed to load multi-club events:", err);
+      } finally {
+        if (isMounted) setMultiClubLoading(false);
+      }
+    };
+
+    fetchMultiClubEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, [dashboardViewMode, userClubs]);
+
+  // Filter multi-club events according to selected club in calendar legend
+  const eventsForCalendar = useMemo(() => {
+    if (calendarClubFilter === "all") return multiClubEvents;
+    return multiClubEvents.filter(
+      (e) => String(e.clubId || e.club?._id || e.club?.id) === String(calendarClubFilter)
+    );
+  }, [multiClubEvents, calendarClubFilter]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -472,7 +591,112 @@ const ClubEvents = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
+      {/* View Switcher: List vs Calendar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center p-1 bg-neutral-100 dark:bg-zinc-800/80 rounded-xl border border-neutral-200 dark:border-zinc-700/60 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setDashboardViewMode('list')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                dashboardViewMode === 'list'
+                  ? 'bg-white dark:bg-zinc-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Events List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDashboardViewMode('calendar')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                dashboardViewMode === 'calendar'
+                  ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Events Calendar</span>
+            </button>
+          </div>
+
+          {userClubs.length > 1 && dashboardViewMode === 'calendar' && (
+            <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
+              Showing events across {userClubs.length} clubs where you are a member or team
+            </span>
+          )}
+        </div>
+
+        {dashboardViewMode === 'calendar' && (
+          <div className="text-xs text-muted-foreground font-medium">
+            {eventsForCalendar.length} {eventsForCalendar.length === 1 ? 'event' : 'events'}
+          </div>
+        )}
+      </div>
+
+      {dashboardViewMode === 'calendar' ? (
+        <div className="space-y-4 mb-8">
+          {/* Multi-Club Filter Badges / Legend with distinct colors */}
+          {userClubs.length > 1 && (
+            <div className="p-3 bg-card border border-border rounded-xl flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground mr-1">
+                Filter by Club:
+              </span>
+              <button
+                type="button"
+                onClick={() => setCalendarClubFilter("all")}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                  calendarClubFilter === "all"
+                    ? "bg-brand-500 text-white border-brand-500 shadow-2xs"
+                    : "bg-muted/40 text-muted-foreground border-border hover:bg-muted"
+                }`}
+              >
+                All My Clubs ({userClubs.length})
+              </button>
+              {userClubs.map((c, i) => {
+                const palette = getClubColorPalette(c.id, i);
+                const isSelected = calendarClubFilter === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setCalendarClubFilter(c.id)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                      isSelected
+                        ? `${palette.badge} ring-2 ring-brand-500`
+                        : `${palette.pill} opacity-85 hover:opacity-100`
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${palette.dot}`} />
+                    <span>{c.name}</span>
+                    <span className="text-[10px] opacity-75 font-normal">
+                      ({c.role.toLowerCase()})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {multiClubLoading ? (
+            <div className="p-12 text-center bg-card rounded-2xl border border-border">
+              <Loader2 className="w-6 h-6 animate-spin text-brand-500 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground font-medium">
+                Loading calendar events for your clubs...
+              </p>
+            </div>
+          ) : (
+            <MonthView
+              currentDate={calendarDate}
+              onDateChange={setCalendarDate}
+              events={eventsForCalendar}
+            />
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Filter Tabs */}
       {createdEvents.length > 0 && (
         <div className="flex items-center gap-1.5 pb-4 border-b border-border mb-6 overflow-x-auto">
           <Button
@@ -950,6 +1174,8 @@ const ClubEvents = () => {
             );
           })}
         </div>
+      )}
+        </>
       )}
 
       <ColumnExportModal

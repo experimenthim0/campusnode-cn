@@ -191,7 +191,7 @@ const PaymentTracking = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-[#001F3F]">
         <ShimmerText text="Loading payment tracking..." className="text-sm font-medium tracking-wide" />
       </div>
     );
@@ -199,7 +199,7 @@ const PaymentTracking = () => {
 
   if (!hasAnyAccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-[#001F3F] p-6">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-2xl shadow-sm max-w-sm text-center">
           <i className="ri-error-warning-line text-4xl text-rose-500 mb-3 block" />
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Access Restricted</h3>
@@ -213,7 +213,7 @@ const PaymentTracking = () => {
 
   if (isForbiddenForClub) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 py-12 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] py-12 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100 flex items-center justify-center">
         <div className="bg-white dark:bg-neutral-900 border border-rose-200 dark:border-rose-900/40 p-8 rounded-2xl shadow-sm max-w-md w-full text-center">
           <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center mx-auto mb-4 text-rose-500">
             <i className="ri-shield-cross-line text-2xl" />
@@ -256,7 +256,7 @@ const PaymentTracking = () => {
   const totalPaidEventsCount = events.length;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 py-10 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] py-10 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100">
       <div className="max-w-7xl mx-auto">
         
         {/* Multi-Club Switcher (When user coordinates / manages multiple clubs) */}

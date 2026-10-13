@@ -43,7 +43,7 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
       aria-hidden="true"
     >
       {/* ── Base canvas background ──────────────────────────────────── */}
-      <div className="absolute inset-0 bg-white dark:bg-[#0a0f1d]" />
+      <div className="absolute inset-0 bg-white dark:bg-[#001F3F]" />
 
       {/* ── Campus Images with Silky Crossfade & Micro-Zoom ───────── */}
       {HERO_BG_IMAGES.map((item, idx) => {
@@ -67,10 +67,10 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
       })}
 
       {/* ── LIGHT MODE OVERLAY: Uniform clean scrim without gradient banding or glow blobs ── */}
-      <div className="dark:hidden absolute inset-0 z-2 pointer-events-none bg-white/70" />
+      <div className="dark:hidden absolute inset-0 z-2 pointer-events-none bg-white/35" />
 
-      {/* ── DARK MODE OVERLAY: Uniform slight blue scrim without gradient banding or glow blobs ── */}
-      <div className="hidden dark:block absolute inset-0 z-2 pointer-events-none bg-[#0a0f1d]/75" />
+      {/* ── DARK MODE OVERLAY: Uniform navy scrim without gradient banding or glow blobs ── */}
+      <div className="hidden dark:block absolute inset-0 z-2 pointer-events-none bg-[#001F3F]/60" />
 
       {/* ── Subtle Campus Spot Pill in Corner (informative & elegant) ── */}
       {showLocationTag && (

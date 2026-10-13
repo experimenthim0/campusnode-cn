@@ -102,7 +102,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
   }
 
   return (
-    <section className={`py-9 sm:py-11 lg:py-14 bg-white dark:bg-[#0a0f1d] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
+    <section className={`py-9 sm:py-11 lg:py-14 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
       <Section className="relative z-10">{Content}</Section>
     </section>
   );
