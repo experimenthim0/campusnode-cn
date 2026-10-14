@@ -24,6 +24,7 @@ import { AtSignIcon } from '@/components/ui/at-sign';
 import { EarthIcon } from '@/components/ui/earth';
 import { ZapIcon } from '@/components/ui/zap';
 import { InsetModernTeamCard, FacultyCard, TEAM_MEMBERS, FACULTY_MENTORS } from './Team';
+import HomeRecruitmentSection from '../components/HomeRecruitmentSection';
 
 
 
@@ -1074,8 +1075,40 @@ const Home = () => {
             </ScrollReveal>
           </div>
 
-          {/* Faculty Mentors */}
-          <div className="mb-12 sm:mb-16">
+      
+        
+
+          {/* Symmetric Team Showcase: 3 Leaders / Architects on Top, 4 Core Innovators Below */}
+          <div className="space-y-6 sm:space-y-8 lg:space-y-8 max-w-6xl mx-auto">
+            {/* Top Row: 3 Team Members */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-xl md:max-w-[860px] mx-auto justify-items-center">
+              {TEAM_MEMBERS.slice(0, 3).map((member, idx) => (
+                <div
+                  key={member.id}
+                  className={`w-full max-w-[280px] sm:max-w-[270px] ${
+                    idx === 2 ? 'sm:col-span-2 sm:max-w-[270px] md:col-span-1' : ''
+                  }`}
+                >
+                  <ScrollReveal direction="up" delay={0.05 * idx}>
+                    <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                  </ScrollReveal>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Row: 4 Team Members */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-xl lg:max-w-6xl mx-auto justify-items-center">
+              {TEAM_MEMBERS.slice(3).map((member, idx) => (
+                <div key={member.id} className="w-full max-w-[280px] sm:max-w-[270px]">
+                  <ScrollReveal direction="up" delay={0.05 * (idx + 3)}>
+                    <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                  </ScrollReveal>
+                </div>
+              ))}
+            </div>
+          </div>
+
+    <div className="mt-12 sm:mt-16">
             <div className="text-center mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
                 <GraduationCap className="w-3.5 h-3.5" />
@@ -1091,24 +1124,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="relative flex py-4 items-center max-w-4xl mx-auto mb-10">
-            <div className="flex-grow border-t border-neutral-200/50 dark:border-white/[0.05]" />
-            <span className="shrink-0 mx-3 text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-              Student Creators
-            </span>
-            <div className="flex-grow border-t border-neutral-200/50 dark:border-white/[0.05]" />
-          </div>
-
-          {/* Frosted Team Cards Responsive Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 max-w-6xl mx-auto">
-            {TEAM_MEMBERS.map((member, idx) => (
-              <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
-                <InsetModernTeamCard member={member} />
-              </ScrollReveal>
-            ))}
-          </div>
-
           {/* Link to Full Team Page */}
           <ScrollReveal direction="up" delay={0.25} className="mt-12 sm:mt-16 text-center">
             <Link
@@ -1121,6 +1136,10 @@ const Home = () => {
           </ScrollReveal>
         </Section>
       </section>
+
+      {/* ── Homepage Recruitment Section (Creative Team) ── */}
+      <HomeRecruitmentSection />
+
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
         <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] relative overflow-hidden transition-colors duration-300">

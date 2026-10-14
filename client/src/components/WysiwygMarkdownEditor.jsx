@@ -37,6 +37,7 @@ const WysiwygMarkdownEditor = ({
   className = '',
   showToolbar = true,
   showStats = false,
+  stickyTop,
 }) => {
   const containerRef = useRef(null);
   const editorRef = useRef(null);
@@ -85,7 +86,6 @@ const WysiwygMarkdownEditor = ({
   const [imageWidth, setImageWidth] = useState('100%');
   const [imageHeight, setImageHeight] = useState('');
   const [imageAlign, setImageAlign] = useState('center'); // 'left' | 'center' | 'right'
-  const [sizePreset, setSizePreset] = useState('100%'); // '25%' | '50%' | '75%' | '100%' | 'custom'
   const [imageError, setImageError] = useState('');
   const imagePopoverRef = useRef(null);
   const imageUrlInputRef = useRef(null);
@@ -95,47 +95,80 @@ const WysiwygMarkdownEditor = ({
   // Heading dropdown
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const headingMenuRef = useRef(null);
+  const toolbarRef = useRef(null);
+  const [stickyTopOffset, setStickyTopOffset] = useState(0);
+
+  // Close heading dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (headingMenuRef.current && !headingMenuRef.current.contains(e.target)) {
+        setIsHeadingMenuOpen(false);
+      }
+    };
+    if (isHeadingMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isHeadingMenuOpen]);
+
+  // Compute sticky top offset dynamically based on scroll container context
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const computeStickyTop = () => {
+      let el = containerRef.current.parentElement;
+      let isInsideScrollableParent = false;
+      while (el && el !== document.body && el !== document.documentElement) {
+        const style = window.getComputedStyle(el);
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+          isInsideScrollableParent = true;
+          break;
+        }
+        el = el.parentElement;
+      }
+
+      // If scrolling against window and sticky/fixed Navbar exists, offset below Navbar
+      if (!isInsideScrollableParent) {
+        const nav = document.querySelector('nav');
+        if (nav) {
+          const navStyle = window.getComputedStyle(nav);
+          if (navStyle.position === 'sticky' || navStyle.position === 'fixed') {
+            setStickyTopOffset(nav.offsetHeight || 64);
+            return;
+          }
+        }
+        setStickyTopOffset(0);
+      } else {
+        setStickyTopOffset(0);
+      }
+    };
+
+    computeStickyTop();
+    window.addEventListener('resize', computeStickyTop);
+    return () => window.removeEventListener('resize', computeStickyTop);
+  }, []);
+
+  // Compute toolbar bottom position relative to editor container for popover placement
+  const getToolbarRelativeTop = useCallback(() => {
+    if (toolbarRef.current && containerRef.current) {
+      const tbRect = toolbarRef.current.getBoundingClientRect();
+      const cRect = containerRef.current.getBoundingClientRect();
+      return Math.max(44, tbRect.bottom - cRect.top + 6);
+    }
+    return 48;
+  }, []);
 
   // Stats
   const [stats, setStats] = useState({ words: 0, characters: 0, readTime: 1 });
 
-  // Initialize and synchronize HTML when external markdown value changes
-  useEffect(() => {
-    if (!editorRef.current) return;
-    if (isInternalChangeRef.current) {
-      isInternalChangeRef.current = false;
-      return;
-    }
-
-    const currentEditorMarkdown = htmlToMarkdown(editorRef.current);
-    if (value !== currentEditorMarkdown) {
-      const html = markdownToHtml(value);
-      editorRef.current.innerHTML = html;
-      calculateStats(editorRef.current.innerText || '');
-    }
-  }, [value]);
-
   // Update statistics
-  const calculateStats = (text) => {
+  const calculateStats = useCallback((text) => {
     const trimmed = (text || '').trim();
     const words = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
     const characters = (text || '').length;
     const readTime = Math.max(1, Math.ceil(words / 200));
     setStats({ words, characters, readTime });
-  };
-
-  // Emit changes to parent
-  const handleEditorInput = useCallback(() => {
-    if (!editorRef.current) return;
-    isInternalChangeRef.current = true;
-
-    const currentHtml = editorRef.current.innerHTML;
-    const markdown = htmlToMarkdown(editorRef.current);
-    calculateStats(editorRef.current.innerText || '');
-    updateActiveFormats();
-
-    onChange?.(markdown, currentHtml);
-  }, [onChange]);
+  }, []);
 
   // Query selection format states for toolbar active lighting
   const updateActiveFormats = useCallback(() => {
@@ -178,8 +211,39 @@ const WysiwygMarkdownEditor = ({
         orderedList,
         isLink,
       });
-    } catch (e) {}
+    } catch (_err) {
+      // Ignore queryCommandState errors if selection is invalid
+    }
   }, []);
+
+  // Initialize and synchronize HTML when external markdown value changes
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (isInternalChangeRef.current) {
+      isInternalChangeRef.current = false;
+      return;
+    }
+
+    const currentEditorMarkdown = htmlToMarkdown(editorRef.current);
+    if (value !== currentEditorMarkdown) {
+      const html = markdownToHtml(value);
+      editorRef.current.innerHTML = html;
+      calculateStats(editorRef.current.innerText || '');
+    }
+  }, [value, calculateStats]);
+
+  // Emit changes to parent
+  const handleEditorInput = useCallback(() => {
+    if (!editorRef.current) return;
+    isInternalChangeRef.current = true;
+
+    const currentHtml = editorRef.current.innerHTML;
+    const markdown = htmlToMarkdown(editorRef.current);
+    calculateStats(editorRef.current.innerText || '');
+    updateActiveFormats();
+
+    onChange?.(markdown, currentHtml);
+  }, [onChange, calculateStats, updateActiveFormats]);
 
   const updateFloatingBubble = useCallback(() => {
     const selection = window.getSelection();
@@ -207,7 +271,11 @@ const WysiwygMarkdownEditor = ({
       let top = rect.top - containerRect.top - 46;
       let left = rect.left - containerRect.left + (rect.width / 2) - 150;
 
-      if (top < 10) {
+      const minTop = toolbarRef.current && containerRef.current
+        ? (toolbarRef.current.getBoundingClientRect().bottom - containerRect.top + 6)
+        : 44;
+
+      if (top < minTop) {
         top = rect.bottom - containerRect.top + 10;
       }
       left = Math.max(10, Math.min(containerRect.width - 310, left));
@@ -217,7 +285,7 @@ const WysiwygMarkdownEditor = ({
         top,
         left,
       });
-    } catch (e) {
+    } catch (_err) {
       setBubbleToolbar({ visible: false, top: 0, left: 0 });
     }
   }, []);
@@ -301,7 +369,7 @@ const WysiwygMarkdownEditor = ({
       savedSelectionRange.current = null;
       setLinkPopover({
         isOpen: true,
-        top: 48,
+        top: getToolbarRelativeTop(),
         left: 16,
         hasSelectedText: false,
         isExistingLink: false,
@@ -455,7 +523,7 @@ const WysiwygMarkdownEditor = ({
       setImagePopover({
         isOpen: true,
         isExistingImage: false,
-        top: 48,
+        top: getToolbarRelativeTop(),
         left: 16,
       });
     }
@@ -465,7 +533,6 @@ const WysiwygMarkdownEditor = ({
     setImageWidth('100%');
     setImageHeight('');
     setImageAlign('center');
-    setSizePreset('100%');
     setImageError('');
 
     setTimeout(() => {
@@ -474,7 +541,6 @@ const WysiwygMarkdownEditor = ({
   };
 
   const handleSizePresetSelect = (preset) => {
-    setSizePreset(preset);
     if (preset === '100%') {
       setImageWidth('100%');
       setImageHeight('');
@@ -589,7 +655,6 @@ const WysiwygMarkdownEditor = ({
     setImageWidth('100%');
     setImageHeight('');
     setImageAlign('center');
-    setSizePreset('100%');
     setImageError('');
   };
 
@@ -663,10 +728,14 @@ const WysiwygMarkdownEditor = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full bg-card border border-border rounded-xl shadow-xs transition-all overflow-hidden ${className}`}
+      className={`relative w-full bg-card border border-border rounded-xl shadow-xs transition-all ${className}`}
     >
       {showToolbar && (
-        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-md">
+        <div
+          ref={toolbarRef}
+          style={{ top: `${stickyTop !== undefined ? stickyTop : stickyTopOffset}px` }}
+          className="sticky z-20 flex flex-wrap items-center gap-1 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-md rounded-t-xl shadow-xs transition-shadow"
+        >
           {/* Headings Dropdown */}
           <div className="relative" ref={headingMenuRef}>
             <Button
@@ -1274,7 +1343,7 @@ const WysiwygMarkdownEditor = ({
       )}
 
       {/* Editable Area */}
-      <div className="relative bg-card">
+      <div className={`relative bg-card ${showStats ? '' : 'rounded-b-xl'}`}>
         <div
           ref={editorRef}
           contentEditable
@@ -1287,12 +1356,12 @@ const WysiwygMarkdownEditor = ({
           onPaste={handlePaste}
           data-placeholder={placeholder}
           style={{ minHeight }}
-          className="wysiwyg-editor-area focus:outline-none"
+          className={`wysiwyg-editor-area focus:outline-none ${!showToolbar ? 'rounded-t-xl' : ''} ${!showStats ? 'rounded-b-xl' : ''}`}
         />
       </div>
 
       {showStats && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground select-none">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground select-none rounded-b-xl">
           <div className="flex items-center gap-3 flex-wrap">
             <span>
               <strong className="text-foreground">{stats.words}</strong> words

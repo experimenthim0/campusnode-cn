@@ -216,7 +216,7 @@ const HomeFooter = () => {
                   aria-hidden={!isActive}
                 >
                   <span
-                    className="w-full logofont text-center font-black tracking-[-0.04em] leading-[0.82] block select-none lowercase transition-transform duration-5000 ease-out will-change-transform drop-shadow-[0_4px_24px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_6px_28px_rgba(0,0,0,0.45)] text-[15.5vw] sm:text-[14.5vw] md:text-[14vw] lg:text-[13.5vw]"
+                    className="w-full logofont text-center font-black tracking-[-0.01em] sm:tracking-[-0.04em] leading-[0.82] block select-none lowercase transition-transform duration-5000 ease-out will-change-transform drop-shadow-[0_4px_24px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_6px_28px_rgba(0,0,0,0.45)] text-[15.5vw] sm:text-[14.5vw] md:text-[14vw] lg:text-[13.5vw]"
                     style={{
                       
                       backgroundImage: `url('${slide.src}')`,

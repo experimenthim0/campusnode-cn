@@ -1,6 +1,7 @@
 import React from 'react';
-import { Linkedin, Instagram, Github, ExternalLink, Sparkles, Bell, Globe, GraduationCap, Mail } from 'lucide-react';
+import { Linkedin, Instagram, Github, ExternalLink, Sparkles, Bell, Globe, GraduationCap, Mail, ArrowRight, Palette, Code2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
+import { RECRUITMENT_FORM_URL } from '../constants/recruitment';
 
 
 // ── Verified Badge ────────────────────────────────────────────────────────────
@@ -336,19 +337,7 @@ export const TEAM_MEMBERS = [
       github: 'https://github.com/xplorewithpranjal',
     },
   },
-  {
-    id: 'amrit-noor',
-    name: 'Amrit Noor Singh',
-    role: 'Core Member',
-    department: 'backend',
-    batch: "CSE '27",
-    imageUrl: '/team_members/amrit_noor_singh.png',
-    socials: {
-      linkedin: 'https://www.linkedin.com/in/amritnoor',
-      // instagram: 'https://instagram.com',
-      github: 'https://github.com/Amrit0726',
-    },
-  },
+
   {
     id: 'ayush-poddar',
     name: 'Ayush Poddar',
@@ -360,6 +349,19 @@ export const TEAM_MEMBERS = [
     socials: {
       linkedin: 'https://www.linkedin.com/in/ayush-poddar-159041310/',
       github: 'https://github.com/ayush2006-creator',
+    },
+  },
+    {
+    id: 'amrit-noor',
+    name: 'Amrit Noor Singh',
+    role: 'Core Member',
+    department: 'backend',
+    batch: "CSE '27",
+    imageUrl: '/team_members/amrit_noor_singh.png',
+    socials: {
+      linkedin: 'https://www.linkedin.com/in/amritnoor',
+      // instagram: 'https://instagram.com',
+      github: 'https://github.com/Amrit0726',
     },
   },
   {
@@ -435,7 +437,57 @@ const Team = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-20 sm:pb-28 relative z-10">
         {/* ── Section 1: Faculty Advisory & Mentorship ── */}
+       
+
+       
+
+        {/* ── Section 2: Student Creators ── */}
         <ScrollReveal>
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              The People Behind Campusnode
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-cn-text tracking-tight mb-3">
+              Meet the Creators
+            </h2>
+            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
+              Designed, built, and maintained by student developers and designers at NIT Jalandhar.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        {/* Symmetric Member Showcase: 3 on Top, 4 Below */}
+        <div className="space-y-6 sm:space-y-8 lg:space-y-8 max-w-6xl mx-auto mb-16 sm:mb-24">
+          {/* Top Row: 3 Team Members */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-xl md:max-w-[860px] mx-auto justify-items-center">
+            {TEAM_MEMBERS.slice(0, 3).map((member, idx) => (
+              <div
+                key={member.id}
+                className={`w-full max-w-[280px] sm:max-w-[270px] ${
+                  idx === 2 ? 'sm:col-span-2 sm:max-w-[270px] md:col-span-1' : ''
+                }`}
+              >
+                <ScrollReveal delay={idx * 0.08}>
+                  <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                </ScrollReveal>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Row: 4 Team Members */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-xl lg:max-w-6xl mx-auto justify-items-center">
+            {TEAM_MEMBERS.slice(3).map((member, idx) => (
+              <div key={member.id} className="w-full max-w-[280px] sm:max-w-[270px]">
+                <ScrollReveal delay={(idx + 3) * 0.08}>
+                  <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                </ScrollReveal>
+              </div>
+            ))}
+          </div>
+        </div>
+
+ <ScrollReveal>
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
               <GraduationCap className="w-3.5 h-3.5" />
@@ -459,65 +511,120 @@ const Team = () => {
           ))}
         </div>
 
-        {/* Section Divider */}
-        <div className="relative flex py-5 items-center max-w-4xl mx-auto mb-12 sm:mb-16">
-          <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
-          <span className="shrink-0 mx-4 text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            Student Innovation Team
-          </span>
-          <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
-        </div>
-
-        {/* ── Section 2: Student Creators ── */}
-        <ScrollReveal>
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              The People Behind Campusnode
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-cn-text tracking-tight mb-3">
-              Meet the Creators
-            </h2>
-            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
-              Designed, built, and maintained by student developers and designers at NIT Jalandhar.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* Member Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto mb-16 sm:mb-24">
-          {TEAM_MEMBERS.map((member, index) => (
-            <ScrollReveal key={member.id} delay={index * 0.1}>
-              <InsetModernTeamCard member={member} />
-            </ScrollReveal>
-          ))}
-        </div>
-
-        {/* Contribute CTA Section */}
-        <ScrollReveal delay={0.6}>
-          <div className="text-center p-8 sm:p-12 rounded-3xl border border-cn-border bg-cn-surface/60 backdrop-blur-sm relative overflow-hidden shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
-              <Sparkles className="w-6 h-6" />
+        {/* ── Section 3: Recruitment Section (Build With Us) ── */}
+        <section id="build-with-us" className="mt-8 sm:mt-12" aria-labelledby="build-with-us-heading">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
+                Opportunities
+              </span>
+              <h2
+                id="build-with-us-heading"
+                className="text-2xl sm:text-3xl md:text-4xl font-semibold text-cn-text tracking-tight mb-3"
+              >
+                Want to Be Part of CampusNode?
+              </h2>
+              <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
+                CampusNode is built by students, for students. We're looking for people who want to contribute their ideas, creativity, and technical skills to a platform used by our campus community.
+              </p>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-cn-text mb-2 sm:mb-3">
-              Want to build with us?
-            </h3>
-            <p className="text-xs sm:text-sm mysans text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
-              Campusnode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
-            </p>
-            <a
-              href="/contribute"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium shadow-md shadow-brand-600/20 transition-all duration-200 active:scale-95 touch-manipulation"
-            >
-              <span>Join the Team & Contribute</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+          </ScrollReveal>
+
+          {/* Opportunity Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-10 sm:mb-12 items-stretch">
+            {/* UI/UX Designer - Visually Prominent */}
+            <ScrollReveal delay={0.1} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border-2 border-brand-500/50 dark:border-brand-400/40 shadow-[0_4px_24px_rgba(0,148,255,0.08)] dark:shadow-[0_4px_28px_rgba(0,148,255,0.15)] hover:shadow-[0_12px_40px_rgba(0,148,255,0.18)] dark:hover:shadow-[0_12px_40px_rgba(0,148,255,0.25)] hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute -top-3 left-6 sm:left-7">
+                  <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-brand-600 text-white shadow-xs">
+                    Primary Requirement
+                  </span>
+                </div>
+
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-5 border border-brand-500/20">
+                    <Palette className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    UI/UX Designer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Design clean, intuitive interfaces for event pages, festival themes, components, and campus experiences.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                    High Priority Focus • Festival & Event UI
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Frontend Developer */}
+            <ScrollReveal delay={0.2} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)] hover:-translate-y-1 transition-all duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-5 border border-neutral-200/80 dark:border-zinc-700">
+                    <Code2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    Frontend Developer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Help turn approved designs into responsive, accessible React interfaces.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    React • Tailwind CSS • Modern Web
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Creative Designer */}
+            <ScrollReveal delay={0.3} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)] hover:-translate-y-1 transition-all duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-5 border border-neutral-200/80 dark:border-zinc-700">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    Creative Designer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Contribute event visuals, banners, illustrations, and other digital assets.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    Visual Assets • Posters • Illustrations
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
 
-          {/* Interactive In-App Notification Toast Preview Playground */}
-      
-          
-        </ScrollReveal>
+          {/* Central Action Button */}
+          <ScrollReveal delay={0.4}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+              <a
+                href={RECRUITMENT_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join the Team - Apply via Google Form (opens in new tab)"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-zinc-900 text-sm font-semibold shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
+              >
+                <span>Join the Team</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
+            </div>
+          </ScrollReveal>
+        </section>
       </div>
     </div>
   );
