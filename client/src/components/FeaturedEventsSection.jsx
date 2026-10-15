@@ -15,7 +15,7 @@ const getCachedFeaturedEvents = () => {
       const parsed = JSON.parse(cached);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (_) {}
+  } catch (_) { }
   return [];
 };
 
@@ -32,7 +32,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
           setEvents(list);
           try {
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(list));
-          } catch (_) {}
+          } catch (_) { }
         }
       } catch (err) {
         console.error("Failed to load featured events in background:", err);
@@ -102,7 +102,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
   }
 
   return (
-    <section className={`py-9 sm:py-11 lg:py-14 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
+    <section className={`py-9 sm:py-11 lg:py-14 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
       <Section className="relative z-10">{Content}</Section>
     </section>
   );

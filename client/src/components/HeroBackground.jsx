@@ -43,7 +43,7 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
       aria-hidden="true"
     >
       {/* ── Base canvas background ──────────────────────────────────── */}
-      <div className="absolute inset-0 bg-white dark:bg-[#001F3F]" />
+      <div className="absolute inset-0 bg-white dark:bg-cn-bg" />
 
       {/* ── Campus Images with Silky Crossfade & Micro-Zoom ───────── */}
       {HERO_BG_IMAGES.map((item, idx) => {
@@ -51,16 +51,14 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
         return (
           <div
             key={item.src}
-            className={`absolute inset-0 z-1 transition-opacity duration-1000 ease-in-out ${
-              isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className={`absolute inset-0 z-1 transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
           >
             <img
               src={item.src}
               alt=""
-              className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out contrast-[0.90] brightness-[1.03] dark:contrast-100 dark:brightness-100 ${
-                isActive ? 'scale-105' : 'scale-100'
-              }`}
+              className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out contrast-[0.90] brightness-[1.03] dark:contrast-100 dark:brightness-100 ${isActive ? 'scale-105' : 'scale-100'
+                }`}
             />
           </div>
         );
@@ -69,8 +67,8 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
       {/* ── LIGHT MODE OVERLAY: Uniform clean scrim without gradient banding or glow blobs ── */}
       <div className="dark:hidden absolute inset-0 z-2 pointer-events-none bg-white/35" />
 
-      {/* ── DARK MODE OVERLAY: Uniform navy scrim without gradient banding or glow blobs ── */}
-      <div className="hidden dark:block absolute inset-0 z-2 pointer-events-none bg-[#001F3F]/60" />
+      {/* ── DARK MODE OVERLAY: Uniform neutral scrim without gradient banding or glow blobs ── */}
+      <div className="hidden dark:block absolute inset-0 z-2 pointer-events-none bg-black/60" />
 
       {/* ── Subtle Campus Spot Pill in Corner (informative & elegant) ── */}
       {showLocationTag && (
@@ -87,11 +85,10 @@ const HeroBackground = ({ glowTop = 'top-[80px]', showLocationTag = true, classN
             key={i}
             onClick={() => setCurrentIdx(i)}
             aria-label={`Show campus photo ${i + 1}`}
-            className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-              i === currentIdx
+            className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === currentIdx
                 ? 'w-6 bg-brand-500 dark:bg-brand-400 shadow-xs'
                 : 'w-2 bg-neutral-400/80 dark:bg-neutral-600/80 hover:bg-neutral-600 dark:hover:bg-neutral-400'
-            }`}
+              }`}
           />
         ))}
       </div>

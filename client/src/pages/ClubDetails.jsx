@@ -820,7 +820,7 @@ const ClubDetails = () => {
   const galleryMedia = club.mediaList || club.media || [];
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-[#001F3F] text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans">
+    <div className="min-h-screen bg-cn-bg text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
           

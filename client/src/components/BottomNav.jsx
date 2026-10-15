@@ -15,20 +15,20 @@ import LogInIcon from "./ui/login";
 import { hasPermission, PERMISSIONS, isStudentLeadRole, isCoordinatorRole, isClubManagementRole } from "../utils/rbac";
 
 const LostFoundIcon = ({ size = 24, ...props }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 14 14" 
-    height={size} 
-    width={size} 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 14 14"
+    height={size}
+    width={size}
     {...props}
   >
     <g id="lost-and-found">
-      <path 
-        fill="currentColor" 
-        fillRule="evenodd" 
-        d="M5.763 2.263A1.75 1.75 0 0 1 8.75 3.5h-3.5c0 -0.464 0.184 -0.91 0.513 -1.237ZM3.75 3.5a3.25 3.25 0 0 1 6.5 0h1.25A2.5 2.5 0 0 1 14 6v5.5a2.5 2.5 0 0 1 -2.5 2.5h-9A2.5 2.5 0 0 1 0 11.5V6a2.5 2.5 0 0 1 2.5 -2.5h1.25Zm2.915 3.067A0.875 0.875 0 1 1 7 8.25a0.625 0.625 0 0 0 -0.625 0.625v1a0.625 0.625 0 1 0 1.25 0v-0.469a2.125 2.125 0 1 0 -2.75 -2.031 0.625 0.625 0 1 0 1.25 0 0.875 0.875 0 0 1 0.54 -0.808Zm0.337 6.308a0.75 0.75 0 1 1 0 -1.5 0.75 0.75 0 0 1 0 1.5Z" 
-        clipRule="evenodd" 
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M5.763 2.263A1.75 1.75 0 0 1 8.75 3.5h-3.5c0 -0.464 0.184 -0.91 0.513 -1.237ZM3.75 3.5a3.25 3.25 0 0 1 6.5 0h1.25A2.5 2.5 0 0 1 14 6v5.5a2.5 2.5 0 0 1 -2.5 2.5h-9A2.5 2.5 0 0 1 0 11.5V6a2.5 2.5 0 0 1 2.5 -2.5h1.25Zm2.915 3.067A0.875 0.875 0 1 1 7 8.25a0.625 0.625 0 0 0 -0.625 0.625v1a0.625 0.625 0 1 0 1.25 0v-0.469a2.125 2.125 0 1 0 -2.75 -2.031 0.625 0.625 0 1 0 1.25 0 0.875 0.875 0 0 1 0.54 -0.808Zm0.337 6.308a0.75 0.75 0 1 1 0 -1.5 0.75 0.75 0 0 1 0 1.5Z"
+        clipRule="evenodd"
       />
     </g>
   </svg>
@@ -41,11 +41,11 @@ const BottomNav = () => {
   const [imageError, setImageError] = useState(false);
   const drawerRef = useRef(null);
   const { isInstallable, installApp } = usePwaInstall();
- const {
-  theme,
-  setTheme,
-  isDark,
-} = useTheme();
+  const {
+    theme,
+    setTheme,
+    isDark,
+  } = useTheme();
 
   const { user, role, logout } = useAuth();
 
@@ -111,18 +111,18 @@ const BottomNav = () => {
   navItems.push(
     user
       ? {
-          label: "Profile",
-          icon: User,
-          image: userImage,
-          action: () => setDrawerOpen(true),
-          isActiveCheck: drawerOpen,
-        }
+        label: "Profile",
+        icon: User,
+        image: userImage,
+        action: () => setDrawerOpen(true),
+        isActiveCheck: drawerOpen,
+      }
       : { label: "Login", icon: LogInIcon, path: "/login" }
   );
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/95 dark:bg-[#001F3F]/95 backdrop-blur-md border-t border-cn-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 z-50 w-full cn-safe-bottom bg-white/95 dark:bg-cn-bg/95 backdrop-blur-md border-t border-cn-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex justify-around items-center h-16 px-2 mysans">
           {navItems.map((item, index) => {
             const Icon = item.icon;
@@ -135,27 +135,24 @@ const BottomNav = () => {
                   <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-brand-600 rounded-b-md transition-all duration-300" />
                 )}
                 <div
-                  className={`flex items-center justify-center transition-transform duration-300 ${
-                    hasImage
+                  className={`flex items-center justify-center transition-transform duration-300 ${hasImage
                       ? "p-0.5 rounded-full"
                       : "p-1.5 rounded-full"
-                  } ${
-                    active
+                    } ${active
                       ? hasImage
                         ? "scale-110"
                         : "scale-110 text-brand-600 dark:bg-brand-950/40"
                       : "text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
-                  }`}
+                    }`}
                 >
                   {hasImage ? (
                     <img
                       src={item.image}
                       alt={user?.name || item.label}
-                      className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${
-                        active
-                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-[#001F3F]"
+                      className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${active
+                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-neutral-900"
                           : "border border-neutral-300 dark:border-neutral-700"
-                      }`}
+                        }`}
                       onError={() => setImageError(true)}
                     />
                   ) : (
@@ -163,11 +160,10 @@ const BottomNav = () => {
                   )}
                 </div>
                 <span
-                  className={`text-[10px] tracking-wide transition-all duration-300 ${
-                    active
+                  className={`text-[10px] tracking-wide transition-all duration-300 ${active
                       ? "font-semibold text-black dark:text-white"
                       : "font-medium text-cn-text-muted"
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </span>
@@ -204,18 +200,16 @@ const BottomNav = () => {
         <>
           {/* Backdrop */}
           <div
-            className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-              drawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${drawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
             onClick={() => setDrawerOpen(false)}
           />
 
           {/* Drawer Content */}
           <div
             ref={drawerRef}
-            className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#121212] rounded-t-2xl shadow-xl border-t border-cn-border transition-transform duration-300 ease-in-out md:hidden pb-[env(safe-area-inset-bottom)] max-h-[85dvh] flex flex-col ${
-              drawerOpen ? "translate-y-0" : "translate-y-full"
-            }`}
+            className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#121212] rounded-t-2xl shadow-xl border-t border-cn-border transition-transform duration-300 ease-in-out md:hidden pb-[env(safe-area-inset-bottom)] max-h-[85dvh] flex flex-col ${drawerOpen ? "translate-y-0" : "translate-y-full"
+              }`}
           >
             {/* Drawer Handle */}
             <div className="w-full flex justify-center pt-2.5 pb-1.5" onClick={() => setDrawerOpen(false)}>
@@ -231,17 +225,17 @@ const BottomNav = () => {
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
                       ? "Student • Student Lead"
                       : user?.memberships?.some(m => m.role === "COORDINATOR")
-                      ? "Student • Coordinator"
-                      : "Student"
+                        ? "Student • Coordinator"
+                        : "Student"
                     : role === "club"
-                    ? "Club Account"
-                    : role === "facultyCoordinator"
-                    ? "Faculty Coordinator"
-                    : role === "admin"
-                    ? "Admin"
-                    : role === "lostFoundAdmin"
-                    ? "L&F Admin"
-                    : "Student"}
+                      ? "Club Account"
+                      : role === "facultyCoordinator"
+                        ? "Faculty Coordinator"
+                        : role === "admin"
+                          ? "Admin"
+                          : role === "lostFoundAdmin"
+                            ? "L&F Admin"
+                            : "Student"}
                 </p>
               </div>
               <button onClick={() => setDrawerOpen(false)} className="p-2 text-neutral-500 hover:text-black dark:hover:text-white rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
@@ -260,10 +254,10 @@ const BottomNav = () => {
               {/* My Events (Visible for all students, leads & coordinators; hidden for pure official club accounts) */}
               {(!(!user?.rollNo && role === "club") && Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === "student" || role === "member" || (user?.memberships && user.memberships.length > 0))) && (
                 <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
-                   <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
-                     <CalendarDaysIcon size={16} />
-                   </div>
-                   My Events
+                  <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
+                    <CalendarDaysIcon size={16} />
+                  </div>
+                  My Events
                 </Link>
               )}
 
@@ -403,9 +397,8 @@ const BottomNav = () => {
                                   </div>
                                   <ChevronDown
                                     size={14}
-                                    className={`text-neutral-400 transition-transform duration-300 shrink-0 ${
-                                      isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
-                                    }`}
+                                    className={`text-neutral-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
+                                      }`}
                                   />
                                 </button>
 
@@ -572,11 +565,10 @@ const BottomNav = () => {
                   <button
                     type="button"
                     onClick={(e) => setTheme("light", e)}
-                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
-                      theme === "light"
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "light"
                         ? "text-neutral-900 font-semibold"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
-                    }`}
+                      }`}
                   >
                     {theme === "light" && (
                       <motion.div
@@ -593,11 +585,10 @@ const BottomNav = () => {
                   <button
                     type="button"
                     onClick={(e) => setTheme("dark", e)}
-                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
-                      theme === "dark"
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "dark"
                         ? "text-neutral-900 font-semibold"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
-                    }`}
+                      }`}
                   >
                     {theme === "dark" && (
                       <motion.div
@@ -614,11 +605,10 @@ const BottomNav = () => {
                   <button
                     type="button"
                     onClick={(e) => setTheme("system", e)}
-                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${
-                      theme === "system" || !theme
+                    className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "system" || !theme
                         ? "text-neutral-900 dark:text-white font-semibold"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
-                    }`}
+                      }`}
                   >
                     {(theme === "system" || !theme) && (
                       <motion.div

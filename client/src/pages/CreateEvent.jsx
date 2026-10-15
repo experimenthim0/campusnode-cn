@@ -235,7 +235,21 @@ const CreateEvent = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'registrationType' && (value === 'team' || value === 'both')) {
+                if (!prev.minTeamSize || Number(prev.minTeamSize) <= 1) {
+                    next.minTeamSize = 2;
+                }
+                if (!prev.maxTeamSize || Number(prev.maxTeamSize) <= 1) {
+                    next.maxTeamSize = 4;
+                }
+            } else if (name === 'registrationType' && (value === 'individual' || value === 'none')) {
+                next.minTeamSize = 1;
+                next.maxTeamSize = 1;
+            }
+            return next;
+        });
         if (fieldErrors[name]) {
             setFieldErrors(prev => {
                 const next = { ...prev };

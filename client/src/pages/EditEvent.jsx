@@ -365,7 +365,21 @@ const EditEvent = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         isDirtyRef.current = true;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'registrationType' && (value === 'team' || value === 'both')) {
+                if (!prev.minTeamSize || Number(prev.minTeamSize) <= 1) {
+                    next.minTeamSize = 2;
+                }
+                if (!prev.maxTeamSize || Number(prev.maxTeamSize) <= 1) {
+                    next.maxTeamSize = 4;
+                }
+            } else if (name === 'registrationType' && (value === 'individual' || value === 'none')) {
+                next.minTeamSize = 1;
+                next.maxTeamSize = 1;
+            }
+            return next;
+        });
         // Clear field-level error when user edits
         if (fieldErrors[name]) {
             setFieldErrors(prev => {
@@ -532,8 +546,8 @@ const EditEvent = () => {
                 totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
                 allowWaitlist: isUnlimited ? false : Boolean(formData.allowWaitlist),
                 registrationType: formData.registrationType || 'individual',
-                minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
-                maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
+                minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 2) : 1,
+                maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 4) : 1,
                 registrationFee: fee,
                 paymentMethod: formData.paymentMethod,
                 paymentInstructions: isFree
@@ -791,6 +805,9 @@ const EditEvent = () => {
     const handleStepClick = (targetStep) => {
         if (targetStep === currentStep) return;
         setFieldErrors({});
+        if (isDirtyRef.current) {
+            handleSaveCurrentStep(currentStep).catch(() => {});
+        }
         setCurrentStep(targetStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };

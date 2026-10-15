@@ -307,12 +307,12 @@ const Home = () => {
           ];
 
   return (
-    <div className="myfont text-cn-text bg-cn-bg dark:bg-[#001F3F] transition-colors duration-300 -mt-12">
+    <div className="myfont text-cn-text bg-cn-bg transition-colors duration-300 -mt-12">
 
       {user ? (
         <>
           {/* ── Hero: Welcome Banner ────────────────────────────────────── */}
-          <section className="relative pt-24 sm:pt-28 pb-10 bg-transparent dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] text-cn-text transition-colors duration-300 overflow-hidden">
+          <section className="relative pt-24 sm:pt-28 pb-10 bg-cn-bg border-b border-neutral-200/50 dark:border-white/[0.05] text-cn-text transition-colors duration-300 overflow-hidden">
             {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
        
 
@@ -389,7 +389,7 @@ const Home = () => {
 
           {/* ── Section A: My Campus Journey (all students, including leads) ─ */}
           {isStudent && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -511,7 +511,7 @@ const Home = () => {
 
           {/* ── Section B: Club Operations Desk (Student Leads & Coordinators only) ── */}
           {isStudent && (isStudentLead || isCoordinator || operationalMemberships.length > 0) && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8 sm:mb-10">
@@ -647,7 +647,7 @@ const Home = () => {
 
           {/* ── Section C: Faculty Coordinator Desk ───────────────────────── */}
           {isFaculty && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8">
@@ -695,7 +695,7 @@ const Home = () => {
 
           {/* ── Section D: Admin Command Center ───────────────────────────── */}
           {isAdmin && (
-            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <section className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
               <SectionGlow />
               <Section className="relative z-10">
                 <div className="mb-8">
@@ -747,7 +747,7 @@ const Home = () => {
         </>
       ) : (
         <>
-          <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] overflow-hidden">
+          <section className="relative pt-20 pb-10 sm:pt-24 sm:pb-14 lg:pt-28 lg:pb-16 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] overflow-hidden">
             {/* ── Dynamic Campus Slideshow Background with High-Contrast Scrims ── */}
             <HeroBackground glowTop="top-[40px]" showLocationTag={false} />
 
@@ -815,7 +815,7 @@ const Home = () => {
       {/* NEW Featured Events Section */}
       <FeaturedEventsSection />
 
-      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+      <section className="pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12 lg:pb-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <ScrollReveal direction="up">
@@ -840,7 +840,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-10 sm:py-10 lg:py-10 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+      <section className="py-10 sm:py-10 lg:py-10 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <ScrollReveal direction="up">
@@ -880,7 +880,7 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
@@ -913,7 +913,7 @@ const Home = () => {
       {!user && (
         <>
           {/* Section 1: For Students */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <ScrollReveal direction="up">
@@ -972,7 +972,7 @@ const Home = () => {
           </section>
 
           {/* Section 2: For Clubs & Societies */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <ScrollReveal direction="up">
@@ -1013,7 +1013,7 @@ const Home = () => {
             </Section>
           </section>
 
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -1050,7 +1050,7 @@ const Home = () => {
       )}
 
 
-      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] scroll-mt-20 relative overflow-hidden transition-colors duration-300">
+      <section id="team" className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] scroll-mt-20 relative overflow-hidden transition-colors duration-300">
         {/* Brand blue glow accent matching Hero vibe */}
         <SectionGlow />
 
@@ -1142,7 +1142,7 @@ const Home = () => {
 
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
-        <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] relative overflow-hidden transition-colors duration-300">
+        <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] relative overflow-hidden transition-colors duration-300">
           <SectionGlow />
 
           <Section className="relative z-10">
@@ -1178,40 +1178,71 @@ const Home = () => {
         </section>
       )}
 
-      {celebrationEvent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-hidden ticket-backdrop-animate">
-          {/* Confetti Animation Background Overlay */}
-          <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
-            <img
-              src="/Confetti.svg"
-              alt="Confetti Celebration"
-              className="w-full h-full object-cover opacity-90 select-none animate-pulse-slow scale-105"
-            />
-          </div>
+     
+{celebrationEvent && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4 py-6 overflow-hidden ticket-backdrop-animate">
+    {/* Confetti Animation */}
+    <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+      <img
+        src="/Confetti.svg"
+        alt=""
+        aria-hidden="true"
+        className="w-full h-full object-cover opacity-90 select-none animate-pulse-slow scale-105"
+      />
+    </div>
 
-          <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-brand-500/20 dark:border-brand-400/20 rounded-2xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors">
-            <div className="relative shrink-0">
-              <img src="/Trophy.svg" alt="Trophy" className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-slow" />
-            </div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="winner-title"
+      className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/60 rounded-2xl max-w-sm w-full max-h-[85dvh] overflow-y-auto relative z-10 flex flex-col p-6 text-center shadow-2xl ticket-card-animate transition-colors"
+    >
+      {/* Trophy */}
+      <div className="relative shrink-0">
+        <img
+          src="/Trophy.svg"
+          alt="Trophy"
+          className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-once"
+        />
+      </div>
 
-            <h3 className="text-[22px] sm:text-2xl font-semibold text-cn-text mt-4 leading-tight">Congratulations!</h3>
-            <p className="text-[16px] sm:text-base font-medium text-brand-500 dark:text-brand-400 mt-1.5 leading-tight">
-              You secured Rank #{celebrationWinnerRank} in {celebrationEvent.title}!
-            </p>
+      {/* Heading */}
+      <h3
+        id="winner-title"
+        className="text-[22px] sm:text-2xl font-semibold text-slate-900 dark:text-slate-100 mt-4 leading-tight"
+      >
+        Congratulations!
+      </h3>
 
-            <p className="text-[14px] text-cn-text-muted mt-3 leading-relaxed italic px-2">
-              "Hard work pays off! Congratulations to the winners of {celebrationEvent.title}. Keep striving for excellence and inspiring those around you."
-            </p>
+      {/* Winner Rank */}
+      <p className="text-base font-semibold text-brand-500 dark:text-brand-300 mt-2 leading-snug">
+    
+        Rank #{celebrationWinnerRank}
+      </p>
 
-            <button
-              onClick={acknowledgeWin}
-              className="mt-6 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 dark:bg-brand-400/20 dark:hover:bg-brand-400/30 text-brand-700 dark:text-brand-300 border border-brand-500/30 dark:border-brand-400/30 font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs text-xs cursor-pointer"
-            >
-              Claim Victory 🏆
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Event Name */}
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed break-words">
+        {celebrationEvent.title}
+       
+      </p>
+
+      {/* Short Message */}
+      <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">
+        Your effort paid off! A well-deserved achievement.
+        Keep it up!
+      </p>
+
+      {/* Action Button */}
+      <button
+        onClick={acknowledgeWin}
+        className="mt-6 w-full py-3 bg-brand-200 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-400/20 font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-sm cursor-pointer"
+      >
+        Awesome! 🎉
+      </button>
+    </div>
+  </div>
+)} 
+
 
       <HomeFooter />
 

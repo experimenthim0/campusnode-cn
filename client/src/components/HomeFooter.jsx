@@ -87,7 +87,7 @@ const HomeFooter = () => {
   const currentSlide = CAMPUS_SLIDES[activeSlideIndex];
 
   return (
-    <footer className="bg-cn-surface dark:bg-[#001F3F] text-cn-text border-t border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 overflow-hidden">
+    <footer className="bg-cn-surface text-cn-text border-t border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 overflow-hidden">
       {/* Upper Navigation Section */}
       <Section className="py-12 sm:py-12 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
@@ -191,14 +191,14 @@ const HomeFooter = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Subtle landmark indicator & interactive selectors */}
-         
+
 
           {/* Masked Typographic Banner Container */}
           <div className="relative w-full overflow-hidden flex items-center justify-center py-0 sm:py-0">
             {/* Natural Document Flow Placeholder to give the container responsive proportional height without shift */}
             <span
               className="invisible select-none logofont pointer-events-none w-full text-center font-black tracking-[-0.04em] leading-[0.82] block text-[15.5vw] sm:text-[14.5vw] md:text-[14vw] lg:text-[13.5vw]"
-             
+
               aria-hidden="true"
             >
               campusnode
@@ -210,15 +210,14 @@ const HomeFooter = () => {
               return (
                 <div
                   key={slide.id}
-                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ease-in-out pointer-events-none ${
-                    isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                  }`}
+                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ease-in-out pointer-events-none ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
                   aria-hidden={!isActive}
                 >
                   <span
                     className="w-full logofont text-center font-black tracking-[-0.01em] sm:tracking-[-0.04em] leading-[0.82] block select-none lowercase transition-transform duration-5000 ease-out will-change-transform drop-shadow-[0_4px_24px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_6px_28px_rgba(0,0,0,0.45)] text-[15.5vw] sm:text-[14.5vw] md:text-[14vw] lg:text-[13.5vw]"
                     style={{
-                      
+
                       backgroundImage: `url('${slide.src}')`,
                       backgroundPosition: slide.position,
                       backgroundSize: 'cover',
@@ -239,9 +238,9 @@ const HomeFooter = () => {
           </div>
 
 
-          
 
-     
+
+
         </div>
       </div>
     </footer>

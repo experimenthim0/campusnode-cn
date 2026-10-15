@@ -198,7 +198,7 @@ const EventPreview = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-cn-bg flex flex-col items-center justify-center">
         <ShimmerText text="Loading event preview..." className="text-sm font-medium tracking-wide" />
       </div>
     );
@@ -206,7 +206,7 @@ const EventPreview = () => {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-cn-bg flex items-center justify-center px-6">
         <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl p-10 text-center max-w-sm bg-white dark:bg-neutral-900 shadow-sm">
           <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center text-rose-600 mx-auto mb-5">
             <AlertCircle className="w-8 h-8" />
@@ -439,10 +439,10 @@ const EventPreview = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] myfont text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen bg-cn-bg myfont text-cn-text">
 
       {/* Top Sticky Preview Bar matching EventDetails styling */}
-      <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-[#001F3F]/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <div className="sticky top-0 z-30 bg-neutral-50/80 dark:bg-cn-bg/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-cn-border-subtle">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-3">
           
           {/* Left: Back / Close button */}

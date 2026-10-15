@@ -462,7 +462,8 @@ const EventDetails = () => {
 
     // Unauthenticated path
     if (!user) {
-      handleIndividualRegister();
+      showNotification('Please login first to register for events', 'warning');
+      navigate('/login');
       return;
     }
 
@@ -581,6 +582,14 @@ const EventDetails = () => {
       setSession(updatedUser, role);
       setMissingFieldsModalOpen(false);
       showNotification('Profile updated successfully!', 'success');
+      if (event.registrationType === 'team') {
+        handleSelectRegisterAsTeam();
+        return;
+      }
+      if (event.registrationType === 'both') {
+        setTeamChoiceModalOpen(true);
+        return;
+      }
       if (event.customFields && event.customFields.length > 0) { setCustomFormResponses({}); setCustomFormModalOpen(true); return; }
       if (event.paymentMethod && event.paymentMethod !== 'FREE') {
         setPaymentPayload({
@@ -671,7 +680,7 @@ const EventDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] flex items-center justify-center">
+      <div className="min-h-screen bg-cn-bg flex items-center justify-center">
         <ShimmerText text="Loading event..." className="text-sm font-semibold uppercase tracking-[0.2em]" />
       </div>
     );
@@ -679,7 +688,7 @@ const EventDetails = () => {
 
   if (error || !event) {
     return (
-      <div className="min-h-[80vh] bg-neutral-50 dark:bg-[#001F3F] flex items-center justify-center px-6">
+      <div className="min-h-[80vh] bg-cn-bg flex items-center justify-center px-6">
         <div className="border-2 border-neutral-200 dark:border-neutral-700 rounded-md p-10 text-center max-w-sm bg-white dark:bg-neutral-900">
           <div className="w-14 h-14 flex items-center justify-center text-yellow-500 text-4xl mx-auto mb-3">
             <i className="ri-error-warning-line" />
@@ -754,7 +763,15 @@ const EventDetails = () => {
     ? { label: 'Waitlist Full', cls: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border-neutral-200 dark:border-neutral-700 shadow-2xs', disabled: true }
     : isFull
     ? { label: `Join Waitlist (${5 - waitlistCount} left)`, cls: 'bg-amber-500 hover:bg-amber-600 text-white dark:text-neutral-950 border-amber-500 shadow-xs shadow-amber-500/20 hover:shadow-sm cursor-pointer', disabled: false }
-    : { label: entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now', cls: 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600 shadow-sm shadow-brand-600/25 hover:shadow-md cursor-pointer', disabled: false };
+    : {
+        label: event.registrationType === 'team'
+          ? (entryFee > 0 ? `Pay ₹${entryFee} & Register Team` : 'Register Team')
+          : event.registrationType === 'both'
+          ? (entryFee > 0 ? `Pay ₹${entryFee} & Register (Solo / Team)` : 'Register (Solo / Team)')
+          : (entryFee > 0 ? `Pay ₹${entryFee} & Register` : 'Register Now'),
+        cls: 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600 shadow-sm shadow-brand-600/25 hover:shadow-md cursor-pointer',
+        disabled: false
+      };
 
   const isUpcoming = !isEnded && !isLive && !isDeadlinePassed && !isExternalRestricted;
   const showMobileCTA = isUpcoming && !alreadyRegistered && !isOpenEvent;
@@ -992,9 +1009,9 @@ const EventDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#001F3F] myfont text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen bg-cn-bg myfont text-cn-text">
 
-      <div className="hidden sm:block top-0 z-30 bg-neutral-50/80 dark:bg-[#001F3F]/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <div className="hidden sm:block top-0 z-30 bg-neutral-50/80 dark:bg-cn-bg/80 backdrop-blur-md border-b border-neutral-200/50 dark:border-cn-border-subtle">
         <div className="max-w-[1300px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}

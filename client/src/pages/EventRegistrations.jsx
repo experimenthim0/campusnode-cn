@@ -112,6 +112,9 @@ const EventRegistrations = () => {
                 const data = regRes.data;
                 setRegistrations(data.participations || (Array.isArray(data) ? data : []));
                 setEventData(eventRes.data);
+                if (eventRes.data?.registrationType === 'team') {
+                    setActiveTab('team');
+                }
 
                 try {
                     const statsRes = await getPaymentStats(id);
@@ -507,16 +510,18 @@ const EventRegistrations = () => {
                 {/* Tabs selection if event supports team registration */}
                 {(eventData?.registrationType === 'team' || eventData?.registrationType === 'both') && (
                     <div className="flex border-b border-neutral-200 dark:border-neutral-850 mb-6">
-                        <button
-                            onClick={() => setActiveTab('individual')}
-                            className={`px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-                                activeTab === 'individual'
-                                    ? 'border-brand-600 text-brand-600 font-extrabold'
-                                    : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
-                            } bg-transparent border-0 outline-none`}
-                        >
-                            Individual Registrations ({individualRegs.length})
-                        </button>
+                        {(eventData?.registrationType === 'both' || individualRegs.length > 0) && (
+                            <button
+                                onClick={() => setActiveTab('individual')}
+                                className={`px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                                    activeTab === 'individual'
+                                        ? 'border-brand-600 text-brand-600 font-extrabold'
+                                        : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300'
+                                } bg-transparent border-0 outline-none`}
+                            >
+                                Individual Registrations ({individualRegs.length})
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab('team')}
                             className={`px-6 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${

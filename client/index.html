@@ -1,123 +1,136 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Campusnode" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <script>
-      // Expose global updater function so React can invoke it at runtime
-      window.updateAppTheme = function(isDark) {
-        const targetColor = isDark ? '#001F3F' : '#ffffff';
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Campusnode" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
-        // Toggle document classes and scheme
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  <script>
+    // Expose global updater function so React can invoke it at runtime
+    window.updateAppTheme = function (isDark) {
+      const targetColor = isDark ? '#0F1117' : '#ffffff';
 
-        // Force-replace the theme-color meta tag for PWA repaint
-        document.querySelectorAll("meta[name='theme-color']").forEach(el => el.remove());
-        const meta = document.createElement('meta');
-        meta.setAttribute('name', 'theme-color');
-        meta.setAttribute('content', targetColor);
-        document.head.appendChild(meta);
-      };
-
-      // Run immediately on page load to prevent FOUC
-      (function() {
-        try {
-          const theme = localStorage.getItem('theme');
-          const isDark = theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          window.updateAppTheme(isDark);
-        } catch (e) {}
-      })();
-    </script>
-    <link rel="preconnect" href="https://res.cloudinary.com" />
-    <link rel="preload" href="/fonts/organix.regular.otf" as="font" type="font/otf" crossorigin />
-    <style>
-      @font-face {
-        font-family: 'logofont';
-        src: url('/fonts/organix.regular.otf') format('opentype');
-        font-display: swap;
+      // Toggle document classes and scheme
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
-    </style>
-    <title>Campusnode</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Allura&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Pacifico&family=Pinyon+Script&family=Sacramento&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  </head>
-  <body>
-    <div id="root">
-      <!-- Pre-React Modern AI Shimmer Loader — replaced when React mounts -->
-      <div id="pre-loader" role="status" aria-label="Loading" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background 0.3s ease;">
-        <style>
-          @keyframes preShimmerSweep {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
+      document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
+      // Force-replace the theme-color meta tag for PWA repaint
+      document.querySelectorAll("meta[name='theme-color']").forEach(el => el.remove());
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.setAttribute('content', targetColor);
+      document.head.appendChild(meta);
+    };
+
+    // Run immediately on page load to prevent FOUC
+    (function () {
+      try {
+        const theme = localStorage.getItem('theme');
+        const isDark = theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        window.updateAppTheme(isDark);
+      } catch (e) { }
+    })();
+  </script>
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="preload" href="/fonts/organix.regular.otf" as="font" type="font/otf" crossorigin />
+  <style>
+    @font-face {
+      font-family: 'logofont';
+      src: url('/fonts/organix.regular.otf') format('opentype');
+      font-display: swap;
+    }
+  </style>
+  <title>Campusnode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Allura&family=Dancing+Script:wght@400..700&family=Great+Vibes&family=Pacifico&family=Pinyon+Script&family=Sacramento&display=swap"
+    rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+  <div id="root">
+    <!-- Pre-React Modern AI Shimmer Loader — replaced when React mounts -->
+    <div id="pre-loader" role="status" aria-label="Loading"
+      style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background 0.3s ease;">
+      <style>
+        @keyframes preShimmerSweep {
+          0% {
+            background-position: 100% 0;
           }
+
+          100% {
+            background-position: -100% 0;
+          }
+        }
+
+        .pre-shimmer {
+          display: inline-block;
+          background-image: linear-gradient(90deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.35) 30%, rgba(15, 23, 42, 0.98) 50%, rgba(15, 23, 42, 0.35) 70%, rgba(15, 23, 42, 0.35) 100%);
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          animation: preShimmerSweep 1.8s ease-in-out infinite;
+          user-select: none;
+          font-family: Inter, system-ui, -apple-system, sans-serif;
+          font-size: 16px;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+        }
+
+        html.dark .pre-shimmer {
+          background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.32) 30%, rgba(255, 255, 255, 0.98) 50%, rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0.32) 100%);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
           .pre-shimmer {
-            display: inline-block;
-            background-image: linear-gradient(90deg, rgba(15,23,42,0.35) 0%, rgba(15,23,42,0.35) 30%, rgba(15,23,42,0.98) 50%, rgba(15,23,42,0.35) 70%, rgba(15,23,42,0.35) 100%);
-            background-size: 200% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            animation: preShimmerSweep 1.8s ease-in-out infinite;
-            user-select: none;
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            font-size: 16px;
-            font-weight: 500;
-            letter-spacing: 0.05em;
+            animation: none !important;
+            background-image: none !important;
+            -webkit-text-fill-color: currentColor !important;
+            color: #4b5563 !important;
           }
+
           html.dark .pre-shimmer {
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.32) 30%, rgba(255,255,255,0.98) 50%, rgba(255,255,255,0.32) 70%, rgba(255,255,255,0.32) 100%);
+            color: #9ca3af !important;
           }
-          @media (prefers-reduced-motion: reduce) {
-            .pre-shimmer {
-              animation: none !important;
-              background-image: none !important;
-              -webkit-text-fill-color: currentColor !important;
-              color: #4b5563 !important;
-            }
-            html.dark .pre-shimmer {
-              color: #9ca3af !important;
-            }
-          }
-        </style>
-        <script>document.getElementById('pre-loader').style.background=document.documentElement.classList.contains('dark')?'#0a0a0a':'#ffffff';</script>
-        <div style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(234,88,12,0.08) 0%,transparent 70%);filter:blur(50px);pointer-events:none;"></div>
-        <div style="text-align:center;position:relative;z-index:1;">
-          <div id="pre-brand" style="font-family:'logofont',serif;font-size:28px;font-weight:700;letter-spacing:0.04em;margin-bottom:12px;">Campus<span style="color:#ea580c;font-weight:300;">node</span></div>
-          <span class="pre-shimmer">Loading...</span>
-          <script>
-            (function(){
-              var dk=document.documentElement.classList.contains('dark');
-              document.getElementById('pre-brand').style.color=dk?'#ffffff':'#0a0a0a';
-            })();
-          </script>
-        </div>
+        }
+      </style>
+      <script>document.getElementById('pre-loader').style.background = document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff';</script>
+      <div
+        style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(234,88,12,0.08) 0%,transparent 70%);filter:blur(50px);pointer-events:none;">
+      </div>
+      <div style="text-align:center;position:relative;z-index:1;">
+        <div id="pre-brand"
+          style="font-family:'logofont',serif;font-size:28px;font-weight:700;letter-spacing:0.04em;margin-bottom:12px;">
+          Campus<span style="color:#ea580c;font-weight:300;">node</span></div>
+        <span class="pre-shimmer">Loading...</span>
+        <script>
+          (function () {
+            var dk = document.documentElement.classList.contains('dark');
+            document.getElementById('pre-brand').style.color = dk ? '#ffffff' : '#0a0a0a';
+          })();
+        </script>
       </div>
     </div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  </div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

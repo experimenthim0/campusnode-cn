@@ -18,7 +18,7 @@ const HomeRecruitmentSection = () => {
   return (
     <section
       id="join-creative-team"
-      className="py-12 sm:py-16 lg:py-20 bg-cn-surface dark:bg-[#001F3F] border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden"
+      className="py-12 sm:py-16 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden"
       aria-labelledby="recruitment-heading"
     >
       <Section className="relative z-10">
@@ -39,7 +39,7 @@ const HomeRecruitmentSection = () => {
                 </h2>
 
                 <p className="text-neutral-600 dark:text-neutral-300 text-sm sm:text-base leading-relaxed mb-6 font-normal">
-                 We're looking for students interested in design and web development to work with us on CampusNode. You'll get to design event pages, try out new ideas, and create special themes for college festivals.
+                  We're looking for students interested in design and web development to work with us on CampusNode. You'll get to design event pages, try out new ideas, and create special themes for college festivals.
                 </p>
 
                 {/* Contribution Areas */}
@@ -52,11 +52,10 @@ const HomeRecruitmentSection = () => {
                     return (
                       <span
                         key={area.name}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
-                          area.isPrimary
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${area.isPrimary
                             ? 'bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/25 font-semibold'
                             : 'bg-neutral-100 dark:bg-zinc-800/80 text-neutral-700 dark:text-neutral-300 border border-neutral-200/80 dark:border-zinc-700 font-medium'
-                        }`}
+                          }`}
                       >
                         <Icon className={`w-3.5 h-3.5 ${area.isPrimary ? 'text-brand-600 dark:text-brand-400' : 'text-neutral-500 dark:text-neutral-400'}`} />
                         <span>{area.name}</span>

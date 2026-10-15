@@ -195,9 +195,11 @@ const eventSchema = z.object({
     entryFee: z.coerce.number().optional(),
     imageUrl: z.string().url().optional().nullable().or(z.literal("")),
     requiredFields: z.array(z.string()).optional(),
+    customFields: z.array(z.any()).optional(),
     allowedPrograms: z.array(z.string()).optional(),
     allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
     allowedBranches: z.array(z.string()).optional(),
+    allowExternal: z.boolean().optional(),
     registrationDeadline: z.coerce.date().optional().nullable(),
     registrationType: z.enum(['individual', 'team', 'both', 'none']).optional().default('individual'),
     minTeamSize: z.coerce.number().int().min(1).optional().default(1),
@@ -209,8 +211,10 @@ const eventSchema = z.object({
     allowWaitlist: z.boolean().optional().default(true),
     certificateTemplate: z.any().optional(),
     registrationFee: z.coerce.number().optional().default(0),
+    paymentMethod: z.string().optional().nullable(),
     paymentInstructions: z.string().optional().nullable(),
     collegePaymentUrl: z.string().optional().nullable().or(z.literal("")),
+    upiId: z.string().optional().nullable(),
     postRegistrationMessage: z.string().optional().nullable(),
     accountHolderName: z.string().optional().nullable(),
     reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
@@ -231,8 +235,58 @@ const eventSchema = z.object({
   params: z.object({}).passthrough().optional(),
 });
 
+// Explicit update schema without defaults so partial saves (e.g. step by step in EditEvent)
+// do not overwrite unprovided fields like registrationType or team sizes.
+const eventUpdateBodySchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional().nullable(),
+  venue: z.string().optional(),
+  startTime: z.coerce.date().optional().nullable(),
+  endTime: z.coerce.date().optional().nullable(),
+  totalSeats: z.coerce.number().int().optional(),
+  entryFee: z.coerce.number().optional(),
+  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  requiredFields: z.array(z.string()).optional(),
+  customFields: z.array(z.any()).optional(),
+  allowedPrograms: z.array(z.string()).optional(),
+  allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
+  allowedBranches: z.array(z.string()).optional(),
+  allowExternal: z.boolean().optional(),
+  registrationDeadline: z.coerce.date().optional().nullable(),
+  registrationType: z.enum(['individual', 'team', 'both', 'none']).optional(),
+  minTeamSize: z.coerce.number().int().min(1).optional(),
+  maxTeamSize: z.coerce.number().int().min(1).optional(),
+  winners: z.array(z.any()).optional(),
+  showWinner: z.boolean().optional(),
+  provideCertificate: z.boolean().optional(),
+  feedbackEnabled: z.boolean().optional(),
+  allowWaitlist: z.boolean().optional(),
+  certificateTemplate: z.any().optional().nullable(),
+  registrationFee: z.coerce.number().optional(),
+  paymentMethod: z.string().optional().nullable(),
+  paymentInstructions: z.string().optional().nullable(),
+  collegePaymentUrl: z.string().optional().nullable().or(z.literal("")),
+  upiId: z.string().optional().nullable(),
+  postRegistrationMessage: z.string().optional().nullable(),
+  accountHolderName: z.string().optional().nullable(),
+  reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
+  isDraft: z.boolean().optional(),
+  clubIds: z.array(z.string()).optional(),
+  clubId: z.string().optional(),
+  expectedUpdatedAt: z.string().optional().nullable(),
+  sponsors: z.array(z.object({
+    name: z.string().min(1),
+    logoUrl: z.string().url(),
+    websiteUrl: z.string().url().optional().nullable().or(z.literal("")),
+  })).optional(),
+  media: z.array(z.object({
+    url: z.string().url(),
+    type: z.enum(['IMAGE', 'VIDEO', 'SPONSOR_LOGO']),
+  })).optional(),
+}).passthrough();
+
 const eventUpdateSchema = z.object({
-  body: eventSchema.shape.body.partial().passthrough(),
+  body: eventUpdateBodySchema,
   query: z.object({}).passthrough().optional(),
   params: z.object({}).passthrough().optional(),
 });
@@ -1435,9 +1489,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       include: eventInclude,
     });
 
-    if (!isDraft) {
-      invalidatePublicResponses(["events:public:*"]);
-    }
+    invalidatePublicResponses(["events", "events:*"]);
 
     // Notify supervised Faculty Coordinator of incoming event review request ONLY if PENDING
     if (!isDraft && targetClubIds.length > 0) {
@@ -1554,6 +1606,8 @@ router.put(
         }
       }
 
+      invalidatePublicResponses(["events", "events:*"]);
+
       res.json({
         message: `Event ${status.toLowerCase()} successfully`,
         event: serializeEvent(updated),
@@ -1656,7 +1710,7 @@ router.post(
       });
 
       if (targetStatus === "PUBLISHED") {
-        invalidatePublicResponses(["events:public:*"]);
+        invalidatePublicResponses(["events", "events:*"]);
       } else if (targetStatus === "PENDING" && updated.organizers?.length > 0) {
         try {
           const clubIds = updated.organizers.map(o => o.clubId);
@@ -2955,6 +3009,8 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       }
     }
 
+    invalidatePublicResponses(["events", "events:*"]);
+
     res.json(serializeEvent(updatedEvent));
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -3006,6 +3062,7 @@ router.delete("/:id", verifyToken, requirePermission([PERMISSIONS.EVENT_DELETE, 
         }
       }
 
+      invalidatePublicResponses(["events", "events:*"]);
       return res.json({ message: "Event deleted successfully." });
     }
 
