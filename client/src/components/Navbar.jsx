@@ -63,11 +63,22 @@ const Navbar = () => {
 
   const [visible, setVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const scrollStopTimer = useRef(null);
 
   useEffect(() => {
     let ticking = false;
 
     const onScroll = () => {
+      // Reset scroll-stop timer on every scroll event
+      if (scrollStopTimer.current) {
+        clearTimeout(scrollStopTimer.current);
+      }
+
+      // Automatically show navbar once user stops scrolling
+      scrollStopTimer.current = setTimeout(() => {
+        setVisible(true);
+      }, 750);
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScrollY = Math.max(0, window.scrollY);
@@ -85,7 +96,7 @@ const Navbar = () => {
             setDropdownOpen(false);
             setNotifDropdownOpen(false);
           } else if (delta < -3) {
-            // Scrolling up (little bit or more): reveal navbar
+            // Scrolling up (bottom to top): reveal navbar
             setVisible(true);
           }
 
@@ -97,7 +108,12 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollStopTimer.current) {
+        clearTimeout(scrollStopTimer.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -540,15 +556,15 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs sm:text-[13px] font-semibold tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
+                  className="px-4 py-2 text-xs sm:text-[13px] font-medium tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-semibold tracking-widest rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-medium tracking-wider rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 >
-                  <span>Register</span>
+                  <span>Register Now</span>
                   <i className="ri-arrow-right-line text-xs" />
                 </Link>
               </>

@@ -91,29 +91,8 @@ const ClubsCarousel = () => {
       checkScroll();
       window.addEventListener('resize', checkScroll);
 
-      const el = scrollRef.current;
-      const onWheel = (e) => {
-        if (!el || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) return;
-        let delta = e.deltaY;
-        if (e.deltaMode === 1) delta *= 33;
-        else if (e.deltaMode === 2) delta *= el.clientWidth;
-
-        const maxScroll = el.scrollWidth - el.clientWidth;
-        if (maxScroll <= 0) return;
-        const canLeft = el.scrollLeft > 2;
-        const canRight = el.scrollLeft < maxScroll - 2;
-
-        if ((delta > 0 && canRight) || (delta < 0 && canLeft)) {
-          e.preventDefault();
-          el.scrollLeft += delta;
-        }
-      };
-
-      if (el) el.addEventListener('wheel', onWheel, { passive: false });
-
       return () => {
         window.removeEventListener('resize', checkScroll);
-        if (el) el.removeEventListener('wheel', onWheel);
       };
     }
   }, [isCarousel, filteredClubs, checkScroll]);

@@ -497,7 +497,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               Events &amp; Activities
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              Explore university events, student club activities, hackathons, and cultural fests.
+             Discover campus events, club activities, hackathons, and cultural fests at NIT Jalandhar.
             </p>
           </div>
 
@@ -511,7 +511,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
               }`}
             >
-              <i className="ri-layout-grid-line" />
+              <i className="ri-layout-grid-line font-light" />
               <span>Feed View</span>
             </button>
             <button
@@ -523,7 +523,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
               }`}
             >
-              <i className="ri-calendar-2-line" />
+              <i className="ri-calendar-2-line font-light" />
               <span>Calendar View</span>
             </button>
           </div>
@@ -571,7 +571,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
                   }`}
                 >
-                  <i className={`${btn.icon} text-xs`} />
+                  <i className={`${btn.icon} text-xs font-medium`} />
                   <span>{btn.label}</span>
                 </button>
               ))}
@@ -585,7 +585,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 aria-label="Filter by club"
               >
                 <option value="ALL">All Clubs</option>
-                <option value="CENTRAL">Central (ODSW)</option>
+                
                 {clubNames.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -879,7 +879,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 }
               }}
               disabled={!pagination.hasPreviousPage || isFetching}
-              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
               aria-label="Previous Page"
             >
               <i className="ri-arrow-left-s-line text-sm" />
@@ -904,7 +904,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                       }
                     }}
                     disabled={isFetching}
-                    className={`min-w-[34px] h-[34px] text-xs font-semibold rounded-lg border transition-all duration-150 cursor-pointer ${
+                    className={`min-w-[34px] h-[34px] text-xs font-medium rounded-lg border transition-all duration-150 cursor-pointer ${
                       pagination.page === p
                         ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs font-bold'
                         : 'bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800'
@@ -927,7 +927,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 }
               }}
               disabled={!pagination.hasNextPage || isFetching}
-              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-2xs cursor-pointer"
               aria-label="Next Page"
             >
               <span className="hidden sm:inline">Next</span>

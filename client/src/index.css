@@ -2576,3 +2576,32 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
 .animate-upload-pulse {
   animation: uploadPulseGlow 2s ease-in-out infinite;
 }
+
+/* ── Club Details Tech Grid & Boxes Background ────────────────────────────── */
+.cn-grid-boxes {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:is(.dark, .dark *) .cn-grid-boxes,
+.dark .cn-grid-boxes {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.038) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.038) 1px, transparent 1px);
+}
+
+.cn-grid-boxes-colored {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.075) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:is(.dark, .dark *) .cn-grid-boxes-colored,
+.dark .cn-grid-boxes-colored {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+}

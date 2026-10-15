@@ -1088,11 +1088,11 @@ const EventDetails = () => {
                       e.stopPropagation();
                       handleShare();
                     }}
-                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-semibold w-9 h-9 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
+                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-semibold px-2 py-1 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
                     title="Share Event"
                     aria-label="Share Event"
                   >
-                    <i className="ri-share-forward-line text-sm" />
+                    <i className="ri-share-forward-line text-sm font-light " />Share
                   </button>
                 </div>
 

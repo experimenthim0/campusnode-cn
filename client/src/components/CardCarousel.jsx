@@ -66,44 +66,6 @@ export default function CardCarousel({
     };
   }, [isCarouselActive, updateScrollState]);
 
-  // Handle mouse wheel scrolling: smoothly convert vertical mouse wheel scroll to horizontal scrolling
-  useEffect(() => {
-    if (!isCarouselActive) return;
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const onWheel = (e) => {
-      // If user has horizontal scroll device (trackpad deltaX or Shift+wheel), let native handling take care
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
-        return;
-      }
-
-      let delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 33;
-      else if (e.deltaMode === 2) delta *= el.clientWidth;
-
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (maxScroll <= 0) return;
-
-      const isScrollingLeft = delta < 0;
-      const isScrollingRight = delta > 0;
-
-      const canScrollLeftNow = el.scrollLeft > 2;
-      const canScrollRightNow = el.scrollLeft < maxScroll - 2;
-
-      // Intercept wheel only if carousel can still scroll in that direction
-      if ((isScrollingRight && canScrollRightNow) || (isScrollingLeft && canScrollLeftNow)) {
-        e.preventDefault();
-        el.scrollLeft += delta;
-      }
-      // If at boundaries, don't preventDefault so page vertical scrolling continues seamlessly
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-    };
-  }, [isCarouselActive]);
 
   // Handle Desktop Mouse Drag-to-Scroll (Click & Drag)
   const handleMouseDown = (e) => {

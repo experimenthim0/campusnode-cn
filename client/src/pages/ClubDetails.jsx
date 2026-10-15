@@ -401,6 +401,60 @@ const TeamMemberCard = ({
   );
 };
 
+/* ── Colorful Tech Grid Themes (Inspired by GDG / Tech Community design) ───── */
+const THEMES = {
+  yellow: {
+    id: "yellow",
+    name: "Sunshine Yellow",
+    dot: "bg-amber-400",
+    gradient: "from-[#F59E0B] via-[#FBBC04] to-[#FCD34D] dark:from-[#92400E]/70 dark:via-[#B45309]/60 dark:to-[#78350F]/70",
+    accentText: "text-amber-600 dark:text-amber-400",
+    badgeBg: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+    ringColor: "ring-amber-400",
+    accentBg: "bg-amber-500",
+  },
+  green: {
+    id: "green",
+    name: "Campus Green",
+    dot: "bg-emerald-500",
+    gradient: "from-[#0F9D58] via-[#10B981] to-[#34D399] dark:from-[#064E3B]/70 dark:via-[#065F46]/60 dark:to-[#022C22]/70",
+    accentText: "text-emerald-600 dark:text-emerald-400",
+    badgeBg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+    ringColor: "ring-emerald-500",
+    accentBg: "bg-emerald-600",
+  },
+  blue: {
+    id: "blue",
+    name: "Developer Blue",
+    dot: "bg-blue-500",
+    gradient: "from-[#2563EB] via-[#3B82F6] to-[#60A5FA] dark:from-[#1E3A8A]/70 dark:via-[#1D4ED8]/60 dark:to-[#172554]/70",
+    accentText: "text-blue-600 dark:text-blue-400",
+    badgeBg: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    ringColor: "ring-blue-500",
+    accentBg: "bg-blue-600",
+  },
+  purple: {
+    id: "purple",
+    name: "Creative Purple",
+    dot: "bg-purple-500",
+    gradient: "from-[#7C3AED] via-[#8B5CF6] to-[#C084FC] dark:from-[#4C1D95]/70 dark:via-[#6D28D9]/60 dark:to-[#2E1065]/70",
+    accentText: "text-purple-600 dark:text-purple-400",
+    badgeBg: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+    ringColor: "ring-purple-500",
+    accentBg: "bg-purple-600",
+  },
+  coral: {
+    id: "coral",
+    name: "Energetic Coral",
+    dot: "bg-rose-500",
+    gradient: "from-[#E11D48] via-[#F43F5E] to-[#FB7185] dark:from-[#881337]/70 dark:via-[#9F1239]/60 dark:to-[#4C0519]/70",
+    accentText: "text-rose-600 dark:text-rose-400",
+    badgeBg: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20",
+    ringColor: "ring-rose-500",
+    accentBg: "bg-rose-600",
+  },
+};
+
 const ClubDetails = () => {
   const { slug } = useParams();
   const { isDark } = useTheme();
@@ -413,6 +467,38 @@ const ClubDetails = () => {
   const [featuredEvent, setFeaturedEvent] = useState(null);
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Theme Accent Switcher (defaults to green for GDGC or yellow for tech, user can toggle)
+  const [selectedThemeKey, setSelectedThemeKey] = useState(() => {
+    try {
+      return localStorage.getItem("campusnode_club_theme_override") || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const activeThemeKey = useMemo(() => {
+    if (selectedThemeKey && THEMES[selectedThemeKey]) return selectedThemeKey;
+    const name = `${club?.clubName || ""} ${club?.category || ""}`.toLowerCase();
+    if (name.includes("gdgc") || name.includes("gdsc") || name.includes("developer")) return "green";
+    if (name.includes("tech") || name.includes("code") || name.includes("hack") || name.includes("robot")) return "yellow";
+    if (name.includes("art") || name.includes("music") || name.includes("dance") || name.includes("cult")) return "purple";
+    if (name.includes("sport") || name.includes("fit") || name.includes("run")) return "coral";
+    return "yellow"; // Default Sunshine Yellow (matches user screenshot)
+  }, [selectedThemeKey, club?.clubName, club?.category]);
+
+  const currentTheme = THEMES[activeThemeKey] || THEMES.yellow;
+
+  // Banner display mode: "grid" (signature tech boxes) or "photo" (uploaded photo)
+  const [bannerMode, setBannerMode] = useState("grid");
+
+  useEffect(() => {
+    if (club?.bannerImage || club?.coverImage) {
+      setBannerMode("photo");
+    } else {
+      setBannerMode("grid");
+    }
+  }, [club?.bannerImage, club?.coverImage]);
 
   // Paginated regular members (role = MEMBER)
   const [regularMembers, setRegularMembers] = useState([]);
@@ -803,14 +889,14 @@ const ClubDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center cn-grid-boxes bg-neutral-50/70 dark:bg-[#0d0e12]">
         <ShimmerText text="Loading Club Details..." className="text-sm font-medium tracking-wider" />
       </div>
     );
 
   if (!club)
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center cn-grid-boxes bg-neutral-50/70 dark:bg-[#0d0e12]">
         <p className="text-red-600 font-medium text-lg">Club not found.</p>
       </div>
     );
@@ -820,34 +906,45 @@ const ClubDetails = () => {
   const galleryMedia = club.mediaList || club.media || [];
 
   return (
-    <div className="min-h-screen bg-cn-bg text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
+    <div className="min-h-screen bg-neutral-50/70 dark:bg-[#0d0e12] text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans relative overflow-x-hidden cn-grid-boxes">
+      {/* Top Colorful Header Backdrop with Boxes Pattern & Angled Slanted Edge (Matches GDGC / developer design) */}
+      <div className="absolute top-0 inset-x-0 h-64 sm:h-76 md:h-88 pointer-events-none select-none overflow-hidden z-0">
+      
+          {/* Grid Boxes Pattern Overlay */}
+          <div className="absolute inset-0 cn-grid-boxes-colored opacity-10" />
+          {/* Subtle luminous depth glows */}
+          {/* <div className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-white/25 dark:bg-white/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 right-10 w-96 h-96 rounded-full bg-black/5 dark:bg-white/5 blur-2xl pointer-events-none" /> */}
+        </div>
+      
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 relative z-10">
+        <div className="bg-white/95 dark:bg-neutral-900/90 backdrop-blur-xs border border-neutral-200/90 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
           
           {/* Banner Cover Image Container */}
           <div className="relative w-full h-44 sm:h-56 md:h-64 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden">
             <img
               src={club.bannerImage || club.coverImage || "/mainbuilding.jpeg"}
-              alt={`${club.clubName} Banner`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.onerror = null;
+                  alt={`${club.clubName} Banner`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
                 e.target.src = "/collegeimg.jpeg";
-              }}
-            />
+                  }}
+                />
             
             {/* Subtle Gradient Shade on Banner */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
 
             
-            {canEdit && (
-              <button
-                onClick={() => setBannerModalOpen(true)}
-                title="Change & Adjust Cover Banner"
+                  {canEdit && (
+                    <button
+                      onClick={() => setBannerModalOpen(true)}
+                      title="Change & Adjust Cover Banner"
                 className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 dark:bg-neutral-900/90 hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 shadow-md backdrop-blur-sm flex items-center justify-center transition-all cursor-pointer border border-neutral-200/60 dark:border-neutral-700/60 hover:scale-105"
-              >
+                    >
                 <i className="ri-pencil-line text-sm" />
-              </button>
+                    </button>
             )}
           </div>
 
@@ -1006,7 +1103,7 @@ const ClubDetails = () => {
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
             <h2 className="text-xs font-medium text-neutral-600 dark:text-neutral-500">
               About the Club
-            </h2>
+              </h2>
             
           </div>
 
@@ -1139,36 +1236,44 @@ const ClubDetails = () => {
         )}
 
         {featuredEvent && (
-          <section className=" text-black rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden shadow-brand-500 border border-brand-200 ">
-            <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none transform translate-x-8 translate-y-8">
-              <i className="ri-fire-fill text-[160px] text-brand-600" />
-            </div>
+          <section className={`rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden border border-neutral-200/60 dark:border-neutral-800 text-neutral-900 dark:text-white bg-gradient-to-r ${currentTheme.gradient}`}>
+            {/* Grid Boxes Overlay */}
+            <div className="absolute inset-0 cn-grid-boxes-colored opacity-90 pointer-events-none" />
+            
+            {/* Slanted subtle shading */}
+            <div
+              className="absolute inset-0 bg-black/5 dark:bg-black/25 pointer-events-none"
+              style={{
+                clipPath: "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
+              }}
+            />
+
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1  rounded-full text-[10px] font-medium uppercase tracking-widest text-brand-600">
-                  Featured Club Event
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-widest bg-white/90 dark:bg-neutral-900/90 text-neutral-900 dark:text-white shadow-2xs backdrop-blur-xs">
+                  <i className="ri-fire-fill text-amber-500" /> Featured Club Event
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-medium tracking-tight leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-medium tracking-tight leading-tight  text-white drop-shadow-2xs">
                   {featuredEvent.title}
                 </h2>
-                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-black pt-1">
-                  <span>
-                    <i className="ri-calendar-line mr-1" />
+                <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-neutral-900 dark:text-neutral-100 pt-1">
+                  <span className="inline-flex items-center gap-1 bg-white/85 dark:bg-neutral-900/80 px-2.5 py-1 rounded-xl backdrop-blur-xs shadow-2xs">
+                    <i className="ri-calendar-line" />
                     {new Date(featuredEvent.startTime).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
                     })}
                   </span>
-                  <span>
-                    <i className="ri-time-line mr-1" />
+                  <span className="inline-flex items-center gap-1 bg-white/85 dark:bg-neutral-900/80 px-2.5 py-1 rounded-xl backdrop-blur-xs shadow-2xs">
+                    <i className="ri-time-line" />
                     {new Date(featuredEvent.startTime).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </span>
-                  <span>
-                    <i className="ri-map-pin-line mr-1" />
+                  <span className="inline-flex items-center gap-1 bg-white/85 dark:bg-neutral-900/80 px-2.5 py-1 rounded-xl backdrop-blur-xs shadow-2xs">
+                    <i className="ri-map-pin-line" />
                     {featuredEvent.venue}
                   </span>
                 </div>
@@ -1176,7 +1281,7 @@ const ClubDetails = () => {
 
               <Link
                 to={`/events/${featuredEvent.slug || featuredEvent._id || featuredEvent.id}`}
-                className="px-5 py-2 bg-white text-neutral-900 hover:bg-neutral-100 transition rounded-xl font-medium text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 flex-shrink-0"
+                className="px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition rounded-xl font-medium text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 flex-shrink-0 cursor-pointer"
               >
                 View Event <i className="ri-arrow-right-line" />
               </Link>
@@ -1206,7 +1311,7 @@ const ClubDetails = () => {
                       setAdminTab("announcements");
                       setAdminHubOpen(true);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60 hover:bg-brand-600 hover:text-white transition text-xs font-medium cursor-pointer"
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl ${currentTheme.badgeBg} hover:opacity-90 transition text-xs font-medium cursor-pointer`}
                   >
                     <i className="ri-add-line" /> Post Announcement
                   </button>
@@ -1458,7 +1563,7 @@ const ClubDetails = () => {
           <section className="w-full space-y-6 sm:space-y-8">
             <div className="flex items-center justify-between pb-2">
               <div>
-                <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-sm sm:text-2xl font-medium text-neutral-900 dark:text-white flex items-center gap-2">
             Club Leadership & Team
                 </h2>
                 {/* <p className="text-xs text-neutral-400 mt-0.5">Guiding faculty, student coordinators, and active members</p> */}
@@ -1471,7 +1576,7 @@ const ClubDetails = () => {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[13px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[16px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Leadership
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
@@ -1512,7 +1617,7 @@ const ClubDetails = () => {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}
-                    <h3 className="text-[13px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
+                    <h3 className="text-[16px] font-medium mysans tracking-widest text-neutral-600 dark:text-neutral-500">
                       Coordinators
                     </h3>
                     {/* <div className="h-px bg-neutral-200 dark:bg-neutral-800 w-12 sm:w-16" /> */}

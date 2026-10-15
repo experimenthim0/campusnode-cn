@@ -25,6 +25,7 @@ import { EarthIcon } from '@/components/ui/earth';
 import { ZapIcon } from '@/components/ui/zap';
 import { InsetModernTeamCard, FacultyCard, TEAM_MEMBERS, FACULTY_MENTORS } from './Team';
 import HomeRecruitmentSection from '../components/HomeRecruitmentSection';
+import CampusNodeDiagram from '../components/CampusNodeDiagram';
 
 
 
@@ -756,7 +757,7 @@ const Home = () => {
                 
                 <ScrollReveal delay={0.2}>
                   <h1 className="font-semibold  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight text-white drop-shadow-2xs">
-                    Never Miss What's Happening
+                   Never Miss What's Happening
                     <br />
                     <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
                   </h1>
@@ -764,7 +765,7 @@ const Home = () => {
 
                 <ScrollReveal delay={0.3} className="w-full">
                   <div className="flex flex-col items-center gap-8 mt-6">
-                    <p className="text-base md:text-lg font-normal text-white leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
+                    <p className="text-base md:text-lg font-normal  text-white leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
                       Find events, discover clubs, follow campus updates, and take part in the communities that make NIT Jalandhar more than just a campus.
                     </p>
 
@@ -1016,8 +1017,8 @@ const Home = () => {
           <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-                <ScrollReveal direction="left">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-center">
+                <ScrollReveal direction="left" className="lg:col-span-5">
                   <div>
                     <SectionLabel>OUR VISION</SectionLabel>
                     <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
@@ -1034,13 +1035,9 @@ const Home = () => {
                   </div>
                 </ScrollReveal>
 
-                <ScrollReveal direction="right" delay={0.2}>
-                  <div className="flex items-center justify-center lg:justify-end">
-                    <img
-                      src="/what-cn.png"
-                      alt="Campusnode Ecosystem"
-                      className="w-full max-w-lg h-auto object-contain"
-                    />
+                <ScrollReveal direction="right" delay={0.2} className="lg:col-span-7 w-full">
+                  <div className="flex items-center justify-center w-full">
+                    <CampusNodeDiagram />
                   </div>
                 </ScrollReveal>
               </div>

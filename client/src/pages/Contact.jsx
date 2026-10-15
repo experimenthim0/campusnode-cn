@@ -262,7 +262,7 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="John Doe"
+                        placeholder="e.g. Himanshu"
                         className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm bg-neutral-50/50 dark:bg-neutral-950/50 border transition-all ${
                           formErrors.name
                             ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'

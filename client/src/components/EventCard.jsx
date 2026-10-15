@@ -100,31 +100,6 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         ? eventDate.getDate()
         : '';
 
-    const getDeadlineInfo = () => {
-        if (event.registrationType === 'none') return null;
-
-        const dl = new Date(registrationDeadline || startTime);
-        if (isNaN(dl.getTime())) return null;
-
-        const isClosed = dl.getTime() < Date.now();
-        const currentYear = new Date().getFullYear();
-        const dateOptions = dl.getFullYear() !== currentYear
-            ? { month: 'short', day: 'numeric', year: 'numeric' }
-            : { month: 'short', day: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
-
-        const formattedDate = dl.toLocaleDateString('en-US', dateOptions);
-        const formattedTimeStr = dl.toLocaleTimeString('en-US', timeOptions);
-        const prefix = isClosed ? 'Reg. closed on' : 'Reg. Closes on';
-
-        return {
-            text: `${prefix} ${formattedDate}, ${formattedTimeStr}`,
-            isClosed
-        };
-    };
-
-    const deadlineInfo = getDeadlineInfo();
-
     const isLive = status === 'LIVE';
     const isEnded = status === 'ENDED';
     const isUpcoming = !isLive && status === 'UPCOMING';
@@ -139,6 +114,78 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         : isFull
             ? (allowWaitlist && waitlistCount > 0 ? `${waitlistCount} waitlisted` : '0 left')
             : `${remainingSeats} left`;
+
+    const getRegistrationIndicator = () => {
+        if (event.registrationType === 'none') return null;
+
+        const dl = new Date(registrationDeadline || startTime);
+        if (isNaN(dl.getTime())) return null;
+
+        const now = Date.now();
+        const diffMs = dl.getTime() - now;
+        const isClosed = diffMs <= 0 || isEnded;
+
+        const currentYear = new Date().getFullYear();
+        const dateOptions = dl.getFullYear() !== currentYear
+            ? { month: 'short', day: 'numeric', year: 'numeric' }
+            : { month: 'short', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        const formattedDate = dl.toLocaleDateString('en-US', dateOptions);
+        const formattedTimeStr = dl.toLocaleTimeString('en-US', timeOptions);
+
+        if (isClosed) {
+            return {
+                color: 'red',
+                label: 'Closed',
+                tooltip: `Registration closed (${formattedDate}, ${formattedTimeStr})`,
+                badgeClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60',
+                dotClass: 'bg-rose-500',
+            };
+        }
+
+        if (isFull && !allowWaitlist) {
+            return {
+                color: 'red',
+                label: 'Closed',
+                tooltip: 'Registration closed - event is full',
+                badgeClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60',
+                dotClass: 'bg-rose-500',
+            };
+        }
+
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (diffHours <= 24) {
+            return {
+                color: 'red',
+                label: 'Ending Soon',
+                tooltip: `Registration closes today at ${formattedTimeStr} (${formattedDate})`,
+                badgeClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60',
+                dotClass: 'bg-rose-500 animate-pulse',
+            };
+        }
+
+        if (diffHours <= 72) {
+            const days = Math.ceil(diffHours / 24);
+            return {
+                color: 'yellow',
+                label: 'Closing Soon',
+                tooltip: `Registration closes in ${days} day${days > 1 ? 's' : ''} (${formattedDate})`,
+                badgeClass: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/60',
+                dotClass: 'bg-amber-500 animate-pulse',
+            };
+        }
+
+        return {
+            color: 'green',
+            label: 'Open',
+            tooltip: `Registration open until ${formattedDate}, ${formattedTimeStr}`,
+            badgeClass: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60',
+            dotClass: 'bg-emerald-500',
+        };
+    };
+
+    const regIndicator = getRegistrationIndicator();
 
     const effectiveRgb = useMemo(() => {
         if (!rgb) return isDark ? [96, 165, 250] : [0, 148, 255];
@@ -295,7 +342,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         ))}
                                     </div>
                                     <Handshake size={13} className="text-brand-500 shrink-0" />
-                                    <span className="truncate text-brand-600 text-[11px] font-medium">
+                                    <span className="truncate text-brand-500 dark:text-brand-400 text-[11px] font-medium">
                                         {jointNames}
                                     </span>
                                 </div>
@@ -315,7 +362,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         }}
                                     />
                                 </div>
-                                <span className="truncate text-brand-600 text-[12px] font-medium">
+                                <span className="truncate text-brand-500 dark:text-brand-400 text-[12px] font-medium">
                                     {primaryClubName}
                                 </span>
                             </div>
@@ -354,11 +401,22 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         <div className="flex gap-2 mb-2 ">
                             {event.winners && event.winners.length > 0 ? (
                                 <div className="flex flex-col gap-2 w-full">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-time-line text-brand-600 text-sm" />
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 min-w-0 truncate">
+                                            <div className="w-5 flex items-center justify-center shrink-0">
+                                                <i className="ri-time-line text-brand-600 text-sm" />
+                                            </div>
+                                            <span className="font-medium text-neutral-500 dark:text-neutral-200 text-xs truncate">{formattedTime}</span>
                                         </div>
-                                        <span className="font-medium text-neutral-500 dark:text-neutral-200 text-xs">{formattedTime}</span>
+                                        {regIndicator && (
+                                            <div
+                                                title={regIndicator.tooltip}
+                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                            >
+                                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
+                                                <span>{regIndicator.label}</span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-5 flex items-center justify-center shrink-0">
@@ -387,11 +445,22 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                             ) : (
                                 /* Results not yet declared */
                                 <div className="flex gap-2 py-2 flex-col text-neutral-600 dark:text-neutral-400">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 flex items-center justify-center shrink-0">
-                                            <i className="ri-time-line text-brand-600 text-sm" />
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 min-w-0 truncate">
+                                            <div className="w-5 flex items-center justify-center shrink-0">
+                                                <i className="ri-time-line text-brand-600 text-sm" />
+                                            </div>
+                                            <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350 truncate">{formattedTime}</span>
                                         </div>
-                                        <span className="font-medium text-xs text-neutral-600 dark:text-neutral-350">{formattedTime}</span>
+                                        {regIndicator && (
+                                            <div
+                                                title={regIndicator.tooltip}
+                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                            >
+                                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
+                                                <span>{regIndicator.label}</span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 flex items-center justify-center shrink-0">
@@ -411,11 +480,23 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     ) : (
                         /* Ended event without winners */
                         <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-neutral-600 dark:text-neutral-400">
-                            <div className="col-span-2 flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-                                <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                                <span className="truncate">
-                                    {formattedTime} (Ended)
-                                </span>
+                            <div className="col-span-2 flex items-center justify-between gap-2 font-medium text-neutral-700 dark:text-neutral-300">
+                                <div className="flex items-center gap-1.5 min-w-0 truncate">
+                                    <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                    <span className="truncate">
+                                        {formattedTime} (Ended)
+                                    </span>
+                                </div>
+
+                                {regIndicator && (
+                                    <div
+                                        title={regIndicator.tooltip}
+                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                    >
+                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
+                                        <span>{regIndicator.label}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-1.5 min-w-0">
@@ -434,28 +515,29 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 ) : (
                     /* Live or Upcoming: Divided into Left Info + Right Big Calendar Date Badge */
                     <div className="flex items-center justify-between gap-2.5 mb-1">
-                        {/* Left Information Section */}
-                        <div className="flex-1 min-w-0 space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
-                            <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300 min-w-0">
-                                <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                                <span className="truncate">{formattedTime}</span>
-                            </div>
-
-                            {deadlineInfo && (
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                    <i className="ri-calendar-check-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
-                                    <span className={`truncate font-medium ${deadlineInfo.isClosed ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                                        {deadlineInfo.text}
-                                    </span>
+                        {/* Information Section */}
+                        <div className="flex-1 min-w-0 space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+                            <div className="flex items-center justify-between gap-2 min-w-0">
+                                <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300 min-w-0 truncate">
+                                    <i className="ri-time-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
+                                    <span className="truncate">{formattedTime}</span>
                                 </div>
-                            )}
+
+                                {regIndicator && (
+                                    <div
+                                        title={regIndicator.tooltip}
+                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                    >
+                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
+                                        <span>{regIndicator.label}</span>
+                                    </div>
+                                )}
+                            </div>
 
                             <div className="flex items-center gap-1.5 min-w-0">
                                 <i className="ri-map-pin-line text-neutral-400 dark:text-neutral-500 text-sm shrink-0" />
                                 <span className="truncate font-medium text-neutral-700 dark:text-neutral-300">{venue}</span>
                             </div>
-
-
                         </div>
                     </div>
                 )}
