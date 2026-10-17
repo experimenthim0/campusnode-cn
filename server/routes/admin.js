@@ -37,8 +37,7 @@ router.post("/login", async (req, res) => {
       return res.status(403).json({ success: false, message: "Please use the official login route for 2FA accounts." });
     }
 
-    const club = admin.role === "facultyCoordinator" ? await prisma.club.findFirst({ where: { facultyCoordinatorId: admin.id } }) : null;
-    const token = generateToken(admin, admin.role, "admin", club?.id);
+    const token = generateToken(admin, "admin", "admin", null, "ADMIN");
 
     const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
@@ -51,7 +50,7 @@ router.post("/login", async (req, res) => {
     res.json({
       success: true,
       message: "Admin login successful",
-      admin: { ...sanitizeUser(admin), clubId: club?.id },
+      admin: sanitizeUser(admin),
       token
     });
   } catch (err) {

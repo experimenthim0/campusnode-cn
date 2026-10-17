@@ -25,7 +25,6 @@ const normalizeClubId = (clubId) => {
 export const generateToken = (user, role, userType = "student", clubId = null, principalType = null) => {
   const resolvedPrincipal = principalType || (
     userType === "faculty" || role === "faculty" || role === "facultyCoordinator" ? "FACULTY" :
-    userType === "admin" && role === "facultyCoordinator" ? "FACULTY" :
     userType === "admin" ? "ADMIN" :
     userType === "external" ? "EXTERNAL" : "STUDENT"
   );
@@ -51,17 +50,6 @@ const getTokensFromRequest = (req) => {
   return tokens;
 };
 
-const getFacultyClub = async (adminId) => {
-  return prisma.club.findFirst({
-    where: {
-      OR: [
-        { facultyCoordinatorId: adminId },
-        { facultyCoordinators: { some: { facultyId: adminId } } },
-      ],
-    },
-    select: { id: true, clubName: true },
-  });
-};
 
 const verifyTokenImpl = async (req, res, next) => {
   const tokens = getTokensFromRequest(req);
@@ -83,7 +71,7 @@ const verifyTokenImpl = async (req, res, next) => {
 
     const principalType = decoded.principalType || (
       decoded.userType === "faculty" || decoded.role === "faculty" || decoded.role === "facultyCoordinator" ? "FACULTY" :
-      decoded.userType === "admin" ? (decoded.role === "facultyCoordinator" ? "FACULTY" : "ADMIN") :
+      decoded.userType === "admin" ? "ADMIN" :
       decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
     );
 
@@ -134,28 +122,6 @@ const verifyTokenImpl = async (req, res, next) => {
               canEditEvents: true,
             },
           })),
-        };
-        return next();
-      }
-
-      // Fallback to AdminRole for backward compatibility
-      const admin = await prisma.adminRole.findUnique({
-        where: { id: decoded.userId },
-        select: { id: true, email: true, name: true, role: true },
-      });
-      if (admin) {
-        const facultyClub = admin.role === "facultyCoordinator" ? await getFacultyClub(admin.id) : null;
-        req.user = {
-          principalType: "FACULTY",
-          facultyId: admin.id,
-          userId: admin.id,
-          id: admin.id,
-          name: admin.name,
-          email: admin.email,
-          role: admin.role,
-          userType: "faculty",
-          clubId: facultyClub?.id ?? null,
-          clubName: facultyClub?.clubName ?? null,
         };
         return next();
       }
@@ -299,14 +265,13 @@ export const authenticateSocketToken = async (token) => {
 
   const principalType = decoded.principalType || (
     decoded.userType === "faculty" || decoded.role === "faculty" || decoded.role === "facultyCoordinator" ? "FACULTY" :
-    decoded.userType === "admin" ? (decoded.role === "facultyCoordinator" ? "FACULTY" : "ADMIN") :
+    decoded.userType === "admin" ? "ADMIN" :
     decoded.userType === "external" ? "EXTERNAL" : "STUDENT"
   );
 
   let exists = false;
   if (principalType === "FACULTY" || decoded.userType === "faculty") {
-    exists = Boolean(await prisma.facultyUser.findUnique({ where: { id: decoded.userId }, select: { id: true } })) ||
-             Boolean(await prisma.adminRole.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
+    exists = Boolean(await prisma.facultyUser.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
   } else if (principalType === "ADMIN" || decoded.userType === "admin") {
     exists = Boolean(await prisma.adminRole.findUnique({ where: { id: decoded.userId }, select: { id: true } }));
   } else if (principalType === "EXTERNAL" || decoded.userType === "external" || decoded.role === "external") {

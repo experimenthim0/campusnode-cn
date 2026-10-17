@@ -95,187 +95,232 @@ router.post(
   async (req, res) => {
     return withSpan("notification.send", { "notification.action": "create" }, async (span) => {
       try {
-      const { targetType, eventId, title, message, clubId: requestedClubId } = req.body;
-      const { userId: sender, userType } = req.user;
+        const { targetType, eventId, title, message, clubId: requestedClubId } = req.body;
+        const { userId: sender, userType } = req.user;
 
-      if (!title || !message || !targetType) {
-        return res.status(400).json({ message: "Incomplete fields" });
-      }
-
-      // Resolve and strictly validate Club Identity
-      let club = null;
-      if (userType === "student") {
-        const targetClubId = requestedClubId || req.user.clubId;
-        if (!targetClubId) {
-          return res.status(400).json({
-            message: "Club ID is required. Individual student broadcasting is not permitted.",
-          });
+        if (!title || !message || !targetType) {
+          return res.status(400).json({ message: "Incomplete fields" });
         }
 
-        const membership = await prisma.clubMembership.findFirst({
-          where: {
-            studentId: sender,
-            clubId: targetClubId,
-            role: { in: ["CLUB_HEAD", "COORDINATOR"] },
-          },
-          include: {
-            club: { select: { id: true, clubName: true, clubLogo: true, slug: true } },
-          },
-        });
-
-        if (!membership) {
-          return res.status(403).json({
-            message: "Access denied: You do not have coordinator or leadership permissions for this club.",
-          });
-        }
-
-        club = membership.club;
-      } else if (req.user.role === "facultyCoordinator") {
-        const targetClubId = requestedClubId || req.user.clubId;
-        club = await prisma.club.findUnique({
-          where: { id: targetClubId },
-          select: { id: true, clubName: true, clubLogo: true, slug: true },
-        });
-      } else if (userType === "admin") {
-        if (requestedClubId) {
-          club = await prisma.club.findUnique({
-            where: { id: requestedClubId },
-            select: { id: true, clubName: true, clubLogo: true, slug: true },
-          });
-        }
-      }
-
-      // Redis idempotency lock: reject duplicate dispatches within 5 seconds
-      const idempotencyPayload = `${sender}:${club?.id || ""}:${targetType}:${eventId || ""}:${String(title).trim()}:${String(message).trim()}`;
-      const idempotencyHash = crypto.createHash("sha256").update(idempotencyPayload).digest("hex");
-      const lockKey = `lock:notif:${idempotencyHash}`;
-      try {
-        const acquired = await redis.set(lockKey, "1", "EX", 5, "NX");
-        if (!acquired) {
-          return res.status(429).json({
-            message: "A notification with identical content is already being processed. Please wait.",
-          });
-        }
-      } catch (lockErr) {
-        console.warn("[Notifications] Redis idempotency check warning:", lockErr.message);
-      }
-
-      let recipientStudentIds = [];
-
-      if (targetType === "REGISTERED_STUDENTS") {
-        if (!eventId) {
-          return res.status(400).json({ message: "Event ID is required." });
-        }
-
-        const event = await prisma.event.findUnique({
-          where: { id: eventId },
-          include: { organizers: true },
-        });
-        if (!event) return res.status(404).json({ message: "Event not found." });
-
-        const organizerClubIds = (event.organizers || []).map((o) => o.clubId);
-
-        if (req.user.role === "admin" || req.user.principalType === "ADMIN") {
-          // allowed
-        } else if (req.user.role === "facultyCoordinator") {
-          if (!organizerClubIds.includes(req.user.clubId)) {
-            return res.status(403).json({ message: "Access denied for this event." });
+        // Resolve and strictly validate Club Identity
+        let club = null;
+        if (userType === "student") {
+          const targetClubId = requestedClubId || req.user.clubId;
+          if (!targetClubId) {
+            return res.status(400).json({
+              message: "Club ID is required. Individual student broadcasting is not permitted.",
+            });
           }
-        } else {
+
           const membership = await prisma.clubMembership.findFirst({
             where: {
               studentId: sender,
-              clubId: { in: organizerClubIds },
+              clubId: targetClubId,
               role: { in: ["CLUB_HEAD", "COORDINATOR"] },
             },
+            include: {
+              club: { select: { id: true, clubName: true, clubLogo: true, slug: true } },
+            },
           });
-          if (!membership && String(event.createdById) !== String(sender)) {
-            return res.status(403).json({ message: "Access denied for this event." });
+
+          if (!membership) {
+            return res.status(403).json({
+              message: "Access denied: You do not have coordinator or leadership permissions for this club.",
+            });
+          }
+
+          club = membership.club;
+        } else if (req.user.role === "facultyCoordinator") {
+          const targetClubId = requestedClubId || req.user.clubId;
+          club = await prisma.club.findUnique({
+            where: { id: targetClubId },
+            select: { id: true, clubName: true, clubLogo: true, slug: true },
+          });
+        } else if (userType === "admin") {
+          if (requestedClubId) {
+            club = await prisma.club.findUnique({
+              where: { id: requestedClubId },
+              select: { id: true, clubName: true, clubLogo: true, slug: true },
+            });
           }
         }
 
-        const participations = await prisma.participation.findMany({
-          where: { eventId, studentId: { not: null } },
-          select: { studentId: true },
-        });
-        recipientStudentIds = [...new Set(participations.map((p) => p.studentId).filter(Boolean))];
-      } else if (targetType === "ALL_STUDENTS") {
-        const isAllowedAll =
-          req.user.role === "admin" ||
-          req.user.principalType === "ADMIN" ||
-          req.user.role === "facultyCoordinator";
-
-        const hasClubHeadRole = (req.user.memberships || []).some(
-          (m) => m.role === "CLUB_HEAD"
-        );
-
-        if (!isAllowedAll && !hasClubHeadRole) {
-          return res.status(403).json({ message: "Broadcast permission required." });
+        // Redis idempotency lock: reject duplicate dispatches within 5 seconds
+        const idempotencyPayload = `${sender}:${club?.id || ""}:${targetType}:${eventId || ""}:${String(title).trim()}:${String(message).trim()}`;
+        const idempotencyHash = crypto.createHash("sha256").update(idempotencyPayload).digest("hex");
+        const lockKey = `lock:notif:${idempotencyHash}`;
+        try {
+          const acquired = await redis.set(lockKey, "1", "EX", 5, "NX");
+          if (!acquired) {
+            return res.status(429).json({
+              message: "A notification with identical content is already being processed. Please wait.",
+            });
+          }
+        } catch (lockErr) {
+          console.warn("[Notifications] Redis idempotency check warning:", lockErr.message);
         }
 
-        const allStudents = await prisma.studentUser.findMany({ select: { id: true } });
-        recipientStudentIds = [...new Set(allStudents.map((s) => s.id))];
-      } else {
-        return res.status(400).json({ message: "Invalid notification target." });
-      }
+        let recipientStudentIds = [];
 
-      if (recipientStudentIds.length === 0) {
-        return res.status(200).json({ message: "No recipients found for this target." });
-      }
+        if (targetType === "REGISTERED_STUDENTS") {
+          if (!eventId) {
+            return res.status(400).json({ message: "Event ID is required." });
+          }
 
-      const notificationsData = recipientStudentIds.map((studentId) => ({
-        id: createObjectId(),
-        senderStudentId: userType === "student" ? sender : null,
-        senderAdminId: userType === "admin" ? sender : null,
-        recipientStudentId: studentId,
-        clubId: club ? club.id : null,
-        eventId: eventId || null,
-        type: targetType === "ALL_STUDENTS" ? "BROADCAST" : "EVENT_ANNOUNCEMENT",
-        title,
-        message,
-      }));
+          const event = await prisma.event.findUnique({
+            where: { id: eventId },
+            include: { organizers: true },
+          });
+          if (!event) return res.status(404).json({ message: "Event not found." });
 
-      await prisma.notification.createMany({
-        data: notificationsData,
-      });
+          const organizerClubIds = (event.organizers || []).map((o) => o.clubId);
 
-      // Pure Club Attribution in real-time notification payload
-      const broadcastPayload = {
-        id: notificationsData[0]?.id || createObjectId(),
-        title,
-        message,
-        eventId: eventId || null,
-        clubId: club ? club.id : null,
-        type: targetType === "ALL_STUDENTS" ? "BROADCAST" : "EVENT_ANNOUNCEMENT",
-        sender: club
-          ? {
-              _id: club.id,
-              id: club.id,
-              name: club.clubName,
-              clubName: club.clubName,
-              clubLogo: club.clubLogo,
-              slug: club.slug,
+          if (req.user.role === "admin" || req.user.principalType === "ADMIN") {
+            // allowed
+          } else if (req.user.role === "facultyCoordinator") {
+            if (!organizerClubIds.includes(req.user.clubId)) {
+              return res.status(403).json({ message: "Access denied for this event." });
             }
-          : {
-              name: req.user.name || "Campus Administration",
-              clubName: "Campus Administration",
+          } else {
+            const membership = await prisma.clubMembership.findFirst({
+              where: {
+                studentId: sender,
+                clubId: { in: organizerClubIds },
+                role: { in: ["CLUB_HEAD", "COORDINATOR"] },
+              },
+            });
+            if (!membership && String(event.createdById) !== String(sender)) {
+              return res.status(403).json({ message: "Access denied for this event." });
+            }
+          }
+
+          const participations = await prisma.participation.findMany({
+            where: { eventId, studentId: { not: null } },
+            select: { studentId: true },
+          });
+          recipientStudentIds = [...new Set(participations.map((p) => p.studentId).filter(Boolean))];
+        } else if (targetType === "ALL_STUDENTS") {
+          const isAllowedAll =
+            req.user.role === "admin" ||
+            req.user.principalType === "ADMIN" ||
+            req.user.role === "facultyCoordinator";
+
+          const hasClubHeadRole = (req.user.memberships || []).some(
+            (m) => m.role === "CLUB_HEAD"
+          );
+
+          if (!isAllowedAll && !hasClubHeadRole) {
+            return res.status(403).json({ message: "Broadcast permission required." });
+          }
+
+          const allStudents = await prisma.studentUser.findMany({ select: { id: true } });
+          recipientStudentIds = [...new Set(allStudents.map((s) => s.id))];
+        } else {
+          return res.status(400).json({ message: "Invalid notification target." });
+        }
+
+        if (targetType === "REGISTERED_STUDENTS") {
+          if (recipientStudentIds.length === 0) {
+            return res.status(200).json({ message: "No registered participants found for this event." });
+          }
+
+          const notificationsData = recipientStudentIds.map((studentId) => ({
+            id: createObjectId(),
+            senderStudentId: userType === "student" ? sender : null,
+            senderAdminId: userType === "admin" ? sender : null,
+            senderFacultyId: userType === "faculty" ? sender : null,
+            recipientStudentId: studentId,
+            clubId: club ? club.id : null,
+            eventId: eventId || null,
+            type: "EVENT_ANNOUNCEMENT",
+            title,
+            message,
+          }));
+
+          await prisma.notification.createMany({
+            data: notificationsData,
+          });
+
+          // Event-specific realtime notification payload
+          const announcementPayload = {
+            id: notificationsData[0]?.id || createObjectId(),
+            title,
+            message,
+            eventId: eventId || null,
+            clubId: club ? club.id : null,
+            type: "EVENT_ANNOUNCEMENT",
+            sender: club
+              ? {
+                _id: club.id,
+                id: club.id,
+                name: club.clubName,
+                clubName: club.clubName,
+                clubLogo: club.clubLogo,
+                slug: club.slug,
+              }
+              : {
+                name: req.user.name || "Campus Administration",
+                clubName: "Campus Administration",
+              },
+          };
+
+          recipientStudentIds.forEach((uId) => {
+            req.io.to(uId.toString()).emit("new-notification", announcementPayload);
+          });
+          sendWebPushNotification(recipientStudentIds, announcementPayload);
+
+          return res.status(201).json({
+            message: `Notification sent to ${recipientStudentIds.length} registered participant(s).`,
+            recipientCount: recipientStudentIds.length,
+          });
+        } else {
+          // targetType === "ALL_STUDENTS" -> Single Canonical Broadcast record
+          const broadcastNotification = await prisma.notification.create({
+            data: {
+              id: createObjectId(),
+              senderStudentId: userType === "student" ? sender : null,
+              senderAdminId: userType === "admin" ? sender : null,
+              senderFacultyId: userType === "faculty" ? sender : null,
+              recipientStudentId: null, // Null indicates college-wide broadcast
+              clubId: club ? club.id : null,
+              eventId: null,
+              type: "BROADCAST",
+              title,
+              message,
             },
-      };
+          });
 
-      if (targetType === "ALL_STUDENTS") {
-        req.io.emit("new-notification", broadcastPayload);
-        sendWebPushNotification(null, broadcastPayload);
-      } else {
-        recipientStudentIds.forEach((uId) => {
-          req.io.to(uId.toString()).emit("new-notification", broadcastPayload);
-        });
-        sendWebPushNotification(recipientStudentIds, broadcastPayload);
-      }
+          const broadcastPayload = {
+            id: broadcastNotification.id,
+            title,
+            message,
+            eventId: null,
+            clubId: club ? club.id : null,
+            type: "BROADCAST",
+            sender: club
+              ? {
+                _id: club.id,
+                id: club.id,
+                name: club.clubName,
+                clubName: club.clubName,
+                clubLogo: club.clubLogo,
+                slug: club.slug,
+              }
+              : {
+                name: req.user.name || "Campus Administration",
+                clubName: "Campus Administration",
+              },
+          };
 
-      return res.status(201).json({
-        message: `Notification sent to ${recipientStudentIds.length} recipients.`,
-        recipientCount: recipientStudentIds.length,
-      });
+          req.io.emit("new-notification", broadcastPayload);
+          sendWebPushNotification(null, broadcastPayload);
+
+          return res.status(201).json({
+            message: `Broadcast notification dispatched to all students.`,
+            recipientCount: recipientStudentIds.length,
+            notificationId: broadcastNotification.id,
+          });
+        }
       } catch (err) {
         internalNotificationError(res, err, "Failed to send notification.");
       }
@@ -289,21 +334,28 @@ export function getNotificationRecipientFilter(user) {
     const isFaculty = role === "facultyCoordinator";
     return isFaculty && clubId
       ? {
-          OR: [
-            { recipientStudentId: userId },
-            { clubId, recipientStudentId: null },
-            { clubId, type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] } },
-          ],
-        }
+        OR: [
+          { recipientStudentId: userId },
+          { clubId, recipientStudentId: null },
+          { clubId, type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] } },
+          { recipientStudentId: null, type: "BROADCAST" },
+        ],
+      }
       : {
-          OR: [
-            { senderAdminId: userId },
-            { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } },
-            { recipientStudentId: userId },
-          ],
-        };
+        OR: [
+          { senderAdminId: userId },
+          { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } },
+          { recipientStudentId: userId },
+          { recipientStudentId: null, type: "BROADCAST" },
+        ],
+      };
   }
-  return { recipientStudentId: userId };
+  return {
+    OR: [
+      { recipientStudentId: userId },
+      { recipientStudentId: null, type: "BROADCAST" },
+    ],
+  };
 }
 
 router.get(
@@ -378,16 +430,10 @@ router.get(
       const search = typeof req.query.search === "string" ? req.query.search.trim().slice(0, 100) : "";
       const type = typeof req.query.type === "string" ? req.query.type.trim() : null;
 
-      const andConditions = [scope];
-
-      if (tab === "unread") {
-        andConditions.push({ NOT: { readBy: { has: userId } } });
-      } else if (tab === "read") {
-        andConditions.push({ readBy: { has: userId } });
-      }
+      const baseFilterConditions = [scope];
 
       if (search) {
-        andConditions.push({
+        baseFilterConditions.push({
           OR: [
             { title: { contains: search, mode: "insensitive" } },
             { message: { contains: search, mode: "insensitive" } },
@@ -399,7 +445,15 @@ router.get(
       }
 
       if (type) {
-        andConditions.push({ type });
+        baseFilterConditions.push({ type });
+      }
+
+      const andConditions = [...baseFilterConditions];
+
+      if (tab === "unread") {
+        andConditions.push({ NOT: { readBy: { has: userId } } });
+      } else if (tab === "read") {
+        andConditions.push({ readBy: { has: userId } });
       }
 
       const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
@@ -414,10 +468,10 @@ router.get(
         }),
         prisma.notification.count({ where }),
         prisma.notification.count({
-          where: { AND: [scope, { NOT: { readBy: { has: userId } } }] },
+          where: { AND: [...baseFilterConditions, { NOT: { readBy: { has: userId } } }] },
         }),
         prisma.notification.count({
-          where: { AND: [scope, { readBy: { has: userId } }] },
+          where: { AND: [...baseFilterConditions, { readBy: { has: userId } }] },
         }),
       ]);
 
@@ -463,8 +517,8 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
       const isFaculty = req.user.role === "facultyCoordinator";
       baseWhere = clubId
         ? (isFaculty && String(clubId) !== String(req.user.clubId)
-            ? { id: "__unauthorized__" }
-            : { clubId })
+          ? { id: "__unauthorized__" }
+          : { clubId })
         : { senderAdminId: userId };
     } else {
       const ownsClub = !clubId || (req.user.memberships || []).some((m) => String(m.clubId) === String(clubId));
@@ -556,11 +610,8 @@ router.put(
   requirePermission(PERMISSIONS.NOTIFICATION_VIEW),
   async (req, res) => {
     try {
-      const { userId, userType } = req.user;
-
-      const recipientFilter = userType === "admin"
-        ? { OR: [{ recipientStudentId: userId }, { senderAdminId: userId }] }
-        : { recipientStudentId: userId };
+      const { userId } = req.user;
+      const recipientFilter = getNotificationRecipientFilter(req.user);
 
       const unread = await prisma.notification.findMany({
         where: {
@@ -570,11 +621,14 @@ router.put(
         select: { id: true },
       });
 
-      for (const n of unread) {
-        await prisma.notification.update({
-          where: { id: n.id },
-          data: { readBy: { push: userId } },
-        });
+      if (unread.length > 0) {
+        const unreadIds = unread.map((n) => n.id);
+        await prisma.$executeRaw`
+          UPDATE "Notification"
+          SET "readBy" = array_append("readBy", ${userId})
+          WHERE "id" = ANY(${unreadIds})
+            AND NOT (${userId} = ANY("readBy"))
+        `;
       }
 
       res.json({ message: "All notifications marked as read" });
@@ -592,24 +646,39 @@ router.put(
     try {
       const { userId } = req.user;
 
-       const isFaculty = req.user.role === "facultyCoordinator";
-       const authorizedWhere = userId && req.user.userType === "admin"
-         ? (isFaculty
-             ? {
-                 id: req.params.id,
-                 OR: [
-                   { recipientStudentId: userId },
-                   { clubId: req.user.clubId, recipientStudentId: null },
-                   {
-                     clubId: req.user.clubId,
-                     type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] },
-                   },
-                 ],
-               }
-             : { id: req.params.id, OR: [{ recipientStudentId: userId }, { senderAdminId: userId }, { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } }] })
-         : { id: req.params.id, recipientStudentId: userId };
+      const isFaculty = req.user.role === "facultyCoordinator";
+      const authorizedWhere = userId && req.user.userType === "admin"
+        ? (isFaculty
+          ? {
+            id: req.params.id,
+            OR: [
+              { recipientStudentId: userId },
+              { clubId: req.user.clubId, recipientStudentId: null },
+              {
+                clubId: req.user.clubId,
+                type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] },
+              },
+              { recipientStudentId: null, type: "BROADCAST" },
+            ],
+          }
+          : {
+            id: req.params.id,
+            OR: [
+              { recipientStudentId: userId },
+              { senderAdminId: userId },
+              { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } },
+              { recipientStudentId: null, type: "BROADCAST" },
+            ],
+          })
+        : {
+          id: req.params.id,
+          OR: [
+            { recipientStudentId: userId },
+            { recipientStudentId: null, type: "BROADCAST" },
+          ],
+        };
 
-       const notif = await prisma.notification.findFirst({ where: authorizedWhere });
+      const notif = await prisma.notification.findFirst({ where: authorizedWhere });
 
       if (!notif) {
         return res.status(404).json({ message: "Notification not found." });

@@ -299,6 +299,9 @@ const eventInclude = {
   reviewedBy: {
     select: { id: true, name: true },
   },
+  reviewedByFaculty: {
+    select: { id: true, name: true, email: true },
+  },
   organizers: {
     include: {
       club: {
@@ -1223,13 +1226,22 @@ router.get(
             select: {
               id: true,
               teamName: true,
+              leaderId: true,
               leaderStudentId: true,
+              rejectedMembers: true,
               leaderStudent: { select: { id: true, name: true, email: true, rollNo: true } },
               members: {
                 select: {
                   id: true,
                   studentId: true,
+                  role: true,
                   student: { select: { id: true, name: true, email: true, rollNo: true } },
+                },
+              },
+              participations: {
+                select: {
+                  studentId: true,
+                  status: true,
                 },
               },
             },
@@ -1565,12 +1577,14 @@ router.put(
         });
       }
 
+      const isFaculty = req.user.userType === "faculty" || req.user.principalType === "FACULTY" || req.user.role === "facultyCoordinator";
       const updated = await prisma.event.update({
         where: { id: req.params.id },
         data: {
           reviewStatus: status,
           reviewComment: comment || null,
-          reviewedById: req.user.userId,
+          reviewedById: isFaculty ? null : req.user.userId,
+          reviewedByFacultyId: isFaculty ? req.user.userId : null,
         },
         include: eventInclude,
       });
@@ -1581,10 +1595,9 @@ router.put(
           const notif = await prisma.notification.create({
             data: {
               id: createObjectId(),
-              targetScope: "USER",
               recipientStudentId: updated.createdById,
-              recipientUserId: updated.createdById,
-              senderAdminId: req.user.userId,
+              senderAdminId: isFaculty ? null : req.user.userId,
+              senderFacultyId: isFaculty ? req.user.userId : null,
               eventId: updated.id,
               clubId: primaryClubId,
               type: "EVENT_REVIEW_RESULT",
@@ -1697,6 +1710,7 @@ router.post(
         req.user.role === "admin" ||
         hasPermission(req.user, PERMISSIONS.EVENT_PUBLISH, event);
       const shouldDirectPublish = Boolean(req.body.directPublish && canDirectPublish);
+      const isFaculty = req.user.userType === "faculty" || req.user.principalType === "FACULTY" || req.user.role === "facultyCoordinator";
       const targetStatus = shouldDirectPublish ? "PUBLISHED" : "PENDING";
 
       const updated = await prisma.event.update({
@@ -1704,7 +1718,8 @@ router.post(
         data: {
           reviewStatus: targetStatus,
           reviewComment: null,
-          reviewedById: shouldDirectPublish ? req.user.userId : null,
+          reviewedById: shouldDirectPublish ? (isFaculty ? null : req.user.userId) : null,
+          reviewedByFacultyId: shouldDirectPublish ? (isFaculty ? req.user.userId : null) : null,
         },
         include: eventInclude,
       });
