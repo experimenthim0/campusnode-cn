@@ -5,7 +5,6 @@ import {
   getClubBySlugOrId,
   getClubs,
   updateClub,
-  getClubMembers,
   uploadClubLogo,
   deleteClubLogo,
   deleteClubBanner,
@@ -32,7 +31,6 @@ import {
   Plus,
   Globe,
   Check,
-  RefreshCw,
   X,
   Building2,
   Instagram,
@@ -52,7 +50,6 @@ const EditClub = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [clubId, setClubId] = useState(id);
   const [clubSlug, setClubSlug] = useState("");
-  const [roleStudentLeads, setRoleStudentLeads] = useState([]);
 
   // Image Uploading States
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -94,12 +91,12 @@ const EditClub = () => {
     facultyName: "",
   });
 
-  const applyClubData = (club, fetchedRoleLeads = []) => {
+  const applyClubData = (club) => {
     const resolvedId = club._id || club.id;
     setClubId(resolvedId);
     setClubSlug(club.slug || "");
 
-    // Resolve student lead from club data or auto-fetched Student Lead role
+    // Resolve student lead from club data
     const rawCoords = club.studentCoordinators || club.studentcoordinators;
     const storedCoords =
       Array.isArray(rawCoords) && rawCoords.length > 0
@@ -107,9 +104,6 @@ const EditClub = () => {
         : typeof rawCoords === "string" && rawCoords
         ? rawCoords
         : "";
-
-    const resolvedStudentLead =
-      storedCoords || (fetchedRoleLeads.length > 0 ? fetchedRoleLeads.join(", ") : "");
 
     // Process Gallery Media
     const rawGallery =
@@ -130,7 +124,7 @@ const EditClub = () => {
       clubLogo: club.clubLogo || "",
       bannerImage: club.bannerImage || club.coverImage || "",
       description: club.description || "",
-      studentCoordinators: resolvedStudentLead,
+      studentCoordinators: storedCoords,
       clubInstagram:
         club.socialLinks?.find((l) => l.platform === "instagram")?.url || "",
       clubLinkedin:
@@ -177,38 +171,13 @@ const EditClub = () => {
           throw new Error("No club ID found.");
         }
 
-        const [res, membersRes] = await Promise.all([
-          getClubBySlugOrId(targetId),
-          getClubMembers(targetId).catch(() => null),
-        ]);
+        const res = await getClubBySlugOrId(targetId);
 
         if (!res.data.club) {
           throw new Error("Club data not found in response.");
         }
 
-        const membersList = Array.isArray(membersRes?.data)
-          ? membersRes.data
-          : membersRes?.data?.members || [];
-
-        const headMembers = membersList.filter(
-          (m) =>
-            !m.isClubAccount &&
-            (m.role === "CLUB_HEAD" ||
-              (m.role || "").toUpperCase() === "CLUB_HEAD" ||
-              (m.role || "").toLowerCase() === "clubhead" ||
-              (m.role || "").toUpperCase() === "STUDENT_LEAD"),
-        );
-
-        const roleHeadNames = headMembers
-          .map((m) => m.student?.name || m.name)
-          .filter(Boolean);
-        const fetchedRoleLeads =
-          roleHeadNames.length > 0
-            ? roleHeadNames
-            : res.data.club.studentHeads || [];
-
-        setRoleStudentLeads(fetchedRoleLeads);
-        applyClubData(res.data.club, fetchedRoleLeads);
+        applyClubData(res.data.club);
       } catch (err) {
         console.error("DEBUG: fetchClub error:", err);
         if (
@@ -699,7 +668,7 @@ const EditClub = () => {
                         }}
                       />
                     ) : (
-                      <span className="text-2xl sm:text-3xl font-black text-foreground select-none">
+                      <span className="text-2xl sm:text-3xl font-medium text-foreground select-none">
                         {clubInitials}
                       </span>
                     )}
@@ -708,7 +677,7 @@ const EditClub = () => {
                     {!isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-1 text-center">
                         <Camera className="w-4 h-4 mb-0.5 shrink-0" />
-                        <span className="text-[10px] font-semibold leading-tight">
+                        <span className="text-[10px] font-medium leading-tight">
                           Change
                         </span>
                       </div>
@@ -718,7 +687,7 @@ const EditClub = () => {
                     {isUploadingLogo && (
                       <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
-                        <span className="text-[9px] font-semibold mt-1">Uploading…</span>
+                        <span className="text-[9px] font-medium mt-1">Uploading…</span>
                       </div>
                     )}
 
@@ -735,7 +704,7 @@ const EditClub = () => {
 
                   <div className="text-white drop-shadow-sm pb-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm sm:text-base font-semibold tracking-tight">
+                      <span className="text-sm sm:text-base font-medium tracking-tight">
                         {formData.clubName || "Club Logo"}
                       </span>
                       {formData.clubLogo && (
@@ -932,7 +901,7 @@ const EditClub = () => {
                       </Button>
                     </div>
 
-                    <span className="absolute bottom-2 left-2 text-[10px] font-semibold text-white/90 bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="absolute bottom-2 left-2 text-[10px] font-medium text-white/90 bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                       #{idx + 1}
                     </span>
                   </div>
@@ -998,72 +967,6 @@ const EditClub = () => {
                   onChange={handleChange}
                   placeholder="Technical, Cultural, Sports, Social, Literary…"
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Faculty Coordinator Name
-                </label>
-                <Input
-                  type="text"
-                  name="facultyName"
-                  value={formData.facultyName}
-                  onChange={handleChange}
-                  placeholder="Prof. / Dr. Full Name"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Faculty Coordinator Email
-                </label>
-                <Input
-                  type="email"
-                  name="facultyEmail"
-                  value={formData.facultyEmail}
-                  onChange={handleChange}
-                  placeholder="faculty@college.edu"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Student Lead / Club Head
-                  </label>
-                  {roleStudentLeads.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          studentCoordinators: roleStudentLeads.join(", "),
-                        }))
-                      }
-                      className="h-6 text-[11px] text-primary hover:text-primary gap-1 px-1.5 shrink-0"
-                      title="Auto-fill with name from active Student Lead role"
-                    >
-                      <RefreshCw className="w-3 h-3 shrink-0" /> Sync Role
-                    </Button>
-                  )}
-                </div>
-                <Input
-                  type="text"
-                  name="studentCoordinators"
-                  value={formData.studentCoordinators}
-                  onChange={handleChange}
-                  placeholder="Student Lead Name (or multiple comma separated)"
-                />
-                {roleStudentLeads.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Active Student Lead (from Team Roles):{" "}
-                    <strong className="text-foreground font-medium">
-                      {roleStudentLeads.join(", ")}
-                    </strong>
-                  </p>
-                )}
               </div>
 
               <div className="space-y-1.5">

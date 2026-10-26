@@ -352,7 +352,7 @@ const VerifyCertificate = () => {
           <Card className="border-border bg-card shadow-xs overflow-hidden">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-base sm:text-lg font-semibold text-foreground">
+                <CardTitle className="text-base sm:text-lg font-medium text-foreground">
                   Verify Certificate
                 </CardTitle>
                 <div className="flex items-center gap-1">
@@ -566,7 +566,7 @@ const VerifyCertificate = () => {
                         {cert.certificateNumber}
                       </span>
                     </div>
-                    <CardTitle className="text-base sm:text-lg font-semibold tracking-tight mt-1 text-foreground">
+                    <CardTitle className="text-base sm:text-lg font-medium tracking-tight mt-1 text-foreground">
                       Valid Certificate
                     </CardTitle>
                   </div>
@@ -605,7 +605,7 @@ const VerifyCertificate = () => {
                     <span>Recipient</span>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-sm font-medium text-foreground">
                       {cert.studentName}
                     </p>
                     {cert.rollNo && cert.rollNo !== "N/A" && (
@@ -718,7 +718,7 @@ const VerifyCertificate = () => {
                   <Badge variant="destructive" className="text-[10px] uppercase">
                     Revoked
                   </Badge>
-                  <CardTitle className="text-base sm:text-lg font-semibold text-destructive mt-1">
+                  <CardTitle className="text-base sm:text-lg font-medium text-destructive mt-1">
                     Certificate Revoked
                   </CardTitle>
                 </div>
@@ -765,7 +765,7 @@ const VerifyCertificate = () => {
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">
+              <h2 className="text-base sm:text-lg font-medium text-foreground">
                 Certificate Not Found
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">

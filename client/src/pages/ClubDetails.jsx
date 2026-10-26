@@ -66,12 +66,12 @@ const MemberSocials = ({ student }) => {
       title: "Instagram",
     });
  
-  if (student.portfolioUrl)
-    links.push({
-      url: formatUrl(student.portfolioUrl),
-      icon: <EarthIcon size={15} className="shrink-0 flex items-center justify-center" />,
-      title: "Portfolio",
-    });
+  // if (student.portfolioUrl)
+  //   links.push({
+  //     url: formatUrl(student.portfolioUrl),
+  //     icon: <EarthIcon size={15} className="shrink-0 flex items-center justify-center" />,
+  //     title: "Portfolio",
+  //   });
 
   if (links.length === 0) return null;
 
@@ -283,9 +283,10 @@ const ClubCalendarView = ({ events }) => {
                     {ev.title}
                   </h5>
                   <p className="text-xs text-neutral-400 mt-0.5">
-                    {new Date(ev.startTime).toLocaleTimeString([], {
-                      hour: "2-digit",
+                    {new Date(ev.startTime).toLocaleTimeString("en-US", {
+                      hour: "numeric",
                       minute: "2-digit",
+                      hour12: true,
                     })}{" "}
                     · {ev.venue}
                   </p>
@@ -378,7 +379,7 @@ const TeamMemberCard = ({
               student?.linkedinProfile ||
               student?.xProfile ||
               student?.instagramProfile ||
-              student?.whatsappNumber ||
+             
               student?.portfolioUrl
           )) && (
           <div className="pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-center">
@@ -889,14 +890,14 @@ const ClubDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center cn-grid-boxes bg-neutral-50/70 dark:bg-[#0d0e12]">
+      <div className="min-h-screen flex items-center justify-center bg-cn-bg text-cn-text">
         <ShimmerText text="Loading Club Details..." className="text-sm font-medium tracking-wider" />
       </div>
     );
 
   if (!club)
     return (
-      <div className="min-h-screen flex items-center justify-center cn-grid-boxes bg-neutral-50/70 dark:bg-[#0d0e12]">
+      <div className="min-h-screen flex items-center justify-center bg-cn-bg text-cn-text">
         <p className="text-red-600 font-medium text-lg">Club not found.</p>
       </div>
     );
@@ -906,20 +907,9 @@ const ClubDetails = () => {
   const galleryMedia = club.mediaList || club.media || [];
 
   return (
-    <div className="min-h-screen bg-neutral-50/70 dark:bg-[#0d0e12] text-neutral-900 dark:text-white pb-24 transition-colors duration-300 mysans relative overflow-x-hidden cn-grid-boxes">
-      {/* Top Colorful Header Backdrop with Boxes Pattern & Angled Slanted Edge (Matches GDGC / developer design) */}
-      <div className="absolute top-0 inset-x-0 h-64 sm:h-76 md:h-88 pointer-events-none select-none overflow-hidden z-0">
-      
-          {/* Grid Boxes Pattern Overlay */}
-          <div className="absolute inset-0 cn-grid-boxes-colored opacity-10" />
-          {/* Subtle luminous depth glows */}
-          {/* <div className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-white/25 dark:bg-white/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 right-10 w-96 h-96 rounded-full bg-black/5 dark:bg-white/5 blur-2xl pointer-events-none" /> */}
-        </div>
-      
-
+    <div className="min-h-screen bg-cn-bg text-cn-text pb-24 transition-colors duration-300 mysans relative overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 relative z-10">
-        <div className="bg-white/95 dark:bg-neutral-900/90 backdrop-blur-xs border border-neutral-200/90 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-xs relative">
+        <div className="bg-cn-surface dark:bg-cn-surface-card border border-cn-border rounded-3xl overflow-hidden shadow-xs relative">
           
           {/* Banner Cover Image Container */}
           <div className="relative w-full h-44 sm:h-56 md:h-64 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800 overflow-hidden">
@@ -1236,10 +1226,7 @@ const ClubDetails = () => {
         )}
 
         {featuredEvent && (
-          <section className={`rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden border border-neutral-200/60 dark:border-neutral-800 text-neutral-900 dark:text-white bg-gradient-to-r ${currentTheme.gradient}`}>
-            {/* Grid Boxes Overlay */}
-            <div className="absolute inset-0 cn-grid-boxes-colored opacity-90 pointer-events-none" />
-            
+          <section className={`rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden border border-cn-border text-neutral-900 dark:text-white bg-gradient-to-r ${currentTheme.gradient}`}>
             {/* Slanted subtle shading */}
             <div
               className="absolute inset-0 bg-black/5 dark:bg-black/25 pointer-events-none"
@@ -1267,9 +1254,10 @@ const ClubDetails = () => {
                   </span>
                   <span className="inline-flex items-center gap-1 bg-white/85 dark:bg-neutral-900/80 px-2.5 py-1 rounded-xl backdrop-blur-xs shadow-2xs">
                     <i className="ri-time-line" />
-                    {new Date(featuredEvent.startTime).toLocaleTimeString([], {
-                      hour: "2-digit",
+                    {new Date(featuredEvent.startTime).toLocaleTimeString("en-US", {
+                      hour: "numeric",
                       minute: "2-digit",
+                      hour12: true,
                     })}
                   </span>
                   <span className="inline-flex items-center gap-1 bg-white/85 dark:bg-neutral-900/80 px-2.5 py-1 rounded-xl backdrop-blur-xs shadow-2xs">

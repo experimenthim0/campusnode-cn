@@ -104,7 +104,7 @@ const EventRejectionModal = ({
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h3 id="reject-event-title" className="text-base font-semibold text-foreground leading-tight truncate">
+              <h3 id="reject-event-title" className="text-base font-medium text-foreground leading-tight truncate">
                 Reject Event Proposal
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -129,10 +129,10 @@ const EventRejectionModal = ({
           {/* Target Event Context */}
           <div className="p-3 rounded-xl bg-muted/40 border border-border/80 text-xs flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">
                 Target Event
               </span>
-              <p className="font-semibold text-foreground truncate mt-0.5">
+              <p className="font-medium text-foreground truncate mt-0.5">
                 {title}
               </p>
             </div>
@@ -166,7 +166,7 @@ const EventRejectionModal = ({
           {/* Reason Input */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="rejection-reason" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <label htmlFor="rejection-reason" className="text-xs font-medium text-foreground flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-destructive" />
                 <span>Rejection Reason / Required Changes</span>
                 <span className="text-destructive">*</span>
@@ -206,7 +206,7 @@ const EventRejectionModal = ({
               size="sm"
               disabled={submitting}
               onClick={onClose}
-              className="h-9 px-4 text-xs font-semibold rounded-xl cursor-pointer"
+              className="h-9 px-4 text-xs font-medium rounded-xl cursor-pointer"
             >
               Cancel
             </Button>
@@ -215,7 +215,7 @@ const EventRejectionModal = ({
               variant="destructive"
               size="sm"
               disabled={submitting || !reason.trim()}
-              className="h-9 px-4 text-xs font-semibold rounded-xl cursor-pointer shadow-xs gap-1.5"
+              className="h-9 px-4 text-xs font-medium rounded-xl cursor-pointer shadow-xs gap-1.5"
             >
               {submitting ? (
                 <>

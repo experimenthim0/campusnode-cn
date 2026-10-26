@@ -183,7 +183,7 @@ const css = `
 
 function Wordmark({ className = '' }) {
   return (
-    <span className={`font-black tracking-tight select-none ${className}`}>
+    <span className={`font-medium tracking-tight select-none ${className}`}>
       <span className="text-neutral-900 dark:text-white tracking-wider logofont">Campusnode</span>
       
     </span>
@@ -211,11 +211,11 @@ function NodeCard({ node, isHovered, onHover, onLeave }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <h3 className="text-[clamp(10px,1.55cqw,15px)] font-black uppercase tracking-widest text-neutral-950 dark:text-white">
+          <h3 className="text-[clamp(10px,1.55cqw,15px)] font-medium uppercase tracking-widest text-neutral-950 dark:text-white">
             {title}
           </h3>
           {badge && (
-            <span className="text-[clamp(8px,0.95cqw,10px)] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-[#0a7cff] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
+            <span className="text-[clamp(8px,0.95cqw,10px)] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-[#0a7cff] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
               {badge}
             </span>
           )}
@@ -402,15 +402,15 @@ export default function CampusNodeDiagram({ className = '' }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-neutral-950 dark:text-white">
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-neutral-950 dark:text-white">
                       {n.title}
                     </h3>
                     {n.badge ? (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-[#0a7cff] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
+                      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-[#0a7cff] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
                         {n.badge}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-[#0a7cff] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[11px] text-[#0a7cff] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         View &rarr;
                       </span>
                     )}

@@ -228,7 +228,7 @@ const RegistrationTermsNotice = ({
           >
             <h3
               className="
-                text-[13px] font-semibold
+                text-[13px] font-medium
                 text-neutral-900 dark:text-white
               "
             >

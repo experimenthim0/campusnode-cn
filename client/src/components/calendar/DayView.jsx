@@ -68,7 +68,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
     <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="p-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black text-black dark:text-white">
+          <h2 className="text-lg font-medium text-black dark:text-white">
             {currentDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </h2>
           <p className="text-xs text-neutral-400 font-medium">
@@ -84,7 +84,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
           {HOURS.map((h) => (
             <div
               key={h}
-              className="h-[70px] pr-3 flex items-start justify-end text-xs font-semibold text-neutral-400 pt-1"
+              className="h-[70px] pr-3 flex items-start justify-end text-xs font-medium text-neutral-400 pt-1"
             >
               {formatHour(h)}
             </div>
@@ -114,12 +114,12 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
               <div
                 key={b.id || b._id}
                 style={style}
-                className="absolute left-3 right-3 z-10 bg-rose-500/15 border-2 border-rose-500/40 rounded-2xl p-3 text-xs font-semibold text-rose-600 dark:text-rose-400 flex flex-col justify-between"
+                className="absolute left-3 right-3 z-10 bg-rose-500/15 border-2 border-rose-500/40 rounded-2xl p-3 text-xs font-medium text-rose-600 dark:text-rose-400 flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2">
                   <AlertTriangle size={16} className="text-rose-500 shrink-0" />
                   <div>
-                    <p className="font-extrabold uppercase tracking-wide">{b.venue} BLACKOUT</p>
+                    <p className="font-medium uppercase tracking-wide">{b.venue} BLACKOUT</p>
                     <p className="opacity-90">{b.title}</p>
                   </div>
                 </div>
@@ -133,8 +133,8 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
             const category = event.club?.category || "Technical";
             const colorClass = CATEGORY_COLORS[category] || CATEGORY_COLORS.DEFAULT;
 
-            const startStr = new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            const endStr = new Date(event.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            const startStr = new Date(event.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+            const endStr = new Date(event.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
             return (
               <div
@@ -145,18 +145,18 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h4 className="font-extrabold text-sm text-black dark:text-white leading-tight">
+                    <h4 className="font-medium text-sm text-black dark:text-white leading-tight">
                       {event.title}
                     </h4>
                     <p className="text-xs opacity-80">{event.club?.clubName}</p>
                   </div>
 
-                  <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-zinc-700">
+                  <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-[11px] font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-zinc-700">
                     {event.venue}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-black/5 dark:border-white/5">
+                <div className="flex items-center justify-between text-xs font-medium pt-2 border-t border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-1.5 opacity-90">
                     <Clock size={13} />
                     <span>
@@ -164,7 +164,7 @@ const DayView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =>
                     </span>
                   </div>
 
-                  <span className="text-[11px] uppercase tracking-wider font-extrabold">
+                  <span className="text-[11px] uppercase tracking-wider font-medium">
                     {event.reviewStatus}
                   </span>
                 </div>

@@ -80,7 +80,7 @@ const DayEventsOverviewModal = ({
             <div className="min-w-0">
               <h3
                 id="day-events-title"
-                className="text-base font-semibold leading-snug text-cn-text sm:text-lg"
+                className="text-base font-medium leading-snug text-cn-text sm:text-lg"
               >
                 {dateHeading}
               </h3>
@@ -132,14 +132,16 @@ const DayEventsOverviewModal = ({
                 : null;
 
               const timeString = start
-                ? `${start.toLocaleTimeString([], {
+                ? `${start.toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "2-digit",
+                    hour12: true,
                   })}${
                     end
-                      ? ` – ${end.toLocaleTimeString([], {
+                      ? ` – ${end.toLocaleTimeString("en-US", {
                           hour: "numeric",
                           minute: "2-digit",
+                          hour12: true,
                         })}`
                       : ""
                   }`
@@ -186,7 +188,7 @@ const DayEventsOverviewModal = ({
                   </div>
 
                   {/* Event Title */}
-                  <h4 className="break-words text-[15px] font-semibold leading-snug text-cn-text sm:text-base">
+                  <h4 className="break-words text-[15px] font-medium leading-snug text-cn-text sm:text-base">
                     {event.title}
                   </h4>
 

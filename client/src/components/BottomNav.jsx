@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Users, Calendar, User, Shield, ShieldCheck, X, Sun, Moon, Package, Monitor, Download, Smartphone, ChevronDown } from "lucide-react";
+import { Home, Users, Calendar, User, Shield, ShieldCheck, X, Sun, Moon, Package, Monitor, Download, Smartphone, ChevronDown, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePwaInstall } from "../hooks/usePwaInstall";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { CalendarDaysIcon } from "./ui/calendar-days";
 import { IndianRupeeIcon } from "./ui/indian-rupee";
 import { ConciergeBellIcon } from "./ui/concierge-bell";
@@ -48,6 +49,15 @@ const BottomNav = () => {
   } = useTheme();
 
   const { user, role, logout } = useAuth();
+  const { unreadCount, notifications } = useSocket() || {};
+
+  const currentUserId = user?._id || user?.id;
+  const computedUnread = typeof unreadCount === "number" && unreadCount > 0
+    ? unreadCount
+    : (Array.isArray(notifications) && currentUserId
+        ? notifications.filter((n) => !(n.readBy || []).includes(currentUserId)).length
+        : 0);
+  const hasUnread = computedUnread > 0;
 
   const userImage = user?.profileImage || user?.picture || user?.clubLogo || user?.avatar || null;
 
@@ -97,7 +107,6 @@ const BottomNav = () => {
     { label: "Home", icon: Home, path: "/" },
     { label: "Clubs", icon: Users, path: "/clubs" },
     { label: "Events", icon: Calendar, path: "/events" },
-    // 
   ];
 
   if (user && (role === "admin" || role === "paymentAdmin")) {
@@ -116,6 +125,7 @@ const BottomNav = () => {
         image: userImage,
         action: () => setDrawerOpen(true),
         isActiveCheck: drawerOpen,
+        hasDot: hasUnread,
       }
       : { label: "Login", icon: LogInIcon, path: "/login" }
   );
@@ -141,27 +151,35 @@ const BottomNav = () => {
                     } ${active
                       ? hasImage
                         ? "scale-110"
-                        : "scale-110 text-brand-600 dark:bg-brand-950/40"
-                      : "text-cn-text-muted hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
+                        : "scale-110 text-brand-600 dark:text-brand-300 dark:bg-brand-950/40"
+                      : "text-cn-text-muted hover:text-brand-600 dark:hover:text-brand-300"
                     }`}
                 >
-                  {hasImage ? (
-                    <img
-                      src={item.image}
-                      alt={user?.name || item.label}
-                      className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${active
-                          ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-neutral-900"
-                          : "border border-neutral-300 dark:border-neutral-700"
-                        }`}
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <Icon size={24} strokeWidth={active ? 2.5 : 2} />
-                  )}
+                  <div className="relative flex items-center justify-center">
+                    {hasImage ? (
+                      <img
+                        src={item.image}
+                        alt={user?.name || item.label}
+                        className={`w-7 h-7 rounded-full object-cover shrink-0 transition-all duration-300 ${active
+                            ? "ring-2 ring-brand-600 ring-offset-1 dark:ring-offset-neutral-900"
+                            : "border border-neutral-300 dark:border-neutral-700"
+                          }`}
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      <Icon size={24} strokeWidth={active ? 1.5 : 1} />
+                    )}
+                    {item.hasDot && (
+                      <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 pointer-events-none z-10" aria-label="Unread notifications">
+                        <span className=" absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-neutral-900"></span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <span
-                  className={`text-[10px] tracking-wide transition-all duration-300 ${active
-                      ? "font-semibold text-black dark:text-white"
+                  className={`text-[11px] leading-tight transition-all duration-300 ${active
+                      ? "font-medium text-brand-600 dark:text-brand-300"
                       : "font-medium text-cn-text-muted"
                     }`}
                 >
@@ -208,7 +226,7 @@ const BottomNav = () => {
           {/* Drawer Content */}
           <div
             ref={drawerRef}
-            className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#121212] rounded-t-2xl shadow-xl border-t border-cn-border transition-transform duration-300 ease-in-out md:hidden pb-[env(safe-area-inset-bottom)] max-h-[85dvh] flex flex-col ${drawerOpen ? "translate-y-0" : "translate-y-full"
+            className={`fixed bottom-0 left-0 right-0 z-50 bg-cn-surface dark:bg-cn-surface-card rounded-t-2xl shadow-xl border-t border-cn-border transition-transform duration-300 ease-in-out md:hidden pb-[env(safe-area-inset-bottom)] max-h-[85dvh] flex flex-col ${drawerOpen ? "translate-y-0" : "translate-y-full"
               }`}
           >
             {/* Drawer Handle */}
@@ -216,11 +234,11 @@ const BottomNav = () => {
               <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full" />
             </div>
 
-            <div className="flex justify-between items-center px-5 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex justify-between items-center px-5 pb-3 border-b border-cn-border">
               <div>
-                <p className="text-[11px] font-semibold tracking-widest text-neutral-400 mb-0.5">Logged in as</p>
-                <p className="text-base font-medium text-black dark:text-white">{user.name}</p>
-                <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-500 font-semibold mt-0.5">
+                <p className="text-[11px] font-medium tracking-widest text-cn-text-muted mb-0.5">Logged in as</p>
+                <p className="text-base font-medium text-cn-text">{user.name}</p>
+                <p className="text-[11px] tracking-widest text-brand-600 dark:text-brand-400 font-medium mt-0.5">
                   {Boolean(user?.rollNo || user?.branch || user?.expectedGraduationYear || user?.academicYear || user?.year || role === 'student' || role === 'member')
                     ? user?.memberships?.some(m => m.role === "CLUB_HEAD")
                       ? "Student • Student Lead"
@@ -249,6 +267,20 @@ const BottomNav = () => {
                   <User size={16} />
                 </div>
                 My Profile
+              </Link>
+
+              <Link to="/notifications" onClick={() => setDrawerOpen(false)} className="flex items-center justify-between px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shrink-0">
+                    <Bell size={16} />
+                  </div>
+                  Notifications
+                </div>
+                {hasUnread && (
+                  <span className="px-2 py-0.5 text-[10px] font-medium bg-red-500 text-white rounded-full">
+                    {computedUnread > 99 ? '99+' : computedUnread}
+                  </span>
+                )}
               </Link>
 
               {/* My Events (Visible for all students, leads & coordinators; hidden for pure official club accounts) */}
@@ -287,7 +319,7 @@ const BottomNav = () => {
 
               {(role === "club" || Boolean(user?.clubId) || (user?.memberships && user.memberships.length > 0) || role === "facultyCoordinator") && (
                 <div className="mt-1.5 pt-1.5 border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  <p className="px-3 pt-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Management
                   </p>
 
@@ -384,11 +416,11 @@ const BottomNav = () => {
                                 <button
                                   type="button"
                                   onClick={() => setOpenClubId(isOpen ? "" : clubId)}
-                                  className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-semibold transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
+                                  className="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-medium transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
                                     <div className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
-                                    <span className="truncate text-neutral-900 dark:text-neutral-100 font-semibold text-xs">
+                                    <span className="truncate text-neutral-900 dark:text-neutral-100 font-medium text-xs">
                                       {m.clubName || "Club"}
                                     </span>
                                     <span className="text-[9px] px-1.5 py-0.5 rounded-xl bg-brand-200/40 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-medium shrink-0">
@@ -480,7 +512,7 @@ const BottomNav = () => {
 
                     return (
                       <div key={clubId} className="space-y-0.5 mb-1.5 last:mb-0">
-                        <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                        <p className="px-3 pt-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400">
                           {m.clubName || "Club"}
                         </p>
 
@@ -530,7 +562,7 @@ const BottomNav = () => {
 
                   {role === "facultyCoordinator" && user.clubId && (!user.memberships || !user.memberships.find((m) => m.clubId === user.clubId)) && (
                     <div className="space-y-0.5 mb-2">
-                      <p className="px-3 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                      <p className="px-3 pt-1 pb-1 text-[11px] font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400">
                         Faculty Review
                       </p>
                       <Link to="/my-events" onClick={() => setDrawerOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium text-black dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-colors">
@@ -557,17 +589,17 @@ const BottomNav = () => {
               )}
             </div>
 
-            <div className="px-4 py-2.5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#121212]">
+            <div className="px-4 py-2.5 border-t border-cn-border bg-neutral-50 dark:bg-cn-surface">
               <div className="rounded-2xl mb-1.5">
-                <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-neutral-200/80 dark:bg-[#181818] border border-neutral-300/40 dark:border-neutral-800/80 p-1">
+                <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-neutral-200/80 dark:bg-cn-surface-elevated border border-neutral-300/40 dark:border-cn-border p-1">
 
                   {/* Light */}
                   <button
                     type="button"
                     onClick={(e) => setTheme("light", e)}
                     className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "light"
-                        ? "text-neutral-900 font-semibold"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+                        ? "text-neutral-900 font-medium"
+                        : "text-cn-text-muted hover:text-cn-text"
                       }`}
                   >
                     {theme === "light" && (
@@ -586,8 +618,8 @@ const BottomNav = () => {
                     type="button"
                     onClick={(e) => setTheme("dark", e)}
                     className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "dark"
-                        ? "text-neutral-900 font-semibold"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+                        ? "text-neutral-900 font-medium"
+                        : "text-cn-text-muted hover:text-cn-text"
                       }`}
                   >
                     {theme === "dark" && (
@@ -606,14 +638,14 @@ const BottomNav = () => {
                     type="button"
                     onClick={(e) => setTheme("system", e)}
                     className={`relative flex flex-row items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors duration-150 cursor-pointer select-none z-10 ${theme === "system" || !theme
-                        ? "text-neutral-900 dark:text-white font-semibold"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+                        ? "text-neutral-900 dark:text-white font-medium"
+                        : "text-cn-text-muted hover:text-cn-text"
                       }`}
                   >
                     {(theme === "system" || !theme) && (
                       <motion.div
                         layoutId="bottomNavThemePill"
-                        className="absolute inset-0 bg-white dark:bg-[#252525] rounded-lg shadow-xs -z-10"
+                        className="absolute inset-0 bg-white dark:bg-cn-surface-card rounded-lg shadow-xs -z-10"
                         transition={{ type: "spring", stiffness: 420, damping: 30 }}
                       />
                     )}
@@ -626,14 +658,14 @@ const BottomNav = () => {
 
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 dark:bg-red-950/25 text-red-600 dark:text-red-400 font-semibold text-sm rounded-xl hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-danger-50 dark:bg-danger-950/25 text-danger-600 dark:text-danger-400 font-medium text-sm rounded-xl hover:bg-danger-100 dark:hover:bg-danger-950/50 transition-colors"
               >
                 <LogoutIcon size={18} />
                 Logout
               </button>
-              <span className="text-center text-[10px] text-neutral-500 font-medium mt-2 block select-none">
-                <span className="logofont tracking-wider font-light text-[18px] text-black dark:text-neutral-200">Campusnode</span>
-                <span className="block mt-0.5 text-[9px] text-neutral-400">Developed By Team Xplore</span>
+              <span className="text-center text-[10px] text-cn-text-muted font-medium mt-2 block select-none">
+                <span className="logofont tracking-wider font-light text-[18px] text-cn-text">Campusnode</span>
+                <span className="block mt-0.5 text-[9px] text-cn-text-muted">Developed By Team Xplore</span>
               </span>
             </div>
           </div>

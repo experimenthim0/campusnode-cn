@@ -253,23 +253,22 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
       {/* Page Header - Hide if on Home */}
       {!isHome && (
         <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
+          <h1 className="text-page-title text-cn-text mb-2">
             NITJ Clubs & Societies
           </h1>
-         
         </div>
       )}
 
       {(!isHome || showFilters) && (
         <div className="mb-8 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs overflow-hidden">
           <div className="relative group">
-            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
+            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-cn-text-muted group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
               type="text"
               placeholder="Search clubs by name, category, faculty, or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-zinc-900/60 border border-neutral-200 dark:border-zinc-800 rounded-xl focus:bg-white dark:focus:bg-zinc-900 focus:border-brand-600 dark:focus:border-brand-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
+              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl focus:bg-cn-surface focus:border-brand-600 text-body text-cn-text placeholder-cn-text-muted outline-none transition-all"
             />
             {searchQuery && (
               <button
@@ -289,7 +288,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
                 <button
                   key={cat.key}
                   onClick={() => setFilterCategory(cat.key)}
-                  className={` inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                  className={` inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 text-[10px] sm:text-[11px] font-medium tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
                     isSelected
                       ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
@@ -304,14 +303,14 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
 
           {isFilterActive && (
             <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
-              <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-semibold truncate pr-2">
+              <span className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-medium truncate pr-2">
                 {filteredClubs.length} club{filteredClubs.length !== 1 ? "s" : ""} found
                 {searchQuery && <span className="text-brand-600 dark:text-brand-400 ml-1">for "{searchQuery}"</span>}
                 {filterCategory !== "ALL" && <span className="text-brand-600 dark:text-brand-400 ml-1">in category "{filterCategory}"</span>}
               </span>
               <button
                 onClick={handleClearFilters}
-                className="mysans font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                className="mysans font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
               >
                 <i className="ri-close-line" /> Clear
               </button>
@@ -325,7 +324,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center mx-auto mb-4 overflow-hidden">
             <img className="w-full h-full object-contain drop-shadow-xs" src={randomCat} alt="No clubs found" />
           </div>
-          <h3 className="text-base sm:text-lg font-extrabold text-neutral-900 dark:text-white mb-1 tracking-tight">
+          <h3 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-white mb-1 tracking-tight">
             {clubs.length === 0 ? "No Clubs Found" : "No Matching Clubs Found"}
           </h3>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-4 leading-relaxed font-light">
@@ -337,7 +336,7 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
           {isFilterActive && filteredClubs.length === 0 && (
             <button
               onClick={handleClearFilters}
-              className="mysans text-brand-600 dark:text-brand-400 font-semibold uppercase tracking-widest text-[10px] sm:text-[11px] hover:underline cursor-pointer inline-flex items-center gap-1"
+              className="mysans text-brand-600 dark:text-brand-400 font-medium uppercase tracking-widest text-[10px] sm:text-[11px] hover:underline cursor-pointer inline-flex items-center gap-1"
             >
               <i className="ri-refresh-line text-xs" /> Clear all filters
             </button>
@@ -378,11 +377,11 @@ const ClubsPage = ({ isHome = false, showFilters = false }) => {
   );
 
   if (isHome) {
-    return <div className="myfont w-full">{content}</div>;
+    return <div className="w-full">{content}</div>;
   }
 
   return (
-    <div className="myfont min-h-screen bg-cn-bg transition-colors duration-300">
+    <div className="min-h-screen bg-cn-bg transition-colors duration-300">
       <Section className="py-10 sm:py-12 lg:py-16">
         {content}
       </Section>

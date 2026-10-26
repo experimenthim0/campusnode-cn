@@ -92,6 +92,7 @@ const AppLayout = () => {
   const location = useLocation();
   const isDashboardRoute = isSidebarRoute(location.pathname);
   const isAuth = isAuthRoute(location.pathname);
+  const isHome = location.pathname === "/" || location.pathname === "";
 
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -155,7 +156,7 @@ const AppLayout = () => {
       <div className="flex-1">
         <Outlet />
       </div>
-      <Footer />
+      {!isHome && <Footer />}
       {!isAuth && <BottomNav />}
     </div>
   );

@@ -523,7 +523,7 @@ const ClubMembers = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-medium text-foreground">
             Team Management Restricted
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
@@ -551,12 +551,7 @@ const ClubMembers = () => {
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <Link
-            to={`/club-events/${clubId}`}
-            className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Club Events
-          </Link>
+          
           <h1 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">Team Management</h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
             Manage club members, leadership designations, and event editing permissions.
@@ -1083,7 +1078,7 @@ const ClubMembers = () => {
                   <Crown className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-foreground">Transfer Leadership</h3>
+                  <h3 className="text-base font-medium text-foreground">Transfer Leadership</h3>
                   <p className="text-xs text-muted-foreground">Select a club member to become the new Student Lead</p>
                 </div>
               </div>

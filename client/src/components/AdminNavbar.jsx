@@ -14,14 +14,14 @@ const AdminNavbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-surface border-b border-cn-border myfont">
+    <nav className="sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-surface border-b border-cn-border">
       <div className="max-w-full mx-auto px-5 lg:px-8 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 sm:gap-4">
           <img src="/nitjlogo.png" alt="NITJ Logo" className="w-9 h-10" />
           <span className="text-[22px] tracking-wider text-cn-text leading-none select-none logofont">
             Campusnode
           </span>
-          <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-cn-surface-muted text-cn-text-muted text-[9px] font-semibold uppercase tracking-[0.15em] rounded-md">
+          <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-cn-surface-muted text-cn-text-muted text-[10px] font-medium uppercase tracking-[0.15em] rounded-md">
             Admin
           </span>
         </div>
@@ -30,7 +30,7 @@ const AdminNavbar = () => {
           {/* Visit Website */}
           <button
             onClick={handleVisitWebsite}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium tracking-wide text-cn-text-secondary rounded-lg hover:bg-cn-surface-muted hover:text-cn-text transition-all duration-150 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-nav text-cn-text-secondary rounded-lg hover:bg-cn-surface-muted hover:text-cn-text transition-all duration-150 cursor-pointer"
             title="Open website in new tab"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -44,13 +44,12 @@ const AdminNavbar = () => {
           {/* Theme toggle */}
           <ThemeToggle size="sm" />
 
-
           <div className="w-px h-5 bg-cn-border" />
 
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium tracking-wide text-cn-text-secondary rounded-lg hover:bg-danger-50 dark:hover:bg-danger-950/20 hover:text-danger-600 dark:hover:text-danger-400 transition-all duration-150 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-nav text-cn-text-secondary rounded-lg hover:bg-danger-50 dark:hover:bg-danger-950/20 hover:text-danger-600 dark:hover:text-danger-400 transition-all duration-150 cursor-pointer"
             title="Secure Logout"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

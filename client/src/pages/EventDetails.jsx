@@ -11,6 +11,8 @@ import '../components/WysiwygMarkdownEditor.css';
 import { useNotification } from '../context/NotificationContext';
 import CalendarDropdown from '../components/CalendarDropdown';
 import PaymentModal from '../components/PaymentModal';
+import EventCard from '../components/EventCard';
+import EventCardSkeleton from '../components/skeletons/EventCardSkeleton';
 import { getPublicJson } from '../lib/publicDataCache';
 import { cachedFetch, getEventTTL, invalidateCache } from '../lib/cacheManager';
 import { prefetchClubDetail } from '../lib/prefetchManager';
@@ -23,6 +25,7 @@ import { EarthIcon } from "@/components/ui/earth";
 import { hasPermission, PERMISSIONS } from '../utils/rbac';
 import ShimmerText from '../components/ShimmerText';
 import ImageZoomModal from '../components/ImageZoomModal';
+import { getMissingSocialFields } from '../utils/socialFields';
 import { formatAcademicYear } from '../utils/academicProgress';
 import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
 import ScrollReveal from '../components/ScrollReveal';
@@ -73,6 +76,128 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
 );
 
 
+const calculateSimilarEvents = (currentEvent, allCandidates) => {
+  if (!currentEvent || !Array.isArray(allCandidates)) return [];
+
+  const currentId = String(currentEvent.id || currentEvent._id || '');
+  const currentSlug = String(currentEvent.slug || '').toLowerCase();
+
+  const currentCategory = String(
+    currentEvent.category ||
+    currentEvent.club?.category ||
+    currentEvent.organizers?.[0]?.club?.category ||
+    ''
+  ).trim().toLowerCase();
+
+  const currentClubIds = new Set();
+  if (currentEvent.clubId) currentClubIds.add(String(currentEvent.clubId));
+  if (currentEvent.club?.id) currentClubIds.add(String(currentEvent.club.id));
+  if (currentEvent.club?._id) currentClubIds.add(String(currentEvent.club._id));
+  if (currentEvent.createdBy?.id) currentClubIds.add(String(currentEvent.createdBy.id));
+  if (currentEvent.createdBy?._id) currentClubIds.add(String(currentEvent.createdBy._id));
+  if (Array.isArray(currentEvent.organizers)) {
+    currentEvent.organizers.forEach((o) => {
+      if (o?.club?.id) currentClubIds.add(String(o.club.id));
+      if (o?.club?._id) currentClubIds.add(String(o.club._id));
+      if (o?.clubId) currentClubIds.add(String(o.clubId));
+    });
+  }
+
+  const currentStart = currentEvent.startTime ? new Date(currentEvent.startTime).getTime() : null;
+  const now = Date.now();
+
+  const scored = [];
+
+  for (const cand of allCandidates) {
+    if (!cand) continue;
+    const candId = String(cand.id || cand._id || '');
+    const candSlug = String(cand.slug || '').toLowerCase();
+
+    // 1. Exclude the current event
+    if (candId && currentId && candId === currentId) continue;
+    if (candSlug && currentSlug && candSlug === currentSlug) continue;
+
+    // 2. Exclude non-published events
+    if (cand.reviewStatus && cand.reviewStatus !== 'PUBLISHED') continue;
+
+    let score = 0;
+
+    // 3. Category match (+60 exact, +25 partial)
+    const candCategory = String(
+      cand.category ||
+      cand.club?.category ||
+      cand.organizers?.[0]?.club?.category ||
+      ''
+    ).trim().toLowerCase();
+
+    if (currentCategory && candCategory) {
+      if (currentCategory === candCategory) {
+        score += 60;
+      } else if (currentCategory.includes(candCategory) || candCategory.includes(currentCategory)) {
+        score += 25;
+      }
+    }
+
+    // 4. Same club / organizer (+35)
+    const candClubIds = [
+      cand.clubId,
+      cand.club?.id,
+      cand.club?._id,
+      cand.createdBy?.id,
+      cand.createdBy?._id,
+      ...(Array.isArray(cand.organizers)
+        ? cand.organizers.flatMap((o) => [o?.club?.id, o?.club?._id, o?.clubId])
+        : []),
+    ].filter(Boolean).map(String);
+
+    if (candClubIds.some((cId) => currentClubIds.has(cId))) {
+      score += 35;
+    }
+
+    // 5. Nearby date proximity (+50 <= 3 days, +40 <= 7 days, +28 <= 14 days, +18 <= 30 days, +10 <= 60 days, +5 <= 90 days)
+    const candStart = cand.startTime ? new Date(cand.startTime).getTime() : null;
+    let diffDays = 9999;
+    if (currentStart && candStart && !isNaN(currentStart) && !isNaN(candStart)) {
+      diffDays = Math.abs(currentStart - candStart) / (1000 * 60 * 60 * 24);
+      if (diffDays <= 3) {
+        score += 50;
+      } else if (diffDays <= 7) {
+        score += 40;
+      } else if (diffDays <= 14) {
+        score += 28;
+      } else if (diffDays <= 30) {
+        score += 18;
+      } else if (diffDays <= 60) {
+        score += 10;
+      } else if (diffDays <= 90) {
+        score += 5;
+      }
+    }
+
+    // 6. Active / upcoming status relevance boost (+20)
+    const isUpcomingOrLive = cand.status === 'UPCOMING' || cand.status === 'LIVE' || (candStart && candStart >= now);
+    if (isUpcomingOrLive) {
+      score += 20;
+    }
+
+    scored.push({
+      event: cand,
+      score,
+      diffDays,
+      candStart: candStart || 0,
+    });
+  }
+
+  // Sort: highest score first, then closest date, then upcoming start time
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (a.diffDays !== b.diffDays) return a.diffDays - b.diffDays;
+    return b.candStart - a.candStart;
+  });
+
+  return scored.slice(0, 3).map((item) => item.event);
+};
+
 const EventDetails = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -89,8 +214,13 @@ const EventDetails = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [customFormResponses, setCustomFormResponses] = useState({});
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [registeredEventIds, setRegisteredEventIds] = useState(new Set());
+  const [similarEvents, setSimilarEvents] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isTeamRegistrationSuccess, setIsTeamRegistrationSuccess] = useState(false);
+  const [registeredTeamInfo, setRegisteredTeamInfo] = useState(null);
   const [registrationPaymentStatus, setRegistrationPaymentStatus] = useState(null);
   const [postRegMessage, setPostRegMessage] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
@@ -235,6 +365,8 @@ const EventDetails = () => {
   }, [searchQuery, teammates]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    setAlreadyRegistered(false);
     const fetchEvent = async () => {
       try {
         const url = `/api/events/${slug}`;
@@ -261,9 +393,15 @@ const EventDetails = () => {
         if (user && (role === 'member' || role === 'student' || role === 'faculty' || role === 'facultyCoordinator' || role === 'external')) {
           getUserEvents(user.id || user._id)
             .then((regRes) => {
-              const eventId = eventData.id || eventData._id;
-              const isAlreadyReg = regRes.data?.some(r => r.eventId && (r.eventId.id === eventId || r.eventId._id === eventId));
-              if (isAlreadyReg) {
+              const eventId = String(eventData.id || eventData._id || '');
+              const userRegIds = new Set(
+                (regRes.data || [])
+                  .map((r) => r.eventId && (r.eventId.id || r.eventId._id || (typeof r.eventId === 'string' ? r.eventId : null)))
+                  .filter(Boolean)
+                  .map(String)
+              );
+              setRegisteredEventIds(userRegIds);
+              if (userRegIds.has(eventId)) {
                 setAlreadyRegistered(true);
               }
             })
@@ -278,6 +416,65 @@ const EventDetails = () => {
     };
     fetchEvent();
   }, [slug]);
+
+  // Load and score similar events (same category, nearby date, same club/organizer)
+  useEffect(() => {
+    if (!event) return;
+    let isMounted = true;
+
+    const fetchSimilar = async () => {
+      setLoadingSimilar(true);
+      try {
+        const poolMap = new Map();
+
+        // 1. Fetch general published pool
+        const generalRes = await getPublicJson('/api/events?limit=50&status=ALL');
+        const generalEvents = Array.isArray(generalRes)
+          ? generalRes
+          : (Array.isArray(generalRes?.events) ? generalRes.events : []);
+        generalEvents.forEach((e) => {
+          const key = String(e.id || e._id);
+          if (key) poolMap.set(key, e);
+        });
+
+        // 2. Fetch category-specific pool if category is known to enrich candidate set
+        const cat = event.category || event.club?.category || event.organizers?.[0]?.club?.category;
+        if (cat && cat.toUpperCase() !== 'ALL') {
+          try {
+            const catRes = await getPublicJson(`/api/events?category=${encodeURIComponent(cat)}&limit=20`);
+            const catEvents = Array.isArray(catRes)
+              ? catRes
+              : (Array.isArray(catRes?.events) ? catRes.events : []);
+            catEvents.forEach((e) => {
+              const key = String(e.id || e._id);
+              if (key) poolMap.set(key, e);
+            });
+          } catch {
+            // Category query enrichment is optional
+          }
+        }
+
+        const allCandidates = Array.from(poolMap.values());
+        const topSimilar = calculateSimilarEvents(event, allCandidates);
+
+        if (isMounted) {
+          setSimilarEvents(topSimilar);
+        }
+      } catch (err) {
+        console.error('Failed to load similar events:', err);
+      } finally {
+        if (isMounted) {
+          setLoadingSimilar(false);
+        }
+      }
+    };
+
+    fetchSimilar();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [event?.id, event?.slug, event?.category, event?.club?.category]);
 
   useEffect(() => {
     if (event) {
@@ -332,13 +529,21 @@ const EventDetails = () => {
         if (res.data.status === 'WAITLISTED') {
           showNotification('Your team has been added to the waitlist.', 'info');
         } else {
-          showNotification(`Successfully registered team ${paymentPayload.teamName}!`, 'success');
+          showNotification(`Team "${paymentPayload.teamName}" created! Invitations sent to all members. Your team registration will be confirmed once they accept.`, 'success');
         }
         setPaymentModalOpen(false);
         setRegistrationPaymentStatus(res.data.paymentStatus || 'PENDING');
+        setIsTeamRegistrationSuccess(true);
+        setRegisteredTeamInfo({
+          teamName: paymentPayload.teamName,
+          teammates: paymentPayload.teammates || teammates || [],
+          minTeamSize: event.minTeamSize || 1,
+        });
         setPostRegMessage(res.data.postRegistrationMessage || event.postRegistrationMessage || null);
         setShowSuccessModal(true);
       } else {
+        setIsTeamRegistrationSuccess(false);
+        setRegisteredTeamInfo(null);
         // Individual registration
         const registerBody = {
           studentId: paymentPayload.studentId || null,
@@ -407,6 +612,8 @@ const EventDetails = () => {
       if (res.data.status === 'WAITLISTED') {
         showNotification('You have been added to the waitlist.', 'info');
       } else if (res.data.status === 'REGISTERED') {
+        setIsTeamRegistrationSuccess(false);
+        setRegisteredTeamInfo(null);
         setRegistrationId(res.data.qrCode);
         setRegistrationPaymentStatus(res.data.paymentStatus || 'SUCCESS');
         setPostRegMessage(res.data.postRegistrationMessage || event.postRegistrationMessage || null);
@@ -483,7 +690,7 @@ const EventDetails = () => {
     }
 
     if (!isFacultyUser && event.requiredFields && event.requiredFields.length > 0) {
-      const missing = event.requiredFields.filter(field => !user[field]);
+      const missing = getMissingSocialFields(user, event.requiredFields);
       if (missing.length > 0) {
         setMissingFields(missing);
         setMissingFieldsModalOpen(true);
@@ -559,10 +766,16 @@ const EventDetails = () => {
       if (res.data.status === 'WAITLISTED') {
         showNotification('Your team has been added to the waitlist.', 'info');
       } else {
-        showNotification(`Successfully registered team ${teamName}!`, 'success');
+        showNotification(`Team "${teamName}" created! Invitations sent to all members. Your team registration will be confirmed once they accept.`, 'success');
       }
       setTeamModalOpen(false);
       setRegistrationPaymentStatus('SUCCESS');
+      setIsTeamRegistrationSuccess(true);
+      setRegisteredTeamInfo({
+        teamName: teamName,
+        teammates: teammates || [],
+        minTeamSize: event.minTeamSize || 1,
+      });
       setPostRegMessage(res.data.postRegistrationMessage || event.postRegistrationMessage || null);
       setShowSuccessModal(true);
     } catch (err) {
@@ -681,7 +894,7 @@ const EventDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-cn-bg flex items-center justify-center">
-        <ShimmerText text="Loading event..." className="text-sm font-semibold uppercase tracking-[0.2em]" />
+        <ShimmerText text="Loading event..." className="text-sm font-medium uppercase tracking-[0.2em]" />
       </div>
     );
   }
@@ -840,15 +1053,15 @@ const EventDetails = () => {
       answer: (
         <span>
           The event starts on{' '}
-          <strong className="font-semibold text-black dark:text-white">
-            {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+          <strong className="font-medium text-black dark:text-white">
+            {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
           </strong>{' '}
           and ends on{' '}
-          <strong className="font-semibold text-black dark:text-white">
-            {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+          <strong className="font-medium text-black dark:text-white">
+            {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
           </strong>
           . It will be held at{' '}
-          <strong className="font-semibold text-black dark:text-white">
+          <strong className="font-medium text-black dark:text-white">
             {venue}
           </strong>.
         </span>
@@ -861,8 +1074,8 @@ const EventDetails = () => {
           {registrationDeadline ? (
             <>
               Registration closes on{' '}
-              <strong className="font-semibold text-black dark:text-white">
-                {new Date(registrationDeadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(registrationDeadline).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+              <strong className="font-medium text-black dark:text-white">
+                {new Date(registrationDeadline).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })} at {new Date(registrationDeadline).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
               </strong>.{' '}
             </>
           ) : (
@@ -871,7 +1084,7 @@ const EventDetails = () => {
           {(event.registrationFee > 0 || entryFee > 0) ? (
             <>
               The entry fee is{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 ₹{event.registrationFee || entryFee}
               </strong>{' '}
               (non-refundable), payable securely via the event's designated payment method.{' '}
@@ -879,7 +1092,7 @@ const EventDetails = () => {
           ) : (
             <>
               This event is{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 Completely Free
               </strong>{' '}
               to attend!{' '}
@@ -904,7 +1117,7 @@ const EventDetails = () => {
           {isUnlimited ? (
             <>
               This event has{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 Unlimited Seats
               </strong>.{' '}
             </>
@@ -912,7 +1125,7 @@ const EventDetails = () => {
             !allowWaitlist ? (
               <>
                 All{' '}
-                <strong className="font-semibold text-black dark:text-white">
+                <strong className="font-medium text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 are filled. Registration is currently closed.{' '}
@@ -920,7 +1133,7 @@ const EventDetails = () => {
             ) : isWaitlistFull ? (
               <>
                 All{' '}
-                <strong className="font-semibold text-black dark:text-white">
+                <strong className="font-medium text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 and all 5 waitlist spots are filled. Registration is currently closed.{' '}
@@ -928,7 +1141,7 @@ const EventDetails = () => {
             ) : (
               <>
                 All{' '}
-                <strong className="font-semibold text-black dark:text-white">
+                <strong className="font-medium text-black dark:text-white">
                   {totalSeats} seats
                 </strong>{' '}
                 are filled. However, you can register to join the waitlist ({5 - waitlistCount} spots left).{' '}
@@ -937,7 +1150,7 @@ const EventDetails = () => {
           ) : (
             <>
               There are{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 {Math.max(0, totalSeats - registeredCount)} spots remaining
               </strong>{' '}
               out of {totalSeats} total seats.{' '}
@@ -946,7 +1159,7 @@ const EventDetails = () => {
           {!isAllPrograms && event.allowedPrograms && event.allowedPrograms.length > 0 ? (
             <>
               Eligibility is open to programs:{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 {programDisplay}
               </strong>.{' '}
             </>
@@ -956,7 +1169,7 @@ const EventDetails = () => {
           {event.allowedBranches && event.allowedBranches.length > 0 && (
             <>
               Allowed branches:{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 {event.allowedBranches.join(', ')}
               </strong>.{' '}
             </>
@@ -964,14 +1177,14 @@ const EventDetails = () => {
           {event.allowedYears && event.allowedYears.length > 0 && (
             <>
               Eligible batches:{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 Year {event.allowedYears.map(y => isNaN(parseInt(y, 10)) ? y : formatAcademicYear(y)).join(', ')}
               </strong>.{' '}
             </>
           )}
           {event.provideCertificate ? (
             <>
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 Digital certificates
               </strong>{' '}
               will be issued to participants after the event closes.
@@ -989,14 +1202,14 @@ const EventDetails = () => {
           {isCentralEvent ? (
             <>
               This event is organized centrally by the{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 Office of DSW (Dean Student Welfare)
               </strong>.
             </>
           ) : (
             <>
               This event is organized by{' '}
-              <strong className="font-semibold text-black dark:text-white">
+              <strong className="font-medium text-black dark:text-white">
                 {displayName}
               </strong>.
               {clubSlugOrId ? ' You can click the organizer name in the sidebar to visit their club page.' : ''}{' '}
@@ -1019,7 +1232,7 @@ const EventDetails = () => {
           >
             <i className="ri-arrow-left-line text-base" /> Back
           </button>
-          <span className="text-[15px] font-semibold text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
+          <span className="text-[15px] font-medium text-neutral-600 dark:text-neutral-400 tracking-wide truncate max-w-[200px] hidden sm:block">Event Details</span>
           <div className="w-16" />
         </div>
       </div>
@@ -1033,17 +1246,17 @@ const EventDetails = () => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                <span className="text-xs font-black uppercase tracking-widest text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-medium uppercase tracking-widest text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2.5 py-0.5 rounded-full">
                   Event Proposal Rejected
                 </span>
                 {event.reviewedBy?.name && (
-                  <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                  <span className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
                     Reviewed by: {event.reviewedBy.name}
                   </span>
                 )}
               </div>
               <p className="text-sm font-medium text-rose-800 dark:text-rose-200 mt-1">
-                <span className="font-semibold">Feedback: </span>
+                <span className="font-medium">Feedback: </span>
                 {event.reviewComment || "No specific feedback comment provided. Please contact the faculty coordinator."}
               </p>
             </div>
@@ -1054,7 +1267,7 @@ const EventDetails = () => {
         {event.reviewStatus === 'PENDING' && (
           <div className="mb-6 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-xl p-4 shadow-xs flex items-center gap-3">
             <i className="ri-time-line text-amber-600 dark:text-amber-400 text-xl" />
-            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+            <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
               This event proposal is currently <span className="underline">PENDING REVIEW</span> by the faculty coordinator and is not yet public.
             </p>
           </div>
@@ -1088,7 +1301,7 @@ const EventDetails = () => {
                       e.stopPropagation();
                       handleShare();
                     }}
-                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-semibold px-2 py-1 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
+                    className="inline-flex items-center justify-center bg-black/60 hover:bg-black/80 dark:bg-neutral-900/70 dark:hover:bg-neutral-800/80 backdrop-blur-md text-white text-[11px] font-medium px-2 py-1 rounded-full border border-white/25 dark:border-white/15 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation transition-all duration-200 cursor-pointer"
                     title="Share Event"
                     aria-label="Share Event"
                   >
@@ -1099,17 +1312,17 @@ const EventDetails = () => {
                 {/* Status badge overlay */}
                 <div className="absolute top-2 left-2">
                   {isLive && (
-                    <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
+                    <span className="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse shadow-lg">
                       <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> Live Now
                     </span>
                   )}
                   {isEnded && (
-                    <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
                       <i className="ri-check-line" /> Ended
                     </span>
                   )}
                   {!isLive && !isEnded && (
-                    <span className="inline-flex items-center gap-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    <span className="inline-flex items-center gap-1.5 bg-black text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
                       <i className="ri-time-line" /> Upcoming
                     </span>
                   )}
@@ -1122,7 +1335,141 @@ const EventDetails = () => {
                 {title}
               </h1>
 
-              <div className="flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+              {/* Mobile Event Info Card (Icon-based modern layout with Date, Venue, Price, Organizer & Co-organizers) */}
+              <div className="block lg:hidden mb-6">
+                <div className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
+                  {/* Date & Time with Calendar Icon */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl  border border-brand-200/60 dark:border-brand-900/40 flex items-center justify-center shrink-0 text-brand-600 dark:text-brand-400 font-medium">
+                      <i className="ri-calendar-event-line text-lg font-medium" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 leading-snug">
+                        {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                      </p>
+                      <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-0.5">
+                        {new Date(startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Venue & Price (when paid) */}
+                  <div className="flex items-center justify-between gap-1 pt-1 border-t border-neutral-200 dark:border-neutral-800/80">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-neutral-600 dark:text-neutral-300 border border-brand-200/60 dark:border-brand-900/40">
+                        <i className="ri-map-pin-2-line text-base text-brand-500" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {/* <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Venue</p> */}
+                        <p className="text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">{venue || 'NIT Jalandhar'}</p>
+                      </div>
+                    </div>
+
+                    {Number(entryFee) > 0 && (
+                      <div className="flex items-center gap-2 shrink-0 pl-2">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                          <i className="ri-ticket-2-line text-base" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Entry Fee</p>
+                          <p className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-100">₹{entryFee}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Organizer & Co-organizers */}
+                  <div className="pt-1 border-t border-neutral-200 dark:border-neutral-800/80 space-y-2.5">
+                    {/* Primary Organizer */}
+                    <div className="flex items-center gap-3">
+                      {isCentralEvent ? (
+                        <div className="w-9 h-9 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200 dark:border-cn-blue-900/50 flex items-center justify-center shrink-0 text-cn-blue-600 dark:text-cn-blue-400">
+                          <i className="ri-building-2-line text-base" />
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-center shrink-0 overflow-hidden">
+                          {event.club?.clubLogo || primaryClub?.clubLogo ? (
+                            <img
+                              src={event.club?.clubLogo || primaryClub?.clubLogo}
+                              alt={displayName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <i className="ri-team-line text-neutral-500 dark:text-neutral-400 text-base" />
+                          )}
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                          Organizer
+                        </p>
+                        {clubSlugOrId ? (
+                          <Link
+                            to={`/club/${clubSlugOrId}`}
+                            className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:text-brand-600 dark:hover:text-brand-400 truncate block transition-colors"
+                          >
+                            {displayName}
+                          </Link>
+                        ) : (
+                          <p className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                            {displayName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Co-Organizers (if Joint Event) */}
+                    {isJointEvent && allOrganizingClubs.slice(1).length > 0 && (
+                      <div className="pl-12 pt-1">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-brand-600 dark:text-brand-500 mb-1.5 flex items-center gap-1">
+                          <i className="ri-shake-hands-line text-xs" /> Co-Organizers
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {allOrganizingClubs.slice(1).map((c, i) => (
+                            <Link
+                              key={c.id || c._id || i}
+                              to={`/club/${c.slug || c.id || c._id}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
+                            >
+                              {c.clubLogo && <img src={c.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />}
+                              <span>{c.clubName}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Participating Clubs (if Central Event) */}
+                    {isCentralEvent && event.participatingClubs?.length > 0 && (
+                      <div className="pl-12 pt-1">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5 flex items-center gap-1">
+                          <i className="ri-team-line text-xs" /> Participating Clubs
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {event.participatingClubs.map((pc, i) => (
+                            <Link
+                              key={pc.id || pc.club?.id || i}
+                              to={`/club/${pc.club?.slug || pc.club?.id}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-colors"
+                            >
+                              {pc.club?.clubLogo && <img src={pc.club.clubLogo} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />}
+                              <span>{pc.club?.clubName}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div> 
+
+              {/* Desktop Metadata Row (kept intact for lg screens) */}
+              <div className="hidden lg:flex items-center gap-4 flex-wrap text-[13px] text-neutral-500 dark:text-neutral-500 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
                 <span className="inline-flex items-center gap-1.5">
                   <i className="ri-calendar-event-line text-brand-500" />
                   {new Date(startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -1150,11 +1497,6 @@ const EventDetails = () => {
                   </span>
                 )}
                 <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-                <span className="inline-flex items-center gap-1.5">
-                  <i className="ri-user-line text-brand-500" />
-                  {registeredCount} Registered
-                </span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
                 <span className="inline-flex items-center gap-1.5" title="Total event views">
                   <i className="ri-eye-line text-brand-500" />
                   {views || 0} Views
@@ -1171,8 +1513,8 @@ const EventDetails = () => {
                       <i className="ri-trophy-fill" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Event Results</p>
-                      <p className="text-[15px] font-black text-black dark:text-white">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500">Event Results</p>
+                      <p className="text-[15px] font-medium text-black dark:text-white">
                         {event.registrationType === 'team' ? 'Winning Teams' : 'Winners'}
                       </p>
                     </div>
@@ -1193,7 +1535,7 @@ const EventDetails = () => {
                           <div
                             className={`w-9 h-9 shrink-0 rounded-lg ${
                               medal ? medal.badgeBg : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
-                            } flex items-center justify-center font-black text-sm`}
+                            } flex items-center justify-center font-medium text-sm`}
                           >
                             <span>#{winner.rank}</span>
                           </div>
@@ -1201,11 +1543,11 @@ const EventDetails = () => {
                           {/* Winner / Team Name & Members */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-semibold text-black dark:text-white truncate">
+                              <p className="text-sm font-medium text-black dark:text-white truncate">
                                 {winner.name}
                               </p>
                               {isTeamWinner && (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-medium uppercase tracking-wider bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/40 px-2 py-0.5 rounded-full">
                                   <i className="ri-team-line text-[10px]" /> Team
                                 </span>
                               )}
@@ -1227,7 +1569,7 @@ const EventDetails = () => {
                           </div>
 
                           {/* Rank Label */}
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-md shrink-0">
                             {medal ? `${medal.label} Place` : `#${winner.rank}`}
                           </span>
                         </div>
@@ -1241,7 +1583,7 @@ const EventDetails = () => {
             {description && (
               <ScrollReveal direction="up" distance={20} delay={0.04}>
                 <div className="mb-8">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
+                  <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-3">
                     About this Event
                   </h2>
                   <div 
@@ -1254,7 +1596,7 @@ const EventDetails = () => {
 
             <div className="mb-8">
               <ScrollReveal direction="up" distance={15}>
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                <h3 className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Event Highlights
                 </h3>
               </ScrollReveal>
@@ -1268,7 +1610,7 @@ const EventDetails = () => {
                         <i className={`${h.icon} text-cn-blue-600 dark:text-cn-blue-400 text-base`} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
+                        <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-0.5">{h.label}</p>
                         <p className="text-[13px] font-medium text-black dark:text-white leading-snug">{h.value}</p>
                       </div>
                     </div>
@@ -1282,7 +1624,7 @@ const EventDetails = () => {
             {event.media && event.media.filter(m => m.type !== 'SPONSOR_LOGO').length > 0 && (
               <div className="mb-8">
                 <ScrollReveal direction="up" distance={15}>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  <h3 className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                     Gallery
                   </h3>
                 </ScrollReveal>
@@ -1327,7 +1669,7 @@ const EventDetails = () => {
 
             <div className="mb-8">
               <ScrollReveal direction="up" distance={15}>
-                <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                   Frequently Asked Questions
                 </h2>
               </ScrollReveal>
@@ -1346,31 +1688,31 @@ const EventDetails = () => {
             </div>
           </div>
 
-          <div className="w-full lg:w-[30%] lg:sticky lg:top-[80px] shrink-0">
+          <div className="w-full lg:w-[30%]  lg:sticky lg:top-[80px] shrink-0">
             <ScrollReveal direction="up" distance={20} delay={0.08} duration={0.45}>
-              <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm hidden lg:block">
 
-              <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
+              <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 ">
+                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
                   DATE & TIME
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    {/* <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p> */}
-                    <p className="text-[16px] font-semibold text-black dark:text-white leading-snug">
+                    {/* <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Starts</p> */}
+                    <p className="text-[16px] font-medium text-black dark:text-white leading-snug">
                       {new Date(startTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
                     <p className="text-[14px] font-medium text-brand-600">
-                      {new Date(startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                      {new Date(startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
                     </p>
                   </div>
                   {/* <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" /> */}
                   {/* <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-500">Ends</p>
                     <p className="text-[14px] font-medium text-neutral-700 dark:text-neutral-300">
                       {new Date(endTime).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' })}
                       {' · '}
-                      {new Date(endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
+                      {new Date(endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
                     </p>
                   </div> */}
                 </div>
@@ -1379,8 +1721,8 @@ const EventDetails = () => {
               {!isUnlimited && (
                 <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Availability</span>
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-black dark:text-white">{fillPct}% Full</span>
                   </div>
                   <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div
@@ -1416,20 +1758,20 @@ const EventDetails = () => {
                     <i className="ri-checkbox-circle-fill text-2xl" />
                   </div>
                   <div className="text-center">
-                    <p className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Registration Successful!</p>
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Registration Successful!</p>
                     <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-500 mt-1">Check your dashboard for the ticket QR code</p>
                   </div>
                   
                   <div className="w-full bg-white dark:bg-neutral-950 border border-neutral-100 dark:border-neutral-850 p-4 rounded-xl text-center shadow-sm">
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
-                    <p className="text-base font-black text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
+                    <p className="text-[9px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-1.5">Ticket ID / Ref Number</p>
+                    <p className="text-base font-medium text-neutral-900 dark:text-neutral-100 tracking-wider font-mono select-all">
                       {registrationId}
                     </p>
                   </div>
 
                   <Link 
                     to="/my-events" 
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-cn-blue-600 hover:text-cn-blue-700 dark:text-cn-blue-400 dark:hover:text-cn-blue-300 hover:underline"
                   >
                     View My Tickets <i className="ri-arrow-right-s-line" />
                   </Link>
@@ -1445,7 +1787,7 @@ const EventDetails = () => {
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <i className="ri-ticket-2-line text-neutral-500 dark:text-neutral-500 text-sm" />
-                    <span className={`font-black text-sm ${entryFee > 0 ? 'text-black dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                    <span className={`font-medium text-sm ${entryFee > 0 ? 'text-black dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
                       {entryFee > 0 ? `₹${entryFee}` : 'Free'}
                     </span>
                   </div>
@@ -1489,14 +1831,14 @@ const EventDetails = () => {
                       <i className="ri-building-2-line text-cn-blue-600 dark:text-cn-blue-400 text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
                    
                     </div>
                   </div>
 
                   {event.participatingClubs?.length > 0 && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
                         Participating Clubs
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1533,16 +1875,16 @@ const EventDetails = () => {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500">Organizer</p>
                       {clubSlugOrId ? (
                         <Link
                           to={`/club/${clubSlugOrId}`}
-                          className="text-[13px] font-semibold text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
+                          className="text-[13px] font-medium text-black dark:text-white hover:text-cn-blue-600 dark:hover:text-cn-blue-400 transition-colors duration-200 truncate block hover:underline"
                         >
                           {displayName}
                         </Link>
                       ) : (
-                        <p className="text-[13px] font-semibold text-black dark:text-white truncate">{displayName}</p>
+                        <p className="text-[13px] font-medium text-black dark:text-white truncate">{displayName}</p>
                       )}
 
                     </div>
@@ -1550,7 +1892,7 @@ const EventDetails = () => {
 
                   {isJointEvent && (
                     <div className="px-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-500 mb-2">
                         Co-Organizers
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1581,10 +1923,10 @@ const EventDetails = () => {
                     <i className="ri-question-answer-line text-base" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                    <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                       Questions?
                     </p>
-                    <h3 className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                    <h3 className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100 truncate">
                       Contact Organizer
                     </h3>
                   </div>
@@ -1611,7 +1953,7 @@ const EventDetails = () => {
 
                 {event?.club?.socialLinks && event.club.socialLinks.length > 0 && (
                   <div className="mt-4 pt-3.5 border-t border-neutral-100 dark:border-neutral-800">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
+                    <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
                       Connect with {displayName}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1655,7 +1997,7 @@ const EventDetails = () => {
             {event.sponsors && event.sponsors.length > 0 && (
               <ScrollReveal direction="up" distance={20} delay={0.15}>
                 <div className="mt-6 mb-8 bg-white dark:bg-neutral-900 border-1 border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
+                  <h3 className="text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500 mb-4">
                     Sponsors/Partners
                   </h3>
                   <div className="flex flex-wrap gap-5 items-center">
@@ -1683,6 +2025,35 @@ const EventDetails = () => {
             )}
           </div>
         </div>
+
+        {/* Similar Events Section */}
+        {(loadingSimilar || similarEvents.length > 0) && (
+          <ScrollReveal direction="up" distance={24} duration={0.45} className="mt-14 pt-10 border-t border-cn-border">
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <h2 className="text-section-title font-medium text-cn-text tracking-tight">
+                Similar Events
+              </h2>
+            </div>
+
+            {loadingSimilar ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <EventCardSkeleton />
+                <EventCardSkeleton className="hidden md:flex" />
+                <EventCardSkeleton className="hidden lg:flex" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {similarEvents.map((simEvent) => (
+                  <EventCard
+                    key={simEvent.id || simEvent._id}
+                    event={simEvent}
+                    isRegistered={registeredEventIds.has(String(simEvent.id || simEvent._id))}
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollReveal>
+        )}
       </div>
 
       {showMobileCTA && (
@@ -1744,7 +2115,7 @@ const EventDetails = () => {
                   <i className="ri-information-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-medium text-base sm:text-lg text-cn-text leading-tight">
                     Complete Your Profile
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">
@@ -1771,7 +2142,7 @@ const EventDetails = () => {
                   const placeholder = field === 'portfolioUrl' ? 'https://yourportfolio.com' : `https://${fieldLabel.toLowerCase()}.com/yourprofile`;
                   return (
                     <div key={field}>
-                      <label className="block text-xs font-semibold text-cn-text mb-1.5 capitalize">
+                      <label className="block text-xs font-medium text-cn-text mb-1.5 capitalize">
                         {fieldLabel} <span className="text-brand-500">*</span>
                       </label>
                       <input type="url" placeholder={placeholder} value={modalInputs[field] || ''} onChange={(e) => setModalInputs({ ...modalInputs, [field]: e.target.value })}
@@ -1782,10 +2153,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
+              <button onClick={() => { setMissingFieldsModalOpen(false); setModalInputs({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
+              <button onClick={handleSaveAndRegister} disabled={missingFields.some(field => !modalInputs[field]) || isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm">
                 {isRegistering ? 'Processing...' : 'Save & Register'}
               </button>
             </div>
@@ -1802,7 +2173,7 @@ const EventDetails = () => {
                   <i className="ri-file-list-3-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-medium text-base sm:text-lg text-cn-text leading-tight">
                     Registration Form
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Fill in the details to complete your registration</p>
@@ -1819,7 +2190,7 @@ const EventDetails = () => {
             </div>
             <div className="p-6 overflow-y-auto flex-1 text-cn-text-secondary">
               <div className="mb-6">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-3">Your Profile (Auto-filled)</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: JSON.parse(localStorage.getItem('user'))?.name },
@@ -1830,18 +2201,18 @@ const EventDetails = () => {
                     { label: 'Program', value: JSON.parse(localStorage.getItem('user'))?.program },
                   ].map((item, i) => (
                     <div key={i} className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted">{item.label}</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted">{item.label}</p>
                       <p className="text-xs sm:text-[13px] font-medium text-cn-text truncate">{item.value || '—'}</p>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="border-t border-cn-border-subtle mb-6" />
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-3">Additional Information</p>
               <div className="space-y-4">
                 {(event.customFields || []).map((field, idx) => (
                   <div key={idx}>
-                    <label className="block text-xs font-semibold text-cn-text mb-1.5">
+                    <label className="block text-xs font-medium text-cn-text mb-1.5">
                       {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                     </label>
                     {field.type === 'text' && (
@@ -1864,10 +2235,10 @@ const EventDetails = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
-              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
+              <button onClick={() => { setCustomFormModalOpen(false); setCustomFormResponses({}); }} className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-medium text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs">
                 Cancel
               </button>
-              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-semibold text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
+              <button onClick={handleCustomFormSubmit} disabled={isRegistering} className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-medium text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-md shadow-brand-500/20 hover:shadow-lg">
                 {isRegistering ? 'Processing...' : (event.paymentMethod && event.paymentMethod !== 'FREE' ? 'Pay & Register' : 'Register')}
               </button>
             </div>
@@ -1884,7 +2255,7 @@ const EventDetails = () => {
                   <i className="ri-question-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-medium text-base sm:text-lg text-cn-text leading-tight">
                     Confirm Registration
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Please review the event details below.</p>
@@ -1900,11 +2271,11 @@ const EventDetails = () => {
               </button>
             </div>
             <div className="p-6 text-cn-text-secondary">
-              <p className="text-sm font-semibold text-cn-text mb-3">
+              <p className="text-sm font-medium text-cn-text mb-3">
                 Are you sure you want to register for this event?
               </p>
               <div className="bg-cn-surface-muted border border-cn-border rounded-xl p-4 mb-4 space-y-2">
-                <p className="text-sm font-semibold text-cn-text truncate">
+                <p className="text-sm font-medium text-cn-text truncate">
                   {event.title}
                 </p>
                 <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
@@ -1917,7 +2288,7 @@ const EventDetails = () => {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-cn-text-secondary">
                   <i className="ri-ticket-2-line text-brand-500" />
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">{entryFee > 0 ? `₹${entryFee}` : 'Free Entry'}</span>
                 </div>
               </div>
               {isFull && allowWaitlist && (
@@ -1929,14 +2300,14 @@ const EventDetails = () => {
             <div className="px-6 py-4 border-t border-cn-border-subtle bg-cn-surface flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
               >
                 Cancel
               </button>
               <button
                 onClick={processDirectRegistration}
                 disabled={isRegistering}
-                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 {isRegistering ? 'Registering...' : 'Yes, Register'}
               </button>
@@ -1976,8 +2347,12 @@ const EventDetails = () => {
                 <img src={isPendingPayment ? "/Success popup.svg" : "/Success popup.svg"} alt="Registration Successful" className="w-40 h-40 mx-auto animate-bounce-slow" />
               </div>
               
-              <h3 className="text-lg font-semibold text-cn-text mt-4">
-                {isPendingPayment ? 'Registration Received!' : 'Registration Successful!'}
+              <h3 className="text-lg font-medium text-cn-text mt-4">
+                {isPendingPayment
+                  ? 'Registration Received!'
+                  : isTeamRegistrationSuccess
+                  ? 'Team Created & Invitations Sent!'
+                  : 'Registration Successful!'}
               </h3>
 
               {isPendingPayment ? (
@@ -1985,12 +2360,48 @@ const EventDetails = () => {
                   <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
                     <div className="flex items-center gap-2 mb-1.5">
                       <i className="ri-time-line text-brand-500 text-base" />
-                      <p className="text-xs font-semibold text-cn-text">Payment Under Review</p>
+                      <p className="text-xs font-medium text-cn-text">Payment Under Review</p>
                     </div>
                     <p className="text-xs text-cn-text-secondary leading-relaxed">
                       The club is verifying your payment details. Once verified, your ticket will appear in your <strong className="text-cn-text font-medium">My Events</strong> section.
                     </p>
                   </div>
+                </>
+              ) : isTeamRegistrationSuccess ? (
+                <>
+                  <div className="my-3.5 p-3.5 bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/60 rounded-xl text-left">
+                    <div className="flex items-center gap-2 mb-1.5 text-brand-700 dark:text-brand-300 font-medium text-xs">
+                      <i className="ri-mail-send-line text-sm" />
+                      <span>Invitations Dispatched</span>
+                    </div>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                      Invitations have been sent to all team members via notification. Once they accept the invitation, your team registration will be successfully confirmed.
+                    </p>
+                    {(registeredTeamInfo?.minTeamSize || event?.minTeamSize) > 1 && (
+                      <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2 flex items-center gap-1 font-medium">
+                        <i className="ri-alert-line shrink-0" />
+                        <span>This event requires at least {registeredTeamInfo?.minTeamSize || event?.minTeamSize} members. If any member declines, you can add more members in My Events.</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {registeredTeamInfo?.teammates?.length > 0 && (
+                    <div className="my-2 p-3 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-2">
+                        Invited Teammates ({registeredTeamInfo.teammates.length})
+                      </p>
+                      <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                        {registeredTeamInfo.teammates.map((t, idx) => (
+                          <div key={t.id || idx} className="flex items-center justify-between text-xs">
+                            <span className="font-medium text-cn-text truncate max-w-[170px]">{t.name}</span>
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-medium">
+                              Pending Acceptance
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -2000,8 +2411,8 @@ const EventDetails = () => {
                   
                   {registrationId && (
                     <div className="my-4 p-4 bg-cn-surface-muted border border-cn-border rounded-xl">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
-                      <p className="text-base font-semibold text-cn-text tracking-wider font-mono select-all">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-1.5">Your Registration ID</p>
+                      <p className="text-base font-medium text-cn-text tracking-wider font-mono select-all">
                         {registrationId}
                       </p>
                     </div>
@@ -2012,7 +2423,7 @@ const EventDetails = () => {
               {/* Post-Registration Message from Club */}
               {postRegMessage && (
                 <div className="my-3 p-4 bg-cn-surface-muted border border-cn-border rounded-xl text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-2 flex items-center gap-1.5">
                     <i className="ri-information-line text-brand-500 text-xs" />
                     Message from Club
                   </p>
@@ -2026,9 +2437,9 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setShowSuccessModal(false); navigate('/my-events'); }}
-                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-semibold py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
+                  className="w-full bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-black font-medium py-3 px-6 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-md shadow-brand-500/20 hover:shadow-lg border-0 outline-none text-xs cursor-pointer"
                 >
-                  Go to My Events
+                  {isTeamRegistrationSuccess ? 'Go to My Events (Track Team)' : 'Go to My Events'}
                 </button>
                 <button
                   type="button"
@@ -2046,7 +2457,7 @@ const EventDetails = () => {
       {teamChoiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-sm px-4">
           <div className="bg-cn-surface border border-cn-border rounded-2xl max-w-sm w-full shadow-2xl p-6 transition-colors">
-            <h3 className="font-semibold text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
+            <h3 className="font-medium text-cn-text text-base sm:text-lg mb-1.5">Registration Mode</h3>
             <p className="text-cn-text-muted text-xs mb-6">Choose how you want to participate in this event.</p>
             <div className="flex flex-col gap-3">
               <button
@@ -2055,14 +2466,14 @@ const EventDetails = () => {
                   setTeamChoiceModalOpen(false);
                   handleIndividualRegister();
                 }}
-                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
+                className="w-full px-5 py-3 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs hover:shadow-xs"
               >
                 Register as Individual
               </button>
               <button
                 type="button"
                 onClick={handleSelectRegisterAsTeam}
-                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                className="w-full px-5 py-3 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs shadow-brand-500/20 hover:shadow-sm"
               >
                 Register as Team
               </button>
@@ -2087,7 +2498,7 @@ const EventDetails = () => {
                   <i className="ri-group-line text-lg" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base sm:text-lg text-cn-text leading-tight">
+                  <h3 className="font-medium text-base sm:text-lg text-cn-text leading-tight">
                     Create Team
                   </h3>
                   <p className="text-xs text-cn-text-muted font-normal mt-0.5">Form a team to register for {event.title}</p>
@@ -2106,7 +2517,7 @@ const EventDetails = () => {
             <form onSubmit={handleTeamSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-cn-text-secondary">
               {/* Team Name */}
               <div>
-                <label className="block text-xs font-semibold text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
+                <label className="block text-xs font-medium text-cn-text mb-1.5">Team Name <span className="text-brand-500">*</span></label>
                 <input
                   type="text"
                   required
@@ -2119,7 +2530,7 @@ const EventDetails = () => {
 
               {/* Members/Teammates selection */}
               <div>
-                <label className="block text-xs font-semibold text-cn-text mb-1.5">
+                <label className="block text-xs font-medium text-cn-text mb-1.5">
                   Add Teammates <span className="text-xs text-cn-text-muted font-normal">(Team size: {teammates.length + 1} / min {event.minTeamSize || 1}, max {event.maxTeamSize || 1})</span>
                 </label>
                 <div className="relative">
@@ -2152,10 +2563,10 @@ const EventDetails = () => {
                         className="p-3 text-xs hover:bg-brand-50 dark:hover:bg-brand-950/30 cursor-pointer flex justify-between items-center transition-colors"
                       >
                         <div className="text-left">
-                          <p className="font-semibold text-cn-text">{s.name}</p>
+                          <p className="font-medium text-cn-text">{s.name}</p>
                           <p className="text-cn-text-muted font-mono mt-0.5">{s.rollNo} • {s.email}</p>
                         </div>
-                        <span className="text-brand-500 font-semibold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
+                        <span className="text-brand-500 font-medium uppercase tracking-wider text-[10px] px-2.5 py-1 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-lg">Add</span>
                       </div>
                     ))}
                   </div>
@@ -2163,27 +2574,27 @@ const EventDetails = () => {
               </div>
 
               <div className="bg-cn-surface-muted p-4 border border-cn-border rounded-xl space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted text-left">Team Roster</p>
                 <div className="divide-y divide-cn-border-subtle">
                   {/* Leader */}
                   <div className="py-2.5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <p className="font-semibold text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-semibold">(You)</span></p>
+                      <p className="font-medium text-cn-text">{JSON.parse(localStorage.getItem('user'))?.name} <span className="text-brand-500 font-medium">(You)</span></p>
                       <p className="text-cn-text-muted font-mono mt-0.5">{JSON.parse(localStorage.getItem('user'))?.rollNo}</p>
                     </div>
-                    <span className="text-xs font-semibold text-cn-text-muted uppercase tracking-wider">Leader</span>
+                    <span className="text-xs font-medium text-cn-text-muted uppercase tracking-wider">Leader</span>
                   </div>
                   {/* Members */}
                   {teammates.map((member) => (
                     <div key={member.id} className="py-2.5 flex justify-between items-center text-xs">
                       <div className="text-left">
-                        <p className="font-semibold text-cn-text">{member.name}</p>
+                        <p className="font-medium text-cn-text">{member.name}</p>
                         <p className="text-cn-text-muted font-mono mt-0.5">{member.rollNo}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setTeammates(teammates.filter(t => t.id !== member.id))}
-                        className="px-3 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
+                        className="px-3 py-1 text-xs font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/40 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation outline-none cursor-pointer"
                       >
                         Remove
                       </button>
@@ -2200,10 +2611,10 @@ const EventDetails = () => {
               {/* Additional custom fields if any */}
               {event.customFields && event.customFields.length > 0 && (
                 <div className="space-y-4 pt-3 border-t border-cn-border-subtle">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-1 text-left">Additional Information</p>
                   {(event.customFields || []).map((field, idx) => (
                     <div key={idx}>
-                      <label className="block text-xs font-semibold text-cn-text mb-1.5 text-left">
+                      <label className="block text-xs font-medium text-cn-text mb-1.5 text-left">
                         {field.label}{' '}{field.required && <span className="text-brand-500">*</span>}
                       </label>
                       {field.type === 'text' && (
@@ -2230,14 +2641,14 @@ const EventDetails = () => {
                 <button
                   type="button"
                   onClick={() => { setTeamModalOpen(false); setCustomFormResponses({}); }}
-                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
+                  className="px-4 py-2.5 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-800 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-2xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-semibold mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-400 text-white dark:text-neutral-950 font-medium mysans text-xs rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 shadow-xs shadow-brand-500/20 hover:shadow-sm"
                 >
                   {isRegistering ? 'Registering...' : (event.entryFee > 0 ? `Pay ₹${event.entryFee} & Create` : 'Create Team')}
                 </button>

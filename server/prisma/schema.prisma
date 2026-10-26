@@ -74,6 +74,18 @@ enum SocialPlatform {
   PORTFOLIO
 }
 
+enum UpdateCategory {
+  OFFICIAL
+  TPO
+  IMPORTANT
+}
+
+enum UpdateStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 // ==========================================
 // CORE ENTITIES
 // ==========================================
@@ -727,4 +739,35 @@ model Certificate {
   @@index([studentId])
   @@index([externalUserId])
   @@index([facultyId])
+}
+
+// ==========================================
+// CAMPUS UPDATES (INSTAGRAM-STYLE FEED)
+// ==========================================
+
+model CampusUpdate {
+  id                 String         @id @db.VarChar(24)
+  title              String         @db.VarChar
+  description        String         @db.Text
+  category           UpdateCategory
+  organizationName   String         @db.VarChar
+  organizationAvatar String?        @db.VarChar
+  images             String[]       @default([]) @db.VarChar
+  attachments        Json?
+  deadline           DateTime?
+  actionLabel        String?        @db.VarChar
+  actionUrl          String?        @db.VarChar
+  sourceReference    String?        @db.VarChar
+  isPinned           Boolean        @default(false)
+  status             UpdateStatus   @default(PUBLISHED)
+  pinnedAt           DateTime?
+  publishedAt        DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  createdById        String?        @db.VarChar(24)
+
+  @@index([status, publishedAt])
+  @@index([category, status])
+  @@index([isPinned, status])
+  @@index([createdAt])
 }

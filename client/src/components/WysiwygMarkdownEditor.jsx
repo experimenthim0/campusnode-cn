@@ -776,7 +776,7 @@ const WysiwygMarkdownEditor = ({
                     onClick={() => setBlockFormat(item.tag)}
                     className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md flex items-center justify-between transition-colors cursor-pointer ${
                       activeFormats.blockType === item.tag
-                        ? 'bg-primary/10 text-primary font-semibold'
+                        ? 'bg-primary/10 text-primary font-medium'
                         : 'hover:bg-muted text-foreground'
                     }`}
                   >
@@ -986,7 +986,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h2' ? 'p' : 'h2')}
-            className="h-6 px-1.5 text-[11px] font-semibold"
+            className="h-6 px-1.5 text-[11px] font-medium"
           >
             H2
           </Button>
@@ -996,7 +996,7 @@ const WysiwygMarkdownEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setBlockFormat(activeFormats.blockType === 'h3' ? 'p' : 'h3')}
-            className="h-6 px-1.5 text-[11px] font-semibold"
+            className="h-6 px-1.5 text-[11px] font-medium"
           >
             H3
           </Button>

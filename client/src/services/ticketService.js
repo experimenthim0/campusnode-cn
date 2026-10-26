@@ -171,9 +171,10 @@ export const generateTicketCanvas = async ({ ticket, qrDataUrl, user }) => {
     : 'TBA';
 
   const formattedTime = isValidDate
-    ? eventDateObj.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
+    ? eventDateObj.toLocaleTimeString('en-US', {
+        hour: 'numeric',
         minute: '2-digit',
+        hour12: true,
         timeZone: 'Asia/Kolkata',
       })
     : 'TBA';

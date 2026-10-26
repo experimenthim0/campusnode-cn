@@ -36,7 +36,7 @@ const ForgotPassword = () => {
         </div>
 
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg font-semibold text-cn-text text-center">
+          <h2 className="text-lg font-medium text-cn-text text-center">
             Forgot Password
           </h2>
           <p className="mt-1 text-center text-sm text-cn-text-muted mb-6">

@@ -53,13 +53,13 @@ const CoordinatorsTab = ({
         <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-cn-surface border border-cn-border">
                 <div>
-                    <h2 className="text-base font-black text-cn-text tracking-wide">Faculty Coordinators</h2>
+                    <h2 className="text-base font-medium text-cn-text tracking-wide">Faculty Coordinators</h2>
                     <p className="text-xs text-cn-text-muted font-medium">Manage faculty coordinator accounts overseeing campus clubs and approving events.</p>
                 </div>
                 <button
                     type="button"
                     onClick={() => setIsAddCoordModalOpen(true)}
-                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
+                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-medium rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
                 >
                     <Plus size={16} />
                     <span>Add New Coordinator</span>
@@ -80,12 +80,12 @@ const CoordinatorsTab = ({
                     {coordinators.map((c, idx) => (
                         <tr key={c._id || c.id || idx} className="border-b border-cn-border-subtle hover:bg-cn-surface-muted transition-colors">
                             <Td className="text-cn-text-muted">{idx + 1}</Td>
-                            <Td className="font-semibold text-cn-text">{c.name}</Td>
+                            <Td className="font-medium text-cn-text">{c.name}</Td>
                             <Td className="text-cn-text-muted">{c.email}</Td>
                             <Td align="right">
                                 <button
                                     onClick={() => { setEditingCoord(c); setIsCoordModalOpen(true); }}
-                                    className="px-3 py-1.5 bg-cn-surface-muted text-cn-text text-[10px] font-semibold uppercase tracking-wider rounded-lg hover:bg-cn-surface-elevated transition-colors cursor-pointer"
+                                    className="px-3 py-1.5 bg-cn-surface-muted text-cn-text text-[10px] font-medium uppercase tracking-wider rounded-lg hover:bg-cn-surface-elevated transition-colors cursor-pointer"
                                 >
                                     Edit
                                 </button>
@@ -114,13 +114,13 @@ const CoordinatorsTab = ({
                             <button
                                 type="button"
                                 onClick={() => setIsAddCoordModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Create Coordinator
                             </button>
@@ -143,13 +143,13 @@ const CoordinatorsTab = ({
                             <button 
                                 type="button" 
                                 onClick={() => { setIsCoordModalOpen(false); setEditingCoord(null); }} 
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button 
                                 type="submit" 
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Save Changes
                             </button>

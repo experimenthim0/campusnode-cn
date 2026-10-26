@@ -466,14 +466,14 @@ const CheckIn = () => {
                 <span>/</span>
                 <span className="font-medium text-primary text-[10px] uppercase tracking-wider">Attendance Check-In</span>
               </div>
-              <h1 className="text-base sm:text-lg font-semibold truncate leading-tight">
+              <h1 className="text-base sm:text-lg font-medium truncate leading-tight">
                 {event?.title}
               </h1>
               {startTime && (
                 <p className="text-xs text-muted-foreground truncate">
                   {startTime.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })},{' '}
-                  {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  {endTime ? ` – ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                  {startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                  {endTime ? ` – ${endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
                 </p>
               )}
             </div>
@@ -520,7 +520,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Registrations
                     </p>
-                    <p className="text-2xl font-semibold font-mono tracking-tight">
+                    <p className="text-2xl font-medium font-mono tracking-tight">
                       {event?.registeredCount ?? '—'}
                     </p>
                   </div>
@@ -536,7 +536,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Attended
                     </p>
-                    <p className="text-2xl font-semibold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                    <p className="text-2xl font-medium font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
                       {attendedCount}
                     </p>
                   </div>
@@ -552,7 +552,7 @@ const CheckIn = () => {
                     <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Check-in Rate
                     </p>
-                    <p className="text-2xl font-semibold font-mono tracking-tight">
+                    <p className="text-2xl font-medium font-mono tracking-tight">
                       {attendRate}%
                     </p>
                   </div>
@@ -567,7 +567,7 @@ const CheckIn = () => {
                   <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Attendance Progress
                   </span>
-                  <span className="text-xs font-mono font-semibold text-primary">
+                  <span className="text-xs font-mono font-medium text-primary">
                     {attendedCount} / {event?.registeredCount ?? 0}
                   </span>
                 </div>
@@ -685,11 +685,11 @@ const CheckIn = () => {
                       <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
                         <Clock className="w-6 h-6 animate-pulse" />
                       </div>
-                      <p className="text-sm font-semibold mb-1">
+                      <p className="text-sm font-medium mb-1">
                         Check-in opens in {formatCountdown(opensAt, currentTime)}
                       </p>
                       <p className="text-xs text-muted-foreground max-w-xs">
-                        Scanner activates 4 hours before event start ({opensAt?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                        Scanner activates 4 hours before event start ({opensAt?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })})
                       </p>
                     </div>
                   ) : windowStatus === 'CLOSED' ? (
@@ -697,9 +697,9 @@ const CheckIn = () => {
                       <div className="w-12 h-12 rounded-xl bg-muted border border-border text-muted-foreground flex items-center justify-center mb-3">
                         <Lock className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-semibold mb-1">Check-in Closed</p>
+                      <p className="text-sm font-medium mb-1">Check-in Closed</p>
                       <p className="text-xs text-muted-foreground max-w-xs">
-                        Event concluded at {endTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Event concluded at {endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </p>
                     </div>
                   ) : (
@@ -726,7 +726,7 @@ const CheckIn = () => {
                 /* Roll Number Check-in Tab */
                 <div className="p-5">
                   <div className="mb-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground mb-1">
+                    <p className="text-xs font-medium uppercase tracking-wider text-foreground mb-1">
                       Roll Number Lookup
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
@@ -880,7 +880,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl">
                             <CheckCircle2 className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-semibold">Successfully Checked In</p>
+                              <p className="text-xs font-medium">Successfully Checked In</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.participantName} — {scanResult?.rollNo || scanResult?.branch || 'Checked In'}
                               </p>
@@ -891,7 +891,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
                             <AlertTriangle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-semibold">Attendance Already Recorded</p>
+                              <p className="text-xs font-medium">Attendance Already Recorded</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.message || 'Attendance is already recorded.'}
                               </p>
@@ -902,7 +902,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl">
                             <Clock className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-semibold">
+                              <p className="text-xs font-medium">
                                 {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
                               </p>
                               <p className="text-xs font-medium opacity-90">
@@ -915,7 +915,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
                             <XCircle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-semibold">Wrong Event</p>
+                              <p className="text-xs font-medium">Wrong Event</p>
                               <p className="text-xs font-medium opacity-90">
                                 {scanResult?.message || 'This pass is for a different event.'}
                               </p>
@@ -926,7 +926,7 @@ const CheckIn = () => {
                           <div className="flex items-center gap-3 p-3.5 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
                             <XCircle className="w-5 h-5 shrink-0" />
                             <div>
-                              <p className="text-xs font-semibold">
+                              <p className="text-xs font-medium">
                                 {scanState === 'unauthorized'
                                   ? 'Access Denied'
                                   : scanState === 'invalid_signature'
@@ -987,7 +987,7 @@ function ScanOverlay({ scanState, scanResult }) {
             <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 uppercase tracking-wider text-[10px]">
               Checked In
             </Badge>
-            <p className="text-sm font-semibold truncate max-w-full">
+            <p className="text-sm font-medium truncate max-w-full">
               {scanResult?.participantName || 'Attendee'}
             </p>
             <div className="w-full bg-muted/60 rounded-lg p-2.5 border border-border">

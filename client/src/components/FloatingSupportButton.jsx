@@ -9,16 +9,16 @@ const FloatingSupportButton = () => {
   const autoCloseTimerRef = useRef(null);
   const leaveTimerRef = useRef(null);
 
-  // Show for 3 to 4 seconds on initial mount, then auto-close
+  // Wait 5 to 6 seconds after page load before showing popup, then auto-close
   useEffect(() => {
     const showDelayTimer = setTimeout(() => {
       setIsOpen(true);
 
-      // Auto-close after 3.8 seconds
+      // Auto-close after 5 seconds once shown
       autoCloseTimerRef.current = setTimeout(() => {
         setIsOpen(false);
-      }, 3800);
-    }, 600);
+      }, 5000);
+    }, 5500);
 
     return () => {
       clearTimeout(showDelayTimer);
@@ -90,7 +90,7 @@ const FloatingSupportButton = () => {
 
                 <div className="flex-1 min-w-0 pr-1">
                
-                  <p className="text-[12px] sm:text-[13px] font-semibold text-neutral-900 dark:text-white leading-tight">
+                  <p className="text-[12px] sm:text-[13px] font-medium text-neutral-900 dark:text-white leading-tight">
                     Need help or have feedback?
                   </p>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-1 font-normal group-hover/bubble:text-cn-blue-600 dark:group-hover/bubble:text-cn-blue-400 transition-colors">

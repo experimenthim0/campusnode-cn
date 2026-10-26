@@ -70,7 +70,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
       </div>
       <div className="mt-3 flex items-baseline">
         <p
-          className={`text-2xl sm:text-3xl font-semibold logofont tracking-tight leading-none ${
+          className={`text-2xl sm:text-3xl font-medium logofont tracking-tight leading-none ${
             accent ? "text-amber-600 dark:text-amber-400" : "text-foreground"
           }`}
         >
@@ -360,12 +360,12 @@ const EventCalendarPage = ({ readOnly = false }) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Event Name</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Date & Time</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Venue</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Organizing Club</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-right">Action</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Event Name</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Date & Time</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Venue</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Organizing Club</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -392,7 +392,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                     >
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-semibold hover:text-primary transition-colors text-xs line-clamp-1">
+                          <span className="font-medium hover:text-primary transition-colors text-xs line-clamp-1">
                             {e.title}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
@@ -426,7 +426,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                       <TableCell>
                         <Badge
                           variant={status === "PUBLISHED" ? "default" : status === "PENDING" ? "outline" : "destructive"}
-                          className={`text-[10px] font-semibold uppercase tracking-wider ${
+                          className={`text-[10px] font-medium uppercase tracking-wider ${
                             status === "PUBLISHED"
                               ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                               : status === "PENDING"

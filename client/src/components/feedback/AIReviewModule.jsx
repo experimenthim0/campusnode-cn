@@ -41,10 +41,10 @@ const AIReviewModule = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-lg md:text-xl font-medium text-slate-900 dark:text-white tracking-tight">
                 AI Feedback Review
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cn-teal-50 text-cn-teal-800 dark:bg-cn-teal-950/50 dark:text-cn-teal-300 border border-cn-teal-200 dark:border-cn-teal-800/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider bg-cn-teal-50 text-cn-teal-800 dark:bg-cn-teal-950/50 dark:text-cn-teal-300 border border-cn-teal-200 dark:border-cn-teal-800/40">
                 OpenRouter AI
               </span>
             </div>
@@ -57,7 +57,7 @@ const AIReviewModule = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/60 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2">
+          <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/60 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-2">
             <Brain className="w-3.5 h-3.5 text-cn-teal-500" aria-hidden="true" />
             <span>
               Reviews used:{' '}
@@ -82,7 +82,7 @@ const AIReviewModule = ({
           <div className="flex items-start gap-3">
             <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-200">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-amber-900 dark:text-amber-200">
                 72-Hour Feedback Window Active
               </h4>
               <p className="text-xs text-amber-800 dark:text-amber-300/90 mt-1 max-w-xl leading-relaxed">
@@ -91,7 +91,7 @@ const AIReviewModule = ({
               </p>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-200/60 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200 shrink-0">
+          <span className="px-3 py-1 rounded-full text-[11px] font-medium bg-amber-200/60 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200 shrink-0">
             Collecting Feedback
           </span>
         </div>
@@ -104,7 +104,7 @@ const AIReviewModule = ({
             <Sparkles className="w-7 h-7" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-base font-medium text-slate-900 dark:text-white">
               Generate First AI Review
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
@@ -116,7 +116,7 @@ const AIReviewModule = ({
               type="button"
               onClick={onGenerateReview}
               disabled={generating || totalResponses === 0 || completedCount >= 2}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cn-teal-600 to-emerald-600 hover:from-cn-teal-500 hover:to-emerald-500 text-white text-xs font-semibold uppercase tracking-wider rounded-2xl shadow-md shadow-cn-teal-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cn-teal-500 focus-visible:outline-none"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cn-teal-600 to-emerald-600 hover:from-cn-teal-500 hover:to-emerald-500 text-white text-xs font-medium uppercase tracking-wider rounded-2xl shadow-md shadow-cn-teal-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cn-teal-500 focus-visible:outline-none"
             >
               {generating ? (
                 <>
@@ -153,7 +153,7 @@ const AIReviewModule = ({
                     role="tab"
                     aria-selected={isSelected}
                     onClick={() => setAiState((prev) => ({ ...prev, selectedReviewIndex: idx }))}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none ${
                       isSelected
                         ? 'bg-cn-blue-600 text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-neutral-700'
@@ -164,7 +164,7 @@ const AIReviewModule = ({
                       ({rev.responseCount} responses)
                     </span>
                     {isLatest && (
-                      <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-semibold uppercase tracking-wider ${
+                      <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-medium uppercase tracking-wider ${
                         isSelected ? 'bg-white text-cn-blue-600' : 'bg-cn-teal-50 text-cn-teal-700 dark:bg-cn-teal-950/60 dark:text-cn-teal-300'
                       }`}>
                         Latest
@@ -209,7 +209,7 @@ const AIReviewModule = ({
                 type="button"
                 onClick={() => onDownloadPDF(currentReview.reviewNumber)}
                 disabled={downloadingPdf}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-slate-800 dark:hover:bg-neutral-100 transition-all cursor-pointer shadow-xs disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium uppercase tracking-wider rounded-xl hover:bg-slate-800 dark:hover:bg-neutral-100 transition-all cursor-pointer shadow-xs disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none"
                 aria-label={`Download AI Report PDF for Review #${currentReview.reviewNumber}`}
               >
                 <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -233,7 +233,7 @@ const AIReviewModule = ({
                   type="button"
                   onClick={onGenerateReview}
                   disabled={generating || completedCount >= 2}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-700 dark:text-cn-blue-300 border border-cn-blue-200 dark:border-cn-blue-900/40 text-xs font-semibold rounded-xl hover:bg-cn-blue-100 dark:hover:bg-cn-blue-950/60 transition-all cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-700 dark:text-cn-blue-300 border border-cn-blue-200 dark:border-cn-blue-900/40 text-xs font-medium rounded-xl hover:bg-cn-blue-100 dark:hover:bg-cn-blue-950/60 transition-all cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-cn-blue-500 focus-visible:outline-none"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} aria-hidden="true" />
                   <span>{generating ? 'Generating Review...' : `Regenerate Review (${remainingReviews} remaining)`}</span>

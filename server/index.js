@@ -21,8 +21,10 @@ import blackoutRoutes, { ensureBlackoutTable } from "./routes/blackouts.js";
 import scannerRoutes from "./routes/scanner.js";
 import feedbackRoutes from "./routes/feedback.js";
 import featuredEventRoutes from "./routes/featuredEvents.js";
+import campusUpdateRoutes from "./routes/campusUpdates.js";
 import previewRouter from "./emails/preview/previewRouter.js";
 import { initEmailWorker, closeEmailWorker } from "./emails/index.js";
+import { startNotificationCleanupScheduler, stopNotificationCleanupScheduler } from "./services/notificationCleanupService.js";
 import { getPublicKeyInfo } from "./services/qrSigningService.js";
 import prisma from "./lib/prisma.js";
 import compression from "compression";
@@ -216,6 +218,7 @@ app.use("/api/venues", venueRoutes);
 app.use("/api/scanner", scannerRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/featured-events", featuredEventRoutes);
+app.use("/api/campus-updates", campusUpdateRoutes);
 if (process.env.NODE_ENV !== "production") {
   app.use("/api/emails/preview", previewRouter);
 }
@@ -266,9 +269,11 @@ seedPermissions();
 ensureBlackoutTable();
 ensureVenuesTableAndSeed();
 initEmailWorker();
+startNotificationCleanupScheduler();
 
 const handleShutdown = async () => {
   console.log("\nShutting down CampusNode server gracefully...");
+  stopNotificationCleanupScheduler();
   await closeEmailWorker();
   process.exit(0);
 };

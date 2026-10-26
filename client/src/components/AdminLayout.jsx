@@ -54,9 +54,9 @@ const AdminLayout = () => {
           <div className="flex items-center gap-2.5">
             <img src="/nitjlogo.png" alt="NITJ Logo" className="w-8 h-9 shrink-0" />
             <span className="font-light text-[20px] tracking-wider text-black dark:text-white leading-none select-none logofont">
-              Cam<span className="uppercase">P</span>usnode
+              Campusnode
             </span>
-            <span className="px-2 py-0.5 bg-neutral-200/70 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-[9px] font-semibold uppercase tracking-wider rounded-md shrink-0">
+            <span className="px-2 py-0.5 bg-neutral-200/70 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 text-[9px] font-medium uppercase tracking-wider rounded-md shrink-0">
               Admin
             </span>
           </div>
@@ -81,7 +81,7 @@ const AdminLayout = () => {
             <span>Desktop Display Required</span>
           </div>
 
-          <h1 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-2 leading-snug">
+          <h1 className="text-xl font-medium tracking-tight text-neutral-900 dark:text-white mb-2 leading-snug">
             Sorry, this page is not designed for smaller screens
           </h1>
 
@@ -96,14 +96,14 @@ const AdminLayout = () => {
                 <p className="text-[10px] uppercase tracking-wider font-medium text-neutral-400 dark:text-neutral-500">
                   Signed In As
                 </p>
-                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
                   {user?.name || "Administrator"}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                   {user?.email || (role === "paymentAdmin" ? "payment@admin.system" : "admin@college.edu")}
                 </p>
               </div>
-              <span className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase">
+              <span className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase">
                 {role === "paymentAdmin" ? "Finance" : "Admin"}
               </span>
             </div>
@@ -134,9 +134,7 @@ const AdminLayout = () => {
         </div>
 
         {/* Footer Note */}
-        <div className="text-center text-[11px] text-neutral-400 dark:text-neutral-600">
-          Campusnode Security & Administration
-        </div>
+       
       </div>
 
       {/* ========================================================= */}

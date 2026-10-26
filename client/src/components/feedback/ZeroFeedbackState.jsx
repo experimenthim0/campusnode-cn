@@ -7,7 +7,7 @@ const ZeroFeedbackState = ({ isCompleted }) => {
       <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/30 text-amber-500 flex items-center justify-center mx-auto shadow-inner">
         <Star className="w-8 h-8 fill-amber-400 stroke-amber-500" aria-hidden="true" />
       </div>
-      <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+      <h3 className="text-xl font-medium text-slate-900 dark:text-white">
         No Attendee Feedback Yet
       </h3>
       <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
@@ -22,7 +22,7 @@ const ZeroFeedbackState = ({ isCompleted }) => {
         <div className="pt-2">
           <a
             href="/feedback-questions"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-slate-800 dark:text-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-slate-800 dark:text-slate-200 transition-colors"
           >
             <span>Preview Student Feedback Questions →</span>
           </a>

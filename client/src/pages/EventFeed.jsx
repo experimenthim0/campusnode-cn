@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import EventCard from '../components/EventCard';
+import CompactEventCard from '../components/CompactEventCard';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { getUserEvents, registerForEvent } from '../services/eventService';
 import { useSearchParams } from 'react-router-dom';
 import EventCardSkeleton from '../components/skeletons/EventCardSkeleton';
+import CompactEventCardSkeleton from '../components/skeletons/CompactEventCardSkeleton';
 import { Skeleton } from '../components/ui/Skeleton';
 import { getPublicJson } from '../lib/publicDataCache';
 import { registerUpdateCallback, unregisterUpdateCallback, invalidateCache } from '../lib/cacheManager';
@@ -13,6 +15,7 @@ import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import CardCarousel from '../components/CardCarousel';
 import ScrollReveal from '../components/ScrollReveal';
 import MonthView from '../components/calendar/MonthView';
+import { LayoutGrid, Rows3 } from 'lucide-react';
 
 const CAT_IMAGES = [
   "/cat_images/cat-black (1).png",
@@ -91,6 +94,24 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
+
+  // Layout preference: 'grid' (regular cards) vs 'compact' (modern horizontal cards)
+  const [cardLayout, setCardLayout] = useState(() => {
+    try {
+      return localStorage.getItem('event_card_layout') || 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
+
+  const handleSetCardLayout = (layout) => {
+    setCardLayout(layout);
+    try {
+      localStorage.setItem('event_card_layout', layout);
+    } catch {
+      // ignore
+    }
+  };
 
   const [events, setEvents] = useState([]);
   const [pagination, setPagination] = useState({
@@ -449,7 +470,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   }, [events, onlyActive, hideHeader]);
 
   if (loading) {
-    const skeletonGrid = (
+    const skeletonGrid = cardLayout === 'compact' ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+        {[...Array(pageSize > 6 ? 6 : pageSize)].map((_, i) => (
+          <CompactEventCardSkeleton key={i} />
+        ))}
+      </div>
+    ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {[...Array(pageSize > 6 ? 6 : pageSize)].map((_, i) => (
           <EventCardSkeleton key={i} />
@@ -486,46 +513,83 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
   ];
 
   const Container = hideHeader ? 'div' : Section;
-  const containerProps = hideHeader ? { className: "myfont w-full" } : { className: "myfont py-10 sm:py-12 lg:py-16" };
+  const containerProps = hideHeader ? { className: "w-full" } : { className: "py-10 sm:py-12 lg:py-16" };
 
   return (
     <Container {...containerProps}>
       {!hideHeader && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 sm:mb-10">
           <div className="text-center sm:text-left">
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+            <h1 className="text-page-title text-cn-text">
               Events &amp; Activities
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="text-body text-cn-text-secondary mt-1">
              Discover campus events, club activities, hackathons, and cultural fests at NIT Jalandhar.
             </p>
           </div>
 
-          <div className="inline-flex items-center p-1 bg-neutral-100 dark:bg-zinc-800/80 rounded-xl border border-neutral-200 dark:border-zinc-700/60 shadow-2xs shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode('feed')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === 'feed'
-                  ? 'bg-white dark:bg-zinc-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
-                  : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
-              }`}
-            >
-              <i className="ri-layout-grid-line font-light" />
-              <span>Feed View</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('calendar')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === 'calendar'
-                  ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
-                  : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
-              }`}
-            >
-              <i className="ri-calendar-2-line font-light" />
-              <span>Calendar View</span>
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center p-1 bg-neutral-100 dark:bg-zinc-800/80 rounded-xl border border-neutral-200 dark:border-zinc-700/60 shadow-2xs shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode('feed')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  viewMode === 'feed'
+                    ? 'bg-white dark:bg-zinc-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+                }`}
+              >
+                <i className="ri-layout-grid-line font-light" />
+                <span>Feed View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('calendar')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  viewMode === 'calendar'
+                    ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+                }`}
+              >
+                <i className="ri-calendar-2-line font-light" />
+                <span>Calendar View</span>
+              </button>
+            </div>
+
+            {/* {viewMode === 'feed' && (
+              <div
+                role="group"
+                aria-label="Layout view switcher"
+                className="inline-flex items-center p-1 bg-neutral-100 dark:bg-zinc-800/80 rounded-xl border border-neutral-200 dark:border-zinc-700/60 shadow-2xs shrink-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => handleSetCardLayout('grid')}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                    cardLayout === 'grid'
+                      ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
+                      : 'text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                  }`}
+                  aria-label="Regular grid view"
+                  title="Regular grid view"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetCardLayout('compact')}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                    cardLayout === 'compact'
+                      ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs'
+                      : 'text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                  }`}
+                  aria-label="Modern list view"
+                  title="Modern list view"
+                >
+                  <Rows3 className="w-4 h-4" />
+                </button>
+              </div>
+            )} */}
           </div>
         </div>
       )}
@@ -535,13 +599,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {(!hideHeader || showFilters) && (
         <div className="mb-6 bg-cn-surface border border-cn-border rounded-2xl p-2.5 sm:p-3.5 shadow-2xs max-w-full overflow-hidden">
           <div className="relative group">
-            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
+            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-cn-text-muted group-focus-within:text-brand-600 dark:group-focus-within:text-brand-400 text-sm sm:text-base transition-colors pointer-events-none" />
             <input
               type="text"
               placeholder="Search events, clubs, or categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-neutral-50 dark:bg-zinc-900/60 border border-neutral-200 dark:border-zinc-800 rounded-xl focus:bg-white dark:focus:bg-zinc-900 focus:border-brand-600 dark:focus:border-brand-500 text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none transition-all font-medium"
+              className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 bg-cn-surface-muted border border-cn-border rounded-xl focus:bg-cn-surface focus:border-brand-600 text-body text-cn-text placeholder-cn-text-muted outline-none transition-all"
             />
             {searchQuery && (
               <button
@@ -565,7 +629,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                   key={btn.key}
                   type="button"
                   onClick={() => setFilterStatus(btn.key)}
-                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
+                  className={`mysans inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-medium uppercase tracking-wider rounded-lg border whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer ${
                     filterStatus === btn.key
                       ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs"
                       : "bg-neutral-50 dark:bg-zinc-850/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800"
@@ -620,7 +684,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="mysans inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
+                className="mysans inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors shrink-0 cursor-pointer"
                 title="Reset all filters"
               >
                 <i className="ri-refresh-line text-xs" />
@@ -632,7 +696,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
             <span>
               Showing{' '}
-              <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+              <span className="font-medium text-neutral-800 dark:text-neutral-200">
                 {pagination.total > 0
                   ? `${(pagination.page - 1) * pagination.limit + 1}–${Math.min(pagination.page * pagination.limit, pagination.total)} of ${pagination.total}`
                   : '0'}
@@ -641,15 +705,49 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             </span>
             <div className="flex items-center gap-2">
               {isFetching && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider animate-pulse">
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-600 dark:text-brand-400 uppercase tracking-wider animate-pulse">
                   <i className="ri-loader-4-line animate-spin text-xs" />
                   Updating...
                 </span>
               )}
               {isFilterActive && !isFetching && (
-                <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+                <span className="text-[10px] font-medium text-brand-600 dark:text-brand-400 uppercase tracking-wider">
                   Filters applied
                 </span>
+              )}
+              {viewMode === 'feed' && (
+                <div
+                  role="group"
+                  aria-label="Layout switcher"
+                  className="inline-flex items-center p-0.5 bg-neutral-100 dark:bg-zinc-800/90 rounded-lg border border-neutral-200 dark:border-zinc-700/60 shrink-0 ml-1"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleSetCardLayout('grid')}
+                    className={`p-1 rounded-md transition-all cursor-pointer ${
+                      cardLayout === 'grid'
+                        ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-2xs'
+                        : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
+                    }`}
+                    aria-label="Regular grid view"
+                    title="Regular grid view"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetCardLayout('compact')}
+                    className={`p-1 rounded-md transition-all cursor-pointer ${
+                      cardLayout === 'compact'
+                        ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-2xs'
+                        : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
+                    }`}
+                    aria-label="Modern list view"
+                    title="Modern list view"
+                  >
+                    <Rows3 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -661,7 +759,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">
             <i className="ri-error-warning-line text-2xl" />
           </div>
-          <h3 className="font-bold text-neutral-900 dark:text-neutral-100 text-base mb-1">
+          <h3 className="font-medium text-neutral-900 dark:text-neutral-100 text-base mb-1">
             Failed to load events
           </h3>
           <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 max-w-md mx-auto">
@@ -670,7 +768,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
           <button
             type="button"
             onClick={() => fetchEvents()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
           >
             <i className="ri-refresh-line text-xs" />
             <span>Retry</span>
@@ -687,7 +785,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
               className="max-h-full max-w-full object-contain drop-shadow-xs"
             />
           </div>
-          <h3 className="font-extrabold text-base sm:text-lg text-neutral-900 dark:text-white mb-1 tracking-tight">
+          <h3 className="font-medium text-base sm:text-lg text-neutral-900 dark:text-white mb-1 tracking-tight">
             {pagination.total === 0 && !isFilterActive
               ? 'No events scheduled yet'
               : pagination.total === 0
@@ -706,7 +804,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
             <button
               type="button"
               onClick={handleResetFilters}
-              className="text-brand-600 font-semibold uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
+              className="text-brand-600 font-medium uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
             >
               Clear all filters
             </button>
@@ -743,7 +841,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 </h2>
               )}
               {hideHeader && (
-                <h3 className="text-md font-semibold text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                <h3 className="text-md font-medium text-red-500 mb-4 flex items-center gap-2 uppercase tracking-wide">
                   <span className="relative flex h-3 w-3">
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                   </span>
@@ -763,6 +861,18 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 </ScrollReveal>
               ))}
             </CardCarousel>
+          ) : cardLayout === 'compact' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+              {liveEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.04 * (idx % 2)} distance={16}>
+                  <CompactEventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {liveEvents.map((event, idx) => (
@@ -783,7 +893,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div className={endedEvents.length > 0 ? 'mb-14' : ''}>
           {!hideHeader && (
             <ScrollReveal direction="up" distance={15}>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
+              <h2 className="text-lg font-medium text-gray-700 dark:text-neutral-300 mb-6 flex items-center gap-2">
                 Upcoming Events
               </h2>
             </ScrollReveal>
@@ -801,6 +911,18 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 </ScrollReveal>
               ))}
             </CardCarousel>
+          ) : cardLayout === 'compact' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+              {upcomingEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.04 * (idx % 2)} distance={16}>
+                  <CompactEventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {upcomingEvents.map((event, idx) => (
@@ -821,13 +943,13 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
         <div>
           {!hideHeader && (
             <ScrollReveal direction="up" distance={15}>
-              <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-6 flex items-center justify-center gap-2">
+              <h2 className="text-xl font-medium text-neutral-800 dark:text-neutral-200 mb-6 flex items-center justify-center gap-2">
                 Past Events
               </h2>
             </ScrollReveal>
           )}
           {hideHeader && (
-            <h3 className="text-md font-semibold text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <h3 className="text-md font-medium text-neutral-400 mb-4 flex items-center gap-2 uppercase tracking-wide">
               Past Events
             </h3>
           )}
@@ -843,6 +965,18 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                 </ScrollReveal>
               ))}
             </CardCarousel>
+          ) : cardLayout === 'compact' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+              {endedEvents.map((event, idx) => (
+                <ScrollReveal key={event.id || event._id} direction="up" delay={0.04 * (idx % 2)} distance={16}>
+                  <CompactEventCard
+                    event={event}
+                    onRegister={handleRegister}
+                    isRegistered={registeredEvents.has(String(event.id || event._id))}
+                  />
+                </ScrollReveal>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {endedEvents.map((event, idx) => (
@@ -863,8 +997,8 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
       {!limit && pagination.totalPages > 1 && (
         <div className="mt-12 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-100 dark:border-zinc-800/80 pt-6">
           <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-            Page <span className="font-semibold text-neutral-900 dark:text-neutral-100">{pagination.page}</span> of{' '}
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">{pagination.totalPages}</span>
+            Page <span className="font-medium text-neutral-900 dark:text-neutral-100">{pagination.page}</span> of{' '}
+            <span className="font-medium text-neutral-900 dark:text-neutral-100">{pagination.totalPages}</span>
             {' '}• {pagination.total} total {pagination.total === 1 ? 'event' : 'events'}
           </div>
 
@@ -906,7 +1040,7 @@ const EventFeed = ({ limit, hideHeader = false, showFilters = false, onlyActive 
                     disabled={isFetching}
                     className={`min-w-[34px] h-[34px] text-xs font-medium rounded-lg border transition-all duration-150 cursor-pointer ${
                       pagination.page === p
-                        ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs font-bold'
+                        ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-2xs font-medium'
                         : 'bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-zinc-800 hover:bg-neutral-100 dark:hover:bg-zinc-800'
                     }`}
                     aria-current={pagination.page === p ? 'page' : undefined}

@@ -122,7 +122,7 @@ const MonthView = ({
       {onDateChange && (
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50/70 dark:bg-zinc-900/50">
           <div className="flex items-center gap-2">
-            <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-100">
+            <h3 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-neutral-100">
               {currentDate.toLocaleDateString("en-US", {
                 month: "long",
                 year: "numeric",
@@ -133,7 +133,7 @@ const MonthView = ({
             <button
               type="button"
               onClick={handleToday}
-              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-zinc-800 bg-cn-surface text-cn-text hover:bg-neutral-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs font-medium rounded-lg border border-neutral-200 dark:border-zinc-800 bg-cn-surface text-cn-text hover:bg-neutral-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               Today
             </button>
@@ -164,7 +164,7 @@ const MonthView = ({
         {dayNames.map((d) => (
           <div
             key={d}
-            className="py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+            className="py-2.5 text-center text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
             {d}
           </div>
@@ -191,7 +191,7 @@ const MonthView = ({
               {/* Cell Header: Day Number + Event Count Badge */}
               <div className="flex items-center justify-between mb-1">
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                     today
                       ? "bg-brand-600 text-white shadow-sm"
                       : cell.isCurrentMonth
@@ -203,7 +203,7 @@ const MonthView = ({
                 </span>
 
                 {dayEvents.length > 0 && (
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300">
+                  <span className="text-[10px] font-medium px-1.5 py-0.2 rounded-full bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300">
                     {dayEvents.length}
                   </span>
                 )}
@@ -213,7 +213,7 @@ const MonthView = ({
               {dayBlackouts.map((b) => (
                 <div
                   key={b.id || b._id}
-                  className="mb-1 p-1 bg-rose-500/15 border border-rose-500/30 rounded-lg text-[10px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate"
+                  className="mb-1 p-1 bg-rose-500/15 border border-rose-500/30 rounded-lg text-[10px] font-medium text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate"
                 >
                   <AlertTriangle size={10} className="shrink-0 text-rose-500" />
                   <span className="truncate">{b.venue}: CLOSED</span>
@@ -233,7 +233,7 @@ const MonthView = ({
                   );
                 })}
                 {dayEvents.length > 4 && (
-                  <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400">
+                  <span className="text-[9px] font-medium text-neutral-500 dark:text-neutral-400">
                     +{dayEvents.length - 4}
                   </span>
                 )}
@@ -254,7 +254,7 @@ const MonthView = ({
                       title={`${event.title} • ${event.club?.clubName || "Club"}`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${palette.dot}`} />
-                      <span className="truncate max-w-full font-semibold leading-tight">
+                      <span className="truncate max-w-full font-medium leading-tight">
                         {event.title}
                       </span>
                     </div>
@@ -262,7 +262,7 @@ const MonthView = ({
                 })}
 
                 {dayEvents.length > 3 && (
-                  <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 text-left pl-1">
+                  <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 text-left pl-1">
                     +{dayEvents.length - 3} more
                   </p>
                 )}

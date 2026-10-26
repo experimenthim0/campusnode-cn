@@ -22,39 +22,26 @@ const FeaturedEventCard = ({ event, isPreview = false, className = "" }) => {
 
   const CardContent = (
     <div
-      className={`group relative flex flex-col justify-between h-full p-4 sm:p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl transition-all duration-200 hover:border-brand-500/50 dark:hover:border-brand-500/40 hover:-translate-y-1 hover:shadow-md active:scale-[0.99] touch-manipulation cursor-pointer select-none text-left ${className}`}
+      className={`group relative flex flex-col justify-between h-full p-4 sm:p-4 bg-cn-surface dark:bg-cn-surface-card border border-cn-border rounded-2xl transition-all duration-200 hover:border-brand-500/50 hover:-translate-y-1 hover:shadow-md active:scale-[0.99] touch-manipulation cursor-pointer select-none text-left ${className}`}
     >
       {/* Top Bar: Badge & Arrow */}
       <div>
-        {/* <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/60 rounded-md">
-            <Sparkles size={11} className="text-brand-500" />
-            FEATURED
-          </span>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 dark:text-neutral-500 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-950/50 transition-all">
-            <ArrowUpRight
-              size={18}
-              className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            />
-          </div>
-        </div>  */}
-
         {/* Title: Strongest visual weight */}
-        <h3 className="font-black text-lg sm:text-xl text-neutral-900 dark:text-neutral-50 leading-[1.25] tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2">
+        <h3 className="text-card-title text-cn-text group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors line-clamp-2">
           {event.title || "Untitled Event"}
         </h3>
 
         {/* Date & Time */}
-        <div className="mt-3 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <div className="mt-3 text-body font-medium text-cn-text-secondary">
           {combinedStr || "Date & Time TBA"}
         </div>
 
         {/* Hosted By */}
         <div className="flex items-center justify-between gap-2">
-          <div className="mt-1 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 truncate">
-            Hosted by <span className="font-medium text-neutral-600 dark:text-neutral-300">{hostName}</span>
+          <div className="mt-1 text-metadata text-cn-text-muted truncate">
+            Hosted by <span className="font-medium text-cn-text">{hostName}</span>
           </div>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 dark:text-neutral-500 group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-950/50 transition-all">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-cn-text-muted group-hover:text-brand-600 dark:group-hover:text-brand-300 group-hover:bg-brand-50 dark:group-hover:bg-brand-950/50 transition-all">
             <ArrowUpRight
               size={18}
               className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"

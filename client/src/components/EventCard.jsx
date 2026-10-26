@@ -129,7 +129,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         const dateOptions = dl.getFullYear() !== currentYear
             ? { month: 'short', day: 'numeric', year: 'numeric' }
             : { month: 'short', day: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
         const formattedDate = dl.toLocaleDateString('en-US', dateOptions);
         const formattedTimeStr = dl.toLocaleTimeString('en-US', timeOptions);
 
@@ -192,19 +192,15 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
         return adaptExtractedColor(rgb, isDark);
     }, [rgb, isDark]);
 
-    // Construct premium card styles dynamically (harmonious slight minimal blue in dark mode, theme-adapted glow)
+    // Construct premium card styles dynamically (theme-adapted glow on hover with extracted image color)
     const customStyles = (isHovered && rgb)
         ? {
-            backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
             boxShadow: isDark
                 ? `0 20px 40px -15px rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.35)`
                 : `0 20px 40px -15px rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.15)`,
             borderColor: `rgba(${effectiveRgb[0]}, ${effectiveRgb[1]}, ${effectiveRgb[2]}, 0.35)`,
         }
-        : {
-            backgroundColor: isDark ? 'rgb(13, 13, 13)' : 'rgb(255, 255, 255)',
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgb(229, 231, 235)', // border-gray-200
-        };
+        : {};
 
     const activeRgb = effectiveRgb;
 
@@ -266,7 +262,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleCardClick}
-            className="relative border border-neutral-200 dark:border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1 flex flex-col h-full shadow-sm group cursor-pointer"
+            className="relative border border-cn-border bg-cn-surface dark:bg-cn-surface-card rounded-xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 flex flex-col h-full shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_24px_-4px_rgba(0,0,0,0.08),0_4px_10px_-2px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_10px_28px_-4px_rgba(0,0,0,0.45)] group cursor-pointer"
         >
 
             {/* Image */}
@@ -287,7 +283,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                 {/* Status / Date Badge */}
                 <div className="absolute top-1.5 left-1.5 z-10">
                     {isLive && (
-                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md uppercase shadow-xs">
+                        <span className="inline-flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-medium tracking-wider px-2.5 py-1 rounded-md uppercase shadow-xs">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             Live
                         </span>
@@ -295,23 +291,23 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                     {!isLive && status === 'UPCOMING' && (
                         dayNumber && monthName ? (
                             <div className="flex flex-col items-center justify-center min-w-[34px] rounded-md overflow-hidden bg-white/95 dark:bg-neutral-900/95 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs backdrop-blur-xs select-none">
-                                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[8px] font-black uppercase tracking-wider text-center px-1.5 py-0.5 leading-none">
+                                <div className="w-full bg-red-500 dark:bg-red-600 text-white text-[8px] font-medium uppercase tracking-wider text-center px-1.5 py-0.5 leading-none">
                                     {monthName}
                                 </div>
                                 <div className="w-full flex items-center justify-center px-1.5 py-0.5 bg-neutral-50/90 dark:bg-neutral-900/90">
-                                    <span className="text-xs sm:text-[13px] font-black text-neutral-900 dark:text-white tracking-tight leading-none">
+                                    <span className="text-xs sm:text-[13px] font-medium text-neutral-900 dark:text-white tracking-tight leading-none">
                                         {dayNumber}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
+                            <span className="inline-flex items-center border border-neutral-200 dark:border-neutral-700 bg-white/95 dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-100 text-[10px] font-medium tracking-wider px-2.5 py-1 rounded-md shadow-xs backdrop-blur-xs">
                                 Upcoming
                             </span>
                         )
                     )}
                     {isEnded && (
-                        <span className="inline-flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs">
+                        <span className="inline-flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-medium tracking-wider px-2.5 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shadow-xs">
                             Ended
                         </span>
                     )}
@@ -392,7 +388,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                         </div>
                     )}
                 </div>
-                <h3 className="text-lg font-medium mysans text-neutral-900 dark:text-white tracking-wide mb-2 line-clamp-2">{title}</h3>
+                <h3 className="text-card-title text-cn-text mb-2 line-clamp-2">{title}</h3>
 
                 {/* Info row */}
                 {isEnded ? (
@@ -411,7 +407,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         {regIndicator && (
                                             <div
                                                 title={regIndicator.tooltip}
-                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
                                             >
                                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
                                                 <span>{regIndicator.label}</span>
@@ -422,13 +418,13 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         <div className="w-5 flex items-center justify-center shrink-0">
                                             <i className="ri-trophy-fill text-brand-600 text-sm" />
                                         </div>
-                                        <span className="text-[11px] font-semibold tracking-wider text-brand-600 uppercase">Winners</span>
+                                        <span className="text-[11px] font-medium tracking-wider text-brand-600 uppercase">Winners</span>
                                     </div>
                                     {/* Winner Rows */}
                                     {event.winners.map((winner, index) => (
                                         <div key={index} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/40 p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
+                                                <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md ${winner.rank === 1 ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60' :
                                                     winner.rank === 2 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700' :
                                                         'bg-brand-100 dark:bg-brand-950/40 text-brand-855 dark:text-brand-400 border border-brand-200 dark:border-brand-900/60'
                                                     }`}>
@@ -455,7 +451,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                         {regIndicator && (
                                             <div
                                                 title={regIndicator.tooltip}
-                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
                                             >
                                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
                                                 <span>{regIndicator.label}</span>
@@ -491,7 +487,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 {regIndicator && (
                                     <div
                                         title={regIndicator.tooltip}
-                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
                                     >
                                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
                                         <span>{regIndicator.label}</span>
@@ -526,7 +522,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
                                 {regIndicator && (
                                     <div
                                         title={regIndicator.tooltip}
-                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
+                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide border shrink-0 select-none ${regIndicator.badgeClass}`}
                                     >
                                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${regIndicator.dotClass}`} />
                                         <span>{regIndicator.label}</span>
@@ -549,7 +545,7 @@ const EventCard = ({ event, onRegister, isRegistered }) => {
 
                     {entryFee !== 0 && (
                         <span
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
+                            className="inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider px-2.5 py-2 rounded-lg border shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60"
                         >
                             <i className="ri-money-rupee-circle-line" /> ₹{entryFee}
                         </span>

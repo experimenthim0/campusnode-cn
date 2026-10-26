@@ -130,7 +130,7 @@ const CountdownTimer = ({ startTime, endTime }) => {
 
 const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-2 mb-5 text-brand-600 dark:text-brand-500">
-    <span className="text-[11px] font-semibold uppercase tracking-[0.15em]">{children}</span>
+    <span className="text-[11px] font-medium uppercase tracking-[0.15em]">{children}</span>
   </div>
 );
 
@@ -139,7 +139,7 @@ const SectionGlow = () => null;
 const BtnPrimary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white text-[13px] font-semibold uppercase tracking-widest rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:border-neutral-800 dark:hover:border-neutral-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg"
+    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-btn rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-brand-600/20 hover:shadow-lg"
   >
     {children}
   </Link>
@@ -148,7 +148,7 @@ const BtnPrimary = ({ to, children }) => (
 const BtnSecondary = ({ to, children }) => (
   <Link
     to={to}
-    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 border border-neutral-300 dark:border-neutral-700 transition-all duration-200 font-medium text-sm rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-cn-blue-500/50"
+    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-cn-surface hover:bg-cn-surface-muted text-cn-text hover:text-brand-600 dark:hover:text-brand-300 border border-cn-border transition-all duration-200 text-btn rounded-full cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:border-brand-500/50"
   >
     {children}
   </Link>
@@ -308,7 +308,7 @@ const Home = () => {
           ];
 
   return (
-    <div className="myfont text-cn-text bg-cn-bg transition-colors duration-300 -mt-12">
+    <div className="text-cn-text bg-cn-bg transition-colors duration-300 -mt-12">
 
       {user ? (
         <>
@@ -322,13 +322,13 @@ const Home = () => {
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b border-neutral-200/50 dark:border-white/[0.05]">
                 <div className="flex flex-col gap-2">
                   {/* Role badge */}
-                  <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-widest border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-500 dark:bg-brand-400 opacity-80" />
                     {roleBadgeLabel}
                   </span>
 
                   {/* Greeting — always student's personal name */}
-                  <h1 className="text-3xl md:text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
+                  <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-neutral-900 dark:text-white">
                     Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cn-blue-600 via-brand-500 to-cn-blue-400 dark:from-cn-blue-400 dark:via-brand-400 dark:to-cn-blue-200">{firstName}</span>
                   </h1>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 font-light">
@@ -352,7 +352,7 @@ const Home = () => {
                         <button
                           type="button"
                           onClick={openFeedbackModal}
-                          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 dark:bg-brand-400/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 dark:border-brand-400/20 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md group backdrop-blur-sm"
+                          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-brand-500/10 dark:bg-brand-400/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 dark:border-brand-400/20 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md group backdrop-blur-sm"
                         >
                           <span className="w-2 h-2 rounded-full bg-brand-500 dark:bg-brand-400 animate-ping" />
                           <span>FEEDBACK • {pendingCount} {pendingCount === 1 ? 'event needs' : 'events need'} your feedback</span>
@@ -396,13 +396,13 @@ const Home = () => {
                 <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <SectionLabel>My Campus Journey</SectionLabel>
-                    <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+                    <h2 className="font-medium text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                       My Registered Events
                     </h2>
                   </div>
                   <Link
                     to="/my-events"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md self-start sm:self-auto backdrop-blur-sm"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md self-start sm:self-auto backdrop-blur-sm"
                   >
                     Manage Passes & QR Codes <ArrowRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-500 shrink-0" />
                   </Link>
@@ -417,13 +417,13 @@ const Home = () => {
                     <div className="w-12 h-12 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4">
                       <Calendar className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                     </div>
-                    <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-1">Your timeline is empty</h3>
+                    <h3 className="font-medium text-lg text-neutral-900 dark:text-white mb-1">Your timeline is empty</h3>
                     <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed mb-6">
                       You haven't registered for any events yet. Check out the latest campus fests and technical sessions below!
                     </p>
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center px-6 py-3 bg-brand-500/10 hover:bg-brand-500/20 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-600 dark:text-brand-400 border border-brand-500/25 dark:border-brand-400/25 font-semibold text-xs uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs backdrop-blur-sm"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-brand-500/10 hover:bg-brand-500/20 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-600 dark:text-brand-400 border border-brand-500/25 dark:border-brand-400/25 font-medium text-xs uppercase tracking-widest rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs backdrop-blur-sm"
                     >
                       Find Events to Join
                     </Link>
@@ -447,7 +447,7 @@ const Home = () => {
                             <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-brand-500/15 dark:border-brand-400/15 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md hover:border-brand-500/30 dark:hover:border-brand-400/30 transition-all duration-300">
                               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                 <div className="space-y-2">
-                                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                                  <h3 className="text-lg font-medium text-neutral-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                                     <Link to={`/event/${event.slug || event.id || event._id}`}>{event.title}</Link>
                                   </h3>
                                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -456,14 +456,14 @@ const Home = () => {
                                     </span>
                                     <span>•</span>
                                     <span>
-                                      {new Date(event.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - {new Date(event.endTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                      {new Date(event.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - {new Date(event.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     </span>
                                   </div>
                                 </div>
                                 <div className="flex flex-wrap items-center sm:flex-col sm:items-end gap-2">
                                   <CountdownTimer startTime={event.startTime} endTime={event.endTime} />
                                   {isPaidEvent && reg.paymentStatus && (
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 backdrop-blur-sm">
                                       {isPending && (
                                         <span className="w-1.5 h-1.5 rounded-full bg-brand-500 dark:bg-brand-400 animate-ping inline-block" />
                                       )}
@@ -480,7 +480,7 @@ const Home = () => {
                                   <MapPin className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
                                   <span>Venue: <strong className="text-neutral-900 dark:text-white">{event.venue}</strong></span>
                                   {event.venue !== 'Online' && (
-                                    <span className="text-[10px] text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+                                    <span className="text-[10px] text-brand-600 dark:text-brand-400 font-medium hover:underline">
                                       ({openMapEventId === event._id ? 'Close Map' : 'Locate on Map'})
                                     </span>
                                   )}
@@ -519,11 +519,11 @@ const Home = () => {
                   {/* Section identity */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-shield-star-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-brand-600 dark:text-brand-400">
                       {isStudentLead ? 'Club Operations Desk' : 'Coordinator Desk'}
                     </span>
                   </div>
-                  <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+                  <h2 className="font-medium text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     {isStudentLead ? 'Your Clubs & Leadership' : 'Your Clubs & Coordination'}
                   </h2>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
@@ -551,19 +551,19 @@ const Home = () => {
                             {m.clubLogo ? (
                               <img src={m.clubLogo} alt={m.clubName} className="w-9 h-9 rounded-xl object-cover border border-brand-500/20 dark:border-brand-400/20 shrink-0" />
                             ) : (
-                              <div className="w-9 h-9 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 flex items-center justify-center shrink-0 text-base font-black">
+                              <div className="w-9 h-9 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 flex items-center justify-center shrink-0 text-base font-medium">
                                 {(m.clubName || 'C').charAt(0)}
                               </div>
                             )}
                             <div>
-                              <p className="font-semibold text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
-                              <p className="text-[10px] uppercase tracking-widest font-semibold text-brand-600 dark:text-brand-400">
+                              <p className="font-medium text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
+                              <p className="text-[10px] uppercase tracking-widest font-medium text-brand-600 dark:text-brand-400">
                                 {isLead ? 'Student Lead' : isCoord ? 'Club Coordinator' : 'Team Member'}
                               </p>
                             </div>
                             <Link
                               to={`/club-events/${m.clubId}`}
-                              className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                              className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
                             >
                               View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
                             </Link>
@@ -581,7 +581,7 @@ const Home = () => {
                                   <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
+                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">
                                     {isLead || isCoord || m.canEditEvents ? 'Create & manage events, scan QR tickets' : 'Scan QR tickets and check-in attendees'}
                                   </p>
@@ -599,7 +599,7 @@ const Home = () => {
                                   <Users className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Team & Members</p>
+                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Team & Members</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
                                 </div>
                               </Link>
@@ -615,7 +615,7 @@ const Home = () => {
                                   <Wallet className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
+                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
                                 </div>
                               </Link>
@@ -631,7 +631,7 @@ const Home = () => {
                                   <Bell className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-sm text-neutral-900 dark:text-white">Announcements</p>
+                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Announcements</p>
                                   <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
                                 </div>
                               </Link>
@@ -654,9 +654,9 @@ const Home = () => {
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-government-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">Faculty Coordinator Desk</span>
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-brand-600 dark:text-brand-400">Faculty Coordinator Desk</span>
                   </div>
-                  <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+                  <h2 className="font-medium text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     Approvals & Oversight
                   </h2>
                 </div>
@@ -666,12 +666,12 @@ const Home = () => {
                       <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                         <Calendar className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                       </div>
-                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Event Proposals</h3>
+                      <h3 className="font-medium text-lg text-neutral-900 dark:text-white mb-2">Event Proposals</h3>
                       <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                         Review detailed proposals for upcoming club events. Approve for public release or return with comments.
                       </p>
                     </div>
-                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                    <Link to="/my-events" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                       Review Proposals <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
@@ -680,12 +680,12 @@ const Home = () => {
                       <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                         <Users className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                       </div>
-                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
+                      <h3 className="font-medium text-lg text-neutral-900 dark:text-white mb-2">Club Co-ordination</h3>
                       <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                         Oversee student memberships, coordinate schedules, and send urgent notifications.
                       </p>
                     </div>
-                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                    <Link to="/clubs" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                       View Club Directory <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
@@ -702,9 +702,9 @@ const Home = () => {
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm mb-4">
                     <i className="ri-shield-keyhole-line text-brand-600 dark:text-brand-400 text-sm" />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">Admin Command Center</span>
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-brand-600 dark:text-brand-400">Admin Command Center</span>
                   </div>
-                  <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+                  <h2 className="font-medium text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                     Platform Management
                   </h2>
                 </div>
@@ -715,12 +715,12 @@ const Home = () => {
                         <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                           <LayoutDashboard className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                         </div>
-                        <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
+                        <h3 className="font-medium text-lg text-neutral-900 dark:text-white mb-2">Core System Stats</h3>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                           Access platform statistics, manage clubs, review transaction logs, and configure core settings.
                         </p>
                       </div>
-                      <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                      <Link to="/admin-dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                         Open Admin Panel <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -731,12 +731,12 @@ const Home = () => {
                         <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4">
                           <Bell className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                         </div>
-                        <h3 className="font-semibold text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
+                        <h3 className="font-medium text-lg text-neutral-900 dark:text-white mb-2">Broadcast Announcements</h3>
                         <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
                           Send campus-wide push notifications and official announcements to all registered accounts.
                         </p>
                       </div>
-                      <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
+                      <Link to="/send-notification" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-all duration-200 group">
                         Create System Broadcast <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -756,7 +756,7 @@ const Home = () => {
               <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
                 
                 <ScrollReveal delay={0.2}>
-                  <h1 className="font-semibold  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight text-white drop-shadow-2xs">
+                  <h1 className="font-medium  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight dark:text-white text-black drop-shadow-2xs">
                    Never Miss What's Happening
                     <br />
                     <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
@@ -765,7 +765,7 @@ const Home = () => {
 
                 <ScrollReveal delay={0.3} className="w-full">
                   <div className="flex flex-col items-center gap-8 mt-6">
-                    <p className="text-base md:text-lg font-normal  text-white leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
+                    <p className="text-base md:text-lg font-normal dark:text-white text-black leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
                       Find events, discover clubs, follow campus updates, and take part in the communities that make NIT Jalandhar more than just a campus.
                     </p>
 
@@ -773,7 +773,7 @@ const Home = () => {
                       {/* Primary Action */}
                       <Link
                         to="/events"
-                        className="group h-12 text-white bg-cn-blue-600 hover:bg-cn-blue-700 active:bg-cn-blue-800 transition-all duration-200 font-semibold text-sm px-7 inline-flex items-center justify-center rounded-full cursor-pointer shadow-lg shadow-cn-blue-600/25 hover:shadow-xl hover:shadow-cn-blue-600/35 hover:-translate-y-0.5 active:scale-95 touch-manipulation border border-transparent"
+                        className="group h-12 text-white bg-cn-blue-600 hover:bg-cn-blue-700 active:bg-cn-blue-800 transition-all duration-200 font-medium text-sm px-7 inline-flex items-center justify-center rounded-full cursor-pointer shadow-lg shadow-cn-blue-600/25 hover:shadow-xl hover:shadow-cn-blue-600/35 hover:-translate-y-0.5 active:scale-95 touch-manipulation border border-transparent"
                       >
                         <span>Explore What's Happening</span>
                         <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -791,17 +791,17 @@ const Home = () => {
 
                     {/* <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-16 pt-2 px-6 py-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800/60 shadow-2xs">
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">5K+</span>
+                        <span className="text-3xl sm:text-4xl font-medium text-neutral-900 dark:text-white leading-none">5K+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Students</span>
                       </div>
                       <div className="w-[1px] h-8 bg-neutral-200 dark:bg-neutral-800" />
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">25+</span>
+                        <span className="text-3xl sm:text-4xl font-medium text-neutral-900 dark:text-white leading-none">25+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Clubs & Societies</span>
                       </div>
                       <div className="w-[1px] h-8 bg-neutral-200 dark:bg-neutral-800" />
                       <div className="flex flex-col items-center">
-                        <span className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white leading-none">100+</span>
+                        <span className="text-3xl sm:text-4xl font-medium text-neutral-900 dark:text-white leading-none">100+</span>
                         <span className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 mt-1">Events Every Year</span>
                       </div>
                     </div> */}
@@ -822,7 +822,7 @@ const Home = () => {
           <ScrollReveal direction="up">
             <div className="mb-6 sm:mb-6">
               <SectionLabel>Latest Happenings</SectionLabel>
-              <h2 className="font-black text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight">
+              <h2 className="font-medium text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight">
                 What's Buzzing on Campus
               </h2>
             </div>
@@ -847,14 +847,14 @@ const Home = () => {
           <ScrollReveal direction="up">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
               <div>
-                <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
+                <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-medium text-xs uppercase tracking-widest mb-1.5">
 
                   <span>CAMPUS COMMUNITIES</span>
                 </div>
-                <h2 className="font-semibold text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-wide">
+                <h2 className="font-medium text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
                   Discover Your Campus Community.
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 max-w-xl">
+                <p className=" text-neutral-500 dark:text-neutral-400 mt-1.5 max-w-xl">
                   Explore the clubs and societies that shape student life, innovation, and culture at NIT Jalandhar.
                 </p>
               </div>
@@ -881,13 +881,13 @@ const Home = () => {
         </Section>
       </section>
 
-      <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+      {/* <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
         <SectionGlow />
         <Section className="relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-4">
               <ScrollReveal direction="left">
-                <h2 className="font-black  text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
+                <h2 className="font-medium  text-3xl sm:text-4xl text-neutral-900 dark:text-white leading-[1.1] tracking-tight mb-6">
                   Club<br /><span className="text-brand-600 dark:text-brand-500 text-5xl sm:text-6xl">Hall of Fame</span>
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6">
@@ -909,7 +909,7 @@ const Home = () => {
             </div>
           </div>
         </Section>
-      </section>
+      </section> */}
 
       {!user && (
         <>
@@ -921,10 +921,10 @@ const Home = () => {
                 <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: text */}
                   <div>
-                    <p className="text-xs font-semibold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
+                    <p className="text-xs font-medium tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Students
                     </p>
-                    <h2 className="text-3xl  sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
+                    <h2 className="text-3xl  sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                      Don't Just Be on Campus. <br/>Be Part of It.
                       
                     </h2>
@@ -944,11 +944,11 @@ const Home = () => {
                     </div>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
-                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-semibold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
+                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-medium uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
                         Join now
                         <i className="ri-arrow-right-line text-sm" />
                       </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-semibold uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
+                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-medium uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
                         Browse Events
                       </Link>
                     </div>
@@ -963,8 +963,8 @@ const Home = () => {
                       style={{ filter: "saturate(0.9)" }}
                     />
                     <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-xl px-4 py-3 shadow-md">
-                      <p className="text-lg font-black text-cn-text leading-none">1-Click</p>
-                      <p className="text-[11px] text-cn-text mt-0.5 font-semibold">Event Registration</p>
+                      <p className="text-lg font-medium text-cn-text leading-none">1-Click</p>
+                      <p className="text-[11px] text-cn-text mt-0.5 font-medium">Event Registration</p>
                     </div>
                   </div>
                 </div>
@@ -979,17 +979,17 @@ const Home = () => {
               <ScrollReveal direction="up">
                 <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
+                    <p className="text-xs font-medium tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
                       For Clubs & Societies
                     </p>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-neutral-900 dark:text-white">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight text-neutral-900 dark:text-white">
                       Less logistics,{" "}
                       <span className="text-brand-600 dark:text-brand-500">more impact.</span>
                     </h2>
                   </div>
                   <Link
                     to="/clubs"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-semibold uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-medium uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
                   >
                     <span>Explore All Societies</span>
                     <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
@@ -1005,7 +1005,7 @@ const Home = () => {
                       <div className="w-10 h-10 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-cn-blue-600 group-hover:text-white transition-colors text-lg">
                         {f.icon}
                       </div>
-                      <p className="text-base font-semibold text-neutral-900 dark:text-white mb-1">{f.title}</p>
+                      <p className="text-base font-medium text-neutral-900 dark:text-white mb-1">{f.title}</p>
                       <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
                     </div>
                   ))}
@@ -1021,7 +1021,7 @@ const Home = () => {
                 <ScrollReveal direction="left" className="lg:col-span-5">
                   <div>
                     <SectionLabel>OUR VISION</SectionLabel>
-                    <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
+                    <h2 className="font-medium text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
                       Making Campus Life Easier to Discover.<br />
                     </h2>
                     <div className="space-y-4 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
@@ -1054,13 +1054,13 @@ const Home = () => {
         <Section className="relative z-10">
           <div className="flex flex-col items-center mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <ScrollReveal direction="up" delay={0.1}>
-              <span className="text-brand-600 dark:text-brand-500 font-semibold tracking-[0.2em] text-xs uppercase block mb-3">
+              <span className="text-brand-600 dark:text-brand-500 font-medium tracking-[0.2em] text-xs uppercase block mb-3">
                 The Innovators
               </span>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2}>
-              <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
                 Built by Students, for Students.
               </h2>
             </ScrollReveal>
@@ -1075,17 +1075,38 @@ const Home = () => {
       
         
 
-          {/* Symmetric Team Showcase: 3 Leaders / Architects on Top, 4 Core Innovators Below */}
-          <div className="space-y-6 sm:space-y-8 lg:space-y-8 max-w-6xl mx-auto">
-            {/* Top Row: 3 Team Members */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-xl md:max-w-[860px] mx-auto justify-items-center">
-              {TEAM_MEMBERS.slice(0, 3).map((member, idx) => (
+          {/* Mobile: Unified 2-column grid for all team members (no card is oversized) */}
+          <div className="md:hidden grid grid-cols-2 gap-3 sm:gap-6 max-w-md sm:max-w-xl mx-auto mb-12 sm:mb-16 justify-items-center">
+            {TEAM_MEMBERS.map((member, idx) => (
+              <div
+                key={member.id}
+                className={`w-full ${
+                  idx === TEAM_MEMBERS.length - 1 && TEAM_MEMBERS.length % 2 !== 0
+                    ? 'col-span-2 flex justify-center'
+                    : ''
+                }`}
+              >
                 <div
-                  key={member.id}
-                  className={`w-full max-w-[280px] sm:max-w-[270px] ${
-                    idx === 2 ? 'sm:col-span-2 sm:max-w-[270px] md:col-span-1' : ''
-                  }`}
+                  className={
+                    idx === TEAM_MEMBERS.length - 1 && TEAM_MEMBERS.length % 2 !== 0
+                      ? 'w-full max-w-[calc(50%-6px)]'
+                      : 'w-full'
+                  }
                 >
+                  <ScrollReveal direction="up" delay={0.04 * idx}>
+                    <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                  </ScrollReveal>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: Symmetric Member Showcase (3 on Top, 4 Below) */}
+          <div className="hidden md:block space-y-8 max-w-6xl mx-auto">
+            {/* Top Row: 3 Team Members */}
+            <div className="grid grid-cols-3 gap-8 max-w-[860px] mx-auto justify-items-center">
+              {TEAM_MEMBERS.slice(0, 3).map((member, idx) => (
+                <div key={member.id} className="w-full max-w-[270px]">
                   <ScrollReveal direction="up" delay={0.05 * idx}>
                     <InsetModernTeamCard member={member} className="max-w-[270px]" />
                   </ScrollReveal>
@@ -1094,7 +1115,7 @@ const Home = () => {
             </div>
 
             {/* Bottom Row: 4 Team Members */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-xl lg:max-w-6xl mx-auto justify-items-center">
+            <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 max-w-6xl mx-auto justify-items-center">
               {TEAM_MEMBERS.slice(3).map((member, idx) => (
                 <div key={member.id} className="w-full max-w-[280px] sm:max-w-[270px]">
                   <ScrollReveal direction="up" delay={0.05 * (idx + 3)}>
@@ -1107,12 +1128,12 @@ const Home = () => {
 
     <div className="mt-12 sm:mt-16">
             <div className="text-center mb-6">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
                 <GraduationCap className="w-3.5 h-3.5" />
                 Faculty Mentors
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 md:gap-8 max-w-2xl mx-auto">
               {FACULTY_MENTORS.map((mentor, idx) => (
                 <ScrollReveal key={mentor.id} direction="up" delay={0.05 * idx}>
                   <FacultyCard mentor={mentor} />
@@ -1135,7 +1156,7 @@ const Home = () => {
       </section>
 
       {/* ── Homepage Recruitment Section (Creative Team) ── */}
-      <HomeRecruitmentSection />
+      {/* <HomeRecruitmentSection /> */}
 
       {/* ── Bottom Call to Action Section ── */}
       {!user && (
@@ -1145,13 +1166,13 @@ const Home = () => {
           <Section className="relative z-10">
             <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
               <ScrollReveal direction="up" delay={0.1}>
-                <span className="text-brand-600 dark:text-brand-500 font-semibold tracking-[0.2em] text-xs uppercase block mb-3">
+                <span className="text-brand-600 dark:text-brand-500 font-medium tracking-[0.2em] text-xs uppercase block mb-3">
                   STAY CONNECTED
                 </span>
               </ScrollReveal>
 
               <ScrollReveal direction="up" delay={0.2}>
-                <h2 className="font-black text-3xl sm:text-4xl lg:text-5xl leading-[1.12] tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
+                <h2 className="font-medium text-3xl sm:text-4xl lg:text-5xl leading-[1.12] tracking-tight text-neutral-900 dark:text-white mb-4 sm:mb-6">
                   Your Next Campus Experience Starts Here.
                     </h2>
               </ScrollReveal>
@@ -1165,7 +1186,7 @@ const Home = () => {
               <ScrollReveal direction="up" delay={0.35}>
                 <Link
                   to="/register"
-                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-semibold text-sm px-7 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                  className="text-white bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all duration-200 font-medium text-sm px-7 py-3.5 inline-flex items-center rounded-full cursor-pointer shadow-md shadow-black/15 dark:shadow-white/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                 >
                   Get Started <ArrowRightIcon className="w-4 h-4 ml-1.5" />
                 </Link>
@@ -1199,27 +1220,29 @@ const Home = () => {
         <img
           src="/Trophy.svg"
           alt="Trophy"
-          className="w-24 h-24 sm:w-28 sm:h-28 mx-auto animate-bounce-once"
+          className="w-24 h-24 sm:w-28 sm:h-28 mx-auto"
         />
       </div>
 
       {/* Heading */}
       <h3
         id="winner-title"
-        className="text-[22px] sm:text-2xl font-semibold text-slate-900 dark:text-slate-100 mt-4 leading-tight"
+        className="text-[22px] sm:text-2xl font-medium text-slate-900 dark:text-slate-100 mt-4 leading-tight"
       >
         Congratulations!
       </h3>
 
       {/* Winner Rank */}
-      <p className="text-base font-semibold text-brand-500 dark:text-brand-300 mt-2 leading-snug">
+      <p className="text-base font-medium text-brand-500 dark:text-brand-300 mt-2 leading-snug">
     
         Rank #{celebrationWinnerRank}
+      
       </p>
 
       {/* Event Name */}
       <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed break-words">
         {celebrationEvent.title}
+      
        
       </p>
 
@@ -1232,13 +1255,13 @@ const Home = () => {
       {/* Action Button */}
       <button
         onClick={acknowledgeWin}
-        className="mt-6 w-full py-3 bg-brand-200 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-400/20 font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-sm cursor-pointer"
+        className="mt-6 w-full py-3 bg-brand-200 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-400/20 font-medium rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-sm cursor-pointer"
       >
         Awesome! 🎉
       </button>
     </div>
   </div>
-)} 
+)}  
 
 
       <HomeFooter />

@@ -82,7 +82,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
   return (
     <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 sticky top-0 z-20">
-        <div className="py-3 text-center text-[10px] font-black uppercase text-neutral-400 dark:text-neutral-500 border-r border-neutral-200 dark:border-zinc-800">
+        <div className="py-3 text-center text-[10px] font-medium uppercase text-neutral-400 dark:text-neutral-500 border-r border-neutral-200 dark:border-zinc-800">
           Time
         </div>
         {weekDays.map((dayObj, i) => {
@@ -93,11 +93,11 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
               key={i}
               className="py-2.5 px-2 text-center border-r border-neutral-100 dark:border-zinc-800/80 last:border-r-0"
             >
-              <p className="text-[10px] font-black uppercase tracking-wider text-neutral-400">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
                 {dayObj.toLocaleDateString("default", { weekday: "short" })}
               </p>
               <p
-                className={`text-sm font-black mx-auto inline-flex items-center justify-center w-7 h-7 rounded-full mt-0.5 ${
+                className={`text-sm font-medium mx-auto inline-flex items-center justify-center w-7 h-7 rounded-full mt-0.5 ${
                   isToday
                     ? "bg-brand-600 text-white shadow-sm"
                     : "text-neutral-900 dark:text-white"
@@ -117,7 +117,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
           {HOURS.map((h) => (
             <div
               key={h}
-              className="h-[60px] pr-2 flex items-start justify-end text-[10px] font-semibold text-neutral-400 pt-1"
+              className="h-[60px] pr-2 flex items-start justify-end text-[10px] font-medium text-neutral-400 pt-1"
             >
               {formatHour(h)}
             </div>
@@ -145,11 +145,11 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                   <div
                     key={b.id || b._id}
                     style={style}
-                    className="absolute left-1 right-1 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-[10px] font-semibold text-rose-600 dark:text-rose-400 overflow-hidden flex flex-col justify-between"
+                    className="absolute left-1 right-1 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-[10px] font-medium text-rose-600 dark:text-rose-400 overflow-hidden flex flex-col justify-between"
                   >
                     <div className="flex items-center gap-1">
                       <AlertTriangle size={12} className="text-rose-500 shrink-0" />
-                      <span className="font-extrabold truncate">{b.venue} BLACKOUT</span>
+                      <span className="font-medium truncate">{b.venue} BLACKOUT</span>
                     </div>
                     <p className="truncate opacity-80">{b.title}</p>
                   </div>
@@ -162,8 +162,8 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                 const colorClass = CATEGORY_COLORS[category] || CATEGORY_COLORS.DEFAULT;
                 const statusDot = STATUS_BADGES[event.reviewStatus] || "bg-neutral-400";
 
-                const startStr = new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                const endStr = new Date(event.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                const startStr = new Date(event.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+                const endStr = new Date(event.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
                 return (
                   <div
@@ -174,7 +174,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className="font-extrabold text-black dark:text-white truncate">
+                        <span className="font-medium text-black dark:text-white truncate">
                           {event.title}
                         </span>
                         <span className={`w-2 h-2 rounded-full shrink-0 ${statusDot}`} />
@@ -182,7 +182,7 @@ const WeekView = ({ currentDate, events = [], blackouts = [], onSelectEvent }) =
                       <p className="text-[10px] opacity-80 truncate">{event.club?.clubName}</p>
                     </div>
 
-                    <div className="mt-1 flex items-center justify-between text-[10px] font-semibold opacity-90">
+                    <div className="mt-1 flex items-center justify-between text-[10px] font-medium opacity-90">
                       <span className="truncate">{event.venue}</span>
                       <span>{startStr}</span>
                     </div>

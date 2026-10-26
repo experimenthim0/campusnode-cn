@@ -3,15 +3,15 @@ import { MapPin } from 'lucide-react';
 
 export const HERO_BG_IMAGES = [
   { src: '/bg_images/mainbuilding.jpeg', title: 'Main Administrative Building' },
-  { src: '/bg_images/top_view.webp', title: 'Campus Aerial View' },
+  // { src: '/bg_images/top_view.webp', title: 'Campus Aerial View' },
   { src: '/bg_images/SAC.webp', title: 'Student Activity Centre (SAC)' },
   { src: '/bg_images/it_building.webp', title: 'Department of IT & Computer Science' },
-  { src: '/bg_images/lib_alt.webp', title: 'Central Library & Lecture Theatres' },
+  // { src: '/bg_images/lib_alt.webp', title: 'Central Library & Lecture Theatres' },
   { src: '/bg_images/csh_sac.webp', title: 'Central Seminar Hall & SAC' },
-  { src: '/bg_images/ALt.webp', title: 'Academic Lecture Theatres' },
+  // { src: '/bg_images/ALt.webp', title: 'Academic Lecture Theatres' },
   { src: '/bg_images/hostels.webp', title: 'Student Hostels' },
   { src: '/bg_images/itbuilding.jpeg', title: 'IT Complex' },
-  { src: '/bg_images/hostels-day.jpeg', title: 'Campus Residences' },
+  // { src: '/bg_images/hostels-day.jpeg', title: 'Campus Residences' },
 ];
 
 /**

@@ -16,7 +16,7 @@
   <script>
     // Expose global updater function so React can invoke it at runtime
     window.updateAppTheme = function (isDark) {
-      const targetColor = isDark ? '#0F1117' : '#ffffff';
+      const targetColor = isDark ? '#0B1220' : '#FAFAFA';
 
       // Toggle document classes and scheme
       if (isDark) {
@@ -44,8 +44,16 @@
     })();
   </script>
   <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="preload" href="/fonts/mysans.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="preload" href="/fonts/organix.regular.otf" as="font" type="font/otf" crossorigin />
   <style>
+    @font-face {
+      font-family: 'mysans';
+      src: url('/fonts/mysans.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
     @font-face {
       font-family: 'logofont';
       src: url('/fonts/organix.regular.otf') format('opentype');
@@ -65,7 +73,7 @@
 
 <body>
   <div id="root">
-    <!-- Pre-React Modern AI Shimmer Loader — replaced when React mounts -->
+    <!-- Pre-React Modern Loader — replaced when React mounts -->
     <div id="pre-loader" role="status" aria-label="Loading"
       style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background 0.3s ease;">
       <style>
@@ -89,14 +97,14 @@
           color: transparent;
           animation: preShimmerSweep 1.8s ease-in-out infinite;
           user-select: none;
-          font-family: Inter, system-ui, -apple-system, sans-serif;
-          font-size: 16px;
+          font-family: 'mysans', system-ui, -apple-system, sans-serif;
+          font-size: 14px;
           font-weight: 500;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.04em;
         }
 
         html.dark .pre-shimmer {
-          background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.32) 30%, rgba(255, 255, 255, 0.98) 50%, rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0.32) 100%);
+          background-image: linear-gradient(90deg, rgba(226, 232, 240, 0.32) 0%, rgba(226, 232, 240, 0.32) 30%, rgba(226, 232, 240, 0.98) 50%, rgba(226, 232, 240, 0.32) 70%, rgba(226, 232, 240, 0.32) 100%);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -104,27 +112,27 @@
             animation: none !important;
             background-image: none !important;
             -webkit-text-fill-color: currentColor !important;
-            color: #4b5563 !important;
+            color: #475569 !important;
           }
 
           html.dark .pre-shimmer {
-            color: #9ca3af !important;
+            color: #94a3b8 !important;
           }
         }
       </style>
-      <script>document.getElementById('pre-loader').style.background = document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff';</script>
+      <script>document.getElementById('pre-loader').style.background = document.documentElement.classList.contains('dark') ? '#0B1220' : '#FAFAFA';</script>
       <div
-        style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(234,88,12,0.08) 0%,transparent 70%);filter:blur(50px);pointer-events:none;">
+        style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,148,255,0.08) 0%,transparent 70%);filter:blur(50px);pointer-events:none;">
       </div>
       <div style="text-align:center;position:relative;z-index:1;">
         <div id="pre-brand"
           style="font-family:'logofont',serif;font-size:28px;font-weight:700;letter-spacing:0.04em;margin-bottom:12px;">
-          Campus<span style="color:#ea580c;font-weight:300;">node</span></div>
+          Campus<span style="color:#0094FF;font-weight:400;">node</span></div>
         <span class="pre-shimmer">Loading...</span>
         <script>
           (function () {
             var dk = document.documentElement.classList.contains('dark');
-            document.getElementById('pre-brand').style.color = dk ? '#ffffff' : '#0a0a0a';
+            document.getElementById('pre-brand').style.color = dk ? '#E2E8F0' : '#111111';
           })();
         </script>
       </div>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { resendVerificationEmail } from '../services/authService';
@@ -54,12 +55,75 @@ const Login = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTextRevealing, setIsTextRevealing] = useState(false);
+  const revealIntervalRef = useRef(null);
+  const revealTimeoutRef = useRef(null);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState(''); // '' | 'sending' | 'sent' | 'error'
   const [resendMsg, setResendMsg] = useState('');
 
+  useEffect(() => {
+    return () => {
+      if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    };
+  }, []);
+
+  const handleTogglePassword = () => {
+    if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+
+    const nextState = !showPassword;
+    setShowPassword(nextState);
+
+    const passwordVal = formData.password;
+
+    if (nextState && passwordVal && passwordVal.length > 0) {
+      // Animate ONLY the input text reveal for a short span (~350ms - 450ms)
+      setIsTextRevealing(true);
+      const len = passwordVal.length;
+      const stepDuration = Math.min(55, Math.max(25, Math.floor(400 / len)));
+      let currentStep = 0;
+
+      // Start with all masked bullets
+      setDisplayText('•'.repeat(len));
+
+      revealIntervalRef.current = setInterval(() => {
+        currentStep++;
+        if (currentStep >= len) {
+          clearInterval(revealIntervalRef.current);
+          revealIntervalRef.current = null;
+          setDisplayText('');
+          revealTimeoutRef.current = setTimeout(() => {
+            setIsTextRevealing(false);
+          }, 150);
+        } else {
+          // Unmask progressively from left to right
+          setDisplayText(passwordVal.slice(0, currentStep) + '•'.repeat(len - currentStep));
+        }
+      }, stepDuration);
+    } else {
+      // Reset text reveal state immediately when hiding
+      setDisplayText('');
+      setIsTextRevealing(false);
+    }
+  };
+
   const handleChange = (e) => {
+    if (e.target.name === 'password') {
+      if (revealIntervalRef.current) {
+        clearInterval(revealIntervalRef.current);
+        revealIntervalRef.current = null;
+      }
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
+      setIsTextRevealing(false);
+      setDisplayText('');
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
     if (needsVerification) setNeedsVerification(false);
@@ -141,10 +205,10 @@ const Login = () => {
       />
 
       <div className="w-full max-w-md relative z-10">
-        
+
         {/* Frosted Glass Login Card */}
         <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden flex flex-col">
-          
+
           {/* Card Header */}
           <div className="text-center mb-6">
             {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-3">
@@ -263,22 +327,57 @@ const Login = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    value={formData.password}
+                    value={displayText !== '' ? displayText : formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={inputCls}
+                    className={`${inputCls} pr-11`}
+                    style={{
+                      textShadow: isTextRevealing
+                        ? '0 0 8px rgba(0, 148, 255, 0.7), 0 0 2px rgba(0, 148, 255, 0.4)'
+                        : 'none',
+                      letterSpacing: isTextRevealing ? '0.04em' : 'normal',
+                      transition: 'text-shadow 0.25s ease, letter-spacing 0.25s ease',
+                    }}
                   />
-                  <button
+                  <motion.button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                    onClick={handleTogglePassword}
+                    onMouseDown={(e) => e.preventDefault()}
+                    whileHover={{ scale: 1.12 }}
+                    whileTap={{ scale: 0.88 }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
+                    className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer focus:outline-none ${showPassword
+                        ? "text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300"
+                        : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      }`}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {showPassword ? (
+                        <motion.span
+                          key="eye-off"
+                          initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="flex items-center justify-center"
+                        >
+                          <EyeOff className="w-4 h-4" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="eye"
+                          initial={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="flex items-center justify-center"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 </div>
               </div>
 

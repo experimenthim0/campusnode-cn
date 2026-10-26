@@ -125,11 +125,11 @@ const VenueTimelineView = ({
     <div className="bg-cn-surface border border-neutral-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
       <div className="p-3 px-4 border-b border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/60 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-xs">
+          <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-medium text-xs">
             <Layers size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-black text-black dark:text-white tracking-wide">
+            <h3 className="text-sm font-medium text-black dark:text-white tracking-wide">
               Venue Timeline Grid — {currentDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
             </h3>
             <p className="text-[11px] text-neutral-400 font-medium">
@@ -139,7 +139,7 @@ const VenueTimelineView = ({
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium">
           <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Technical
           </span>
@@ -165,7 +165,7 @@ const VenueTimelineView = ({
           {/* Timeline Header Row (Sticky top) */}
           <div className="flex border-b border-neutral-200 dark:border-zinc-800 bg-neutral-100/80 dark:bg-zinc-900 sticky top-0 z-30">
             <div
-              className="w-[200px] shrink-0 p-3 bg-neutral-100 dark:bg-zinc-900 border-r border-neutral-200 dark:border-zinc-800 text-xs font-black uppercase text-neutral-400 tracking-wider sticky left-0 z-40"
+              className="w-[200px] shrink-0 p-3 bg-neutral-100 dark:bg-zinc-900 border-r border-neutral-200 dark:border-zinc-800 text-xs font-medium uppercase text-neutral-400 tracking-wider sticky left-0 z-40"
             >
               Venues ({venueList.length})
             </div>
@@ -175,7 +175,7 @@ const VenueTimelineView = ({
                 <div
                   key={h}
                   style={{ width: `${HOUR_WIDTH_PX}px` }}
-                  className="shrink-0 p-2.5 text-center text-xs font-black text-neutral-500 dark:text-neutral-400 tracking-wide"
+                  className="shrink-0 p-2.5 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 tracking-wide"
                 >
                   {formatHourLabel(h)}
                 </div>
@@ -212,12 +212,12 @@ const VenueTimelineView = ({
                   >
                     <div className="flex items-center gap-2 truncate">
                       <Building2 size={15} className="text-neutral-400 shrink-0" />
-                      <span className="text-xs font-semibold text-black dark:text-white truncate">
+                      <span className="text-xs font-medium text-black dark:text-white truncate">
                         {venueName}
                       </span>
                     </div>
 
-                    <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-zinc-800 text-neutral-400">
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-zinc-800 text-neutral-400">
                       {venueEvents.length}
                     </span>
                   </div>
@@ -241,11 +241,11 @@ const VenueTimelineView = ({
                         <div
                           key={b.id || b._id}
                           style={{ left: `${leftPx}px`, width: `${widthPx}px` }}
-                          className="absolute top-2 bottom-2 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2 overflow-hidden shadow-sm"
+                          className="absolute top-2 bottom-2 z-10 bg-rose-500/20 border-2 border-rose-500/40 rounded-xl p-2 text-xs font-medium text-rose-600 dark:text-rose-400 flex items-center gap-2 overflow-hidden shadow-sm"
                         >
                           <AlertTriangle size={14} className="text-rose-500 shrink-0" />
                           <div className="truncate">
-                            <p className="font-black text-[11px] uppercase tracking-wider">
+                            <p className="font-medium text-[11px] uppercase tracking-wider">
                               BLACKOUT: {b.title}
                             </p>
                             <p className="text-[10px] opacity-80 truncate">{b.reason || "Maintenance"}</p>
@@ -261,8 +261,8 @@ const VenueTimelineView = ({
                       const colorClass = CATEGORY_COLORS[category] || CATEGORY_COLORS.DEFAULT;
                       const statusInfo = STATUS_BADGES[event.reviewStatus] || STATUS_BADGES.PENDING;
 
-                      const startStr = new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                      const endStr = new Date(event.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                      const startStr = new Date(event.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+                      const endStr = new Date(event.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
                       return (
                         <div
@@ -274,7 +274,7 @@ const VenueTimelineView = ({
                           className={`absolute top-2 bottom-2 z-10 p-2.5 rounded-2xl border text-xs font-medium shadow-sm transition-all hover:scale-[1.01] hover:shadow-md cursor-grab active:cursor-grabbing flex flex-col justify-between overflow-hidden group/block ${colorClass}`}
                         >
                           <div className="flex items-center justify-between gap-1 leading-tight mb-1">
-                            <h5 className="font-extrabold text-xs text-black dark:text-white truncate">
+                            <h5 className="font-medium text-xs text-black dark:text-white truncate">
                               {event.title}
                             </h5>
                             <span
@@ -283,7 +283,7 @@ const VenueTimelineView = ({
                             />
                           </div>
 
-                          <div className="flex items-center justify-between text-[10px] font-semibold opacity-90">
+                          <div className="flex items-center justify-between text-[10px] font-medium opacity-90">
                             <span className="truncate">{event.club?.clubName || "Club"}</span>
                             <span className="shrink-0">{startStr} - {endStr}</span>
                           </div>

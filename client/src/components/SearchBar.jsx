@@ -1089,7 +1089,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                             )}
 
                             {isSelected ? (
-                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground bg-primary rounded">
+                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground bg-primary rounded">
                                 ↵
                               </kbd>
                             ) : (

@@ -41,7 +41,7 @@ export const RolloutBlocked = ({ rollout }) => {
           </div>
 
           {/* Headline */}
-          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight mb-2">
+          <h1 className="text-2xl sm:text-3xl font-medium text-zinc-900 dark:text-white tracking-tight mb-2">
             Campusnode is launching in phases.
           </h1>
 
@@ -55,7 +55,7 @@ export const RolloutBlocked = ({ rollout }) => {
               <Calendar className="w-3.5 h-3.5 text-cn-blue-500" />
               <span>Your access will be available from:</span>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+            <div className="text-xl sm:text-2xl font-medium text-zinc-900 dark:text-white tracking-tight">
               {availableDate}
             </div>
           </div>
@@ -65,7 +65,7 @@ export const RolloutBlocked = ({ rollout }) => {
             <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
               Your group:
             </div>
-            <div className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white">
+            <div className="text-base sm:text-lg font-medium text-zinc-900 dark:text-white">
               {groupLabel}
             </div>
             {user?.email && (

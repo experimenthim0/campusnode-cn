@@ -161,6 +161,7 @@ router.post(
         }
 
         let recipientStudentIds = [];
+        let broadcastRecipientCount = 0;
 
         if (targetType === "REGISTERED_STUDENTS") {
           if (!eventId) {
@@ -213,8 +214,8 @@ router.post(
             return res.status(403).json({ message: "Broadcast permission required." });
           }
 
-          const allStudents = await prisma.studentUser.findMany({ select: { id: true } });
-          recipientStudentIds = [...new Set(allStudents.map((s) => s.id))];
+          broadcastRecipientCount = await prisma.studentUser.count();
+          recipientStudentIds = []; // Broadcast uses single canonical row; student IDs not needed in memory
         } else {
           return res.status(400).json({ message: "Invalid notification target." });
         }
@@ -241,9 +242,8 @@ router.post(
             data: notificationsData,
           });
 
-          // Event-specific realtime notification payload
-          const announcementPayload = {
-            id: notificationsData[0]?.id || createObjectId(),
+          // Event-specific realtime notification base payload
+          const baseAnnouncementPayload = {
             title,
             message,
             eventId: eventId || null,
@@ -264,10 +264,22 @@ router.post(
               },
           };
 
+          const notifIdByStudent = new Map(
+            notificationsData.map((n) => [String(n.recipientStudentId), n.id])
+          );
+
           recipientStudentIds.forEach((uId) => {
-            req.io.to(uId.toString()).emit("new-notification", announcementPayload);
+            const personalNotifId = notifIdByStudent.get(String(uId)) || notificationsData[0].id;
+            req.io.to(uId.toString()).emit("new-notification", {
+              ...baseAnnouncementPayload,
+              id: personalNotifId,
+              _id: personalNotifId,
+            });
           });
-          sendWebPushNotification(recipientStudentIds, announcementPayload);
+          sendWebPushNotification(recipientStudentIds, {
+            ...baseAnnouncementPayload,
+            id: notificationsData[0]?.id,
+          });
 
           return res.status(201).json({
             message: `Notification sent to ${recipientStudentIds.length} registered participant(s).`,
@@ -317,7 +329,7 @@ router.post(
 
           return res.status(201).json({
             message: `Broadcast notification dispatched to all students.`,
-            recipientCount: recipientStudentIds.length,
+            recipientCount: broadcastRecipientCount,
             notificationId: broadcastNotification.id,
           });
         }
@@ -405,11 +417,16 @@ router.get(
         res.setHeader("X-Unread-Count", unreadCount);
 
         return res.json(
-          deduplicated.map((n) => ({
-            ...n,
-            _id: n.id,
-            sender: formatSender(n),
-          })),
+          deduplicated.map((n) => {
+            const isRead = (n.readBy || []).includes(userId);
+            return {
+              ...n,
+              _id: n.id,
+              isRead,
+              readBy: isRead ? [userId] : [],
+              sender: formatSender(n),
+            };
+          }),
         );
       }
 
@@ -458,15 +475,16 @@ router.get(
 
       const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
 
-      const [rawNotifications, total, unreadCount, readCount] = await Promise.all([
+      // Optimized: calculate total from mutually exclusive partitions (unreadCount + readCount)
+      // without running a redundant count query for 'all'
+      const [rawNotifications, unreadCount, readCount] = await Promise.all([
         prisma.notification.findMany({
           where,
           include: senderInclude,
-          orderBy: { createdAt: sort },
+          orderBy: [{ createdAt: sort }, { id: sort }],
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.notification.count({ where }),
         prisma.notification.count({
           where: { AND: [...baseFilterConditions, { NOT: { readBy: { has: userId } } }] },
         }),
@@ -475,15 +493,21 @@ router.get(
         }),
       ]);
 
+      const total = tab === "unread" ? unreadCount : tab === "read" ? readCount : unreadCount + readCount;
       const totalPages = Math.ceil(total / limit) || 1;
       const hasNextPage = page < totalPages;
       const hasPreviousPage = page > 1;
 
-      const notifications = rawNotifications.map((n) => ({
-        ...n,
-        _id: n.id,
-        sender: formatSender(n),
-      }));
+      const notifications = rawNotifications.map((n) => {
+        const isRead = (n.readBy || []).includes(userId);
+        return {
+          ...n,
+          _id: n.id,
+          isRead,
+          readBy: isRead ? [userId] : [],
+          sender: formatSender(n),
+        };
+      });
 
       res.setHeader("X-Total-Count", total);
       res.setHeader("X-Unread-Count", unreadCount);
@@ -548,7 +572,7 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
         prisma.notification.findMany({
           where,
           include: senderInclude,
-          orderBy: { createdAt: "desc" },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           skip: (page - 1) * limit,
           take: limit,
         }),
@@ -557,11 +581,16 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
 
       const totalPages = Math.ceil(total / limit) || 1;
       return res.json({
-        notifications: rawNotifications.map((n) => ({
-          ...n,
-          _id: n.id,
-          sender: formatSender(n),
-        })),
+        notifications: rawNotifications.map((n) => {
+          const isRead = (n.readBy || []).includes(userId);
+          return {
+            ...n,
+            _id: n.id,
+            isRead,
+            readBy: isRead ? [userId] : [],
+            sender: formatSender(n),
+          };
+        }),
         pagination: {
           page,
           limit,
@@ -593,11 +622,16 @@ router.get("/sent", verifyToken, requirePermission(PERMISSIONS.NOTIFICATION_VIEW
     }
 
     res.json(
-      deduplicated.map((n) => ({
-        ...n,
-        _id: n.id,
-        sender: formatSender(n),
-      })),
+      deduplicated.map((n) => {
+        const isRead = (n.readBy || []).includes(userId);
+        return {
+          ...n,
+          _id: n.id,
+          isRead,
+          readBy: isRead ? [userId] : [],
+          sender: formatSender(n),
+        };
+      }),
     );
   } catch (err) {
     internalNotificationError(res, err, "Failed to fetch sent notifications.");
@@ -645,38 +679,8 @@ router.put(
   async (req, res) => {
     try {
       const { userId } = req.user;
-
-      const isFaculty = req.user.role === "facultyCoordinator";
-      const authorizedWhere = userId && req.user.userType === "admin"
-        ? (isFaculty
-          ? {
-            id: req.params.id,
-            OR: [
-              { recipientStudentId: userId },
-              { clubId: req.user.clubId, recipientStudentId: null },
-              {
-                clubId: req.user.clubId,
-                type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT", "EVENT_REVIEW_REQUEST"] },
-              },
-              { recipientStudentId: null, type: "BROADCAST" },
-            ],
-          }
-          : {
-            id: req.params.id,
-            OR: [
-              { recipientStudentId: userId },
-              { senderAdminId: userId },
-              { type: { in: ["BROADCAST", "EVENT_ANNOUNCEMENT"] }, clubId: { not: null } },
-              { recipientStudentId: null, type: "BROADCAST" },
-            ],
-          })
-        : {
-          id: req.params.id,
-          OR: [
-            { recipientStudentId: userId },
-            { recipientStudentId: null, type: "BROADCAST" },
-          ],
-        };
+      const recipientFilter = getNotificationRecipientFilter(req.user);
+      const authorizedWhere = { id: req.params.id, ...recipientFilter };
 
       const notif = await prisma.notification.findFirst({ where: authorizedWhere });
 
@@ -686,7 +690,12 @@ router.put(
 
       // Already marked as read — skip duplicate push
       if ((notif.readBy || []).includes(userId)) {
-        return res.json({ ...notif, _id: notif.id });
+        return res.json({
+          ...notif,
+          _id: notif.id,
+          isRead: true,
+          readBy: [userId],
+        });
       }
 
       const updatedRows = await prisma.$queryRaw`
@@ -698,7 +707,12 @@ router.put(
       `;
       const updated = updatedRows[0] || notif;
 
-      res.json({ ...updated, _id: updated.id });
+      res.json({
+        ...updated,
+        _id: updated.id,
+        isRead: true,
+        readBy: [userId],
+      });
     } catch (err) {
       internalNotificationError(res, err, "Failed to mark notification as read.");
     }

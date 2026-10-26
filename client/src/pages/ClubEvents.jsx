@@ -524,12 +524,7 @@ const ClubEvents = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wider text-muted-foreground hover:text-brand-600 transition-colors mb-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Profile
-          </Link>
+          
           <h2 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">
             {clubName} Events
           </h2>
@@ -638,13 +633,13 @@ const ClubEvents = () => {
           {/* Multi-Club Filter Badges / Legend with distinct colors */}
           {userClubs.length > 1 && (
             <div className="p-3 bg-card border border-border rounded-xl flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-muted-foreground mr-1">
+              <span className="text-xs font-medium text-muted-foreground mr-1">
                 Filter by Club:
               </span>
               <button
                 type="button"
                 onClick={() => setCalendarClubFilter("all")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${calendarClubFilter === "all"
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${calendarClubFilter === "all"
                     ? "bg-brand-500 text-white border-brand-500 shadow-2xs"
                     : "bg-muted/40 text-muted-foreground border-border hover:bg-muted"
                   }`}
@@ -659,7 +654,7 @@ const ClubEvents = () => {
                     key={c.id}
                     type="button"
                     onClick={() => setCalendarClubFilter(c.id)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${isSelected
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${isSelected
                         ? `${palette.badge} ring-2 ring-brand-500`
                         : `${palette.pill} opacity-85 hover:opacity-100`
                       }`}

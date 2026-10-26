@@ -139,31 +139,31 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
     switch (effectiveStatus) {
       case "ACTIVE":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
             <CheckCircle size={12} /> Active
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
             <Clock size={12} /> Pending
           </span>
         );
       case "REVOKED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300">
             <XCircle size={12} /> Revoked
           </span>
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300">
             <AlertCircle size={12} /> Expired
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
             <XCircle size={12} /> Rejected
           </span>
         );
@@ -178,7 +178,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
         <div>
           <div className="flex items-center gap-2">
             <Shield className="text-brand-600 dark:text-brand-500" size={18} />
-            <h3 className="text-base font-semibold text-cn-text">
+            <h3 className="text-base font-medium text-cn-text">
               Event Staff
             </h3>
           </div>
@@ -194,7 +194,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
         </div>
         <button
           onClick={() => setShowInviteModal(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-xl shadow-xs transition-colors cursor-pointer"
         >
           <UserPlus size={14} />
           Invite Staff
@@ -220,7 +220,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
       ) : staffList.length === 0 ? (
         <div className="py-10 text-center">
           <Shield className="mx-auto text-neutral-300 dark:text-neutral-700 mb-2" size={32} />
-          <p className="text-xs font-semibold text-cn-text">
+          <p className="text-xs font-medium text-cn-text">
             No Staff Assigned
           </p>
           <p className="text-[11px] text-cn-text-muted mt-0.5">
@@ -244,11 +244,11 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                 <tr key={staff.id} className="hover:bg-cn-surface-muted transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-semibold flex items-center justify-center text-[11px]">
+                      <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-medium flex items-center justify-center text-[11px]">
                         {staff.user?.name ? staff.user.name.charAt(0).toUpperCase() : "?"}
                       </div>
                       <div>
-                        <p className="font-semibold text-cn-text text-xs">{staff.user?.name || "Unknown"}</p>
+                        <p className="font-medium text-cn-text text-xs">{staff.user?.name || "Unknown"}</p>
                         <p className="text-[11px] text-cn-text-muted">{staff.user?.email}</p>
                       </div>
                     </div>
@@ -279,7 +279,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                     {staff.status === "ACTIVE" || staff.status === "PENDING" ? (
                       <button
                         onClick={() => handleRevokeStaff(staff.id, staff.user?.name || staff.user?.email)}
-                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors cursor-pointer"
                         title="Revoke access"
                       >
                         <Trash2 size={12} />
@@ -301,7 +301,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
           <div className="bg-cn-surface border border-cn-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transition-colors">
             <div className="px-6 py-4 border-b border-cn-border-subtle flex items-center justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-cn-text leading-tight">
+                <h3 className="text-base sm:text-lg font-medium text-cn-text leading-tight">
                   Invite Event Staff
                 </h3>
                 <p className="text-xs text-cn-text-muted font-normal mt-0.5">
@@ -309,7 +309,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                   <Link
                     to="/central-organizer/guide"
                     target="_blank"
-                    className="text-brand-600 dark:text-brand-400 hover:underline font-semibold"
+                    className="text-brand-600 dark:text-brand-400 hover:underline font-medium"
                   >
                     View Guide
                   </Link>
@@ -327,7 +327,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
 
             <form onSubmit={handleInviteStaff} className="p-6 space-y-4 text-cn-text">
               <div>
-                <label className="block text-xs font-semibold text-cn-text mb-1.5">
+                <label className="block text-xs font-medium text-cn-text mb-1.5">
                   Student Account <span className="text-brand-600">*</span>
                 </label>
                 <div className="relative">
@@ -356,12 +356,12 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                           className="w-full text-left p-3 flex items-center justify-between gap-2 hover:bg-brand-50 dark:hover:bg-brand-950/40 transition-colors cursor-pointer"
                         >
                           <div>
-                            <p className="text-xs font-semibold text-cn-text">{st.name}</p>
+                            <p className="text-xs font-medium text-cn-text">{st.name}</p>
                             <p className="text-[11px] text-cn-text-muted">
                               {st.email} {st.rollNo ? `• ${st.rollNo}` : ""}
                             </p>
                           </div>
-                          <span className="text-[11px] font-semibold text-brand-600 dark:text-brand-400">
+                          <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400">
                             Select
                           </span>
                         </button>
@@ -372,7 +372,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
 
                 {selectedStudent && (
                   <div className="mt-2 flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-xs">
-                    <span className="font-semibold text-emerald-800 dark:text-emerald-300 text-[11px]">Selected:</span>
+                    <span className="font-medium text-emerald-800 dark:text-emerald-300 text-[11px]">Selected:</span>
                     <span className="font-medium text-cn-text text-[11px] truncate">{selectedStudent.name}</span>
                     <button
                       type="button"
@@ -390,7 +390,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
 
               {/* Permissions Grid */}
               <div>
-                <label className="block text-xs font-semibold text-cn-text mb-1.5">
+                <label className="block text-xs font-medium text-cn-text mb-1.5">
                   Roles & Permissions <span className="text-brand-600">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -411,7 +411,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                           onChange={() => handlePermissionToggle(perm.id)}
                           className="h-4 w-4 accent-brand-600 rounded cursor-pointer"
                         />
-                        <span className="text-[11px] font-semibold leading-tight">{perm.label}</span>
+                        <span className="text-[11px] font-medium leading-tight">{perm.label}</span>
                       </label>
                     );
                   })}
@@ -420,7 +420,7 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
 
               {/* Expiry */}
               <div>
-                <label className="block text-xs font-semibold text-cn-text mb-1.5">
+                <label className="block text-xs font-medium text-cn-text mb-1.5">
                   Access Expiry (Optional)
                 </label>
                 <input
@@ -435,14 +435,14 @@ const EventStaffManager = ({ eventId, eventTitle }) => {
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="px-4 py-2.5 text-xs font-semibold text-cn-text bg-transparent hover:bg-cn-surface-muted border border-cn-border rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-medium text-cn-text bg-transparent hover:bg-cn-surface-muted border border-cn-border rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50 text-xs font-semibold rounded-xl cursor-pointer transition-colors shadow-xs"
+                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50 text-xs font-medium rounded-xl cursor-pointer transition-colors shadow-xs"
                 >
                   {inviting ? "Inviting..." : "Send Invite"}
                 </button>

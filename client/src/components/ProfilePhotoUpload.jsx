@@ -207,7 +207,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
               }}
             />
           ) : (
-            <span className="text-3xl md:text-4xl font-semibold text-foreground select-none">
+            <span className="text-3xl md:text-4xl font-medium text-foreground select-none">
               {initials}
             </span>
           )}
@@ -228,7 +228,7 @@ const ProfilePhotoUpload = ({ user, onPhotoUpdate }) => {
           {uploading && (
             <div className="absolute inset-0 rounded-full bg-black/50 flex flex-col items-center justify-center">
               <div className="w-7 h-7 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
-              <p className="text-white text-[10px] font-semibold mt-1.5">{uploadProgress}%</p>
+              <p className="text-white text-[10px] font-medium mt-1.5">{uploadProgress}%</p>
             </div>
           )}
         </div>

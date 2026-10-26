@@ -260,10 +260,10 @@ const ExportCenter = ({ embedded = false }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-black dark:text-white tracking-wide">
+            <h1 className="text-2xl font-medium text-black dark:text-white tracking-wide">
               Export Center
             </h1>
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-md bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50">
+            <span className="px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-900/50">
               Data Management
             </span>
           </div>
@@ -279,7 +279,7 @@ const ExportCenter = ({ embedded = false }) => {
             <span className="text-neutral-500 dark:text-neutral-400 font-medium">
               Active Context:
             </span>
-            <span className="font-semibold text-black dark:text-white">
+            <span className="font-medium text-black dark:text-white">
               {session} · {semester} Semester
             </span>
           </div>
@@ -295,7 +295,7 @@ const ExportCenter = ({ embedded = false }) => {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+        <label className="block text-xs font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
           Select Dataset
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -318,7 +318,7 @@ const ExportCenter = ({ embedded = false }) => {
               >
                 <div>
                   <i className={`${ds.icon} text-lg ${isSelected ? "text-brand-400 dark:text-brand-600" : "text-neutral-400"}`} />
-                  <p className="text-xs font-semibold mt-2 truncate">{ds.label}</p>
+                  <p className="text-xs font-medium mt-2 truncate">{ds.label}</p>
                 </div>
                 {!isAuthorized && (
                   <span className="text-[9px] font-medium text-rose-500 mt-1">Restricted</span>
@@ -331,7 +331,7 @@ const ExportCenter = ({ embedded = false }) => {
 
       <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/30 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-black dark:text-white flex items-center gap-2">
             <i className="ri-filter-3-line text-brand-500" />
             Filters & Scope ({activeDataset.label})
           </h2>
@@ -493,7 +493,7 @@ const ExportCenter = ({ embedded = false }) => {
         <button
           onClick={handleExportCSV}
           disabled={isExporting || totalCount === 0}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold uppercase tracking-wider rounded-lg shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-medium uppercase tracking-wider rounded-lg shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           {isExporting ? (
             <>
@@ -513,20 +513,20 @@ const ExportCenter = ({ embedded = false }) => {
       {isColumnModalOpen && (
         <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-neutral-50 dark:bg-zinc-900/40 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-black dark:text-white">
+            <p className="text-xs font-medium uppercase tracking-wider text-black dark:text-white">
               Select Export Columns
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSelectAllColumns}
-                className="text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer border-0 bg-transparent"
+                className="text-[11px] font-medium text-brand-600 dark:text-brand-400 hover:underline cursor-pointer border-0 bg-transparent"
               >
                 Select All
               </button>
               <span className="text-neutral-300 dark:text-neutral-700">•</span>
               <button
                 onClick={handleClearAllColumns}
-                className="text-[11px] font-semibold text-neutral-400 hover:underline cursor-pointer border-0 bg-transparent"
+                className="text-[11px] font-medium text-neutral-400 hover:underline cursor-pointer border-0 bg-transparent"
               >
                 Reset Default
               </button>
@@ -561,7 +561,7 @@ const ExportCenter = ({ embedded = false }) => {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+          <p className="text-xs font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             Preview {totalCount > 0 ? `(Showing ${(page - 1) * 50 + 1}–${Math.min(page * 50, totalCount)} of ${totalCount})` : ""}
           </p>
 
@@ -597,7 +597,7 @@ const ExportCenter = ({ embedded = false }) => {
         ) : previewData.length === 0 ? (
           <div className="p-12 text-center border border-neutral-200 dark:border-zinc-800 rounded-xl bg-cn-surface space-y-2">
             <i className="ri-inbox-line text-3xl text-neutral-400" />
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">
               No records found
             </p>
             <p className="text-[11px] text-neutral-400">
@@ -609,9 +609,9 @@ const ExportCenter = ({ embedded = false }) => {
             <Table className="text-xs">
               <TableHeader>
                 <TableRow className="bg-neutral-50 dark:bg-zinc-900/60 hover:bg-neutral-50 dark:hover:bg-zinc-900/60">
-                  <TableHead className="w-12 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">#</TableHead>
+                  <TableHead className="w-12 text-[10px] font-medium uppercase tracking-wider text-neutral-400">#</TableHead>
                   {selectedColumns.map((colId) => (
-                    <TableHead key={colId} className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    <TableHead key={colId} className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
                       {columnLabelMap.get(colId) || colId}
                     </TableHead>
                   ))}
@@ -668,12 +668,12 @@ const ExportCenter = ({ embedded = false }) => {
               <Table className="text-xs">
                 <TableHeader>
                   <TableRow className="bg-neutral-50 dark:bg-zinc-900/60 hover:bg-neutral-50 dark:hover:bg-zinc-900/60">
-                    <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Dataset</TableHead>
-                    <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Records</TableHead>
-                    <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Exported By</TableHead>
-                    <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">IP Address</TableHead>
-                    <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Location</TableHead>
-                    <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Date & Time</TableHead>
+                    <TableHead className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Dataset</TableHead>
+                    <TableHead className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Records</TableHead>
+                    <TableHead className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Exported By</TableHead>
+                    <TableHead className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">IP Address</TableHead>
+                    <TableHead className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Location</TableHead>
+                    <TableHead className="text-right text-[10px] font-medium uppercase tracking-wider text-neutral-400">Date & Time</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -682,10 +682,10 @@ const ExportCenter = ({ embedded = false }) => {
                       key={item.id}
                       className="hover:bg-neutral-50 dark:hover:bg-zinc-900/40 transition-colors"
                     >
-                      <TableCell className="font-semibold text-black dark:text-white uppercase">
+                      <TableCell className="font-medium text-black dark:text-white uppercase">
                         {item.dataset}
                       </TableCell>
-                      <TableCell className="font-mono font-semibold text-brand-600 dark:text-brand-400">
+                      <TableCell className="font-mono font-medium text-brand-600 dark:text-brand-400">
                         {item.recordCount}
                       </TableCell>
                       <TableCell className="text-neutral-700 dark:text-neutral-300 font-medium">
