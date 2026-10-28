@@ -103,10 +103,10 @@ const InAppNotificationToast = ({ toast, onClose, preview = false, inline = fals
       return;
     }
 
-    // Auto-dismiss after 5.5 seconds in live mode
+   
     timerRef.current = setTimeout(() => {
       handleClose();
-    }, 5500);
+    }, 8000);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -193,9 +193,7 @@ const InAppNotificationToast = ({ toast, onClose, preview = false, inline = fals
                     </Badge>
                   )}
                 </div>
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  Official Campus Notification
-                </span>
+                
               </div>
             </div>
 

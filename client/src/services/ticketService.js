@@ -134,7 +134,12 @@ export const generateTicketCanvas = async ({ ticket, qrDataUrl, user }) => {
   const ev = ticket.eventId || ticket.event || {};
   const passId = ticket.qrCode || ticket.id || ticket._id || 'PASS';
 
+  const organizers = ev.organizers || [];
+  const isJoint = organizers.length > 1;
+  const jointOrganizerNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : null;
+
   const organizerName =
+    jointOrganizerNames ||
     ev.club?.clubName ||
     ev.club?.name ||
     ev.organizers?.[0]?.club?.clubName ||
@@ -166,9 +171,10 @@ export const generateTicketCanvas = async ({ ticket, qrDataUrl, user }) => {
     : 'TBA';
 
   const formattedTime = isValidDate
-    ? eventDateObj.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
+    ? eventDateObj.toLocaleTimeString('en-US', {
+        hour: 'numeric',
         minute: '2-digit',
+        hour12: true,
         timeZone: 'Asia/Kolkata',
       })
     : 'TBA';
@@ -620,7 +626,12 @@ export const generateTicketPdf = async ({ ticket, user }) => {
   const passId = ticket.qrCode || ticket.id || ticket._id || 'PASS';
   const qrPayload = ticket.qrPayload || ticket.qrCode || passId;
 
+  const organizers = ev.organizers || [];
+  const isJoint = organizers.length > 1;
+  const jointOrganizerNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : null;
+
   let rawOrganizer =
+    jointOrganizerNames ||
     ev.club?.clubName ||
     ev.club?.name ||
     ev.organizers?.[0]?.club?.clubName ||

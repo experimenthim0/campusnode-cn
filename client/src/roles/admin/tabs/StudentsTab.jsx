@@ -333,7 +333,7 @@ export default function StudentsTab() {
             <div className="bg-cn-surface p-5 sm:p-6 border border-cn-border rounded-2xl shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-neutral-100 dark:border-zinc-800/80">
                     <div>
-                        <h2 className="text-base sm:text-lg font-bold text-cn-text flex items-center gap-2">
+                        <h2 className="text-base sm:text-lg font-medium text-cn-text flex items-center gap-2">
                             <GraduationCap className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                             <span>Student Information Search</span>
                         </h2>
@@ -345,7 +345,7 @@ export default function StudentsTab() {
                     {hasSearched && (
                         <button
                             onClick={handleResetSearch}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer self-start sm:self-auto rounded-lg hover:bg-cn-surface-muted"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer self-start sm:self-auto rounded-lg hover:bg-cn-surface-muted"
                         >
                             <RotateCcw size={13} />
                             <span>Reset Search</span>
@@ -379,7 +379,7 @@ export default function StudentsTab() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-3 bg-brand-600 hover:bg-brand-500 active:scale-[0.99] text-white text-sm font-semibold tracking-wide rounded-xl transition-all duration-150 flex items-center justify-center gap-2 shadow-md shadow-brand-600/20 cursor-pointer disabled:opacity-60 shrink-0"
+                        className="px-6 py-3 bg-brand-600 hover:bg-brand-500 active:scale-[0.99] text-white text-sm font-medium tracking-wide rounded-xl transition-all duration-150 flex items-center justify-center gap-2 shadow-md shadow-brand-600/20 cursor-pointer disabled:opacity-60 shrink-0"
                     >
                         {loading ? (
                             <>
@@ -397,7 +397,7 @@ export default function StudentsTab() {
 
                 {/* Filter Controls Row (Branch Wise, Year Wise, Program Wise) */}
                 <div className="pt-3 border-t border-neutral-100 dark:border-zinc-800/80 flex flex-wrap items-center gap-2.5">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-cn-text uppercase tracking-wider shrink-0 mr-1">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-cn-text uppercase tracking-wider shrink-0 mr-1">
                         <Filter size={14} className="text-brand-600 dark:text-brand-400" />
                         <span>Filter By:</span>
                     </div>
@@ -496,7 +496,7 @@ export default function StudentsTab() {
                         <div className="w-16 h-16 rounded-3xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto border border-brand-500/20 shadow-xs">
                             <Search size={28} strokeWidth={2.2} />
                         </div>
-                        <h3 className="text-lg font-bold text-cn-text">Search for Student Records</h3>
+                        <h3 className="text-lg font-medium text-cn-text">Search for Student Records</h3>
                         <p className="text-xs sm:text-sm text-cn-text-muted leading-relaxed">
                             To protect system performance, student records are not loaded all at once. Use the search box above with a name, roll number, or email, or pick a branch and batch year to display results.
                         </p>
@@ -507,7 +507,7 @@ export default function StudentsTab() {
                         {/* Branch Wise Quick Search (Short codes) */}
                         {availableBranchCodes.length > 0 && (
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-cn-text-muted mb-2 text-center">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-cn-text-muted mb-2 text-center">
                                     Quick Search by Branch
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-1.5">
@@ -515,7 +515,7 @@ export default function StudentsTab() {
                                         <button
                                             key={code}
                                             onClick={() => handleQuickFilter('branch', code)}
-                                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cn-surface-muted hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 text-cn-text border border-cn-border transition-colors cursor-pointer"
+                                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-cn-surface-muted hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 text-cn-text border border-cn-border transition-colors cursor-pointer"
                                         >
                                             {code}
                                         </button>
@@ -527,7 +527,7 @@ export default function StudentsTab() {
                         {/* Graduation Year Quick Search */}
                         {availableYears.length > 0 && (
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-cn-text-muted mb-2 text-center">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-cn-text-muted mb-2 text-center">
                                     Quick Search by Graduation Year
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-1.5">
@@ -535,7 +535,7 @@ export default function StudentsTab() {
                                         <button
                                             key={y}
                                             onClick={() => handleQuickFilter('year', y)}
-                                            className="px-3 py-1 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 text-cn-text transition-colors cursor-pointer border border-transparent hover:border-brand-500/20"
+                                            className="px-3 py-1 rounded-lg text-xs font-medium bg-neutral-100 dark:bg-zinc-800 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 text-cn-text transition-colors cursor-pointer border border-transparent hover:border-brand-500/20"
                                         >
                                             Graduation {y}
                                         </button>
@@ -553,7 +553,7 @@ export default function StudentsTab() {
                     {/* Results Top Meta Bar */}
                     <div className="flex flex-wrap items-center justify-between gap-3 bg-cn-surface px-4 py-3 rounded-xl border border-cn-border">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-bold text-cn-text">
+                            <span className="text-xs font-medium text-cn-text">
                                 {loading ? 'Searching records...' : `Found ${pagination.total} matching student${pagination.total !== 1 ? 's' : ''}`}
                             </span>
                             {pagination.total > 0 && (
@@ -566,7 +566,7 @@ export default function StudentsTab() {
                             {activeFiltersList.map((f, i) => (
                                 <span
                                     key={i}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20"
                                 >
                                     <span>{f.label}</span>
                                     <button
@@ -680,13 +680,13 @@ export default function StudentsTab() {
                                             <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-neutral-400">
                                                 <Search size={22} />
                                             </div>
-                                            <p className="text-base font-bold text-cn-text">No students found matching your search</p>
+                                            <p className="text-base font-medium text-cn-text">No students found matching your search</p>
                                             <p className="text-xs text-cn-text-muted leading-relaxed">
                                                 No student records matched your current query or filters. Check your roll number spelling or try broadening your branch or batch criteria.
                                             </p>
                                             <button
                                                 onClick={handleResetSearch}
-                                                className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-500 transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5 mt-1"
+                                                className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-medium hover:bg-brand-500 transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5 mt-1"
                                             >
                                                 <RotateCcw size={13} />
                                                 <span>Clear & Try New Search</span>
@@ -713,7 +713,7 @@ export default function StudentsTab() {
                                             {/* Student Name & Roll No */}
                                             <Td>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold text-xs flex items-center justify-center overflow-hidden shrink-0 border border-brand-500/20">
+                                                    <div className="relative w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium text-xs flex items-center justify-center overflow-hidden shrink-0 border border-brand-500/20">
                                                         {student.profileImage ? (
                                                             <img
                                                                 src={student.profileImage}
@@ -729,7 +729,7 @@ export default function StudentsTab() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span className="font-bold text-cn-text text-sm truncate max-w-[180px]">
+                                                            <span className="font-medium text-cn-text text-sm truncate max-w-[180px]">
                                                                 {student.name}
                                                             </span>
                                                             {student.isVerified ? (
@@ -743,7 +743,7 @@ export default function StudentsTab() {
                                                             )}
                                                         </div>
                                                         <div className="flex items-center gap-2 mt-0.5">
-                                                            <span className="font-mono text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-wide">
+                                                            <span className="font-mono text-xs font-medium text-brand-600 dark:text-brand-400 tracking-wide">
                                                                 {student.rollNo}
                                                             </span>
                                                             <span className="text-[10px] text-cn-text-muted font-medium">
@@ -758,17 +758,17 @@ export default function StudentsTab() {
                                             <Td>
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-neutral-100 dark:bg-zinc-800 text-cn-text">
+                                                        <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-neutral-100 dark:bg-zinc-800 text-cn-text">
                                                             {PROGRAM_LABELS[student.program] || student.program || 'B.Tech'}
                                                         </span>
-                                                        <span className="text-xs font-bold text-cn-text">
+                                                        <span className="text-xs font-medium text-cn-text">
                                                             {branchCode}
                                                         </span>
                                                     </div>
                                                     <div className="text-[11px] text-cn-text-muted font-medium">
                                                         {student.academicYearLabel || 'N/A'} • {student.semesterLabel || 'Current Term'}
                                                     </div>
-                                                    <div className="text-[10.5px] font-semibold text-brand-600 dark:text-brand-400">
+                                                    <div className="text-[10.5px] font-medium text-brand-600 dark:text-brand-400">
                                                         Class of {student.expectedGraduationYear || 'N/A'}
                                                     </div>
                                                 </div>
@@ -822,14 +822,14 @@ export default function StudentsTab() {
                                             <Td>
                                                 <div className="flex flex-wrap gap-1.5 max-w-[180px]">
                                                     {student.isClubLead && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                                             <Sparkles size={10} />
                                                             <span>Club Head</span>
                                                         </span>
                                                     )}
 
                                                     {student.isCoordinator && !student.isClubLead && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                                                             <span>Coordinator</span>
                                                         </span>
                                                     )}
@@ -863,7 +863,7 @@ export default function StudentsTab() {
                                             <Td align="center">
                                                 <button
                                                     onClick={() => handleOpenStudentDetail(student.id)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cn-border bg-cn-surface text-cn-text text-xs font-semibold hover:bg-cn-surface-muted hover:border-neutral-300 dark:hover:border-zinc-700 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cn-border bg-cn-surface text-cn-text text-xs font-medium hover:bg-cn-surface-muted hover:border-neutral-300 dark:hover:border-zinc-700 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
                                                 >
                                                     <Eye size={13} className="text-brand-500" />
                                                     <span>Inspect</span>
@@ -928,7 +928,7 @@ export default function StudentsTab() {
                             {/* Profile Header Banner */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-zinc-900 border border-neutral-200/80 dark:border-zinc-800">
                                 <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold text-lg flex items-center justify-center overflow-hidden shrink-0 border border-brand-500/20">
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium text-lg flex items-center justify-center overflow-hidden shrink-0 border border-brand-500/20">
                                         {studentDetail.profileImage ? (
                                             <img
                                                 src={studentDetail.profileImage}
@@ -948,27 +948,27 @@ export default function StudentsTab() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <h3 className="text-base sm:text-lg font-bold text-cn-text truncate">
+                                            <h3 className="text-base sm:text-lg font-medium text-cn-text truncate">
                                                 {studentDetail.name}
                                             </h3>
                                             {studentDetail.isVerified ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
                                                     <CheckCircle2 size={11} />
                                                     <span>Verified Student</span>
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
                                                     <BadgeAlert size={11} />
                                                     <span>Unverified Account</span>
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 text-xs text-cn-text-muted mt-1.5">
-                                            <span className="font-mono font-semibold text-brand-600 dark:text-brand-400">
+                                            <span className="font-mono font-medium text-brand-600 dark:text-brand-400">
                                                 {studentDetail.rollNo}
                                             </span>
                                             <span>•</span>
-                                            <span className="font-semibold text-cn-text">{studentDetail.branch}</span>
+                                            <span className="font-medium text-cn-text">{studentDetail.branch}</span>
                                             <span>•</span>
                                             <span>{PROGRAM_LABELS[studentDetail.program] || studentDetail.program || 'B.Tech'}</span>
                                             <span>•</span>
@@ -987,7 +987,7 @@ export default function StudentsTab() {
                             </div>
 
                             {/* Dossier Tabs */}
-                            <div className="flex border-b border-neutral-200 dark:border-zinc-800 gap-2 sm:gap-6 text-xs font-semibold overflow-x-auto pb-px">
+                            <div className="flex border-b border-neutral-200 dark:border-zinc-800 gap-2 sm:gap-6 text-xs font-medium overflow-x-auto pb-px">
                                 {[
                                     { id: 'overview', label: 'Academic & Contact' },
                                     { id: 'clubs', label: `Clubs (${(studentDetail.memberships || []).length})` },
@@ -1013,11 +1013,11 @@ export default function StudentsTab() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                         {/* Roll Number */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Roll Number
                                             </p>
                                             <div className="flex items-center justify-between gap-2">
-                                                <p className="text-sm font-mono font-bold text-brand-600 dark:text-brand-400">
+                                                <p className="text-sm font-mono font-medium text-brand-600 dark:text-brand-400">
                                                     {studentDetail.rollNo}
                                                 </p>
                                                 <button
@@ -1032,50 +1032,50 @@ export default function StudentsTab() {
 
                                         {/* Expected Graduation Year */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Graduation Year
                                             </p>
-                                            <p className="text-sm font-semibold text-cn-text">
+                                            <p className="text-sm font-medium text-cn-text">
                                                 {studentDetail.expectedGraduationYear ? `Class of ${studentDetail.expectedGraduationYear}` : 'Not specified'}
                                             </p>
                                         </div>
 
                                         {/* Academic Status / Progress */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Academic Status / Progress
                                             </p>
-                                            <p className="text-sm font-semibold text-cn-text">
+                                            <p className="text-sm font-medium text-cn-text">
                                                 {studentDetail.academicYearLabel || 'N/A'} • {studentDetail.semesterLabel || 'Current Term'}
                                             </p>
                                         </div>
 
                                         {/* Branch / Department */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Branch / Department
                                             </p>
-                                            <p className="text-sm font-semibold text-cn-text">
+                                            <p className="text-sm font-medium text-cn-text">
                                                 {studentDetail.branch || 'N/A'}
                                             </p>
                                         </div>
 
                                         {/* Degree Program */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Degree Program
                                             </p>
-                                            <p className="text-sm font-semibold text-cn-text">
+                                            <p className="text-sm font-medium text-cn-text">
                                                 {PROGRAM_LABELS[studentDetail.program] || studentDetail.program || 'B.Tech'}
                                             </p>
                                         </div>
 
                                         {/* Verification Status */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Verification Status
                                             </p>
-                                            <p className="text-sm font-semibold text-cn-text flex items-center gap-1.5">
+                                            <p className="text-sm font-medium text-cn-text flex items-center gap-1.5">
                                                 {studentDetail.isVerified ? (
                                                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
                                                 ) : (
@@ -1086,13 +1086,13 @@ export default function StudentsTab() {
 
                                         {/* Email Address */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1 sm:col-span-2">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Email Address
                                             </p>
                                             <div className="flex items-center justify-between gap-2">
                                                 <a
                                                     href={`mailto:${studentDetail.email}`}
-                                                    className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline truncate"
+                                                    className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline truncate"
                                                 >
                                                     {studentDetail.email}
                                                 </a>
@@ -1108,14 +1108,14 @@ export default function StudentsTab() {
 
                                         {/* Contact Phone Number */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Contact Phone Number
                                             </p>
                                             {studentDetail.phone ? (
                                                 <div className="flex items-center justify-between gap-2">
                                                     <a
                                                         href={`tel:${studentDetail.phone}`}
-                                                        className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                                                        className="text-xs font-mono font-medium text-brand-600 dark:text-brand-400 hover:underline"
                                                     >
                                                         {studentDetail.phone}
                                                     </a>
@@ -1134,20 +1134,20 @@ export default function StudentsTab() {
 
                                         {/* Two-Step Verification */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Two-Step Verification (2FA)
                                             </p>
-                                            <p className="text-xs font-semibold text-cn-text">
+                                            <p className="text-xs font-medium text-cn-text">
                                                 {studentDetail.isTwoStepEnabled ? 'Enabled' : 'Disabled'}
                                             </p>
                                         </div>
 
                                         {/* Account Registered On */}
                                         <div className="p-3.5 rounded-xl border border-cn-border bg-cn-surface space-y-1 sm:col-span-2">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted">
                                                 Account Registered On
                                             </p>
-                                            <p className="text-xs font-semibold text-cn-text">
+                                            <p className="text-xs font-medium text-cn-text">
                                                 {new Date(studentDetail.createdAt).toLocaleDateString(undefined, {
                                                     year: 'numeric',
                                                     month: 'long',
@@ -1160,7 +1160,7 @@ export default function StudentsTab() {
                                     {/* Social Links */}
                                     {(studentDetail.socialLinks || []).length > 0 && (
                                         <div className="p-4 rounded-xl border border-cn-border bg-cn-surface">
-                                            <p className="text-[10px] uppercase font-bold tracking-wider text-cn-text-muted mb-2">
+                                            <p className="text-[10px] uppercase font-medium tracking-wider text-cn-text-muted mb-2">
                                                 Public Profiles & Links
                                             </p>
                                             <div className="flex flex-wrap gap-2">
@@ -1216,7 +1216,7 @@ export default function StudentsTab() {
                                                             )}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-xs font-bold text-cn-text truncate">
+                                                            <p className="text-xs font-medium text-cn-text truncate">
                                                                 {m.club?.clubName}
                                                             </p>
                                                             <p className="text-[11px] text-cn-text-muted capitalize">
@@ -1224,7 +1224,7 @@ export default function StudentsTab() {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${m.role === 'CLUB_HEAD'
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${m.role === 'CLUB_HEAD'
                                                             ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                                                             : m.role === 'COORDINATOR'
                                                                 ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
@@ -1253,7 +1253,7 @@ export default function StudentsTab() {
                                                 className="p-3.5 rounded-xl border border-cn-border bg-cn-surface flex items-center justify-between gap-3"
                                             >
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-xs font-bold text-cn-text truncate">
+                                                    <p className="text-xs font-medium text-cn-text truncate">
                                                         {p.event?.title || 'Campus Event'}
                                                     </p>
                                                     <p className="text-[11px] text-cn-text-muted mt-0.5">
@@ -1269,7 +1269,7 @@ export default function StudentsTab() {
                                                 </div>
 
                                                 <div className="flex items-center gap-2 shrink-0">
-                                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${p.attendedAt || p.status === 'ATTENDED'
+                                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${p.attendedAt || p.status === 'ATTENDED'
                                                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                                             : 'bg-neutral-100 dark:bg-zinc-800 text-cn-text-muted'
                                                         }`}>
@@ -1300,7 +1300,7 @@ export default function StudentsTab() {
                                                         <Award size={18} />
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="text-xs font-bold text-cn-text truncate">
+                                                        <p className="text-xs font-medium text-cn-text truncate">
                                                             {cert.event?.title || cert.clubName || 'Achievement Certificate'}
                                                         </p>
                                                         <p className="text-[10px] font-mono text-cn-text-muted">

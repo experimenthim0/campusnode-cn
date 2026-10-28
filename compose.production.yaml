@@ -1,0 +1,210 @@
+# ==============================================================================
+# CampusNode — Production Docker Compose Configuration
+# Target: NIT Jalandhar Linux Server
+# Standard: 4 Isolated Containers, GHCR Image Pulling, Auto-Restart, Log Rotation
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL 16 Database
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: campusnode-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-campusnode}
+      POSTGRES_USER: ${POSTGRES_USER:-campusnode_user}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD is required in .env}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-campusnode_user} -d ${POSTGRES_DB:-campusnode}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - campusnode-network
+
+  # ----------------------------------------------------------------------------
+  # 2. Redis 7 In-Memory Cache & BullMQ Queue
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: campusnode-redis
+    restart: always
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy noeviction
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?Error: REDIS_PASSWORD is required in .env}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.2"
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - campusnode-network
+
+  # ----------------------------------------------------------------------------
+  # 2.5 Prisma Migration Runner (Executes 'prisma migrate deploy' once on startup)
+  # ----------------------------------------------------------------------------
+  migration:
+    image: ${BACKEND_IMAGE:-ghcr.io/campusnode/backend}:${IMAGE_TAG:-latest}
+    container_name: campusnode-migration
+    restart: "no"
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: "${DATABASE_URL:?Error: DATABASE_URL is required in .env}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - campusnode-network
+
+  # ----------------------------------------------------------------------------
+  # 3. Node.js Express Backend (API, WebSockets, BullMQ Queue Worker)
+  # ----------------------------------------------------------------------------
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/campusnode/backend}:${IMAGE_TAG:-latest}
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: campusnode-backend
+    restart: always
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: "${DATABASE_URL:?Error: DATABASE_URL is required in .env}"
+      REDIS_URL: "${REDIS_URL:?Error: REDIS_URL is required in .env}"
+      CLIENT_URL: "${CLIENT_URL:?Error: CLIENT_URL is required in .env}"
+      JWT_SECRET: "${JWT_SECRET:?Error: JWT_SECRET is required in .env}"
+      SMTP_HOST: "${SMTP_HOST:?Error: SMTP_HOST is required in .env}"
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_SECURE: "${SMTP_SECURE:-false}"
+      SMTP_USER: "${SMTP_USER:-}"
+      SMTP_PASS: "${SMTP_PASS:-}"
+      EMAIL_FROM: "${EMAIL_FROM:-CampusNode <no-reply@campusnode.nitj.ac.in>}"
+      EMAIL_FROM_NAME: "${EMAIL_FROM_NAME:-CampusNode Support}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
+        reservations:
+          cpus: "0.5"
+          memory: 384M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    networks:
+      - campusnode-network
+
+  # ----------------------------------------------------------------------------
+  # 4. React 19 Frontend SPA & Nginx Reverse Proxy
+  # ----------------------------------------------------------------------------
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/campusnode/frontend}:${IMAGE_TAG:-latest}
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+        VITE_MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
+    container_name: campusnode-frontend
+    restart: always
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/nginx-health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - campusnode-network
+
+# ------------------------------------------------------------------------------
+# Persistent Volume Declarations
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    name: campusnode_postgres_data
+  redis_data:
+    name: campusnode_redis_data
+
+# ------------------------------------------------------------------------------
+# Internal Application Network
+# ------------------------------------------------------------------------------
+networks:
+  campusnode-network:
+    name: campusnode-network
+    driver: bridge

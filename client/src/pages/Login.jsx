@@ -1,46 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { resendVerificationEmail } from '../services/authService';
-
-const STUDENT_FAILURE_MESSAGES = [
-  {
-    title: "Wrong Password Again?",
-    body: "Was the password your crush's birthday? Because clearly, it's not working out. 💔",
-    hint: "Double check your spelling or use 'Forgot password?'"
-  },
-  {
-    title: "Midterm Flashbacks?",
-    body: "You're forgetting this password just like Chapter 4 during the end-sem exams. 📚",
-    hint: "Don't guess blindly — take a quick breath."
-  },
-  {
-    title: "Ex's Nickname Detected?",
-    body: "Still trying your ex's nickname? It didn't work then, and it's definitely not working now. 💀",
-    hint: "Time to let it go and reset the password."
-  },
-  {
-    title: "3 AM Sleep Deprivation",
-    body: "That late-night Maggi and 2 hours of sleep are finally taking their toll on your memory. 🍜",
-    hint: "Type slowly, check your Caps Lock."
-  },
-  {
-    title: "Viva Exam Strategy?",
-    body: "Typing random passwords with the exact same confidence as an unprepared external viva. 📝",
-    hint: "Multiple failed attempts might trigger the rate limiter."
-  },
-  {
-    title: "8:30 AM Monday Energy",
-    body: "Struggling to remember this password harder than making it to the 75% attendance threshold. ⏰",
-    hint: "Take a second to verify before hitting Sign In again."
-  },
-  {
-    title: "Left on Seen?",
-    body: "Entering wrong passwords faster than your crush leaves you on 'Delivered'. 📱",
-    hint: "Hit 'Forgot password?' to get back in quickly."
-  }
-];
 
 const Login = () => {
   const { login, verify2FA: authVerify2FA } = useAuth();
@@ -51,15 +14,77 @@ const Login = () => {
   const [otp, setOtp] = useState('');
   const [showOTP, setShowOTP] = useState(false);
   const [error, setError] = useState('');
-  const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTextRevealing, setIsTextRevealing] = useState(false);
+  const revealIntervalRef = useRef(null);
+  const revealTimeoutRef = useRef(null);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState(''); // '' | 'sending' | 'sent' | 'error'
   const [resendMsg, setResendMsg] = useState('');
 
+  useEffect(() => {
+    return () => {
+      if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    };
+  }, []);
+
+  const handleTogglePassword = () => {
+    if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+
+    const nextState = !showPassword;
+    setShowPassword(nextState);
+
+    const passwordVal = formData.password;
+
+    if (nextState && passwordVal && passwordVal.length > 0) {
+      // Animate ONLY the input text reveal for a short span (~350ms - 450ms)
+      setIsTextRevealing(true);
+      const len = passwordVal.length;
+      const stepDuration = Math.min(55, Math.max(25, Math.floor(400 / len)));
+      let currentStep = 0;
+
+      // Start with all masked bullets
+      setDisplayText('•'.repeat(len));
+
+      revealIntervalRef.current = setInterval(() => {
+        currentStep++;
+        if (currentStep >= len) {
+          clearInterval(revealIntervalRef.current);
+          revealIntervalRef.current = null;
+          setDisplayText('');
+          revealTimeoutRef.current = setTimeout(() => {
+            setIsTextRevealing(false);
+          }, 150);
+        } else {
+          // Unmask progressively from left to right
+          setDisplayText(passwordVal.slice(0, currentStep) + '•'.repeat(len - currentStep));
+        }
+      }, stepDuration);
+    } else {
+      // Reset text reveal state immediately when hiding
+      setDisplayText('');
+      setIsTextRevealing(false);
+    }
+  };
+
   const handleChange = (e) => {
+    if (e.target.name === 'password') {
+      if (revealIntervalRef.current) {
+        clearInterval(revealIntervalRef.current);
+        revealIntervalRef.current = null;
+      }
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
+      setIsTextRevealing(false);
+      setDisplayText('');
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
     if (needsVerification) setNeedsVerification(false);
@@ -89,7 +114,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       const result = await login(formData.email, formData.password);
-      setFailedAttempts(0);
 
       if (result?.needs2FA) {
         setShowOTP(true);
@@ -102,7 +126,6 @@ const Login = () => {
         setVerificationEmail(err.response?.data?.email || formData.email);
         setError(err.response?.data?.message || 'Please verify your email before logging in.');
       } else {
-        setFailedAttempts((prev) => prev + 1);
         setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
       }
     } finally {
@@ -116,7 +139,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       await authVerify2FA(formData.email, otp);
-      setFailedAttempts(0);
       // Navigation is handled by AuthContext
     } catch (err) {
       setError(err.response?.data?.message || 'OTP verification failed. Please try again.');
@@ -141,10 +163,10 @@ const Login = () => {
       />
 
       <div className="w-full max-w-md relative z-10">
-        
+
         {/* Frosted Glass Login Card */}
         <div className="rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8 relative overflow-hidden flex flex-col">
-          
+
           {/* Card Header */}
           <div className="text-center mb-6">
             {/* <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cn-blue-50 dark:bg-cn-blue-950/50 border border-cn-blue-200/60 dark:border-cn-blue-800/60 text-cn-blue-600 dark:text-cn-blue-400 text-xs font-medium uppercase tracking-wider mb-3">
@@ -199,31 +221,8 @@ const Login = () => {
                 </div>
               )}
 
-              {/* Humorous failure message after 2 failed attempts (only if not verification error) */}
-              {!needsVerification && failedAttempts >= 2 && (
-                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
-                  <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-                  <div className="space-y-0.5 w-full">
-                    <div className="flex items-center justify-between gap-2">
-                      <strong className="block font-medium text-xs text-amber-950 dark:text-amber-100">
-                        {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].title}
-                      </strong>
-                      <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                        Attempt {failedAttempts}
-                      </span>
-                    </div>
-                    <p className="text-xs text-amber-900/90 dark:text-amber-300 leading-relaxed font-normal">
-                      {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].body}
-                    </p>
-                    <p className="text-[11px] text-amber-800/80 dark:text-amber-400/80 italic pt-0.5">
-                      💡 {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].hint}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Standard error for 1st failed attempt */}
-              {!needsVerification && error && failedAttempts < 2 && (
+              {/* Standard error */}
+              {!needsVerification && error && (
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl text-center">
                   {error}
                 </div>
@@ -263,22 +262,57 @@ const Login = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    value={formData.password}
+                    value={displayText !== '' ? displayText : formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={inputCls}
+                    className={`${inputCls} pr-11`}
+                    style={{
+                      textShadow: isTextRevealing
+                        ? '0 0 8px rgba(0, 148, 255, 0.7), 0 0 2px rgba(0, 148, 255, 0.4)'
+                        : 'none',
+                      letterSpacing: isTextRevealing ? '0.04em' : 'normal',
+                      transition: 'text-shadow 0.25s ease, letter-spacing 0.25s ease',
+                    }}
                   />
-                  <button
+                  <motion.button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                    onClick={handleTogglePassword}
+                    onMouseDown={(e) => e.preventDefault()}
+                    whileHover={{ scale: 1.12 }}
+                    whileTap={{ scale: 0.88 }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
+                    className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer focus:outline-none ${showPassword
+                        ? "text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300"
+                        : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      }`}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {showPassword ? (
+                        <motion.span
+                          key="eye-off"
+                          initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="flex items-center justify-center"
+                        >
+                          <EyeOff className="w-4 h-4" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="eye"
+                          initial={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="flex items-center justify-center"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 </div>
               </div>
 

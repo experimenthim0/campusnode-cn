@@ -82,7 +82,7 @@ const ProfileTab = ({
                 <CardHeader className="pb-4">
                     <div className="flex items-center gap-2">
                         <User className="size-4 text-primary" />
-                        <CardTitle className="text-base font-semibold">Admin Profile</CardTitle>
+                        <CardTitle className="text-base font-medium">Admin Profile</CardTitle>
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
                         Update your administrator identity and security preferences.
@@ -154,7 +154,7 @@ const ProfileTab = ({
                 <CardHeader className="pb-4">
                     <div className="flex items-center gap-2">
                         <KeyRound className="size-4 text-primary" />
-                        <CardTitle className="text-base font-semibold">Change Password</CardTitle>
+                        <CardTitle className="text-base font-medium">Change Password</CardTitle>
                     </div>
                     <CardDescription className="text-xs text-muted-foreground">
                         Ensure your administrative password is unique, strong, and stored securely.

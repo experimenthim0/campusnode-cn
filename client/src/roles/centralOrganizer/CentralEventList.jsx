@@ -44,13 +44,13 @@ const CentralEventList = ({
     return (
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center rounded-2xl shadow-xs">
         <Calendar className="mx-auto text-neutral-400 mb-3" size={44} />
-        <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">No Central Events Yet</h3>
+        <h3 className="text-lg font-medium text-neutral-800 dark:text-neutral-200">No Central Events Yet</h3>
         <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
           Create your first college-wide event to coordinate participating clubs and staff members.
         </p>
         <button
           onClick={onCreateClick}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer shadow-sm"
         >
           <PlusCircle size={15} />
           Create College Event
@@ -81,7 +81,7 @@ const CentralEventList = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
+            className="px-3 py-2 text-xs font-medium rounded-lg border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
           >
             <option value="ALL">All ({events.length})</option>
             <option value="PUBLISHED">Live ({events.filter((e) => e.reviewStatus === "PUBLISHED").length})</option>

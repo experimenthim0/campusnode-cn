@@ -44,7 +44,7 @@ const FeaturedEventsPage = () => {
         <div className="mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
           >
             <ArrowLeft size={14} />
             <span>Back to Home</span>
@@ -53,11 +53,11 @@ const FeaturedEventsPage = () => {
 
         {/* Page Header */}
         <div className="mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/50 mb-3">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium uppercase tracking-wider bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200/50 dark:border-brand-800/50 mb-3">
             <Sparkles size={12} className="text-brand-500" />
             <span>Campus Spotlight</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 leading-[1.1]">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-neutral-900 dark:text-neutral-50 leading-[1.1]">
             Featured Events
           </h1>
           <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 mt-2 max-w-2xl">
@@ -87,7 +87,7 @@ const FeaturedEventsPage = () => {
             <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4">
               <Calendar size={22} />
             </div>
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50">
               No Featured Events Right Now
             </h3>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 mb-6">
@@ -95,7 +95,7 @@ const FeaturedEventsPage = () => {
             </p>
             <Link
               to="/events"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-medium rounded-xl shadow-xs transition-colors"
             >
               Browse All Events
             </Link>

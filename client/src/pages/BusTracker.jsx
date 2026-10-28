@@ -401,7 +401,7 @@ const BusTracker = () => {
                 <Bus className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-base sm:text-lg font-semibold tracking-tight text-neutral-900 dark:text-white leading-tight">
+                <h1 className="text-base sm:text-lg font-medium tracking-tight text-neutral-900 dark:text-white leading-tight">
                   NITJ Bus Tracker
                 </h1>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 hidden sm:block">
@@ -420,7 +420,7 @@ const BusTracker = () => {
               <span className="font-mono text-xs font-medium text-neutral-800 dark:text-neutral-200">
                 {clockStr}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium uppercase tracking-wider bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded-full">
                 {dayStr}
               </span>
             </div>
@@ -446,7 +446,7 @@ const BusTracker = () => {
 
         {simMode && (
           <div className="bg-brand-500/5 border border-brand-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-2 text-xs font-semibold text-brand-600 dark:text-brand-400">
+            <div className="flex items-center gap-2 text-xs font-medium text-brand-600 dark:text-brand-400">
               <Clock className="w-4 h-4" />
               <span>TEST TIME SIMULATOR</span>
             </div>
@@ -529,11 +529,11 @@ const BusTracker = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Active Buses
             </p>
             <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
+              <span className="text-2xl sm:text-3xl font-medium text-neutral-900 dark:text-white">
                 {activeBuses.length}
               </span>
               <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
@@ -544,11 +544,11 @@ const BusTracker = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Next Departure
             </p>
             <div className="mt-2">
-              <span className="text-xl sm:text-2xl font-black text-brand-600 dark:text-brand-500">
+              <span className="text-xl sm:text-2xl font-medium text-brand-600 dark:text-brand-500">
                 {nextDeparture ? (
                   (() => {
                     const diff = Math.round(nextDeparture.dep - nowM(effDate));
@@ -563,11 +563,11 @@ const BusTracker = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               Est. Speed
             </p>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
+              <span className="text-2xl sm:text-3xl font-medium text-neutral-900 dark:text-white">
                 {estSpeed}
               </span>
               <span className="text-xs font-medium text-neutral-500">km/h</span>
@@ -576,11 +576,11 @@ const BusTracker = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
               ETA to Campus
             </p>
             <div className="mt-2">
-              <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              <span className="text-xl sm:text-2xl font-medium text-emerald-600 dark:text-emerald-400">
                 {etaCampus ? (
                   (() => {
                     const left = Math.round(etaCampus.arr - nowM(effDate));
@@ -599,7 +599,7 @@ const BusTracker = () => {
         <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3">
           <button
             onClick={() => setActiveTab("live")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "live"
                 ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -611,7 +611,7 @@ const BusTracker = () => {
           
           <button
             onClick={() => setActiveTab("schedule")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "schedule"
                 ? "bg-brand-600 text-white shadow-sm"
                 : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -629,7 +629,7 @@ const BusTracker = () => {
                 <div className="w-12 h-12 rounded-full bg-brand-500/10 text-brand-600 flex items-center justify-center mx-auto mb-3">
                   <Bus className="w-6 h-6" />
                 </div>
-                <h3 className="font-semibold text-base text-neutral-900 dark:text-white mb-1">
+                <h3 className="font-medium text-base text-neutral-900 dark:text-white mb-1">
                   No buses currently on route
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto leading-relaxed">
@@ -659,7 +659,7 @@ const BusTracker = () => {
                           className="w-3.5 h-3.5 rounded-full shrink-0" 
                           style={{ backgroundColor: leg.color }}
                         />
-                        <h4 className="font-semibold text-sm text-neutral-900 dark:text-white">
+                        <h4 className="font-medium text-sm text-neutral-900 dark:text-white">
                           {STOPS[leg.from].short} → {STOPS[leg.to].short}
                         </h4>
                       </div>
@@ -706,7 +706,7 @@ const BusTracker = () => {
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
-                <h3 className="font-semibold text-base text-neutral-900 dark:text-white">
+                <h3 className="font-medium text-base text-neutral-900 dark:text-white">
                   Official Transport Schedule
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -722,7 +722,7 @@ const BusTracker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-500 flex items-center gap-1.5">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-500 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 Saturday & Sunday — Afternoon Batch 1
               </h4>
@@ -737,7 +737,7 @@ const BusTracker = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-semibold text-brand-600 dark:text-brand-400">2:00 PM – Campus</td>
+                      <td className="py-3 px-3 font-medium text-brand-600 dark:text-brand-400">2:00 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Patel Chowk</td>
                       <td className="py-3 px-3 font-medium">4:20 PM via Maqsudan, Bidhipur</td>
                     </tr>
@@ -747,7 +747,7 @@ const BusTracker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 Saturday & Sunday — Afternoon Batch 2
               </h4>
@@ -762,7 +762,7 @@ const BusTracker = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-semibold text-emerald-600 dark:text-emerald-400">4:45 PM – Campus</td>
+                      <td className="py-3 px-3 font-medium text-emerald-600 dark:text-emerald-400">4:45 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Maqsudan</td>
                       <td className="py-3 px-3 font-medium">6:10 PM via Bidhipur</td>
                     </tr>
@@ -772,7 +772,7 @@ const BusTracker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5" />
                 All Week — Evening Batch
               </h4>
@@ -787,7 +787,7 @@ const BusTracker = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 text-neutral-800 dark:text-neutral-200">
                     <tr>
-                      <td className="py-3 px-3 font-semibold text-rose-600 dark:text-rose-400">6:30 PM – Campus</td>
+                      <td className="py-3 px-3 font-medium text-rose-600 dark:text-rose-400">6:30 PM – Campus</td>
                       <td className="py-3 px-3">→ Bidhipur → Campus → Patel Chowk</td>
                       <td className="py-3 px-3 font-medium">8:45 PM via Maqsudan, Bidhipur</td>
                     </tr>

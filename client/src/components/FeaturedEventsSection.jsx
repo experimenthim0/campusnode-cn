@@ -15,7 +15,7 @@ const getCachedFeaturedEvents = () => {
       const parsed = JSON.parse(cached);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (_) {}
+  } catch (_) { }
   return [];
 };
 
@@ -32,7 +32,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
           setEvents(list);
           try {
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(list));
-          } catch (_) {}
+          } catch (_) { }
         }
       } catch (err) {
         console.error("Failed to load featured events in background:", err);
@@ -57,11 +57,11 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
       <ScrollReveal direction="up" distance={20}>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-black text-xs uppercase tracking-widest mb-1.5">
+            <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-medium text-xs uppercase tracking-widest mb-1.5">
               <Sparkles size={13} className="text-brand-500" />
               <span>Handpicked Campus Highlights</span>
             </div>
-            <h2 className="font-black text-2xl sm:text-3xl text-neutral-900 dark:text-white leading-tight tracking-wide">
+            <h2 className="font-medium text-2xl sm:text-3xl text-neutral-900 dark:text-white leading-tight tracking-wide">
               Featured Events
             </h2>
           </div>
@@ -102,14 +102,7 @@ const FeaturedEventsSection = ({ showViewAll = true, inline = false, className =
   }
 
   return (
-    <section className={`py-9 sm:py-11 lg:py-14 bg-gradient-to-b from-neutral-50/90 via-white to-neutral-50/60 dark:from-neutral-950/90 dark:via-neutral-900/30 dark:to-neutral-950/90 border-b border-neutral-200/80 dark:border-neutral-800/80 transition-colors duration-300 relative overflow-hidden ${className}`}>
-      {/* Subtle ambient brand blue glow matching Hero and SectionGlow */}
-      <div className="dark:hidden absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none" aria-hidden="true">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#C9EBFF] opacity-35 blur-[100px]" />
-      </div>
-      <div className="hidden dark:block absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none" aria-hidden="true">
-        <div className="campus-glow-flow w-[700px] max-w-[90vw] h-[260px] rounded-full bg-[#0094FF] opacity-[0.24] blur-[95px]" />
-      </div>
+    <section className={`py-9 sm:py-11 lg:py-14 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden ${className}`}>
       <Section className="relative z-10">{Content}</Section>
     </section>
   );

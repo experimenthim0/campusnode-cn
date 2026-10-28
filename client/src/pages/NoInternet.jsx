@@ -144,30 +144,30 @@ const hasMovesAvailable = (board) => {
 const getTileStyles = (val) => {
   switch (val) {
     case 2:
-      return "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400 border border-brand-300/40 dark:border-brand-800/40 text-base sm:text-xl font-semibold shadow-xs";
+      return "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400 border border-brand-300/40 dark:border-brand-800/40 text-base sm:text-xl font-medium shadow-xs";
     case 4:
-      return "bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-300 border border-brand-400/50 dark:border-brand-700/40 text-base sm:text-xl font-semibold shadow-xs";
+      return "bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-300 border border-brand-400/50 dark:border-brand-700/40 text-base sm:text-xl font-medium shadow-xs";
     case 8:
-      return "bg-brand-400 text-white dark:bg-brand-600 dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
+      return "bg-brand-400 text-white dark:bg-brand-600 dark:text-white text-base sm:text-xl font-medium shadow-sm";
     case 16:
-      return "bg-brand-500 text-white dark:bg-brand-500 dark:text-white text-base sm:text-xl font-extrabold shadow-sm";
+      return "bg-brand-500 text-white dark:bg-brand-500 dark:text-white text-base sm:text-xl font-medium shadow-sm";
     case 32:
-      return "bg-brand-600 text-white dark:bg-brand-700 dark:text-white text-base sm:text-xl font-black shadow-md";
+      return "bg-brand-600 text-white dark:bg-brand-700 dark:text-white text-base sm:text-xl font-medium shadow-md";
     case 64:
-      return "bg-brand-700 text-white dark:bg-brand-800 dark:text-white text-base sm:text-xl font-black shadow-md";
+      return "bg-brand-700 text-white dark:bg-brand-800 dark:text-white text-base sm:text-xl font-medium shadow-md";
     case 128:
-      return "bg-brand-800 text-amber-100 dark:bg-brand-900 dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-1 ring-amber-400/40";
+      return "bg-brand-800 text-amber-100 dark:bg-brand-900 dark:text-amber-200 text-sm sm:text-lg font-medium shadow-lg ring-1 ring-amber-400/40";
     case 256:
-      return "bg-brand-900 text-amber-200 dark:bg-brand-950 dark:text-amber-200 text-sm sm:text-lg font-black shadow-lg ring-2 ring-amber-400/60";
+      return "bg-brand-900 text-amber-200 dark:bg-brand-950 dark:text-amber-200 text-sm sm:text-lg font-medium shadow-lg ring-2 ring-amber-400/60";
     case 512:
-      return "bg-gradient-to-br from-amber-500 to-brand-600 text-white text-sm sm:text-lg font-black shadow-xl ring-2 ring-amber-300";
+      return "bg-gradient-to-br from-amber-500 to-brand-600 text-white text-sm sm:text-lg font-medium shadow-xl ring-2 ring-amber-300";
     case 1024:
-      return "bg-gradient-to-br from-amber-400 via-brand-500 to-rose-600 text-white text-xs sm:text-base font-black shadow-xl ring-2 ring-amber-300";
+      return "bg-gradient-to-br from-amber-400 via-brand-500 to-rose-600 text-white text-xs sm:text-base font-medium shadow-xl ring-2 ring-amber-300";
     case 2048:
-      return "bg-gradient-to-br from-yellow-300 via-amber-500 to-brand-600 text-white text-xs sm:text-base font-black shadow-2xl ring-4 ring-yellow-400 animate-pulse";
+      return "bg-gradient-to-br from-yellow-300 via-amber-500 to-brand-600 text-white text-xs sm:text-base font-medium shadow-2xl ring-4 ring-yellow-400 animate-pulse";
     default:
       if (val > 2048) {
-        return "bg-gradient-to-br from-purple-600 to-brand-600 text-white text-[11px] sm:text-sm font-black shadow-2xl ring-2 ring-purple-400";
+        return "bg-gradient-to-br from-purple-600 to-brand-600 text-white text-[11px] sm:text-sm font-medium shadow-2xl ring-2 ring-purple-400";
       }
       return "bg-neutral-100/80 dark:bg-neutral-900/60 text-transparent border border-neutral-200/50 dark:border-neutral-800/60";
   }
@@ -457,7 +457,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
             <WifiOff className="size-7 text-muted-foreground" />
           </div>
           <div>
-            <CardTitle className="text-xl sm:text-2xl font-semibold tracking-tight">
+            <CardTitle className="text-xl sm:text-2xl font-medium tracking-tight">
               You're Offline
             </CardTitle>
             <CardDescription className="text-sm mt-2 leading-relaxed text-muted-foreground">
@@ -519,7 +519,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                   <Gamepad2 size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-cn-text leading-tight">
+                  <h3 className="text-base font-medium text-cn-text leading-tight">
                     2048 Offline Arcade
                   </h3>
                   <p className="text-[11px] text-cn-text-muted font-normal">
@@ -543,19 +543,19 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
               <div className="w-full flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-1 text-center min-w-[65px]">
-                    <span className="block text-[9px] font-semibold text-cn-text-muted uppercase tracking-wider">
+                    <span className="block text-[9px] font-medium text-cn-text-muted uppercase tracking-wider">
                       Score
                     </span>
-                    <span className="block text-sm font-black text-cn-text">
+                    <span className="block text-sm font-medium text-cn-text">
                       {score}
                     </span>
                   </div>
 
                   <div className="bg-cn-surface-muted border border-cn-border rounded-xl px-3 py-1 text-center min-w-[65px]">
-                    <div className="flex items-center justify-center gap-1 text-[9px] font-semibold text-cn-text-muted uppercase tracking-wider">
+                    <div className="flex items-center justify-center gap-1 text-[9px] font-medium text-cn-text-muted uppercase tracking-wider">
                       <Trophy size={10} className="text-brand-500" /> Best
                     </div>
-                    <span className="block text-sm font-black text-cn-text">
+                    <span className="block text-sm font-medium text-cn-text">
                       {bestScore}
                     </span>
                   </div>
@@ -573,7 +573,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                   <button
                     onClick={handleUndo}
                     disabled={!prevGameState}
-                    className="px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-cn-surface-muted text-cn-text-secondary border border-cn-border font-semibold text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-cn-surface-muted text-cn-text-secondary border border-cn-border font-medium text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                     title="Undo"
                   >
                     <Undo2 size={13} />
@@ -582,7 +582,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
 
                   <button
                     onClick={startNewGame}
-                    className="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-cn-bg text-white font-medium text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
                     title="New Game"
                   >
                     <RotateCcw size={13} />
@@ -623,10 +623,10 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                 {/* Victory Overlay */}
                 {hasWon && !keepPlaying && (
                   <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center animate-in fade-in duration-200 z-20">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-xl font-black mb-2 shadow-lg animate-bounce">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-xl font-medium mb-2 shadow-lg animate-bounce">
                       🏆
                     </div>
-                    <h3 className="text-lg font-black text-white leading-tight">
+                    <h3 className="text-lg font-medium text-white leading-tight">
                       You Reached 2048!
                     </h3>
                     <p className="text-xs text-amber-200 mt-1 mb-4 font-medium">
@@ -635,13 +635,13 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                     <div className="flex gap-2 w-full max-w-xs">
                       <button
                         onClick={() => setKeepPlaying(true)}
-                        className="flex-1 py-2 px-2.5 bg-cn-surface text-cn-text hover:bg-cn-surface-muted font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-2.5 bg-cn-surface text-cn-text hover:bg-cn-surface-muted font-medium text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         Keep Going
                       </button>
                       <button
                         onClick={startNewGame}
-                        className="flex-1 py-2 px-2.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-2.5 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         New Game
                       </button>
@@ -655,7 +655,7 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                     <div className="w-10 h-10 rounded-2xl bg-danger-500/20 text-danger-400 border border-danger-500/30 flex items-center justify-center text-lg mb-2">
                       <WifiOff size={18} />
                     </div>
-                    <h3 className="text-lg font-semibold text-white leading-tight">
+                    <h3 className="text-lg font-medium text-white leading-tight">
                       Game Over!
                     </h3>
                     <p className="text-xs text-neutral-300 mt-0.5 mb-4">
@@ -665,14 +665,14 @@ const NoInternet = ({ onRetrySuccess, targetPath }) => {
                       {prevGameState && (
                         <button
                           onClick={handleUndo}
-                          className="flex-1 py-2 px-2.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                          className="flex-1 py-2 px-2.5 bg-white/20 hover:bg-white/30 text-white font-medium text-xs rounded-xl transition-colors cursor-pointer"
                         >
                           Undo Move
                         </button>
                       )}
                       <button
                         onClick={startNewGame}
-                        className="flex-1 py-2 px-3 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                        className="flex-1 py-2 px-3 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                       >
                         Try Again
                       </button>

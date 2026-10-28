@@ -17,6 +17,10 @@ export async function sendWebPushNotification(recipientUserIds, notificationPayl
       }
     }
 
+    if (!prisma.pushSubscription?.findMany) {
+      return;
+    }
+
     const subscriptions = await prisma.pushSubscription.findMany({
       where: whereClause,
     });

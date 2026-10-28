@@ -45,7 +45,10 @@ export const deleteClub = (id) =>
   api.delete(`/api/clubs/${id}`);
 
 export const getClubMembers = (clubId, params = {}) =>
-  api.get(`/api/club-members/${clubId}/members`, { params });
+  api.get(`/api/club-members/${clubId}/members`, {
+    params,
+    headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+  });
 
 export const getMyClubMembership = (clubId) =>
   api.get(`/api/club-members/${clubId}/my-membership`);

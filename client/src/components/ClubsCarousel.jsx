@@ -91,29 +91,8 @@ const ClubsCarousel = () => {
       checkScroll();
       window.addEventListener('resize', checkScroll);
 
-      const el = scrollRef.current;
-      const onWheel = (e) => {
-        if (!el || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) return;
-        let delta = e.deltaY;
-        if (e.deltaMode === 1) delta *= 33;
-        else if (e.deltaMode === 2) delta *= el.clientWidth;
-
-        const maxScroll = el.scrollWidth - el.clientWidth;
-        if (maxScroll <= 0) return;
-        const canLeft = el.scrollLeft > 2;
-        const canRight = el.scrollLeft < maxScroll - 2;
-
-        if ((delta > 0 && canRight) || (delta < 0 && canLeft)) {
-          e.preventDefault();
-          el.scrollLeft += delta;
-        }
-      };
-
-      if (el) el.addEventListener('wheel', onWheel, { passive: false });
-
       return () => {
         window.removeEventListener('resize', checkScroll);
-        if (el) el.removeEventListener('wheel', onWheel);
       };
     }
   }, [isCarousel, filteredClubs, checkScroll]);
@@ -140,11 +119,11 @@ const ClubsCarousel = () => {
       {/* Header with Navigation Controls */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
         <div>
-          <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
+          <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-medium text-xs uppercase tracking-widest mb-1.5">
             <i className="ri-team-line text-sm" />
             <span>Student Communities</span>
           </div>
-          <h2 className="font-black text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+          <h2 className="font-medium text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
             NITJ Clubs & Societies
           </h2>
         </div>
@@ -193,7 +172,7 @@ const ClubsCarousel = () => {
             <button
               key={tab.key}
               onClick={() => setFilterCategory(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border transition-all duration-150 shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-full border transition-all duration-150 shrink-0 cursor-pointer ${
                 isSelected
                   ? 'bg-neutral-900 dark:bg-white text-white dark:text-black border-neutral-900 dark:border-white shadow-2xs'
                   : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'

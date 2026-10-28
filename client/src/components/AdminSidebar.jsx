@@ -24,27 +24,27 @@ const AdminSidebarLink = ({ to, icon: Icon, label, isActive, collapsed }) => (
     to={to}
     className={`admin-sidebar-link group relative flex items-center rounded-xl transition-colors duration-200 py-2 px-2.5 my-0.5
       ${isActive
-        ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12] text-black dark:text-white font-medium"
-        : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white font-medium"
+        ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12] text-brand-600 dark:text-brand-300 font-medium"
+        : "text-cn-text-secondary hover:bg-cn-surface-muted hover:text-cn-text font-medium"
       }`}
     title={collapsed ? label : undefined}
   >
     <Icon
       size={18}
       strokeWidth={isActive ? 2.2 : 1.7}
-      className={`shrink-0 sidebar-link-icon transition-colors ${isActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500 group-hover:text-black dark:group-hover:text-white"
+      className={`shrink-0 sidebar-link-icon transition-colors ${isActive ? "text-brand-600 dark:text-brand-400" : "text-cn-text-muted group-hover:text-cn-text"
         }`}
     />
-    <span className="text-[13px] tracking-wide truncate sidebar-link-text ml-3">
+    <span className="text-nav truncate sidebar-link-text ml-3">
       {label}
     </span>
     {isActive && (
-      <span className="ml-auto shrink-0 w-1.5 h-3.5 rounded-full bg-brand-600 dark:bg-brand-500" />
+      <span className="ml-auto shrink-0 w-1.5 h-3.5 rounded-full bg-brand-600 dark:bg-brand-400" />
     )}
 
     {/* Tooltip — collapsed mode */}
     {collapsed && (
-      <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+      <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-label font-medium rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
         {label}
         <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-black dark:bg-white rotate-45" />
       </span>
@@ -76,8 +76,8 @@ const AdminSidebarDropdown = ({
         type="button"
         onClick={() => !collapsed && onToggle(id)}
         className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 transition-colors duration-200 cursor-pointer ${isAnyChildActive
-            ? `${collapsed ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12]" : ""} text-black dark:text-white font-medium`
-            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white"
+          ? `${collapsed ? "bg-brand-500/[0.08] dark:bg-brand-500/[0.12]" : ""} text-brand-600 dark:text-brand-300 font-medium`
+          : "text-cn-text-secondary hover:bg-cn-surface-muted hover:text-cn-text"
           }`}
         title={collapsed ? label : undefined}
       >
@@ -85,11 +85,11 @@ const AdminSidebarDropdown = ({
           <Icon
             size={18}
             strokeWidth={isAnyChildActive ? 2.2 : 1.7}
-            className={`shrink-0 transition-colors ${isAnyChildActive ? "text-brand-600 dark:text-brand-500" : "text-neutral-400 dark:text-neutral-500"
+            className={`shrink-0 transition-colors ${isAnyChildActive ? "text-brand-600 dark:text-brand-400" : "text-cn-text-muted"
               }`}
           />
           {!collapsed && (
-            <span className="text-[13px] font-medium tracking-wide truncate ml-3">
+            <span className="text-nav truncate ml-3">
               {label}
             </span>
           )}
@@ -97,15 +97,15 @@ const AdminSidebarDropdown = ({
         {!collapsed && (
           <ChevronDown
             size={14}
-            className={`shrink-0 text-neutral-400 dark:text-neutral-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            className={`shrink-0 text-cn-text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""
               }`}
           />
         )}
       </button>
 
-      {/* Submenu links without dots, clean auto-collapsible */}
+      {/* Submenu links */}
       {!collapsed && isOpen && (
-        <div className="pl-3 pt-1 pb-1 space-y-0.5 border-l border-neutral-200/60 dark:border-zinc-800/60 ml-4 my-1">
+        <div className="pl-3 pt-1 pb-1 space-y-0.5 border-l border-cn-border ml-4 my-1">
           {items.map((item, idx) => {
             const isActive = item.exactPath
               ? location.pathname === item.exactPath
@@ -117,9 +117,9 @@ const AdminSidebarDropdown = ({
               <Link
                 key={idx}
                 to={linkTo}
-                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] tracking-wide transition-all duration-150 ${isActive
-                    ? "bg-neutral-100 dark:bg-zinc-800/60 text-black dark:text-white font-medium"
-                    : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50/60 dark:hover:bg-zinc-900/60 hover:text-black dark:hover:text-white font-medium"
+                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-body text-[13px] transition-all duration-150 ${isActive
+                  ? "bg-cn-surface-muted text-brand-600 dark:text-brand-300 font-medium"
+                  : "text-cn-text-secondary hover:bg-cn-surface-muted hover:text-cn-text font-normal"
                   }`}
               >
                 <span className="truncate">{item.label}</span>
@@ -138,11 +138,11 @@ const AdminSidebarDropdown = ({
 const SectionDivider = ({ title, collapsed }) => (
   <div className="sidebar-divider my-2">
     {title && !collapsed && (
-      <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+      <p className="px-2 pb-1 text-label uppercase tracking-wider text-cn-text-muted">
         {title}
       </p>
     )}
-    <div className="h-px bg-neutral-100 dark:bg-zinc-800/80 mx-1" />
+    <div className="h-px bg-cn-border mx-1" />
   </div>
 );
 
@@ -209,6 +209,7 @@ const AdminSidebar = () => {
       icon: Radio,
       label: "Communication",
       items: [
+        { label: "Campus Updates", tab: "campus-updates" },
         { label: "Broadcasts (Outgoing)", tab: "broadcasts" },
         { label: "Notifications (Incoming)", tab: "notifications" },
       ]
@@ -255,27 +256,26 @@ const AdminSidebar = () => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col shrink-0 bg-cn-surface border-r border-neutral-200/80 dark:border-zinc-800/80 overflow-hidden admin-sidebar-transition ${collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
+      className={`hidden md:flex flex-col shrink-0 bg-cn-surface border-r border-cn-border overflow-hidden admin-sidebar-transition ${collapsed ? "admin-sidebar-collapsed" : "admin-sidebar-expanded"
         }`}
       style={{ height: "calc(100dvh - 3.5rem - env(safe-area-inset-top))" }}
       aria-label="Admin sidebar"
     >
       <div className="flex items-center justify-between px-3.5 pt-4 pb-2 relative min-h-[48px]">
         <div className="flex items-center gap-2.5 min-w-0 sidebar-brand-container">
-          <div className="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-500 flex items-center justify-center shrink-0 border border-brand-500/20">
-            <Shield size={16} strokeWidth={2.2} />
-          </div>
-          <div className="min-w-0 sidebar-brand-text">
-            <p className="text-[13px] font-medium text-black dark:text-white truncate leading-tight tracking-tight">
-              Control Panel
-            </p>
 
+          <div className="min-w-0 sidebar-brand-text">
+            <img
+              src={theme === "dark" ? "/darkthemelogo.png" : "/lightthemelogo.png"}
+              alt="Campusnode Logo"
+              className="w-8  h-8 object-contain"
+            />
           </div>
         </div>
 
         <button
           onClick={() => setCollapsed((prev) => !prev)}
-          className="admin-sidebar-toggle-btn w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 transition-all duration-200 cursor-pointer shrink-0"
+          className="admin-sidebar-toggle-btn w-7 h-7 rounded-lg flex items-center justify-center text-cn-text-muted hover:text-cn-text hover:bg-cn-surface-muted transition-all duration-200 cursor-pointer shrink-0"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -353,7 +353,7 @@ const AdminSidebar = () => {
         )}
       </nav>
 
-      <div className="mt-auto border-t border-neutral-200/80 dark:border-zinc-800/80 bg-neutral-50/50 dark:bg-zinc-950/40 p-2.5 space-y-2">
+      <div className="mt-auto border-t border-cn-border bg-cn-surface-muted/40 p-2.5 space-y-2">
         {/* Settings Tab - Positioned directly above profile & logout */}
         <AdminSidebarLink
           to="/admin-dashboard?tab=profile"
@@ -367,21 +367,21 @@ const AdminSidebar = () => {
         />
 
         {/* Divider */}
-        <div className="h-px bg-neutral-200/60 dark:bg-zinc-800/60 mx-1" />
+        <div className="h-px bg-cn-border mx-1" />
 
         {/* Profile Card and Logout Row */}
         {!collapsed ? (
           /* Expanded state: Non-clickable profile info + Logout button */
-          <div className="flex items-center justify-between gap-2.5 px-2 py-1.5 rounded-xl bg-white/80 dark:bg-zinc-900/60 border border-neutral-200/60 dark:border-zinc-800/50">
+          <div className="flex items-center justify-between gap-2.5 px-2 py-1.5 rounded-xl bg-cn-surface-card border border-cn-border">
             <div className="flex items-center gap-2.5 min-w-0 flex-1 select-none">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-neutral-200 dark:ring-zinc-700 overflow-hidden shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-cn-border overflow-hidden shrink-0">
                 <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                <p className="text-body-emphasis text-cn-text truncate leading-tight">
                   {adminName}
                 </p>
-                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate leading-tight mt-0.5">
+                <p className="text-metadata text-cn-text-muted truncate leading-tight mt-0.5">
                   {adminEmail}
                 </p>
               </div>
@@ -389,7 +389,7 @@ const AdminSidebar = () => {
 
             <button
               onClick={handleLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-150 cursor-pointer shrink-0"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-cn-text-muted hover:text-danger-600 dark:hover:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-950/30 transition-all duration-150 cursor-pointer shrink-0"
               title="Sign out of Admin"
               aria-label="Logout"
             >
@@ -403,10 +403,10 @@ const AdminSidebar = () => {
               className="group relative flex items-center justify-center cursor-default select-none"
               title={`Signed in as ${adminName} (${adminEmail})`}
             >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-neutral-200 dark:ring-zinc-700 overflow-hidden">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-cn-border overflow-hidden">
                 <img src={`${theme === "light" ? "/lightthemelogo.png" : "/darkthemelogo.png"}`} alt="logo" className='w-8 h-8 rounded-full object-cover' />
               </div>
-              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-black dark:bg-white text-white dark:text-black text-label font-medium rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                 {adminName}
                 <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-black dark:bg-white rotate-45" />
               </span>
@@ -414,14 +414,14 @@ const AdminSidebar = () => {
 
             <button
               onClick={handleLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer group relative"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-cn-text-muted hover:text-danger-600 dark:hover:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-950/30 transition-colors cursor-pointer group relative"
               title="Logout"
               aria-label="Logout"
             >
               <LogOut size={15} strokeWidth={2} />
-              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-red-600 text-white text-[11px] font-semibold tracking-wide rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+              <span className="admin-sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-danger-600 text-white text-label font-medium rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
                 Logout
-                <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-red-600 rotate-45" />
+                <span className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-danger-600 rotate-45" />
               </span>
             </button>
           </div>

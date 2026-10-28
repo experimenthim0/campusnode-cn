@@ -73,7 +73,7 @@ const Contribute = () => {
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.1}>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-foreground mb-4">
               Help Build Campusnode
             </h1>
           </ScrollReveal>
@@ -120,7 +120,7 @@ const Contribute = () => {
         <section>
           <ScrollReveal direction="up">
             <div className="text-center max-w-xl mx-auto mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+              <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground mb-2">
                 What You Can Contribute
               </h2>
             </div>
@@ -135,7 +135,7 @@ const Contribute = () => {
                     <div className="w-9 h-9 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-3">
                       <Icon className="w-4.5 h-4.5" />
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground mb-1">
+                    <h3 className="text-sm font-medium text-foreground mb-1">
                       {area.title}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed font-normal">
@@ -154,7 +154,7 @@ const Contribute = () => {
         <section id="contribution-flow" className="scroll-mt-16">
           <ScrollReveal direction="up">
             <div className="text-center max-w-xl mx-auto mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+              <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground mb-2">
                 Contribution Flow
               </h2>
             </div>
@@ -164,10 +164,10 @@ const Contribute = () => {
             {CONTRIBUTION_STEPS.map((step, idx) => (
               <ScrollReveal key={step.step} direction="up" delay={0.05 * idx}>
                 <div className="h-full p-5 rounded-xl bg-card border border-border flex flex-col justify-start">
-                  <span className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 block mb-2">
+                  <span className="text-xs font-mono font-medium text-brand-600 dark:text-brand-400 block mb-2">
                     {step.step}
                   </span>
-                  <h3 className="text-sm font-semibold text-foreground mb-1.5">
+                  <h3 className="text-sm font-medium text-foreground mb-1.5">
                     {step.title}
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed font-normal">
@@ -200,7 +200,7 @@ const Contribute = () => {
         <section>
           <ScrollReveal direction="up">
             <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border text-center max-w-2xl mx-auto">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-2">
+              <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-foreground mb-2">
                 Want to Join the Campusnode Team?
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-6 max-w-lg mx-auto font-normal">

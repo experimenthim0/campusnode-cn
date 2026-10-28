@@ -12,6 +12,8 @@ import DayView from "../components/calendar/DayView";
 import VenueTimelineView from "../components/calendar/VenueTimelineView";
 import EventQuickViewDrawer from "../components/calendar/EventQuickViewDrawer";
 import EventApprovalPreviewModal from "../components/EventApprovalPreviewModal";
+import EventRejectionModal from "../components/EventRejectionModal";
+import { invalidateCache } from "../lib/cacheManager";
 import RescheduleConfirmModal from "../components/calendar/RescheduleConfirmModal";
 import BlackoutModal from "../components/calendar/BlackoutModal";
 import ConflictCenter from "../components/calendar/ConflictCenter";
@@ -68,7 +70,7 @@ const StatCard = ({ label, value, accent, icon: Icon }) => (
       </div>
       <div className="mt-3 flex items-baseline">
         <p
-          className={`text-2xl sm:text-3xl font-semibold logofont tracking-tight leading-none ${
+          className={`text-2xl sm:text-3xl font-medium logofont tracking-tight leading-none ${
             accent ? "text-amber-600 dark:text-amber-400" : "text-foreground"
           }`}
         >
@@ -104,6 +106,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [previewModalEvent, setPreviewModalEvent] = useState(null);
+  const [rejectModalEvent, setRejectModalEvent] = useState(null);
 
   const [rescheduleData, setRescheduleData] = useState(null);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
@@ -253,36 +256,45 @@ const EventCalendarPage = ({ readOnly = false }) => {
     try {
       await reviewEvent(eventId, {
         status: "PUBLISHED",
-        comment: comment || "Approved by faculty coordinator"
+        comment: comment || "Approved by faculty coordinator",
+        reason: comment || "Approved by faculty coordinator"
       });
       showNotification(`Event approved successfully.`, "success");
+      try {
+        await invalidateCache(['/api/events', '/api/events/*']);
+      } catch {}
       setDrawerOpen(false);
       setPreviewModalEvent(null);
       fetchCalendarData();
     } catch (err) {
-      showNotification("Failed to approve event.", "error");
+      showNotification(err.response?.data?.message || "Failed to approve event.", "error");
     }
   };
 
   const handleRejectEvent = async (eventItemOrId, customReason = null) => {
     const eventId = typeof eventItemOrId === 'string' ? eventItemOrId : (eventItemOrId?.id || eventItemOrId?._id);
-    const title = typeof eventItemOrId === 'object' ? eventItemOrId?.title : 'Event';
-    let reason = customReason;
-    if (reason === null) {
-      reason = prompt(`Enter rejection reason for "${title}":`);
-      if (reason === null) return;
+    if (customReason === null) {
+      const eventObj = typeof eventItemOrId === 'object' ? eventItemOrId : events.find(e => (e.id || e._id) === eventId) || { id: eventId };
+      setRejectModalEvent(eventObj);
+      return;
     }
+
     try {
       await reviewEvent(eventId, {
         status: "REJECTED",
-        comment: reason.trim() || "Proposal rejected by faculty coordinator."
+        comment: customReason.trim() || "Proposal rejected by faculty coordinator.",
+        reason: customReason.trim() || "Proposal rejected by faculty coordinator."
       });
       showNotification(`Event rejected.`, "info");
+      try {
+        await invalidateCache(['/api/events', '/api/events/*']);
+      } catch {}
       setDrawerOpen(false);
       setPreviewModalEvent(null);
+      setRejectModalEvent(null);
       fetchCalendarData();
     } catch (err) {
-      showNotification("Failed to reject event.", "error");
+      showNotification(err.response?.data?.message || "Failed to reject event.", "error");
     }
   };
 
@@ -348,12 +360,12 @@ const EventCalendarPage = ({ readOnly = false }) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Event Name</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Date & Time</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Venue</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Organizing Club</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-right">Action</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Event Name</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Date & Time</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Venue</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Organizing Club</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-[10px] font-medium uppercase tracking-wider text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -380,7 +392,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                     >
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-semibold hover:text-primary transition-colors text-xs line-clamp-1">
+                          <span className="font-medium hover:text-primary transition-colors text-xs line-clamp-1">
                             {e.title}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
@@ -414,7 +426,7 @@ const EventCalendarPage = ({ readOnly = false }) => {
                       <TableCell>
                         <Badge
                           variant={status === "PUBLISHED" ? "default" : status === "PENDING" ? "outline" : "destructive"}
-                          className={`text-[10px] font-semibold uppercase tracking-wider ${
+                          className={`text-[10px] font-medium uppercase tracking-wider ${
                             status === "PUBLISHED"
                               ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                               : status === "PENDING"
@@ -526,6 +538,16 @@ const EventCalendarPage = ({ readOnly = false }) => {
         onApprove={handleApproveEvent}
         onReject={handleRejectEvent}
         userRole={userRole}
+      />
+
+      <EventRejectionModal
+        isOpen={Boolean(rejectModalEvent)}
+        event={rejectModalEvent}
+        onClose={() => setRejectModalEvent(null)}
+        onConfirm={(reason) => {
+          const id = rejectModalEvent?.id || rejectModalEvent?._id;
+          return handleRejectEvent(id, reason);
+        }}
       />
 
       {canManageCalendar && <RescheduleConfirmModal

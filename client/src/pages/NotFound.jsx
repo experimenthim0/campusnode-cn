@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Home, CalendarDays, Compass } from "lucide-react";
+import { Home, CalendarDays } from "lucide-react";
 
 const timeBasedMessages = {
   earlyMorning: [
@@ -107,11 +105,15 @@ const NotFound = () => {
       navigate('/');
       return;
     }
-    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+
+    const timer = setTimeout(() => {
+      setCountdown(c => c - 1);
+    }, 1000);
+
     return () => clearTimeout(timer);
   }, [countdown, navigate]);
 
-  // Refresh / rotate message every 7 seconds
+  // Rotate message smoothly every 7 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setFade(false);
@@ -125,74 +127,74 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="min-h-[85vh] bg-cn-bg text-cn-text flex items-center justify-center px-4 py-12 transition-colors duration-200">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full text-center space-y-6">
         
-        {/* Subtle Brand Tag */}
-        <div className="inline-flex items-center gap-2">
-          <Badge variant="outline" className="border-border text-muted-foreground font-medium uppercase tracking-wider text-[10px] px-2.5 py-0.5">
-            <Compass className="size-3 text-primary mr-1" />
-            Error 404 • Destination Unknown
-          </Badge>
+        {/* Cat & Bird 404 Illustration */}
+        <div className="flex justify-center select-none pt-2">
+          <div className="relative inline-block bg-white dark:bg-white/95 rounded-2xl p-2.5 sm:p-3 shadow-xs border border-neutral-200/80 dark:border-white/10">
+            <img
+              src="/404_error.png"
+              alt="404 - Page Not Found"
+              className="w-44 sm:w-52 md:w-60 h-auto object-contain pointer-events-none"
+              loading="eager"
+            />
+          </div>
         </div>
 
-        {/* Clean Institutional 404 Heading */}
-        <div className="space-y-1">
-          <h1 className="text-7xl md:text-8xl font-black tracking-tight text-foreground select-none font-mono">
-            404
-          </h1>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+        {/* Heading */}
+        <div className="space-y-1.5">
+          <h1 className="text-xl sm:text-2xl font-medium tracking-tight text-neutral-900 dark:text-white">
             Page Not Found
-          </p>
+          </h1>
+        
         </div>
 
         {/* Humorous Campus Quote Card */}
-        <Card className="border-border bg-card shadow-xs text-left">
-          <CardContent className="p-5 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
-                Campus Dispatch
-              </span>
-              <span className="text-[10px] text-muted-foreground font-mono">
-                Live Status
-              </span>
-            </div>
-            <p className={`text-sm text-foreground/90 leading-relaxed font-medium min-h-[44px] flex items-center transition-opacity duration-200 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-              {message}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-[#101930] p-4 sm:p-5 shadow-xs text-left">
+          <div className="flex items-center justify-between text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
+            <span>Overheard on Campus</span>
+            <span>NIT Jalandhar</span>
+          </div>
+          <p
+            className={`text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed min-h-[44px] flex items-center transition-opacity duration-200 ${
+              fade ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            "{message}"
+          </p>
+        </div>
 
         {/* Auto Redirect Notice */}
-        <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1.5">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Redirecting to home in{' '}
-          <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 font-semibold">
+          <span className="font-medium text-neutral-800 dark:text-neutral-200">
             {countdown}s
-          </Badge>
+          </span>
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
           <Button
             onClick={() => navigate('/')}
             className="gap-2 cursor-pointer font-medium shadow-xs"
           >
-            <Home className="size-4" />
+            <Home className="w-4 h-4" />
             Take Me Home
           </Button>
+
           <Button
             variant="outline"
             onClick={() => navigate('/events')}
             className="gap-2 cursor-pointer font-medium"
           >
-            <CalendarDays className="size-4" />
+            <CalendarDays className="w-4 h-4" />
             Browse Events
           </Button>
         </div>
 
-        <p className="pt-6 text-[10px] text-muted-foreground tracking-wider uppercase font-medium">
-          Campusnode Platform • National Institute of Technology Jalandhar
-        </p>
+        {/* Institutional Attribution */}
+       
       </div>
     </div>
   );

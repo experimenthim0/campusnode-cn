@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
+import ThemeToggle from "./ThemeToggle";
 import { Link, useLocation } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import { useAuth } from "../context/AuthContext";
@@ -13,7 +14,7 @@ import { LogoutIcon } from "./ui/logout";
 import { CalendarCogIcon } from "./ui/calendar-cog";
 import { LayoutGridIcon } from "./ui/layout-grid";
 import LogInIcon from "./ui/login";
-import { LayoutDashboard, Shield } from "lucide-react";
+import { LayoutDashboard, Shield, Megaphone } from "lucide-react";
 import { EyeIcon } from "./ui/eye";
 import SearchBar from "./SearchBar";
 import { ArrowRightIcon } from "./ui/arrow-right";
@@ -55,18 +56,28 @@ const Navbar = () => {
   const { notifications, unreadCount, setUnreadCount, setNotifications } = useSocket() || {};
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const notifDropdownRef = useRef(null);
-  const notifMobileDropdownRef = useRef(null);
 
   const location = useLocation();
   const dropdownRef = useRef(null);
 
   const [visible, setVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const scrollStopTimer = useRef(null);
 
   useEffect(() => {
     let ticking = false;
 
     const onScroll = () => {
+      // Reset scroll-stop timer on every scroll event
+      if (scrollStopTimer.current) {
+        clearTimeout(scrollStopTimer.current);
+      }
+
+      // Automatically show navbar once user stops scrolling
+      scrollStopTimer.current = setTimeout(() => {
+        setVisible(true);
+      }, 750);
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScrollY = Math.max(0, window.scrollY);
@@ -84,7 +95,7 @@ const Navbar = () => {
             setDropdownOpen(false);
             setNotifDropdownOpen(false);
           } else if (delta < -3) {
-            // Scrolling up (little bit or more): reveal navbar
+            // Scrolling up (bottom to top): reveal navbar
             setVisible(true);
           }
 
@@ -96,7 +107,12 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollStopTimer.current) {
+        clearTimeout(scrollStopTimer.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -119,8 +135,7 @@ const Navbar = () => {
       }
       if (
         notifDropdownRef.current &&
-        !notifDropdownRef.current.contains(e.target) &&
-        (!notifMobileDropdownRef.current || !notifMobileDropdownRef.current.contains(e.target))
+        !notifDropdownRef.current.contains(e.target)
       ) {
         setNotifDropdownOpen(false);
       }
@@ -226,9 +241,9 @@ const Navbar = () => {
       .toUpperCase() || "?";
 
   const navLinkCls = (path) =>
-    `relative py-1 text-[14px] font-semibold tracking-wide transition-colors duration-200 group flex items-center justify-center ${isActive(path)
-      ? "text-cn-blue-600 dark:text-cn-blue-400 font-semibold"
-      : "text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400"
+    `relative py-1 text-nav transition-colors duration-200 group flex items-center justify-center ${isActive(path)
+      ? "text-brand-600 dark:text-brand-300 font-medium"
+      : "text-cn-text-secondary hover:text-brand-600 dark:hover:text-brand-300 font-medium"
     }`;
 
 
@@ -258,7 +273,7 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-bg/40 border-b border-cn-border-subtle backdrop-blur-xl transition-all duration-300 ease-in-out myfont ${
+        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-cn-bg/40 border-b border-cn-border-subtle backdrop-blur-xl transition-all duration-300 ease-in-out ${
           scrolled ? "shadow-xs border-cn-border-subtle bg-cn-bg/80" : ""
         } ${visible ? "translate-y-0" : "-translate-y-full pointer-events-none shadow-none"}`}
       >
@@ -291,12 +306,12 @@ const Navbar = () => {
             <Link to="/" className={navLinkCls("/")}>
               <span className="relative inline-block leading-none">
                 Home
-                {isActive("/") && (
+                {/* {isActive("/") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
@@ -309,12 +324,12 @@ const Navbar = () => {
             <Link to="/clubs" className={navLinkCls("/clubs")}>
               <span className="relative inline-block leading-none">
                 Clubs
-                {isActive("/clubs") && (
+                {/* {isActive("/clubs") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
@@ -327,16 +342,28 @@ const Navbar = () => {
             <Link to="/events" className={navLinkCls("/events")}>
               <span className="relative inline-block leading-none">
                 Events
-                {isActive("/events") && (
+                {/* {isActive("/events") && (
                   <EyeIcon
                     size={12}
                     className="absolute -top-2.5 -right-2 text-cn-blue-600 dark:text-cn-blue-400 pointer-events-none"
                   />
-                )}
+                )} */}
               </span>
               <span
                 className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
                   isActive("/events")
+                    ? "scale-x-100 opacity-100"
+                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"
+                }`}
+              />
+            </Link>
+            <Link to="/campus-updates" className={navLinkCls("/campus-updates")}>
+              <span className="relative inline-block leading-none">
+                Updates
+              </span>
+              <span
+                className={`absolute -bottom-1 left-0 right-0 h-[2px] bg-cn-blue-600 dark:bg-cn-blue-400 rounded-full transform transition-all duration-200 origin-center ${
+                  isActive("/campus-updates")
                     ? "scale-x-100 opacity-100"
                     : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-75"
                 }`}
@@ -358,26 +385,11 @@ const Navbar = () => {
               title="Search (Ctrl+K)"
             >
               <i className={`${searchOpen ? "ri-close-line text-cn-blue-600" : "ri-search-line group-hover:scale-110"} text-base transition-transform duration-200`} />
-              <span className="hidden xl:inline-block text-[10px] font-semibold uppercase tracking-wider text-cn-text-muted group-hover:text-cn-text bg-cn-surface-muted px-1.5 py-0.5 rounded border border-cn-border">⌘K</span>
+              <span className="hidden xl:inline-block text-[10px] font-medium uppercase tracking-wider text-cn-text-muted group-hover:text-cn-text bg-cn-surface-muted px-1.5 py-0.5 rounded border border-cn-border">⌘K</span>
             </button>
 
             {/* Theme toggle */}
-            <button
-              onClick={() => {
-                document.documentElement.classList.add('dark-transition');
-                toggleTheme();
-                setTimeout(() => document.documentElement.classList.remove('dark-transition'), 400);
-              }}
-              className="p-2 rounded-full text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs hover:rotate-12"
-              aria-label="Toggle dark mode"
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
-              )}
-            </button>
+            <ThemeToggle size="md" />
 
             {user ? (
               <>
@@ -398,13 +410,13 @@ const Navbar = () => {
                     {notifDropdownOpen && (
                       <div className="absolute top-[calc(100%+12px)] right-0 w-80 max-h-96 overflow-y-auto bg-cn-surface/95 backdrop-blur-xl border border-cn-border rounded-2xl z-50 shadow-2xl overflow-hidden animate-in fade-in duration-200">
                         <div className="px-4 py-3 border-b border-cn-border flex justify-between items-center bg-cn-surface-muted/80 backdrop-blur-md sticky top-0 z-10">
-                          <h3 className="text-xs font-black uppercase tracking-wider text-cn-text">Notifications</h3>
+                          <h3 className="text-xs font-medium uppercase tracking-wider text-cn-text">Notifications</h3>
                           <div className="flex items-center gap-3">
                             {unreadCount > 0 && (
                               <button
                                 type="button"
                                 onClick={handleMarkAllNotificationsRead}
-                                className="text-[11px] font-semibold text-cn-text-muted hover:text-cn-text transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                                className="text-[11px] font-medium text-cn-text-muted hover:text-cn-text transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                               >
                                 Mark all read
                               </button>
@@ -412,7 +424,7 @@ const Navbar = () => {
                             <Link
                               to="/notifications"
                               onClick={() => setNotifDropdownOpen(false)}
-                              className="inline-flex items-center gap-1 text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-xs font-semibold uppercase tracking-wider group"
+                              className="inline-flex items-center gap-1 text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-xs font-medium uppercase tracking-wider group"
                             >
                               See All
                               <i className="ri-arrow-right-line text-sm text-cn-blue-600 dark:text-cn-blue-400 group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -429,19 +441,19 @@ const Navbar = () => {
                                 className={`block p-3.5 transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-transparent'}`}
                               >
                                 <div className="flex justify-between items-start mb-1">
-                                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
+                                  <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 uppercase tracking-wider truncate max-w-[170px]">
                                     {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
                                       ? 'Campusnode'
                                       : (notif.sender?.clubName || notif.sender?.name || 'Campusnode')}
                                   </span>
                                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap ml-2">{formatDate(notif.createdAt)}</span>
                                 </div>
-                                <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5 line-clamp-1">{notif.title}</h4>
+                                <h4 className="text-xs font-medium text-neutral-900 dark:text-neutral-100 mb-0.5 line-clamp-1">{notif.title}</h4>
                                 <p className="text-[11.5px] text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">{notif.message}</p>
                               </Link>
                             ))
                           ) : (
-                            <div className="p-8 text-center text-neutral-400 dark:text-neutral-500 text-xs font-semibold uppercase tracking-wider">
+                            <div className="p-8 text-center text-neutral-400 dark:text-neutral-500 text-xs font-medium uppercase tracking-wider">
                               No notifications yet
                             </div>
                           )}
@@ -460,7 +472,7 @@ const Navbar = () => {
                     aria-haspopup="true"
                     aria-expanded={dropdownOpen}
                   >
-                    {/* <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-2xs">
+                    {/* <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 text-white font-medium text-[10px] flex items-center justify-center shrink-0 shadow-2xs">
                       {initials}
                     </span> */}
                     <img
@@ -468,7 +480,7 @@ const Navbar = () => {
                       alt="Profile"
                       className="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm border-2 border-white dark:border-neutral-900 group-hover:border-brand-500/40 transition-colors duration-200"
                     />
-                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 max-w-[90px] truncate hidden lg:block group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                    <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 max-w-[90px] truncate hidden lg:block group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                       {user.name?.split(" ")[0]}
                     </span>
                     <i
@@ -483,10 +495,10 @@ const Navbar = () => {
                       role="menu"
                     >
                       <div className="px-3 py-2.5 mb-1 rounded-xl bg-neutral-50 dark:bg-neutral-850/60 border border-neutral-100 dark:border-neutral-800/80">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                           Logged in as
                         </p>
-                        <p className="text-xs font-black text-neutral-900 dark:text-neutral-100 truncate mt-0.5">
+                        <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate mt-0.5">
                           {user.name}
                         </p>
                         <p className="text-[10px] tracking-wide text-brand-600 dark:text-brand-400 font-medium truncate mt-0.5">
@@ -514,7 +526,7 @@ const Navbar = () => {
                           <Link
                             to="/admin-dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
+                            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                             role="menuitem"
                           >
                             <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -524,7 +536,7 @@ const Navbar = () => {
                             <Link
                               to="/profile"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-150 hover:-translate-y-0.5 active:scale-95 touch-manipulation group"
                               role="menuitem"
                             >
                               <LayoutDashboard size={16} className="text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" />
@@ -537,7 +549,7 @@ const Navbar = () => {
                       <div className="mt-1 pt-1 border-t border-neutral-100 dark:border-neutral-800">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+                          className="flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/25 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 touch-manipulation"
                           role="menuitem"
                         >
                           <LogoutIcon size={16} className="text-red-500 group-hover:translate-x-0.5 transition-transform duration-150">
@@ -554,15 +566,15 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs sm:text-[13px] font-semibold tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
+                  className="px-4 py-2 text-xs sm:text-[13px] font-medium tracking-wider text-cn-text hover:text-cn-blue-600 dark:hover:text-cn-blue-400 rounded-full hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation hover:shadow-xs"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-semibold tracking-widest rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-cn-blue-600 hover:bg-cn-blue-700 text-white border-2 border-cn-blue-600 hover:border-cn-blue-700 text-[13px] font-medium tracking-wider rounded-full transition-all duration-200 shadow-sm shadow-cn-blue-500/20 hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer"
                 >
-                  <span>Register</span>
+                  <span>Register Now</span>
                   <i className="ri-arrow-right-line text-xs" />
                 </Link>
               </>
@@ -573,7 +585,6 @@ const Navbar = () => {
             <button
               onClick={() => {
                 setSearchOpen((prev) => !prev);
-                setNotifDropdownOpen(false);
               }}
               className="relative p-2 rounded-full text-cn-text-secondary hover:text-cn-blue-600 dark:hover:text-cn-blue-400 hover:bg-cn-surface-muted border border-transparent hover:border-cn-border transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs"
               aria-label="Search"
@@ -581,104 +592,21 @@ const Navbar = () => {
               <i className={`${searchOpen ? 'ri-close-line text-cn-blue-600' : 'ri-search-line'} text-[19px]`} />
             </button>
 
-            {user ? (
-              (role === "member" || role === "facultyCoordinator" || role === "club" || role === "admin" || role === "student" || role === "central_organizer" || user?.principalType === "INSTITUTIONAL" || role === "external" || role === "lostFoundAdmin" || role === "paymentAdmin") && (
-                <div className="relative" ref={notifMobileDropdownRef}>
-                  <button
-                    onClick={() => {
-                      handleNotificationClick();
-                      setSearchOpen(false);
-                    }}
-                    className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs group"
-                    aria-label="Notifications"
-                  >
-                    <BellIcon size={19} className="shrink-0 group-hover:scale-105 transition-transform duration-200" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-600 rounded-full border-2 border-cn-bg"></span>
-                    )}
-                  </button>
+            {/* Campus Updates - Replaces notification icon in mobile view */}
+            <Link
+              to="/campus-updates"
+              className={`relative p-2 rounded-full transition-all duration-200 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs group ${
+                isActive("/campus-updates")
+                  ? "text-brand-600 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-950/40"
+                  : "text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60"
+              }`}
+              aria-label="Campus Updates"
+              title="Campus Updates"
+            >
+              <Megaphone size={19} className="shrink-0 group-hover:scale-105 transition-transform duration-200" />
+            </Link>
 
-                  {/* Mobile Notification Dropdown */}
-                  {notifDropdownOpen && (
-                    <div className="fixed top-16 left-5 right-5 max-h-96 overflow-y-auto bg-white dark:bg-neutral-900 border-2 border-gray-200 dark:border-neutral-800 rounded-t-4xl rounded-sm z-50 shadow-lg">
-                      <div className="px-4 py-3 border-b-2 border-gray-200 dark:border-neutral-800 flex justify-between items-center bg-neutral-100 dark:bg-neutral-950 sticky top-0 z-10">
-                        <h3 className="text-[14px] font-black tracking-widest text-black dark:text-neutral-200">Notifications</h3>
-                        <div className="flex items-center gap-3">
-                          {unreadCount > 0 && (
-                            <button
-                              type="button"
-                              onClick={handleMarkAllNotificationsRead}
-                              className="text-xs font-medium tracking-widest text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 touch-manipulation"
-                            >
-                              Mark read
-                            </button>
-                          )}
-                          <Link
-                            to="/notifications"
-                            onClick={() => {
-                              setNotifDropdownOpen(false);
-                              setMobileOpen(false);
-                            }}
-                            className="text-xs font-medium tracking-widest text-brand-600 dark:text-brand-500 
-                          hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation"
-                          >
-                            See all
-                            <i className="ri-arrow-right-line text-sm text-brand-600 dark:text-brand-500 transition-transform duration-200" />
-                          </Link>
-                        </div>
-                      </div>
-                      <div className="divide-y divide-neutral-100 dark:divide-neutral-850">
-                        {notifications?.length > 0 ? (
-                          notifications.slice(0, 4).map((notif, idx) => (
-                            <Link
-                              key={notif.id || notif._id || idx}
-                              to={notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId) ? '/notifications' : notif.url || '/notifications'}
-                              onClick={() => handleNotificationItemClick(notif)}
-                              className={`block p-4 transition-colors ${!notif.readBy?.includes(user?._id || user?.id) ? 'bg-brand-50 dark:bg-brand-500/10' : 'bg-transparent'}`}
-                            >
-                              <div className="flex justify-between items-start mb-1">
-                                <span className="text-[10px] font-medium text-brand-600 dark:text-brand-500 tracking-widest">
-                                    {notif.type === 'TEAM_INVITATION' || notif.type === 'TEAM_RESPONSE' || Boolean(notif.teamId)
-                                    ? 'Campusnode'
-                                    : (notif.sender?.clubName || notif.sender?.name || 'Campusnode')}
-                                </span>
-                                <span className="text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(notif.createdAt)} </span>
-                              </div>
-                              <h4 className="text-[13px] font-semibold text-black dark:text-neutral-100 mb-1">{notif.title}</h4>
-                              <p className="text-[12px] text-neutral-600 dark:text-neutral-400">{notif.message}</p>
-                            </Link>
-                          ))
-                        ) : (
-                          <div className="p-6 text-center text-neutral-500 dark:text-neutral-450 text-[12px] font-semibold tracking-widest">
-                            No notifications yet
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  )}
-                </div>
-              )
-            ) : (
-              <button
-                onClick={() => {
-                  document.documentElement.classList.add('dark-transition');
-                  toggleTheme();
-                  setTimeout(() => document.documentElement.classList.remove('dark-transition'), 400);
-                }}
-                className="p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-neutral-100/90 dark:hover:bg-neutral-800/70 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 touch-manipulation hover:shadow-xs shrink-0"
-                aria-label="Toggle dark mode"
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {isDark ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
-                )}
-              </button>
-            )}
-
-            {/* Hamburger (Removed for BottomNav PWA style) */}
+            {!user && <ThemeToggle size="md" />}
           </div>
 
         </div>

@@ -30,6 +30,7 @@ import DOMPurify from 'dompurify';
 import { markdownToHtml } from '../utils/htmlMarkdownConverter';
 
 import { PROGRAM_OPTIONS, PROGRAM_LABELS } from '../constants/academicConstants';
+import { formatSocialFieldLabel } from '../utils/socialFields';
 
 const EventApprovalPreviewModal = ({
   event,
@@ -64,11 +65,11 @@ const EventApprovalPreviewModal = ({
     : 'Not Scheduled';
 
   const formattedStartTime = start
-    ? start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })
+    ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })
     : '';
 
   const formattedEndTime = end
-    ? end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })
+    ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })
     : '';
 
   const formattedDeadline = regDeadline
@@ -180,15 +181,15 @@ const EventApprovalPreviewModal = ({
                   className="w-12 h-12 rounded-2xl object-cover border-2 border-white/80 dark:border-zinc-700 bg-white shadow-md shrink-0"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-black text-lg border-2 border-white/80 shadow-md shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-medium text-lg border-2 border-white/80 shadow-md shrink-0">
                   {clubName[0] || 'C'}
                 </div>
               )}
               <div className="min-w-0">
-                <span className="text-xs font-semibold text-brand-400 uppercase tracking-widest block drop-shadow-sm">
+                <span className="text-xs font-medium text-brand-400 uppercase tracking-widest block drop-shadow-sm">
                   {clubName}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-white leading-tight truncate drop-shadow-md">
+                <h2 className="text-xl sm:text-2xl font-medium text-white leading-tight truncate drop-shadow-md">
                   {event.title}
                 </h2>
               </div>
@@ -196,22 +197,22 @@ const EventApprovalPreviewModal = ({
 
             <div className="shrink-0 flex items-center gap-2">
               {isPendingReview && (
-                <span className="px-3 py-1 bg-amber-500 text-black text-xs font-extrabold tracking-wider rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
+                <span className="px-3 py-1 bg-amber-500 text-black text-xs font-medium tracking-wider rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
                   <Clock size={13} /> PENDING APPROVAL
                 </span>
               )}
               {isDeletionRequested && (
-                <span className="px-3 py-1 bg-rose-600 text-white text-xs font-extrabold tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
+                <span className="px-3 py-1 bg-rose-600 text-white text-xs font-medium tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
                   <AlertTriangle size={13} /> DELETION REQUESTED
                 </span>
               )}
               {isApproved && (
-                <span className="px-3 py-1 bg-emerald-600 text-white text-xs font-extrabold tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
+                <span className="px-3 py-1 bg-emerald-600 text-white text-xs font-medium tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
                   <CheckCircle2 size={13} /> PUBLISHED / APPROVED
                 </span>
               )}
               {isRejected && (
-                <span className="px-3 py-1 bg-rose-600 text-white text-xs font-extrabold tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
+                <span className="px-3 py-1 bg-rose-600 text-white text-xs font-medium tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
                   <XCircle size={13} /> REJECTED
                 </span>
               )}
@@ -237,14 +238,14 @@ const EventApprovalPreviewModal = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] border ${
+            <span className={`px-2.5 py-0.5 rounded-md font-medium text-[11px] border ${
               isPaidEvent
                 ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700/50'
                 : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700/50'
             }`}>
               {isPaidEvent ? `₹${feeAmount} Entry Fee` : 'Free Event'}
             </span>
-            <span className="px-2.5 py-0.5 rounded-md font-semibold text-[11px] bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
+            <span className="px-2.5 py-0.5 rounded-md font-medium text-[11px] bg-neutral-100 dark:bg-zinc-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-zinc-700">
               {isTeam ? `Team (${minTeam}-${maxTeam})` : 'Individual Entry'}
             </span>
           </div>
@@ -266,7 +267,7 @@ const EventApprovalPreviewModal = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-2.5 text-xs font-semibold transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                className={`px-3.5 py-2.5 text-xs font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                   isActive
                     ? 'border-brand-600 text-brand-600 dark:text-brand-500'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
@@ -291,7 +292,7 @@ const EventApprovalPreviewModal = ({
             <div className="space-y-6">
               {/* Event Description */}
               <div className="space-y-2">
-                <h4 className="text-xs font-black uppercase tracking-widest text-neutral-400">
+                <h4 className="text-xs font-medium uppercase tracking-widest text-neutral-400">
                   Event Description & Agenda
                 </h4>
                 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800 text-sm leading-relaxed prose dark:prose-invert max-w-none">
@@ -310,7 +311,7 @@ const EventApprovalPreviewModal = ({
               {/* Post Registration Message (if any) */}
               {event.postRegistrationMessage && (
                 <div className="p-4 rounded-2xl bg-brand-50/60 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 space-y-1">
-                  <p className="text-xs font-semibold text-brand-800 dark:text-brand-400 flex items-center gap-1.5">
+                  <p className="text-xs font-medium text-brand-800 dark:text-brand-400 flex items-center gap-1.5">
                     <Sparkles size={14} /> Post-Registration Confirmation Note for Students:
                   </p>
                   <p className="text-xs text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap font-medium">
@@ -322,18 +323,18 @@ const EventApprovalPreviewModal = ({
               {/* Quick Logistics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40">
-                  <p className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider">Registration Deadline</p>
-                  <p className="text-xs font-semibold text-neutral-900 dark:text-white mt-1">{formattedDeadline}</p>
+                  <p className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider">Registration Deadline</p>
+                  <p className="text-xs font-medium text-neutral-900 dark:text-white mt-1">{formattedDeadline}</p>
                 </div>
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40">
-                  <p className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider">Total Seats / Capacity</p>
-                  <p className="text-xs font-semibold text-neutral-900 dark:text-white mt-1">
+                  <p className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider">Total Seats / Capacity</p>
+                  <p className="text-xs font-medium text-neutral-900 dark:text-white mt-1">
                     {event.totalSeats > 0 ? `${event.totalSeats} seats` : 'Unlimited capacity'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40">
-                  <p className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider">Certificate & Feedback</p>
-                  <p className="text-xs font-semibold text-neutral-900 dark:text-white mt-1">
+                  <p className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider">Certificate & Feedback</p>
+                  <p className="text-xs font-medium text-neutral-900 dark:text-white mt-1">
                     {event.provideCertificate ? '✓ Certificates Enabled' : 'No Certificates'} • {event.feedbackEnabled !== false ? '✓ Feedback Enabled' : 'No Feedback'}
                   </p>
                 </div>
@@ -357,7 +358,7 @@ const EventApprovalPreviewModal = ({
                       <CreditCard size={18} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-neutral-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                         {isPaidEvent ? 'Paid Registration Event' : 'Free Entry Event'}
                       </h4>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -366,7 +367,7 @@ const EventApprovalPreviewModal = ({
                     </div>
                   </div>
 
-                  <span className="text-2xl font-black text-neutral-900 dark:text-white">
+                  <span className="text-2xl font-medium text-neutral-900 dark:text-white">
                     ₹{feeAmount}
                   </span>
                 </div>
@@ -376,10 +377,10 @@ const EventApprovalPreviewModal = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Payee Account Holder */}
                       <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800">
-                        <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                        <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                           Payee / Account Holder Name
                         </span>
-                        <p className="font-semibold text-sm text-neutral-900 dark:text-white">
+                        <p className="font-medium text-sm text-neutral-900 dark:text-white">
                           {event.accountHolderName || 'Not specified'}
                         </p>
                       </div>
@@ -387,10 +388,10 @@ const EventApprovalPreviewModal = ({
                       {/* Payee UPI ID */}
                       <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                          <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                             UPI ID / VPA
                           </span>
-                          <p className="font-mono font-semibold text-sm text-brand-600 dark:text-brand-400">
+                          <p className="font-mono font-medium text-sm text-brand-600 dark:text-brand-400">
                             {event.upiId || 'Not provided'}
                           </p>
                         </div>
@@ -410,7 +411,7 @@ const EventApprovalPreviewModal = ({
                     {/* College Payment Gateway URL if any */}
                     {event.collegePaymentUrl && (
                       <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800">
-                        <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                        <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                           Official College Payment Portal URL
                         </span>
                         <a
@@ -428,7 +429,7 @@ const EventApprovalPreviewModal = ({
                     {/* Payment Instructions for participants */}
                     {event.paymentInstructions && (
                       <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800">
-                        <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                        <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                           Instructions Displayed to Students During Registration
                         </span>
                         <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
@@ -448,12 +449,12 @@ const EventApprovalPreviewModal = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* External Participation */}
                 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800">
-                  <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                  <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                     External College Participation
                   </span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`w-2.5 h-2.5 rounded-full ${allowExternal ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                    <p className="font-semibold text-sm text-neutral-900 dark:text-white">
+                    <p className="font-medium text-sm text-neutral-900 dark:text-white">
                       {allowExternal ? 'Open to External Students' : 'NITJ Students Only (Internal)'}
                     </p>
                   </div>
@@ -464,10 +465,10 @@ const EventApprovalPreviewModal = ({
 
                 {/* Team Requirements */}
                 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800">
-                  <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1">
+                  <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1">
                     Participation Format & Team Size
                   </span>
-                  <p className="font-semibold text-sm text-neutral-900 dark:text-white mt-1">
+                  <p className="font-medium text-sm text-neutral-900 dark:text-white mt-1">
                     {isTeam ? `Team Event (${minTeam} to ${maxTeam} members)` : 'Individual Registration (Solo)'}
                   </p>
                   <p className="text-xs text-neutral-500 mt-1">
@@ -479,12 +480,12 @@ const EventApprovalPreviewModal = ({
               {/* Target Programs & Branches */}
               <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800 space-y-3">
                 <div>
-                  <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1.5">
+                  <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1.5">
                     Allowed Academic Programs
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {allowedPrograms.map((prog, i) => (
-                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-semibold rounded-lg text-neutral-800 dark:text-neutral-200">
+                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-medium rounded-lg text-neutral-800 dark:text-neutral-200">
                         {prog}
                       </span>
                     ))}
@@ -492,12 +493,12 @@ const EventApprovalPreviewModal = ({
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1.5">
+                  <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1.5">
                     Allowed Academic Years
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {allowedYears.map((yr, i) => (
-                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-semibold rounded-lg text-neutral-800 dark:text-neutral-200">
+                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-medium rounded-lg text-neutral-800 dark:text-neutral-200">
                         {yr}
                       </span>
                     ))}
@@ -505,12 +506,12 @@ const EventApprovalPreviewModal = ({
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block mb-1.5">
+                  <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block mb-1.5">
                     Allowed Branches & Departments
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {allowedBranches.map((br, i) => (
-                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-semibold rounded-lg text-neutral-800 dark:text-neutral-200">
+                      <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-medium rounded-lg text-neutral-800 dark:text-neutral-200">
                         {br}
                       </span>
                     ))}
@@ -524,14 +525,14 @@ const EventApprovalPreviewModal = ({
           {activeTab === 'registration' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800 space-y-2">
-                <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block">
+                <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block">
                   Default Required Fields
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {requiredFields.length > 0 ? (
                     requiredFields.map((field, i) => (
                       <span key={i} className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 text-xs font-medium rounded-lg text-neutral-800 dark:text-neutral-200">
-                        ✓ {field}
+                        ✓ {formatSocialFieldLabel(field)}
                       </span>
                     ))
                   ) : (
@@ -542,7 +543,7 @@ const EventApprovalPreviewModal = ({
 
               {/* Custom Questions / Fields */}
               <div className="space-y-2">
-                <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block">
+                <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block">
                   Custom Registration Questions ({customFields.length})
                 </span>
                 {customFields.length > 0 ? (
@@ -550,7 +551,7 @@ const EventApprovalPreviewModal = ({
                     {customFields.map((field, idx) => (
                       <div key={idx} className="p-3.5 rounded-xl border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-start justify-between gap-3 text-xs">
                         <div>
-                          <p className="font-semibold text-neutral-900 dark:text-white">
+                          <p className="font-medium text-neutral-900 dark:text-white">
                             {idx + 1}. {field.label || field.question || field.fieldName}
                           </p>
                           <p className="text-[11px] text-neutral-400 mt-0.5">
@@ -578,16 +579,16 @@ const EventApprovalPreviewModal = ({
           {activeTab === 'organizer' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-200 dark:border-zinc-800 space-y-3">
-                <span className="text-[10px] font-semibold uppercase text-neutral-400 tracking-wider block">
+                <span className="text-[10px] font-medium uppercase text-neutral-400 tracking-wider block">
                   Created & Submitted By
                 </span>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center text-brand-600 font-semibold">
+                    <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center text-brand-600 font-medium">
                       <User size={15} />
                     </div>
                     <div>
-                      <p className="font-semibold text-neutral-900 dark:text-white">
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {event.createdBy?.name || 'Student Coordinator'}
                       </p>
                       <p className="text-[11px] text-neutral-400">
@@ -609,7 +610,7 @@ const EventApprovalPreviewModal = ({
 
               {event.reviewComment && (
                 <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-xs space-y-1">
-                  <span className="font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
+                  <span className="font-medium text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
                     <MessageSquare size={13} /> Previous Review Comment:
                   </span>
                   <p className="text-neutral-700 dark:text-neutral-300 font-medium">
@@ -626,9 +627,9 @@ const EventApprovalPreviewModal = ({
           {/* Rejection / Note Input */}
           {(isPendingReview || isRejecting) && (
             <div className="space-y-1.5">
-              <label className="text-[10.5px] font-semibold uppercase tracking-wider text-neutral-500 flex items-center justify-between">
+              <label className="text-[10.5px] font-medium uppercase tracking-wider text-neutral-500 flex items-center justify-between">
                 <span>Faculty Review Notes / Instructions (Optional for Approval, Required for Rejection):</span>
-                {isRejecting && <span className="text-rose-600 font-semibold">* Required for rejection</span>}
+                {isRejecting && <span className="text-rose-600 font-medium">* Required for rejection</span>}
               </label>
               <textarea
                 value={reviewComment}
@@ -645,7 +646,7 @@ const EventApprovalPreviewModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-neutral-200 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-300 text-xs font-semibold rounded-xl hover:bg-neutral-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+              className="px-4 py-2.5 bg-neutral-200 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-300 text-xs font-medium rounded-xl hover:bg-neutral-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
             >
               Close Preview
             </button>
@@ -657,7 +658,7 @@ const EventApprovalPreviewModal = ({
                     type="button"
                     disabled={isSubmitting}
                     onClick={handleRejectClick}
-                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
                   >
                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                     <span>Reject Proposal</span>
@@ -666,7 +667,7 @@ const EventApprovalPreviewModal = ({
                     type="button"
                     disabled={isSubmitting}
                     onClick={handleApproveClick}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-600/20"
                   >
                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                     <span>Approve &amp; Publish Event</span>
@@ -681,7 +682,7 @@ const EventApprovalPreviewModal = ({
                       if (onRestore) onRestore(eventIdStr);
                       onClose();
                     }}
-                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <CheckCircle2 size={14} />
                     <span>Restore Event</span>
@@ -693,7 +694,7 @@ const EventApprovalPreviewModal = ({
                       if (onDeleteApprove) onDeleteApprove(eventIdStr);
                       onClose();
                     }}
-                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <XCircle size={14} />
                     <span>Approve Deletion</span>

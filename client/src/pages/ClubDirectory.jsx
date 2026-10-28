@@ -205,7 +205,7 @@ const ClubDirectory = () => {
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 pt-24 sm:pt-28 pb-5 transition-colors">
         <Section>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-neutral-900 dark:text-white">
               Club Directory
             </h1>
 
@@ -330,7 +330,7 @@ const ClubDirectory = () => {
                                     className="w-8 h-8 rounded object-cover bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0"
                                   />
                                 ) : (
-                                  <div className="w-8 h-8 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                                  <div className="w-8 h-8 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
                                     {(club.clubName || 'C')[0]}
                                   </div>
                                 )}
@@ -472,7 +472,7 @@ const ClubDirectory = () => {
                                 className="w-7 h-7 rounded object-cover bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shrink-0"
                               />
                             ) : (
-                              <div className="w-7 h-7 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                              <div className="w-7 h-7 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium text-xs flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
                                 {(club.clubName || 'C')[0]}
                               </div>
                             )}

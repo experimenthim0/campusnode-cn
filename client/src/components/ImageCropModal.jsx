@@ -150,7 +150,7 @@ const ImageCropModal = ({
               <ImageIcon className="w-5 h-5 shrink-0" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-semibold text-foreground leading-tight">
+              <h2 className="text-base sm:text-lg font-medium text-foreground leading-tight">
                 {title}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>

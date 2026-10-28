@@ -12,8 +12,8 @@ datasource db {
 
 enum AdminRoleType {
   admin
-  facultyCoordinator
 }
+
 
 enum ClubMemberRole {
   CLUB_HEAD
@@ -72,6 +72,18 @@ enum SocialPlatform {
   INSTAGRAM
   WHATSAPP
   PORTFOLIO
+}
+
+enum UpdateCategory {
+  OFFICIAL
+  TPO
+  IMPORTANT
+}
+
+enum UpdateStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 // ==========================================
@@ -173,6 +185,8 @@ model FacultyUser {
   clubCoordinators ClubFacultyCoordinator[]
   participations   Participation[]          @relation("FacultyParticipation")
   certificates     Certificate[]            @relation("FacultyCertificate")
+  reviewedEvents   Event[]                  @relation("EventReviewedByFaculty")
+  notifications    Notification[]           @relation("NotificationSenderFaculty")
 
   @@index([email])
   @@index([department])
@@ -302,6 +316,7 @@ model Event {
   reviewStatus            ReviewStatus    @default(PENDING)
   reviewComment           String?         @db.VarChar
   reviewedById            String?         @db.VarChar(24)
+  reviewedByFacultyId     String?         @db.VarChar(24)
   winners                 Json?
   showWinner              Boolean         @default(false)
   provideCertificate      Boolean         @default(false)
@@ -323,6 +338,7 @@ model Event {
 
   createdBy               StudentUser?    @relation("EventCreatedBy", fields: [createdById], references: [id])
   reviewedBy              AdminRole?      @relation("EventReviewedBy", fields: [reviewedById], references: [id])
+  reviewedByFaculty       FacultyUser?    @relation("EventReviewedByFaculty", fields: [reviewedByFacultyId], references: [id])
 
   organizers              EventOrganizer[]
   participations          Participation[]
@@ -336,6 +352,7 @@ model Event {
 
   @@index([reviewStatus, startTime])
   @@index([createdById, startTime])
+  @@index([reviewedByFacultyId])
 }
 
 model EventOrganizer {
@@ -426,6 +443,7 @@ model Team {
   leaderId        String          @db.VarChar(24)
   leaderStudentId String          @db.VarChar(24)
   status          String          @default("active") @db.VarChar
+  rejectedMembers Json?           @default("[]")
   createdAt       DateTime        @default(now())
 
   event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -458,6 +476,7 @@ model Notification {
   id                 String       @id @db.VarChar(24)
   senderStudentId    String?      @db.VarChar(24)
   senderAdminId      String?      @db.VarChar(24)
+  senderFacultyId    String?      @db.VarChar(24)
   recipientStudentId String?      @db.VarChar(24)
   clubId             String?      @db.VarChar(24)
   eventId            String?      @db.VarChar(24)
@@ -470,6 +489,7 @@ model Notification {
 
   senderStudent      StudentUser? @relation("NotificationSenderStudent", fields: [senderStudentId], references: [id])
   senderAdmin        AdminRole?   @relation("NotificationSenderAdmin", fields: [senderAdminId], references: [id])
+  senderFaculty      FacultyUser? @relation("NotificationSenderFaculty", fields: [senderFacultyId], references: [id])
   recipientStudent   StudentUser? @relation("NotificationRecipientStudent", fields: [recipientStudentId], references: [id])
   club               Club?        @relation(fields: [clubId], references: [id])
 
@@ -478,6 +498,7 @@ model Notification {
   @@index([clubId, createdAt])
   @@index([eventId, createdAt])
   @@index([teamId, createdAt])
+  @@index([senderFacultyId])
 }
 
 // ==========================================
@@ -718,4 +739,35 @@ model Certificate {
   @@index([studentId])
   @@index([externalUserId])
   @@index([facultyId])
+}
+
+// ==========================================
+// CAMPUS UPDATES (INSTAGRAM-STYLE FEED)
+// ==========================================
+
+model CampusUpdate {
+  id                 String         @id @db.VarChar(24)
+  title              String         @db.VarChar
+  description        String         @db.Text
+  category           UpdateCategory
+  organizationName   String         @db.VarChar
+  organizationAvatar String?        @db.VarChar
+  images             String[]       @default([]) @db.VarChar
+  attachments        Json?
+  deadline           DateTime?
+  actionLabel        String?        @db.VarChar
+  actionUrl          String?        @db.VarChar
+  sourceReference    String?        @db.VarChar
+  isPinned           Boolean        @default(false)
+  status             UpdateStatus   @default(PUBLISHED)
+  pinnedAt           DateTime?
+  publishedAt        DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  createdById        String?        @db.VarChar(24)
+
+  @@index([status, publishedAt])
+  @@index([category, status])
+  @@index([isPinned, status])
+  @@index([createdAt])
 }

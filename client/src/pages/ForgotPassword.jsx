@@ -36,7 +36,7 @@ const ForgotPassword = () => {
         </div>
 
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-lg font-semibold text-cn-text text-center">
+          <h2 className="text-lg font-medium text-cn-text text-center">
             Forgot Password
           </h2>
           <p className="mt-1 text-center text-sm text-cn-text-muted mb-6">
@@ -52,7 +52,7 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-cn-border rounded-xl bg-cn-surface text-cn-text text-sm font-medium outline-none focus:border-cn-blue-500 focus:ring-1 focus:ring-cn-blue-500/20 transition-all placeholder:text-neutral-400"
-                placeholder="you@nitj.ac.in or club@domain.com"
+                placeholder="E.g. himanshu@nitj.ac.in"
               />
             </div>
 

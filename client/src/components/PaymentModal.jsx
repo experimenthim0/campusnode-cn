@@ -238,7 +238,7 @@ const PaymentModal = ({
                   <Wallet className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <span className="font-semibold text-xs tracking-tight text-white block leading-tight">
+                  <span className="font-medium text-xs tracking-tight text-white block leading-tight">
                     Campusnode
                   </span>
                   <span className="text-[10px] text-neutral-400 font-medium">
@@ -267,7 +267,7 @@ const PaymentModal = ({
                   className="w-10 h-10 rounded-lg object-cover border border-neutral-800 shrink-0"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300 font-semibold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300 font-medium text-sm shrink-0">
                   {event?.title?.charAt(0) || 'E'}
                 </div>
               )}
@@ -277,7 +277,7 @@ const PaymentModal = ({
                 </p>
                 <h3
                   id="payment-modal-title"
-                  className="font-semibold text-white text-sm leading-snug line-clamp-2 mt-0.5"
+                  className="font-medium text-white text-sm leading-snug line-clamp-2 mt-0.5"
                 >
                   {event?.title || 'Event Registration'}
                 </h3>
@@ -290,7 +290,7 @@ const PaymentModal = ({
                 Total payable
               </span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-3xl font-bold tracking-tight text-white">
+                <span className="text-3xl font-medium tracking-tight text-white">
                   ₹{amount}
                 </span>
                 <span className="text-xs text-neutral-400 font-medium">INR</span>
@@ -374,7 +374,7 @@ const PaymentModal = ({
               /* College Payment Flow */
               <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-4">
                 <div className="space-y-1">
-                  <h4 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                  <h4 className="font-medium text-foreground text-sm flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                     Official College Payment Portal
                   </h4>
@@ -411,19 +411,19 @@ const PaymentModal = ({
                 {/* 3 Step Guide */}
                 <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-xs text-muted-foreground border border-border/50">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 border border-border">
+                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5 border border-border">
                       1
                     </span>
                     <span>Complete payment</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 border border-border">
+                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5 border border-border">
                       2
                     </span>
                     <span>Copy the receipt/reference number</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5 border border-border">
+                    <span className="w-4 h-4 rounded-full bg-muted text-foreground text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5 border border-border">
                       3
                     </span>
                     <span>Return here and submit the details</span>
@@ -437,7 +437,7 @@ const PaymentModal = ({
                   <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-4">
                     {/* Step 1 & 2 */}
                     <div className="text-center space-y-1">
-                      <span className="text-xs font-semibold text-foreground block">
+                      <span className="text-xs font-medium text-foreground block">
                         Scan QR with any UPI app
                       </span>
                       <p className="text-xs text-muted-foreground">
@@ -513,7 +513,7 @@ const PaymentModal = ({
                 ) : (
                   <div className="rounded-xl border border-dashed border-amber-300 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 p-4 text-center space-y-1.5">
                     <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mx-auto" />
-                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-300">
+                    <p className="text-xs font-medium text-amber-900 dark:text-amber-300">
                       Direct UPI Not Configured
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -527,7 +527,7 @@ const PaymentModal = ({
             {/* VERIFICATION FORM */}
             <div className="space-y-3.5 pt-1">
               <div>
-                <h4 className="text-xs font-semibold text-foreground">
+                <h4 className="text-xs font-medium text-foreground">
                   Confirm your payment
                 </h4>
                 <p className="text-xs text-muted-foreground mt-0.5">

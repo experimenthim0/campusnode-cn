@@ -42,6 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "../components/ui/dropdown-menu";
+import RequiredSocialHandlesModal from "../components/RequiredSocialHandlesModal";
 
 /**
  * Format notification timestamp to clean time labels
@@ -203,6 +204,8 @@ const Notifications = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
   const [markAllLoading, setMarkAllLoading] = useState(false);
+  const [socialHandlesModalOpen, setSocialHandlesModalOpen] = useState(false);
+  const [socialHandlesModalData, setSocialHandlesModalData] = useState(null);
 
   // Push Permission Banner State
   const [permissionState, setPermissionState] = useState(getNotificationPermissionState());
@@ -410,16 +413,38 @@ const Notifications = () => {
     }
   };
 
-  const handleAcceptInvite = async (notifId, e) => {
+  const handleAcceptInvite = async (notifId, e, optionalSocialHandles = null) => {
     if (e) e.stopPropagation();
     if (actionLoading[notifId]) return;
     setActionLoading((prev) => ({ ...prev, [notifId]: "accept" }));
     try {
-      const res = await api.post(`/api/teams/invitations/${notifId}/accept`);
+      const payload = { action: "accept" };
+      if (optionalSocialHandles) {
+        payload.socialHandles = optionalSocialHandles;
+      }
+      const res = await api.post(`/api/teams/invitations/${notifId}/accept`, payload);
       if (showNotification) showNotification(res.data.message || "Invitation accepted!", "success");
+      setNotificationsList((prev) =>
+        prev.map((n) =>
+          n.id === notifId || n._id === notifId
+            ? { ...n, title: "Accepted Team Invitation", readBy: [...(n.readBy || []), currentUserId] }
+            : n
+        )
+      );
       if (syncNotifications) await syncNotifications(true);
       await fetchNotificationsData();
     } catch (err) {
+      if (err.response?.data?.code === "REQUIRED_FIELDS_MISSING") {
+        const missingFields = err.response.data.missingFields || [];
+        const eventTitle = err.response.data.eventTitle || "";
+        setSocialHandlesModalData({
+          notifId,
+          missingFields,
+          eventTitle,
+        });
+        setSocialHandlesModalOpen(true);
+        return;
+      }
       if (showNotification) showNotification(err.response?.data?.message || "Failed to accept", "error");
     } finally {
       setActionLoading((prev) => ({ ...prev, [notifId]: null }));
@@ -431,8 +456,15 @@ const Notifications = () => {
     if (actionLoading[notifId]) return;
     setActionLoading((prev) => ({ ...prev, [notifId]: "decline" }));
     try {
-      const res = await api.post(`/api/teams/invitations/${notifId}/decline`);
+      const res = await api.post(`/api/teams/invitations/${notifId}/decline`, { action: "decline" });
       if (showNotification) showNotification(res.data.message || "Invitation declined.", "info");
+      setNotificationsList((prev) =>
+        prev.map((n) =>
+          n.id === notifId || n._id === notifId
+            ? { ...n, title: "Declined Team Invitation", readBy: [...(n.readBy || []), currentUserId] }
+            : n
+        )
+      );
       if (syncNotifications) await syncNotifications(true);
       await fetchNotificationsData();
     } catch (err) {
@@ -554,7 +586,7 @@ const Notifications = () => {
             >
               <span>Unread</span>
               {tabCounts.unread > 0 && (
-                <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 py-0 h-4">
+                <Badge variant="secondary" className="text-[10px] font-medium px-1.5 py-0 h-4">
                   {tabCounts.unread}
                 </Badge>
               )}
@@ -705,9 +737,17 @@ const Notifications = () => {
                 const BadgeIcon = badge.icon;
                 const formattedTime = formatMeetSphereTime(notif.createdAt);
 
-                const isTeamInvite =
+                const isAccepted =
+                  notif.title?.toLowerCase().includes("accepted") ||
+                  notif.message?.toLowerCase().includes("you accepted");
+                const isDeclined =
+                  notif.title?.toLowerCase().includes("declined") ||
+                  notif.title?.toLowerCase().includes("rejected") ||
+                  notif.message?.toLowerCase().includes("you declined");
+                const isPendingInvite =
                   notif.type === "TEAM_INVITATION" &&
-                  notif.title?.toLowerCase().includes("invitation");
+                  !isAccepted &&
+                  !isDeclined;
 
                 return (
                   <div
@@ -734,26 +774,44 @@ const Notifications = () => {
                           {notif.message}
                         </p>
 
-                        {/* Inline team invite actions on mobile */}
-                        {isTeamInvite && (
-                          <div className="flex items-center gap-2 mt-2 md:hidden">
+                        {/* Team invitation actions on Desktop & Mobile */}
+                        {isPendingInvite && (
+                          <div className="flex items-center gap-2 mt-2.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
                             <Button
                               size="sm"
                               onClick={(e) => handleAcceptInvite(notifId, e)}
                               disabled={actionLoading[notifId] === "accept"}
-                              className="h-7 px-2.5 text-[11px] font-semibold cursor-pointer"
+                              className="h-7 px-3 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs gap-1.5"
                             >
-                              {actionLoading[notifId] === "accept" ? "Accepting..." : "Accept"}
+                              <Check size={13} />
+                              <span>{actionLoading[notifId] === "accept" ? "Accepting..." : "Accept Invitation"}</span>
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={(e) => handleDeclineInvite(notifId, e)}
                               disabled={actionLoading[notifId] === "decline"}
-                              className="h-7 px-2.5 text-[11px] font-semibold cursor-pointer"
+                              className="h-7 px-3 text-xs font-medium text-destructive hover:bg-destructive/10 border-destructive/30 cursor-pointer gap-1.5"
                             >
-                              {actionLoading[notifId] === "decline" ? "Declining..." : "Decline"}
+                              <X size={13} />
+                              <span>{actionLoading[notifId] === "decline" ? "Declining..." : "Decline"}</span>
                             </Button>
+                          </div>
+                        )}
+
+                        {isAccepted && notif.type === "TEAM_INVITATION" && (
+                          <div className="mt-2 flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                              <Check size={11} /> Invitation Accepted
+                            </span>
+                          </div>
+                        )}
+
+                        {isDeclined && notif.type === "TEAM_INVITATION" && (
+                          <div className="mt-2 flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-500/10 px-2.5 py-0.5 rounded-full border border-neutral-500/20">
+                              <X size={11} /> Invitation Declined
+                            </span>
                           </div>
                         )}
                       </div>
@@ -808,7 +866,7 @@ const Notifications = () => {
                               </div>
                             )}
 
-                            {isTeamInvite && (
+                            {isPendingInvite && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -867,8 +925,8 @@ const Notifications = () => {
         {pagination.totalPages > 1 && (
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6">
             <div className="text-xs text-muted-foreground font-medium">
-              Page <span className="font-semibold text-foreground">{pagination.page}</span> of{" "}
-              <span className="font-semibold text-foreground">{pagination.totalPages}</span>
+              Page <span className="font-medium text-foreground">{pagination.page}</span> of{" "}
+              <span className="font-medium text-foreground">{pagination.totalPages}</span>
               {" "}• {pagination.total} total {pagination.total === 1 ? "notification" : "notifications"}
             </div>
 
@@ -897,7 +955,7 @@ const Notifications = () => {
                       size="sm"
                       onClick={() => handlePageChange(p)}
                       disabled={isFetching}
-                      className={`h-8 w-8 p-0 text-xs font-semibold cursor-pointer ${
+                      className={`h-8 w-8 p-0 text-xs font-medium cursor-pointer ${
                         pagination.page === p
                           ? "bg-primary text-primary-foreground shadow-xs pointer-events-none"
                           : ""
@@ -922,6 +980,22 @@ const Notifications = () => {
             </nav>
           </div>
         )}
+
+        {/* Required Social Handles Prompt Modal for Team Invitations */}
+        <RequiredSocialHandlesModal
+          isOpen={socialHandlesModalOpen}
+          onClose={() => {
+            setSocialHandlesModalOpen(false);
+            setSocialHandlesModalData(null);
+          }}
+          missingFields={socialHandlesModalData?.missingFields || []}
+          eventTitle={socialHandlesModalData?.eventTitle || ""}
+          onSuccess={async (handles) => {
+            if (socialHandlesModalData?.notifId) {
+              await handleAcceptInvite(socialHandlesModalData.notifId, null, handles);
+            }
+          }}
+        />
 
       </div>
     </div>

@@ -836,7 +836,7 @@ const CertificateDesigner = () => {
                 <Laptop className="w-3 h-3" /> Desktop or Laptop Recommended
               </Badge>
 
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight mb-2">
+              <h2 className="text-xl sm:text-2xl font-medium text-foreground tracking-tight mb-2">
                 Precision Studio Workspace
               </h2>
 

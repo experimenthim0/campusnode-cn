@@ -10,7 +10,7 @@ import {
 } from "../lib/observability.js";
 import { updateInFlightRequests } from "../lib/telemetry/metrics.js";
 
-const DEFAULT_MAX_IN_FLIGHT = 250;
+const DEFAULT_MAX_IN_FLIGHT = 500;
 let inFlightRequests = 0;
 
 const numberFromEnv = (name, fallback) => {
@@ -131,7 +131,10 @@ const CACHE_RULES = [
     test: (_, path) =>
       path.includes("/register") ||
       path.includes("/check-in") ||
-      path.includes("/verify"),
+      path.includes("/verify") ||
+      path.includes("/club-manage") ||
+      path.includes("/review") ||
+      path.includes("/registrations"),
     header: "no-cache, no-store, must-revalidate",
   },
   {
@@ -145,6 +148,10 @@ const CACHE_RULES = [
   {
     test: (_, path) => path.startsWith("/api/admin/"),
     header: "private, no-cache, no-store",
+  },
+  {
+    test: (_, path) => path.startsWith("/api/club-members/"),
+    header: "private, no-cache, no-store, must-revalidate",
   },
   {
     test: (_, path) => path.startsWith("/api/notifications"),
@@ -225,6 +232,7 @@ export const etagSupport = (req, res, next) => {
     req.path.startsWith("/api/auth/") ||
     req.path.startsWith("/api/admin/") ||
     req.path.startsWith("/api/payment/") ||
+    req.path.startsWith("/api/club-members/") ||
     req.path.includes("/download") ||
     req.path.includes("/export") ||
     req.path.includes("/register") ||

@@ -1,113 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Info,
-  Lock,
-  CheckCircle2,
-  AlertTriangle,
-  X,
-  ExternalLink,
-  ShieldCheck,
-  Check,
-} from 'lucide-react';
+import { Lock, X, Check, AlertTriangle, ExternalLink } from 'lucide-react';
 
 const ROLE_FIELD_SPECS = {
-  student: {
-    roleTitle: 'NITJ Student Registration',
-    roleBadge: 'NITJian Academic Profile',
-    lockedFields: [
-      {
-        label: 'Roll Number',
-        desc: 'Official institute roll number',
-      },
-      {
-        label: 'College Email',
-        desc: 'Official @nitj.ac.in email address',
-      },
-      {
-        label: 'Academic Program',
-        desc: 'Your enrolled degree program',
-      },
-      {
-        label: 'Branch / Department',
-        desc: 'Your assigned department',
-      },
-      {
-        label: 'Expected Graduation Year',
-        desc: 'Your expected year of graduation',
-      },
-    ],
-    editableLater: [
-      'Full Name',
-      'Profile Photo',
-      'Contact Number',
-      'Social Links',
-      'Password & 2FA',
-    ],
-  },
-
-  faculty: {
-    roleTitle: 'Faculty Coordinator Registration',
-    roleBadge: 'Institute Faculty Profile',
-    lockedFields: [
-      {
-        label: 'Official Institute Email',
-        desc: 'Official @nitj.ac.in faculty email',
-      },
-      {
-        label: 'Faculty Full Name',
-        desc: 'Your official faculty name',
-      },
-      {
-        label: 'Department',
-        desc: 'Your assigned department',
-      },
-      {
-        label: 'Designation / Post',
-        desc: 'Your current designation',
-      },
-      {
-        label: 'Club Supervision Affiliation',
-        desc: 'Managed by the institute administration',
-      },
-    ],
-    editableLater: [
-      'Profile Photo',
-      'Password',
-      'Two-Factor Authentication',
-      'Office / Mobile Contact',
-    ],
-  },
-
-  external: {
-    roleTitle: 'External Participant Registration',
-    roleBadge: 'External Guest Profile',
-    lockedFields: [
-      {
-        label: 'Academic Email',
-        desc: 'Your registered college or university email',
-      },
-      {
-        label: 'College / University',
-        desc: 'Your current institution',
-      },
-      {
-        label: 'Program / Degree',
-        desc: 'Your current degree program',
-      },
-      {
-        label: 'Graduation Year',
-        desc: 'Your expected graduation year',
-      },
-    ],
-    editableLater: [
-      'Full Name',
-      'Profile Photo',
-      'Contact Number',
-      'Social Links',
-      'Password',
-    ],
-  },
+  student: [
+    'Roll Number',
+    'College Email',
+    'Academic Program',
+    'Branch / Department',
+    'Expected Graduation Year',
+  ],
+  faculty: [
+    'Official Institute Email',
+    'Faculty Full Name',
+    'Department',
+    'Designation / Post',
+    'Club Supervision Affiliation',
+  ],
+  external: [
+    'Academic Email',
+    'College / University',
+    'Program / Degree',
+    'Graduation Year',
+  ],
 };
 
 const RegistrationTermsNotice = ({
@@ -118,267 +33,280 @@ const RegistrationTermsNotice = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
-  const timeoutRef = useRef(null);
+  const popupRef = useRef(null);
+  const triggerRef = useRef(null);
 
-  const spec =
+  const lockedFields =
     ROLE_FIELD_SPECS[role] || ROLE_FIELD_SPECS.student;
 
   useEffect(() => {
-    const handleOutsideClick = (e) => {
+    if (!isOpen) return;
+
+    const handleOutsideClick = (event) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target)
+        !containerRef.current.contains(event.target)
       ) {
         setIsOpen(false);
       }
     };
 
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
         setIsOpen(false);
+        triggerRef.current?.focus();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
-      document.addEventListener('keydown', handleEscape);
-    }
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('pointerdown', handleOutsideClick);
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    setIsOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 280);
-  };
-
-  const toggleOpen = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    setIsOpen((prev) => !prev);
-  };
-
-  const handleAcknowledgeAndAgree = () => {
-    onAgreementChange(true);
+  const closePopup = () => {
     setIsOpen(false);
+    triggerRef.current?.focus();
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative select-none pt-1"
+      className="relative w-full"
     >
-      {/* Terms Row */}
+      {/* Terms Section */}
       <div
-        className={`flex items-start gap-2.5 p-3 rounded-xl border transition-all duration-200 ${
-          error
-            ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-500/20'
-            : agreed
-            ? 'bg-brand-50/40 dark:bg-brand-950/15 border-brand-200/70 dark:border-brand-900/40'
-            : 'bg-neutral-50/80 dark:bg-neutral-900/40 border-neutral-200/80 dark:border-neutral-800'
-        }`}
+        className={`
+          rounded-xl border px-3.5 py-3
+          transition-colors duration-200
+          ${
+            error
+              ? 'border-rose-300 bg-rose-50/50 dark:border-rose-900 dark:bg-rose-950/20'
+              : agreed
+              ? 'border-brand-200 bg-brand-50/30 dark:border-brand-900/50 dark:bg-brand-950/10'
+              : 'border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40'
+          }
+        `}
       >
-        {/* Checkbox */}
-        <div className="pt-0.5 shrink-0">
-          <input
-            id="terms"
-            name="terms"
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) =>
-              onAgreementChange(e.target.checked)
-            }
-            className="sr-only peer"
-          />
+        <div className="flex items-start gap-3">
 
-          <label
-            htmlFor="terms"
-            className="w-4 h-4 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 peer-checked:bg-brand-600 dark:peer-checked:bg-brand-500 peer-checked:border-brand-600 dark:peer-checked:border-brand-500 flex items-center justify-center cursor-pointer transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/30"
-          >
-            {agreed && (
-              <Check className="w-3 h-3 text-white stroke-[3]" />
-            )}
-          </label>
-        </div>
+          {/* Checkbox */}
+          <div className="relative mt-0.5 shrink-0">
+            <input
+              id="terms"
+              name="terms"
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) =>
+                onAgreementChange?.(e.target.checked)
+              }
+              className="peer sr-only"
+            />
 
-        {/* Terms Text */}
-        <div className="flex-1 min-w-0 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-          <div className="flex items-center flex-wrap gap-x-1 gap-y-0.5">
             <label
               htmlFor="terms"
-              className="cursor-pointer"
+              className={`
+                flex h-[17px] w-[17px]
+                cursor-pointer items-center justify-center
+                rounded-[5px] border transition-colors
+                peer-focus-visible:ring-2
+                peer-focus-visible:ring-brand-500/40
+                ${
+                  agreed
+                    ? 'border-brand-600 bg-brand-600'
+                    : 'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800'
+                }
+              `}
             >
-              I agree to the{' '}
+              {agreed && (
+                <Check
+                  className="h-3 w-3 text-white"
+                  strokeWidth={3}
+                />
+              )}
+            </label>
+          </div>
+
+          <div className="min-w-0 flex-1">
+
+            {/* Agreement Text */}
+            <div className="text-xs leading-5 text-neutral-700 dark:text-neutral-300">
+              <label
+                htmlFor="terms"
+                className="cursor-pointer"
+              >
+                I agree to the{' '}
+              </label>
+
               <Link
                 to="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="font-medium text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-0.5"
+                className="font-medium text-brand-600 hover:underline dark:text-brand-400"
               >
                 Terms & Conditions
-                <ExternalLink className="w-2.5 h-2.5 opacity-70" />
               </Link>
-            </label>
+            </div>
 
+            {/* Non-editable Fields Trigger */}
             <button
+              ref={triggerRef}
               type="button"
-              onClick={toggleOpen}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              aria-label="View non-editable fields"
+              onClick={() => setIsOpen((prev) => !prev)}
               aria-expanded={isOpen}
-              title="View non-editable fields"
-              className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-semibold transition-all cursor-pointer ${
-                isOpen
-                  ? 'bg-brand-600 text-white shadow-xs scale-110'
-                  : 'bg-neutral-200 hover:bg-brand-100 text-neutral-700 hover:text-brand-700 dark:bg-neutral-800 dark:hover:bg-brand-950/60 dark:text-neutral-300 dark:hover:text-brand-300'
-              }`}
+              aria-controls="locked-fields-popup"
+              className="
+                mt-1.5 inline-flex items-center gap-1.5
+                rounded-sm text-[11px] font-medium
+                text-neutral-500 transition-colors
+                hover:text-brand-600
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-brand-500/40
+                dark:text-neutral-400
+                dark:hover:text-brand-400
+              "
             >
-              <Info className="w-3 h-3 stroke-[2.5]" />
-            </button>
-          </div>
+              <Lock className="h-3 w-3 shrink-0" />
 
-          <div className="mt-1">
-            <button
-              type="button"
-              onClick={toggleOpen}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              className="text-[11px] font-medium text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
-            >
-              <Lock className="w-3 h-3" />
               <span>
-                Non-editable fields ({spec.lockedFields.length})
+                {lockedFields.length} fields cannot be edited later
+              </span>
+
+              <span className="text-brand-600 dark:text-brand-400">
+                View
               </span>
             </button>
+
           </div>
         </div>
       </div>
 
-      {/* Error */}
+      {/* Validation Error */}
       {error && (
-        <p className="text-xs text-rose-500 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium animate-fadeIn">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+        <p
+          role="alert"
+          className="
+            mt-1.5 flex items-center gap-1.5
+            text-xs font-medium text-rose-600
+            dark:text-rose-400
+          "
+        >
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           <span>{error}</span>
         </p>
       )}
 
-      {/* Popup */}
+      {/* Non-editable Fields Popup */}
       {isOpen && (
         <div
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          className="absolute z-50 left-0 right-0 bottom-full mb-2 bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-700/80 rounded-2xl shadow-2xl p-4 sm:p-5 transition-all animate-fadeIn"
+          id="locked-fields-popup"
+          ref={popupRef}
+          role="region"
+          aria-label="Fields you cannot edit later"
+          className="
+            absolute bottom-full left-0 z-50 mb-2
+            w-full max-w-[340px]
+            overflow-hidden rounded-xl
+            border border-neutral-200
+            bg-white shadow-xl
+            dark:border-neutral-700
+            dark:bg-neutral-900
+          "
         >
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <Lock className="w-4 h-4" />
-              </div>
-
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-white leading-tight">
-                  Non-Editable Fields
-                </h4>
-
-                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {spec.roleBadge}
-                </p>
-              </div>
-            </div>
+          <div
+            className="
+              flex items-center justify-between
+              border-b border-neutral-100
+              px-4 py-3
+              dark:border-neutral-800
+            "
+          >
+            <h3
+              className="
+                text-[13px] font-medium
+                text-neutral-900 dark:text-white
+              "
+            >
+              Fields you cannot edit later
+            </h3>
 
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
-              className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              aria-label="Close"
+              onClick={closePopup}
+              aria-label="Close popup"
+              className="
+                flex h-7 w-7 items-center justify-center
+                rounded-md text-neutral-400
+                transition-colors
+                hover:bg-neutral-100
+                hover:text-neutral-700
+                dark:hover:bg-neutral-800
+                dark:hover:text-neutral-200
+              "
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Short Notice */}
-          <div className="mt-3 p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-1.5 leading-relaxed">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          {/* Field Names */}
+          <div className="px-4 py-3">
+            <ul className="space-y-2.5">
+              {lockedFields.map((field) => (
+                <li
+                  key={field}
+                  className="
+                    flex items-center gap-2.5
+                    text-xs leading-5
+                    text-neutral-700
+                    dark:text-neutral-300
+                  "
+                >
+                  <span
+                    className="
+                      h-1.5 w-1.5 shrink-0
+                      rounded-full bg-neutral-400
+                      dark:bg-neutral-500
+                    "
+                  />
 
-            <span>
-              These details cannot be changed after registration.
-            </span>
-          </div>
-
-          {/* Locked Fields */}
-          <div className="mt-3 space-y-1.5 max-h-[190px] overflow-y-auto pr-1 scrollbar-thin">
-            {spec.lockedFields.map((item, idx) => (
-              <div
-                key={idx}
-                className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/50 flex items-start gap-2"
-              >
-                <div className="w-4 h-4 rounded-full bg-rose-500/10 dark:bg-rose-400/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
-                  <Lock className="w-2.5 h-2.5" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-neutral-900 dark:text-neutral-100 leading-tight">
-                    {item.label}
-                  </p>
-
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-tight mt-0.5">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Editable Fields */}
-          <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mb-1">
-              <CheckCircle2 className="w-3 h-3" />
-              Editable later
-            </p>
-
-            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-normal">
-              {spec.editableLater.join(' • ')}
-            </p>
+                  <span>{field}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Footer */}
-          <div className="mt-3.5 pt-2 flex items-center justify-between gap-2 border-t border-neutral-100 dark:border-neutral-800">
-            <Link
-              to="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-0.5"
-            >
-              Read full policy
-              <ExternalLink className="w-2.5 h-2.5" />
-            </Link>
-
+          <div
+            className="
+              flex justify-end
+              border-t border-neutral-100
+              px-4 py-2.5
+              dark:border-neutral-800
+            "
+          >
             <button
               type="button"
-              onClick={handleAcknowledgeAndAgree}
-              className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-[11px] font-medium transition-all cursor-pointer shadow-xs flex items-center gap-1"
+              onClick={closePopup}
+              className="
+                rounded-lg bg-neutral-900
+                px-4 py-1.5
+                text-xs font-medium text-white
+                transition-colors
+                hover:bg-neutral-800
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-brand-500
+                dark:bg-white
+                dark:text-neutral-900
+                dark:hover:bg-neutral-200
+              "
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>
-                {agreed ? 'Understood' : 'I Understand & Agree'}
-              </span>
+              Got it
             </button>
           </div>
         </div>

@@ -18,6 +18,7 @@ import {
   Radio,
   Sparkles,
   BookOpen,
+  Settings,
 } from "lucide-react";
 import { hasPermission, PERMISSIONS, isStudentLeadRole } from "../utils/rbac";
 import { useSocket } from "../context/SocketContext";
@@ -70,12 +71,12 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
   <Link
     to={to}
     title={isCollapsed ? label : undefined}
-    className={`group flex items-center mysans rounded-xl text-[13px] transition-all duration-200 relative ${isCollapsed
+    className={`group flex items-center rounded-xl text-nav transition-all duration-200 relative ${isCollapsed
         ? "w-10 h-10 mx-auto justify-center p-0"
         : "w-full gap-3 px-3 py-1.5"
       } ${isActive
-        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium border-0"
-        : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
+        ? "bg-brand-500/10 text-brand-600 dark:text-brand-300 font-medium border-0"
+        : "text-cn-text-secondary hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated hover:text-cn-text font-medium"
       }`}
   >
     <div className="relative shrink-0 flex items-center justify-center">
@@ -83,8 +84,8 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
         size={17}
         strokeWidth={isActive ? 2.2 : 1.8}
         className={`w-[17px] h-[17px] min-w-[17px] min-h-[17px] shrink-0 transition-colors duration-200 ${isActive
-            ? "text-brand-600 dark:text-brand-400"
-            : "text-slate-600 dark:text-slate-400 group-hover:text-black dark:group-hover:text-white"
+            ? "text-brand-600 dark:text-brand-300"
+            : "text-cn-text-muted group-hover:text-cn-text"
           }`}
       />
       {isCollapsed && badge && (
@@ -98,7 +99,7 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, isCollapsed, badge }) =>
       </span>
     )}
     {!isCollapsed && !badge && isActive && (
-      <ChevronRight size={14} className="w-3.5 h-3.5 min-w-[12px] min-h-[12px] ml-auto text-brand-600 shrink-0" />
+      <ChevronRight size={14} className="w-3.5 h-3.5 min-w-[12px] min-h-[12px] ml-auto text-brand-600 dark:text-brand-300 shrink-0" />
     )}
   </Link>
 );
@@ -174,32 +175,32 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition-all duration-200 cursor-pointer ${isAnyChildActive
-            ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium"
-            : "text-slate-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white font-medium"
+        className={`w-full flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200 cursor-pointer ${isAnyChildActive
+            ? "bg-brand-500/10 text-brand-600 dark:text-brand-300 font-medium"
+            : "text-cn-text-secondary hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated hover:text-cn-text font-medium"
           }`}
       >
         <div className="flex items-center gap-3 min-w-0">
           <Icon
-            size={19}
+            size={18}
             strokeWidth={isAnyChildActive ? 2.2 : 1.8}
-            className={`w-[19px] h-[19px] min-w-[19px] min-h-[19px] shrink-0 transition-colors duration-200 ${isAnyChildActive
-                ? "text-brand-600 dark:text-brand-400"
-                : "text-slate-600 dark:text-slate-400"
+            className={`w-[18px] h-[18px] min-w-[18px] min-h-[18px] shrink-0 transition-colors duration-200 ${isAnyChildActive
+                ? "text-brand-600 dark:text-brand-300"
+                : "text-cn-text-muted"
               }`}
           />
-          <span className="text-[13px] tracking-wide truncate font-medium">{label}</span>
+          <span className="text-nav truncate">{label}</span>
         </div>
         <ChevronDown
           size={14}
-          className={`w-3.5 h-3.5 min-w-[14px] min-h-[14px] shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
+          className={`w-3.5 h-3.5 min-w-[14px] min-h-[14px] shrink-0 text-cn-text-muted transition-transform duration-200 ${isOpen ? "rotate-180 text-brand-600 dark:text-brand-300" : ""
             }`}
         />
       </button>
 
       {/* Submenu links */}
       {isOpen && (
-        <div className="pl-4 pt-1 pb-1 space-y-1 border-l-2 border-brand-500/20 dark:border-zinc-800 ml-4 my-1">
+        <div className="pl-4 pt-1 pb-1 space-y-1 border-l-2 border-brand-500/20 dark:border-cn-border ml-4 my-1">
           {items.map((item, idx) => {
             const isActive = isItemActive(item.to, location);
 
@@ -207,13 +208,13 @@ const SidebarDropdown = ({ icon: Icon, label, items, isCollapsed }) => {
               <Link
                 key={idx}
                 to={item.to}
-                className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-150 ${isActive
-                    ? "bg-brand-500/15 text-brand-600 dark:text-brand-400 font-medium"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-zinc-800/60 hover:text-black dark:hover:text-white"
+                className={`flex items-center px-2.5 py-1.5 rounded-lg text-xs tracking-wide transition-all duration-150 ${isActive
+                    ? "bg-brand-500/15 text-brand-600 dark:text-brand-300 font-medium"
+                    : "text-cn-text-secondary hover:bg-neutral-100 dark:hover:bg-cn-surface-elevated hover:text-cn-text font-medium"
                   }`}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full mr-2 shrink-0 ${isActive ? "bg-brand-500" : "bg-neutral-300 dark:bg-zinc-700"
+                  className={`w-1.5 h-1.5 rounded-full mr-2 shrink-0 ${isActive ? "bg-brand-500" : "bg-neutral-300 dark:bg-neutral-600"
                     }`}
                 />
                 <span className="truncate">{item.label}</span>
@@ -570,6 +571,13 @@ const DynamicSidebar = ({ user }) => {
 
 
       <div className={`pb-2 pt-2 border-t border-gray-200 dark:border-zinc-800 mt-auto shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+        <SidebarLink
+          to="/settings"
+          icon={Settings}
+          label="Account Settings"
+          isActive={isActive("/settings")}
+          isCollapsed={isCollapsed}
+        />
         <Link
           to="/"
           title={isCollapsed ? "Exit Dashboard" : undefined}

@@ -42,7 +42,7 @@ const RawAttendeeResponses = ({ responses = [] }) => {
     <section aria-label="Raw Attendee Written Responses" className="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-6 shadow-xs space-y-6">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-neutral-100 dark:border-neutral-800 pb-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-base font-medium text-slate-900 dark:text-white flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-brand-500" aria-hidden="true" />
             <span>Attendee Written Responses ({responses.length})</span>
           </h3>
@@ -67,7 +67,7 @@ const RawAttendeeResponses = ({ responses = [] }) => {
                 }}
                 className={`px-3 py-1 rounded-lg capitalize transition-all cursor-pointer ${
                   sentimentFilter === filterKey
-                    ? 'bg-white dark:bg-neutral-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                    ? 'bg-white dark:bg-neutral-900 text-slate-900 dark:text-white shadow-xs font-medium'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -123,11 +123,11 @@ const RawAttendeeResponses = ({ responses = [] }) => {
             >
               <div className="flex items-center justify-between gap-2 border-b border-neutral-200/60 dark:border-neutral-700/50 pb-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold border border-amber-200/60 dark:border-amber-800/40">
+                  <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-medium border border-amber-200/60 dark:border-amber-800/40">
                     <Star className="w-3 h-3 fill-amber-400 stroke-amber-500" aria-hidden="true" />
                     <span>{res.overallRating} / 5</span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-md font-semibold text-[10px] uppercase tracking-wider ${
+                  <span className={`px-2 py-0.5 rounded-md font-medium text-[10px] uppercase tracking-wider ${
                     res.sentiment === 'positive'
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
                       : res.sentiment === 'neutral'
@@ -145,19 +145,19 @@ const RawAttendeeResponses = ({ responses = [] }) => {
               <div className="space-y-2.5 text-xs">
                 {res.liked && (
                   <div>
-                    <p className="font-semibold text-emerald-800 dark:text-emerald-400 text-[11px]">What they liked:</p>
+                    <p className="font-medium text-emerald-800 dark:text-emerald-400 text-[11px]">What they liked:</p>
                     <p className="text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">{res.liked}</p>
                   </div>
                 )}
                 {res.improvements && (
                   <div>
-                    <p className="font-semibold text-amber-800 dark:text-amber-400 text-[11px]">Areas for improvement:</p>
+                    <p className="font-medium text-amber-800 dark:text-amber-400 text-[11px]">Areas for improvement:</p>
                     <p className="text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">{res.improvements}</p>
                   </div>
                 )}
                 {res.comments && (
                   <div>
-                    <p className="font-semibold text-slate-600 dark:text-slate-400 text-[11px]">Additional comments:</p>
+                    <p className="font-medium text-slate-600 dark:text-slate-400 text-[11px]">Additional comments:</p>
                     <p className="text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">{res.comments}</p>
                   </div>
                 )}

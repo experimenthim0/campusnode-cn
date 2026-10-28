@@ -89,7 +89,7 @@ const StarRatingSelector = ({ value, onChange, name, disabled }) => {
         })}
       </div>
 
-      <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 shrink-0 text-right min-w-[70px]">
+      <span className="text-xs font-medium text-amber-600 dark:text-amber-400 shrink-0 text-right min-w-[70px]">
         {display ? (
           RATING_LABELS[display]
         ) : (
@@ -301,7 +301,7 @@ export const EventFeedbackModal = ({
               </div>
               <h2
                 id="feedback-dialog-title"
-                className="text-lg sm:text-xl font-semibold tracking-tight text-foreground"
+                className="text-lg sm:text-xl font-medium tracking-tight text-foreground"
               >
                 How was your experience?
               </h2>
@@ -351,7 +351,7 @@ export const EventFeedbackModal = ({
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div className="space-y-1.5 max-w-sm mx-auto">
-                  <h3 className="text-xl font-semibold text-foreground">
+                  <h3 className="text-xl font-medium text-foreground">
                     Thank you!
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -393,7 +393,7 @@ export const EventFeedbackModal = ({
                 {/* 1-5 Ratings Section */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-foreground">
                       Required Ratings (1–5)
                     </h3>
                     <span className="text-[11px] text-muted-foreground font-medium">
@@ -462,7 +462,7 @@ export const EventFeedbackModal = ({
                 {/* Optional Written Feedback */}
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center justify-between border-b border-border pb-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-foreground">
                       Optional Written Feedback
                     </h3>
                     <span className="text-[11px] text-muted-foreground font-medium">

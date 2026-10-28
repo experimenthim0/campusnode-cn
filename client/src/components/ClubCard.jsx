@@ -21,7 +21,7 @@ const ClubCard = ({ club }) => {
   const cardRef = useRef(null);
 
   // Use fallback logo instantly, preload real clubLogo in background
-  const fallbackLogo = isDark ? "/lightthemelogo2.png" : "/darkthemelogo.png";
+  const fallbackLogo = "/lightthemelogo2.png";
   const [logoSrc, setLogoSrc] = useState(fallbackLogo);
 
   useEffect(() => {
@@ -156,14 +156,8 @@ const ClubCard = ({ club }) => {
       style={cardStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col h-full group bg-white dark:bg-[#121316]"
+      className="relative border border-cn-border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_24px_-4px_rgba(0,0,0,0.08),0_4px_10px_-2px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_10px_28px_-4px_rgba(0,0,0,0.45)] flex flex-col h-full group bg-cn-surface dark:bg-cn-surface-card"
     >
-      {/* Ambient color gradient overlay on hover */}
-      {/* <div
-        className="absolute inset-0 pointer-events-none transition-all duration-500 ease-out"
-        style={glowOverlayStyle}
-      /> */}
-
       {/* Campus Building Header Banner with Progressive Depth Shading */}
       <div className="relative w-full h-32 sm:h-36 overflow-hidden shrink-0 bg-neutral-100 dark:bg-neutral-800">
         <img
@@ -176,27 +170,14 @@ const ClubCard = ({ club }) => {
           }}
         />
 
-        {/* Subtle top vignette for banner depth */}
-        {/* <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/25 to-transparent pointer-events-none" /> */}
-
-        {/* Ambient brand color tint from extracted logo color on hover */}
-        {/* {rgb && (
-          <div
-            className="absolute inset-x-0 bottom-0 h-20 pointer-events-none transition-opacity duration-500 opacity-25 group-hover:opacity-50"
-            style={{
-              background: `linear-gradient(to top, rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35) 0%, transparent 100%)`,
-            }}
-          />
-        )} */}
-
         {/* Multi-layered progressive fade matching card surface (eliminates hard edge) */}
-        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-16 bg-gradient-to-t from-white/95 via-white/65 via-35% to-transparent dark:from-[#121316]/95 dark:via-[#121316]/65 dark:via-35% dark:to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-[#121316] to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-16 bg-gradient-to-t from-white/95 via-white/65 via-35% to-transparent dark:from-cn-surface-card/95 dark:via-cn-surface-card/65 dark:via-35% dark:to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-cn-surface-card to-transparent pointer-events-none" />
       </div>
 
       {/* Floating Circular Club Logo */}
-      <div className="-mt-8 sm:-mt-9 flex justify-center relative z-10">
-        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-neutral-900 border-1 border-neutral-700/80 shadow-lg flex items-center justify-center overflow-hidden p-1 group-hover:scale-105 transition-transform duration-300">
+      <div className="-mt-8 sm:-mt-9 flex justify-center relative z-10 items-center">
+        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-neutral-100 shadow-lg flex items-center justify-center overflow-hidden p-0.5">
           <img
             ref={imgRef}
             src={displayUrl}
@@ -216,7 +197,7 @@ const ClubCard = ({ club }) => {
       <div className="p-5 pt-1 flex flex-col flex-grow relative z-10">
         {/* Club Name */}
         <h3
-          className="text-lg sm:text-xl font-semibold tracking-tight text-neutral-900 dark:text-white text-center leading-snug mb-1.5 line-clamp-1 group-hover:text-cn-blue-600 dark:group-hover:text-cn-blue-400 transition-colors"
+          className="text-card-title text-center text-cn-text mb-1.5 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors"
           title={club.clubName}
         >
           {club.clubName}
@@ -225,29 +206,28 @@ const ClubCard = ({ club }) => {
         {/* Category Pill Badge */}
         {club.category && (
           <div className="flex justify-center mb-3">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-300 border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs group-hover:border-neutral-300 dark:group-hover:border-neutral-600 transition-colors">
-          
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-metadata bg-cn-surface-muted text-cn-text-secondary border border-cn-border shadow-2xs group-hover:border-neutral-300 dark:group-hover:border-neutral-600 transition-colors">
               <span>{club.category}</span>
             </span>
           </div>
         )}
 
         {/* Faculty Lead & Student Head */}
-        <div className="border-t border-neutral-100 dark:border-neutral-800/80 pt-3.5 pb-2 text-left flex flex-row justify-between items-start gap-3">
+        <div className="border-t border-cn-border pt-3.5 pb-2 text-left flex flex-row justify-between items-start gap-3">
           <div className="flex-1 min-w-0 pr-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 block mb-1">
+            <span className="text-label uppercase tracking-wider text-cn-text-muted block mb-1">
               {facultyList.length > 1 ? "FACULTY COORDINATORS" : "FACULTY LEAD"}
             </span>
             {facultyList.length > 0 ? (
               <div className="flex flex-col gap-0.5">
                 {facultyList.map((name, idx) => (
-                  <p key={idx} className="text-sm font-semibold text-neutral-900 dark:text-white truncate" title={name}>
+                  <p key={idx} className="text-body-emphasis text-cn-text truncate" title={name}>
                     {name}
                   </p>
                 ))}
               </div>
             ) : (
-              <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+              <p className="text-body-emphasis text-cn-text truncate">
                 Not Assigned
               </p>
             )}
@@ -255,12 +235,12 @@ const ClubCard = ({ club }) => {
 
           {studentList.length > 0 && (
             <div className="shrink-0 text-right max-w-[48%]">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-500 block mb-1">
+              <span className="text-label uppercase tracking-wider text-cn-text-muted block mb-1">
                 {studentList.length > 1 ? "STUDENT LEADS" : "STUDENT LEAD"}
               </span>
               <div className="flex flex-col gap-0.5 items-end">
                 {studentList.map((name, idx) => (
-                  <p key={idx} className="text-sm font-semibold text-neutral-900 dark:text-white truncate max-w-full" title={name}>
+                  <p key={idx} className="text-body-emphasis text-cn-text truncate max-w-full" title={name}>
                     {name}
                   </p>
                 ))}
@@ -310,7 +290,7 @@ const ClubCard = ({ club }) => {
             <Link
               to={`/club/${club.slug || club._id || club.id}`}
               style={buttonStyle}
-              className="py-2 px-5 rounded-full border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation"
+              className="py-2 px-5 rounded-full border border-neutral-300 dark:border-neutral-700/80 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 text-neutral-900 dark:text-white text-xs font-medium transition-all duration-200 inline-flex items-center justify-center gap-2 group/btn cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation"
             >
               <span>Explore Club</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />

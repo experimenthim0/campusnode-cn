@@ -131,11 +131,11 @@ const ClubAnnouncementsSection = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-semibold uppercase tracking-wider text-neutral-900 dark:text-white">
+              <h2 className="text-sm sm:text-base font-medium uppercase tracking-wider text-neutral-900 dark:text-white">
                 Club Announcements
               </h2>
               {announcements.length > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-full border border-neutral-200 dark:border-neutral-700">
+                <span className="px-2 py-0.5 text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-full border border-neutral-200 dark:border-neutral-700">
                   {announcements.length}
                 </span>
               )}
@@ -150,7 +150,7 @@ const ClubAnnouncementsSection = ({
           <button
             type="button"
             onClick={() => setIsFormOpen((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer shadow-2xs shrink-0 ${
               isFormOpen
                 ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                 : "bg-brand-600 hover:bg-brand-700 text-white"
@@ -168,7 +168,7 @@ const ClubAnnouncementsSection = ({
           className="mb-6 p-4 sm:p-5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-brand-200/60 dark:border-brand-900/30 space-y-4 animate-in fade-in duration-200"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+            <h3 className="text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
               <i className="ri-edit-line" /> Compose New Announcement
             </h3>
             <span className="text-[11px] text-neutral-400">Visible to all students & members</span>
@@ -176,7 +176,7 @@ const ClubAnnouncementsSection = ({
 
           <div className="space-y-3">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
                 Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -191,7 +191,7 @@ const ClubAnnouncementsSection = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
                 Announcement Content <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -220,7 +220,7 @@ const ClubAnnouncementsSection = ({
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl text-xs font-medium uppercase tracking-wider transition-all shadow-xs cursor-pointer"
               >
                 {submitting ? (
                   <>
@@ -256,11 +256,11 @@ const ClubAnnouncementsSection = ({
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
                     {item.isPinned && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 rounded-md border border-brand-200 dark:border-brand-900/50">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 rounded-md border border-brand-200 dark:border-brand-900/50">
                         <i className="ri-pushpin-fill text-[11px] font-light" /> Pinned
                       </span>
                     )}
-                    <h3 className="text-sm font-semibold text-neutral-900 dark:text-white break-words">
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-white break-words">
                       {item.title}
                     </h3>
                   </div>
@@ -335,7 +335,7 @@ const ClubAnnouncementsSection = ({
             <button
               type="button"
               onClick={() => setIsFormOpen(true)}
-              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs hover:bg-brand-700 transition cursor-pointer"
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs font-medium shadow-xs hover:bg-brand-700 transition cursor-pointer"
             >
               <i className="ri-add-line" /> Post First Announcement
             </button>

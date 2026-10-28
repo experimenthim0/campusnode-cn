@@ -38,30 +38,30 @@ const CentralEventCard = ({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-md">
                 <Sparkles size={11} className="text-brand-600 dark:text-brand-400" />
                 College-Wide
               </span>
 
               {event.registrationType === "none" ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <DoorOpen size={11} className="text-brand-600 dark:text-brand-400" />
                   Open Walk-in
                 </span>
               ) : event.registrationType === "team" ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <Users size={11} className="text-brand-600 dark:text-brand-400" />
                   Team ({event.minTeamSize || 1}-{event.maxTeamSize || 1})
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-md">
                   <User size={11} className="text-brand-600 dark:text-brand-400" />
                   Individual Pass
                 </span>
               )}
             </div>
 
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-1">
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 line-clamp-1">
               {event.title}
             </h3>
           </div>
@@ -92,7 +92,7 @@ const CentralEventCard = ({
             <Clock size={14} className="text-brand-600 dark:text-brand-500 shrink-0" />
             <span>
               {new Date(event.startTime).toLocaleDateString()} &bull;{" "}
-              {new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {new Date(event.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
             </span>
           </p>
           <p className="flex items-center gap-2">
@@ -124,7 +124,7 @@ const CentralEventCard = ({
         {/* Participating Clubs Preview */}
         {event.participatingClubs?.length > 0 && (
           <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-semibold text-neutral-400">Clubs:</span>
+            <span className="text-[11px] font-medium text-neutral-400">Clubs:</span>
             {event.participatingClubs.map((pc) => (
               <span
                 key={pc.id}
@@ -142,14 +142,14 @@ const CentralEventCard = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => onManageStaff(event)}
-            className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-600 dark:text-brand-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-600 dark:text-brand-400 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <Shield size={13} className="text-brand-600 dark:text-brand-400" />
             Staff ({event._count?.eventStaff || 0})
           </button>
           <button
             onClick={() => onManageClubs(event)}
-            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <Building2 size={13} className="text-brand-600 dark:text-brand-400" />
             Clubs ({event.participatingClubs?.length || 0})
@@ -161,7 +161,7 @@ const CentralEventCard = ({
           <button
             type="button"
             onClick={() => onTogglePublish(event.id, event.reviewStatus)}
-            className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
               event.reviewStatus === "PUBLISHED"
                 ? "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
                 : "bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"

@@ -48,7 +48,7 @@ const CentralOrganizerStats = ({ stats }) => {
               <span className="text-xs font-medium uppercase tracking-wider">{item.label}</span>
               <Icon size={18} className="text-brand-600 dark:text-brand-500" />
             </div>
-            <p className="text-2xl font-black text-neutral-900 dark:text-neutral-50">{item.value}</p>
+            <p className="text-2xl font-medium text-neutral-900 dark:text-neutral-50">{item.value}</p>
           </div>
         );
       })}

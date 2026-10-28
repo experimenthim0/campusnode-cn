@@ -165,15 +165,15 @@ const ClubLeaderboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-500">Live Ranking</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-brand-600 dark:text-brand-500">Live Ranking</span>
               <Link 
                 to="/ranking-guide"
-                className="text-[10px] font-semibold text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 underline decoration-dotted transition-colors"
+                className="text-[10px] font-medium text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 underline decoration-dotted transition-colors"
               >
                 How points work?
               </Link>
             </div>
-            <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-wide">Club Leaderboard</h2>
+            <h2 className="text-3xl font-medium text-neutral-900 dark:text-white tracking-wide">Club Leaderboard</h2>
           </div>
           <div
            
@@ -202,7 +202,7 @@ const ClubLeaderboard = () => {
                 {/* Main Content */}
                 <div className="flex items-center gap-3">
                   
-                  <div className={`w-11 h-11 shrink-0 flex flex-col items-center justify-center rounded-xl font-black text-base shadow-xs
+                  <div className={`w-11 h-11 shrink-0 flex flex-col items-center justify-center rounded-xl font-medium text-base shadow-xs
                     ${isTop3 ? 'bg-white dark:bg-neutral-800' : 'bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700'}
                     ${isTop3 ? rankStyles[index].text : ''}
                   `}>
@@ -215,24 +215,24 @@ const ClubLeaderboard = () => {
                     <div className="flex items-center gap-2">
                       <Link 
                         to={`/club/${club.slug || club._id}`}
-                        className="text-[16px] font-black text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors block truncate tracking-tight"
+                        className="text-[16px] font-medium text-neutral-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors block truncate tracking-tight"
                       >
                         {club.clubName}
                       </Link>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                       <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 tracking-widest">{club.category || 'Society'}</span>
+                       <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 tracking-widest">{club.category || 'Society'}</span>
                       
                     </div>
                   </div>
 
                   {/* Counter: Only show Points/Score */}
                   <div className="text-right pr-1 sm:pr-2 shrink-0">
-                    <div className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white leading-none tabular-nums tracking-tighter">
+                    <div className="text-xl sm:text-2xl font-medium text-neutral-900 dark:text-white leading-none tabular-nums tracking-tighter">
                       {club.points !== undefined ? club.points : club.score}
                     </div>
 
-                    <div className="text-[8px] sm:text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mt-0.5">
+                    <div className="text-[8px] sm:text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mt-0.5">
                       Points
                     </div>
                   </div>
@@ -249,7 +249,7 @@ const ClubLeaderboard = () => {
             <button
               type="button"
               onClick={() => setShowAll((prev) => !prev)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white transition-all cursor-pointer"
             >
               {showAll ? (
                 <><i className="ri-arrow-up-s-line text-sm" /> Show Top 3</>

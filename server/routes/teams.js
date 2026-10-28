@@ -14,7 +14,7 @@ import { MAX_WAITLIST_CAPACITY } from "../services/waitlistService.js";
 
 const router = express.Router();
 
-async function notifyTeamMember(io, recipientId, title, message) {
+async function notifyTeamMember(io, recipientId, title, message, eventId = null, teamId = null) {
   try {
     const notification = await prisma.notification.create({
       data: {
@@ -23,6 +23,8 @@ async function notifyTeamMember(io, recipientId, title, message) {
         type: "TEAM_RESPONSE",
         title,
         message,
+        eventId: eventId || null,
+        teamId: teamId || null,
       },
     });
     const payload = {
@@ -380,28 +382,28 @@ router.post(
   },
 );
 
-router.post(
-  "/invitations/:id/respond",
-  verifyToken,
-  async (req, res) => {
-    const notificationId = req.params.id;
-    const { action } = req.body;
-    const userId = req.user.userId;
+async function handleInvitationResponse(req, res) {
+  const targetId = req.params.id;
+  if (!req.body) req.body = {};
+  const action = req.body.action;
+  const userId = req.user.userId;
 
-    if (!["accept", "decline"].includes(action)) {
-      return res.status(400).json({ message: "Action must be 'accept' or 'decline'." });
-    }
+  if (!["accept", "decline"].includes(action)) {
+    return res.status(400).json({ message: "Action must be 'accept' or 'decline'." });
+  }
 
-    try {
-      const notif = await prisma.notification.findUnique({
-        where: { id: notificationId },
-      });
+  try {
+    let notif = await prisma.notification.findUnique({
+      where: { id: targetId },
+    });
 
-      if (!notif || notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
+    let participation;
+    if (notif) {
+      if (notif.recipientStudentId !== userId || notif.type !== "TEAM_INVITATION") {
         return res.status(404).json({ message: "Invitation not found." });
       }
 
-      const participation = await prisma.participation.findFirst({
+      participation = await prisma.participation.findFirst({
         where: {
           eventId: notif.eventId,
           teamId: notif.teamId,
@@ -413,278 +415,605 @@ router.post(
           team: { include: { leaderStudent: true } },
         },
       });
+    } else {
+      // Find participation directly by id or teamId
+      participation = await prisma.participation.findFirst({
+        where: {
+          id: targetId,
+          status: "INVITED",
+          studentId: userId,
+        },
+        include: {
+          event: true,
+          team: { include: { leaderStudent: true } },
+        },
+      });
 
       if (!participation) {
-        return res.status(400).json({ message: "Invalid or already processed invitation." });
+        participation = await prisma.participation.findFirst({
+          where: {
+            teamId: targetId,
+            status: "INVITED",
+            studentId: userId,
+          },
+          include: {
+            event: true,
+            team: { include: { leaderStudent: true } },
+          },
+        });
       }
 
-      const event = participation.event;
+      if (participation) {
+        notif = await prisma.notification.findFirst({
+          where: {
+            recipientStudentId: userId,
+            eventId: participation.eventId,
+            teamId: participation.teamId,
+            type: "TEAM_INVITATION",
+          },
+        });
+      }
+    }
 
-      if (action === "decline") {
-        await prisma.$transaction(async (tx) => {
-          await tx.teamMember.deleteMany({
-            where: {
-              teamId: notif.teamId,
-              userId,
-            },
-          });
+    if (!participation) {
+      return res.status(400).json({ message: "Invalid or already processed invitation." });
+    }
 
-          await tx.participation.delete({
-            where: { id: participation.id },
-          });
+    const event = participation.event;
+    const targetTeamId = participation.teamId || notif?.teamId;
 
+    if (action === "decline") {
+      const student = await prisma.studentUser.findUnique({ where: { id: userId } });
+      const currentTeam = await prisma.team.findUnique({
+        where: { id: targetTeamId },
+        select: { id: true, rejectedMembers: true, teamName: true, leaderId: true },
+      });
+
+      const currentRejected = Array.isArray(currentTeam?.rejectedMembers)
+        ? currentTeam.rejectedMembers
+        : [];
+      const updatedRejected = [
+        ...currentRejected.filter((r) => r.studentId !== userId),
+        {
+          studentId: userId,
+          name: student?.name || "Student",
+          rollNo: student?.rollNo || "",
+          email: student?.email || "",
+          rejectedAt: new Date().toISOString(),
+        },
+      ];
+
+      await prisma.$transaction(async (tx) => {
+        await tx.teamMember.deleteMany({
+          where: {
+            teamId: targetTeamId,
+            userId,
+          },
+        });
+
+        await tx.participation.delete({
+          where: { id: participation.id },
+        });
+
+        await tx.team.update({
+          where: { id: targetTeamId },
+          data: {
+            rejectedMembers: updatedRejected,
+          },
+        });
+
+        if (notif) {
           await tx.notification.update({
-            where: { id: notificationId },
+            where: { id: notif.id },
             data: {
               title: "Declined Team Invitation",
-              message: `You declined ${participation.team.leaderStudent?.name}'s invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
+              message: `You declined ${participation.team?.leaderStudent?.name || "the leader"}'s invitation to join team "${participation.team?.teamName || ""}" for "${participation.event?.title || "the event"}".`,
               readBy: { push: [userId] },
             },
           });
-        });
+        }
+      });
 
-        const student = await prisma.studentUser.findUnique({ where: { id: userId } });
-        await notifyTeamMember(
-          req.io,
-          participation.team.leaderId,
-          "Invitation Declined",
-          `${student?.name || "A member"} declined your invitation to join team "${participation.team.teamName}" for "${participation.event.title}".`,
-        );
+      const remainingMembersCount = await prisma.teamMember.count({
+        where: { teamId: targetTeamId },
+      });
+      const minSize = event?.minTeamSize || 1;
+      const isBelowMin = remainingMembersCount < minSize;
 
-        return res.json({ success: true, message: "Invitation declined successfully." });
+      const notifTitle = isBelowMin ? "Invitation Declined — Less Members" : "Invitation Declined";
+      const notifMsg = isBelowMin
+        ? `${student?.name || "A member"} declined your invitation to join team "${participation.team?.teamName || ""}". Your team now has less members (${remainingMembersCount}/${minSize}) than required. Please add more members in My Events.`
+        : `${student?.name || "A member"} declined your invitation to join team "${participation.team?.teamName || ""}" for "${participation.event?.title || "the event"}".`;
+
+      await notifyTeamMember(
+        req.io,
+        participation.team?.leaderId,
+        notifTitle,
+        notifMsg,
+        event?.id,
+        targetTeamId,
+      );
+
+      return res.json({ success: true, message: "Invitation declined successfully." });
+    }
+
+    let newStatus = "REGISTERED";
+
+    if (event) {
+      const now = new Date();
+      if (now > new Date(event.endTime)) {
+        return res.status(400).json({ message: "This event has already ended. Invitations can no longer be accepted." });
       }
 
-      let newStatus = "REGISTERED";
+      const registrationDeadline = event.registrationDeadline
+        ? new Date(event.registrationDeadline)
+        : new Date(event.startTime);
 
-      if (event) {
-        const now = new Date();
-        if (now > new Date(event.endTime)) {
-          return res.status(400).json({ message: "This event has already ended. Invitations can no longer be accepted." });
-        }
-
-        const registrationDeadline = event.registrationDeadline
-          ? new Date(event.registrationDeadline)
-          : new Date(event.startTime);
-
-        if (now > registrationDeadline) {
-          return res.status(400).json({ message: "Registration deadline has passed for this event. Invitations can no longer be accepted." });
-        }
+      if (now > registrationDeadline) {
+        return res.status(400).json({ message: "Registration deadline has passed for this event. Invitations can no longer be accepted." });
       }
+    }
 
-      await prisma.$transaction(async (tx) => {
-        const events = await tx.$queryRaw`
-          SELECT * FROM "Event" WHERE id = ${event.id} FOR UPDATE
-        `;
-        const latestEvent = events[0];
+    // Validate required fields (social media handles / profile fields) for the event
+    const requiredFields = Array.isArray(event?.requiredFields) ? event.requiredFields : [];
+    if (requiredFields.length > 0) {
+      const student = await prisma.studentUser.findUnique({
+        where: { id: userId },
+        include: { socialLinks: true },
+      });
 
-        const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
-        if (isFull) {
-          const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
-          if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
-            const err = new Error("Cannot accept invitation. The event and its waitlist are completely full.");
-            err.statusCode = 400;
-            err.waitlistFull = true;
-            throw err;
+      const socialKeyMap = {
+        githubProfile: "GITHUB",
+        linkedinProfile: "LINKEDIN",
+        xProfile: "X",
+        instagramProfile: "INSTAGRAM",
+        whatsappNumber: "WHATSAPP",
+        portfolioUrl: "PORTFOLIO",
+      };
+
+      const currentLinks = {};
+      student?.socialLinks?.forEach((link) => {
+        const plat = (link.platform || "").toUpperCase();
+        if (plat === "GITHUB") currentLinks.githubProfile = link.url;
+        if (plat === "LINKEDIN") currentLinks.linkedinProfile = link.url;
+        if (plat === "X") currentLinks.xProfile = link.url;
+        if (plat === "INSTAGRAM") currentLinks.instagramProfile = link.url;
+        if (plat === "WHATSAPP") currentLinks.whatsappNumber = link.url;
+        if (plat === "PORTFOLIO") currentLinks.portfolioUrl = link.url;
+      });
+
+      // Check if incoming request provided any handles (either in req.body.socialHandles or directly in req.body)
+      const incoming = req.body.socialHandles || req.body || {};
+      for (const [key, platform] of Object.entries(socialKeyMap)) {
+        if (incoming[key] && typeof incoming[key] === "string" && incoming[key].trim()) {
+          const val = incoming[key].trim();
+          if (student) {
+            await prisma.studentSocialLink.upsert({
+              where: {
+                studentId_platform: {
+                  studentId: userId,
+                  platform,
+                },
+              },
+              update: { url: val },
+              create: {
+                id: crypto.randomBytes(12).toString("hex"),
+                studentId: userId,
+                platform,
+                url: val,
+              },
+            });
           }
-          newStatus = "WAITLISTED";
-        } else {
-          newStatus = "REGISTERED";
+          currentLinks[key] = val;
         }
+      }
 
-        await tx.participation.update({
-          where: { id: participation.id },
-          data: { status: newStatus },
+      if (req.user?.userType === "external" || req.user?.role === "external") {
+        const ext = await prisma.externalUser.findUnique({ where: { id: userId } });
+        if (ext?.portfolioUrl) currentLinks.portfolioUrl = ext.portfolioUrl;
+        if (incoming.portfolioUrl?.trim()) {
+          await prisma.externalUser.update({
+            where: { id: userId },
+            data: { portfolioUrl: incoming.portfolioUrl.trim() },
+          });
+          currentLinks.portfolioUrl = incoming.portfolioUrl.trim();
+        }
+      }
+
+      const missing = requiredFields.filter((f) => !currentLinks[f] || !String(currentLinks[f]).trim());
+      if (missing.length > 0) {
+        return res.status(400).json({
+          message: "This event requires you to provide your social media handles before accepting the team invitation.",
+          code: "REQUIRED_FIELDS_MISSING",
+          requiredFields,
+          missingFields: missing,
+          eventTitle: event?.title || "Event",
         });
+      }
+    }
 
-        if (newStatus === "REGISTERED") {
-          await tx.event.update({
-            where: { id: event.id },
-            data: { registeredCount: { increment: 1 } },
-          });
-        } else {
-          await tx.event.update({
-            where: { id: event.id },
-            data: { waitingListIds: { push: [participation.id] } },
-          });
+    await prisma.$transaction(async (tx) => {
+      const events = await tx.$queryRaw`
+        SELECT * FROM "Event" WHERE id = ${event.id} FOR UPDATE
+      `;
+      const latestEvent = events[0];
+
+      const isFull = latestEvent.totalSeats > 0 && latestEvent.registeredCount >= latestEvent.totalSeats;
+      if (isFull) {
+        const currentWaitlistCount = (latestEvent.waitingListIds || []).length;
+        if (currentWaitlistCount >= MAX_WAITLIST_CAPACITY) {
+          const err = new Error("Cannot accept invitation. The event and its waitlist are completely full.");
+          err.statusCode = 400;
+          err.waitlistFull = true;
+          throw err;
         }
+        newStatus = "WAITLISTED";
+      } else {
+        newStatus = "REGISTERED";
+      }
 
+      await tx.participation.update({
+        where: { id: participation.id },
+        data: { status: newStatus },
+      });
+
+      if (newStatus === "REGISTERED") {
+        await tx.event.update({
+          where: { id: event.id },
+          data: { registeredCount: { increment: 1 } },
+        });
+      } else {
+        await tx.event.update({
+          where: { id: event.id },
+          data: { waitingListIds: { push: [participation.id] } },
+        });
+      }
+
+      if (notif) {
         await tx.notification.update({
-          where: { id: notificationId },
+          where: { id: notif.id },
           data: {
             title: "Accepted Team Invitation",
-            message: `You accepted ${participation.team.leaderStudent?.name}'s invitation to join team "${participation.team.teamName}" for "${event.title}".`,
+            message: `You accepted ${participation.team?.leaderStudent?.name || "the leader"}'s invitation to join team "${participation.team?.teamName || ""}" for "${event.title}".`,
             readBy: { push: [userId] },
           },
         });
-      });
-
-      const student = await prisma.studentUser.findUnique({ where: { id: userId } });
-      await notifyTeamMember(
-        req.io,
-        participation.team.leaderId,
-        "Invitation Accepted",
-        `${student?.name || "A member"} accepted your invitation to join team "${participation.team.teamName}" for "${event.title}".`,
-      );
-
-      invalidatePublicResponses(["events:public:*"]);
-
-      res.json({ success: true, status: newStatus, message: "Invitation accepted successfully." });
-    } catch (err) {
-      console.error("Accept invitation error:", err);
-      if (err.statusCode) {
-        return res.status(err.statusCode).json({ message: err.message, waitlistFull: err.waitlistFull });
       }
-      res.status(500).json({ message: err.message });
+    });
+
+    const student = await prisma.studentUser.findUnique({ where: { id: userId } });
+    await notifyTeamMember(
+      req.io,
+      participation.team?.leaderId,
+      "Invitation Accepted",
+      `${student?.name || "A member"} accepted your invitation to join team "${participation.team?.teamName || ""}" for "${event.title}".`,
+      event.id,
+      targetTeamId,
+    );
+
+    invalidatePublicResponses(["events:public:*"]);
+
+    res.json({ success: true, status: newStatus, message: "Invitation accepted successfully." });
+  } catch (err) {
+    console.error("Invitation response error:", err);
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ message: err.message, waitlistFull: err.waitlistFull });
     }
+    res.status(500).json({ message: err.message });
+  }
+}
+
+router.post(
+  "/invitations/:id/respond",
+  verifyToken,
+  handleInvitationResponse,
+);
+
+router.post(
+  "/invitations/:id/accept",
+  verifyToken,
+  async (req, res) => {
+    if (!req.body) req.body = {};
+    req.body.action = "accept";
+    return handleInvitationResponse(req, res);
   },
 );
 
 router.post(
-  "/:id/invite",
+  "/invitations/:id/decline",
   verifyToken,
   async (req, res) => {
-    const teamId = req.params.id;
-    const leaderId = req.user.userId;
-    const { studentId } = req.body;
+    if (!req.body) req.body = {};
+    req.body.action = "decline";
+    return handleInvitationResponse(req, res);
+  },
+);
 
-    try {
-      if (!studentId) {
-        return res.status(400).json({ message: "Student ID is required." });
+async function handleInviteMember(req, res) {
+  const targetId = req.params.id;
+  const leaderId = req.user.userId;
+  let studentId = req.body.studentId;
+
+  try {
+    // Resolve team whether targetId is a teamId or a participationId
+    let team = await prisma.team.findUnique({
+      where: { id: targetId },
+      include: {
+        event: true,
+        members: true,
+      },
+    });
+
+    if (!team) {
+      const part = await prisma.participation.findUnique({
+        where: { id: targetId },
+        include: {
+          team: {
+            include: {
+              event: true,
+              members: true,
+            },
+          },
+        },
+      });
+      if (part?.team) team = part.team;
+    }
+
+    if (!team) return res.status(404).json({ message: "Team not found." });
+
+    // If studentId wasn't passed directly, check memberIds array from frontend
+    if (!studentId && Array.isArray(req.body.memberIds)) {
+      studentId = req.body.memberIds.find(
+        (mId) => mId && !team.members.some((m) => m.userId === mId)
+      );
+    }
+
+    if (!studentId) {
+      return res.status(400).json({ message: "Student ID is required." });
+    }
+
+    if (team.leaderId !== leaderId && team.leaderStudentId !== leaderId) {
+      return res.status(403).json({ message: "Only the team leader can add new members." });
+    }
+
+    const event = team.event;
+
+    if (event) {
+      const now = new Date();
+      if (now > new Date(event.endTime)) {
+        return res.status(400).json({ message: "This event has already ended. Team modifications are closed." });
       }
 
-      const team = await prisma.team.findUnique({
-        where: { id: teamId },
-        include: {
-          event: true,
-          members: true,
+      const registrationDeadline = event.registrationDeadline
+        ? new Date(event.registrationDeadline)
+        : new Date(event.startTime);
+
+      if (now > registrationDeadline) {
+        return res.status(400).json({ message: "Registration deadline has passed for this event." });
+      }
+    }
+
+    const currentSize = team.members.length;
+    const maxSize = event.maxTeamSize || 1;
+    if (currentSize >= maxSize) {
+      return res.status(400).json({ message: `Team is already at its maximum size of ${maxSize} members.` });
+    }
+
+    const alreadyInTeam = team.members.some((m) => m.userId === studentId);
+    if (alreadyInTeam) {
+      return res.status(400).json({ message: "This user is already a member of your team." });
+    }
+
+    const student = await prisma.studentUser.findUnique({ where: { id: studentId } });
+    if (!student) return res.status(404).json({ message: "Student not found." });
+
+    if (
+      event.allowedPrograms?.length > 0 &&
+      student.program &&
+      !event.allowedPrograms.includes(student.program)
+    ) {
+      return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
+    }
+
+    if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
+      const progress = calculateAcademicProgress(student);
+      return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
+    }
+
+    if (
+      event.allowedBranches?.length > 0 &&
+      student.branch &&
+      !event.allowedBranches.includes(student.branch)
+    ) {
+      return res.status(400).json({ message: `${student.name} is ineligible due to their branch (${student.branch}).` });
+    }
+
+    const existing = await prisma.participation.findFirst({
+      where: {
+        eventId: event.id,
+        studentId,
+      },
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: `${student.name} is already registered or invited to this event.`,
+      });
+    }
+
+    const currentRejected = Array.isArray(team.rejectedMembers) ? team.rejectedMembers : [];
+    const updatedRejected = currentRejected.filter((r) => r.studentId !== studentId);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.teamMember.create({
+        data: {
+          id: createObjectId(),
+          teamId: team.id,
+          userId: studentId,
+          studentId,
+          role: "member",
         },
       });
 
-      if (!team) return res.status(404).json({ message: "Team not found." });
-      if (team.leaderId !== leaderId) {
-        return res.status(403).json({ message: "Only the team leader can add new members." });
-      }
+      const memberTicketId = crypto.randomBytes(12).toString("base64url");
+      const { qrPayload: mPayload, qrVersion: mVer, qrKeyId: mKey } = signTicket(event.id, memberTicketId);
 
-      const event = team.event;
-
-      if (event) {
-        const now = new Date();
-        if (now > new Date(event.endTime)) {
-          return res.status(400).json({ message: "This event has already ended. Team modifications are closed." });
-        }
-
-        const registrationDeadline = event.registrationDeadline
-          ? new Date(event.registrationDeadline)
-          : new Date(event.startTime);
-
-        if (now > registrationDeadline) {
-          return res.status(400).json({ message: "Registration deadline has passed for this event." });
-        }
-      }
-
-      const currentSize = team.members.length;
-      const maxSize = event.maxTeamSize || 1;
-      if (currentSize >= maxSize) {
-        return res.status(400).json({ message: `Team is already at its maximum size of ${maxSize} members.` });
-      }
-
-      const alreadyInTeam = team.members.some((m) => m.userId === studentId);
-      if (alreadyInTeam) {
-        return res.status(400).json({ message: "This user is already a member of your team." });
-      }
-
-      const student = await prisma.studentUser.findUnique({ where: { id: studentId } });
-      if (!student) return res.status(404).json({ message: "Student not found." });
-
-      if (
-        event.allowedPrograms?.length > 0 &&
-        student.program &&
-        !event.allowedPrograms.includes(student.program)
-      ) {
-        return res.status(400).json({ message: `${student.name} is ineligible due to their program (${student.program}).` });
-      }
-
-      if (!isStudentEligibleForEventYears(student, event.allowedYears)) {
-        const progress = calculateAcademicProgress(student);
-        return res.status(400).json({ message: `${student.name} is ineligible due to their academic standing (${progress.academicYearLabel}).` });
-      }
-
-      if (
-        event.allowedBranches?.length > 0 &&
-        student.branch &&
-        !event.allowedBranches.includes(student.branch)
-      ) {
-        return res.status(400).json({ message: `${student.name} is ineligible due to their branch (${student.branch}).` });
-      }
-
-      const existing = await prisma.participation.findFirst({
-        where: {
+      await tx.participation.create({
+        data: {
+          id: createObjectId(),
           eventId: event.id,
+          userId: studentId,
+          studentId,
+          teamId: team.id,
+          status: "INVITED",
+          paymentStatus: "SUCCESS",
+          qrCode: memberTicketId,
+          qrPayload: mPayload,
+          qrVersion: mVer,
+          qrKeyId: mKey,
+          formResponses: {},
+        },
+      });
+
+      if (currentRejected.length !== updatedRejected.length) {
+        await tx.team.update({
+          where: { id: team.id },
+          data: { rejectedMembers: updatedRejected },
+        });
+      }
+    });
+
+    const leaderStudent = await prisma.studentUser.findUnique({ where: { id: leaderId } });
+    const leaderName = leaderStudent?.name || "Team Leader";
+
+    await notifyInvitation(
+      req.io,
+      studentId,
+      event.id,
+      team.id,
+      team.teamName,
+      event.title,
+      leaderName,
+    );
+
+    res.json({
+      success: true,
+      message: `Invitation successfully sent to ${student.name}.`,
+    });
+  } catch (err) {
+    console.error("Invite teammate error:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+async function handleRemoveMember(req, res) {
+  const targetId = req.params.id;
+  const { studentId } = req.params;
+  const leaderId = req.user.userId;
+
+  try {
+    let team = await prisma.team.findUnique({
+      where: { id: targetId },
+      include: {
+        event: true,
+        members: true,
+      },
+    });
+
+    if (!team) {
+      const part = await prisma.participation.findUnique({
+        where: { id: targetId },
+        include: {
+          team: {
+            include: {
+              event: true,
+              members: true,
+            },
+          },
+        },
+      });
+      if (part?.team) team = part.team;
+    }
+
+    if (!team) return res.status(404).json({ message: "Team not found." });
+
+    if (team.leaderId !== leaderId && team.leaderStudentId !== leaderId) {
+      return res.status(403).json({ message: "Only the team leader can remove members." });
+    }
+
+    if (studentId === team.leaderId || studentId === team.leaderStudentId) {
+      return res.status(400).json({ message: "The team leader cannot be removed. To cancel registration, deregister the team." });
+    }
+
+    const memberEntry = team.members.find((m) => m.userId === studentId || m.studentId === studentId);
+    if (!memberEntry) {
+      return res.status(404).json({ message: "Member not found in this team." });
+    }
+
+    const event = team.event;
+    if (event) {
+      const now = new Date();
+      if (now > new Date(event.endTime)) {
+        return res.status(400).json({ message: "This event has already ended. Team modifications are closed." });
+      }
+    }
+
+    const memberPart = await prisma.participation.findFirst({
+      where: {
+        eventId: team.eventId,
+        studentId,
+      },
+    });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.teamMember.deleteMany({
+        where: {
+          teamId: team.id,
           studentId,
         },
       });
 
-      if (existing) {
-        return res.status(400).json({
-          message: `${student.name} is already registered or invited to this event.`,
+      if (memberPart) {
+        if (memberPart.status === "REGISTERED") {
+          await tx.event.update({
+            where: { id: team.eventId },
+            data: { registeredCount: { decrement: 1 } },
+          });
+        }
+        await tx.participation.delete({
+          where: { id: memberPart.id },
         });
       }
+    });
 
-      await prisma.$transaction(async (tx) => {
-        await tx.teamMember.create({
-          data: {
-            id: createObjectId(),
-            teamId,
-            userId: studentId,
-            studentId,
-            role: "member",
-          },
-        });
+    const removedStudent = await prisma.studentUser.findUnique({ where: { id: studentId } });
+    const leaderStudent = await prisma.studentUser.findUnique({ where: { id: leaderId } });
 
-        const memberTicketId = crypto.randomBytes(12).toString("base64url");
-        const { qrPayload: mPayload, qrVersion: mVer, qrKeyId: mKey } = signTicket(event.id, memberTicketId);
+    await notifyTeamMember(
+      req.io,
+      studentId,
+      "Removed from Team",
+      `You were removed from team "${team.teamName}" for "${event?.title || "event"}" by the team leader (${leaderStudent?.name || "Leader"}).`,
+      event?.id,
+      team.id
+    );
 
-        await tx.participation.create({
-          data: {
-            id: createObjectId(),
-            eventId: event.id,
-            userId: studentId,
-            studentId,
-            teamId,
-            status: "INVITED",
-            paymentStatus: "SUCCESS",
-            qrCode: memberTicketId,
-            qrPayload: mPayload,
-            qrVersion: mVer,
-            qrKeyId: mKey,
-            formResponses: {},
-          },
-        });
-      });
+    invalidatePublicResponses(["events:public:*"]);
 
-      const leaderStudent = await prisma.studentUser.findUnique({ where: { id: leaderId } });
-      const leaderName = leaderStudent?.name || "Team Leader";
+    res.json({
+      success: true,
+      message: `${removedStudent?.name || "Member"} was removed from the team.`,
+    });
+  } catch (err) {
+    console.error("Remove team member error:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
 
-      await notifyInvitation(
-        req.io,
-        studentId,
-        event.id,
-        teamId,
-        team.teamName,
-        event.title,
-        leaderName,
-      );
-
-      res.json({
-        success: true,
-        message: `Invitation successfully sent to ${student.name}.`,
-      });
-    } catch (err) {
-      console.error("Invite teammate error:", err);
-      res.status(500).json({ message: err.message });
-    }
-  },
-);
+router.post("/:id/invite", verifyToken, handleInviteMember);
+router.post("/:id/manage-members", verifyToken, handleInviteMember);
+router.delete("/:id/members/:studentId", verifyToken, handleRemoveMember);
+router.delete("/:id/manage-members/:studentId", verifyToken, handleRemoveMember);
 
 router.get(
   "/event/:eventId/lookup-leader",

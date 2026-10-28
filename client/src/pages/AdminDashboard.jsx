@@ -28,6 +28,7 @@ import {
     BroadcastsTab,
     NotificationsTab,
     FeaturedEventsTab,
+    CampusUpdatesTab,
     ProfileTab
 } from '../roles/admin';
 
@@ -253,6 +254,7 @@ const AdminDashboard = () => {
         notifications: { title: 'Incoming Notifications & Alerts', subtitle: 'View real-time alerts, proposals, and notification logs received from clubs and coordinators' },
         'export-center': { title: 'Export Center', subtitle: 'Export & download structured administrative data' },
         'featured-events': { title: 'Featured Events Spotlight', subtitle: 'Manage homepage hero spotlights, custom display ordering, and automatic rotation' },
+        'campus-updates': { title: 'Campus Updates', subtitle: 'Manage Instagram-style official updates, TPO opportunities, and campus announcements' },
         profile: { title: 'Settings & Profile', subtitle: 'Update display name, password, and two-step verification' },
     };
 
@@ -302,7 +304,7 @@ const AdminDashboard = () => {
                 {activeTab !== 'export-center' && (
                     <div className="mb-8 flex flex-wrap justify-between items-end gap-4">
                         <div>
-                            <h1 className="text-2xl font-black text-black dark:text-white tracking-wide">
+                            <h1 className="text-2xl font-medium text-black dark:text-white tracking-wide">
                                 {currentTabInfo.title}
                             </h1>
                             <p className="text-neutral-400 dark:text-neutral-500 text-[12px] mt-0.5 tracking-wide font-medium">
@@ -313,7 +315,7 @@ const AdminDashboard = () => {
                         {activeTab === 'broadcasts' && (
                             <button
                                 onClick={() => setBroadcastModalOpen(true)}
-                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-semibold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
+                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-medium tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                             >
                                 <Plus size={16} />
                                 <span>New Broadcast</span>
@@ -323,7 +325,7 @@ const AdminDashboard = () => {
                         {activeTab === 'notifications' && (
                             <button
                                 onClick={handleMarkAllAsRead}
-                                className="px-3.5 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[11px] font-semibold tracking-wide rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                                className="px-3.5 py-2 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[11px] font-medium tracking-wide rounded-xl hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                                 <CheckCheck size={14} className="text-brand-500" />
                                 <span>Mark All Read</span>
@@ -333,7 +335,7 @@ const AdminDashboard = () => {
                         {activeTab === 'venues' && (
                             <button
                                 onClick={() => setIsAddVenueModalOpen(true)}
-                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-semibold tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
+                                className="px-4 py-2.5 bg-brand-600 text-white text-[12px] font-medium tracking-wide rounded-xl hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20 cursor-pointer"
                             >
                                 <Plus size={16} />
                                 <span>Add Venue</span>
@@ -435,6 +437,10 @@ const AdminDashboard = () => {
 
                 {activeTab === 'featured-events' && (
                     <FeaturedEventsTab />
+                )}
+
+                {activeTab === 'campus-updates' && (
+                    <CampusUpdatesTab />
                 )}
 
                 {activeTab === 'profile' && (

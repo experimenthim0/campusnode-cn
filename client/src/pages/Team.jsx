@@ -1,6 +1,7 @@
 import React from 'react';
-import { Linkedin, Instagram, Github, ExternalLink, Sparkles, Bell, Globe, GraduationCap, Mail } from 'lucide-react';
+import { Linkedin, Instagram, Github, ExternalLink, Sparkles, Bell, Globe, GraduationCap, Mail, ArrowRight, Palette, Code2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
+import { RECRUITMENT_FORM_URL } from '../constants/recruitment';
 
 
 // ── Verified Badge ────────────────────────────────────────────────────────────
@@ -33,9 +34,9 @@ const SocialButton = ({ href, label, icon: Icon, hoverColor }) => (
     target="_blank"
     rel="noopener noreferrer"
     aria-label={label}
-    className={`group/btn relative flex items-center justify-center w-9 h-9 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${hoverColor}`}
+    className={`group/btn relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-zinc-500 dark:text-zinc-400 transition-all duration-200 bg-neutral-100 active:scale-95 ${hoverColor}`}
   >
-    <Icon className="w-4 h-4 transition-transform duration-200 group-hover/btn:scale-110" />
+    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/btn:scale-110" />
   </a>
 );
 
@@ -56,7 +57,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
       className={`
         relative w-full max-w-[300px] mx-auto
         bg-white dark:bg-zinc-900
-        rounded-[28px] p-3
+        rounded-2xl sm:rounded-[28px] p-2.5 sm:p-3
         border border-zinc-200/80 dark:border-zinc-800
         shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]
         hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)]
@@ -69,7 +70,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
       `}
     >
       {/* ── Photo ── */}
-      <div className="relative w-full aspect-square rounded-[20px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 group">
+      <div className="relative w-full aspect-square rounded-xl sm:rounded-[20px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 group">
         <img
           src={item.imageUrl}
           alt={item.name}
@@ -87,11 +88,11 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
       </div>
 
       {/* ── Info ── */}
-      <div className="mt-3.5 px-1 flex flex-col gap-3">
+      <div className="mt-2.5 px-0.5 sm:px-1 flex flex-col gap-2 sm:gap-3">
         {/* Name */}
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[17px] font-medium text-zinc-900 dark:text-white tracking-tight leading-tight truncate">
+            <h3 className="text-sm sm:text-[15px] md:text-[17px] font-medium text-zinc-900 dark:text-white tracking-tight leading-tight truncate">
               {item.name}
             </h3>
             {/* <VerifiedBadge className="w-[15px] h-[15px] flex-shrink-0" /> */}
@@ -99,19 +100,19 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-zinc-100 dark:bg-zinc-800" />
+        {/* <div className="w-full h-px bg-zinc-100 dark:bg-zinc-800" /> */}
 
         {/* Social Links Row */}
         {hasSocials && (
-          <div className="flex items-center justify-between pb-0.5">
+          <div className="flex items-center justify-between pb-0.5 gap-1">
             {/* Left: icon cluster */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {item.socials?.linkedin && (
                 <SocialButton
                   href={item.socials.linkedin}
                   label={`${item.name}'s LinkedIn`}
                   icon={Linkedin}
-                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 rounded-full  hover:bg-blue-50 dark:hover:bg-blue-950/30"
                 />
               )}
               {item.socials?.portfolio && (
@@ -119,7 +120,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                   href={item.socials.portfolio}
                   label={`${item.name}'s Portfolio`}
                   icon={Globe}
-                  hoverColor="hover:text-pink-600 dark:hover:text-pink-400 hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50 dark:hover:bg-pink-950/30"
+                  hoverColor="hover:text-pink-600 dark:hover:text-pink-400 rounded-full  hover:bg-pink-50 dark:hover:bg-pink-950/30"
                 />
               )}
               {item.socials?.email && (
@@ -127,7 +128,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                   href={`mailto:${item.socials.email}`}
                   label={`${item.name}'s Email`}
                   icon={Mail}
-                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 rounded-full hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 />
               )}
               {item.socials?.github && (
@@ -135,7 +136,7 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                   href={item.socials.github}
                   label={`${item.name}'s GitHub`}
                   icon={Github}
-                  hoverColor="hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                  hoverColor="hover:text-zinc-900 dark:hover:text-white rounded-full hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                 />
               )}
             </div>
@@ -146,10 +147,10 @@ export const InsetModernTeamCard = ({ member, data, className = '' }) => {
                 href={item.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors duration-200 group/link"
+                className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors duration-200 group/link shrink-0"
               >
                 <span className="group-hover/link:underline underline-offset-2">Profile</span>
-                <ExternalLink className="w-3 h-3 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
               </a>
             )}
           </div>
@@ -174,7 +175,7 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
       className={`
         relative w-full max-w-[320px] mx-auto
         bg-white dark:bg-zinc-900
-        rounded-[28px] p-3.5
+        rounded-2xl sm:rounded-[28px] p-2.5 sm:p-3.5
         border border-zinc-200/80 dark:border-zinc-800
         shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]
         hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)]
@@ -187,13 +188,13 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
       `}
     >
       {/* ── Photo & Faculty Tag ── */}
-      <div className="relative w-full aspect-square rounded-[20px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 group">
+      <div className="relative w-full aspect-square rounded-xl sm:rounded-[20px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 group">
         <img
           src={item.imageUrl}
           alt={item.name}
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-contains object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           onError={(e) => {
             if (item.fallbackUrl && e.currentTarget.src !== item.fallbackUrl)
               e.currentTarget.src = item.fallbackUrl;
@@ -207,20 +208,20 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
       </div>
 
       {/* ── Info ── */}
-      <div className="mt-3.5 px-1 flex flex-col flex-grow justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-[17px] font-semibold text-zinc-900 dark:text-white tracking-tight leading-tight truncate">
+      <div className="mt-2.5 sm:mt-3.5 px-0.5 sm:px-1 flex flex-col flex-grow justify-between gap-2.5 sm:gap-3">
+        <div className="flex flex-col gap-0.5 sm:gap-1">
+          <h3 className="text-sm sm:text-base md:text-[17px] font-medium text-zinc-900 dark:text-white tracking-normal leading-normal">
             {item.name}
           </h3>
 
-          {item.designation && (
+          {/* {item.designation && (
             <p className="text-[12px] font-medium text-brand-600 dark:text-brand-400 leading-snug">
               {item.designation}
             </p>
-          )}
+          )} */}
 
           {item.department && (
-            <p className="text-[11.5px] text-zinc-500 dark:text-zinc-400 leading-snug">
+            <p className="text-[10px] sm:text-[11.5px] text-zinc-500 dark:text-zinc-400 leading-snug line-clamp-2 sm:line-clamp-none">
               {item.department}
             </p>
           )}
@@ -233,14 +234,14 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
 
         {/* Links Row */}
         {hasSocials && (
-          <div className="flex items-center justify-between pb-0.5">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between pb-0.5 gap-1">
+            <div className="flex items-center gap-1 sm:gap-2">
               {item.socials?.linkedin && (
                 <SocialButton
                   href={item.socials.linkedin}
                   label={`${item.name}'s LinkedIn`}
                   icon={Linkedin}
-                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                  hoverColor="hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 rounded-full dark:hover:bg-blue-950/30"
                 />
               )}
               {item.socials?.email && (
@@ -248,7 +249,7 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
                   href={`mailto:${item.socials.email}`}
                   label={`Email ${item.name}`}
                   icon={Mail}
-                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  hoverColor="hover:text-amber-600 dark:hover:text-amber-400 rounded-full hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 />
               )}
             </div>
@@ -258,10 +259,10 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
                 href={item.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors duration-200 group/link"
+                className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-medium text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors duration-200 group/link shrink-0"
               >
                 <span>Profile</span>
-                <ExternalLink className="w-3 h-3 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
               </a>
             )}
           </div>
@@ -280,8 +281,7 @@ export const FACULTY_MENTORS = [
     name: 'Dr. Samayveer Singh',
     role: 'Faculty Mentor',
     designation: 'Assistant Professor (Grade-I)',
-    department: 'Department of Computer Science & Engineering',
-    institution: 'NIT Jalandhar',
+    department: 'Computer Science & Engineering',
     imageUrl: '/team_members/samayveer_singh.jpg',
     fallbackUrl: '/user-img.png',
     profileUrl: 'https://departments.nitj.ac.in/dept/cse/Faculty/6430446b38bff038a78085b7',
@@ -295,8 +295,8 @@ export const FACULTY_MENTORS = [
     name: 'Dr. Lalatendu Behera',
     role: 'Faculty Mentor',
     designation: 'Assistant Professor (Grade-I)',
-    department: 'Department of Computer Science & Engineering',
-    institution: 'NIT Jalandhar',
+    department: 'Computer Science & Engineering',
+   
     imageUrl: '/team_members/lalatendu_behera.jpg',
     fallbackUrl: '/user-img.png',
     profileUrl: 'https://lalatendubehera.github.io/lalatendu/',
@@ -336,19 +336,7 @@ export const TEAM_MEMBERS = [
       github: 'https://github.com/xplorewithpranjal',
     },
   },
-  {
-    id: 'amrit-noor',
-    name: 'Amrit Noor Singh',
-    role: 'Core Member',
-    department: 'backend',
-    batch: "CSE '27",
-    imageUrl: '/team_members/amrit_noor_singh.png',
-    socials: {
-      linkedin: 'https://www.linkedin.com/in/amritnoor',
-      // instagram: 'https://instagram.com',
-      github: 'https://github.com/Amrit0726',
-    },
-  },
+
   {
     id: 'ayush-poddar',
     name: 'Ayush Poddar',
@@ -360,6 +348,19 @@ export const TEAM_MEMBERS = [
     socials: {
       linkedin: 'https://www.linkedin.com/in/ayush-poddar-159041310/',
       github: 'https://github.com/ayush2006-creator',
+    },
+  },
+    {
+    id: 'amrit-noor',
+    name: 'Amrit Noor Singh',
+    role: 'Core Member',
+    department: 'backend',
+    batch: "CSE '27",
+    imageUrl: '/team_members/amrit_noor_singh.png',
+    socials: {
+      linkedin: 'https://www.linkedin.com/in/amritnoor',
+      // instagram: 'https://instagram.com',
+      github: 'https://github.com/Amrit0726',
     },
   },
   {
@@ -435,13 +436,84 @@ const Team = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-20 sm:pb-28 relative z-10">
         {/* ── Section 1: Faculty Advisory & Mentorship ── */}
+       
+
+       
+
+        {/* ── Section 2: Student Creators ── */}
         <ScrollReveal>
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              The People Behind Campusnode
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-cn-text tracking-tight mb-3">
+              Meet the Creators
+            </h2>
+            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
+              Designed, built, and maintained by student developers and designers at NIT Jalandhar.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        {/* Mobile: Unified 2-column grid for all team members (no card is oversized) */}
+        <div className="md:hidden grid grid-cols-2 gap-3 sm:gap-6 max-w-md sm:max-w-xl mx-auto mb-16 sm:mb-20 justify-items-center">
+          {TEAM_MEMBERS.map((member, idx) => (
+            <div
+              key={member.id}
+              className={`w-full ${
+                idx === TEAM_MEMBERS.length - 1 && TEAM_MEMBERS.length % 2 !== 0
+                  ? 'col-span-2 flex justify-center'
+                  : ''
+              }`}
+            >
+              <div
+                className={
+                  idx === TEAM_MEMBERS.length - 1 && TEAM_MEMBERS.length % 2 !== 0
+                    ? 'w-full max-w-[calc(50%-6px)]'
+                    : 'w-full'
+                }
+              >
+                <ScrollReveal delay={idx * 0.06}>
+                  <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                </ScrollReveal>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: Symmetric Member Showcase (3 on Top, 4 Below) */}
+        <div className="hidden md:block space-y-8 max-w-6xl mx-auto mb-16 sm:mb-24">
+          {/* Top Row: 3 Team Members */}
+          <div className="grid grid-cols-3 gap-8 max-w-[860px] mx-auto justify-items-center">
+            {TEAM_MEMBERS.slice(0, 3).map((member, idx) => (
+              <div key={member.id} className="w-full max-w-[270px]">
+                <ScrollReveal delay={idx * 0.08}>
+                  <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                </ScrollReveal>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Row: 4 Team Members */}
+          <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 max-w-6xl mx-auto justify-items-center">
+            {TEAM_MEMBERS.slice(3).map((member, idx) => (
+              <div key={member.id} className="w-full max-w-[270px]">
+                <ScrollReveal delay={(idx + 3) * 0.08}>
+                  <InsetModernTeamCard member={member} className="max-w-[270px]" />
+                </ScrollReveal>
+              </div>
+            ))}
+          </div>
+        </div>
+
+ <ScrollReveal>
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
               <GraduationCap className="w-3.5 h-3.5" />
               Faculty Advisory & Leadership
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-cn-text tracking-tight mb-3 sm:mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium text-cn-text tracking-tight mb-3 sm:mb-4">
               Mentorship & Guidance
             </h1>
             <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
@@ -451,7 +523,7 @@ const Team = () => {
         </ScrollReveal>
 
         {/* Faculty Mentors Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto mb-16 sm:mb-20">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 md:gap-8 max-w-2xl mx-auto mb-16 sm:mb-20">
           {FACULTY_MENTORS.map((mentor, index) => (
             <ScrollReveal key={mentor.id} delay={index * 0.1}>
               <FacultyCard mentor={mentor} />
@@ -459,65 +531,120 @@ const Team = () => {
           ))}
         </div>
 
-        {/* Section Divider */}
-        <div className="relative flex py-5 items-center max-w-4xl mx-auto mb-12 sm:mb-16">
-          <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
-          <span className="shrink-0 mx-4 text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            Student Innovation Team
-          </span>
-          <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800" />
-        </div>
-
-        {/* ── Section 2: Student Creators ── */}
-        <ScrollReveal>
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              The People Behind Campusnode
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-cn-text tracking-tight mb-3">
-              Meet the Creators
-            </h2>
-            <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
-              Designed, built, and maintained by student developers and designers at NIT Jalandhar.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* Member Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto mb-16 sm:mb-24">
-          {TEAM_MEMBERS.map((member, index) => (
-            <ScrollReveal key={member.id} delay={index * 0.1}>
-              <InsetModernTeamCard member={member} />
-            </ScrollReveal>
-          ))}
-        </div>
-
-        {/* Contribute CTA Section */}
-        <ScrollReveal delay={0.6}>
-          <div className="text-center p-8 sm:p-12 rounded-3xl border border-cn-border bg-cn-surface/60 backdrop-blur-sm relative overflow-hidden shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
-              <Sparkles className="w-6 h-6" />
+        {/* ── Section 3: Recruitment Section (Build With Us) ── */}
+        <section id="build-with-us" className="mt-8 sm:mt-12" aria-labelledby="build-with-us-heading">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 mb-3 sm:mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
+                Opportunities
+              </span>
+              <h2
+                id="build-with-us-heading"
+                className="text-2xl sm:text-3xl md:text-4xl font-medium text-cn-text tracking-tight mb-3"
+              >
+                Want to Be Part of CampusNode?
+              </h2>
+              <p className="text-sm sm:text-base text-cn-text-muted leading-relaxed mysans">
+                CampusNode is built by students, for students. We're looking for people who want to contribute their ideas, creativity, and technical skills to a platform used by our campus community.
+              </p>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-cn-text mb-2 sm:mb-3">
-              Want to build with us?
-            </h3>
-            <p className="text-xs sm:text-sm mysans text-cn-text-muted leading-relaxed mb-5 sm:mb-6 max-w-md mx-auto">
-              Campusnode is an open, student-driven initiative across NIT Jalandhar. We welcome new developers, designers, and organizers.
-            </p>
-            <a
-              href="/contribute"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium shadow-md shadow-brand-600/20 transition-all duration-200 active:scale-95 touch-manipulation"
-            >
-              <span>Join the Team & Contribute</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+          </ScrollReveal>
+
+          {/* Opportunity Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-10 sm:mb-12 items-stretch">
+            {/* UI/UX Designer - Visually Prominent */}
+            <ScrollReveal delay={0.1} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border-2 border-brand-500/50 dark:border-brand-400/40 shadow-[0_4px_24px_rgba(0,148,255,0.08)] dark:shadow-[0_4px_28px_rgba(0,148,255,0.15)] hover:shadow-[0_12px_40px_rgba(0,148,255,0.18)] dark:hover:shadow-[0_12px_40px_rgba(0,148,255,0.25)] hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute -top-3 left-6 sm:left-7">
+                  <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wider bg-brand-600 text-white shadow-xs">
+                    Primary Requirement
+                  </span>
+                </div>
+
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-5 border border-brand-500/20">
+                    <Palette className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-medium text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    UI/UX Designer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Design clean, intuitive interfaces for event pages, festival themes, components, and campus experiences.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                    High Priority Focus • Festival & Event UI
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Frontend Developer */}
+            <ScrollReveal delay={0.2} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)] hover:-translate-y-1 transition-all duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-5 border border-neutral-200/80 dark:border-zinc-700">
+                    <Code2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-medium text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    Frontend Developer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Help turn approved designs into responsive, accessible React interfaces.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    React • Tailwind CSS • Modern Web
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Creative Designer */}
+            <ScrollReveal delay={0.3} className="h-full">
+              <div className="relative h-full flex flex-col justify-between rounded-[28px] p-6 sm:p-7 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)] hover:-translate-y-1 transition-all duration-300">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-zinc-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-5 border border-neutral-200/80 dark:border-zinc-700">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-medium text-zinc-900 dark:text-white tracking-tight mb-2.5">
+                    Creative Designer
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed mysans">
+                    Contribute event visuals, banners, illustrations, and other digital assets.
+                  </p>
+                </div>
+
+                <div className="pt-5 mt-5 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="inline-block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    Visual Assets • Posters • Illustrations
+                  </span>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
 
-          {/* Interactive In-App Notification Toast Preview Playground */}
-      
-          
-        </ScrollReveal>
+          {/* Central Action Button */}
+          <ScrollReveal delay={0.4}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+              <a
+                href={RECRUITMENT_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join the Team - Apply via Google Form (opens in new tab)"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-zinc-900 text-sm font-medium shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
+              >
+                <span>Join the Team</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
+            </div>
+          </ScrollReveal>
+        </section>
       </div>
     </div>
   );

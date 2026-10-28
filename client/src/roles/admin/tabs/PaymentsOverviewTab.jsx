@@ -213,7 +213,7 @@ const PaymentsOverviewTab = ({
                                 </Td>
 
                                 {/* Club Name */}
-                                <Td className="font-semibold text-black dark:text-white" title={displayClubName}>
+                                <Td className="font-medium text-black dark:text-white" title={displayClubName}>
                                     <span className="truncate max-w-[200px] block">
                                         {displayClubName}
                                     </span>
@@ -222,7 +222,7 @@ const PaymentsOverviewTab = ({
                                 {/* Event Title */}
                                 <Td>
                                     <div className="space-y-0.5">
-                                        <p className="font-semibold text-black dark:text-white text-sm">
+                                        <p className="font-medium text-black dark:text-white text-sm">
                                             {item.title}
                                         </p>
                                         {item.eventDate && (
@@ -240,11 +240,11 @@ const PaymentsOverviewTab = ({
                                 {/* Registration Fee */}
                                 <Td align="center">
                                     {isPaid ? (
-                                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                             ₹{item.fee}
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-zinc-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-zinc-700">
+                                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-lg bg-neutral-100 dark:bg-zinc-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-zinc-700">
                                             Free
                                         </span>
                                     )}
@@ -252,7 +252,7 @@ const PaymentsOverviewTab = ({
 
                                 {/* Total Registration */}
                                 <Td align="center">
-                                    <span className="font-semibold text-sm text-neutral-800 dark:text-neutral-200">
+                                    <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200">
                                         {item.regCount.toLocaleString('en-IN')}
                                     </span>
                                     <span className="text-[11px] text-neutral-400 dark:text-neutral-500 ml-1">
@@ -263,7 +263,7 @@ const PaymentsOverviewTab = ({
                                 {/* Total Collected Amount */}
                                 <Td align="right">
                                     <div className="flex flex-col items-end">
-                                        <span className={`font-mono font-black text-base ${
+                                        <span className={`font-mono font-medium text-base ${
                                             item.collected > 0
                                                 ? 'text-emerald-600 dark:text-emerald-400'
                                                 : 'text-neutral-400 dark:text-neutral-500'
@@ -281,7 +281,7 @@ const PaymentsOverviewTab = ({
                             <td colSpan="6" className="px-5 py-16 text-center text-neutral-400 dark:text-neutral-500 text-sm">
                                 <div className="max-w-xs mx-auto space-y-2">
                                     <Wallet size={28} className="mx-auto text-neutral-300 dark:text-neutral-700" />
-                                    <p className="font-semibold text-neutral-600 dark:text-neutral-300">
+                                    <p className="font-medium text-neutral-600 dark:text-neutral-300">
                                         No event collections found
                                     </p>
                                     <p className="text-xs text-neutral-400">
@@ -296,7 +296,7 @@ const PaymentsOverviewTab = ({
                                                 setFilterType('paid');
                                                 setCurrentPage(1);
                                             }}
-                                            className="mt-3 px-3 py-1.5 text-xs font-semibold bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 rounded-lg text-black dark:text-white transition-colors"
+                                            className="mt-3 px-3 py-1.5 text-xs font-medium bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 rounded-lg text-black dark:text-white transition-colors"
                                         >
                                             Reset Filters
                                         </button>

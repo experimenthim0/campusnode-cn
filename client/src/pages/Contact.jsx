@@ -168,12 +168,12 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 dark:bg-neutral-950/50 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-cn-bg text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
 
         {/* Title Only */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-medium text-neutral-900 dark:text-white tracking-tight">
             Contact & Suggestions
           </h1>
         </div>
@@ -192,7 +192,7 @@ const Contact = () => {
                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xs">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h3 className="text-2xl font-black text-neutral-900 dark:text-white mb-2">
+                <h3 className="text-2xl font-medium text-neutral-900 dark:text-white mb-2">
                   Message Delivered!
                 </h3>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8 leading-relaxed">
@@ -201,13 +201,13 @@ const Contact = () => {
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <button
                     onClick={handleReset}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 text-xs font-medium uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                   >
                     Send Another Note
                   </button>
                   <Link
                     to="/"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold uppercase tracking-wider hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium uppercase tracking-wider hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                   >
                     Back to Home
                   </Link>
@@ -216,7 +216,7 @@ const Contact = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  <h2 className="text-lg font-medium text-neutral-900 dark:text-white">
                     Send a Message
                   </h2>
                 </div>
@@ -262,7 +262,7 @@ const Contact = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="John Doe"
+                        placeholder="e.g. Himanshu"
                         className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm bg-neutral-50/50 dark:bg-neutral-950/50 border transition-all ${
                           formErrors.name
                             ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/20'
@@ -354,7 +354,7 @@ const Contact = () => {
                 <button
                   type="submit"
                   disabled={status === 'submitting'}
-                  className="w-full sm:w-auto px-8 py-3 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold uppercase tracking-wider shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium uppercase tracking-wider shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {status === 'submitting' ? (
                     <>
@@ -383,7 +383,7 @@ const Contact = () => {
                   <Users className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                  <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                     Club Queries
                   </h3>
                   <Link
@@ -398,7 +398,7 @@ const Contact = () => {
 
             {/* Quick Links Card */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl p-6 shadow-xs">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
                 Helpful Resources
               </h3>
               <ul className="space-y-2.5">

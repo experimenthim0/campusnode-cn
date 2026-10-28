@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { registerStudent } from '../services/authService';
@@ -41,7 +42,54 @@ const RegisterStudent = () => {
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTextRevealing, setIsTextRevealing] = useState(false);
+  const revealIntervalRef = useRef(null);
+  const revealTimeoutRef = useRef(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    };
+  }, []);
+
+  const handleTogglePassword = () => {
+    if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+
+    const nextState = !showPassword;
+    setShowPassword(nextState);
+
+    const passwordVal = formData.password;
+
+    if (nextState && passwordVal && passwordVal.length > 0) {
+      setIsTextRevealing(true);
+      const len = passwordVal.length;
+      const stepDuration = Math.min(55, Math.max(25, Math.floor(400 / len)));
+      let currentStep = 0;
+
+      setDisplayText('•'.repeat(len));
+
+      revealIntervalRef.current = setInterval(() => {
+        currentStep++;
+        if (currentStep >= len) {
+          clearInterval(revealIntervalRef.current);
+          revealIntervalRef.current = null;
+          setDisplayText('');
+          revealTimeoutRef.current = setTimeout(() => {
+            setIsTextRevealing(false);
+          }, 150);
+        } else {
+          setDisplayText(passwordVal.slice(0, currentStep) + '•'.repeat(len - currentStep));
+        }
+      }, stepDuration);
+    } else {
+      setDisplayText('');
+      setIsTextRevealing(false);
+    }
+  };
 
   const isOtherProgram = formData.program === 'OTHER';
   const availableBranches = getBranchesForProgram(formData.program);
@@ -125,6 +173,19 @@ const RegisterStudent = () => {
     }
     if (serverError) {
       setServerError('');
+    }
+
+    if (name === 'password') {
+      if (revealIntervalRef.current) {
+        clearInterval(revealIntervalRef.current);
+        revealIntervalRef.current = null;
+      }
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
+      setIsTextRevealing(false);
+      setDisplayText('');
     }
 
     if (name === 'program') {
@@ -411,19 +472,58 @@ const RegisterStudent = () => {
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       required
-                      className={`${getInputCls('password')} pr-10`}
+                      className={`${getInputCls('password')} pr-11`}
                       placeholder="Create a secure password"
-                      value={formData.password}
+                      value={displayText !== '' ? displayText : formData.password}
                       onChange={handleChange}
+                      style={{
+                        textShadow: isTextRevealing
+                          ? '0 0 8px rgba(0, 148, 255, 0.7), 0 0 2px rgba(0, 148, 255, 0.4)'
+                          : 'none',
+                        letterSpacing: isTextRevealing ? '0.04em' : 'normal',
+                        transition: 'text-shadow 0.25s ease, letter-spacing 0.25s ease',
+                      }}
                     />
-                    <button
+                    <motion.button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+                      onClick={handleTogglePassword}
+                      onMouseDown={(e) => e.preventDefault()}
+                      whileHover={{ scale: 1.12 }}
+                      whileTap={{ scale: 0.88 }}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer focus:outline-none ${
+                        showPassword
+                          ? "text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300"
+                          : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      }`}
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                      <AnimatePresence mode="wait" initial={false}>
+                        {showPassword ? (
+                          <motion.span
+                            key="eye-off"
+                            initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            className="flex items-center justify-center"
+                          >
+                            <EyeOff className="w-4 h-4" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="eye"
+                            initial={{ opacity: 0, scale: 0.5, rotate: 25 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            className="flex items-center justify-center"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
                   </div>
                   {fieldErrors.password && (
                     <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1">

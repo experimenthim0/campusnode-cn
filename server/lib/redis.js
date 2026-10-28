@@ -113,6 +113,32 @@ class InMemoryRedis {
     return num;
   }
 
+  async incrby(key, amount = 1) {
+    const k = String(key);
+    const existing = await this.get(k);
+    let num = existing ? parseInt(existing, 10) : 0;
+    if (isNaN(num)) num = 0;
+    num += Number(amount);
+    const oldItem = this.store.get(k);
+    this.store.set(k, {
+      value: String(num),
+      expiresAt: oldItem ? oldItem.expiresAt : null,
+    });
+    return num;
+  }
+
+  async getset(key, value) {
+    const k = String(key);
+    const old = await this.get(k);
+    const val = typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
+    const oldItem = this.store.get(k);
+    this.store.set(k, {
+      value: val,
+      expiresAt: oldItem ? oldItem.expiresAt : null,
+    });
+    return old;
+  }
+
   async expire(key, seconds) {
     const k = String(key);
     const item = this.store.get(k);
@@ -236,6 +262,8 @@ const metrics = {
     setnx: 0,
     del: 0,
     incr: 0,
+    incrby: 0,
+    getset: 0,
     expire: 0,
     ttl: 0,
     keys: 0,
@@ -250,6 +278,7 @@ const metrics = {
     idempotency: 0,
     queue: 0,
     publicCache: 0,
+    views: 0,
     other: 0,
   },
   errors: 0,
@@ -264,6 +293,7 @@ const categorizeKey = (key = "") => {
   if (k.startsWith("lock:notif:")) return "idempotency";
   if (k.startsWith("bull:") || k.startsWith("campusnode-emails:")) return "queue";
   if (k.startsWith("cache:")) return "publicCache";
+  if (k.startsWith("event:views:")) return "views";
   return "other";
 };
 
@@ -368,6 +398,36 @@ const redisClient = {
       activeClient = inMemoryFallback;
       isConnected = false;
       return await inMemoryFallback.incr(key);
+    }
+  },
+
+  async incrby(key, amount) {
+    recordMetric("incrby", key);
+    assertRedisAvailable();
+    try {
+      return await activeClient.incrby(key, amount);
+    } catch (err) {
+      metrics.errors++;
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
+      return await inMemoryFallback.incrby(key, amount);
+    }
+  },
+
+  async getset(key, value) {
+    recordMetric("getset", key);
+    assertRedisAvailable();
+    try {
+      return await activeClient.getset(key, value);
+    } catch (err) {
+      metrics.errors++;
+      if (redisRequired) throw new Error("REDIS_UNAVAILABLE");
+      metrics.fallbackOperations++;
+      activeClient = inMemoryFallback;
+      isConnected = false;
+      return await inMemoryFallback.getset(key, value);
     }
   },
 
@@ -487,7 +547,7 @@ const redisClient = {
 };
 
 const redisCommandMethods = new Set([
-  "get", "set", "setex", "setnx", "del", "incr", "expire", "ttl", "flushall", "keys",
+  "get", "set", "setex", "setnx", "del", "incr", "incrby", "getset", "expire", "ttl", "flushall", "keys",
 ]);
 
 export const redis = new Proxy(redisClient, {

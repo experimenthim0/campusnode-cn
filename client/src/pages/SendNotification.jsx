@@ -374,11 +374,11 @@ const SendNotification = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider text-primary border-primary/30">
+          <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-wider text-primary border-primary/30">
             Broadcasts & Communication
           </Badge>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-medium tracking-tight">
           Broadcast Center
         </h1>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
@@ -409,7 +409,7 @@ const SendNotification = () => {
           <Megaphone className="w-4 h-4" />
           <span>Club Announcements</span>
           {activeClubData?.announcements?.length > 0 && (
-            <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-semibold">
+            <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-medium">
               {activeClubData.announcements.length}
             </Badge>
           )}
@@ -444,7 +444,7 @@ const SendNotification = () => {
                     ))}
                   </select>
                 ) : (
-                  <span className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background text-foreground">
+                  <span className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background text-foreground">
                     {managedClubs[0]?.name || currentClubName}
                   </span>
                 )}
@@ -463,14 +463,14 @@ const SendNotification = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-primary">
                       Sending As Official Club
                     </span>
-                    <Badge variant="outline" className="text-[9px] font-semibold text-primary border-primary/30 py-0">
+                    <Badge variant="outline" className="text-[9px] font-medium text-primary border-primary/30 py-0">
                       <ShieldCheck className="w-3 h-3 mr-1 text-primary" /> Verified
                     </Badge>
                   </div>
-                  <div className="text-sm font-semibold truncate mt-0.5">
+                  <div className="text-sm font-medium truncate mt-0.5">
                     {currentClubName}
                   </div>
                 </div>
@@ -611,7 +611,7 @@ const SendNotification = () => {
 
           {/* History */}
           <div>
-            <h2 className="text-base sm:text-lg font-semibold tracking-tight mb-4">
+            <h2 className="text-base sm:text-lg font-medium tracking-tight mb-4">
               Notification History
             </h2>
             {history.length === 0 ? (
@@ -646,7 +646,7 @@ const SendNotification = () => {
                         {formatRelativeTime(notif.createdAt)}
                       </span>
                     </div>
-                    <h3 className="text-sm font-semibold mb-1">{notif.title}</h3>
+                    <h3 className="text-sm font-medium mb-1">{notif.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">{notif.message}</p>
                   </Card>
                 ))}

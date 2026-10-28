@@ -370,13 +370,13 @@ const ClubsTab = ({
         <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-cn-surface border border-cn-border">
                 <div>
-                    <h2 className="text-base font-black text-cn-text tracking-wide">Registered Clubs</h2>
+                    <h2 className="text-base font-medium text-cn-text tracking-wide">Registered Clubs</h2>
                     <p className="text-xs text-neutral-400 font-medium">Manage registered student clubs, faculty coordinators, and designated student club heads.</p>
                 </div>
                 <button
                     type="button"
                     onClick={() => setIsCreateClubModalOpen(true)}
-                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
+                    className="px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white text-xs font-medium rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
                 >
                     <Plus size={16} />
                     <span>Add New Club</span>
@@ -403,7 +403,7 @@ const ClubsTab = ({
                                 <Td className="text-neutral-300 dark:text-neutral-600 text-xs">{idx + 1}</Td>
                                 <Td>
                                     <div className="space-y-0.5">
-                                        <p className="font-semibold text-black dark:text-white">{club.clubName}</p>
+                                        <p className="font-medium text-black dark:text-white">{club.clubName}</p>
                                         <p className="text-[11px] text-neutral-400">{club.clubEmail || `${club.slug}@nitj.ac.in`}</p>
                                     </div>
                                 </Td>
@@ -422,7 +422,7 @@ const ClubsTab = ({
                                                                 <p className="font-medium text-black dark:text-white flex items-center gap-1.5 text-xs truncate">
                                                                     <span>{c.name}</span>
                                                                     {coordinators.length > 1 && (
-                                                                        <span className="text-[9.5px] px-1.5 py-0.2 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold shrink-0">
+                                                                        <span className="text-[9.5px] px-1.5 py-0.2 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium shrink-0">
                                                                             #{cIdx + 1}
                                                                         </span>
                                                                     )}
@@ -440,7 +440,7 @@ const ClubsTab = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => openManageCoordinatorModal(club)}
-                                                    className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors cursor-pointer shrink-0 border border-brand-200/70 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 bg-brand-50/50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-brand-900/60"
+                                                    className="px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider rounded-lg transition-colors cursor-pointer shrink-0 border border-brand-200/70 dark:border-brand-900/40 text-brand-600 dark:text-brand-400 bg-brand-50/50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-brand-900/60"
                                                     title="Manage Club Faculty Coordinators"
                                                 >
                                                     {coordinators.length > 0 ? (coordinators.length > 1 ? `Manage (${coordinators.length})` : 'Manage') : 'Assign'}
@@ -454,7 +454,7 @@ const ClubsTab = ({
                                         <div className="flex items-center gap-3">
                                             <div className="space-y-0.5 min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="font-semibold text-black dark:text-white text-xs truncate">{headUser.name}</p>
+                                                    <p className="font-medium text-black dark:text-white text-xs truncate">{headUser.name}</p>
                                                 </div>
                                                 <p className="text-[11px] text-neutral-400 truncate">
                                                     {headUser.rollNo || ''}{headUser.branch ? ` • ${headUser.branch}` : ''}
@@ -482,7 +482,7 @@ const ClubsTab = ({
                                         <button
                                             type="button"
                                             onClick={() => openManageHeadModal(club)}
-                                            className={`px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                                            className={`px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
                                                 headUser
                                                     ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-200/70 dark:border-brand-900/40 hover:bg-brand-100 dark:hover:bg-brand-900/60'
                                                     : 'bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black shadow-xs'
@@ -503,14 +503,14 @@ const ClubsTab = ({
                                                 setSelectedEditFaculty(null);
                                                 setIsEditModalOpen(true);
                                             }}
-                                            className="px-3 py-1.5 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-semibold uppercase tracking-wider rounded-lg hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                                            className="px-3 py-1.5 bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-medium uppercase tracking-wider rounded-lg hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => { setClubToDelete(club); setIsDeleteModalOpen(true); }}
-                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 text-[10px] font-medium uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                                             title="Delete Club"
                                         >
                                             <Trash2 size={12} />
@@ -542,7 +542,7 @@ const ClubsTab = ({
                     <div className="space-y-5 pt-1">
                         {/* Current Club Head Display */}
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-cn-text-muted mb-2">
+                            <label className="block text-xs font-medium uppercase tracking-wider text-cn-text-muted mb-2">
                                 Current Active Student Lead
                             </label>
                             {selectedClubForHead.memberships?.[0]?.student ? (
@@ -552,7 +552,7 @@ const ClubsTab = ({
                                         <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-3">
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-11 h-11 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-semibold text-sm flex items-center justify-center border border-emerald-500/20 shrink-0 overflow-hidden">
+                                                    <div className="w-11 h-11 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-medium text-sm flex items-center justify-center border border-emerald-500/20 shrink-0 overflow-hidden">
                                                         {head.profileImage ? (
                                                             <img src={head.profileImage} alt={head.name} className="w-full h-full object-cover" />
                                                         ) : (
@@ -561,9 +561,9 @@ const ClubsTab = ({
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <h4 className="font-semibold text-sm text-cn-text truncate">{head.name}</h4>
+                                                            <h4 className="font-medium text-sm text-cn-text truncate">{head.name}</h4>
                                                             {selectedClubForHead.memberships?.[0]?.position && (
-                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 shrink-0">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 shrink-0">
                                                                     {selectedClubForHead.memberships[0].position}
                                                                 </span>
                                                             )}
@@ -615,7 +615,7 @@ const ClubsTab = ({
                         {/* Search & Select New Student Section */}
                         {!selectedStudentToAssign ? (
                             <div className="space-y-3 pt-2 border-t border-cn-border-subtle">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-cn-text-muted">
+                                <label className="block text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                                     {selectedClubForHead.memberships?.[0]?.student ? 'Transfer / Assign New Student Lead' : 'Search & Assign Student Lead'}
                                 </label>
 
@@ -665,12 +665,12 @@ const ClubsTab = ({
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                        <div className="w-8 h-8 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold text-xs flex items-center justify-center border border-brand-500/20 shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium text-xs flex items-center justify-center border border-brand-500/20 shrink-0">
                                                             {student.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="flex items-center gap-2">
-                                                                <p className="font-semibold text-xs text-cn-text truncate">{student.name}</p>
+                                                                <p className="font-medium text-xs text-cn-text truncate">{student.name}</p>
                                                                 <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300">
                                                                     {student.rollNo}
                                                                 </span>
@@ -700,7 +700,7 @@ const ClubsTab = ({
                                                             setStudentSearchResults([]);
                                                             setStudentQuery('');
                                                         }}
-                                                        className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer shrink-0 ${
+                                                        className={`px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer shrink-0 ${
                                                             isSelected
                                                                 ? 'bg-brand-500 text-white dark:bg-brand-400 dark:text-black'
                                                                 : 'bg-neutral-100 dark:bg-zinc-800 hover:bg-neutral-200 dark:hover:bg-zinc-700 text-cn-text'
@@ -722,7 +722,7 @@ const ClubsTab = ({
                             /* Candidate Selection Confirmation Box */
                             <div className="p-4 rounded-xl border border-brand-500/40 bg-brand-50/50 dark:bg-brand-950/30 space-y-3 pt-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10.5px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                                    <span className="text-[10.5px] font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
                                         <Sparkles size={12} /> Designated Candidate
                                     </span>
                                     <button
@@ -738,11 +738,11 @@ const ClubsTab = ({
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-black text-sm flex items-center justify-center border border-brand-500/20 shrink-0">
+                                    <div className="w-10 h-10 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium text-sm flex items-center justify-center border border-brand-500/20 shrink-0">
                                         {selectedStudentToAssign.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-semibold text-xs sm:text-sm text-cn-text truncate">{selectedStudentToAssign.name}</p>
+                                        <p className="font-medium text-xs sm:text-sm text-cn-text truncate">{selectedStudentToAssign.name}</p>
                                         <p className="text-xs text-cn-text-muted font-mono">{selectedStudentToAssign.rollNo} • {selectedStudentToAssign.branch || selectedStudentToAssign.program || 'Student'}</p>
                                         <p className="text-xs text-cn-text-secondary">{selectedStudentToAssign.email}</p>
                                         {selectedStudentToAssign.phone && (
@@ -756,7 +756,7 @@ const ClubsTab = ({
 
                                 {/* Position / Designation Input */}
                                 <div className="space-y-1 pt-1">
-                                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-cn-text-muted">
+                                    <label className="block text-[11px] font-medium uppercase tracking-wider text-cn-text-muted">
                                         Designation / Position (Display Only)
                                     </label>
                                     <input
@@ -799,7 +799,7 @@ const ClubsTab = ({
                                     setIsHeadModalOpen(false);
                                     setSelectedClubForHead(null);
                                 }}
-                                className="px-4 py-2 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Close
                             </button>
@@ -812,7 +812,7 @@ const ClubsTab = ({
                                         Boolean(selectedStudentToAssign.currentHeadClub && String(selectedStudentToAssign.currentHeadClub.id) !== String(selectedClubForHead._id || selectedClubForHead.id))
                                     }
                                     onClick={handleAssignHead}
-                                    className="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+                                    className="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
                                 >
                                     {isSubmittingHead ? (
                                         <>
@@ -857,7 +857,7 @@ const ClubsTab = ({
                                 return (
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between mb-1">
-                                            <label className="block text-xs font-semibold uppercase tracking-wider text-cn-text-muted">
+                                            <label className="block text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                                                 Assigned Faculty Coordinators ({activeCoordinators.length})
                                             </label>
                                             <span className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
@@ -873,13 +873,13 @@ const ClubsTab = ({
                                                     return (
                                                         <div key={facId || idx} className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-50/40 dark:bg-purple-950/20 flex items-center justify-between gap-3">
                                                             <div className="flex items-center gap-3 min-w-0">
-                                                                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-semibold text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
+                                                                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-medium text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
                                                                     {fc.name?.charAt(0).toUpperCase() || 'F'}
                                                                 </div>
                                                                 <div className="min-w-0">
                                                                     <div className="flex items-center gap-2">
-                                                                        <h4 className="font-semibold text-sm text-cn-text truncate">{fc.name}</h4>
-                                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 shrink-0">
+                                                                        <h4 className="font-medium text-sm text-cn-text truncate">{fc.name}</h4>
+                                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 shrink-0">
                                                                             <GraduationCap size={11} /> #{idx + 1}
                                                                         </span>
                                                                     </div>
@@ -918,7 +918,7 @@ const ClubsTab = ({
                         {/* Search & Add Another Faculty Coordinator Section */}
                         {!selectedFacultyToAssign ? (
                             <div className="space-y-3 pt-2 border-t border-cn-border-subtle">
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-cn-text-muted">
+                                <label className="block text-xs font-medium uppercase tracking-wider text-cn-text-muted">
                                     Add Another Faculty Coordinator
                                 </label>
                                 <div className="relative">
@@ -973,12 +973,12 @@ const ClubsTab = ({
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
-                                                        <div className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
                                                             {fac.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="flex items-center gap-2">
-                                                                <p className="font-semibold text-xs text-cn-text truncate">{fac.name}</p>
+                                                                <p className="font-medium text-xs text-cn-text truncate">{fac.name}</p>
                                                                 <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
                                                                     {fac.department}
                                                                 </span>
@@ -1005,7 +1005,7 @@ const ClubsTab = ({
                                                             setFacultySearchResults([]);
                                                             setFacultyQuery('');
                                                         }}
-                                                        className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors shrink-0 ${
+                                                        className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 ${
                                                             isAlreadyCoordinatingOther
                                                                 ? 'bg-neutral-100 dark:bg-zinc-800 text-neutral-400 cursor-not-allowed border border-neutral-200 dark:border-zinc-700'
                                                                 : isSelected
@@ -1029,7 +1029,7 @@ const ClubsTab = ({
                             /* Candidate Selection Confirmation Box */
                             <div className="p-4 rounded-xl border border-purple-500/40 bg-purple-50/50 dark:bg-purple-950/30 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10.5px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                                    <span className="text-[10.5px] font-medium uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                                         <Sparkles size={12} /> Selected Coordinator Candidate
                                     </span>
                                     <button
@@ -1045,11 +1045,11 @@ const ClubsTab = ({
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium text-sm flex items-center justify-center border border-purple-500/20 shrink-0">
                                         {selectedFacultyToAssign.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-semibold text-xs sm:text-sm text-cn-text truncate">{selectedFacultyToAssign.name}</p>
+                                        <p className="font-medium text-xs sm:text-sm text-cn-text truncate">{selectedFacultyToAssign.name}</p>
                                         <p className="text-xs text-cn-text-muted">{selectedFacultyToAssign.department}{selectedFacultyToAssign.designation ? ` • ${selectedFacultyToAssign.designation}` : ''}</p>
                                         <p className="text-xs text-cn-text-secondary font-mono">{selectedFacultyToAssign.email}</p>
                                     </div>
@@ -1092,7 +1092,7 @@ const ClubsTab = ({
                                     setFacultyQuery('');
                                     setFacultySearchResults([]);
                                 }}
-                                className="px-4 py-2 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Close
                             </button>
@@ -1107,7 +1107,7 @@ const ClubsTab = ({
                                         )
                                     }
                                     onClick={handleAssignCoordinator}
-                                    className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+                                    className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
                                 >
                                     {isSubmittingCoordinator ? (
                                         <>
@@ -1148,7 +1148,7 @@ const ClubsTab = ({
                         {selectedCreateFaculty ? (
                             <div className="p-3.5 bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200/70 dark:border-brand-900/40 rounded-xl space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                                    <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
                                         <GraduationCap size={13} /> Selected Faculty Coordinator
                                     </span>
                                     <button
@@ -1158,17 +1158,17 @@ const ClubsTab = ({
                                             setCreateFacultyName('');
                                             setCreateFacultyEmail('');
                                         }}
-                                        className="text-[11px] text-red-500 hover:text-red-600 font-semibold cursor-pointer"
+                                        className="text-[11px] text-red-500 hover:text-red-600 font-medium cursor-pointer"
                                     >
                                         Remove / Change
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
+                                    <div className="w-9 h-9 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium text-xs flex items-center justify-center border border-purple-500/20 shrink-0">
                                         {selectedCreateFaculty.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-semibold text-xs text-cn-text truncate">{selectedCreateFaculty.name}</p>
+                                        <p className="font-medium text-xs text-cn-text truncate">{selectedCreateFaculty.name}</p>
                                         <p className="text-[11px] text-cn-text-muted truncate">{selectedCreateFaculty.department}</p>
                                         <p className="text-[11px] text-cn-text-secondary font-mono truncate">{selectedCreateFaculty.email}</p>
                                     </div>
@@ -1178,7 +1178,7 @@ const ClubsTab = ({
                             </div>
                         ) : (
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-cn-text flex items-center gap-1.5">
+                                <label className="text-xs font-medium text-cn-text flex items-center gap-1.5">
                                     <GraduationCap size={14} className="text-brand-600 dark:text-brand-400" /> Faculty Coordinator <span className="text-cn-text-muted font-normal">(Optional)</span>
                                 </label>
                                 <div className="relative">
@@ -1237,7 +1237,7 @@ const ClubsTab = ({
                                                             </p>
                                                         )}
                                                     </div>
-                                                    <span className={`text-[10px] font-semibold shrink-0 ml-2 ${
+                                                    <span className={`text-[10px] font-medium shrink-0 ml-2 ${
                                                         isAlreadyCoordinating ? 'text-neutral-400' : 'text-brand-600 dark:text-brand-400'
                                                     }`}>
                                                         {isAlreadyCoordinating ? 'Unavailable' : 'Select'}
@@ -1254,13 +1254,13 @@ const ClubsTab = ({
                             <button
                                 type="button"
                                 onClick={() => setIsCreateClubModalOpen(false)}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Create Club
                             </button>
@@ -1278,13 +1278,13 @@ const ClubsTab = ({
                     <div className="space-y-4 pt-2">
                         {/* Club Summary */}
                         <div className="p-4 bg-brand-50 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-900/40 rounded-xl space-y-2">
-                            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                            <p className="text-xs font-medium text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
                                 <Shield size={14} className="shrink-0" /> Registered Club Information
                             </p>
                             <div className="text-xs space-y-1.5 text-cn-text-secondary">
                                 <p><strong className="text-cn-text">Club Name:</strong> {createdClubCredentials.clubName}</p>
-                                <p><strong className="text-cn-text">Club Identifier:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-semibold text-cn-text">{createdClubCredentials.slug}</code></p>
-                                <p><strong className="text-cn-text">Official Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-semibold text-cn-text">{createdClubCredentials.clubEmail}</code></p>
+                                <p><strong className="text-cn-text">Club Identifier:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-medium text-cn-text">{createdClubCredentials.slug}</code></p>
+                                <p><strong className="text-cn-text">Official Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-medium text-cn-text">{createdClubCredentials.clubEmail}</code></p>
                             </div>
                         </div>
 
@@ -1292,14 +1292,14 @@ const ClubsTab = ({
                         {createdClubCredentials.facultyEmail ? (
                             <>
                                 <div className="p-4 bg-cn-surface-muted border border-cn-border rounded-xl space-y-2">
-                                    <p className="text-xs font-semibold text-cn-text flex items-center gap-1.5">
+                                    <p className="text-xs font-medium text-cn-text flex items-center gap-1.5">
                                         <GraduationCap size={14} className="shrink-0" /> Assigned Faculty Coordinator
                                     </p>
                                     <div className="text-xs space-y-1.5 text-cn-text-secondary">
                                         <p><strong className="text-cn-text">Coordinator:</strong> {createdClubCredentials.facultyName}</p>
-                                        <p><strong className="text-cn-text">Faculty Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-semibold text-cn-text">{createdClubCredentials.facultyEmail}</code></p>
+                                        <p><strong className="text-cn-text">Faculty Email:</strong> <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-medium text-cn-text">{createdClubCredentials.facultyEmail}</code></p>
                                         <p className="text-[11px] text-cn-text-muted pt-1">
-                                            Coordinator governance privileges are linked directly to their existing faculty account (<span className="font-mono text-cn-text font-semibold">/login</span>). No new account or separate password is required.
+                                            Coordinator governance privileges are linked directly to their existing faculty account (<span className="font-mono text-cn-text font-medium">/login</span>). No new account or separate password is required.
                                         </p>
                                     </div>
                                 </div>
@@ -1307,13 +1307,13 @@ const ClubsTab = ({
                                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-xl flex items-start gap-2.5">
                                     <Mail size={15} className="text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                                     <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-                                        An official appointment email has been dispatched to <span className="font-semibold">{createdClubCredentials.facultyEmail}</span> with club coordinator access details.
+                                        An official appointment email has been dispatched to <span className="font-medium">{createdClubCredentials.facultyEmail}</span> with club coordinator access details.
                                     </p>
                                 </div>
                             </>
                         ) : (
                             <div className="p-4 bg-cn-surface-muted border border-cn-border rounded-xl space-y-1.5">
-                                <p className="text-xs font-semibold text-cn-text flex items-center gap-1.5">
+                                <p className="text-xs font-medium text-cn-text flex items-center gap-1.5">
                                     <GraduationCap size={14} className="shrink-0" /> Faculty Coordinator
                                 </p>
                                 <p className="text-xs text-cn-text-secondary">
@@ -1334,7 +1334,7 @@ const ClubsTab = ({
                                                 openManageCoordinatorModal(clubObj);
                                             }
                                         }}
-                                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                                     >
                                         <GraduationCap size={14} />
                                         <span>Assign Coordinator</span>
@@ -1349,7 +1349,7 @@ const ClubsTab = ({
                                             openManageHeadModal(clubObj);
                                         }
                                     }}
-                                    className="px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                                    className="px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                                 >
                                     <UserPlus size={14} />
                                     <span>Assign Student Lead</span>
@@ -1357,7 +1357,7 @@ const ClubsTab = ({
                             </div>
                             <button
                                 onClick={() => setCreatedClubCredentials(null)}
-                                className="px-5 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                                className="px-5 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer"
                             >
                                 Done
                             </button>
@@ -1375,11 +1375,11 @@ const ClubsTab = ({
                         {/* Quick Live Search from FacultyUser table */}
                         <div className="p-3 bg-cn-surface-muted border border-cn-border rounded-xl space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-semibold text-cn-text flex items-center gap-1.5">
+                                <label className="text-xs font-medium text-cn-text flex items-center gap-1.5">
                                     <Search size={13} className="text-brand-600 dark:text-brand-400" /> Search Faculty Table to Reassign
                                 </label>
                                 {selectedEditFaculty && (
-                                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                                         <CheckCircle2 size={11} /> Reassigned
                                     </span>
                                 )}
@@ -1441,7 +1441,7 @@ const ClubsTab = ({
                                                         </p>
                                                     )}
                                                 </div>
-                                                <span className={`text-[10px] font-semibold shrink-0 ml-2 ${
+                                                <span className={`text-[10px] font-medium shrink-0 ml-2 ${
                                                     isAlreadyCoordinatingOther ? 'text-neutral-400' : 'text-brand-600 dark:text-brand-400'
                                                 }`}>
                                                     {isAlreadyCoordinatingOther ? 'Unavailable' : 'Select'}
@@ -1475,7 +1475,7 @@ const ClubsTab = ({
                                 <GraduationCap size={13} className="text-brand-600 dark:text-brand-400" /> Faculty Coordinator Note
                             </p>
                             <p>
-                                Changing the faculty coordinator will reassign governance permissions to their existing faculty account (<span className="font-mono text-cn-text font-semibold">/login</span>). Faculty members must already have an account on Campusnode.
+                                Changing the faculty coordinator will reassign governance permissions to their existing faculty account (<span className="font-mono text-cn-text font-medium">/login</span>). Faculty members must already have an account on Campusnode.
                             </p>
                         </div>
 
@@ -1484,14 +1484,14 @@ const ClubsTab = ({
                                 type="button"
                                 disabled={isUpdating}
                                 onClick={() => { setIsEditModalOpen(false); setEditingClub(null); }}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isUpdating}
-                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white dark:bg-brand-400 dark:hover:bg-brand-500 dark:text-black text-xs font-medium rounded-xl transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 {isUpdating ? (
                                     <>
@@ -1516,7 +1516,7 @@ const ClubsTab = ({
                 >
                     <div className="space-y-4 pt-2">
                         <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-xl space-y-2">
-                            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold text-sm">
+                            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-medium text-sm">
                                 <AlertTriangle size={18} className="shrink-0" />
                                 <span>Warning: Permanent Deletion</span>
                             </div>
@@ -1535,7 +1535,7 @@ const ClubsTab = ({
                                 type="button"
                                 disabled={isDeleting}
                                 onClick={() => { setIsDeleteModalOpen(false); setClubToDelete(null); }}
-                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2.5 bg-transparent hover:bg-cn-surface-muted text-cn-text border border-cn-border text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 Cancel
                             </button>
@@ -1543,7 +1543,7 @@ const ClubsTab = ({
                                 type="button"
                                 disabled={isDeleting}
                                 onClick={handleDeleteClub}
-                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50 shadow-xs"
+                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50 shadow-xs"
                             >
                                 {isDeleting ? (
                                     <>

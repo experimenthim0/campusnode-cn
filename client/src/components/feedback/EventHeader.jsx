@@ -15,7 +15,7 @@ const EventHeader = ({ eventData, isCompleted, refreshing, onRefresh, eventId })
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
           </Link>
           <span className="text-slate-300 dark:text-neutral-700" aria-hidden="true">•</span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+          <span className="text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400">
             Feedback Analytics
           </span>
         </div>
@@ -38,11 +38,11 @@ const EventHeader = ({ eventData, isCompleted, refreshing, onRefresh, eventId })
             </span>
           )}
           {isCompleted ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
               Event Completed
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
               Upcoming / In Progress
             </span>
           )}

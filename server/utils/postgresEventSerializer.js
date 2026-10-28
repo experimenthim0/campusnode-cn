@@ -30,9 +30,9 @@ export function serializeEvent(event) {
     createdBy: event.createdBy
       ? { ...event.createdBy, _id: event.createdBy.id }
       : event.createdBy,
-    reviewedBy: event.reviewedBy
-      ? { ...event.reviewedBy, _id: event.reviewedBy.id }
-      : event.reviewedBy,
+    reviewedBy: (event.reviewedByFaculty || event.reviewedBy)
+      ? { ...(event.reviewedByFaculty || event.reviewedBy), _id: (event.reviewedByFaculty || event.reviewedBy).id }
+      : (event.reviewedBy || null),
     organizers: event.organizers || [],
     clubId: primaryClubId,
     club: primaryClub
@@ -75,10 +75,58 @@ export function serializeParticipation(participation) {
       phone: rawExternal?.phone || null,
       isExternal: true,
     };
+  } else if (participation.faculty) {
+    const rawFaculty = participation.faculty;
+    user = {
+      id: participation.facultyId || rawFaculty?.id || null,
+      _id: participation.facultyId || rawFaculty?.id || null,
+      name: rawFaculty?.name || "Faculty Member",
+      email: rawFaculty?.email || "",
+      department: rawFaculty?.department || "",
+      designation: rawFaculty?.designation || "",
+      profileImage: rawFaculty?.profileImage || null,
+      isFaculty: true,
+    };
   }
 
   const fee = participation.event?.registrationFee ?? participation.event?.entryFee ?? 0;
   const isPaidSuccess = participation.paymentStatus === "SUCCESS";
+
+  let team = participation.team;
+  if (team) {
+    const partStatusMap = new Map();
+    if (Array.isArray(team.participations)) {
+      team.participations.forEach((p) => {
+        if (p.studentId) partStatusMap.set(p.studentId, p.status);
+      });
+    }
+
+    const members = (team.members || []).map((m) => {
+      const student = m.student || m.user || null;
+      const studentId = m.studentId || m.userId || student?.id;
+      return {
+        ...m,
+        userId: studentId,
+        studentId,
+        user: student ? { ...student, _id: student.id } : null,
+        status: partStatusMap.get(studentId) || (m.role === "leader" ? "REGISTERED" : "INVITED"),
+      };
+    });
+
+    const leader = team.leaderStudent || team.leader || null;
+    const leaderId = team.leaderId || team.leaderStudentId || leader?.id;
+
+    team = {
+      ...team,
+      _id: team.id,
+      leaderId,
+      leaderStudentId: leaderId,
+      leader: leader ? { ...leader, _id: leader.id } : null,
+      leaderStudent: leader ? { ...leader, _id: leader.id } : null,
+      members,
+      rejectedMembers: Array.isArray(team.rejectedMembers) ? team.rejectedMembers : [],
+    };
+  }
 
   return {
     ...participation,
@@ -86,6 +134,7 @@ export function serializeParticipation(participation) {
     userId: participation.userId || participation.studentId || participation.externalUserId,
     amountPaid: isPaidSuccess ? fee : 0,
     user,
+    team,
     event: participation.event ? serializeEvent(participation.event) : participation.event,
   };
 }

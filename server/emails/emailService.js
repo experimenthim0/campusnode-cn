@@ -1,43 +1,24 @@
 import { emailConfig } from "./config/emailConfig.js";
 import { templateRegistry } from "./templateRegistry.js";
 import { renderEmail } from "./renderer/emailRenderer.js";
-import { resendTransport } from "./transports/resendTransport.js";
-import { mockTransport } from "./transports/mockTransport.js";
+import { smtpTransport } from "./transports/smtpTransport.js";
 import { enqueueEmail } from "./emailQueue.js";
 
 /**
- * Determine the active transport based on environment configuration.
+ * Returns the unified SMTP transport.
  *
  * @returns {object} Transport with a `.send(payload)` method
  */
-export const getActiveTransport = () => {
-  if (emailConfig.isTest()) {
-    return mockTransport;
-  }
-
-  const apiKey = emailConfig.getApiKey();
-  if (apiKey) {
-    return resendTransport;
-  }
-
-  // If no API key is set in development, safely fall back to mock
-  if (!emailConfig.isProduction()) {
-    return mockTransport;
-  }
-
-  // In production without an API key, return resendTransport which will throw a clear error
-  return resendTransport;
-};
+export const getActiveTransport = () => smtpTransport;
 
 /**
  * Direct transactional email sender.
- * Executes the render and network/mock transport directly.
+ * Executes the template render and SMTP delivery directly.
  *
  * @param {object} options
- * @returns {Promise<{ id: string }>}
+ * @returns {Promise<{ id: string, messageId?: string }>}
  */
 export const sendEmailDirect = async (options = {}) => {
-  const transport = getActiveTransport();
   const from = emailConfig.getFromHeader();
 
   // 1. Check for modern template-based invocation
@@ -59,7 +40,7 @@ export const sendEmailDirect = async (options = {}) => {
     const rendered = renderEmail(template, data);
     const subject = options.subjectOverride || rendered.subject;
 
-    return await transport.send({
+    return await smtpTransport.send({
       from,
       to,
       subject,
@@ -78,7 +59,7 @@ export const sendEmailDirect = async (options = {}) => {
     throw new Error('[EmailService] Recipient address ("email" or "to") is required.');
   }
 
-  return await transport.send({
+  return await smtpTransport.send({
     from,
     to: legacyTo,
     subject: legacySubject,

@@ -79,7 +79,7 @@ Campus event management often suffers from fragmented communication across messa
 - **Real-Time Engine**: Socket.io for live updates and notifications
 - **Authentication**: JWT (JSON Web Tokens), bcryptjs password hashing, 2FA OTP support
 - **Storage & Media**: Cloudinary API for logo, gallery, lost & found, and certificate template uploads
-- **PDF & Communication**: PDFKit for certificate rendering, Nodemailer & Resend for transactional email triggers
+- **PDF & Communication**: PDFKit for certificate rendering, Nodemailer for transactional SMTP email triggers (Mailpit in dev, College SMTP in prod)
 - **Security & Performance**: Helmet headers, express-rate-limit, CORS policy, Gzip compression
 
 ---
@@ -210,12 +210,13 @@ CLOUDINARY_CLOUD_NAME="your_cloud_name"
 CLOUDINARY_API_KEY="your_api_key"
 CLOUDINARY_API_SECRET="your_api_secret"
 
-# Email Services
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT=587
-SMTP_USER="your_email@domain.com"
-SMTP_PASS="your_app_password"
-RESEND_API_KEY="re_123456789"
+# Transactional Email (SMTP via Nodemailer)
+SMTP_HOST="localhost"
+SMTP_PORT=1025
+SMTP_SECURE=false
+SMTP_USER=""
+SMTP_PASS=""
+EMAIL_FROM="CampusNode <no-reply@campusnode.nitj.ac.in>"
 ```
 
 ### Frontend (`client/.env`)

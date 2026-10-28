@@ -30,7 +30,11 @@ import {
   Calendar,
   Ticket,
   CheckCircle2,
-  Search
+  Search,
+  Handshake,
+  UserPlus,
+  UserX,
+  Trash2
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DownloadIcon } from '@/components/ui/download';
@@ -45,6 +49,8 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import ShimmerText from '../components/ShimmerText';
 import { useTheme } from '../context/ThemeContext';
+import RequiredSocialHandlesModal from '../components/RequiredSocialHandlesModal';
+import { getMissingSocialFields } from '../utils/socialFields';
 const MyRegisteredEventCard = ({
   reg,
   user,
@@ -58,6 +64,9 @@ const MyRegisteredEventCard = ({
   onOpenFeedback,
   hasSubmittedFeedback,
   clubWantsFeedback,
+  onAcceptInvitation,
+  onDeclineInvitation,
+  actionLoadingId,
 }) => {
   const event = reg.eventId;
   if (!event) return null;
@@ -90,30 +99,38 @@ const MyRegisteredEventCard = ({
   const posterImage = event.imageUrl || '/fallback-img.jpg';
   const isPaidEvent = event.paymentMethod && event.paymentMethod !== 'FREE';
   const isTeam = Boolean(reg.team || reg.teamId);
-  const isTeamLeader = isTeam && (reg.team?.leaderId === (user?.id || user?._id));
+  const isTeamLeader = isTeam && (reg.team?.leaderId === (user?.id || user?._id) || reg.team?.leaderStudentId === (user?.id || user?._id));
   const isTeamMember = isTeam && !isTeamLeader;
+  const isInvited = reg.status === 'INVITED';
+  const eventMinTeamSize = event.minTeamSize || 1;
+  const teamMembers = reg.team?.members || [];
+  const currentTeamCount = teamMembers.length || 1;
+  const rejectedMembers = reg.team?.rejectedMembers || [];
+  const isBelowMinTeamSize = isTeam && eventMinTeamSize > 1 && currentTeamCount < eventMinTeamSize;
+  const hasRejectedMembers = isTeam && rejectedMembers.length > 0;
+  const showLessMembersWarning = isTeamLeader && isBelowMinTeamSize && hasRejectedMembers;
   const isPaymentSuccess = isTeamMember || ['APPROVED', 'SUCCESS'].includes(reg.paymentStatus);
   const isPaymentRejected = reg.paymentStatus === 'REJECTED';
   const isPaymentPending = isPaidEvent && reg.paymentStatus === 'PENDING';
   const isWaitlisted = reg.status === 'WAITLISTED';
-  const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted;
+  const canShowTicket = (!isPaidEvent || isTeamMember || isPaymentSuccess) && !isWaitlisted && !isInvited;
   const isAttended = reg.status === 'ATTENDED' || reg.attended;
   const { isDark } = useTheme();
 const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
-    const rawClubLogo = event.club?.clubLogo || event.createdBy?.clubLogo;
-    const [clubLogoSrc, setClubLogoSrc] = useState(fallbackLogo);
+  const rawClubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
+  const [clubLogoSrc, setClubLogoSrc] = useState(fallbackLogo);
 
-    useEffect(() => {
-        if (!rawClubLogo) {
-            setClubLogoSrc(fallbackLogo);
-            return;
-        }
-        setClubLogoSrc(fallbackLogo);
-        const img = new Image();
-        img.src = rawClubLogo;
-        img.onload = () => setClubLogoSrc(rawClubLogo);
-        img.onerror = () => setClubLogoSrc(fallbackLogo);
-    }, [rawClubLogo, fallbackLogo]);
+  useEffect(() => {
+    if (!rawClubLogo) {
+      setClubLogoSrc(fallbackLogo);
+      return;
+    }
+    setClubLogoSrc(fallbackLogo);
+    const img = new Image();
+    img.src = rawClubLogo;
+    img.onload = () => setClubLogoSrc(rawClubLogo);
+    img.onerror = () => setClubLogoSrc(fallbackLogo);
+  }, [rawClubLogo, fallbackLogo]);
 
   // Only allow feedback when club explicitly wants to collect feedback, event has ended or user attended, and not yet submitted
   const canGiveFeedback = Boolean(clubWantsFeedback) && (isPast || isAttended) && !hasSubmittedFeedback;
@@ -127,8 +144,10 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
         : (event.certificateTemplate.imageUrl || Object.keys(event.certificateTemplate).length > 0)))
   );
 
-  const clubName = event.club?.clubName || event.organizers?.[0]?.club?.clubName || event.createdBy?.clubName;
-  const clubLogo = event.club?.clubLogo || event.organizers?.[0]?.club?.clubLogo || event.createdBy?.clubLogo;
+  const organizers = event.organizers || [];
+  const isJoint = organizers.length > 1;
+  const jointNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : '';
+  const primaryClubName = event.club?.clubName || organizers[0]?.club?.clubName || event.createdBy?.clubName;
 
   return (
     <div
@@ -174,7 +193,11 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
 
         {/* Top-Right: Registration Status Badge */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-          {isAttended ? (
+          {isInvited ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-amber-600 text-white shadow-xs">
+              Invitation Pending
+            </span>
+          ) : isAttended ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-black/75 text-white backdrop-blur-md border border-white/15 shadow-xs">
               <span className="text-emerald-400">✓</span> Attended
             </span>
@@ -194,20 +217,51 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
       <div className="p-5 flex flex-col flex-1 gap-3">
         {/* Club line & Payment pill */}
         <div className="flex items-center justify-between gap-2 min-w-0">
-          {clubName ? (
+          {isJoint ? (
+            <div className="flex items-center min-w-0 gap-1.5">
+              <div className="flex items-center -space-x-1.5 shrink-0">
+                {organizers.slice(0, 3).map((o, i) => (
+                  <div
+                    key={o.club?.id || i}
+                    className="w-5 h-5 rounded-full overflow-hidden border border-white dark:border-neutral-900 shrink-0 bg-neutral-100 dark:bg-neutral-800 shadow-2xs"
+                    title={o.club?.clubName}
+                  >
+                    <img
+                      src={o.club?.clubLogo || fallbackLogo}
+                      alt={o.club?.clubName || 'Club'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = fallbackLogo;
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <Handshake size={13} className="text-brand-500 shrink-0" />
+              <span
+                className="text-xs font-medium text-brand-600 dark:text-brand-400 truncate hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                title={jointNames}
+              >
+                {jointNames}
+              </span>
+            </div>
+          ) : primaryClubName ? (
             <div className="flex items-center min-w-0 gap-2">
               <div className="w-5 h-5 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-neutral-100 dark:bg-neutral-800">
                 <img
                   src={clubLogoSrc}
-                  alt={clubName}
+                  alt={primaryClubName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = '/lightthemelogo.png';
+                    e.target.src = fallbackLogo;
                   }}
                 />
               </div>
-              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 truncate hover:text-neutral-900 dark:hover:text-white transition-colors">{clubName}</span>
+              <span className="text-xs font-medium text-brand-600 dark:text-brand-400 truncate hover:text-neutral-900 dark:hover:text-white transition-colors">
+                {primaryClubName}
+              </span>
             </div>
           ) : <div />}
 
@@ -256,7 +310,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
           {isValidDate && (
             <div className="shrink-0 self-center">
               <div className="flex flex-col items-center justify-center min-w-[50px] bg-white dark:bg-neutral-800/90 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700/80 shadow-2xs">
-                <div className="w-full bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-[8px] font-semibold uppercase tracking-wider text-center py-0.5 px-1 leading-none border-b border-neutral-200/80 dark:border-neutral-700/60">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 text-[8px] font-medium uppercase tracking-wider text-center py-0.5 px-1 leading-none border-b border-neutral-200/80 dark:border-neutral-700/60">
                   {monthName}
                 </div>
                 <div className="text-base font-medium text-neutral-900 dark:text-white leading-tight px-2 pt-0.5 font-mono">
@@ -270,30 +324,53 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
           )}
         </div>
 
-        {/* Team Details (if team registration) */}
-        {reg.team && (
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-850/80 border border-neutral-200/80 dark:border-neutral-800 rounded-xl text-xs space-y-1.5">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 font-medium text-neutral-900 dark:text-white">
-                <Users className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" />
-                <span>Team: <span className="text-brand-600 dark:text-brand-400">{reg.team.teamName}</span></span>
-              </div>
-              {!isPast && (user?.id === reg.team.leaderId || user?._id === reg.team.leaderId) && (
-                <button
-                  type="button"
-                  onClick={() => onUpdateTeam(reg)}
-                  className="h-6 px-2.5 rounded-full text-[10px] font-medium bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500 transition-all cursor-pointer shadow-2xs"
-                >
-                  Update
-                </button>
-              )}
+        {/* Warning: Less members - student rejected */}
+        {showLessMembersWarning && (
+          <div
+            onClick={() => onUpdateTeam(reg)}
+            className="p-2.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs flex items-center justify-between gap-2 text-amber-900 dark:text-amber-200 cursor-pointer hover:bg-amber-500/20 transition-colors shadow-2xs"
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="font-medium text-[11.5px] truncate">
+                Less members — student rejected so please add more
+              </span>
             </div>
-            <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
-              Leader: <span className="font-medium text-neutral-800 dark:text-neutral-200">{reg.team.leader?.name}</span>
+            <span className="text-[10px] font-medium bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-0.5 rounded-full shrink-0 shadow-2xs">
+              Manage
+            </span>
+          </div>
+        )}
+
+        {/* Team Details: Only show Team Name & Option to Manage Team when confirmed registered */}
+        {reg.team && !isInvited && (
+          <div className="flex items-center justify-between gap-2 p-3 bg-neutral-50 dark:bg-neutral-850/80 border border-neutral-200/80 dark:border-neutral-800 rounded-xl text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <Users className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+              <span className="font-medium text-neutral-900 dark:text-white truncate">
+                Team: <span className="text-brand-600 dark:text-brand-400 font-medium">{reg.team.teamName}</span>
+              </span>
             </div>
-            <div className="text-neutral-500 dark:text-neutral-400 text-[11px] line-clamp-1">
-              Members: <span className="font-medium text-neutral-800 dark:text-neutral-200">
-                {(reg.team.members || []).map(m => m.user?.name).filter(Boolean).join(', ')}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onUpdateTeam(reg)}
+              className="h-7 px-3 rounded-full text-[11px] font-medium border-neutral-300 dark:border-neutral-700 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all shrink-0 cursor-pointer shadow-2xs gap-1.5"
+            >
+              <Users className="w-3 h-3" />
+              <span>{isTeamLeader ? 'Manage Team' : 'View Team'}</span>
+            </Button>
+          </div>
+        )}
+
+        {/* If pending invitation, only show minimal team name notice without team roster button */}
+        {reg.team && isInvited && (
+          <div className="p-3 bg-muted/40 border border-border/70 rounded-xl text-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Users className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-muted-foreground truncate">
+                Invited to join <span className="font-medium text-foreground">{reg.team.teamName}</span>
               </span>
             </div>
           </div>
@@ -301,7 +378,36 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
 
         {/* Action Buttons Footer */}
         <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800 flex flex-col gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
+          {isInvited ? (
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={actionLoadingId === regId}
+                onClick={() => onAcceptInvitation && onAcceptInvitation(reg)}
+                className="flex-1 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium gap-1.5 shadow-xs cursor-pointer"
+              >
+                {actionLoadingId === regId ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                <span>{actionLoadingId === regId ? 'Approving...' : 'Approve'}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={actionLoadingId === regId}
+                onClick={() => onDeclineInvitation && onDeclineInvitation(reg)}
+                className="flex-1 h-9 rounded-xl border-border text-destructive hover:bg-destructive/10 text-xs font-medium gap-1.5 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Reject</span>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 flex-wrap">
             {(!reg.team || isTeamLeader) && (reg.paymentStatus === 'NEED_MORE_DETAILS' || reg.paymentStatus === 'REJECTED') && (
               <Button
                 type="button"
@@ -323,7 +429,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
                     type="button"
                     size="sm"
                     onClick={() => onShowTicket(reg)}
-                    className="flex-1 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold uppercase tracking-wider gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="flex-1 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-medium uppercase tracking-wider gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
                     <QrCode className="w-3.5 h-3.5 text-white dark:text-black" />
                     <span>Show Ticket</span>
@@ -405,6 +511,7 @@ const fallbackLogo = isDark ? "/darkthemelogo.png" : "/lightthemelogo.png";
               </>
             )}
           </div>
+        )}
 
           {/* Certificate Download Button */}
           {isPast && isAttended && isCertificateAvailable && (
@@ -448,6 +555,7 @@ const MyEvents = () => {
   const [updateTeamSearchQuery, setUpdateTeamSearchQuery] = useState('');
   const [updateTeamSearchResults, setUpdateTeamSearchResults] = useState([]);
   const [updateTeamSearching, setUpdateTeamSearching] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState(null);
 
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -463,6 +571,9 @@ const MyEvents = () => {
   const [highlightedRegId, setHighlightedRegId] = useState(null);
   const [downloadingCert, setDownloadingCert] = useState(null);
   const [feedbackModalEvent, setFeedbackModalEvent] = useState(null);
+  const [invitationActionLoadingId, setInvitationActionLoadingId] = useState(null);
+  const [socialHandlesModalOpen, setSocialHandlesModalOpen] = useState(false);
+  const [socialHandlesModalData, setSocialHandlesModalData] = useState(null);
 
   // Check if account is a dedicated ClubAccount without student identity
   const isClubAccount = authUser?.principalType === 'CLUB' || (!user?.rollNo && authRole === 'club');
@@ -471,7 +582,7 @@ const MyEvents = () => {
     if (authUser) {
       setUser(authUser);
       const userId = authUser.id || authUser._id;
-      if (userId && !isClubAccount) {
+      if (userId && userId !== 'undefined' && userId !== 'null' && !isClubAccount) {
         fetchRegistrations(userId);
         fetchFeedbackHistory();
         fetchPendingFeedbackEvents();
@@ -772,22 +883,158 @@ const MyEvents = () => {
   }, [updateTeamSearchQuery, teamToUpdate]);
 
   const handleInviteTeammate = async (student) => {
-    if (!teamToUpdate?.team?.id) return;
-    const updatedMembers = [...(teamToUpdate.team.members || []), { userId: student.id, name: student.name }];
+    const teamId = teamToUpdate?.team?.id || teamToUpdate?.teamId || teamToUpdate?.id;
+    if (!teamId) return;
 
     try {
       const res = await api.post(
-        `/api/teams/${teamToUpdate.id || teamToUpdate._id}/manage-members`,
-        { memberIds: updatedMembers.map(m => m.userId || m.id || m._id) }
+        `/api/teams/${teamId}/manage-members`,
+        { studentId: student.id }
       );
-      showNotification(res.data.message || 'Invitation sent successfully!', 'success');
-      setUpdateTeamModalOpen(false);
+      showNotification(res.data.message || `Invitation sent to ${student.name}!`, 'success');
       setUpdateTeamSearchQuery('');
       setUpdateTeamSearchResults([]);
 
-      fetchRegistrations(user.id || user._id);
+      // Optimistically update teamToUpdate in modal so popup stays open with new member
+      if (teamToUpdate?.team) {
+        const updatedMembers = [
+          ...(teamToUpdate.team.members || []),
+          {
+            id: student.id,
+            userId: student.id,
+            studentId: student.id,
+            role: 'member',
+            status: 'INVITED',
+            user: student,
+          },
+        ];
+        const updatedRejected = (teamToUpdate.team.rejectedMembers || []).filter(
+          (rm) => rm.studentId !== student.id
+        );
+        setTeamToUpdate({
+          ...teamToUpdate,
+          team: {
+            ...teamToUpdate.team,
+            members: updatedMembers,
+            rejectedMembers: updatedRejected,
+          },
+        });
+      }
+
+      if (user) {
+        fetchRegistrations(user.id || user._id);
+      }
     } catch (err) {
       showNotification(err.response?.data?.message || 'Failed to send invitation', 'error');
+    }
+  };
+
+  const handleRemoveTeammate = async (studentId) => {
+    const teamId = teamToUpdate?.team?.id || teamToUpdate?.teamId || teamToUpdate?.id;
+    if (!teamId || !studentId) return;
+
+    try {
+      setRemovingMemberId(studentId);
+      const res = await api.delete(`/api/teams/${teamId}/manage-members/${studentId}`);
+      showNotification(res.data.message || 'Member removed from team', 'success');
+
+      if (teamToUpdate?.team) {
+        const updatedMembers = (teamToUpdate.team.members || []).filter(
+          (m) => m.userId !== studentId && m.studentId !== studentId
+        );
+        setTeamToUpdate({
+          ...teamToUpdate,
+          team: {
+            ...teamToUpdate.team,
+            members: updatedMembers,
+          },
+        });
+      }
+
+      if (user) {
+        fetchRegistrations(user.id || user._id);
+      }
+    } catch (err) {
+      showNotification(err.response?.data?.message || 'Failed to remove member', 'error');
+    } finally {
+      setRemovingMemberId(null);
+    }
+  };
+
+  const handleAcceptInvitation = async (reg, optionalSocialHandles = null) => {
+    const regId = reg.id || reg._id;
+    if (!regId) return;
+
+    // Check if event requires fields and user has missing ones
+    const event = reg.eventId;
+    const reqFields = Array.isArray(event?.requiredFields) ? event.requiredFields : [];
+    if (reqFields.length > 0 && !optionalSocialHandles) {
+      const missing = getMissingSocialFields(user, reqFields);
+      if (missing.length > 0) {
+        setSocialHandlesModalData({
+          reg,
+          missingFields: missing,
+          eventTitle: event?.title || 'Event',
+        });
+        setSocialHandlesModalOpen(true);
+        return;
+      }
+    }
+
+    try {
+      setInvitationActionLoadingId(regId);
+      const payload = { action: 'accept' };
+      if (optionalSocialHandles) {
+        payload.socialHandles = optionalSocialHandles;
+      }
+      const res = await api.post(`/api/teams/invitations/${regId}/accept`, payload);
+      showNotification(res.data?.message || 'Invitation accepted! Registration confirmed.', 'success');
+      await invalidateCache([
+        '/api/events',
+        `/api/events/user/${user?.id || user?._id}`,
+      ]);
+      if (user) {
+        fetchRegistrations(user.id || user._id);
+      }
+    } catch (err) {
+      if (err.response?.data?.code === 'REQUIRED_FIELDS_MISSING') {
+        const missingFields = err.response.data.missingFields || [];
+        const eventTitle = err.response.data.eventTitle || event?.title || 'Event';
+        setSocialHandlesModalData({
+          reg,
+          missingFields,
+          eventTitle,
+        });
+        setSocialHandlesModalOpen(true);
+        return;
+      }
+      console.error('Failed to accept invitation:', err);
+      showNotification(err.response?.data?.message || 'Failed to accept invitation.', 'error');
+    } finally {
+      setInvitationActionLoadingId(null);
+    }
+  };
+
+  const handleDeclineInvitation = async (reg) => {
+    const regId = reg.id || reg._id;
+    if (!regId) return;
+    try {
+      setInvitationActionLoadingId(regId);
+      const res = await api.post(`/api/teams/invitations/${regId}/decline`, { action: 'decline' });
+      showNotification(res.data?.message || 'Invitation declined.', 'info');
+      await invalidateCache([
+        '/api/events',
+        `/api/events/user/${user?.id || user?._id}`,
+      ]);
+      setRegistrations((prev) => prev.filter((r) => (r.id || r._id) !== regId));
+      if (user) {
+        fetchRegistrations(user.id || user._id);
+      }
+    } catch (err) {
+      console.error('Failed to decline invitation:', err);
+      showNotification(err.response?.data?.message || 'Failed to decline invitation.', 'error');
+    } finally {
+      setInvitationActionLoadingId(null);
     }
   };
 
@@ -1002,6 +1249,9 @@ const MyEvents = () => {
                 onOpenFeedback={(ev) => setFeedbackModalEvent(ev)}
                 hasSubmittedFeedback={submittedFeedbackEventIds.has(event.id || event._id)}
                 clubWantsFeedback={clubWantsFeedback}
+                onAcceptInvitation={handleAcceptInvitation}
+                onDeclineInvitation={handleDeclineInvitation}
+                actionLoadingId={invitationActionLoadingId}
               />
             );
           })}
@@ -1012,7 +1262,12 @@ const MyEvents = () => {
       <AnimatePresence>
         {ticketModalOpen && selectedTicket && (() => {
           const ev = selectedTicket.eventId || selectedTicket.event || {};
+          const organizers = ev.organizers || [];
+          const isJoint = organizers.length > 1;
+          const jointNames = isJoint ? organizers.map((o) => o.club?.clubName).filter(Boolean).join(' × ') : null;
+
           const organizerName =
+            jointNames ||
             ev.club?.clubName ||
             ev.club?.name ||
             ev.organizers?.[0]?.club?.clubName ||
@@ -1105,8 +1360,10 @@ const MyEvents = () => {
                       {ev.title || "Event Pass"}
                     </h3>
 
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Organized by <span className="font-medium text-foreground">{organizerName}</span>
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span>Organized by</span>
+                      {isJoint && <Handshake size={13} className="text-brand-500 shrink-0 inline" />}
+                      <span className="font-medium text-foreground">{organizerName}</span>
                     </p>
                   </div>
 
@@ -1158,7 +1415,7 @@ const MyEvents = () => {
 
                   <div className="mt-3 mb-4 text-center">
                     <p className="text-[10px] font-mono text-muted-foreground">
-                      Pass ID: <span className="font-semibold text-primary">{passId}</span>
+                      Pass ID: <span className="font-medium text-primary">{passId}</span>
                     </p>
                   </div>
 
@@ -1269,129 +1526,288 @@ const MyEvents = () => {
               className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10 max-w-md w-full"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="relative z-10 max-w-lg w-full"
             >
-              <Card className="shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <CardHeader className="py-4 px-5 border-b border-border flex flex-row items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Users size={16} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Manage Team</CardTitle>
-                      <CardDescription className="text-xs truncate max-w-[240px]">
-                        {teamToUpdate.team?.teamName}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                    className="h-7 w-7 text-muted-foreground"
-                  >
-                    <X size={16} />
-                  </Button>
-                </CardHeader>
+              <Card className="border border-border/80 bg-card shadow-xl rounded-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                {(() => {
+                  const ev = teamToUpdate.event || teamToUpdate.eventId || {};
+                  const isPast = ev.endTime ? new Date(ev.endTime) < new Date() : false;
+                  const leaderId = teamToUpdate.team?.leaderId || teamToUpdate.team?.leaderStudentId;
+                  const isLeader = leaderId === (user?.id || user?._id);
+                  const leader = teamToUpdate.team?.leader || teamToUpdate.team?.leaderStudent || {};
+                  const leaderName = leader.name || 'Team Leader';
+                  const currentMembers = teamToUpdate.team?.members || [];
+                  const currentCount = currentMembers.length || 1;
+                  const minLimit = ev.minTeamSize || 1;
+                  const maxLimit = ev.maxTeamSize || 1;
+                  const rejectedMembers = teamToUpdate.team?.rejectedMembers || [];
+                  const isBelowMin = minLimit > 1 && currentCount < minLimit;
+                  const hasRejected = rejectedMembers.length > 0;
+                  const showPopupWarning = isLeader && isBelowMin && hasRejected;
 
-                <CardContent className="p-5 space-y-4 overflow-y-auto flex-1">
-                  <div>
-                    <label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
-                      Current Team Members
-                    </label>
-                    <div className="divide-y divide-border text-xs border border-border rounded-lg overflow-hidden">
-                      <div className="p-2.5 flex justify-between items-center bg-muted/20">
-                        <div>
-                          <p className="font-medium">{teamToUpdate.team?.leader?.name} <span className="text-primary font-semibold">(Leader)</span></p>
-                          <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{teamToUpdate.team?.leader?.rollNo || teamToUpdate.team?.leader?.email}</p>
-                        </div>
-                      </div>
-                      {(teamToUpdate.team?.members || [])
-                        .filter(m => m.userId !== teamToUpdate.team?.leaderId)
-                        .map(m => (
-                          <div key={m.id || m.userId} className="p-2.5 flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{m.user?.name || "Pending Invitation"}</p>
-                              <p className="text-muted-foreground font-mono text-[11px] mt-0.5">{m.user?.rollNo || m.user?.email || "Teammate"}</p>
-                            </div>
+                  return (
+                    <>
+                      <CardHeader className="py-4 px-5 border-b border-border/60 flex flex-row items-center justify-between shrink-0 bg-muted/20">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <Users size={16} />
                           </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {/* Add Teammate Selector */}
-                  {(() => {
-                    const currentCount = teamToUpdate.team?.members?.length || 1;
-                    const maxLimit = teamToUpdate.eventId?.maxTeamSize || 1;
-                    
-                    if (currentCount >= maxLimit) {
-                      return (
-                        <div className="bg-muted/50 border border-border p-3 rounded-lg text-xs text-muted-foreground font-medium flex items-center gap-2">
-                          <Info className="w-4 h-4 text-primary shrink-0" />
-                          <span>Your team has reached the maximum size of {maxLimit} members.</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-sm font-medium truncate">
+                                {teamToUpdate.team?.teamName || 'Team Details'}
+                              </CardTitle>
+                              <Badge variant="outline" className="text-[10px] font-normal py-0 px-1.5 shrink-0 text-muted-foreground border-border/70">
+                                {isLeader ? 'Leader' : 'Member'}
+                              </Badge>
+                            </div>
+                            <CardDescription className="text-xs truncate text-muted-foreground mt-0.5">
+                              {ev.title || 'Event'} · {currentCount} of {maxLimit} members
+                            </CardDescription>
+                          </div>
                         </div>
-                      );
-                    }
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0 rounded-lg"
+                        >
+                          <X size={15} />
+                        </Button>
+                      </CardHeader>
 
-                    return (
-                      <div className="space-y-2">
-                        <label className="block text-xs font-medium">
-                          Invite Teammate <span className="text-muted-foreground font-normal">(Size: {currentCount} / max {maxLimit})</span>
-                        </label>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                          <Input
-                            type="text"
-                            placeholder="Search by Email or Roll Number..."
-                            value={updateTeamSearchQuery}
-                            onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
-                            className="pl-9 pr-9 text-xs"
-                          />
-                          {updateTeamSearching && (
-                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
-                          )}
-                        </div>
-
-                        {updateTeamSearchResults.length > 0 && (
-                          <div className="mt-1 max-h-44 overflow-y-auto border border-border rounded-lg shadow-sm divide-y divide-border">
-                            {updateTeamSearchResults.map((s) => (
-                              <div
-                                key={s.id}
-                                onClick={() => handleInviteTeammate(s)}
-                                className="p-2.5 text-xs hover:bg-muted/50 cursor-pointer flex justify-between items-center transition-colors"
-                              >
-                                <div className="min-w-0 pr-2">
-                                  <p className="font-medium truncate">{s.name}</p>
-                                  <p className="text-muted-foreground font-mono text-[11px] truncate">{s.rollNo} • {s.email}</p>
-                                </div>
-                                <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-primary border-primary/30 shrink-0">
-                                  Invite
-                                </Badge>
-                              </div>
-                            ))}
+                      <CardContent className="p-5 space-y-4 overflow-y-auto flex-1">
+                        {/* Minimum Size Warning */}
+                        {showPopupWarning && (
+                          <div className="p-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 rounded-xl text-xs space-y-1">
+                            <div className="flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-300">
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                              <span>Minimum team size not met</span>
+                            </div>
+                            <p className="text-[11.5px] text-amber-700/90 dark:text-amber-300/80 leading-relaxed">
+                              {rejectedMembers.map((m) => m.name || m.rollNo).filter(Boolean).join(', ')} declined. Your team currently has {currentCount} of {minLimit} required members.
+                            </p>
                           </div>
                         )}
-                      </div>
-                    );
-                  })()}
-                </CardContent>
 
-                <CardFooter className="py-3 px-5 border-t border-border bg-muted/20">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
-                    className="w-full"
-                  >
-                    Close
-                  </Button>
-                </CardFooter>
+                        {/* Team Roster */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-medium text-muted-foreground">
+                              Members ({currentCount}/{maxLimit})
+                            </span>
+                            {minLimit > 1 && (
+                              <span className={`text-[11px] font-medium ${isBelowMin ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                                {isBelowMin ? `${minLimit - currentCount} more needed` : `Min. ${minLimit} met`}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="divide-y divide-border/60 border border-border/70 rounded-xl overflow-hidden bg-card">
+                            {/* Team Leader */}
+                            <div className="p-3 px-3.5 flex items-center justify-between gap-3 bg-muted/30">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-xs text-foreground truncate">
+                                    {leader.name || 'Team Leader'}
+                                  </p>
+                                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                    Leader
+                                  </span>
+                                </div>
+                                <p className="text-muted-foreground text-[11.5px] truncate mt-0.5">
+                                  {[leader.rollNo, leader.branch, leader.email].filter(Boolean).join(' · ')}
+                                </p>
+                              </div>
+                              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md shrink-0">
+                                Confirmed
+                              </span>
+                            </div>
+
+                            {/* Teammates */}
+                            {currentMembers
+                              .filter((m) => (m.userId || m.studentId) !== leaderId)
+                              .map((m) => {
+                                const mUser = m.user || m.student || {};
+                                const mId = m.userId || m.studentId || m.id;
+                                const isAccepted = m.status === 'REGISTERED' || m.role === 'leader';
+                                const isRemoving = removingMemberId === mId;
+
+                                return (
+                                  <div key={mId} className="p-3 px-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium text-xs text-foreground truncate">
+                                        {mUser.name || 'Teammate'}
+                                      </p>
+                                      <p className="text-muted-foreground text-[11.5px] truncate mt-0.5">
+                                        {[mUser.rollNo, mUser.branch, mUser.email].filter(Boolean).join(' · ') || 'Invited'}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span
+                                        className={`text-[11px] font-medium px-2 py-0.5 rounded-md border ${
+                                          isAccepted
+                                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                            : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20'
+                                        }`}
+                                      >
+                                        {isAccepted ? 'Accepted' : 'Pending'}
+                                      </span>
+                                      {isLeader && !isPast && (
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          disabled={isRemoving}
+                                          onClick={() => handleRemoveTeammate(mId)}
+                                          title="Remove from team"
+                                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                          {isRemoving ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
+                                          ) : (
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+
+                        {/* Declined Invitations */}
+                        {rejectedMembers.length > 0 && (
+                          <div className="space-y-2">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Declined ({rejectedMembers.length})
+                            </span>
+                            <div className="divide-y divide-border/50 border border-border/60 rounded-xl bg-muted/15 overflow-hidden">
+                              {rejectedMembers.map((rm, idx) => (
+                                <div key={rm.studentId || idx} className="p-3 px-3.5 flex items-center justify-between gap-3">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-medium text-xs text-foreground/90 truncate">
+                                      {rm.name}
+                                    </p>
+                                    <p className="text-muted-foreground text-[11.5px] truncate mt-0.5">
+                                      {[rm.rollNo, rm.email].filter(Boolean).join(' · ')}
+                                    </p>
+                                    {rm.rejectedAt && (
+                                      <p className="text-[10.5px] text-muted-foreground/70 mt-0.5">
+                                        Declined {new Date(rm.rejectedAt).toLocaleDateString()}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-[11px] font-medium text-destructive/80 bg-destructive/10 border border-destructive/20 px-2 py-0.5 rounded-md">
+                                      Declined
+                                    </span>
+                                    {isLeader && !isPast && currentCount < maxLimit && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleInviteTeammate({ id: rm.studentId, name: rm.name, email: rm.email, rollNo: rm.rollNo })}
+                                        className="h-7 px-2.5 text-xs font-medium rounded-lg border-border hover:bg-muted text-foreground gap-1.5 cursor-pointer"
+                                      >
+                                        <UserPlus className="w-3 h-3 text-muted-foreground" />
+                                        <span>Re-invite</span>
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Invite Teammates Section */}
+                        {isLeader && !isPast && (
+                          <div className="space-y-2 pt-1 border-t border-border/60">
+                            {currentCount >= maxLimit ? (
+                              <div className="bg-muted/30 border border-border/60 p-3 rounded-xl text-xs text-muted-foreground flex items-center gap-2">
+                                <Info className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <span>Team has reached the maximum size ({maxLimit} members).</span>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <label className="block text-xs font-medium text-muted-foreground">
+                                  Invite Teammate
+                                </label>
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                  <Input
+                                    type="text"
+                                    placeholder="Search by name, roll number, or email..."
+                                    value={updateTeamSearchQuery}
+                                    onChange={(e) => setUpdateTeamSearchQuery(e.target.value)}
+                                    className="pl-9 pr-9 text-xs h-9 rounded-xl border-border/80 bg-background"
+                                  />
+                                  {updateTeamSearching && (
+                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                                  )}
+                                </div>
+
+                                {updateTeamSearchResults.length > 0 && (
+                                  <div className="mt-1.5 max-h-48 overflow-y-auto border border-border/70 rounded-xl shadow-md divide-y divide-border/60 bg-popover">
+                                    {updateTeamSearchResults.map((s) => (
+                                      <div
+                                        key={s.id}
+                                        onClick={() => handleInviteTeammate(s)}
+                                        className="p-2.5 px-3 text-xs hover:bg-muted/40 cursor-pointer flex justify-between items-center transition-colors"
+                                      >
+                                        <div className="min-w-0 pr-3">
+                                          <p className="font-medium text-foreground truncate">{s.name}</p>
+                                          <p className="text-muted-foreground text-[11.5px] truncate mt-0.5">
+                                            {[s.rollNo, s.branch, s.email].filter(Boolean).join(' · ')}
+                                          </p>
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          className="h-7 px-3 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 gap-1.5 border-0"
+                                        >
+                                          <UserPlus className="w-3 h-3" />
+                                          <span>Invite</span>
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Read-only notice for regular team members */}
+                        {!isLeader && (
+                          <div className="p-3 bg-muted/30 border border-border/60 rounded-xl text-xs text-muted-foreground flex items-center gap-2">
+                            <Info className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <span>Viewing as member. Only the team leader ({leaderName}) can manage members.</span>
+                          </div>
+                        )}
+                      </CardContent>
+
+                      <CardFooter className="py-3 px-5 border-t border-border/60 bg-muted/20 shrink-0">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setUpdateTeamModalOpen(false); setTeamToUpdate(null); setUpdateTeamSearchQuery(''); }}
+                          className="w-full rounded-xl text-xs font-medium h-9 cursor-pointer hover:bg-muted"
+                        >
+                          Close
+                        </Button>
+                      </CardFooter>
+                    </>
+                  );
+                })()}
               </Card>
             </motion.div>
           </div>
@@ -1484,7 +1900,7 @@ const MyEvents = () => {
 
                     {editingReg.paymentReviewMessage && (
                       <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p className="text-[11px] font-semibold text-destructive uppercase tracking-wider mb-1">
+                        <p className="text-[11px] font-medium text-destructive uppercase tracking-wider mb-1">
                           Reviewer Note
                         </p>
                         <p className="text-xs text-destructive leading-relaxed font-medium">
@@ -1528,6 +1944,22 @@ const MyEvents = () => {
           await fetchFeedbackHistory();
           await fetchPendingFeedbackEvents();
           showNotification('Feedback submitted successfully! Thank you.', 'success');
+        }}
+      />
+
+      {/* Required Social Handles Prompt Modal for Team Invitations */}
+      <RequiredSocialHandlesModal
+        isOpen={socialHandlesModalOpen}
+        onClose={() => {
+          setSocialHandlesModalOpen(false);
+          setSocialHandlesModalData(null);
+        }}
+        missingFields={socialHandlesModalData?.missingFields || []}
+        eventTitle={socialHandlesModalData?.eventTitle || ''}
+        onSuccess={async (handles) => {
+          if (socialHandlesModalData?.reg) {
+            await handleAcceptInvitation(socialHandlesModalData.reg, handles);
+          }
         }}
       />
     </div>

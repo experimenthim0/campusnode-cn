@@ -67,29 +67,8 @@ const EventRowSection = ({
       checkScroll();
       window.addEventListener('resize', checkScroll);
 
-      const el = scrollRef.current;
-      const onWheel = (e) => {
-        if (!el || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) return;
-        let delta = e.deltaY;
-        if (e.deltaMode === 1) delta *= 33;
-        else if (e.deltaMode === 2) delta *= el.clientWidth;
-
-        const maxScroll = el.scrollWidth - el.clientWidth;
-        if (maxScroll <= 0) return;
-        const canLeft = el.scrollLeft > 2;
-        const canRight = el.scrollLeft < maxScroll - 2;
-
-        if ((delta > 0 && canRight) || (delta < 0 && canLeft)) {
-          e.preventDefault();
-          el.scrollLeft += delta;
-        }
-      };
-
-      if (el) el.addEventListener('wheel', onWheel, { passive: false });
-
       return () => {
         window.removeEventListener('resize', checkScroll);
-        if (el) el.removeEventListener('wheel', onWheel);
       };
     }
   }, [isCarousel, events, checkScroll]);
@@ -111,12 +90,12 @@ const EventRowSection = ({
       {/* Row Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
         <div>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 border ${badgeClass}`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider mb-2 border ${badgeClass}`}>
             {badgeIcon}
             <span>{badgeText}</span>
             <span className="opacity-60 text-[11px] font-medium">({events.length})</span>
           </div>
-          <h3 className="font-black text-xl sm:text-2xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+          <h3 className="font-medium text-xl sm:text-2xl text-neutral-900 dark:text-white leading-tight tracking-tight">
             {title}
           </h3>
         </div>
@@ -315,11 +294,11 @@ const EventsCarousel = () => {
     <div className="w-full">
       {/* Section Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-semibold text-xs uppercase tracking-widest mb-1.5">
+        <div className="flex items-center gap-2 text-cn-blue-600 dark:text-cn-blue-400 font-medium text-xs uppercase tracking-widest mb-1.5">
           <span className="w-2 h-2 rounded-full bg-cn-blue-600 dark:bg-cn-blue-400" />
           <span>Latest Happenings</span>
         </div>
-        <h2 className="font-black text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
+        <h2 className="font-medium text-2xl sm:text-3xl lg:text-4xl text-neutral-900 dark:text-white leading-tight tracking-tight">
           What's Buzzing on Campus
         </h2>
       </div>

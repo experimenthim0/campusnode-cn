@@ -461,6 +461,7 @@ router.get("/:id", async (req, res) => {
           },
           createdBy: { select: { id: true, name: true } },
           reviewedBy: { select: { id: true, name: true } },
+          reviewedByFaculty: { select: { id: true, name: true } },
         },
         orderBy: { startTime: "asc" },
       }),

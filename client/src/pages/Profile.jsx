@@ -67,9 +67,8 @@ const ClubDescription = ({ description }) => {
     <div>
       <div
         ref={contentRef}
-        className={`transition-all duration-300 ${
-          !isExpanded ? 'line-clamp-3 sm:line-clamp-4 overflow-hidden' : ''
-        }`}
+        className={`transition-all duration-300 ${!isExpanded ? 'line-clamp-3 sm:line-clamp-4 overflow-hidden' : ''
+          }`}
       >
         <div
           className="campusnode-markdown-preview text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed px-0"
@@ -83,13 +82,12 @@ const ClubDescription = ({ description }) => {
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-2 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
+          className="mt-2 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors focus:outline-none"
         >
           <span>{isExpanded ? 'Show less' : 'Expand description'}</span>
           <i
-            className={`ri-arrow-down-s-line text-sm transition-transform duration-300 ${
-              isExpanded ? 'rotate-180' : ''
-            }`}
+            className={`ri-arrow-down-s-line text-sm transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
+              }`}
           />
         </button>
       )}
@@ -99,7 +97,7 @@ const ClubDescription = ({ description }) => {
 
 const SocialProfilesSection = ({ user }) => (
   <div className="mt-8 pt-6 border-t border-border">
-    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Social Profiles</h3>
+    <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Social Profiles</h3>
     <div className="flex flex-wrap gap-2">
       {user?.githubProfile && (
         <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 text-xs font-medium border-border">
@@ -200,8 +198,8 @@ const ClubsSection = ({ user, clubsMap }) => {
 
   const roleLabel = (role) =>
     role === 'CLUB_HEAD' ? 'Student Lead'
-    : role === 'COORDINATOR' ? 'Coordinator'
-    : 'Member';
+      : role === 'COORDINATOR' ? 'Coordinator'
+        : 'Member';
 
   const resolveLogo = (m) =>
     m.clubLogo ||
@@ -257,11 +255,10 @@ const ClubsSection = ({ user, clubsMap }) => {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium text-neutral-900 dark:text-white text-sm">{m.clubName || 'Club'}</h3>
-                        <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold rounded-full border ${
-                          isLead
+                        <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium rounded-full border ${isLead
                             ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
                             : 'bg-brand-50 text-brand-800 border-brand-300 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800'
-                        }`}>
+                          }`}>
                           {roleLabel(m.role)}
                         </span>
                       </div>
@@ -281,22 +278,22 @@ const ClubsSection = ({ user, clubsMap }) => {
                     >
                       <i className="ri-calendar-event-line text-xs font-light" /> Events
                     </Link>
-                     {isLead && (
-                    <Link
-                      to={`/club/${m.clubId}/team`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
-                    >
-                      <i className="ri-team-line text-xs font-light" /> Team
-                    </Link>
-                     )}
-                   
+                    {isLead && (
                       <Link
-                        to={`/club/edit/${m.clubId}`}
+                        to={`/club/${m.clubId}/team`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
                       >
-                        <i className="ri-settings-4-line text-xs text-neutral-500 font-light" /> Settings
+                        <i className="ri-team-line text-xs font-light" /> Team
                       </Link>
-                  
+                    )}
+
+                    <Link
+                      to={`/club/edit/${m.clubId}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-200/70 dark:bg-neutral-700/60 hover:bg-neutral-300/80 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-medium rounded-lg transition-colors"
+                    >
+                      <i className="ri-settings-4-line text-xs text-neutral-500 font-light" /> Settings
+                    </Link>
+
                     <Link
                       to={`/club/${m.slug || m.clubId}`}
                       className="inline-flex items-center gap-1 px-3 py-1.5 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-400 text-xs font-medium transition-colors"
@@ -440,8 +437,8 @@ const Profile = () => {
       user.memberships?.find(m => m.role === 'facultyCoordinator' || m.role === 'FACULTY' || m.role === 'FACULTY_COORDINATOR' || m.role === 'CLUB_HEAD' || m.role === 'COORDINATOR')?.clubId ||
       user.memberships?.[0]?.clubId;
 
-    if (effectiveClubId) {
-      getClubById(effectiveClubId)
+    if (effectiveClubId && typeof effectiveClubId === 'string' && effectiveClubId !== 'undefined' && effectiveClubId !== 'null' && effectiveClubId.trim()) {
+      getClubById(effectiveClubId.trim())
         .then(res => {
           if (!isMounted) return;
           const fetchedClub = res.data?.club || res.data;
@@ -464,8 +461,10 @@ const Profile = () => {
       user.principalType === 'FACULTY'
     );
 
-    if (canFetchEvents) {
-      getUserEvents(user.id || user._id)
+    const targetUserId = user.id || user._id;
+
+    if (canFetchEvents && targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null') {
+      getUserEvents(targetUserId)
         .then(res => {
           if (!isMounted) return;
           const participations = res.data || [];
@@ -581,7 +580,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
@@ -670,7 +669,7 @@ const Profile = () => {
                             <h3 className="font-medium text-neutral-900 dark:text-white text-base leading-snug">
                               {club.clubName || "Assigned Club"}
                             </h3>
-                            <span className="px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-semibold rounded-full border border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800">
+                            <span className="px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-medium rounded-full border border-brand-300 bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-400 dark:border-brand-800">
                               Faculty In-Charge
                             </span>
                           </div>
@@ -754,7 +753,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
@@ -829,7 +828,7 @@ const Profile = () => {
 
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
                     <Button asChild size="sm" className="font-medium shadow-xs">
-                      <Link to="/profile/edit">
+                      <Link to="/settings">
                         <Edit className="size-3.5 mr-1" /> Edit Profile
                       </Link>
                     </Button>
@@ -858,7 +857,7 @@ const Profile = () => {
                 {(user.program || user.branch) && (
                   <div className="bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700 rounded-xl p-4">
                     <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">Program/Branch</p>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.program} • { user.branch}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user.program} • {user.branch}</p>
                   </div>
                 )}
                 {displayAcademicStanding && (

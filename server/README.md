@@ -25,7 +25,7 @@ server/
 │   └── clubMemberController.js         # Club roster, coordinator hierarchy & membership management
 │
 ├── emails/                             # Transactional email engine & BullMQ worker
-│   ├── config/                         # Resend & Nodemailer transport configurations
+│   ├── config/                         # Centralized SMTP & Nodemailer transport configurations
 │   ├── templates/                      # Responsive HTML email templates
 │   ├── emailQueue.js                   # BullMQ job queue & background worker with fallback
 │   └── emailService.js                 # Template compiler & direct dispatcher
@@ -99,7 +99,7 @@ server/
 │   ├── rbac.js                         # Granular Role-Based Access Control matrix & permissions
 │   ├── sanitizeInput.js                # Input sanitization against XSS & injection attacks
 │   ├── sanitizeUser.js                 # Strips sensitive fields (passwords, tokens) from user models
-│   ├── sendEmail.js                    # Transactional email sender via Nodemailer / Resend
+│   ├── sendEmail.js                    # Transactional email sender facade via Nodemailer SMTP
 │   ├── sendPush.js                     # Web push notification sender via web-push / VAPID
 │   ├── slugify.js                      # URL-friendly slug generator
 │   ├── slugifyUnique.js                # Unique slug collision resolver
@@ -112,7 +112,7 @@ server/
 ├── index.js                            # Express application setup & Socket.io server entry point
 ├── package.json                        # Node.js project manifest & dependencies
 ├── package-lock.json                   # Deterministic dependency tree lockfile
-├── prisma.config.ts                    # Prisma configuration options
+├── prisma.config.js                    # Prisma configuration options
 ├── qr-signing-private.pem              # Private key for digital ticket signing (PEM format)
 ├── qr-signing-public.pem               # Public key for scanner verification (PEM format)
 └── vitest.config.js                    # Vitest unit test runner configuration

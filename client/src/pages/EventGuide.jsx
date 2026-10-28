@@ -329,7 +329,7 @@ const EventGuide = () => {
         {/* Custom Field Types */}
         <section className="bg-cn-surface-elevated border border-cn-border rounded-2xl p-6 md:p-8 mb-6 shadow-sm relative">
              <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16" />
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
+          <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
             <i className="ri-magic-line text-brand-600 text-xl" />
             Custom Registration Field Types
           </h2>

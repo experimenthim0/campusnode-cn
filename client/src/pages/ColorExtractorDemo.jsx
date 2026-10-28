@@ -29,7 +29,7 @@ export const ColorExtractorDemo = () => {
         <span className="px-3 py-1 text-xs font-medium tracking-wider text-purple-400 uppercase bg-purple-950/40 rounded-full border border-purple-800/30">
           Component Showcase
         </span>
-        <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
+        <h1 className="mt-4 text-4xl sm:text-5xl font-medium tracking-tight bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
           Dynamic Color Extractor Card
         </h1>
         <p className="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">

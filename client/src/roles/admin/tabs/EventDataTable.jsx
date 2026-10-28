@@ -215,7 +215,7 @@ const EventDataTable = ({
                         {isAnyFilterActive && (
                             <button
                                 onClick={handleResetFilters}
-                                className="h-9 px-2.5 rounded-xl border border-neutral-200 dark:border-zinc-800 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 text-[11px] font-semibold tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                                className="h-9 px-2.5 rounded-xl border border-neutral-200 dark:border-zinc-800 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-zinc-800 text-[11px] font-medium tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
                                 title="Reset all filters"
                             >
                                 <RotateCcw size={12} />
@@ -282,7 +282,7 @@ const EventDataTable = ({
                                         href={eventUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-semibold text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
+                                        className="font-medium text-black dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition-colors inline-flex items-center gap-1.5 group max-w-xs md:max-w-md truncate"
                                         title={eventTitle}
                                     >
                                         <span className="truncate group-hover:underline">{eventTitle}</span>
@@ -304,14 +304,14 @@ const EventDataTable = ({
                                 <Td>
                                     <span 
                                         className={`font-medium text-xs ${
-                                            isCentral ? "text-brand-600 dark:text-brand-400 font-semibold" : "text-neutral-800 dark:text-neutral-200"
+                                            isCentral ? "text-brand-600 dark:text-brand-400 font-medium" : "text-neutral-800 dark:text-neutral-200"
                                         }`}
                                         title={isCentral ? 'Office of DSW (Central)' : clubName}
                                     >
                                         {clubName}
                                     </span>
                                 </Td>
-                                <Td className="text-right font-mono font-semibold text-xs text-neutral-900 dark:text-neutral-100">
+                                <Td className="text-right font-mono font-medium text-xs text-neutral-900 dark:text-neutral-100">
                                     {item.registrationType === 'none' ? (
                                         <span className="text-neutral-400 font-normal">—</span>
                                     ) : (
@@ -336,7 +336,7 @@ const EventDataTable = ({
                                     {isAnyFilterActive && (
                                         <button
                                             onClick={handleResetFilters}
-                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                                         >
                                             <RotateCcw size={11} />
                                             Reset all filters

@@ -191,7 +191,7 @@ const PaymentTracking = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen flex items-center justify-center bg-cn-bg">
         <ShimmerText text="Loading payment tracking..." className="text-sm font-medium tracking-wide" />
       </div>
     );
@@ -199,10 +199,10 @@ const PaymentTracking = () => {
 
   if (!hasAnyAccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-cn-bg p-6">
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 rounded-2xl shadow-sm max-w-sm text-center">
           <i className="ri-error-warning-line text-4xl text-rose-500 mb-3 block" />
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Access Restricted</h3>
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50">Access Restricted</h3>
           <p className="text-xs text-neutral-500 mt-2 font-medium">
             This panel is only accessible to authorized club heads and coordinators.
           </p>
@@ -213,12 +213,12 @@ const PaymentTracking = () => {
 
   if (isForbiddenForClub) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 py-12 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-cn-bg py-12 px-6 lg:px-12 text-cn-text flex items-center justify-center">
         <div className="bg-white dark:bg-neutral-900 border border-rose-200 dark:border-rose-900/40 p-8 rounded-2xl shadow-sm max-w-md w-full text-center">
           <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center mx-auto mb-4 text-rose-500">
             <i className="ri-shield-cross-line text-2xl" />
           </div>
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Permission Denied</h3>
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50">Permission Denied</h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 font-medium">
             You do not have coordinator or club head permissions to review payments for this specific club.
           </p>
@@ -256,14 +256,14 @@ const PaymentTracking = () => {
   const totalPaidEventsCount = events.length;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 py-10 px-6 lg:px-12 text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen bg-cn-bg py-10 px-6 lg:px-12 text-cn-text">
       <div className="max-w-7xl mx-auto">
         
         {/* Multi-Club Switcher (When user coordinates / manages multiple clubs) */}
         {authorizedClubs.length > 1 && (
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-semibold text-base shrink-0 border border-brand-500/20">
+              <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-medium text-base shrink-0 border border-brand-500/20">
                 <i className="ri-building-line text-lg" />
               </div>
               <div>
@@ -272,12 +272,12 @@ const PaymentTracking = () => {
                     Active Club Scope
                   </span>
                   {activeClub.role && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-md border border-brand-200/50 dark:border-brand-900/30">
+                    <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-md border border-brand-200/50 dark:border-brand-900/30">
                       {activeClub.role}
                     </span>
                   )}
                 </div>
-                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mt-0.5">
+                <h2 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-neutral-50 mt-0.5">
                   {activeClub.name}
                 </h2>
               </div>
@@ -354,7 +354,7 @@ const PaymentTracking = () => {
         {events.length === 0 ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-16 text-center shadow-sm">
             <i className="ri-money-dollar-circle-line text-5xl text-neutral-300 dark:text-neutral-700 mb-3 block animate-pulse" />
-            <p className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">No Paid Events Registered</p>
+            <p className="text-lg font-medium text-neutral-800 dark:text-neutral-200">No Paid Events Registered</p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 font-medium max-w-md mx-auto">
               Create an event with a manual payment method or registration fee for {activeClub.name} to start tracking finances here.
             </p>
@@ -386,7 +386,7 @@ const PaymentTracking = () => {
                           <td className="px-6 py-4 text-sm font-medium text-neutral-600 dark:text-neutral-350">
                             ₹{event.registrationFee || event.entryFee}
                           </td>
-                          <td className="px-6 py-4 text-base font-semibold text-brand-650 dark:text-brand-500">
+                          <td className="px-6 py-4 text-base font-medium text-brand-650 dark:text-brand-500">
                             ₹{stats.totalCollected || 0}
                           </td>
                           <td className="px-6 py-4 text-sm font-medium text-neutral-600 dark:text-neutral-300">
@@ -394,17 +394,17 @@ const PaymentTracking = () => {
                           </td>
                           <td className="px-6 py-4">
                             {event.paymentMethod === 'MANUAL_TRANSACTION' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 dark:bg-neutral-850 text-neutral-700 dark:text-neutral-300 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-neutral-200 dark:border-neutral-750">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 dark:bg-neutral-850 text-neutral-700 dark:text-neutral-300 text-[10px] font-medium uppercase tracking-wider rounded-full border border-neutral-200 dark:border-neutral-750">
                                 <i className="ri-qr-code-line text-xs text-neutral-500 dark:text-neutral-400" />
                                 Direct UPI
                               </span>
                             ) : event.paymentMethod === 'COLLEGE_PAYMENT' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-blue-200/50 dark:border-blue-900/50">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 text-[10px] font-medium uppercase tracking-wider rounded-full border border-blue-200/50 dark:border-blue-900/50">
                                 <i className="ri-bank-line text-xs" />
                                 College Portal
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-emerald-200/50 dark:border-emerald-900/50">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 text-[10px] font-medium uppercase tracking-wider rounded-full border border-emerald-200/50 dark:border-emerald-900/50">
                                 Free
                               </span>
                             )}
@@ -429,17 +429,17 @@ const PaymentTracking = () => {
             {selectedEvent && (
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm mb-10">
                 <div className="bg-neutral-50 dark:bg-neutral-950 px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                  <h3 className="font-semibold text-xs uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                  <h3 className="font-medium text-xs uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                     Transaction Audit Ledger — {events.find((e) => (e.id || e._id) === selectedEvent)?.title}
                   </h3>
-                  <span className="font-mono text-[10px] font-semibold bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-full">
+                  <span className="font-mono text-[10px] font-medium bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-full">
                     {paymentStats[selectedEvent]?.registrations?.length || 0} entries
                   </span>
                 </div>
 
                 {!paymentStats[selectedEvent]?.registrations || paymentStats[selectedEvent].registrations.length === 0 ? (
                   <div className="p-12 text-center bg-white dark:bg-neutral-900">
-                    <p className="text-neutral-400 dark:text-neutral-500 font-semibold text-sm">No transaction records logged for this event.</p>
+                    <p className="text-neutral-400 dark:text-neutral-500 font-medium text-sm">No transaction records logged for this event.</p>
                   </div>
                 ) : (() => {
                   const currentRegistrations = paymentStats[selectedEvent]?.registrations || [];
@@ -469,14 +469,14 @@ const PaymentTracking = () => {
                                 <td className="px-6 py-3.5 text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                   {reg.studentName || 'N/A'}
                                 </td>
-                                <td className="px-6 py-3.5 text-xs font-mono text-neutral-500 dark:text-neutral-405 select-all font-semibold">
+                                <td className="px-6 py-3.5 text-xs font-mono text-neutral-500 dark:text-neutral-405 select-all font-medium">
                                   {reg.paymentId || 'N/A'}
                                 </td>
-                                <td className="px-6 py-3.5 text-sm font-semibold text-brand-655 dark:text-brand-500">
+                                <td className="px-6 py-3.5 text-sm font-medium text-brand-655 dark:text-brand-500">
                                   ₹{reg.amountPaid || 0}
                                 </td>
                                 <td className="px-6 py-3.5">
-                                  <span className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                                  <span className={`text-[9px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                                     reg.paymentStatus === 'SUCCESS' || reg.paymentStatus === 'APPROVED'
                                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50' 
                                       : reg.paymentStatus === 'REJECTED'

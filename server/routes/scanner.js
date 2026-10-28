@@ -47,6 +47,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
         name: true,
         department: true,
         coordinatedClubs: { select: { id: true, clubName: true } },
+        clubCoordinators: { select: { club: { select: { id: true, clubName: true } } } },
       },
     });
 
@@ -54,7 +55,13 @@ router.post("/login", validate(loginSchema), async (req, res) => {
       const match = await bcrypt.compare(password, faculty.password);
       if (!match) return res.status(401).json({ message: "Invalid credentials." });
 
-      const clubs = faculty.coordinatedClubs || [];
+      const clubsMap = new Map();
+      (faculty.coordinatedClubs || []).forEach((c) => clubsMap.set(c.id, c));
+      (faculty.clubCoordinators || []).forEach((cc) => {
+        if (cc.club) clubsMap.set(cc.club.id, cc.club);
+      });
+      const clubs = Array.from(clubsMap.values());
+
       if (clubs.length === 0) {
         return res.status(403).json({ message: "Scanner access requires assigned club coordinator role." });
       }

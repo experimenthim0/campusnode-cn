@@ -129,8 +129,14 @@ async function getFeaturedEventSetting() {
 
 // ─────────────────────────────────────────────────────────────
 // 1. PUBLIC: GET /api/featured-events & /all (Homepage & Event Feed - top 3 or all)
+// [FEATURED EVENTS TEMPORARILY DISABLED FOR PERFORMANCE]
+// Returns an empty list immediately to eliminate heavy DB queries.
+// To re-enable in the future, uncomment the implementation block below.
 // ─────────────────────────────────────────────────────────────
 router.get(["/", "/all"], async (req, res) => {
+  return res.json({ events: [], orderingMode: "CUSTOM", totalActive: 0 });
+
+  /*
   try {
     const setting = await getFeaturedEventSetting();
     const orderingMode = setting.orderingMode || "CUSTOM";
@@ -206,12 +212,19 @@ router.get(["/", "/all"], async (req, res) => {
     console.error("Error fetching public featured events:", err);
     res.status(500).json({ message: "Failed to load featured events." });
   }
+  */
 });
 
 // ─────────────────────────────────────────────────────────────
 // 2. PUBLIC: GET /api/featured-events/active (Direct list of active for homepage)
+// [FEATURED EVENTS TEMPORARILY DISABLED FOR PERFORMANCE]
+// Returns an empty list immediately to eliminate heavy DB queries.
+// To re-enable in the future, uncomment the implementation block below.
 // ─────────────────────────────────────────────────────────────
 router.get("/active", async (req, res) => {
+  return res.json({ events: [], orderingMode: "CUSTOM", count: 0 });
+
+  /*
   try {
     const setting = await getFeaturedEventSetting();
     const orderingMode = setting.orderingMode || "CUSTOM";
@@ -282,6 +295,7 @@ router.get("/active", async (req, res) => {
     console.error("Error fetching active featured events:", err);
     res.status(500).json({ message: "Failed to load active featured events." });
   }
+  */
 });
 
 // ─────────────────────────────────────────────────────────────

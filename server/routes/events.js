@@ -20,6 +20,7 @@ import { validateCustomFields } from "../utils/customFields.js";
 import { generateEventSocialHtml, generateDefaultSocialHtml } from "../utils/eventSocialMetadata.js";
 import { MAX_WAITLIST_CAPACITY, promoteWaitlistCandidates, notifyWaitlistCleared } from "../services/waitlistService.js";
 import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
+import viewCounter from "../services/viewCounterService.js";
 
 const router = express.Router();
 
@@ -27,21 +28,35 @@ const router = express.Router();
 // are read so every ticket returned to the web app or scanner is usable and
 // the generated payload is persisted for future requests.
 const ensureParticipationTicket = async (participation) => {
-  if (participation?.qrCode && participation?.qrPayload) return participation;
+  if (!participation) return participation;
+  if (participation.qrCode && participation.qrPayload) return participation;
 
-  const ticketId = participation?.qrCode || crypto.randomBytes(12).toString("base64url");
-  const signed = signTicket(participation.eventId, ticketId);
-  const updated = await prisma.participation.update({
-    where: { id: participation.id },
-    data: {
-      qrCode: ticketId,
-      qrPayload: signed.qrPayload,
-      qrVersion: signed.qrVersion,
-      qrKeyId: signed.qrKeyId,
-    },
-  });
+  // Synthetic records (such as winning projections: "win_...") do not exist
+  // in the Prisma Participation table. Skip updating them in the database.
+  if (!participation.id || String(participation.id).startsWith("win_")) {
+    return participation;
+  }
 
-  return { ...participation, ...updated };
+  try {
+    const ticketId = participation.qrCode || crypto.randomBytes(12).toString("base64url");
+    const signed = signTicket(participation.eventId, ticketId);
+    const updated = await prisma.participation.update({
+      where: { id: participation.id },
+      data: {
+        qrCode: ticketId,
+        qrPayload: signed.qrPayload,
+        qrVersion: signed.qrVersion,
+        qrKeyId: signed.qrKeyId,
+      },
+    });
+
+    return { ...participation, ...updated };
+  } catch (err) {
+    // If the record was removed or update fails, return participation gracefully
+    // rather than failing the entire request with an unhandled 500.
+    console.warn(`[ensureParticipationTicket] Could not update ticket for participation ${participation.id}:`, err?.message);
+    return participation;
+  }
 };
 
 const upload = multer({
@@ -180,9 +195,11 @@ const eventSchema = z.object({
     entryFee: z.coerce.number().optional(),
     imageUrl: z.string().url().optional().nullable().or(z.literal("")),
     requiredFields: z.array(z.string()).optional(),
+    customFields: z.array(z.any()).optional(),
     allowedPrograms: z.array(z.string()).optional(),
     allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
     allowedBranches: z.array(z.string()).optional(),
+    allowExternal: z.boolean().optional(),
     registrationDeadline: z.coerce.date().optional().nullable(),
     registrationType: z.enum(['individual', 'team', 'both', 'none']).optional().default('individual'),
     minTeamSize: z.coerce.number().int().min(1).optional().default(1),
@@ -194,8 +211,10 @@ const eventSchema = z.object({
     allowWaitlist: z.boolean().optional().default(true),
     certificateTemplate: z.any().optional(),
     registrationFee: z.coerce.number().optional().default(0),
+    paymentMethod: z.string().optional().nullable(),
     paymentInstructions: z.string().optional().nullable(),
     collegePaymentUrl: z.string().optional().nullable().or(z.literal("")),
+    upiId: z.string().optional().nullable(),
     postRegistrationMessage: z.string().optional().nullable(),
     accountHolderName: z.string().optional().nullable(),
     reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
@@ -216,8 +235,58 @@ const eventSchema = z.object({
   params: z.object({}).passthrough().optional(),
 });
 
+// Explicit update schema without defaults so partial saves (e.g. step by step in EditEvent)
+// do not overwrite unprovided fields like registrationType or team sizes.
+const eventUpdateBodySchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional().nullable(),
+  venue: z.string().optional(),
+  startTime: z.coerce.date().optional().nullable(),
+  endTime: z.coerce.date().optional().nullable(),
+  totalSeats: z.coerce.number().int().optional(),
+  entryFee: z.coerce.number().optional(),
+  imageUrl: z.string().url().optional().nullable().or(z.literal("")),
+  requiredFields: z.array(z.string()).optional(),
+  customFields: z.array(z.any()).optional(),
+  allowedPrograms: z.array(z.string()).optional(),
+  allowedYears: z.array(z.union([z.string(), z.number()])).optional(),
+  allowedBranches: z.array(z.string()).optional(),
+  allowExternal: z.boolean().optional(),
+  registrationDeadline: z.coerce.date().optional().nullable(),
+  registrationType: z.enum(['individual', 'team', 'both', 'none']).optional(),
+  minTeamSize: z.coerce.number().int().min(1).optional(),
+  maxTeamSize: z.coerce.number().int().min(1).optional(),
+  winners: z.array(z.any()).optional(),
+  showWinner: z.boolean().optional(),
+  provideCertificate: z.boolean().optional(),
+  feedbackEnabled: z.boolean().optional(),
+  allowWaitlist: z.boolean().optional(),
+  certificateTemplate: z.any().optional().nullable(),
+  registrationFee: z.coerce.number().optional(),
+  paymentMethod: z.string().optional().nullable(),
+  paymentInstructions: z.string().optional().nullable(),
+  collegePaymentUrl: z.string().optional().nullable().or(z.literal("")),
+  upiId: z.string().optional().nullable(),
+  postRegistrationMessage: z.string().optional().nullable(),
+  accountHolderName: z.string().optional().nullable(),
+  reviewStatus: z.enum(['DRAFT', 'PENDING', 'PUBLISHED', 'REJECTED']).optional(),
+  isDraft: z.boolean().optional(),
+  clubIds: z.array(z.string()).optional(),
+  clubId: z.string().optional(),
+  expectedUpdatedAt: z.string().optional().nullable(),
+  sponsors: z.array(z.object({
+    name: z.string().min(1),
+    logoUrl: z.string().url(),
+    websiteUrl: z.string().url().optional().nullable().or(z.literal("")),
+  })).optional(),
+  media: z.array(z.object({
+    url: z.string().url(),
+    type: z.enum(['IMAGE', 'VIDEO', 'SPONSOR_LOGO']),
+  })).optional(),
+}).passthrough();
+
 const eventUpdateSchema = z.object({
-  body: eventSchema.shape.body.partial().passthrough(),
+  body: eventUpdateBodySchema,
   query: z.object({}).passthrough().optional(),
   params: z.object({}).passthrough().optional(),
 });
@@ -229,6 +298,9 @@ const eventInclude = {
   },
   reviewedBy: {
     select: { id: true, name: true },
+  },
+  reviewedByFaculty: {
+    select: { id: true, name: true, email: true },
   },
   organizers: {
     include: {
@@ -990,6 +1062,10 @@ router.get(
   verifyToken,
   async (req, res) => {
     try {
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+
       const { clubId } = req.params;
       const events = await prisma.event.findMany({
         where: {
@@ -1150,13 +1226,22 @@ router.get(
             select: {
               id: true,
               teamName: true,
+              leaderId: true,
               leaderStudentId: true,
+              rejectedMembers: true,
               leaderStudent: { select: { id: true, name: true, email: true, rollNo: true } },
               members: {
                 select: {
                   id: true,
                   studentId: true,
+                  role: true,
                   student: { select: { id: true, name: true, email: true, rollNo: true } },
+                },
+              },
+              participations: {
+                select: {
+                  studentId: true,
+                  status: true,
                 },
               },
             },
@@ -1181,43 +1266,47 @@ router.get(
           },
         });
         if (studentInfo) {
-          const eventsWithWinners = await prisma.event.findMany({
-            where: {
-              winners: { not: null },
-              id: { notIn: Array.from(registeredEventIds) },
-            },
-            select: {
-              ...publicEventSelect,
-              customFields: true,
-              postRegistrationMessage: true,
-              paymentInstructions: true,
-              collegePaymentUrl: true,
-              accountHolderName: true,
-              certificateTemplate: true,
-            },
-          });
-          for (const ev of eventsWithWinners) {
-            if (Array.isArray(ev.winners) && ev.winners.length > 0) {
-              const isWinner = ev.winners.some((w) =>
-                (w.studentId && String(w.studentId) === String(studentInfo.id)) ||
-                (w.rollNo && studentInfo.rollNo && String(w.rollNo).trim().toLowerCase() === studentInfo.rollNo.trim().toLowerCase()) ||
-                (w.email && studentInfo.email && String(w.email).trim().toLowerCase() === studentInfo.email.trim().toLowerCase()) ||
-                (w.name && studentInfo.name && String(w.name).toLowerCase().includes(studentInfo.name.toLowerCase()))
-              );
-              if (isWinner) {
-                participations.push({
-                  id: `win_${ev.id}_${studentInfo.id}`,
-                  eventId: ev.id,
-                  studentId: studentInfo.id,
-                  status: "ATTENDED",
-                  paymentStatus: "SUCCESS",
-                  createdAt: ev.createdAt,
-                  updatedAt: ev.updatedAt,
-                  event: ev,
-                  student: studentInfo,
-                });
+          try {
+            const eventsWithWinners = await prisma.event.findMany({
+              where: {
+                showWinner: true,
+                id: { notIn: Array.from(registeredEventIds) },
+              },
+              select: {
+                ...publicEventSelect,
+                customFields: true,
+                postRegistrationMessage: true,
+                paymentInstructions: true,
+                collegePaymentUrl: true,
+                accountHolderName: true,
+                certificateTemplate: true,
+              },
+            });
+            for (const ev of eventsWithWinners) {
+              if (Array.isArray(ev.winners) && ev.winners.length > 0) {
+                const isWinner = ev.winners.some((w) =>
+                  (w.studentId && String(w.studentId) === String(studentInfo.id)) ||
+                  (w.rollNo && studentInfo.rollNo && String(w.rollNo).trim().toLowerCase() === studentInfo.rollNo.trim().toLowerCase()) ||
+                  (w.email && studentInfo.email && String(w.email).trim().toLowerCase() === studentInfo.email.trim().toLowerCase()) ||
+                  (w.name && studentInfo.name && String(w.name).toLowerCase().includes(studentInfo.name.toLowerCase()))
+                );
+                if (isWinner) {
+                  participations.push({
+                    id: `win_${ev.id}_${studentInfo.id}`,
+                    eventId: ev.id,
+                    studentId: studentInfo.id,
+                    status: "ATTENDED",
+                    paymentStatus: "SUCCESS",
+                    createdAt: ev.createdAt,
+                    updatedAt: ev.updatedAt,
+                    event: ev,
+                    student: studentInfo,
+                  });
+                }
               }
             }
+          } catch (winnerQueryErr) {
+            console.warn("[getUserEvents] Error checking external winners:", winnerQueryErr?.message);
           }
         }
       }
@@ -1412,9 +1501,7 @@ router.post("/", verifyToken, requirePermission(PERMISSIONS.EVENT_CREATE), valid
       include: eventInclude,
     });
 
-    if (!isDraft) {
-      invalidatePublicResponses(["events:public:*"]);
-    }
+    invalidatePublicResponses(["events", "events:*"]);
 
     // Notify supervised Faculty Coordinator of incoming event review request ONLY if PENDING
     if (!isDraft && targetClubIds.length > 0) {
@@ -1462,7 +1549,11 @@ router.put(
   requirePermission(PERMISSIONS.EVENT_APPROVE),
   async (req, res) => {
     try {
-      const { status, comment } = req.body;
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.set("Pragma", "no-cache");
+
+      const { status } = req.body;
+      const comment = (req.body.comment || req.body.reason || "").trim();
       if (!["PUBLISHED", "REJECTED"].includes(status)) {
         return res.status(400).json({ message: "Invalid review status." });
       }
@@ -1473,6 +1564,12 @@ router.put(
       });
       if (!event) return res.status(404).json({ message: "Event not found" });
 
+      if (event.reviewStatus === "PUBLISHED" && status === "REJECTED") {
+        return res.status(400).json({
+          message: "Cannot reject an event that has already been approved and published.",
+        });
+      }
+
       const eventClubIds = event.organizers.map(o => o.clubId);
       if (req.user.role !== "admin" && (!req.user.clubId || !eventClubIds.includes(req.user.clubId))) {
         return res.status(403).json({
@@ -1480,12 +1577,14 @@ router.put(
         });
       }
 
+      const isFaculty = req.user.userType === "faculty" || req.user.principalType === "FACULTY" || req.user.role === "facultyCoordinator";
       const updated = await prisma.event.update({
         where: { id: req.params.id },
         data: {
           reviewStatus: status,
-          reviewComment: comment,
-          reviewedById: req.user.userId,
+          reviewComment: comment || null,
+          reviewedById: isFaculty ? null : req.user.userId,
+          reviewedByFacultyId: isFaculty ? req.user.userId : null,
         },
         include: eventInclude,
       });
@@ -1496,10 +1595,9 @@ router.put(
           const notif = await prisma.notification.create({
             data: {
               id: createObjectId(),
-              targetScope: "USER",
               recipientStudentId: updated.createdById,
-              recipientUserId: updated.createdById,
-              senderAdminId: req.user.userId,
+              senderAdminId: isFaculty ? null : req.user.userId,
+              senderFacultyId: isFaculty ? req.user.userId : null,
               eventId: updated.id,
               clubId: primaryClubId,
               type: "EVENT_REVIEW_RESULT",
@@ -1520,6 +1618,8 @@ router.put(
           console.error("Failed to notify event creator of review result:", revNotifErr.message);
         }
       }
+
+      invalidatePublicResponses(["events", "events:*"]);
 
       res.json({
         message: `Event ${status.toLowerCase()} successfully`,
@@ -1610,6 +1710,7 @@ router.post(
         req.user.role === "admin" ||
         hasPermission(req.user, PERMISSIONS.EVENT_PUBLISH, event);
       const shouldDirectPublish = Boolean(req.body.directPublish && canDirectPublish);
+      const isFaculty = req.user.userType === "faculty" || req.user.principalType === "FACULTY" || req.user.role === "facultyCoordinator";
       const targetStatus = shouldDirectPublish ? "PUBLISHED" : "PENDING";
 
       const updated = await prisma.event.update({
@@ -1617,13 +1718,14 @@ router.post(
         data: {
           reviewStatus: targetStatus,
           reviewComment: null,
-          reviewedById: shouldDirectPublish ? req.user.userId : null,
+          reviewedById: shouldDirectPublish ? (isFaculty ? null : req.user.userId) : null,
+          reviewedByFacultyId: shouldDirectPublish ? (isFaculty ? req.user.userId : null) : null,
         },
         include: eventInclude,
       });
 
       if (targetStatus === "PUBLISHED") {
-        invalidatePublicResponses(["events:public:*"]);
+        invalidatePublicResponses(["events", "events:*"]);
       } else if (targetStatus === "PENDING" && updated.organizers?.length > 0) {
         try {
           const clubIds = updated.organizers.map(o => o.clubId);
@@ -1717,14 +1819,16 @@ router.get("/:id", async (req, res) => {
     const isAnonymous = !req.headers.authorization && !req.cookies?.token;
 
     // Use cached response for anonymous public requests
-    if (isAnonymous && req.query.skipIncrement !== "true") {
+    if (isAnonymous) {
       const cached = await getPublicResponse(cacheKey);
       if (cached) {
-        if (cached.id) {
-          prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${cached.id}`.catch(() => {});
+        let liveViews = cached.views;
+        if (cached.id && req.query.skipIncrement !== "true") {
+          viewCounter.recordView(cached.id);
+          liveViews = await viewCounter.getLiveViews(cached.id, cached.views);
         }
         res.set("X-Public-Cache", "HIT");
-        return res.json(cached);
+        return res.json({ ...cached, views: liveViews });
       }
     }
 
@@ -1786,15 +1890,16 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    // Fire-and-forget views count increment asynchronously via raw SQL to prevent modifying event.updatedAt
+    // Fast view counter increment via Redis (persisted to PostgreSQL in background batches)
     if (req.query.skipIncrement !== 'true') {
-      prisma.$executeRaw`UPDATE "Event" SET "views" = "views" + 1 WHERE "id" = ${event.id}`.catch((err) =>
-        console.error("Async view increment error:", err.message)
-      );
+      viewCounter.recordView(event.id);
     }
+
+    const liveViews = await viewCounter.getLiveViews(event.id, event.views);
 
     const response = {
       ...serializeEvent(event),
+      views: liveViews,
       attendedCount
     };
 
@@ -2919,6 +3024,8 @@ router.put("/:id", verifyToken, requirePermission(PERMISSIONS.EVENT_UPDATE), val
       }
     }
 
+    invalidatePublicResponses(["events", "events:*"]);
+
     res.json(serializeEvent(updatedEvent));
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -2970,6 +3077,7 @@ router.delete("/:id", verifyToken, requirePermission([PERMISSIONS.EVENT_DELETE, 
         }
       }
 
+      invalidatePublicResponses(["events", "events:*"]);
       return res.json({ message: "Event deleted successfully." });
     }
 

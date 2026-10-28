@@ -173,7 +173,7 @@ export default function FeedbackSurveyPreview() {
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">
                 Student Feedback Form
               </span>
-              <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-medium text-neutral-900 dark:text-white tracking-tight">
                 Post-Event Feedback Questions
               </h1>
               <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1">
@@ -232,7 +232,7 @@ export default function FeedbackSurveyPreview() {
                   <span className="text-[11px] font-medium tracking-wider uppercase text-neutral-500 dark:text-neutral-400 block">
                     Event Feedback
                   </span>
-                  <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white tracking-tight">
+                  <h2 className="text-lg sm:text-xl font-medium text-neutral-900 dark:text-white tracking-tight">
                     How was your experience?
                   </h2>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400 pt-0.5">
@@ -265,7 +265,7 @@ export default function FeedbackSurveyPreview() {
                       <CheckCircle2 className="w-6 h-6" />
                     </div>
                     <div className="space-y-1 max-w-sm mx-auto">
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                      <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
                         Feedback Submitted
                       </h3>
                       <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -304,7 +304,7 @@ export default function FeedbackSurveyPreview() {
                     {/* Section 1: 6 Star Ratings */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                        <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
                           Rate Your Experience (1–5)
                         </h3>
                         <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
@@ -373,7 +373,7 @@ export default function FeedbackSurveyPreview() {
                     {/* Section 3: Qualitative Written Prompts */}
                     <div className="space-y-3 pt-1">
                       <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                        <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
                           Written Comments
                         </h3>
                         <span className="text-[11px] text-neutral-400 font-medium">
@@ -447,7 +447,7 @@ export default function FeedbackSurveyPreview() {
             
             {/* Rating Questions Breakdown */}
             <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-sm font-medium text-neutral-900 dark:text-white uppercase tracking-wider">
                 1. Star Rating Criteria (1–5 Scale)
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -478,7 +478,7 @@ export default function FeedbackSurveyPreview() {
 
             {/* Attendance Intent */}
             <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-sm font-medium text-neutral-900 dark:text-white uppercase tracking-wider">
                 2. Return Attendance Intent
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -515,7 +515,7 @@ export default function FeedbackSurveyPreview() {
 
             {/* Qualitative Prompts */}
             <div className="bg-cn-surface border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-sm font-medium text-neutral-900 dark:text-white uppercase tracking-wider">
                 3. Qualitative Text Inputs
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">

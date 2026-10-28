@@ -133,7 +133,7 @@ const TermsAndConditions = () => {
                     {/* Section 5: Prohibited Activities */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
                         <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-4 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">5</span>
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">5</span>
                             Prohibited Activities
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
@@ -159,7 +159,7 @@ const TermsAndConditions = () => {
                     {/* Section 6: Limitation of Liability */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
                         <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">6</span>
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">6</span>
                             Limitation of Liability
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -170,7 +170,7 @@ const TermsAndConditions = () => {
                     {/* Section 7: Updates */}
                     <section className="bg-cn-surface border border-cn-border rounded-2xl p-6 md:p-8 shadow-sm">
                         <h2 className="text-base font-medium text-neutral-900 dark:text-white mb-3 flex items-center gap-2.5">
-                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center">7</span>
+                            <span className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium flex items-center justify-center">7</span>
                             Modifications to Terms
                         </h2>
                         <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">

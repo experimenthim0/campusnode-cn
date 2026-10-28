@@ -31,12 +31,12 @@
     "pg": "^8.20.0",
     "prisma": "^7.7.0",
     "qrcode": "^1.5.4",
-    "resend": "^6.12.2",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "fast-check": "^4.6.0",
     "nodemon": "^3.1.11",
     "socket.io-client": "^4.8.3",
@@ -58,6 +58,7 @@
     "seed": "node scripts/seed-admin.js",
     "seed:admin": "node scripts/seed-admin.js",
     "test:load": "node load-tests/run-full-load-test.js",
+    "test:k6": "k6 run load-tests/k6-comprehensive-suite.js",
     "test:redis-usage": "node load-tests/benchmark-redis-usage.js",
     "benchmark:otel": "node load-tests/benchmark-otel-comparison.js",
     "secrets:staging": "node scripts/generate-staging-secrets.js",

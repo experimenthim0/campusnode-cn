@@ -11,8 +11,6 @@ import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import { calculateAcademicProgress } from "../utils/academicProgress.js";
 import { getStudentRoleAndClub } from "./auth.js";
 
-// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
-import { evaluateRolloutAccess } from "../temporary-rollout/index.js";
 
 const router = express.Router();
 
@@ -71,60 +69,16 @@ router.get("/me", verifyToken, async (req, res) => {
 
         const effectivePermissions = getEffectivePermissions({ ...req.user, role, clubId: safeUser.clubId }, clubInfo?.id);
 
-        safeUser.rollout = await evaluateRolloutAccess(safeUser);
-
         return res.json({
           user: safeUser,
           role,
           userType: "faculty",
           principalType: "FACULTY",
           effectivePermissions,
-          rollout: safeUser.rollout,
         });
       }
 
-      const user = await prisma.adminRole.findUnique({ where: { id: userId } });
-      if (user) {
-        const safeUser = sanitizeUser(user);
-        const isFaculty = user.role === "facultyCoordinator";
-        safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
-
-        const clubInfo = isFaculty
-          ? await prisma.club.findFirst({ where: { facultyCoordinatorId: user.id } })
-          : null;
-        safeUser.clubId = clubInfo?.id ?? null;
-        safeUser.memberships = clubInfo ? [{
-          id: `fac_${clubInfo.id}`,
-          clubId: clubInfo.id,
-          clubName: clubInfo.clubName,
-          role: "facultyCoordinator",
-          status: "ACTIVE",
-          customPermissions: [],
-          canTakeAttendance: true,
-          canEditEvents: true,
-          permissions: {
-            canTakeAttendance: true,
-            canViewDashboard: true,
-            canCheckRegistration: true,
-            canEditEvents: true,
-          },
-        }] : [];
-
-        const effectivePermissions = getEffectivePermissions(req.user, clubInfo?.id);
-
-        safeUser.rollout = await evaluateRolloutAccess(safeUser);
-
-        return res.json({
-          user: safeUser,
-          role: user.role,
-          userType: "admin",
-          principalType: safeUser.principalType,
-          effectivePermissions,
-          rollout: safeUser.rollout,
-        });
-      }
-
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Faculty user not found." });
     }
 
     if (userType === "admin" || principalType === "ADMIN") {
@@ -140,15 +94,12 @@ router.get("/me", verifyToken, async (req, res) => {
 
       const effectivePermissions = getEffectivePermissions(req.user, null);
 
-      safeUser.rollout = await evaluateRolloutAccess(safeUser);
-
       return res.json({
         user: safeUser,
         role: user.role,
         userType: "admin",
         principalType: "ADMIN",
         effectivePermissions,
-        rollout: safeUser.rollout,
       });
     }
 
@@ -178,15 +129,12 @@ router.get("/me", verifyToken, async (req, res) => {
 
       const effectivePermissions = EXTERNAL_USER_PERMISSIONS;
 
-      safeUser.rollout = await evaluateRolloutAccess(safeUser);
-
       return res.json({
         user: safeUser,
         role: "external",
         userType: "external",
         principalType: "EXTERNAL",
         effectivePermissions,
-        rollout: safeUser.rollout,
       });
     }
 
@@ -230,15 +178,12 @@ router.get("/me", verifyToken, async (req, res) => {
 
     const effectivePermissions = getEffectivePermissions(req.user, clubId);
 
-    safeUser.rollout = await evaluateRolloutAccess(safeUser);
-
     return res.json({
       user: safeUser,
       role,
       userType: "student",
       principalType: "STUDENT",
       effectivePermissions,
-      rollout: safeUser.rollout,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -323,13 +268,13 @@ router.delete("/social-links/:idOrPlatform", verifyToken, async (req, res) => {
   }
 });
 
-// The :role segment is kept for URL compatibility; actual table is determined by JWT userType.
-router.put("/:role/:id", verifyToken, async (req, res) => {
+// Support both PUT /me and legacy PUT /:role/:id
+router.put(["/me", "/:role/:id"], verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
     const { userId, userType, role, principalType } = req.user;
+    const targetId = req.params.id || userId || req.user.id;
 
-    const isSelf = (userId === id) || (req.user.id === id);
+    const isSelf = !req.params.id || (userId === targetId) || (req.user.id === targetId);
     if (!isSelf && role !== "admin") {
       return res.status(403).json({ message: "Access denied." });
     }
@@ -367,12 +312,7 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
       }
 
       const targetId = userId || id;
-      let updated = null;
-      try {
-        updated = await prisma.facultyUser.update({ where: { id: targetId }, data: updates });
-      } catch {
-        updated = await prisma.adminRole.update({ where: { id: targetId }, data: updates });
-      }
+      const updated = await prisma.facultyUser.update({ where: { id: targetId }, data: updates });
 
       const safeUser = sanitizeUser(updated);
       const coordinatedClubs = await prisma.club.findMany({
@@ -435,23 +375,10 @@ router.put("/:role/:id", verifyToken, async (req, res) => {
 
       const updated = await prisma.adminRole.update({ where: { id: userId || id }, data: updates });
       const safeUser = sanitizeUser(updated);
-      const isFaculty = updated.role === "facultyCoordinator";
-      safeUser.principalType = isFaculty ? "FACULTY" : "ADMIN";
-      const clubInfo = isFaculty ? await prisma.club.findFirst({ where: { facultyCoordinatorId: updated.id } }) : null;
-      safeUser.clubId = clubInfo?.id ?? null;
-      safeUser.memberships = clubInfo ? [{
-        id: `fac_${clubInfo.id}`,
-        clubId: clubInfo.id,
-        clubName: clubInfo.clubName,
-        role: "facultyCoordinator",
-        permissions: {
-          canTakeAttendance: true,
-          canViewDashboard: true,
-          canCheckRegistration: true,
-          canEditEvents: true
-        }
-      }] : [];
-      return res.json({ message: "Profile updated successfully", user: safeUser, role: updated.role, userType: "admin", principalType: safeUser.principalType });
+      safeUser.principalType = "ADMIN";
+      safeUser.clubId = null;
+      safeUser.memberships = [];
+      return res.json({ message: "Profile updated successfully", user: safeUser, role: updated.role, userType: "admin", principalType: "ADMIN" });
     }
 
     // Student profile update
@@ -766,14 +693,24 @@ router.post(
       const processedBuffer = await processProfileImage(req.file.buffer);
 
       const { userId, userType, principalType } = req.user;
-      const isAdmin = userType === "admin" || principalType === "ADMIN" || principalType === "FACULTY";
+      const isFaculty = userType === "faculty" || principalType === "FACULTY" || req.user.role === "facultyCoordinator" || req.user.role === "faculty";
+      const isAdmin = (userType === "admin" || principalType === "ADMIN") && !isFaculty;
       const isExternalUser = userType === "external" || principalType === "EXTERNAL" || req.user.role === "external";
 
       let existingPhotoUrl = null;
       let folder = "profile-photos";
       let publicId = null;
 
-      if (isAdmin) {
+      if (isFaculty) {
+        folder = "faculty-profiles";
+        const currentFaculty = await prisma.facultyUser.findUnique({
+          where: { id: userId },
+          select: { profileImage: true, email: true },
+        });
+        existingPhotoUrl = currentFaculty?.profileImage;
+        const emailPrefix = currentFaculty?.email ? currentFaculty.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]+/g, '-') : userId;
+        publicId = `faculty-${emailPrefix}`;
+      } else if (isAdmin) {
         folder = "admin-profiles";
         const currentAdmin = await prisma.adminRole.findUnique({
           where: { id: userId },
@@ -822,7 +759,9 @@ router.post(
       const result = await uploadImage(processedBuffer, folder, uploadOptions);
       const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
 
-      if (isAdmin) {
+      if (isFaculty) {
+        await prisma.facultyUser.update({ where: { id: userId }, data: { profileImage: versionedUrl } });
+      } else if (isAdmin) {
         await prisma.adminRole.update({ where: { id: userId }, data: { profileImage: versionedUrl } });
       } else if (isExternalUser) {
         await prisma.externalUser.update({ where: { id: userId }, data: { profileImage: versionedUrl } });
@@ -845,11 +784,15 @@ router.post(
 router.delete("/profile-photo", verifyToken, async (req, res) => {
   try {
     const { userId, userType, principalType } = req.user;
-    const isAdmin = userType === "admin" || principalType === "ADMIN" || principalType === "FACULTY";
+    const isFaculty = userType === "faculty" || principalType === "FACULTY" || req.user.role === "facultyCoordinator" || req.user.role === "faculty";
+    const isAdmin = (userType === "admin" || principalType === "ADMIN") && !isFaculty;
     const isExternalUser = userType === "external" || principalType === "EXTERNAL" || req.user.role === "external";
 
     let existingPhotoUrl = null;
-    if (isAdmin) {
+    if (isFaculty) {
+      const currentFaculty = await prisma.facultyUser.findUnique({ where: { id: userId }, select: { profileImage: true } });
+      existingPhotoUrl = currentFaculty?.profileImage;
+    } else if (isAdmin) {
       const currentAdmin = await prisma.adminRole.findUnique({ where: { id: userId }, select: { profileImage: true } });
       existingPhotoUrl = currentAdmin?.profileImage;
     } else if (isExternalUser) {
@@ -873,7 +816,9 @@ router.delete("/profile-photo", verifyToken, async (req, res) => {
       }
     }
 
-    if (isAdmin) {
+    if (isFaculty) {
+      await prisma.facultyUser.update({ where: { id: userId }, data: { profileImage: null } });
+    } else if (isAdmin) {
       await prisma.adminRole.update({ where: { id: userId }, data: { profileImage: null } });
     } else if (isExternalUser) {
       await prisma.externalUser.update({ where: { id: userId }, data: { profileImage: null } });

@@ -290,7 +290,7 @@ const AdminLogin = () => {
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="font-semibold text-base sm:text-lg text-neutral-900 dark:text-white tracking-tight">
+                <h3 className="font-medium text-base sm:text-lg text-neutral-900 dark:text-white tracking-tight">
                   {lockoutInfo.title}
                 </h3>
                 <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-xs mx-auto">
@@ -307,7 +307,7 @@ const AdminLogin = () => {
                 <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Time Remaining
                 </span>
-                <span className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white mt-0.5">
+                <span className="text-xl sm:text-2xl font-medium tracking-tight text-neutral-900 dark:text-white mt-0.5">
                   {formatRemainingTime(lockoutRemaining)}
                 </span>
               </div>
@@ -421,7 +421,7 @@ const AdminLogin = () => {
         </div>
 
         {/* Security Notice */}
-        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500 mt-6 font-semibold uppercase tracking-widest">
+        <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500 mt-6 font-medium uppercase tracking-widest">
           Authorized personnel only. All access attempts are logged.
         </p>
       </div>

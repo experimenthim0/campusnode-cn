@@ -1,11 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  --font-sans: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
   /* ============================================================
      CampusNode Semantic Design Tokens mapped to theme utilities
      ============================================================ */
@@ -20,7 +22,7 @@
   --color-cn-border: var(--cn-border);
   --color-cn-border-subtle: var(--cn-border-subtle);
 
-  /* Primary Brand (Orange) */
+  /* Primary Brand (Blue) */
   --color-cn-brand: var(--cn-brand);
   --color-cn-brand-hover: var(--cn-brand-hover);
   --color-cn-brand-soft: var(--cn-brand-soft);
@@ -58,7 +60,7 @@
      CampusNode Primary Brand: Blue Scale (50 - 950)
      ============================================================ */
   --color-brand-50: #eff8ff;
-  --color-brand-100: #dff1ff#dff1ff;
+  --color-brand-100: #dff1ff;
   --color-brand-200: #b8e1ff;
   --color-brand-300: #7ccaff;
   --color-brand-350: #57bfff;
@@ -266,6 +268,94 @@
     color: var(--cn-brand) !important;
     background-color: var(--cn-brand-soft) !important;
   }
+
+  /* ── Standardized Typography Scale Utilities (Phase 2) ── */
+  .text-page-title {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+  @media (min-width: 768px) {
+    .text-page-title {
+      font-size: 30px;
+    }
+  }
+
+  .text-section-title {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 500;
+  }
+  @media (min-width: 768px) {
+    .text-section-title {
+      font-size: 24px;
+    }
+  }
+
+  .text-card-title {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+
+  .text-subheading {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .text-body-reading {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  .text-body {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .text-body-emphasis {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  .text-nav {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .text-btn {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  .text-label {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .text-metadata {
+    font-family: 'mysans', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
 }
 
 html,
@@ -273,8 +363,9 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background-color: #ffffff;
-  color: #0a0a0a;
+  background-color: var(--cn-bg, #FAFAFA);
+  color: var(--cn-text, #111111);
+  font-family: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html {
@@ -283,8 +374,8 @@ html {
 
 html.dark,
 html.dark body {
-  background-color: #0a0a0a;
-  color: #ffffff;
+  background-color: var(--cn-bg, #0B1220);
+  color: var(--cn-text, #E2E8F0);
 }
 
 @keyframes ai-shimmer-sweep {
@@ -354,6 +445,7 @@ html.dark body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .campus-glow-flow,
   .campus-glow-flow-reverse {
     animation: none;
@@ -407,16 +499,16 @@ html.dark body {
   /* ── CampusNode 60-70% Foundation (Light Mode) ── */
   --cn-bg: #FAFAFA;
   --cn-surface: #FFFFFF;
-  --cn-surface-muted: #F5F7F9;
+  --cn-surface-muted: #F8F9FA;
   --cn-surface-card: #FFFFFF;
-  --cn-surface-elevated: #F8F9FB;
+  --cn-surface-elevated: #FFFFFF;
 
   --cn-text: #111111;
-  --cn-text-secondary: #555555;
-  --cn-text-muted: #888888;
+  --cn-text-secondary: #475569;
+  --cn-text-muted: #64748B;
 
-  --cn-border: #E2E6EA;
-  --cn-border-subtle: #EEF1F4;
+  --cn-border: #E2E8F0;
+  --cn-border-subtle: #F1F5F9;
 
   /* ── ~10% CampusNode Brand Identity (Blue) ── */
   --cn-brand: #0094FF;
@@ -439,6 +531,10 @@ html.dark body {
   --cn-accent-hover: #0078D4;
   --cn-accent-soft: #EFF8FF;
 
+  /* ── Semantic Link and Focus Tokens ── */
+  --cn-link: #0061AD;
+  --cn-focus: #0078D4;
+
   /* ── Semantic System Tokens (Light Mode) ── */
   --alert-success-bg: #F0FDF4;
   --alert-success-text: #15803D;
@@ -458,24 +554,24 @@ html.dark body {
 
   --bg-color: var(--cn-bg);
   --text-color: var(--cn-text);
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: #FAFAFA;
+  --foreground: #111111;
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
   --primary: #0094FF;
   --primary-foreground: #FFFFFF;
   --secondary: #EFF8FF;
   --secondary-foreground: #0061AD;
-  --muted: #F5F7F9;
-  --muted-foreground: #555555;
+  --muted: #F8F9FA;
+  --muted-foreground: #64748B;
   --accent: #EFF8FF;
   --accent-foreground: #0094FF;
   --destructive: #EF4444;
-  --border: #E2E6EA;
-  --input: #E2E6EA;
-  --ring: #0094FF;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #0078D4;
   --chart-1: #0094FF;
   --chart-2: #00E688;
   --chart-3: #0094FF;
@@ -488,16 +584,8 @@ html.dark body {
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #EFF8FF;
   --sidebar-accent-foreground: #0094FF;
-  --sidebar-border: #E2E6EA;
-  --sidebar-ring: #0094FF;
-}
-
-@font-face {
-  font-family: 'myfont';
-  src: url('./assets/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #0078D4;
 }
 
 @font-face {
@@ -507,24 +595,36 @@ html.dark body {
   font-style: normal;
   font-display: swap;
 }
+
+/* Backward-compatibility aliases so legacy classes render mysans */
+@font-face {
+  font-family: 'myfont';
+  src: url('/fonts/mysans.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'titlefont';
-  src: url('/fonts/Kovanov Regular.ttf') format('truetype');
+  src: url('/fonts/mysans.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'parafont';
-  src: url('/fonts/Galens Medium.otf') format('opentype');
+  src: url('/fonts/mysans.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'logofont';
   src: url('/fonts/Reaktif-SemiBold.ttf') format('truetype');
- font-display: swap;
+  font-display: swap;
 }
 
 @font-face {
@@ -557,33 +657,24 @@ html.dark body {
   src: url('./assets/fonts/PinyonScript.ttf') format('truetype');
 }
 
-
-
 body {
-  font-family: 'mysans', sans-serif;
+  font-family: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.myfont {
-  font-family: 'myfont', sans-serif;
-}
-.titlefont {
-  font-family: 'titlefont', 'mysans';
-}
-.parafont {
-  font-family: 'parafont', 'mysans';
+.myfont,
+.titlefont,
+.parafont,
+.mysans {
+  font-family: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .logofont {
   font-family: 'logofont', serif;
 }
 
-.mysans {
-  font-family: 'mysans', sans-serif;
-}
-
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: 'Inter Variable', sans-serif;
+  --font-heading: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'mysans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -625,21 +716,25 @@ body {
 }
 
 .dark {
-  /* ── CampusNode 60-70% Foundation: Deep Navy System (No Pure Black) ── */
-  --cn-bg: #121212;
-  --cn-surface: #121212;
-  --cn-surface-muted: #181818;
-  --cn-surface-card: #161616;
-  --cn-surface-elevated: #1e1e1e;
+  /* ── CampusNode Foundation: Standardized Dark Hierarchy ── */
+  --cn-bg: #0B1220;              /* Level 1: Main page background */
+  --cn-surface: #151F30;         /* Level 2: Cards & containers */
+  --cn-surface-muted: #1A263B;
+  --cn-surface-card: #151F30;    /* Level 2 */
+  --cn-surface-elevated: #1D2A3D;/* Level 3: Dialogs & Popovers */
 
-  /* ── Dark Mode Typography ── */
-  --cn-text: #F4F6F8;
-  --cn-text-secondary: #B8C2CC;
-  --cn-text-muted: #7F8B98;
+  /* ── Dark Mode Typography (High Readability & Comfort) ── */
+  --cn-text: #E2E8F0;
+  --cn-text-secondary: #B4C2D3;
+  --cn-text-muted: #94A3B8;
 
-  /* ── Subtle Borders ── */
-  --cn-border: rgba(255, 255, 255, 0.08);
-  --cn-border-subtle: rgba(255, 255, 255, 0.04);
+  /* ── Distinct Dark Mode Borders ── */
+  --cn-border: #334155;
+  --cn-border-subtle: #1E293B;
+
+  /* ── Semantic Link and Focus Tokens ── */
+  --cn-link: #7CCAFF;
+  --cn-focus: #7CCAFF;
 
   /* ── ~10% CampusNode Brand Identity (Blue) ── */
   --cn-brand: #0094FF;
@@ -655,7 +750,7 @@ body {
   --cn-teal-hover: #25F5B7;
   --cn-teal-soft: rgba(0, 230, 136, 0.15);
 
-  --cn-primary: #F4F6F8;
+  --cn-primary: #E2E8F0;
   --cn-primary-hover: #FFFFFF;
 
   --cn-accent: #0094FF;
@@ -679,37 +774,37 @@ body {
   --alert-info-text: #7CCAFF;
   --alert-info-border: rgba(0, 148, 255, 0.3);
 
-  --background: #121212;
-  --foreground: #F4F6F8;
-  --card: #161616;
-  --card-foreground: #F4F6F8;
-  --popover: #161616;
-  --popover-foreground: #F4F6F8;
+  --background: #0B1220;
+  --foreground: #E2E8F0;
+  --card: #151F30;
+  --card-foreground: #E2E8F0;
+  --popover: #1D2A3D;
+  --popover-foreground: #E2E8F0;
   --primary: #0094FF;
   --primary-foreground: #FFFFFF;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #F4F6F8;
-  --muted: #181818;
-  --muted-foreground: #7F8B98;
-  --accent: #1a1a1a;
+  --secondary: #1A263B;
+  --secondary-foreground: #E2E8F0;
+  --muted: #1A263B;
+  --muted-foreground: #94A3B8;
+  --accent: #1A263B;
   --accent-foreground: #0094FF;
   --destructive: #EF4444;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.10);
-  --ring: #0094FF;
+  --border: #334155;
+  --input: #334155;
+  --ring: #7CCAFF;
   --chart-1: #0094FF;
   --chart-2: #00E688;
   --chart-3: #0094FF;
   --chart-4: #36B5FF;
   --chart-5: #25F5B7;
-  --sidebar: #121212;
-  --sidebar-foreground: #F4F6F8;
+  --sidebar: #151F30;
+  --sidebar-foreground: #E2E8F0;
   --sidebar-primary: #0094FF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1a1a1a;
+  --sidebar-accent: #1A263B;
   --sidebar-accent-foreground: #0094FF;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #0094FF;
+  --sidebar-border: #334155;
+  --sidebar-ring: #7CCAFF;
 }
 
 @layer base {
@@ -723,6 +818,8 @@ body {
 
   html {
     @apply font-sans;
+    background-color: var(--cn-bg);
+    color: var(--cn-text);
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     min-height: 100%;
@@ -897,62 +994,76 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  --bg-color: #0D182A;
-  --text-color: #F4F6F8;
+  --bg-color: #0B1220;
+  --text-color: #E2E8F0;
 }
 
-/* ── Neutral Surface Hierarchy Overrides (Dark Mode #121212 Foundation) ──── */
-.dark .bg-white {
-  background-color: #161616 !important;
+/* ── Neutral Surface Hierarchy Overrides (Dark Mode 3-Level Foundation) ──── */
+/* Level 1: Ensure main page canvas, sections, and footers use #0B1220 */
+.dark section.bg-white,
+.dark section.bg-cn-surface,
+.dark footer.bg-white,
+.dark footer.bg-cn-surface,
+.dark main.bg-white,
+.dark main.bg-cn-surface,
+.dark .bg-page {
+  background-color: #0B1220 !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: #141414 !important;
+/* Level 2: Standard cards, containers, sidebars, and panels use #151F30 */
+.dark .bg-white,
+.dark .bg-cn-surface,
+.dark .bg-cn-surface-card {
+  background-color: #151F30 !important;
 }
 
-.dark .bg-gray-100 {
-  background-color: #181818 !important;
+/* Level 3: Elevated surfaces such as dialogs, popovers, tooltips, and elevated modals use #1D2A3D */
+.dark .bg-cn-surface-elevated,
+.dark [role="dialog"],
+.dark [role="dialog"] .bg-white,
+.dark [role="menu"],
+.dark [data-slot="popover"],
+.dark [data-slot="dialog-content"] {
+  background-color: #1D2A3D !important;
 }
 
-.dark .bg-gray-200 {
-  background-color: #202020 !important;
-}
-
-.dark .bg-gray-300 {
-  background-color: #262626 !important;
-}
-
+/* Subtle & Muted Surfaces */
+.dark .bg-gray-50,
 .dark .bg-neutral-50 {
-  background-color: #141414 !important;
+  background-color: #111A2B !important;
 }
 
+.dark .bg-gray-100,
 .dark .bg-neutral-100 {
-  background-color: #181818 !important;
+  background-color: #1A263B !important;
 }
 
-.dark .bg-neutral-200 {
-  background-color: #202020 !important;
-}
-
+.dark .bg-gray-200,
+.dark .bg-neutral-200,
 .dark .bg-slate-200 {
-  background-color: #181818 !important;
+  background-color: #22324C !important;
+}
+
+.dark .bg-gray-300,
+.dark .bg-neutral-300 {
+  background-color: #2B3D5C !important;
 }
 
 /* Alpha / translucent neutral surfaces */
 .dark .bg-white\/70 {
-  background-color: rgba(22, 22, 22, 0.70) !important;
+  background-color: rgba(21, 31, 48, 0.70) !important;
 }
 
 .dark .bg-white\/80 {
-  background-color: rgba(22, 22, 22, 0.80) !important;
+  background-color: rgba(21, 31, 48, 0.80) !important;
 }
 
 .dark .bg-white\/90 {
-  background-color: rgba(22, 22, 22, 0.90) !important;
+  background-color: rgba(21, 31, 48, 0.90) !important;
 }
 
 .dark .bg-black\/40 {
-  background-color: rgba(0, 0, 0, 0.50) !important;
+  background-color: rgba(11, 18, 32, 0.70) !important;
 }
 
 .dark .bg-black\/10 {
@@ -960,15 +1071,15 @@ body {
 }
 
 .dark .bg-white\/20 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 .dark .bg-neutral-50\/50 {
-  background-color: rgba(22, 22, 22, 0.50) !important;
+  background-color: rgba(26, 38, 59, 0.50) !important;
 }
 
 .dark .bg-neutral-50\/30 {
-  background-color: rgba(22, 22, 22, 0.30) !important;
+  background-color: rgba(26, 38, 59, 0.30) !important;
 }
 
 /* Tinted backgrounds (Secondary Blue/Teal & Status) */
@@ -1021,7 +1132,7 @@ body {
 }
 
 .dark .bg-\[\#fefce8\]\/30 {
-  background-color: rgba(22, 22, 22, 0.4) !important;
+  background-color: rgba(26, 38, 59, 0.40) !important;
 }
 
 .dark .bg-brand-50\/40 {
@@ -1033,113 +1144,83 @@ body {
 }
 
 .dark .bg-\[\#0f1419\] {
-  background-color: #161616 !important;
+  background-color: #111A2B !important;
 }
 
-/* ── Text inversions (CampusNode Dark Typography) ───────────────────────── */
-.dark .text-black {
-  color: #F4F6F8 !important;
+/* ── Text inversions (CampusNode Dark Typography - WCAG AA Contrast) ───── */
+.dark .text-black,
+.dark .text-neutral-900,
+.dark .text-gray-900,
+.dark .text-neutral-800,
+.dark .text-gray-800 {
+  color: #E2E8F0 !important;
 }
 
-.dark .text-black\/70 {
-  color: rgba(244, 246, 248, 0.70) !important;
-}
-
+.dark .text-black\/90,
 .dark .text-black\/80 {
-  color: rgba(244, 246, 248, 0.80) !important;
+  color: rgba(226, 232, 240, 0.85) !important;
 }
 
-.dark .text-black\/90 {
-  color: rgba(244, 246, 248, 0.90) !important;
-}
-
+.dark .text-black\/70,
 .dark .text-black\/60 {
-  color: rgba(244, 246, 248, 0.60) !important;
+  color: rgba(226, 232, 240, 0.70) !important;
 }
 
 .dark .text-black\/50 {
-  color: rgba(244, 246, 248, 0.50) !important;
+  color: rgba(226, 232, 240, 0.50) !important;
 }
 
-.dark .text-gray-300 {
-  color: #B8C2CC !important;
-}
-
-.dark .text-gray-400 {
-  color: #7F8B98 !important;
-}
-
-.dark .text-gray-500 {
-  color: #7F8B98 !important;
-}
-
-.dark .text-gray-600 {
-  color: #B8C2CC !important;
-}
-
-.dark .text-gray-700 {
-  color: #B8C2CC !important;
-}
-
-.dark .text-gray-800 {
-  color: #F4F6F8 !important;
-}
-
-.dark .text-gray-900 {
-  color: #F4F6F8 !important;
-}
-
-.dark .text-neutral-300 {
-  color: #B8C2CC !important;
-}
-
-.dark .text-neutral-400 {
-  color: #7F8B98 !important;
-}
-
-.dark .text-neutral-500 {
-  color: #7F8B98 !important;
-}
-
-.dark .text-neutral-600 {
-  color: #B8C2CC !important;
-}
-
+.dark .text-gray-300,
+.dark .text-neutral-300,
+.dark .text-gray-600,
+.dark .text-neutral-600,
+.dark .text-gray-700,
 .dark .text-neutral-700 {
-  color: #B8C2CC !important;
+  color: #B4C2D3 !important;
 }
 
-.dark .text-neutral-800 {
-  color: #F4F6F8 !important;
+.dark .text-gray-400,
+.dark .text-neutral-400,
+.dark .text-gray-500,
+.dark .text-neutral-500 {
+  color: #94A3B8 !important;
 }
 
-.dark .text-neutral-900 {
-  color: #F4F6F8 !important;
+/* Accessible Brand Accent / Links in Dark Mode */
+.dark a.text-brand-600,
+.dark a.text-cn-blue-600,
+.dark a.hover\:text-brand-600:hover,
+.dark .text-brand-600,
+.dark .text-cn-blue-600 {
+  color: #7CCAFF !important;
 }
 
-/* ── Border inversions (Subtle Dark Mode Borders & Dividers) ────────────── */
-.dark .border-gray-100 {
-  border-color: rgba(255, 255, 255, 0.04) !important;
+/* ── Border inversions (Distinct Dark Mode Borders & Dividers) ──────────── */
+.dark .border-gray-100,
+.dark .border-neutral-100 {
+  border-color: #1E293B !important;
 }
 
-.dark .border-gray-200 {
-  border-color: rgba(255, 255, 255, 0.07) !important;
+.dark .border-gray-200,
+.dark .border-neutral-200,
+.dark .border-gray-300,
+.dark .border-neutral-300 {
+  border-color: #334155 !important;
 }
 
-.dark .border-gray-300 {
-  border-color: rgba(255, 255, 255, 0.09) !important;
+.dark .border-gray-400,
+.dark .border-neutral-400 {
+  border-color: #475569 !important;
 }
 
-.dark .border-gray-400 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
+.dark .border-gray-500,
+.dark .border-neutral-500 {
+  border-color: #64748B !important;
 }
 
-.dark .border-gray-500 {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
-
-.dark .border-gray-600 {
-  border-color: rgba(255, 255, 255, 0.20) !important;
+.dark .border-gray-600,
+.dark .border-neutral-600 {
+  border-color: #64748B !important;
 }
 
 .dark .border-neutral-50 {
@@ -1541,13 +1622,31 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* ── Smooth transition on theme change ─────────────────────────────────── */
+/* ── Smooth transition on theme change (fallback when View Transitions not supported) ─── */
 html.dark-transition,
 html.dark-transition *,
 html.dark-transition *::before,
 html.dark-transition *::after {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
+
+/* ── View Transitions: Full-Screen Circular Reveal Ripple ───────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 99999;
+  /* Crucial: starts clipped at 0px so text/content never flashes before the wave sweeps across */
+  clip-path: circle(0px at var(--theme-x, 50%) var(--theme-y, 50%));
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SEARCH BAR — Styles & Animations (Updated with Blue / Teal Tokens)
@@ -1674,7 +1773,7 @@ html.dark-transition *::after {
 .search-kbd {
   font-family: 'myfont', sans-serif;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
   color: #888888;
   background: #F5F7F9;
   border: 1px solid #E2E6EA;
@@ -1726,7 +1825,7 @@ html.dark-transition *::after {
 .search-results-header {
   padding: 8px 14px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #888888;
@@ -1821,7 +1920,7 @@ html.dark-transition *::after {
 
 .search-result-title {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111111;
   white-space: nowrap;
   overflow: hidden;
@@ -1838,7 +1937,7 @@ html.dark-transition *::after {
 
 .search-result-badge {
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 3px 7px;
@@ -1904,7 +2003,7 @@ html.dark-transition *::after {
 
 .search-no-results-text {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #555555;
   margin-bottom: 4px;
 }
@@ -1961,102 +2060,102 @@ html.dark-transition *::after {
   transform: scale(1.1);
 }
 
-/* ── Dark Mode Overrides for Search (Navy Palette) ─────────────────────── */
+/* ── Dark Mode Overrides for Search (Standardized Navy System) ──────────── */
 .dark .search-input-wrapper {
-  background: #161616 !important;
-  border-color: rgba(255, 255, 255, 0.10) !important;
+  background: #151F30 !important;
+  border-color: #334155 !important;
 }
 
 .dark .search-input-wrapper:focus-within {
-  border-color: #0094FF !important;
-  box-shadow: 0 0 0 3px rgba(0, 148, 255, 0.2) !important;
+  border-color: #7CCAFF !important;
+  box-shadow: 0 0 0 3px rgba(0, 148, 255, 0.25) !important;
 }
 
 .dark .search-input {
-  color: #F4F6F8 !important;
+  color: #E2E8F0 !important;
 }
 
 .dark .search-input::placeholder {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-input-icon {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-input-wrapper:focus-within .search-input-icon {
-  color: #0094FF !important;
+  color: #7CCAFF !important;
 }
 
 .dark .search-clear-btn {
-  background: #16283A !important;
-  color: #B8C2CC !important;
+  background: #1D2A3D !important;
+  color: #B4C2D3 !important;
 }
 
 .dark .search-clear-btn:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #F4F6F8 !important;
+  background: #25364E !important;
+  color: #E2E8F0 !important;
 }
 
 .dark .search-kbd {
-  background: #1e1e1e !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #7F8B98 !important;
+  background: #1A263B !important;
+  border-color: #334155 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-results {
-  background: #161616 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: #151F30 !important;
+  border-color: #334155 !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
 }
 
 .dark .search-results-header {
-  color: #7F8B98 !important;
-  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  color: #94A3B8 !important;
+  border-bottom-color: #1E293B !important;
 }
 
 .dark .search-result-item {
-  border-bottom-color: rgba(244, 246, 248, 0.04) !important;
+  border-bottom-color: #1E293B !important;
 }
 
 .dark .search-result-item:hover {
-  background-color: #16283A !important;
+  background-color: #1D2A3D !important;
 }
 
 .dark .search-result-icon-wrapper {
-  background: #16283A !important;
+  background: #1D2A3D !important;
 }
 
 .dark .search-result-icon {
-  color: #B8C2CC !important;
+  color: #B4C2D3 !important;
 }
 
 .dark .search-result-title {
-  color: #F4F6F8 !important;
+  color: #E2E8F0 !important;
 }
 
 .dark .search-result-subtitle {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-result-arrow {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-result-item:hover .search-result-arrow {
-  color: #0094FF !important;
+  color: #7CCAFF !important;
 }
 
 .dark .search-no-results-icon {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-no-results-text {
-  color: #B8C2CC !important;
+  color: #B4C2D3 !important;
 }
 
 .dark .search-no-results-hint {
-  color: #7F8B98 !important;
+  color: #94A3B8 !important;
 }
 
 .dark .search-loading {
@@ -2339,6 +2438,41 @@ html.dark-transition *::after {
   animation: ticketModalOpen 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* ── Trophy Entrance Bounce (Plays Only Once) ── */
+@keyframes trophyBounceOnce {
+  0% {
+    opacity: 0;
+    transform: translateY(-35px) scale(0.85);
+  }
+
+  38% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+
+  60% {
+    transform: translateY(-12px) scale(0.97);
+  }
+
+  78% {
+    transform: translateY(0) scale(1.02);
+  }
+
+  90% {
+    transform: translateY(-4px) scale(0.99);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-bounce-once,
+.animate-bounce-slow {
+  animation: trophyBounceOnce 1.1s cubic-bezier(0.25, 1, 0.5, 1) 1 both;
+}
+
 /* ── Rich Text Event Description Styles ── */
 .event-description {
   word-break: break-word;
@@ -2347,7 +2481,7 @@ html.dark-transition *::after {
 .event-description a {
   color: #0094FF !important;
   text-decoration: underline !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   transition: color 0.15s ease;
 }
 
@@ -2365,7 +2499,7 @@ html.dark-transition *::after {
 
 .event-description strong,
 .event-description b {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .event-description em,
@@ -2402,7 +2536,7 @@ html.dark-transition *::after {
 
 .event-description h1 {
   font-size: 1.625rem !important;
-  font-weight: 800 !important;
+  font-weight: 500 !important;
   line-height: 1.3 !important;
   margin-top: 1rem !important;
   margin-bottom: 0.5rem !important;
@@ -2410,7 +2544,7 @@ html.dark-transition *::after {
 
 .event-description h2 {
   font-size: 1.375rem !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important;
   line-height: 1.35 !important;
   margin-top: 0.875rem !important;
   margin-bottom: 0.5rem !important;
@@ -2418,7 +2552,7 @@ html.dark-transition *::after {
 
 .event-description h3 {
   font-size: 1.15rem !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important;
   line-height: 1.4 !important;
   margin-top: 0.75rem !important;
   margin-bottom: 0.375rem !important;
@@ -2473,12 +2607,15 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
     top: -15%;
     opacity: 0;
   }
+
   15% {
     opacity: 1;
   }
+
   85% {
     opacity: 1;
   }
+
   100% {
     top: 105%;
     opacity: 0;
@@ -2490,10 +2627,13 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 @keyframes uploadPulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.4;
     transform: scale(0.98);
   }
+
   50% {
     opacity: 0.85;
     transform: scale(1.02);
@@ -2502,4 +2642,33 @@ html.dark input[type="time"]::-webkit-calendar-picker-indicator {
 
 .animate-upload-pulse {
   animation: uploadPulseGlow 2s ease-in-out infinite;
-}
+}
+
+/* ── Club Details Tech Grid & Boxes Background ────────────────────────────── */
+.cn-grid-boxes {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:is(.dark, .dark *) .cn-grid-boxes,
+.dark .cn-grid-boxes {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.038) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.038) 1px, transparent 1px);
+}
+
+.cn-grid-boxes-colored {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.075) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:is(.dark, .dark *) .cn-grid-boxes-colored,
+.dark .cn-grid-boxes-colored {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+}

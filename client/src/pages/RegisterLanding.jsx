@@ -44,8 +44,8 @@ const RegisterLanding = () => {
                   <i className="ri-user-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-600 dark:text-blue-400 mb-0.5">NITJ Student</div>
-                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Student Account</div>
+                  <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-blue-600 dark:text-blue-400 mb-0.5">NITJ Student</div>
+                  <div className="font-medium text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Student Account</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>
@@ -59,8 +59,8 @@ const RegisterLanding = () => {
                   <i className="ri-building-4-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-purple-600 dark:text-purple-400 mb-0.5">Faculty & Staff</div>
-                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Faculty Account</div>
+                  <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-purple-600 dark:text-purple-400 mb-0.5">Faculty & Staff</div>
+                  <div className="font-medium text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">Faculty Account</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>
@@ -74,8 +74,8 @@ const RegisterLanding = () => {
                   <i className="ri-global-line text-2xl" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400 mb-0.5">Other Institutions</div>
-                  <div className="font-semibold text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">External Participant</div>
+                  <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400 mb-0.5">Other Institutions</div>
+                  <div className="font-medium text-[15px] sm:text-[16px] text-zinc-900 dark:text-white leading-tight">External Participant</div>
                 </div>
                 <i className="ri-arrow-right-line text-lg text-zinc-400 dark:text-zinc-500 ml-auto group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
               </Link>

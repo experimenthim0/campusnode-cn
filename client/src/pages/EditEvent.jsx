@@ -13,6 +13,7 @@ import ShimmerText from '../components/ShimmerText';
 import AutosaveStatusBadge from '../components/AutosaveStatusBadge';
 import EventPosterUpload from '../components/EventPosterUpload';
 import { validateEventStep, validateAllEventSteps } from '../utils/eventValidation';
+import { REQUIRED_SOCIAL_OPTIONS } from '../utils/socialFields';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -365,7 +366,21 @@ const EditEvent = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         isDirtyRef.current = true;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (name === 'registrationType' && (value === 'team' || value === 'both')) {
+                if (!prev.minTeamSize || Number(prev.minTeamSize) <= 1) {
+                    next.minTeamSize = 2;
+                }
+                if (!prev.maxTeamSize || Number(prev.maxTeamSize) <= 1) {
+                    next.maxTeamSize = 4;
+                }
+            } else if (name === 'registrationType' && (value === 'individual' || value === 'none')) {
+                next.minTeamSize = 1;
+                next.maxTeamSize = 1;
+            }
+            return next;
+        });
         // Clear field-level error when user edits
         if (fieldErrors[name]) {
             setFieldErrors(prev => {
@@ -532,8 +547,8 @@ const EditEvent = () => {
                 totalSeats: isUnlimited ? 0 : Number(formData.totalSeats || 0),
                 allowWaitlist: isUnlimited ? false : Boolean(formData.allowWaitlist),
                 registrationType: formData.registrationType || 'individual',
-                minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 1) : 1,
-                maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 1) : 1,
+                minTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.minTeamSize || 2) : 1,
+                maxTeamSize: (formData.registrationType === 'team' || formData.registrationType === 'both') ? Number(formData.maxTeamSize || 4) : 1,
                 registrationFee: fee,
                 paymentMethod: formData.paymentMethod,
                 paymentInstructions: isFree
@@ -606,7 +621,7 @@ const EditEvent = () => {
             purgeLocalEventData(id);
 
             setAutosaveStatus('saved');
-            setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            setLastSavedTime(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
             showNotification(`Step ${stepNumber} changes saved.`, 'success');
             return true;
         } catch (err) {
@@ -691,7 +706,7 @@ const EditEvent = () => {
 
                 if (saveSequenceRef.current === currentSeq) {
                     setAutosaveStatus('saved');
-                    setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    setLastSavedTime(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
                 }
             } catch (err) {
                 if (saveSequenceRef.current === currentSeq) {
@@ -791,6 +806,9 @@ const EditEvent = () => {
     const handleStepClick = (targetStep) => {
         if (targetStep === currentStep) return;
         setFieldErrors({});
+        if (isDirtyRef.current) {
+            handleSaveCurrentStep(currentStep).catch(() => {});
+        }
         setCurrentStep(targetStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -944,7 +962,7 @@ const EditEvent = () => {
                                             <Handshake className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <label htmlFor="edit-joint-event-toggle" className="text-xs font-semibold text-neutral-900 dark:text-white cursor-pointer select-none">
+                                            <label htmlFor="edit-joint-event-toggle" className="text-xs font-medium text-neutral-900 dark:text-white cursor-pointer select-none">
                                                 Joint Event (Club Collaboration)
                                             </label>
                                             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -966,7 +984,7 @@ const EditEvent = () => {
 
                                 {isJointEvent && (
                                     <div className="mt-4 pt-3 border-t border-neutral-200/80 dark:border-neutral-800 space-y-3">
-                                        <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                        <label className="block text-xs font-medium uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
                                             Select Collaborating Club(s)
                                         </label>
                                         <select
@@ -1093,10 +1111,10 @@ const EditEvent = () => {
                                         <Calendar className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-semibold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-medium text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 2
                                         </span>
-                                        <h2 className="text-base font-semibold text-foreground leading-tight">
+                                        <h2 className="text-base font-medium text-foreground leading-tight">
                                             Schedule & Access
                                         </h2>
                                     </div>
@@ -1283,10 +1301,10 @@ const EditEvent = () => {
                                         <CreditCard className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-semibold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-medium text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 3
                                         </span>
-                                        <h2 className="text-base font-semibold text-foreground leading-tight">
+                                        <h2 className="text-base font-medium text-foreground leading-tight">
                                             Registration & Payment
                                         </h2>
                                     </div>
@@ -1427,7 +1445,7 @@ const EditEvent = () => {
                                                     : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300'
                                             }`}
                                         >
-                                            <span className="text-xs font-semibold block text-neutral-900 dark:text-white">
+                                            <span className="text-xs font-medium block text-neutral-900 dark:text-white">
                                                 {opt.title}
                                             </span>
                                             <span className="text-[11px] text-neutral-500 mt-0.5 block">
@@ -1528,13 +1546,74 @@ const EditEvent = () => {
                                 </div>
                             )}
 
-                           
+                            {/* Required Social Media & Profile Handles */}
+                            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                                            <i className="ri-share-line text-brand-600 dark:text-brand-400" />
+                                            <span>Required Social Media & Profile Handles</span>
+                                        </h3>
+                                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                                            Select which profile handles participants and team members must provide to register.
+                                        </p>
+                                    </div>
+                                    {(formData.requiredFields || []).length > 0 && (
+                                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300 border border-brand-200 dark:border-brand-800/60">
+                                            {formData.requiredFields.length} selected
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-2">
+                                    {REQUIRED_SOCIAL_OPTIONS.map((opt) => {
+                                        const isSelected = (formData.requiredFields || []).includes(opt.id);
+                                        return (
+                                            <label
+                                                key={opt.id}
+                                                className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer select-none ${
+                                                    isSelected
+                                                        ? 'border-brand-500 bg-brand-50/40 dark:bg-brand-950/20 ring-1 ring-brand-500/50'
+                                                        : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-cn-surface'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={opt.id}
+                                                    checked={isSelected}
+                                                    onChange={() => {
+                                                        setFormData(prev => {
+                                                            const current = prev.requiredFields || [];
+                                                            return {
+                                                                ...prev,
+                                                                requiredFields: isSelected
+                                                                    ? current.filter(f => f !== opt.id)
+                                                                    : [...current, opt.id]
+                                                            };
+                                                        });
+                                                    }}
+                                                    className="mt-0.5 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                                                />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <i className={`${opt.icon} text-sm ${isSelected ? 'text-brand-600 dark:text-brand-400' : 'text-neutral-500 dark:text-neutral-400'}`} />
+                                                        <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100">
+                                                            {opt.label}
+                                                        </span>
+                                                    </div>
+                                                   
+                                                </div>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
                             {/* Custom Registration Form Fields */}
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                                             Custom Registration Questions
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1556,7 +1635,7 @@ const EditEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-neutral-500">Question #{idx + 1}</span>
+                                            <span className="text-xs font-medium text-neutral-500">Question #{idx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(idx)}
@@ -1661,10 +1740,10 @@ const EditEvent = () => {
                                         <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-semibold text-primary uppercase tracking-widest leading-none mb-0.5">
+                                        <span className="block text-[10px] font-medium text-primary uppercase tracking-widest leading-none mb-0.5">
                                             Step 4
                                         </span>
-                                        <h2 className="text-base font-semibold text-foreground leading-tight">
+                                        <h2 className="text-base font-medium text-foreground leading-tight">
                                             Extras & Event Settings
                                         </h2>
                                     </div>
@@ -1719,7 +1798,7 @@ const EditEvent = () => {
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                                             Event Sponsors
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1741,7 +1820,7 @@ const EditEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-neutral-500">Sponsor #{sIdx + 1}</span>
+                                            <span className="text-xs font-medium text-neutral-500">Sponsor #{sIdx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeSponsor(sIdx)}
@@ -1781,7 +1860,7 @@ const EditEvent = () => {
                             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
                                             Media Gallery
                                         </h3>
                                         <p className="text-xs text-neutral-400">
@@ -1803,7 +1882,7 @@ const EditEvent = () => {
                                         className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 bg-neutral-50/40 dark:bg-neutral-800/20 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-neutral-500">Media #{mIdx + 1}</span>
+                                            <span className="text-xs font-medium text-neutral-500">Media #{mIdx + 1}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => removeMedia(mIdx)}

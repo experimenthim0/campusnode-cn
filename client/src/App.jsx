@@ -66,6 +66,7 @@ const RegisterExternal = lazy(() => import('./pages/RegisterExternal'));
 const RegisterFaculty = lazy(() => import('./pages/RegisterFaculty'));
 const RegisterLanding = lazy(() => import('./pages/RegisterLanding'));
 const FeaturedEventsPage = lazy(() => import('./pages/FeaturedEventsPage'));
+const CampusUpdates = lazy(() => import('./pages/CampusUpdates'));
 const DeviceTelemetry = lazy(() => import('./pages/DeviceTelemetry'));
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
@@ -118,6 +119,8 @@ function App() {
                     <Route path="/reset-password/:token" element={<ResetPassword />} />
                     <Route path="/events" element={<EventFeed />} />
                     <Route path="/featured-events" element={<FeaturedEventsPage />} />
+                    <Route path="/campus-updates" element={<CampusUpdates />} />
+                    <Route path="/updates" element={<Navigate to="/campus-updates" replace />} />
                     <Route path="/events/:id/preview" element={<ProtectedRoute><EventPreview /></ProtectedRoute>} />
                     <Route path="/event/:id/preview" element={<ProtectedRoute><EventPreview /></ProtectedRoute>} />
                     <Route path="/event/:slug" element={<EventDetails />} />
@@ -150,7 +153,8 @@ function App() {
                     <Route path="/create" element={<ProtectedRoute disallowedRoles={['facultyCoordinator', 'faculty']}><CreateEvent /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
-                    <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+                    <Route path="/profile/edit" element={<Navigate to="/settings" replace />} />
                     <Route path="/events/edit/:id" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
                     <Route path="/club/edit/:id" element={<ProtectedRoute><EditClub /></ProtectedRoute>} />
                     <Route path="/club/:clubId/team" element={<ProtectedRoute><ClubMembers /></ProtectedRoute>} />

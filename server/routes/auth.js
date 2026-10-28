@@ -21,19 +21,6 @@ import redis from "../lib/redis.js";
 import { z } from "zod";
 import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
 
-// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
-import { evaluateRolloutAccess } from "../temporary-rollout/index.js";
-
-async function attachRolloutToUser(userObj) {
-  if (userObj) {
-    try {
-      userObj.rollout = await evaluateRolloutAccess(userObj);
-    } catch (err) {
-      console.error("[Rollout] Error evaluating rollout on auth session:", err.message);
-    }
-  }
-  return userObj;
-}
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
@@ -425,7 +412,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
 
       return res.json({
@@ -436,7 +422,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -520,7 +505,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -530,11 +514,10 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "faculty",
         principalType,
         token,
-        rollout: userObj.rollout,
       });
     }
 
-    // 3. Admin / Faculty Coordinator User (AdminRole table)
+    // 3. Admin User (AdminRole table)
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
@@ -550,53 +533,26 @@ router.post(["/login", "/login/student"], async (req, res) => {
         return res.json(result);
       }
 
-      const clubInfo = (admin.role === "facultyCoordinator" || admin.role === "club")
-        ? await getAdminClubId(admin.id)
-        : null;
-      const clubId = clubInfo?.id ?? null;
-      const isFaculty = admin.role === "facultyCoordinator";
-      const principalType = isFaculty ? "FACULTY" : "ADMIN";
-      const memberships = clubInfo ? [{
-        id: `fac_${clubInfo.id}`,
-        clubId: clubInfo.id,
-        clubName: clubInfo.clubName,
-        slug: clubInfo.slug,
-        clubLogo: clubInfo.clubLogo,
-        role: "facultyCoordinator",
-        status: "ACTIVE",
-        customPermissions: [],
-        canTakeAttendance: true,
-        canEditEvents: true,
-        canCheckRegistration: true,
-        canViewDashboard: true,
-        permissions: {
-          canTakeAttendance: true,
-          canViewDashboard: true,
-          canCheckRegistration: true,
-          canEditEvents: true,
-        },
-      }] : [];
-
-      const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+      const token = generateToken(admin, "admin", "admin", null, "ADMIN");
       const userObj = {
         ...sanitizeUser(admin),
-        principalType,
-        clubId,
-        clubName: clubInfo?.clubName ?? null,
-        memberships,
+        principalType: "ADMIN",
+        clubId: null,
+        clubName: null,
+        memberships: [],
+        role: "admin",
+        userType: "admin",
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
         message: "Login successful",
         user: userObj,
-        role: admin.role,
+        role: "admin",
         userType: "admin",
-        principalType,
+        principalType: "ADMIN",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -641,7 +597,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         principalType: "EXTERNAL",
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -651,7 +606,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "external",
         principalType: "EXTERNAL",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -766,38 +720,15 @@ router.post("/login/admin", async (req, res) => {
       return res.json(result);
     }
 
-    const club = admin.role === "facultyCoordinator" ? await getAdminClubId(admin.id) : null;
-    const clubId = club?.id ?? null;
-    const isFaculty = admin.role === "facultyCoordinator";
-    const principalType = isFaculty ? "FACULTY" : "ADMIN";
-    const memberships = club ? [{
-      id: `fac_${club.id}`,
-      clubId: club.id,
-      clubName: club.clubName,
-      slug: club.slug,
-      clubLogo: club.clubLogo,
-      role: "facultyCoordinator",
-      status: "ACTIVE",
-      customPermissions: [],
-      canTakeAttendance: true,
-      canEditEvents: true,
-      canCheckRegistration: true,
-      canViewDashboard: true,
-      permissions: {
-        canTakeAttendance: true,
-        canViewDashboard: true,
-        canCheckRegistration: true,
-        canEditEvents: true,
-      },
-    }] : [];
-
-    const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+    const token = generateToken(admin, "admin", "admin", null, "ADMIN");
     const userObj = {
       ...sanitizeUser(admin),
-      principalType,
-      clubId,
-      clubName: club?.clubName ?? null,
-      memberships,
+      principalType: "ADMIN",
+      clubId: null,
+      clubName: null,
+      memberships: [],
+      role: "admin",
+      userType: "admin",
     };
 
     res.cookie("token", token, getCookieOptions());
@@ -1089,7 +1020,6 @@ router.post("/verify-2fa", async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -1099,7 +1029,6 @@ router.post("/verify-2fa", async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -1170,46 +1099,21 @@ router.post("/verify-2fa", async (req, res) => {
       });
     }
 
-    // 3. Admin / Faculty
+    // 3. Admin
     const admin = await prisma.adminRole.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     });
 
     if (admin) {
-      const club = (admin.role === "facultyCoordinator" || admin.role === "club")
-        ? await getAdminClubId(admin.id)
-        : null;
-      const clubId = club?.id ?? null;
-      const isFaculty = admin.role === "facultyCoordinator";
-      const principalType = isFaculty ? "FACULTY" : "ADMIN";
-      const memberships = club ? [{
-        id: `fac_${club.id}`,
-        clubId: club.id,
-        clubName: club.clubName,
-        slug: club.slug,
-        clubLogo: club.clubLogo,
-        role: "facultyCoordinator",
-        status: "ACTIVE",
-        customPermissions: [],
-        canTakeAttendance: true,
-        canEditEvents: true,
-        canCheckRegistration: true,
-        canViewDashboard: true,
-        permissions: {
-          canTakeAttendance: true,
-          canViewDashboard: true,
-          canCheckRegistration: true,
-          canEditEvents: true,
-        },
-      }] : [];
-
-      const token = generateToken(admin, admin.role, "admin", clubId, principalType);
+      const token = generateToken(admin, "admin", "admin", null, "ADMIN");
       const userObj = {
         ...sanitizeUser(admin),
-        principalType,
-        clubId,
-        clubName: club?.clubName ?? null,
-        memberships,
+        principalType: "ADMIN",
+        clubId: null,
+        clubName: null,
+        memberships: [],
+        role: "admin",
+        userType: "admin",
       };
 
       res.cookie("token", token, getCookieOptions());
@@ -1217,10 +1121,9 @@ router.post("/verify-2fa", async (req, res) => {
         success: true,
         message: "Verification successful",
         user: userObj,
-        admin: userObj,
-        role: admin.role,
+        role: "admin",
         userType: "admin",
-        principalType,
+        principalType: "ADMIN",
         token,
       });
     }
