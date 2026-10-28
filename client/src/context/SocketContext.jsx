@@ -98,7 +98,15 @@ export const SocketProvider = ({ children }) => {
   }, [showRealtimeToast]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setSocket((prev) => {
+        if (prev) prev.disconnect();
+        return null;
+      });
+      return;
+    }
+
+    const token = localStorage.getItem("token") || "";
 
     registerPushSubscription().catch(() => { });
 
@@ -107,18 +115,30 @@ export const SocketProvider = ({ children }) => {
       syncNotifications(true);
     });
 
-    // Socket.io connection setup
-    const socketServerUrl = API_URL.replace("/api", "");
+    // Socket.io connection setup with authentication token
+    const socketServerUrl = (API_URL || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
     const newSocket = io(socketServerUrl, {
+      auth: { token },
       reconnectionAttempts: 10,
       reconnectionDelay: 2000,
     });
+
+    // Refresh token before reconnect attempts in case session was updated
+    if (newSocket.io) {
+      newSocket.io.on("reconnect_attempt", () => {
+        newSocket.auth = { token: localStorage.getItem("token") || "" };
+      });
+    }
 
     const handleConnect = () => {
       console.log("[SocketContext] Socket connected:", newSocket.id);
       setSocket(newSocket);
       newSocket.emit("join", String(userId));
       syncNotifications(false);
+    };
+
+    const handleConnectError = (err) => {
+      console.warn("[SocketContext] Connection notice:", err.message);
     };
 
     const handleNewNotification = (rawNotif) => {
@@ -150,6 +170,7 @@ export const SocketProvider = ({ children }) => {
     };
 
     newSocket.on("connect", handleConnect);
+    newSocket.on("connect_error", handleConnectError);
     newSocket.on("new-notification", handleNewNotification);
 
     // ── Polling & Recovery Fallbacks ──────────────────────────────────────────
@@ -171,8 +192,10 @@ export const SocketProvider = ({ children }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("focus", handleVisibilityChange);
       newSocket.off("connect", handleConnect);
+      newSocket.off("connect_error", handleConnectError);
       newSocket.off("new-notification", handleNewNotification);
       newSocket.disconnect();
+      setSocket(null);
     };
   }, [userId, syncNotifications, showRealtimeToast]);
 

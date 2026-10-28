@@ -1,9 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
-import { RolloutBlocked } from '../temporary-rollout';
-
 /**
  * ProtectedRoute — declarative route guard component.
  *
@@ -16,7 +13,6 @@ import { RolloutBlocked } from '../temporary-rollout';
  *   - Unauthenticated users → /login (or /admin-secret-login for admin routes)
  *   - Disallowed users → fallbackPath or /club-events/:clubId or /events
  *   - Authenticated users with wrong role → /login
- *   - Unreleased rollout cohorts → RolloutBlocked launch screen
  */
 const ProtectedRoute = ({ children, roles, disallowedRoles, fallbackPath }) => {
   const { isAuthenticated, role, user } = useAuth();
@@ -27,11 +23,6 @@ const ProtectedRoute = ({ children, roles, disallowedRoles, fallbackPath }) => {
     const isAdminRoute = location.pathname.includes('/admin');
     const redirectTo = isAdminRoute ? '/admin-secret-login' : '/login';
     return <Navigate to={redirectTo} replace />;
-  }
-
-  // [TEMPORARY ROLLOUT INTEGRATION] - Intercept unreleased users during phased rollout
-  if (user?.rollout && user.rollout.enabled && user.rollout.allowed === false) {
-    return <RolloutBlocked rollout={user.rollout} />;
   }
 
   // Disallowed roles check (e.g., faculty coordinators attempting to access event creation)

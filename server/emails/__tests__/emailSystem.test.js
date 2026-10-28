@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { escapeHtml } from "../renderer/escapeHtml.js";
 import { templateRegistry, getTemplate, getAllTemplates } from "../templateRegistry.js";
 import { renderEmail } from "../renderer/emailRenderer.js";
-import { mockTransport, getSentEmails, clearSentEmails, getLastEmail } from "../transports/mockTransport.js";
+import { smtpTransport, getSentEmails, clearSentEmails, getLastEmail } from "../transports/smtpTransport.js";
 import {
   sendEmail,
   sendVerificationEmail,
@@ -190,15 +190,9 @@ describe("Campusnode Centralized Email Subsystem", () => {
       expect(studentRender.html).toContain("Verify Your Login");
       expect(studentRender.html).toContain("123456");
       expect(studentRender.html).toContain("student@nitj.ac.in");
-      expect(studentRender.html).toContain("DEVICE");
-      expect(studentRender.html).toContain("Chrome macOS");
-      expect(studentRender.html).toContain("LOCATION");
-      expect(studentRender.html).toContain("San Francisco, US");
-      expect(studentRender.html).toContain("IP ADDRESS");
-      expect(studentRender.html).toContain("192.168.1.42");
-      expect(studentRender.html).toContain("TIME");
-      expect(studentRender.html).toContain("Feb 9, 10:34 AM");
-      expect(studentRender.html).toContain("SFMono-Regular");
+      expect(studentRender.html).not.toContain("DEVICE");
+      expect(studentRender.html).not.toContain("LOCATION");
+      expect(studentRender.html).not.toContain('class="metadata-table"');
       expect(studentRender.html).toContain("Campusnode");
 
       // 2. Admin portal context
@@ -226,14 +220,9 @@ describe("Campusnode Centralized Email Subsystem", () => {
       expect(rendered.subject).toBe("Password Reset Request");
       expect(rendered.html).toContain("Reset Password");
       expect(rendered.html).toContain("reset-password/sample-token");
-      expect(rendered.html).toContain("DEVICE");
-      expect(rendered.html).toContain("Chrome macOS");
-      expect(rendered.html).toContain("LOCATION");
-      expect(rendered.html).toContain("San Francisco, US");
-      expect(rendered.html).toContain("IP ADDRESS");
-      expect(rendered.html).toContain("192.168.1.42");
-      expect(rendered.html).toContain("TIME");
-      expect(rendered.html).toContain("Feb 9, 10:34 AM");
+      expect(rendered.html).not.toContain("DEVICE");
+      expect(rendered.html).not.toContain("LOCATION");
+      expect(rendered.html).not.toContain('class="metadata-table"');
     });
 
     it("auth:password-changed - should render password changed alert with instructions and security card", () => {
@@ -254,12 +243,9 @@ describe("Campusnode Centralized Email Subsystem", () => {
       expect(rendered.html).toContain("Priya Patel");
       expect(rendered.html).toContain("Didn&#039;t make this change?");
       expect(rendered.html).toContain("support@campusnode.in");
-      expect(rendered.html).toContain("DEVICE");
-      expect(rendered.html).toContain("Safari on iOS");
-      expect(rendered.html).toContain("LOCATION");
-      expect(rendered.html).toContain("Chandigarh, IN");
-      expect(rendered.html).toContain("IP ADDRESS");
-      expect(rendered.html).toContain("103.21.244.2");
+      expect(rendered.html).not.toContain("DEVICE");
+      expect(rendered.html).not.toContain("LOCATION");
+      expect(rendered.html).not.toContain('class="metadata-table"');
       // Security principle: Never include reset URL in password changed alert
       expect(rendered.html).not.toContain("reset-password/");
     });
@@ -317,7 +303,7 @@ describe("Campusnode Centralized Email Subsystem", () => {
   });
 
   describe("Email Dispatch & Transport Safety", () => {
-    it("should use mock transport in test mode and not make real HTTP calls", async () => {
+    it("should use unified SMTP transport without external network calls in test mode", async () => {
       const res = await sendEmail({
         to: "recipient@nitj.ac.in",
         template: "auth:login-otp",
@@ -327,7 +313,7 @@ describe("Campusnode Centralized Email Subsystem", () => {
         },
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
 
       const sent = getSentEmails();
       expect(sent.length).toBe(1);
@@ -343,7 +329,7 @@ describe("Campusnode Centralized Email Subsystem", () => {
         message: "<p>Legacy raw HTML content</p>",
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
 
       const last = getLastEmail();
       expect(last).toBeDefined();
@@ -376,7 +362,7 @@ describe("Campusnode Centralized Email Subsystem", () => {
         expiryHours: 24,
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
       const email = getLastEmail();
       expect(email.to).toBe("newuser@nitj.ac.in");
       expect(email.subject).toBe("Account Verification");
@@ -393,13 +379,12 @@ describe("Campusnode Centralized Email Subsystem", () => {
         location: "New Delhi, IN",
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
       const email = getLastEmail();
       expect(email.to).toBe("student@nitj.ac.in");
       expect(email.subject).toBe("Campusnode Login Verification Code");
       expect(email.html).toContain("543210");
-      expect(email.html).toContain("Edge Windows");
-      expect(email.html).toContain("New Delhi, IN");
+      expect(email.html).not.toContain('class="metadata-table"');
     });
 
     it("sendPasswordResetEmail - dispatches auth:reset-password with reset URL", async () => {
@@ -409,7 +394,7 @@ describe("Campusnode Centralized Email Subsystem", () => {
         expiryMinutes: 15,
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
       const email = getLastEmail();
       expect(email.to).toBe("forgot@nitj.ac.in");
       expect(email.subject).toBe("Password Reset Request");
@@ -425,13 +410,12 @@ describe("Campusnode Centralized Email Subsystem", () => {
         location: "Mumbai, IN",
       });
 
-      expect(res.id).toMatch(/^mock_/);
+      expect(typeof res.id).toBe("string");
       const email = getLastEmail();
       expect(email.to).toBe("changed@nitj.ac.in");
       expect(email.subject).toBe("Your Campusnode password has been changed");
       expect(email.html).toContain("Kavita Rao");
-      expect(email.html).toContain("Firefox Android");
-      expect(email.html).toContain("Mumbai, IN");
+      expect(email.html).not.toContain('class="metadata-table"');
     });
   });
 
@@ -547,13 +531,11 @@ describe("Campusnode Centralized Email Subsystem", () => {
       const otpIdx = rendered.html.indexOf("482917");
       const promptIdx = rendered.html.indexOf("A login was requested for your student account");
       const expiryIdx = rendered.html.indexOf("Expires in <strong>5 minutes</strong>");
-      const metadataIdx = rendered.html.indexOf('class="metadata-table"');
-
       expect(headingIdx).toBeGreaterThan(-1);
       expect(otpIdx).toBeGreaterThan(headingIdx);
       expect(promptIdx).toBeGreaterThan(otpIdx);
       expect(expiryIdx).toBeGreaterThan(promptIdx);
-      expect(metadataIdx).toBeGreaterThan(expiryIdx);
+      expect(rendered.html).not.toContain('class="metadata-table"');
     });
 
     it("auth:reset-password - Primary Action (Reset Button) must render before explanation, expiry, and security metadata", () => {
@@ -571,13 +553,11 @@ describe("Campusnode Centralized Email Subsystem", () => {
       const buttonIdx = rendered.html.indexOf('href="https://campusnode.vercel.app/reset-password/sample-token"');
       const explanationIdx = rendered.html.indexOf("We received a request to reset your Campusnode account password");
       const expiryIdx = rendered.html.indexOf("expire in <strong>15 minutes</strong>");
-      const metadataIdx = rendered.html.indexOf('class="metadata-table"');
-
       expect(headingIdx).toBeGreaterThan(-1);
-      expect(buttonIdx).toBeGreaterThan(headingIdx);
-      expect(explanationIdx).toBeGreaterThan(buttonIdx);
-      expect(expiryIdx).toBeGreaterThan(explanationIdx);
-      expect(metadataIdx).toBeGreaterThan(expiryIdx);
+      expect(explanationIdx).toBeGreaterThan(headingIdx);
+      expect(buttonIdx).toBeGreaterThan(explanationIdx);
+      expect(expiryIdx).toBeGreaterThan(buttonIdx);
+      expect(rendered.html).not.toContain('class="metadata-table"');
     });
 
     it("auth:verify-account - Primary Action (Verify Button) must render before explanation, expiry, and security metadata", () => {

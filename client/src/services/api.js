@@ -12,8 +12,12 @@
 import axios from 'axios';
 import { setupAxiosNetworkInterceptor } from '../utils/network';
 
+const rawBaseUrl = (import.meta.env.VITE_API_URL || '').trim();
+// Remove trailing slash and trailing '/api' to prevent accidental '/api/api/...' paths
+const cleanBaseUrl = rawBaseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: cleanBaseUrl,
   withCredentials: true,
 });
 

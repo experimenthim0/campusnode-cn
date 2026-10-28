@@ -43,8 +43,6 @@ import { authenticateSocketToken } from "./middleware/auth.js";
 import browserAccessGuard from "./middleware/browserAccessGuard.js";
 import { recordSocketHandshake } from "./lib/observability.js";
 
-// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
-import { rolloutMiddleware } from "./temporary-rollout/index.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -197,8 +195,6 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, ...getPerformanceStats(), uptimeSeconds: Math.round(process.uptime()) });
 });
 
-// [TEMPORARY ROLLOUT INTEGRATION] - Launch rollout access control
-app.use(rolloutMiddleware);
 
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);

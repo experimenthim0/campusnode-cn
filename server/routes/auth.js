@@ -21,19 +21,6 @@ import redis from "../lib/redis.js";
 import { z } from "zod";
 import { withSpan, setSpanAttribute } from "../lib/telemetry/tracer.js";
 
-// [TEMPORARY ROLLOUT INTEGRATION] - Remove after launch rollout completion
-import { evaluateRolloutAccess } from "../temporary-rollout/index.js";
-
-async function attachRolloutToUser(userObj) {
-  if (userObj) {
-    try {
-      userObj.rollout = await evaluateRolloutAccess(userObj);
-    } catch (err) {
-      console.error("[Rollout] Error evaluating rollout on auth session:", err.message);
-    }
-  }
-  return userObj;
-}
 
 const router = express.Router();
 const ALLOWED_PROGRAMS = PROGRAM_OPTIONS;
@@ -425,7 +412,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
 
       return res.json({
@@ -436,7 +422,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -520,7 +505,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -530,7 +514,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "faculty",
         principalType,
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -561,7 +544,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "admin",
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -571,7 +553,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "admin",
         principalType: "ADMIN",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -616,7 +597,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         principalType: "EXTERNAL",
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -626,7 +606,6 @@ router.post(["/login", "/login/student"], async (req, res) => {
         userType: "external",
         principalType: "EXTERNAL",
         token,
-        rollout: userObj.rollout,
       });
     }
 
@@ -1041,7 +1020,6 @@ router.post("/verify-2fa", async (req, res) => {
         memberships,
       };
 
-      await attachRolloutToUser(userObj);
       res.cookie("token", token, getCookieOptions());
       return res.json({
         success: true,
@@ -1051,7 +1029,6 @@ router.post("/verify-2fa", async (req, res) => {
         userType: "student",
         principalType: "STUDENT",
         token,
-        rollout: userObj.rollout,
       });
     }
 

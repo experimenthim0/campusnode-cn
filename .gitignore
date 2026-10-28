@@ -9,24 +9,30 @@ node_modules
 !**/.env.example
 .txt
 **/*.pem
-whatextend.txt
-whatnext.md
-CLUB_HEAD_PITCH.md
-README_MONETIZATION.md
-
-new.md
-FEATURES.md
-
 server/node_modules/
-.env
 dist/
 *.log
-_tests_/
 
-POSTGRESQL_MIGRATION_PLAN.md
+# ------------------------------------------------------------------------------
+# Documentation & personal reference files
+# ------------------------------------------------------------------------------
+# All .md files are excluded EXCEPT the essential README.md files in each
+# package root. The /docs/ folder is developer-only reference — not for the repo.
+*.md
+!README.md
+!**/README.md
+!docs/DEPLOYMENT_GUIDE.md
+!docs/COLLEGE_DOMAIN_DEPLOYMENT.md
+
+AGENTS.md
 docs/*
-!docs/development/
-!docs/development/**
+!docs/DEPLOYMENT_GUIDE.md
+!docs/COLLEGE_DOMAIN_DEPLOYMENT.md
+server/prisma/migrations_historical_backup/
+
+# ------------------------------------------------------------------------------
+# Scratch / temporary feature files
+# ------------------------------------------------------------------------------
 map/
 timer/
 EventTimerContext.jsx
@@ -35,47 +41,34 @@ EventTimerLive.jsx
 BustTracker.jsx
 load/
 
-attendance-app.md
-attendence.md
-
+# Scanner app (standalone separate tool)
 scanner-app/
 
+# ------------------------------------------------------------------------------
+# Test directories
+# ------------------------------------------------------------------------------
 server/load-tests/
 server/routes/__tests__/
-
-KEY_ROTATION.md
-STRUCTURE.md
-central_event_role.md
-central_org.md
-SELFGUIDE.md
-LINKS.md
-
-*.md
-!BACKEND_SCHEMA.md
-!API_ENDPOINTS.md
-!README.md
-!CAMPUSNODE_TECHNICAL_SPECIFICATION.md
-
-.agents/*
-
 client/src/__tests__/*
 server/utils/__tests__/*
 server/services/__tests__/*
 server/scratch/*
 server/middleware/__tests__/*
 server/controllers/__tests__/*
+server/__tests__/*
 
-
+# ------------------------------------------------------------------------------
+# Agent tooling (local dev only)
+# ------------------------------------------------------------------------------
 skills-lock.json
+.agents/*
 
-FeatureTobeADDED.md
-
-# Server scripts (only track required operational tools and admin seeds)
+# ------------------------------------------------------------------------------
+# Server scripts — only keep required operational tools and admin seeds
+# ------------------------------------------------------------------------------
 server/scripts/*
 !server/scripts/seed*admin*.js
 !server/scripts/db-safety-guard.js
 !server/scripts/generate-staging-secrets.js
 !server/scripts/rotate-key.js
 !server/scripts/generate-qr-keypair.js
-
-server/__tests__/*

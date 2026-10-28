@@ -1,47 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, AlertTriangle, Sparkles, Lock, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { resendVerificationEmail } from '../services/authService';
-
-const STUDENT_FAILURE_MESSAGES = [
-  {
-    title: "Wrong Password Again?",
-    body: "Was the password your crush's birthday? Because clearly, it's not working out. 💔",
-    hint: "Double check your spelling or use 'Forgot password?'"
-  },
-  {
-    title: "Midterm Flashbacks?",
-    body: "You're forgetting this password just like Chapter 4 during the end-sem exams. 📚",
-    hint: "Don't guess blindly — take a quick breath."
-  },
-  {
-    title: "Ex's Nickname Detected?",
-    body: "Still trying your ex's nickname? It didn't work then, and it's definitely not working now. 💀",
-    hint: "Time to let it go and reset the password."
-  },
-  {
-    title: "3 AM Sleep Deprivation",
-    body: "That late-night Maggi and 2 hours of sleep are finally taking their toll on your memory. 🍜",
-    hint: "Type slowly, check your Caps Lock."
-  },
-  {
-    title: "Viva Exam Strategy?",
-    body: "Typing random passwords with the exact same confidence as an unprepared external viva. 📝",
-    hint: "Multiple failed attempts might trigger the rate limiter."
-  },
-  {
-    title: "8:30 AM Monday Energy",
-    body: "Struggling to remember this password harder than making it to the 75% attendance threshold. ⏰",
-    hint: "Take a second to verify before hitting Sign In again."
-  },
-  {
-    title: "Left on Seen?",
-    body: "Entering wrong passwords faster than your crush leaves you on 'Delivered'. 📱",
-    hint: "Hit 'Forgot password?' to get back in quickly."
-  }
-];
 
 const Login = () => {
   const { login, verify2FA: authVerify2FA } = useAuth();
@@ -52,7 +14,6 @@ const Login = () => {
   const [otp, setOtp] = useState('');
   const [showOTP, setShowOTP] = useState(false);
   const [error, setError] = useState('');
-  const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [displayText, setDisplayText] = useState('');
@@ -153,7 +114,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       const result = await login(formData.email, formData.password);
-      setFailedAttempts(0);
 
       if (result?.needs2FA) {
         setShowOTP(true);
@@ -166,7 +126,6 @@ const Login = () => {
         setVerificationEmail(err.response?.data?.email || formData.email);
         setError(err.response?.data?.message || 'Please verify your email before logging in.');
       } else {
-        setFailedAttempts((prev) => prev + 1);
         setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
       }
     } finally {
@@ -180,7 +139,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       await authVerify2FA(formData.email, otp);
-      setFailedAttempts(0);
       // Navigation is handled by AuthContext
     } catch (err) {
       setError(err.response?.data?.message || 'OTP verification failed. Please try again.');
@@ -263,31 +221,8 @@ const Login = () => {
                 </div>
               )}
 
-              {/* Humorous failure message after 2 failed attempts (only if not verification error) */}
-              {!needsVerification && failedAttempts >= 2 && (
-                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-200">
-                  <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-                  <div className="space-y-0.5 w-full">
-                    <div className="flex items-center justify-between gap-2">
-                      <strong className="block font-medium text-xs text-amber-950 dark:text-amber-100">
-                        {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].title}
-                      </strong>
-                      <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                        Attempt {failedAttempts}
-                      </span>
-                    </div>
-                    <p className="text-xs text-amber-900/90 dark:text-amber-300 leading-relaxed font-normal">
-                      {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].body}
-                    </p>
-                    <p className="text-[11px] text-amber-800/80 dark:text-amber-400/80 italic pt-0.5">
-                      💡 {STUDENT_FAILURE_MESSAGES[(failedAttempts - 2) % STUDENT_FAILURE_MESSAGES.length].hint}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Standard error for 1st failed attempt */}
-              {!needsVerification && error && failedAttempts < 2 && (
+              {/* Standard error */}
+              {!needsVerification && error && (
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-xl text-center">
                   {error}
                 </div>

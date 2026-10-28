@@ -34,8 +34,7 @@ export {
 // Utilities & Transports
 export { escapeHtml } from "./renderer/escapeHtml.js";
 export { renderEmail } from "./renderer/emailRenderer.js";
-export { mockTransport } from "./transports/mockTransport.js";
-export { resendTransport } from "./transports/resendTransport.js";
+export { smtpTransport, sendViaSmtp, getSmtpTransporter } from "./transports/smtpTransport.js";
 export { extractSecurityMetadata } from "./utils/requestMetadata.js";
 
 export { default } from "./emailService.js";

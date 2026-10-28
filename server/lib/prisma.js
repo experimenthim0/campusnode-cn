@@ -11,15 +11,46 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not defined.");
 }
 
-// Address the pg library SECURITY WARNING for SSL modes
-const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+// Address the pg library SECURITY WARNING for SSL modes while respecting explicit settings
+try {
+  const parsedUrl = new URL(connectionString);
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const searchParams = parsedUrl.searchParams;
+  const hasExplicitSsl = searchParams.has("sslmode") || searchParams.has("ssl");
 
-if (!isLocal) {
-  if (connectionString.includes('sslmode=require') && !connectionString.includes('uselibpqcompat=true')) {
-    connectionString = connectionString.replace('sslmode=require', 'uselibpqcompat=true&sslmode=require');
-  } else if (!connectionString.includes('sslmode=')) {
-    const separator = connectionString.includes('?') ? '&' : '?';
-    connectionString += separator + 'uselibpqcompat=true&sslmode=require';
+  const isLocalOrContainerHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname === "postgres" ||
+    hostname === "campusnode-postgres" ||
+    hostname === "host.docker.internal";
+
+  if (!hasExplicitSsl) {
+    // If not a local or container host, enforce secure SSL for remote cloud databases (Neon, RDS, etc.)
+    if (!isLocalOrContainerHost) {
+      searchParams.set("sslmode", "require");
+      searchParams.set("uselibpqcompat", "true");
+      connectionString = parsedUrl.toString();
+    }
+  } else if (searchParams.get("sslmode") === "require" && !searchParams.has("uselibpqcompat")) {
+    searchParams.set("uselibpqcompat", "true");
+    connectionString = parsedUrl.toString();
+  }
+} catch {
+  // Fallback to string matching if URL parsing fails
+  const isLocal =
+    connectionString.includes("localhost") ||
+    connectionString.includes("127.0.0.1") ||
+    connectionString.includes("@postgres:") ||
+    connectionString.includes("@campusnode-postgres:");
+  if (!isLocal) {
+    if (connectionString.includes("sslmode=require") && !connectionString.includes("uselibpqcompat=true")) {
+      connectionString = connectionString.replace("sslmode=require", "uselibpqcompat=true&sslmode=require");
+    } else if (!connectionString.includes("sslmode=")) {
+      const separator = connectionString.includes("?") ? "&" : "?";
+      connectionString += separator + "uselibpqcompat=true&sslmode=require";
+    }
   }
 }
 
