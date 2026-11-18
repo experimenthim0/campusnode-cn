@@ -237,7 +237,7 @@ const HighlightMatch = ({ text = "", query = "" }) => {
         regex.test(part) ? (
           <span
             key={i}
-            className="text-primary font-medium mysans underline decoration-primary/40 underline-offset-2"
+            className="text-brand-600 dark:text-brand-400 font-medium underline decoration-brand-500/40 underline-offset-2"
           >
             {part}
           </span>
@@ -762,19 +762,19 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 sm:pt-16 bg-background/80 backdrop-blur-sm transition-all animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 pt-12 sm:pt-20 bg-black/60 dark:bg-black/75 backdrop-blur-sm transition-all animate-in fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Global Search Command Palette"
     >
-      <Card
-        className="w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] animate-in zoom-in-95 border-border"
+      <div
+        className="w-full max-w-2xl flex flex-col gap-2.5 sm:gap-3 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Search Input Box */}
-        <div className="relative flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
-          <Search className="w-5 h-5 text-primary shrink-0" />
+        {/* Card A: Search Input Card (Top) */}
+        <div className="w-full rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-lg px-4 py-3 sm:py-3.5 flex items-center gap-3">
+          <Search className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -782,13 +782,13 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search events, clubs, members, guides..."
-            className="flex-1 bg-transparent text-sm sm:text-base font-medium placeholder:text-muted-foreground focus:outline-none"
+            className="flex-1 bg-transparent text-sm sm:text-base font-normal text-cn-text placeholder:text-cn-text-muted focus:outline-none"
             autoComplete="off"
             spellCheck="false"
           />
 
           {loading && (
-            <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+            <Loader2 className="w-4 h-4 animate-spin text-brand-600 dark:text-brand-400 shrink-0" />
           )}
 
           {query && (
@@ -799,7 +799,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
                 setQuery("");
                 inputRef.current?.focus();
               }}
-              className="h-7 w-7 text-muted-foreground"
+              className="h-7 w-7 text-cn-text-muted hover:text-cn-text cursor-pointer"
               title="Clear search"
             >
               <X size={14} />
@@ -807,7 +807,7 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
           )}
 
           <div className="hidden sm:flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground bg-muted border border-border rounded">
+            <kbd className="px-2 py-0.5 text-label font-mono font-medium text-cn-text-muted bg-cn-surface-muted border border-cn-border rounded-md">
               ESC
             </kbd>
           </div>
@@ -815,350 +815,355 @@ const SearchBar = ({ isOpen, onClose, isMobile = false }) => {
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="sm:hidden h-7 w-7 text-muted-foreground"
+            className="sm:hidden h-7 w-7 text-cn-text-muted hover:text-cn-text cursor-pointer"
             aria-label="Close"
           >
             <X size={16} />
           </Button>
         </div>
 
-        {/* Category Tabs Bar */}
-        <div className="flex items-center gap-1 px-4 py-2 bg-muted/40 border-b border-border overflow-x-auto no-scrollbar">
-          {CATEGORY_TABS.map((tab) => {
-            const count =
-              query.trim() && searchResults.counts
-                ? searchResults.counts[tab.id] ?? 0
-                : null;
-            const isActive = activeTab === tab.id;
+        {/* Card B: Search Results Card (Below) */}
+        <div className="w-full rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-2xl overflow-hidden flex flex-col max-h-[70vh] sm:max-h-[68vh]">
+          {/* Category Tabs Bar */}
+          <div className="flex items-center gap-1.5 px-4 py-2.5 bg-cn-surface-muted/50 border-b border-cn-border overflow-x-auto no-scrollbar shrink-0">
+            {CATEGORY_TABS.map((tab) => {
+              const count =
+                query.trim() && searchResults.counts
+                  ? searchResults.counts[tab.id] ?? 0
+                  : null;
+              const isActive = activeTab === tab.id;
 
-            return (
-              <Button
-                key={tab.id}
-                variant={isActive ? "default" : "ghost"}
-                size="sm"
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  inputRef.current?.focus();
-                }}
-                className={`h-7 text-xs font-medium px-2.5 gap-1.5 ${!isActive ? 'text-muted-foreground' : ''}`}
-              >
-                <span>{tab.label}</span>
-                {count !== null && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono font-medium ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </Button>
-            );
-          })}
-        </div>
-
-        {/* Results Container / Empty State */}
-        <div
-          ref={listRef}
-          className="flex-1 overflow-y-auto divide-y divide-border p-3 space-y-3"
-        >
-          {!query.trim() ? (
-            /* Empty Query - Recent Searches & Popular Tags */
-            <div className="py-2 px-1 space-y-4">
-              {/* Recent Searches */}
-              {recentSearches.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      Recent Searches
-                    </p>
-                    <button
-                      onClick={clearAllRecents}
-                      className="text-[10px] font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    inputRef.current?.focus();
+                  }}
+                  className={`h-7 text-label font-medium px-3 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+                    isActive
+                      ? "bg-brand-600 text-white dark:bg-brand-600"
+                      : "text-cn-text-secondary hover:text-cn-text hover:bg-cn-surface-muted"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  {count !== null && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium leading-none ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-cn-surface-muted text-cn-text-muted border border-cn-border"
+                      }`}
                     >
-                      Clear all
-                    </button>
-                  </div>
-                  <div className="space-y-1">
-                    {recentSearches.map((item, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => handleQuickSearchClick(item)}
-                        className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/70 transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <History className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary" />
-                          <span className="text-xs font-medium group-hover:text-primary truncate">
-                            {item}
-                          </span>
-                        </div>
-                        <button
-                          onClick={(e) => removeRecent(item, e)}
-                          className="text-muted-foreground hover:text-foreground p-0.5 transition-colors cursor-pointer"
-                          title="Remove from history"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Popular Searches */}
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                  Popular Searches
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULAR_QUICK_SEARCHES.map((tag, idx) => {
-                    const TagIcon = tag.icon;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleQuickSearchClick(tag.query)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg bg-muted/50 border border-border hover:border-primary/40 hover:text-primary transition-all cursor-pointer"
-                      >
-                        <TagIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{tag.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Quick Access */}
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                  Quick Access
-                </p>
-                <div className="space-y-1">
-                  {PUBLIC_PAGES.slice(0, 4).map((p, idx) => {
-                    const PageIcon = p.icon;
-                    return (
-                      <Link
-                        key={idx}
-                        to={p.path}
-                        onClick={() => {
-                          saveRecent(p.title);
-                          onClose();
-                        }}
-                        className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/30 border border-border hover:border-primary/40 hover:bg-muted/60 transition-all group"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-6 h-6 rounded-md bg-background border border-border flex items-center justify-center text-primary text-xs shrink-0">
-                            <PageIcon className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="text-xs font-medium group-hover:text-primary truncate">
-                            {p.title}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground hidden sm:inline truncate">
-                            · {p.description}
-                          </span>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          ) : groupedSections.length > 0 ? (
-            /* Grouped Search Results */
-            <div className="space-y-3">
-              {groupedSections.map((section, sIdx) => (
-                <div key={sIdx} className="space-y-1">
-                  {/* Category Header */}
-                  <div className="flex items-center justify-between px-2 pt-1.5 pb-0.5">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      {section.title}
+                      {count}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5">
-                      {section.items.length}
-                    </Badge>
-                  </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-                  {/* Section Result Cards */}
-                  <div className="space-y-1">
-                    {section.items.map((item) => {
-                      runningIndex += 1;
-                      const itemIndex = runningIndex;
-                      const isSelected = itemIndex === selectedIndex;
-                      const ItemIcon = item.icon || FileText;
-
-                      return (
+          {/* Results Container / Empty State */}
+          <div
+            ref={listRef}
+            className="flex-1 overflow-y-auto divide-y divide-cn-border p-3 sm:p-4 space-y-3"
+          >
+            {!query.trim() ? (
+              /* Empty Query - Recent Searches, Popular Searches & Quick Access */
+              <div className="py-1 px-1 space-y-4">
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted">
+                        Recent Searches
+                      </p>
+                      <button
+                        onClick={clearAllRecents}
+                        className="text-[10px] font-medium text-cn-text-muted hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {recentSearches.map((item, idx) => (
                         <div
-                          key={`${item.type}-${item.id || itemIndex}`}
-                          ref={isSelected ? selectedItemRef : null}
-                          onClick={() => handleResultSelect(item)}
-                          onMouseEnter={() => setSelectedIndex(itemIndex)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 cursor-pointer border ${
-                            isSelected
-                              ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
-                              : "border-transparent hover:bg-muted/40"
-                          }`}
+                          key={idx}
+                          onClick={() => handleQuickSearchClick(item)}
+                          className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-cn-surface-muted/50 hover:bg-cn-surface-muted transition-all cursor-pointer group"
                         >
-                          {/* Visual Asset */}
-                          <div className="shrink-0">
-                            {item.type === "event" ? (
-                              item.image ? (
-                                <img
-                                  src={item.image}
-                                  alt=""
-                                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-border"
-                                />
-                              ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                                  <Calendar className="w-4 h-4" />
-                                </div>
-                              )
-                            ) : item.type === "club" ? (
-                              item.logo ? (
-                                <img
-                                  src={item.logo}
-                                  alt=""
-                                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-border"
-                                />
-                              ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 font-medium text-xs">
-                                  {getInitials(item.title)}
-                                </div>
-                              )
-                            ) : item.type === "member" ? (
-                              item.profileImage ? (
-                                <img
-                                  src={item.profileImage}
-                                  alt=""
-                                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-border"
-                                />
-                              ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-xs border border-primary/20">
-                                  {getInitials(item.title)}
-                                </div>
-                              )
-                            ) : (
-                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center border border-border">
-                                <ItemIcon className="w-4 h-4" />
-                              </div>
-                            )}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <History className="w-3.5 h-3.5 text-cn-text-muted group-hover:text-brand-600 dark:group-hover:text-brand-400" />
+                            <span className="text-body text-cn-text group-hover:text-brand-600 dark:group-hover:text-brand-400 truncate">
+                              {item}
+                            </span>
                           </div>
-
-                          {/* Result Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs sm:text-sm font-medium truncate">
-                                <HighlightMatch text={item.title} query={query} />
-                              </span>
-
-                              {item.type === "member" && item.roleBadge && (
-                                <Badge
-                                  variant={getMemberRoleBadgeVariant(item.roleBadge)}
-                                  className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-medium"
-                                >
-                                  {item.roleBadge}
-                                </Badge>
-                              )}
-
-                              {item.type === "event" && item.isLive && (
-                                <Badge className="text-[9px] font-medium px-1.5 py-0 bg-primary text-primary-foreground shrink-0 flex items-center gap-1 border-none">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                  LIVE
-                                </Badge>
-                              )}
-                            </div>
-
-                            <p className="text-[11px] text-muted-foreground truncate">
-                              <HighlightMatch text={item.subtitle} query={query} />
-                            </p>
-
-                            {item.type === "member" && item.branch && (
-                              <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">
-                                {item.branch}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Right Side Indicator */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            {item.type === "event" && item.priceLabel && (
-                              <Badge variant="secondary" className="text-[10px] font-mono">
-                                {item.priceLabel}
-                              </Badge>
-                            )}
-
-                            {isSelected ? (
-                              <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground bg-primary rounded">
-                                ↵
-                              </kbd>
-                            ) : (
-                              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-                            )}
-                          </div>
+                          <button
+                            onClick={(e) => removeRecent(item, e)}
+                            className="text-cn-text-muted hover:text-cn-text p-0.5 transition-colors cursor-pointer"
+                            title="Remove from history"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Popular Searches */}
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-2 px-1">
+                    Popular Searches
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {POPULAR_QUICK_SEARCHES.map((tag, idx) => {
+                      const TagIcon = tag.icon;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleQuickSearchClick(tag.query)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-label font-medium rounded-lg bg-cn-surface-muted/60 border border-cn-border hover:border-brand-500/50 hover:text-brand-600 dark:hover:text-brand-400 transition-all cursor-pointer text-cn-text"
+                        >
+                          <TagIcon className="w-3.5 h-3.5 text-cn-text-muted" />
+                          <span>{tag.label}</span>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            /* No Results Found */
-            <div className="py-12 px-4 text-center">
-              <Search className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <h4 className="text-sm font-medium mb-1">
-                No matching results found
-              </h4>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                We couldn't find anything matching &ldquo;{query}&rdquo;. Try searching with an event title, club name, member name, or category.
-              </p>
-            </div>
-          )}
-        </div>
 
-        {/* Footer Bar */}
-        <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-          <div className="hidden sm:flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-muted border border-border rounded">
-                ↑↓
-              </kbd>{" "}
-              Navigate
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-muted border border-border rounded">
-                ↵
-              </kbd>{" "}
-              Open
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-muted border border-border rounded">
-                Tab
-              </kbd>{" "}
-              Categories
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-muted border border-border rounded">
-                Esc
-              </kbd>{" "}
-              Close
-            </span>
-          </div>
+                {/* Quick Access */}
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted mb-2 px-1">
+                    Quick Access
+                  </p>
+                  <div className="space-y-1.5">
+                    {PUBLIC_PAGES.slice(0, 4).map((p, idx) => {
+                      const PageIcon = p.icon;
+                      return (
+                        <Link
+                          key={idx}
+                          to={p.path}
+                          onClick={() => {
+                            saveRecent(p.title);
+                            onClose();
+                          }}
+                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-cn-surface-muted/40 border border-cn-border hover:border-brand-500/40 hover:bg-cn-surface-muted transition-all group"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-6 h-6 rounded-md bg-cn-surface border border-cn-border flex items-center justify-center text-brand-600 dark:text-brand-400 text-xs shrink-0">
+                              <PageIcon className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-body font-medium text-cn-text group-hover:text-brand-600 dark:group-hover:text-brand-400 truncate">
+                              {p.title}
+                            </span>
+                            <span className="text-metadata text-cn-text-muted hidden sm:inline truncate">
+                              · {p.description}
+                            </span>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-cn-text-muted group-hover:text-brand-600 dark:group-hover:text-brand-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : groupedSections.length > 0 ? (
+              /* Grouped Search Results */
+              <div className="space-y-3">
+                {groupedSections.map((section, sIdx) => (
+                  <div key={sIdx} className="space-y-1">
+                    {/* Category Header */}
+                    <div className="flex items-center justify-between px-2 pt-1 pb-0.5">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-cn-text-muted">
+                        {section.title}
+                      </span>
+                      <Badge variant="secondary" className="text-[10px] font-mono h-4 px-1.5 bg-cn-surface-muted text-cn-text-secondary border border-cn-border">
+                        {section.items.length}
+                      </Badge>
+                    </div>
 
-          <div className="sm:hidden text-muted-foreground text-[11px]">
-            Tap a result to open
-          </div>
+                    {/* Section Result Cards */}
+                    <div className="space-y-1">
+                      {section.items.map((item) => {
+                        runningIndex += 1;
+                        const itemIndex = runningIndex;
+                        const isSelected = itemIndex === selectedIndex;
+                        const ItemIcon = item.icon || FileText;
 
-          <div className="flex items-center gap-2 font-mono text-[11px]">
-            {query.trim() && (
-              <span>
-                {totalCount} result{totalCount !== 1 ? "s" : ""}
-              </span>
+                        return (
+                          <div
+                            key={`${item.type}-${item.id || itemIndex}`}
+                            ref={isSelected ? selectedItemRef : null}
+                            onClick={() => handleResultSelect(item)}
+                            onMouseEnter={() => setSelectedIndex(itemIndex)}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 cursor-pointer border ${
+                              isSelected
+                                ? "bg-brand-50/70 dark:bg-brand-950/40 border-brand-500/40 ring-1 ring-brand-500/20"
+                                : "border-transparent hover:bg-cn-surface-muted/70"
+                            }`}
+                          >
+                            {/* Visual Asset */}
+                            <div className="shrink-0">
+                              {item.type === "event" ? (
+                                item.image ? (
+                                  <img
+                                    src={item.image}
+                                    alt=""
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-cn-border"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-500/20">
+                                    <Calendar className="w-4 h-4" />
+                                  </div>
+                                )
+                              ) : item.type === "club" ? (
+                                item.logo ? (
+                                  <img
+                                    src={item.logo}
+                                    alt=""
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-cn-border"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-500/20 font-medium text-xs">
+                                    {getInitials(item.title)}
+                                  </div>
+                                )
+                              ) : item.type === "member" ? (
+                                item.profileImage ? (
+                                  <img
+                                    src={item.profileImage}
+                                    alt=""
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-cn-border"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center font-medium text-xs border border-brand-500/20">
+                                    {getInitials(item.title)}
+                                  </div>
+                                )
+                              ) : (
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-cn-surface-muted text-cn-text-secondary flex items-center justify-center border border-cn-border">
+                                  <ItemIcon className="w-4 h-4" />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Result Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-body font-medium text-cn-text truncate">
+                                  <HighlightMatch text={item.title} query={query} />
+                                </span>
+
+                                {item.type === "member" && item.roleBadge && (
+                                  <Badge
+                                    variant={getMemberRoleBadgeVariant(item.roleBadge)}
+                                    className="text-[9px] uppercase px-1.5 py-0 shrink-0 font-medium"
+                                  >
+                                    {item.roleBadge}
+                                  </Badge>
+                                )}
+
+                                {item.type === "event" && item.isLive && (
+                                  <Badge className="text-[9px] font-medium px-1.5 py-0 bg-brand-600 text-white shrink-0 flex items-center gap-1 border-none">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                    LIVE
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <p className="text-metadata text-cn-text-secondary truncate">
+                                <HighlightMatch text={item.subtitle} query={query} />
+                              </p>
+
+                              {item.type === "member" && item.branch && (
+                                <p className="text-[10px] text-cn-text-muted mt-0.5 truncate">
+                                  {item.branch}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Right Side Indicator */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {item.type === "event" && item.priceLabel && (
+                                <Badge variant="secondary" className="text-[10px] font-mono border-cn-border">
+                                  {item.priceLabel}
+                                </Badge>
+                              )}
+
+                              {isSelected ? (
+                                <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-medium text-white bg-brand-600 rounded">
+                                  ↵
+                                </kbd>
+                              ) : (
+                                <ArrowRight className="w-3.5 h-3.5 text-cn-text-muted" />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* No Results Found - Minimal & Clean */
+              <div className="py-10 px-4 text-center">
+                <Search className="w-8 h-8 text-cn-text-muted mx-auto mb-2" />
+                <h4 className="text-subheading font-medium text-cn-text mb-1">
+                  No matching results found
+                </h4>
+                <p className="text-metadata text-cn-text-muted max-w-sm mx-auto">
+                  We couldn't find anything matching &ldquo;{query}&rdquo;. Try another term or choose a different category.
+                </p>
+              </div>
             )}
           </div>
+
+          {/* Footer Bar */}
+          <div className="px-4 py-2 bg-cn-surface-muted/50 border-t border-cn-border flex items-center justify-between text-metadata text-cn-text-muted shrink-0">
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-cn-surface border border-cn-border rounded">
+                  ↑↓
+                </kbd>{" "}
+                Navigate
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-cn-surface border border-cn-border rounded">
+                  ↵
+                </kbd>{" "}
+                Open
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-cn-surface border border-cn-border rounded">
+                  Tab
+                </kbd>{" "}
+                Categories
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-cn-surface border border-cn-border rounded">
+                  Esc
+                </kbd>{" "}
+                Close
+              </span>
+            </div>
+
+            <div className="sm:hidden text-cn-text-muted text-metadata">
+              Tap a result to open
+            </div>
+
+            <div className="flex items-center gap-2 font-mono text-metadata">
+              {query.trim() && (
+                <span>
+                  {totalCount} result{totalCount !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

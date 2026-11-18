@@ -117,7 +117,7 @@ const HomeFooter = () => {
                   href="mailto:clubsetu@nikhim.me"
                   className="text-brand-600 dark:text-brand-400 hover:underline font-medium"
                 >
-                  clubsetu@nikhim.me
+                  campusnode@nitj.ac.in
                 </a>
               </p>
             </div>

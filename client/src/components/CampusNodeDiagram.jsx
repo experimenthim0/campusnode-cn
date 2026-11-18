@@ -104,14 +104,14 @@ const NODES = [
     badge: null,
   },
   {
-    key: 'announcements',
-    title: 'Announcements',
-    desc: 'Stay updated with official updates.',
+    key: 'Updates',
+    title: 'Campus-Updates',
+    desc: 'Stay updated with all campus news and updates.',
     Icon: MegaphoneIcon,
     box: [66.28, 28.13, 31.38, 17.48],
     from: [924, 428],
     to: [1017, 373],
-    href: '/notifications',
+    href: '/campus-updates',
     badge: null,
   },
   {
@@ -200,7 +200,7 @@ function NodeCard({ node, isHovered, onHover, onLeave }) {
       {...wrapperProps}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      className={`group relative flex h-full items-center gap-[clamp(6px,1.4cqw,14px)] rounded-[clamp(10px,1.5cqw,18px)] border px-[clamp(8px,1.6cqw,18px)] py-[clamp(6px,1.2cqw,12px)] transition-all duration-300 select-none ${
+      className={`group relative flex items-center gap-[clamp(6px,1.4cqw,14px)] rounded-[clamp(20px,1.5cqw,24px)] border px-[clamp(8px,1.6cqw,18px)] py-[clamp(6px,1.2cqw,12px)] transition-all duration-300 select-none ${
         isHovered
           ? 'border-[#0a7cff] bg-white dark:bg-neutral-900 shadow-[0_12px_32px_-8px_rgba(10,124,255,0.35)] -translate-y-1'
           : 'border-blue-200/80 dark:border-blue-500/20 bg-white/95 dark:bg-neutral-900/90 shadow-[0_6px_20px_-8px_rgba(10,124,255,0.18)] dark:shadow-[0_6px_20px_-8px_rgba(10,124,255,0.12)] hover:-translate-y-0.5 hover:border-blue-400'
@@ -211,7 +211,7 @@ function NodeCard({ node, isHovered, onHover, onLeave }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <h3 className="text-[clamp(10px,1.55cqw,15px)] font-medium uppercase tracking-widest text-neutral-950 dark:text-white">
+          <h3 className="text-[clamp(10px,1.55cqw,15px)] font-medium tracking-widest text-neutral-950 dark:text-white">
             {title}
           </h3>
           {badge && (
@@ -220,9 +220,9 @@ function NodeCard({ node, isHovered, onHover, onLeave }) {
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-[clamp(9px,1.15cqw,12.5px)] leading-tight text-neutral-600 dark:text-neutral-400 line-clamp-2">
+        {/* <p className="mt-0.5 text-[clamp(9px,1.15cqw,12.5px)] leading-tight text-neutral-600 dark:text-neutral-400 line-clamp-2">
           {desc}
-        </p>
+        </p> */}
       </div>
     </CardWrapper>
   );

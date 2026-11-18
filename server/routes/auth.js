@@ -310,6 +310,7 @@ router.post("/register/faculty", async (req, res) => {
 
     const facultyId = `fac_${createObjectId().slice(0, 20)}`;
     const hashedPassword = await bcrypt.hash(password, 10);
+    const shouldSkipVerification = process.env.SKIP_VERIFICATION === "true";
 
     const newFaculty = await prisma.facultyUser.create({
       data: {
@@ -318,31 +319,65 @@ router.post("/register/faculty", async (req, res) => {
         email: cleanEmail,
         department: department.trim(),
         password: hashedPassword,
-        isVerified: true,
+        isVerified: shouldSkipVerification,
       },
     });
 
-    const role = "faculty";
-    const token = generateToken(newFaculty, role, "faculty", null, "FACULTY");
-    const userObj = {
-      ...sanitizeUser(newFaculty),
-      department: newFaculty.department,
-      role,
-      userType: "faculty",
-      principalType: "FACULTY",
-      clubId: null,
-      memberships: [],
-    };
+    if (shouldSkipVerification) {
+      const role = "faculty";
+      const token = generateToken(newFaculty, role, "faculty", null, "FACULTY");
+      const userObj = {
+        ...sanitizeUser(newFaculty),
+        department: newFaculty.department,
+        role,
+        userType: "faculty",
+        principalType: "FACULTY",
+        clubId: null,
+        memberships: [],
+      };
 
-    res.cookie("token", token, getCookieOptions());
+      res.cookie("token", token, getCookieOptions());
+      return res.status(201).json({
+        success: true,
+        message: "Faculty registered successfully",
+        user: userObj,
+        role,
+        userType: "faculty",
+        principalType: "FACULTY",
+        token,
+      });
+    }
+
+    // Email verification required: generate token and send email
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const verifyKey = `email_verify:${hashedToken}`;
+
+    // Store in Redis with 24-hour TTL (86400 seconds)
+    await redis.setex(
+      verifyKey,
+      86400,
+      JSON.stringify({ userId: newFaculty.id, email: newFaculty.email, userType: "faculty" })
+    );
+
+    const clientUrl = getClientUrl(req.headers.origin);
+    const verifyUrl = `${clientUrl}/verify-email/${rawToken}`;
+
+    try {
+      await sendVerificationEmail({
+        to: newFaculty.email,
+        name: newFaculty.name,
+        verifyUrl,
+        expiryHours: 24,
+      });
+    } catch (emailErr) {
+      console.error("[Auth] Failed to send faculty verification email:", emailErr);
+    }
+
     return res.status(201).json({
       success: true,
-      message: "Faculty registered successfully",
-      user: userObj,
-      role,
-      userType: "faculty",
-      principalType: "FACULTY",
-      token,
+      requiresVerification: true,
+      message: "Registration successful! A verification link has been sent to your NITJ email. Please verify your email before logging in.",
     });
   } catch (err) {
     if (err?.code === "P2002") {
@@ -1345,6 +1380,11 @@ router.get("/verify-email/:token", async (req, res) => {
         where: { id: userId },
         data: { isVerified: true },
       });
+    } else if (userType === "faculty") {
+      await prisma.facultyUser.update({
+        where: { id: userId },
+        data: { isVerified: true },
+      });
     }
 
     // Single-use token: consume upon verification
@@ -1373,8 +1413,11 @@ router.post(["/send-verification-email", "/resend-verification"], async (req, re
     const externalUser = !student ? await prisma.externalUser.findFirst({
       where: { email: { equals: cleanEmail, mode: "insensitive" } },
     }) : null;
+    const faculty = (!student && !externalUser) ? await prisma.facultyUser.findFirst({
+      where: { email: { equals: cleanEmail, mode: "insensitive" } },
+    }) : null;
 
-    const user = student || externalUser;
+    const user = student || externalUser || faculty;
     if (!user) {
       return res.json({ message: "If the account exists, a verification email has been sent." });
     }
@@ -1383,7 +1426,7 @@ router.post(["/send-verification-email", "/resend-verification"], async (req, re
       return res.status(400).json({ message: "This account is already verified. You can log in directly." });
     }
 
-    const userType = student ? "student" : "external";
+    const userType = student ? "student" : externalUser ? "external" : "faculty";
     const rawToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
     const verifyKey = `email_verify:${hashedToken}`;

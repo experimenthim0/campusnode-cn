@@ -17,7 +17,7 @@ export const resetPasswordTemplate = {
   },
 
   getPreheader() {
-    return "Use this secure link to choose a new password for your Campusnode account.";
+    return "Use this link to set a new password for your Campusnode account.";
   },
 
   render(data) {
@@ -28,9 +28,9 @@ export const resetPasswordTemplate = {
       ${Heading({ children: "Reset Your Password", level: 2, align: "center", style: "margin: 0 0 16px 0;" })}
 
       ${BodyText({
-        children: "We received a request to reset your Campusnode account password. Click the button to choose a new password.",
+        children: "We received a request to reset your Campusnode account password. Click below to set a new password.",
         align: "center",
-        style: "margin: 0 0 12px 0;",
+        style: "margin: 0 0 16px 0;",
       })}
 
       ${Button({ label: "Reset Password", url: resetUrl, variant: "primary" })}
@@ -38,11 +38,11 @@ export const resetPasswordTemplate = {
       ${MutedText({
         children: `This password reset link will expire in <strong>${expiryMinutes} minutes</strong>.`,
         align: "center",
-        style: "margin: 0 0 8px 0;",
+        style: "margin: 16px 0 8px 0;",
       })}
 
       ${MutedText({
-        children: `If the button doesn't work, copy and paste this URL into your browser:<br>${LinkText({ href: safeUrl })}`,
+        children: `If the button doesn't work, open this link in your browser:<br>${LinkText({ href: safeUrl })}`,
         align: "center",
         style: "margin: 0; word-break: break-all;",
       })}

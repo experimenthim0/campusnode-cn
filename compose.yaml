@@ -126,6 +126,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ""
+        VITE_GOOGLE_APPS_SCRIPT_URL: ${VITE_GOOGLE_APPS_SCRIPT_URL:-}
         VITE_MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
     image: campusnode-frontend:latest
     container_name: campusnode-frontend
