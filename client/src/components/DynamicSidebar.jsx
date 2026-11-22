@@ -477,7 +477,7 @@ const DynamicSidebar = ({ user }) => {
                         items.push({ label: "Broadcasts", to: `/send-notification?clubId=${clubId}` });
                       }
                       if (canUpdateClub) {
-                        items.push({ label: "Club Settings", to: `/club/edit/${clubId}` });
+                        items.push({ label: "Club Page Settings", to: `/club/edit/${clubId}` });
                       }
 
                       return (
@@ -557,7 +557,7 @@ const DynamicSidebar = ({ user }) => {
                     <SidebarLink
                       to={`/club/edit/${clubId}`}
                       icon={LayoutGrid}
-                      label="Club Settings"
+                      label="Club Page Settings"
                       isActive={isActive(`/club/edit/${clubId}`)}
                       isCollapsed={isCollapsed}
                     />

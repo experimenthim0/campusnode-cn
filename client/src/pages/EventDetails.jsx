@@ -1943,7 +1943,7 @@ const EventDetails = () => {
                   href={`mailto:${
                     isCentralEvent
                       ? 'dsw@nitj.ac.in'
-                      : (allOrganizingClubs[0]?.clubEmail || event.club?.clubEmail || event.createdBy?.email || 'clubsetu@nikhim.me')
+                      : (allOrganizingClubs[0]?.clubEmail || event.club?.clubEmail || event.createdBy?.email || 'campusnode@nitj.ac.in')
                   }?subject=${encodeURIComponent(`Inquiry regarding ${event.title}`)}`}
                   className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
                 >

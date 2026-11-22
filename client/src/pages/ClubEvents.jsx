@@ -31,6 +31,7 @@ import {
   FilterX,
   Download,
   Loader2,
+  Search,
 } from 'lucide-react';
 import { ClubMemberRole } from '../types/index.js';
 import WinnerModal from '../components/WinnerModal';
@@ -55,6 +56,7 @@ const ClubEvents = () => {
   const [loading, setLoading] = useState(true);
   const [exportFilters, setExportFilters] = useState({ month: 'all', year: 'all' });
   const [statusTab, setStatusTab] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
   const [clubName, setClubName] = useState("");
@@ -182,13 +184,24 @@ const ClubEvents = () => {
     };
   }, [dashboardViewMode, userClubs]);
 
-  // Filter multi-club events according to selected club in calendar legend
+  // Filter multi-club events according to selected club in calendar legend and search query
   const eventsForCalendar = useMemo(() => {
-    if (calendarClubFilter === "all") return multiClubEvents;
-    return multiClubEvents.filter(
-      (e) => String(e.clubId || e.club?._id || e.club?.id) === String(calendarClubFilter)
-    );
-  }, [multiClubEvents, calendarClubFilter]);
+    let list = calendarClubFilter === "all"
+      ? multiClubEvents
+      : multiClubEvents.filter(
+          (e) => String(e.clubId || e.club?._id || e.club?.id) === String(calendarClubFilter)
+        );
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((e) =>
+        e.title?.toLowerCase().includes(q) ||
+        (e.location || e.venue || '')?.toLowerCase().includes(q) ||
+        e.category?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [multiClubEvents, calendarClubFilter, searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -374,7 +387,11 @@ const ClubEvents = () => {
     }
   };
 
-  const clearFilters = () => setExportFilters({ month: 'all', year: 'all' });
+  const clearFilters = () => {
+    setExportFilters({ month: 'all', year: 'all' });
+    setStatusTab('ALL');
+    setSearchQuery('');
+  };
 
   const handleExportClubData = () => {
     setEventExportError('');
@@ -431,7 +448,15 @@ const ClubEvents = () => {
           : statusTab === 'JOINT'
             ? (event.organizers && event.organizers.length > 1)
             : true;
-    return mMatch && yMatch && sMatch;
+    if (!mMatch || !yMatch || !sMatch) return false;
+
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.trim().toLowerCase();
+    const titleMatch = event.title?.toLowerCase().includes(q);
+    const venueMatch = (event.location || event.venue || '')?.toLowerCase().includes(q);
+    const categoryMatch = event.category?.toLowerCase().includes(q);
+    const descMatch = event.description?.toLowerCase().includes(q);
+    return Boolean(titleMatch || venueMatch || categoryMatch || descMatch);
   });
 
   const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
@@ -687,52 +712,78 @@ const ClubEvents = () => {
         </div>
       ) : (
         <>
-          {/* Filter Tabs */}
+          {/* Filter Tabs & Search Bar */}
           {createdEvents.length > 0 && (
-            <div className="flex items-center gap-1.5 pb-4 border-b border-border mb-6 overflow-x-auto">
-              <Button
-                size="sm"
-                variant={statusTab === 'ALL' ? 'default' : 'ghost'}
-                onClick={() => setStatusTab('ALL')}
-                className={`h-8 text-xs font-medium rounded-lg ${statusTab === 'ALL' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                All Events ({createdEvents.length})
-              </Button>
-              <Button
-                size="sm"
-                variant={statusTab === 'PENDING' ? 'default' : 'ghost'}
-                onClick={() => setStatusTab('PENDING')}
-                className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${statusTab === 'PENDING'
-                    ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
-                    : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
-                  }`}
-              >
-                <Clock className="w-3.5 h-3.5" />
-                Pending Review
-                {pendingCount > 0 && (
-                  <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-medium">
-                    {pendingCount}
-                  </Badge>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border mb-6">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                <Button
+                  size="sm"
+                  variant={statusTab === 'ALL' ? 'default' : 'ghost'}
+                  onClick={() => setStatusTab('ALL')}
+                  className={`h-8 text-xs font-medium rounded-lg ${statusTab === 'ALL' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                  All Events ({createdEvents.length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusTab === 'PENDING' ? 'default' : 'ghost'}
+                  onClick={() => setStatusTab('PENDING')}
+                  className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${statusTab === 'PENDING'
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                      : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                    }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  Pending Review
+                  {pendingCount > 0 && (
+                    <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-medium">
+                      {pendingCount}
+                    </Badge>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusTab === 'JOINT' ? 'default' : 'ghost'}
+                  onClick={() => setStatusTab('JOINT')}
+                  className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${statusTab === 'JOINT'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                      : 'text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
+                    }`}
+                >
+                  <Handshake className="w-3.5 h-3.5" />
+                  Joint Events
+                  {jointCount > 0 && (
+                    <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-medium">
+                      {jointCount}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
+
+              {/* Search Box on Right */}
+              <div className="relative w-full sm:w-64 md:w-72 shrink-0">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                  <Search size={14} />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search club events, venues..."
+                  className="w-full pl-8 pr-7 py-1.5 rounded-full bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-2xs"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X size={13} />
+                  </button>
                 )}
-              </Button>
-              <Button
-                size="sm"
-                variant={statusTab === 'JOINT' ? 'default' : 'ghost'}
-                onClick={() => setStatusTab('JOINT')}
-                className={`h-8 text-xs font-medium rounded-lg gap-1.5 ${statusTab === 'JOINT'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
-                  }`}
-              >
-                <Handshake className="w-3.5 h-3.5" />
-                Joint Events
-                {jointCount > 0 && (
-                  <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-medium">
-                    {jointCount}
-                  </Badge>
-                )}
-              </Button>
+              </div>
             </div>
           )}
 
@@ -763,14 +814,18 @@ const ClubEvents = () => {
             <Card className="border-dashed border-border bg-card">
               <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16 px-6 text-center pt-12 sm:pt-16">
                 <FilterX className="w-12 h-12 text-muted-foreground/40 mb-3 mx-auto" />
-                <p className="text-muted-foreground mb-4 text-sm font-medium">No events match your selected filters.</p>
+                <p className="text-muted-foreground mb-4 text-sm font-medium">
+                  {searchQuery
+                    ? `No events found matching "${searchQuery}".`
+                    : 'No events match your selected filters.'}
+                </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={clearFilters}
                   className="text-xs cursor-pointer hover:bg-accent transition-colors"
                 >
-                  Clear Filters
+                  {searchQuery ? 'Clear Search & Filters' : 'Clear Filters'}
                 </Button>
               </CardContent>
             </Card>

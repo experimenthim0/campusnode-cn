@@ -908,10 +908,10 @@ const Home = () => {
                 
                 <ScrollReveal delay={0.2}>
                   <div className='mb-8'>
-                  <h1 className="font-medium  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight dark:text-white text-black drop-shadow-2xs">
+                  <h1 className="font-medium  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight dark:text-white text-white drop-shadow-2xs">
                    Never Miss What's Happening
                     <br />
-                    <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
+                    <span className="text-white text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
                   </h1>
 
                   </div>

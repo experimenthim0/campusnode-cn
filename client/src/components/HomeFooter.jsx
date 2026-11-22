@@ -100,9 +100,7 @@ const HomeFooter = () => {
               </span>
             </div>
             <div>
-              <p className="text-[13px] text-cn-text-muted mt-3 leading-relaxed max-w-sm">
-                The centralized campus platform for Dr. B. R. Ambedkar National Institute of Technology Jalandhar.
-              </p>
+              
               <p className="text-[13px] text-cn-text-muted mt-3">
                 Have any questions or suggestion?{' '}
                 <br />
@@ -114,7 +112,7 @@ const HomeFooter = () => {
                 </Link>{' '}
                 or email at{' '}
                 <a
-                  href="mailto:clubsetu@nikhim.me"
+                  href="mailto:campusnode@nitj.ac.in"
                   className="text-brand-600 dark:text-brand-400 hover:underline font-medium"
                 >
                   campusnode@nitj.ac.in

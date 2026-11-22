@@ -132,8 +132,10 @@ const Contact = () => {
       params.append('email', emailVal);
       params.append('category', categoryLabel);
       params.append('subject', subjectVal);
-      params.append('suggestion', compositeContent);
-      params.append('description', compositeContent);
+      params.append('message', contentVal);
+      params.append('suggestion', contentVal);
+      params.append('description', contentVal);
+      params.append('compositeContent', compositeContent);
       params.append('description/suggestion', compositeContent);
 
       await fetch(targetUrl, {
