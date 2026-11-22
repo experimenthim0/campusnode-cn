@@ -412,16 +412,14 @@ const CheckIn = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <Card className="p-8 max-w-sm w-full text-center flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <ScanLine className="w-6 h-6 animate-pulse" />
-          </div>
-          <CardTitle className="text-base">Initializing Attendance Portal</CardTitle>
-          <CardDescription className="text-xs">
+      <div className="mysans min-h-screen flex items-center justify-center bg-cn-bg text-cn-text">
+        <Card className="p-8 max-w-sm w-full text-center flex flex-col items-center gap-3 bg-cn-surface dark:bg-cn-surface-card border-cn-border">
+          <ScanLine className="w-8 h-8 text-brand-600 dark:text-brand-400 animate-pulse" />
+          <CardTitle className="text-base text-cn-text">Initializing Attendance Portal</CardTitle>
+          <CardDescription className="text-xs text-cn-text-secondary">
             Verifying event clearances and security credentials...
           </CardDescription>
-          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mt-2" />
+          <Loader2 className="w-4 h-4 animate-spin text-cn-text-muted mt-2" />
         </Card>
       </div>
     );
@@ -434,7 +432,7 @@ const CheckIn = () => {
   const showOverlay = scanState !== 'idle';
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
+    <div className="mysans min-h-screen bg-cn-bg text-cn-text transition-colors duration-200">
       <style>{`
         @keyframes scan-sweep {
           0% { top: 8px; opacity: 0.8; }
@@ -448,29 +446,29 @@ const CheckIn = () => {
       `}</style>
 
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-40 bg-cn-surface/90 backdrop-blur-md border-b border-cn-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 shrink-0"
+              className="h-9 w-9 shrink-0 border-cn-border text-cn-text bg-cn-surface hover:bg-cn-surface-muted"
               onClick={() => navigate('/profile')}
               title="Return to Profile"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 mb-0.5 text-xs text-cn-text-muted">
                 <span className="font-medium uppercase tracking-wider text-[10px]">Events</span>
                 <span>/</span>
-                <span className="font-medium text-primary text-[10px] uppercase tracking-wider">Attendance Check-In</span>
+                <span className="font-medium text-brand-600 dark:text-brand-400 text-[10px] uppercase tracking-wider">Attendance Check-In</span>
               </div>
-              <h1 className="text-base sm:text-lg font-medium truncate leading-tight">
+              <h1 className="text-base sm:text-lg font-medium text-cn-text truncate leading-tight">
                 {event?.title}
               </h1>
               {startTime && (
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-cn-text-secondary truncate">
                   {startTime.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })},{' '}
                   {startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                   {endTime ? ` – ${endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
@@ -488,12 +486,12 @@ const CheckIn = () => {
                 <span className="font-mono">{formatCountdown(opensAt, currentTime)}</span>
               </Badge>
             ) : windowStatus === 'CLOSED' ? (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-3">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-3 border border-cn-border text-cn-text-secondary">
                 <Lock className="w-3.5 h-3.5" />
                 <span>Check-in Closed</span>
               </Badge>
             ) : (
-              <Badge className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white py-1 px-3 border-none">
+              <Badge className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white py-1 px-3 border-none">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span>Check-in Active</span>
               </Badge>
@@ -511,133 +509,120 @@ const CheckIn = () => {
 
             {/* Metrics Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Registrations
-                    </p>
-                    <p className="text-2xl font-medium font-mono tracking-tight">
-                      {event?.registeredCount ?? '—'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Registrations */}
+              <div className="p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-xs transition-colors flex items-center gap-4">
+                <Users className="w-6 h-6 text-brand-600 dark:text-brand-400 shrink-0" />
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-label text-cn-text-muted uppercase tracking-wider font-medium">
+                    Registrations
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-medium font-mono tracking-tight text-cn-text">
+                    {event?.registeredCount ?? '—'}
+                  </p>
+                </div>
+              </div>
 
-              <Card>
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
-                    <BadgeCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Attended
-                    </p>
-                    <p className="text-2xl font-medium font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
-                      {attendedCount}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Attended */}
+              <div className="p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-xs transition-colors flex items-center gap-4">
+                <BadgeCheck className="w-6 h-6 text-brand-600 dark:text-brand-400 shrink-0" />
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-label text-cn-text-muted uppercase tracking-wider font-medium">
+                    Attended
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-medium font-mono tracking-tight text-cn-text">
+                    {attendedCount}
+                  </p>
+                </div>
+              </div>
 
-              <Card>
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Check-in Rate
-                    </p>
-                    <p className="text-2xl font-medium font-mono tracking-tight">
-                      {attendRate}%
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Check-in Rate */}
+              <div className="p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-xs transition-colors flex items-center gap-4">
+                <CheckCircle2 className="w-6 h-6 text-brand-600 dark:text-brand-400 shrink-0" />
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-label text-cn-text-muted uppercase tracking-wider font-medium">
+                    Check-in Rate
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-medium font-mono tracking-tight text-brand-600 dark:text-brand-400">
+                    {attendRate}%
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Attendance Progress Card */}
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Attendance Progress
-                  </span>
-                  <span className="text-xs font-mono font-medium text-primary">
-                    {attendedCount} / {event?.registeredCount ?? 0}
-                  </span>
-                </div>
-                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${attendRate}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="h-full bg-primary rounded-full"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <div className="p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-xs transition-colors">
+              <div className="flex justify-between items-center mb-2.5">
+                <span className="text-label uppercase tracking-wider font-medium text-cn-text-muted">
+                  Attendance Progress
+                </span>
+                <span className="text-xs font-mono font-medium text-brand-600 dark:text-brand-400">
+                  {attendedCount} / {event?.registeredCount ?? 0}
+                </span>
+              </div>
+              <div className="h-2.5 w-full bg-cn-surface-muted rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${attendRate}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  className="h-full bg-brand-600 dark:bg-brand-500 rounded-full"
+                />
+              </div>
+            </div>
 
             {/* Session History Card */}
-            <Card className="overflow-hidden">
-              <CardHeader className="py-3 px-5 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
+            <div className="rounded-xl sm:rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-card shadow-xs overflow-hidden">
+              <div className="py-3.5 px-5 sm:px-6 border-b border-cn-border bg-cn-surface-muted/50 flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <CardTitle className="text-xs font-medium uppercase tracking-wider">
+                  <Clock className="w-4 h-4 text-cn-text-secondary" />
+                  <span className="text-xs font-medium uppercase tracking-wider text-cn-text">
                     Session Log
-                  </CardTitle>
+                  </span>
                 </div>
                 {attendanceLog.length > 0 && (
-                  <Badge variant="secondary" className="font-mono text-xs">
+                  <Badge variant="secondary" className="font-mono text-xs border border-cn-border text-cn-text">
                     {attendanceLog.length} recorded
                   </Badge>
                 )}
-              </CardHeader>
-              <CardContent className="p-0 max-h-[360px] overflow-y-auto divide-y divide-border">
+              </div>
+              <div className="p-0 max-h-[360px] overflow-y-auto divide-y divide-cn-border">
                 {attendanceLog.length === 0 ? (
                   <div className="py-12 flex flex-col items-center justify-center text-center px-4 gap-1.5">
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-sm font-medium text-cn-text-secondary">
                       No check-ins yet this session
                     </p>
-                    <p className="text-xs text-muted-foreground/80 max-w-xs">
+                    <p className="text-xs text-cn-text-muted max-w-xs">
                       Verified attendees will appear here in real-time as they scan.
                     </p>
                   </div>
                 ) : (
-                  <ul className="m-0 p-0 list-none divide-y divide-border">
+                  <ul className="m-0 p-0 list-none divide-y divide-cn-border">
                     {attendanceLog.map((entry) => (
-                      <li key={entry.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/30 transition-colors">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
+                      <li key={entry.id} className="flex items-center gap-3 px-5 sm:px-6 py-3.5 hover:bg-cn-surface-muted transition-colors">
+                        <CheckCircle2 className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-medium text-cn-text truncate">
                             {entry.name}
                           </p>
                           {entry.identifier && (
-                            <p className="text-xs text-muted-foreground font-mono truncate">
+                            <p className="text-xs text-cn-text-muted font-mono truncate">
                               {entry.identifier}
                             </p>
                           )}
                         </div>
-                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                        <span className="text-[11px] text-cn-text-muted font-mono shrink-0">
                           {formatTimeAgo(entry.time)}
                         </span>
                       </li>
                     ))}
                   </ul>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Connection Status */}
-            <div className="flex items-center gap-2.5 px-4 py-3 bg-muted/40 border border-border rounded-xl">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${windowStatus === 'OPEN' ? 'bg-emerald-500 animate-pulse' : windowStatus === 'NOT_OPEN' ? 'bg-amber-500' : 'bg-muted-foreground'}`} />
-              <span className="text-xs text-muted-foreground font-medium">
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-cn-surface-muted border border-cn-border rounded-xl">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${windowStatus === 'OPEN' ? 'bg-brand-500 animate-pulse' : windowStatus === 'NOT_OPEN' ? 'bg-amber-500' : 'bg-cn-text-muted'}`} />
+              <span className="text-xs text-cn-text-secondary font-medium">
                 {windowStatus === 'OPEN'
                   ? 'Scanner active — real-time ticket verification enabled'
                   : windowStatus === 'NOT_OPEN'
@@ -645,21 +630,22 @@ const CheckIn = () => {
                   : 'Attendance verification concluded for this event'}
               </span>
             </div>
+              
 
           </div>
 
           {/* RIGHT COLUMN: Scanner Viewfinder / Roll Number Entry */}
           <div className="lg:sticky lg:top-20">
-            <Card className="overflow-hidden shadow-sm">
+            <Card className="overflow-hidden shadow-xs border-cn-border bg-cn-surface dark:bg-cn-surface-card rounded-xl sm:rounded-2xl">
               
               {/* Segmented Tab Controls */}
-              <div className="p-3 border-b border-border bg-muted/20">
-                <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+              <div className="p-3 border-b border-cn-border bg-cn-surface-muted/50">
+                <div className="grid grid-cols-2 gap-1 p-1 bg-cn-surface-muted rounded-lg border border-cn-border">
                   <Button
                     type="button"
                     variant={activeTab === 'scan' ? 'default' : 'ghost'}
                     size="sm"
-                    className={`h-8 text-xs font-medium ${activeTab === 'scan' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    className={`h-8 text-xs font-medium ${activeTab === 'scan' ? 'bg-brand-600 hover:bg-brand-700 text-white shadow-xs' : 'text-cn-text-secondary hover:text-cn-text'}`}
                     onClick={() => setActiveTab('scan')}
                   >
                     <ScanLine className="w-3.5 h-3.5 mr-1.5" />
@@ -669,7 +655,7 @@ const CheckIn = () => {
                     type="button"
                     variant={activeTab === 'manual' ? 'default' : 'ghost'}
                     size="sm"
-                    className={`h-8 text-xs font-medium ${activeTab === 'manual' ? 'shadow-xs' : 'text-muted-foreground'}`}
+                    className={`h-8 text-xs font-medium ${activeTab === 'manual' ? 'bg-brand-600 hover:bg-brand-700 text-white shadow-xs' : 'text-cn-text-secondary hover:text-cn-text'}`}
                     onClick={() => setActiveTab('manual')}
                   >
                     <Hash className="w-3.5 h-3.5 mr-1.5" />
@@ -682,30 +668,26 @@ const CheckIn = () => {
                 <div>
                   {windowStatus === 'NOT_OPEN' ? (
                     <div className="p-8 flex flex-col items-center justify-center text-center">
-                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
-                        <Clock className="w-6 h-6 animate-pulse" />
-                      </div>
-                      <p className="text-sm font-medium mb-1">
+                      <Clock className="w-8 h-8 text-amber-500 animate-pulse mb-3" />
+                      <p className="text-sm font-medium text-cn-text mb-1">
                         Check-in opens in {formatCountdown(opensAt, currentTime)}
                       </p>
-                      <p className="text-xs text-muted-foreground max-w-xs">
+                      <p className="text-xs text-cn-text-muted max-w-xs">
                         Scanner activates 4 hours before event start ({opensAt?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })})
                       </p>
                     </div>
                   ) : windowStatus === 'CLOSED' ? (
                     <div className="p-8 flex flex-col items-center justify-center text-center">
-                      <div className="w-12 h-12 rounded-xl bg-muted border border-border text-muted-foreground flex items-center justify-center mb-3">
-                        <Lock className="w-6 h-6" />
-                      </div>
-                      <p className="text-sm font-medium mb-1">Check-in Closed</p>
-                      <p className="text-xs text-muted-foreground max-w-xs">
+                      <Lock className="w-8 h-8 text-cn-text-muted mb-3" />
+                      <p className="text-sm font-medium text-cn-text mb-1">Check-in Closed</p>
+                      <p className="text-xs text-cn-text-muted max-w-xs">
                         Event concluded at {endTime?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <div className="relative bg-black overflow-hidden m-4 rounded-xl border border-border">
-                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-emerald-400 rounded z-[9]" />
+                      <div className="relative bg-black overflow-hidden m-4 rounded-xl border border-cn-border">
+                        <div className="scan-line absolute left-3 right-3 h-[2px] bg-brand-400 rounded z-[9]" />
                         <div id="reader" className="w-full" />
 
                         {/* Result Overlay */}
@@ -716,7 +698,7 @@ const CheckIn = () => {
                         </AnimatePresence>
                       </div>
 
-                      <p className="m-0 p-3 text-xs text-center text-muted-foreground bg-muted/20 border-t border-border font-medium">
+                      <p className="m-0 p-3 text-xs text-center text-cn-text-muted bg-cn-surface-muted/50 border-t border-cn-border font-medium">
                         Align attendee QR ticket inside the viewfinder
                       </p>
                     </div>
@@ -724,19 +706,19 @@ const CheckIn = () => {
                 </div>
               ) : (
                 /* Roll Number Check-in Tab */
-                <div className="p-5">
+                <div className="p-5 sm:p-6">
                   <div className="mb-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-foreground mb-1">
+                    <p className="text-xs font-medium uppercase tracking-wider text-cn-text mb-1">
                       Roll Number Lookup
                     </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-cn-text-secondary leading-relaxed">
                       Search registered attendees by university roll number to record presence.
                     </p>
                   </div>
 
                   <form onSubmit={handleManualSubmit} className="space-y-3">
                     <div className="relative flex items-center">
-                      <Hash className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <Hash className="absolute left-3 w-4 h-4 text-cn-text-muted pointer-events-none" />
                       <Input
                         type="text"
                         value={manualId}
@@ -748,7 +730,7 @@ const CheckIn = () => {
                             ? 'Check-in closed'
                             : 'e.g. 21BCS001 or roll number...'
                         }
-                        className="pl-9 pr-9"
+                        className="pl-9 pr-9 border-cn-border bg-cn-surface text-cn-text"
                         disabled={manualLoading || windowStatus !== 'OPEN'}
                         autoFocus={windowStatus === 'OPEN'}
                       />
@@ -758,7 +740,7 @@ const CheckIn = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => { setManualId(''); setSearchResults([]); }}
-                          className="absolute right-1 h-7 w-7 text-muted-foreground"
+                          className="absolute right-1 h-7 w-7 text-cn-text-muted"
                         >
                           <X className="w-3.5 h-3.5" />
                         </Button>
@@ -767,7 +749,7 @@ const CheckIn = () => {
 
                     <Button
                       type="submit"
-                      className="w-full font-medium"
+                      className="w-full font-medium bg-brand-600 hover:bg-brand-700 text-white"
                       disabled={manualLoading || windowStatus !== 'OPEN' || !manualId.trim()}
                     >
                       {windowStatus === 'NOT_OPEN' ? (
@@ -789,15 +771,15 @@ const CheckIn = () => {
                   {manualId.trim() && (
                     <div className="mt-5 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                        <span className="text-[11px] font-medium text-cn-text-muted uppercase tracking-wider">
                           Registered Attendees {searchLoading ? '...' : `(${searchResults.length})`}
                         </span>
-                        {searchLoading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+                        {searchLoading && <Loader2 className="w-3 h-3 animate-spin text-cn-text-muted" />}
                       </div>
 
                       {searchLoading && searchResults.length === 0 ? (
-                        <div className="p-4 text-center bg-muted/40 border border-border rounded-xl">
-                          <p className="text-xs text-muted-foreground">Searching attendees...</p>
+                        <div className="p-4 text-center bg-cn-surface-muted border border-cn-border rounded-xl">
+                          <p className="text-xs text-cn-text-muted">Searching attendees...</p>
                         </div>
                       ) : searchResults.length > 0 ? (
                         <div className="max-h-[260px] overflow-y-auto space-y-2 pr-0.5">
@@ -808,24 +790,24 @@ const CheckIn = () => {
                             return (
                               <div
                                 key={item.participationId}
-                                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                                className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                                   isAttended
-                                    ? 'bg-emerald-500/10 border-emerald-500/20'
-                                    : 'bg-card border-border hover:border-border/80'
+                                    ? 'bg-brand-500/10 border-brand-500/20 text-cn-text'
+                                    : 'bg-cn-surface dark:bg-cn-surface-card border-cn-border hover:border-cn-border/80'
                                 }`}
                               >
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-sm font-medium truncate">
+                                    <p className="text-sm font-medium text-cn-text truncate">
                                       {item.student?.name || 'Registered Attendee'}
                                     </p>
                                     {item.student?.rollNo && (
-                                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 border-cn-border text-cn-text-secondary">
                                         {item.student.rollNo}
                                       </Badge>
                                     )}
                                   </div>
-                                  <p className="text-xs text-muted-foreground truncate">
+                                  <p className="text-xs text-cn-text-secondary truncate">
                                     {item.student?.branch || item.student?.program || 'Student'}
                                     {item.student?.expectedGraduationYear ? ` • Class of ${item.student.expectedGraduationYear}` : ''}
                                   </p>
@@ -833,7 +815,7 @@ const CheckIn = () => {
 
                                 <div className="shrink-0">
                                   {isAttended ? (
-                                    <Badge className="bg-emerald-600 text-white gap-1 text-[10px]">
+                                    <Badge className="bg-brand-600 text-white gap-1 text-[10px]">
                                       <CheckCircle2 className="w-3 h-3" />
                                       <span>Checked In</span>
                                     </Badge>
@@ -843,7 +825,7 @@ const CheckIn = () => {
                                       size="sm"
                                       onClick={() => handleMarkStudent(item)}
                                       disabled={manualLoading || isItemLoading}
-                                      className="h-8 text-xs font-medium gap-1.5"
+                                      className="h-8 text-xs font-medium gap-1.5 bg-brand-600 hover:bg-brand-700 text-white"
                                     >
                                       {isItemLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
                                       <span>Check In</span>
@@ -855,11 +837,11 @@ const CheckIn = () => {
                           })}
                         </div>
                       ) : (
-                        <div className="p-4 text-center bg-muted/30 border border-border rounded-xl">
-                          <p className="text-xs font-medium mb-1">
+                        <div className="p-4 text-center bg-cn-surface-muted border border-cn-border rounded-xl">
+                          <p className="text-xs font-medium text-cn-text mb-1">
                             No registered attendees found
                           </p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-[11px] text-cn-text-muted">
                             Only students registered for this event can be checked in.
                           </p>
                         </div>
@@ -877,11 +859,11 @@ const CheckIn = () => {
                         className="mt-4"
                       >
                         {scanState === 'success' && (
-                          <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl">
-                            <CheckCircle2 className="w-5 h-5 shrink-0" />
+                          <div className="flex items-center gap-3 p-3.5 bg-brand-500/10 border border-brand-500/20 text-cn-text rounded-xl">
+                            <CheckCircle2 className="w-5 h-5 shrink-0 text-brand-600 dark:text-brand-400" />
                             <div>
-                              <p className="text-xs font-medium">Successfully Checked In</p>
-                              <p className="text-xs font-medium opacity-90">
+                              <p className="text-xs font-medium text-cn-text">Successfully Checked In</p>
+                              <p className="text-xs font-medium text-cn-text-secondary opacity-90">
                                 {scanResult?.participantName} — {scanResult?.rollNo || scanResult?.branch || 'Checked In'}
                               </p>
                             </div>
@@ -965,13 +947,13 @@ function ScanOverlay({ scanState, scanResult }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 flex items-center justify-center z-20 bg-background/85 backdrop-blur-md p-4"
+      className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm p-4"
     >
       {scanState === 'processing' && (
-        <Card className="p-6 text-center max-w-[280px] w-full flex flex-col items-center gap-2.5 shadow-lg">
-          <Loader2 className="w-7 h-7 animate-spin text-primary" />
-          <p className="text-xs font-medium">Validating pass...</p>
-        </Card>
+        <div className="p-6 text-center max-w-[280px] w-full flex flex-col items-center gap-3 shadow-xl rounded-2xl border border-cn-border bg-cn-surface dark:bg-cn-surface-elevated">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-600 dark:text-brand-400" />
+          <p className="text-xs font-medium text-cn-text">Validating pass...</p>
+        </div>
       )}
 
       {scanState === 'success' && (
@@ -980,28 +962,26 @@ function ScanOverlay({ scanState, scanResult }) {
           animate={{ scale: 1, y: 0 }}
           className="w-full max-w-[290px]"
         >
-          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-emerald-500/30">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 uppercase tracking-wider text-[10px]">
+          <div className="p-6 flex flex-col items-center gap-3 text-center shadow-xl rounded-2xl border border-brand-500/30 bg-cn-surface dark:bg-cn-surface-elevated">
+            <CheckCircle2 className="w-8 h-8 text-brand-600 dark:text-brand-400" />
+            <Badge className="bg-brand-600 text-white hover:bg-brand-700 uppercase tracking-wider text-[10px] px-2.5 py-0.5">
               Checked In
             </Badge>
-            <p className="text-sm font-medium truncate max-w-full">
+            <p className="text-sm font-medium text-cn-text truncate max-w-full">
               {scanResult?.participantName || 'Attendee'}
             </p>
-            <div className="w-full bg-muted/60 rounded-lg p-2.5 border border-border">
+            <div className="w-full bg-cn-surface-muted rounded-xl p-3 border border-cn-border">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[10px] font-medium text-muted-foreground uppercase">
+                <span className="text-[10px] font-medium text-cn-text-muted uppercase">
                   {scanResult?.rollNo ? 'Roll No' : scanResult?.branch ? 'Branch' : 'Email'}
                 </span>
-                <span className="font-mono font-medium truncate ml-2">
+                <span className="font-mono font-medium text-cn-text truncate ml-2">
                   {scanResult?.rollNo || scanResult?.branch || 'Verified'}
                 </span>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
-          </Card>
+            <p className="text-[10px] text-cn-text-muted">Resuming scan in 2.5s</p>
+          </div>
         </motion.div>
       )}
 
@@ -1011,18 +991,16 @@ function ScanOverlay({ scanState, scanResult }) {
           animate={{ scale: 1, y: 0 }}
           className="w-full max-w-[290px]"
         >
-          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-amber-500/30">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px]">
+          <div className="p-6 flex flex-col items-center gap-3 text-center shadow-xl rounded-2xl border border-amber-500/30 bg-cn-surface dark:bg-cn-surface-elevated">
+            <AlertTriangle className="w-8 h-8 text-amber-500" />
+            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px] px-2.5 py-0.5">
               Already Marked
             </Badge>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-cn-text-secondary leading-relaxed">
               {scanResult?.message || 'Attendance record is already active.'}
             </p>
-            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
-          </Card>
+            <p className="text-[10px] text-cn-text-muted">Resuming scan in 2.5s</p>
+          </div>
         </motion.div>
       )}
 
@@ -1032,18 +1010,16 @@ function ScanOverlay({ scanState, scanResult }) {
           animate={{ scale: 1, y: 0 }}
           className="w-full max-w-[290px]"
         >
-          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-amber-500/30">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <Clock className="w-6 h-6" />
-            </div>
-            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px]">
+          <div className="p-6 flex flex-col items-center gap-3 text-center shadow-xl rounded-2xl border border-amber-500/30 bg-cn-surface dark:bg-cn-surface-elevated">
+            <Clock className="w-8 h-8 text-amber-500" />
+            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[10px] px-2.5 py-0.5">
               {scanState === 'not_open' ? 'Check-in Not Open' : 'Check-in Closed'}
             </Badge>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-cn-text-secondary leading-relaxed">
               {scanResult?.message}
             </p>
-            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
-          </Card>
+            <p className="text-[10px] text-cn-text-muted">Resuming scan in 2.5s</p>
+          </div>
         </motion.div>
       )}
 
@@ -1053,18 +1029,16 @@ function ScanOverlay({ scanState, scanResult }) {
           animate={{ scale: 1, y: 0 }}
           className="w-full max-w-[290px]"
         >
-          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-destructive/30">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10 text-destructive border border-destructive/20">
-              <XCircle className="w-6 h-6" />
-            </div>
-            <Badge variant="destructive" className="uppercase tracking-wider text-[10px]">
+          <div className="p-6 flex flex-col items-center gap-3 text-center shadow-xl rounded-2xl border border-rose-500/30 bg-cn-surface dark:bg-cn-surface-elevated">
+            <XCircle className="w-8 h-8 text-rose-500" />
+            <Badge variant="destructive" className="uppercase tracking-wider text-[10px] px-2.5 py-0.5">
               Wrong Event
             </Badge>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-cn-text-secondary leading-relaxed">
               {scanResult?.message || 'This ticket is for a different event.'}
             </p>
-            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
-          </Card>
+            <p className="text-[10px] text-cn-text-muted">Resuming scan in 2.5s</p>
+          </div>
         </motion.div>
       )}
 
@@ -1074,11 +1048,9 @@ function ScanOverlay({ scanState, scanResult }) {
           animate={{ scale: 1, y: 0 }}
           className="w-full max-w-[290px]"
         >
-          <Card className="p-5 flex flex-col items-center gap-2.5 text-center shadow-lg border-destructive/30">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10 text-destructive border border-destructive/20">
-              <XCircle className="w-6 h-6" />
-            </div>
-            <Badge variant="destructive" className="uppercase tracking-wider text-[10px]">
+          <div className="p-6 flex flex-col items-center gap-3 text-center shadow-xl rounded-2xl border border-rose-500/30 bg-cn-surface dark:bg-cn-surface-elevated">
+            <XCircle className="w-8 h-8 text-rose-500" />
+            <Badge variant="destructive" className="uppercase tracking-wider text-[10px] px-2.5 py-0.5">
               {scanState === 'unauthorized'
                 ? 'Access Denied'
                 : scanState === 'invalid_signature'
@@ -1087,7 +1059,7 @@ function ScanOverlay({ scanState, scanResult }) {
                 ? 'Connection Error'
                 : 'Invalid Ticket'}
             </Badge>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-cn-text-secondary leading-relaxed">
               {scanResult?.message ||
                 (scanState === 'unauthorized'
                   ? 'Lacking attendance clearance permissions.'
@@ -1095,8 +1067,8 @@ function ScanOverlay({ scanState, scanResult }) {
                   ? 'This pass signature could not be verified.'
                   : 'Registration record not found.')}
             </p>
-            <p className="text-[10px] text-muted-foreground">Resuming scan in 2.5s</p>
-          </Card>
+            <p className="text-[10px] text-cn-text-muted">Resuming scan in 2.5s</p>
+          </div>
         </motion.div>
       )}
     </motion.div>

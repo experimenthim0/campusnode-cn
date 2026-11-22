@@ -39,7 +39,7 @@ export const studentHeadAssignedTemplate = {
         level: 2,
         align: "left",
         color: colors.primary,
-        style: "margin: 0 0 4px 0; font-size: 20px;",
+        style: "margin: 0 0 16px 0; font-size: 20px;",
       })}
       
       ${BodyText({
@@ -48,11 +48,11 @@ export const studentHeadAssignedTemplate = {
         style: "margin-bottom: 8px;",
       })}
       ${BodyText({
-        children: `Congratulations! You have been officially appointed as the <strong>Club Head (Student Lead)</strong> for <strong>${safeClub}</strong> on Campusnode.`,
+        children: `You have been appointed as the <strong>Club Head (Student Lead)</strong> for <strong>${safeClub}</strong> on Campusnode.`,
         align: "left",
       })}
       
-      <table role="presentation" class="info-table" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; table-layout: fixed; margin: 20px 0; border: 1px solid ${colors.infoBorder}; border-radius: ${radii.lg}; background-color: ${colors.infoBg}; border-collapse: separate; overflow: hidden; font-family: ${typography.fontFamily};">
+      <table role="presentation" class="info-table" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; table-layout: fixed; margin: 18px 0; border: 1px solid ${colors.infoBorder}; border-radius: ${radii.lg}; background-color: ${colors.infoBg}; border-collapse: separate; overflow: hidden; font-family: ${typography.fontFamily};">
         <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
           <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Assigned Role</td>
           <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.primary}; text-align: right; vertical-align: middle;">Club Head (Student Lead)</td>
@@ -75,7 +75,7 @@ export const studentHeadAssignedTemplate = {
         ${
           safeRollNo
             ? `
-        <tr class="info-row" style="border-bottom: 1px solid #dbeafe;">
+        <tr class="info-row">
           <td class="info-cell-label" width="38%" style="width: 38%; padding: 11px 14px; font-size: 13px; font-weight: 600; color: ${colors.heading}; vertical-align: middle;">Roll Number</td>
           <td class="info-cell-value" width="62%" align="right" style="width: 62%; padding: 11px 14px; font-size: 13px; text-align: right; vertical-align: middle;">
             <code class="info-code" style="background: ${colors.border}; color: ${colors.heading}; padding: 3px 8px; border-radius: ${radii.sm}; font-family: ${typography.fontMono}; font-weight: 600; font-size: 13px;">${safeRollNo}</code>
@@ -85,24 +85,16 @@ export const studentHeadAssignedTemplate = {
         }
       </table>
 
-      <p class="email-body-text" style="font-family: ${typography.fontFamily}; font-size: 14px; font-weight: 600; color: ${colors.heading}; margin: 24px 0 8px 0;">
-        Your Leadership Capabilities:
-      </p>
-      <ul style="margin: 0 0 20px 0; padding-left: 20px; font-family: ${typography.fontFamily}; font-size: 14px; line-height: 1.6; color: ${colors.body};">
-        <li style="margin-bottom: 6px;"><strong>Event Management:</strong> Create, edit, and publish official club events and configure registration details.</li>
-        <li style="margin-bottom: 6px;"><strong>Pass & Attendance:</strong> Scan attendee QR passes at events and verify check-ins in real-time.</li>
-        <li style="margin-bottom: 6px;"><strong>Team Coordination:</strong> Appoint coordinators and organize your club membership roster.</li>
-        <li style="margin-bottom: 6px;"><strong>Feedback & Analytics:</strong> Review event turnout statistics and student feedback reports.</li>
-      </ul>
-
-      <p class="email-body-text" style="font-family: ${typography.fontFamily}; font-size: 14px; font-weight: 400; color: #475569; line-height: 1.6; background: ${colors.bgApp}; border-left: 3px solid ${colors.primary}; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
-        💡 <strong>No Separate Password Needed:</strong> Your leadership privileges are linked directly to your existing student account. Simply log in with your college email to access your club tools.
-      </p>
+      ${BodyText({
+        children: "<strong>No Separate Password Needed:</strong> Log in with your college email to access your club dashboard.",
+        align: "left",
+        style: "margin: 0 0 20px 0; font-size: 13px;",
+      })}
       
       ${Button({ label: "Go to Club Dashboard", url: targetUrl, variant: "primary" })}
       
       ${MutedText({
-        children: "If you have questions about your club head appointment, reach out to your Faculty Coordinator or Campus Administrator.",
+        children: "For assistance, contact your Faculty Coordinator or Campus Administrator.",
         align: "center",
         style: "border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px; font-size: 12px;",
       })}

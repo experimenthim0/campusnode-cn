@@ -194,7 +194,7 @@ export const FacultyCard = ({ mentor, data, className = '' }) => {
           alt={item.name}
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="absolute inset-0 w-full h-full object-contains object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           onError={(e) => {
             if (item.fallbackUrl && e.currentTarget.src !== item.fallbackUrl)
               e.currentTarget.src = item.fallbackUrl;
@@ -282,7 +282,7 @@ export const FACULTY_MENTORS = [
     role: 'Faculty Mentor',
     designation: 'Assistant Professor (Grade-I)',
     department: 'Computer Science & Engineering',
-    imageUrl: '/team_members/samayveer_singh.jpg',
+    imageUrl: '/team_members/Samayveer-sir.jpg',
     fallbackUrl: '/user-img.png',
     profileUrl: 'https://departments.nitj.ac.in/dept/cse/Faculty/6430446b38bff038a78085b7',
     socials: {

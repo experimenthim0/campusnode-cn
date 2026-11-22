@@ -871,7 +871,7 @@ const FAQ = () => {
 
               <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
                 <a
-                  href="mailto:clubsetu@nikhim.me"
+                  href="mailto:campusnode@nitj.ac.in"
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium shadow-xs transition-all active:scale-95 cursor-pointer"
                 >
                   <Mail className="w-3.5 h-3.5" />

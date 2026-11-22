@@ -112,7 +112,7 @@ const DataPrivacy = () => {
 
                     <section>
                         <h2 className="text-lg font-medium text-black mb-3">7. Contact</h2>
-                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:contact.nikhim@gmail.com" className="text-brand-600 font-medium hover:underline">contact.nikhim@gmail.com</a>.</p>
+                        <p>For any data privacy concerns, contact our data protection team at <a href="mailto:campusnode@nitj.ac.in" className="text-brand-600 font-medium hover:underline">campusnode@nitj.ac.in</a>.</p>
                     </section>
                 </div>
             </div>

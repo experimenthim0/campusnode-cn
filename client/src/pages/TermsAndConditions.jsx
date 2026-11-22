@@ -187,7 +187,7 @@ const TermsAndConditions = () => {
                             For questions regarding our terms of service, governance, or institutional inquiries:
                         </p>
                         <a
-                            href="mailto:contact.nikhim@gmail.com"
+                            href="mailto:campusnode@nitj.ac.in"
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium transition-all cursor-pointer shadow-sm hover:-translate-y-0.5"
                         >
                             <i className="ri-send-plane-line" /> Email Campusnode Team

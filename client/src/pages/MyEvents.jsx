@@ -542,6 +542,7 @@ const MyEvents = () => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all' | 'upcoming' | 'past' | 'pending_feedback'
+  const [searchQuery, setSearchQuery] = useState('');
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
   const [pendingFeedbackEventIds, setPendingFeedbackEventIds] = useState(new Set());
@@ -662,10 +663,10 @@ const MyEvents = () => {
     return { all: registrations.length, upcoming, past, pendingFeedback };
   }, [registrations, submittedFeedbackEventIds, pendingFeedbackEventIds]);
 
-  // Filtered registrations based on current active filter
+  // Filtered registrations based on current active filter and search query
   const filteredRegistrations = React.useMemo(() => {
     const now = Date.now();
-    if (filter === 'all') return sortedRegistrations;
+    const query = searchQuery.trim().toLowerCase();
 
     return sortedRegistrations.filter((r) => {
       const ev = r.eventId;
@@ -676,12 +677,22 @@ const MyEvents = () => {
       const hasFeedback = submittedFeedbackEventIds.has(ev.id || ev._id);
       const clubWantsFeedback = (ev.feedbackEnabled === true || pendingFeedbackEventIds.has(ev.id || ev._id)) && ev.feedbackEnabled !== false;
 
-      if (filter === 'upcoming') return !isPast;
-      if (filter === 'past') return isPast;
-      if (filter === 'pending_feedback') return clubWantsFeedback && (isPast || isAttended) && !hasFeedback;
-      return true;
+      let matchesTab = true;
+      if (filter === 'upcoming') matchesTab = !isPast;
+      else if (filter === 'past') matchesTab = isPast;
+      else if (filter === 'pending_feedback') matchesTab = clubWantsFeedback && (isPast || isAttended) && !hasFeedback;
+
+      if (!matchesTab) return false;
+
+      if (!query) return true;
+
+      const titleMatch = ev.title?.toLowerCase().includes(query);
+      const locationMatch = (ev.location || ev.venue || '')?.toLowerCase().includes(query);
+      const clubMatch = (ev.club?.clubName || ev.organizers?.[0]?.club?.clubName || ev.createdBy?.clubName || '')?.toLowerCase().includes(query);
+      const categoryMatch = ev.category?.toLowerCase().includes(query);
+      return Boolean(titleMatch || locationMatch || clubMatch || categoryMatch);
     });
-  }, [sortedRegistrations, filter, submittedFeedbackEventIds, pendingFeedbackEventIds]);
+  }, [sortedRegistrations, filter, searchQuery, submittedFeedbackEventIds, pendingFeedbackEventIds]);
 
   // Deep-link highlighting
   useEffect(() => {
@@ -1113,7 +1124,7 @@ const MyEvents = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* Page Header */}
+      {/* Page Header with Heading and Search Box */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-medium tracking-tight">My Events</h1>
@@ -1121,7 +1132,32 @@ const MyEvents = () => {
             Track all events you have registered for, view digital tickets, and download participation certificates.
           </p>
         </div>
-       
+
+        {/* Search Input Box */}
+        {registrations.length > 0 && (
+          <div className="relative w-full sm:w-72 md:w-80 shrink-0">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+              <Search size={15} />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search my events, venues, clubs..."
+              className="w-full pl-9 pr-8 py-2 rounded-full bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modern Filter Navigation */}
@@ -1208,19 +1244,34 @@ const MyEvents = () => {
       ) : filteredRegistrations.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center mx-auto mb-4">
-            <Ticket className="w-6 h-6" />
+            {searchQuery ? <Search className="w-6 h-6" /> : <Ticket className="w-6 h-6" />}
           </div>
-          <CardTitle className="text-base mb-1">No events in this category</CardTitle>
+          <CardTitle className="text-base mb-1">
+            {searchQuery ? 'No matching events found' : 'No events in this category'}
+          </CardTitle>
           <CardDescription className="text-xs mb-4 max-w-md mx-auto">
-            {filter === 'upcoming'
+            {searchQuery
+              ? `No registered events matched "${searchQuery}". Try checking your spelling or clear the search query.`
+              : filter === 'upcoming'
               ? 'You have no upcoming or live events right now.'
               : filter === 'past'
               ? 'You have no past events.'
               : 'You have submitted feedback for all attended and ended events!'}
           </CardDescription>
-          <Button variant="outline" size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs font-medium cursor-pointer">
-            View All Events ({counts.all})
-          </Button>
+          {searchQuery ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchQuery('')}
+              className="rounded-full text-xs font-medium cursor-pointer"
+            >
+              Clear Search
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs font-medium cursor-pointer">
+              View All Events ({counts.all})
+            </Button>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

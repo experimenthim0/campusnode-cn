@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFeedbackPrompt } from '../context/FeedbackPromptContext';
 import { getUserEvents } from '../services/eventService';
 import { isStudentLeadRole, isCoordinatorRole, hasPermission, PERMISSIONS } from '../utils/rbac';
+import { getColorSync } from 'colorthief';
+import { useImageBlob } from '../hooks/useImageBlob';
 
-import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search, ArrowRight, GraduationCap } from 'lucide-react';
+import { Clock, MapPin, Calendar, Bookmark, Compass, User, Plus, Wallet, Users, Bell, LayoutDashboard, Search, ArrowRight, GraduationCap, ChevronDown, ChevronUp, Hourglass, Radio, Trophy, Zap, CheckCircle2, Megaphone, ClipboardCheck, Building2 } from 'lucide-react';
 import EventFeed from './EventFeed';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import Clubspage from './Clubspage';
@@ -30,31 +32,27 @@ import CampusNodeDiagram from '../components/CampusNodeDiagram';
 
 
 
-// Icons are handled by Remix Icons (ri-)
-
-const studentItems = [
+const clubBenefits = [
   {
-    icon: <i className="ri-chat-1-line" />,
-    problem: "Cluttered WhatsApp groups",
-    solution: "One clean feed for all technical, cultural, and sports events.",
+    icon: Calendar,
+    title: "Event Management",
+    desc: "Create and publish campus events in minutes.",
   },
   {
-    icon: <i className="ri-time-line" />,
-    problem: "Missed registration deadlines",
-    solution: "Instant alerts and one-click registration before seats fill.",
+    icon: ClipboardCheck,
+    title: "Registration Desk",
+    desc: "Manage attendee lists and track participants in one place.",
   },
   {
-    icon: <i className="ri-user-line" />,
-    problem: "Zero track record",
-    solution: "Auto-build your profile with every event you participate in.",
+    icon: Megaphone,
+    title: "Announcements",
+    desc: "Share important updates directly with student audiences.",
   },
-];
-
-const clubFeatures = [
-  { icon: <i className="ri-broadcast-line" />, title: "Reach everyone", desc: "Push to students interested in your domain." },
-  { icon: <i className="ri-file-text-line" />, title: "E-certificates", desc: "Auto-generated for every participant." },
-  { icon: <i className="ri-bar-chart-line" />, title: "Real-time analytics", desc: "See registrations by branch, live." },
-  { icon: <i className="ri-award-line" />, title: "Club showcase", desc: "Dedicated profile for your past achievements." },
+  {
+    icon: Building2,
+    title: "Club Presence",
+    desc: "Showcase your society, initiatives, and achievements.",
+  },
 ];
 
 const CountdownTimer = ({ startTime, endTime }) => {
@@ -115,15 +113,17 @@ const CountdownTimer = ({ startTime, endTime }) => {
 
   if (timeLeft.status === 'LIVE') {
     return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/15 dark:bg-brand-400/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 dark:border-brand-400/30 animate-pulse backdrop-blur-sm">
-        🔵 Live • {timeLeft.text}
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/15 dark:bg-brand-400/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 dark:border-brand-400/30 animate-pulse backdrop-blur-sm">
+        <Radio className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
+        <span>Live • {timeLeft.text}</span>
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm">
-      ⏳ {timeLeft.text}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 backdrop-blur-sm">
+      <Hourglass className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 shrink-0" />
+      <span>{timeLeft.text}</span>
     </span>
   );
 };
@@ -156,6 +156,213 @@ const BtnSecondary = ({ to, children }) => (
 
 
 
+const ClubOperationCard = ({
+  membership: m,
+  isLead,
+  isCoord,
+  canManageTeam,
+  canReviewPayments,
+  canBroadcast,
+  canManageEvents,
+}) => {
+  const [rgb, setRgb] = useState(null);
+  const imgRef = useRef(null);
+  const fallbackLogo = "/lightthemelogo2.png";
+  const [logoSrc, setLogoSrc] = useState(fallbackLogo);
+
+  useEffect(() => {
+    if (!m?.clubLogo) {
+      setLogoSrc(fallbackLogo);
+      return;
+    }
+    setLogoSrc(fallbackLogo);
+    const img = new Image();
+    img.src = m.clubLogo;
+    img.onload = () => setLogoSrc(m.clubLogo);
+    img.onerror = () => setLogoSrc(fallbackLogo);
+  }, [m?.clubLogo]);
+
+  const { displayUrl, isBlobLoaded } = useImageBlob(logoSrc);
+
+  const handleImageLoad = () => {
+    const imageEl = imgRef.current;
+    if (!imageEl || !m.clubLogo) return;
+    try {
+      if (imageEl.complete && isBlobLoaded) {
+        const color = getColorSync(imageEl);
+        if (color) {
+          const rgbArray = color.array();
+          if (Array.isArray(rgbArray) && rgbArray.length === 3) {
+            setRgb(rgbArray);
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore color extraction error
+    }
+  };
+
+  useEffect(() => {
+    setRgb(null);
+  }, [m.clubLogo]);
+
+  useEffect(() => {
+    const imageEl = imgRef.current;
+    if (imageEl && imageEl.complete && isBlobLoaded) {
+      handleImageLoad();
+    }
+  }, [displayUrl, isBlobLoaded]);
+
+  const headerBgStyle = rgb
+    ? { backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.05)` }
+    : undefined;
+
+  const iconBgStyle = rgb
+    ? { backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.1)` }
+    : undefined;
+
+  const handleTileEnter = (e) => {
+    if (rgb) {
+      e.currentTarget.style.backgroundColor = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.06)`;
+    }
+  };
+
+  const handleTileLeave = (e) => {
+    e.currentTarget.style.backgroundColor = "";
+  };
+
+  return (
+    <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-neutral-200/50 dark:border-white/[0.05] rounded-2xl overflow-hidden shadow-sm">
+      {/* Club header */}
+      <div
+        style={headerBgStyle}
+        className="flex items-center gap-3 px-6 py-4 border-b border-neutral-200/50 dark:border-white/[0.05] bg-brand-500/[0.03] dark:bg-brand-400/[0.03] backdrop-blur-sm"
+      >
+        {m.clubLogo ? (
+          <img
+            ref={imgRef}
+            src={displayUrl}
+            alt={m.clubName}
+            crossOrigin={isBlobLoaded && m.clubLogo ? "anonymous" : undefined}
+            onLoad={handleImageLoad}
+            className="w-9 h-9 rounded-xl object-cover border border-neutral-200/60 dark:border-white/10 shrink-0"
+          />
+        ) : (
+          <div
+            style={iconBgStyle}
+            className="w-9 h-9 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-neutral-200/60 dark:border-white/10 flex items-center justify-center shrink-0 text-base font-medium"
+          >
+            {(m.clubName || 'C').charAt(0)}
+          </div>
+        )}
+        <div>
+          <p className="font-medium text-neutral-900 dark:text-white text-base leading-tight">
+            {m.clubName || 'Your Club'}
+          </p>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-brand-600 dark:text-brand-400">
+            {isLead ? 'Student Lead' : isCoord ? 'Club Coordinator' : 'Team Member'}
+          </p>
+        </div>
+        <Link
+          to={`/club-events/${m.clubId}`}
+          className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
+        >
+          View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Operation tiles */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-neutral-200/50 dark:divide-white/[0.05]">
+        {/* Events & Attendance */}
+        {canManageEvents && (
+          <Link
+            to={`/club-events/${m.clubId}`}
+            onMouseEnter={handleTileEnter}
+            onMouseLeave={handleTileLeave}
+            className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
+          >
+            <div
+              style={iconBgStyle}
+              className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-neutral-200/60 dark:border-white/10 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15"
+            >
+              <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            </div>
+            <div>
+              <p className="font-medium text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">
+                {isLead || isCoord || m.canEditEvents ? 'Create & manage events, scan QR tickets' : 'Scan QR tickets and check-in attendees'}
+              </p>
+            </div>
+          </Link>
+        )}
+
+        {/* Team Management */}
+        {canManageTeam && (
+          <Link
+            to={`/club/${m.clubId}/team`}
+            onMouseEnter={handleTileEnter}
+            onMouseLeave={handleTileLeave}
+            className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
+          >
+            <div
+              style={iconBgStyle}
+              className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-neutral-200/60 dark:border-white/10 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15"
+            >
+              <Users className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            </div>
+            <div>
+              <p className="font-medium text-sm text-neutral-900 dark:text-white">Team & Members</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
+            </div>
+          </Link>
+        )}
+
+        {/* Payments */}
+        {canReviewPayments && (
+          <Link
+            to="/payments"
+            onMouseEnter={handleTileEnter}
+            onMouseLeave={handleTileLeave}
+            className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
+          >
+            <div
+              style={iconBgStyle}
+              className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-neutral-200/60 dark:border-white/10 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15"
+            >
+              <Wallet className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            </div>
+            <div>
+              <p className="font-medium text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
+            </div>
+          </Link>
+        )}
+
+        {/* Broadcasts */}
+        {canBroadcast && (
+          <Link
+            to={`/send-notification?clubId=${m.clubId}`}
+            onMouseEnter={handleTileEnter}
+            onMouseLeave={handleTileLeave}
+            className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
+          >
+            <div
+              style={iconBgStyle}
+              className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-neutral-200/60 dark:border-white/10 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15"
+            >
+              <Bell className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            </div>
+            <div>
+              <p className="font-medium text-sm text-neutral-900 dark:text-white">Announcements</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
+            </div>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Home = () => {
   const { user: authUser, role: authRole } = useAuth();
   const [user, setUser] = useState(authUser);
@@ -166,6 +373,7 @@ const Home = () => {
   const [openMapEventId, setOpenMapEventId] = useState(null);
   const [celebrationEvent, setCelebrationEvent] = useState(null);
   const [celebrationWinnerRank, setCelebrationWinnerRank] = useState(null);
+  const [showAllRegistrations, setShowAllRegistrations] = useState(false);
 
   useEffect(() => {
     document.title = "Campusnode | NITJ Clubs & Events";
@@ -430,7 +638,7 @@ const Home = () => {
                   </div>
                 ) : (
                   <div className="relative border-l-2 border-brand-500/20 dark:border-brand-400/20 pl-6 md:pl-8 ml-4 md:ml-6 space-y-8">
-                    {registrations.map((reg, idx) => {
+                    {(showAllRegistrations ? registrations : registrations.slice(0, 5)).map((reg, idx) => {
                       const event = reg.eventId;
                       if (!event) return null;
                       const isApproved = reg.paymentStatus === 'APPROVED' || reg.paymentStatus === 'SUCCESS';
@@ -504,6 +712,33 @@ const Home = () => {
                         </ScrollReveal>
                       );
                     })}
+
+                    {registrations.length > 5 && (
+                      <div className="relative pt-1">
+                        <div className="absolute -left-[35px] md:-left-[43px] top-2.5 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border border-brand-500/40 dark:border-brand-400/40 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm z-10">
+                          {showAllRegistrations ? (
+                            <ChevronUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-600 dark:text-brand-400" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-600 dark:text-brand-400" />
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setShowAllRegistrations((prev) => !prev)}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-brand-500/20 dark:border-brand-400/20 bg-brand-500/10 dark:bg-brand-400/10 hover:bg-brand-500/15 dark:hover:bg-brand-400/15 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs backdrop-blur-sm"
+                        >
+                          <span>
+                            {showAllRegistrations
+                              ? 'Show Less (First 5 Events)'
+                              : `View All Registered Events (${registrations.length})`}
+                          </span>
+                          {showAllRegistrations ? (
+                            <ChevronUp className="w-4 h-4 shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 shrink-0" />
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </Section>
@@ -545,99 +780,15 @@ const Home = () => {
 
                     return (
                       <ScrollReveal key={m.clubId} direction="up" delay={0.06 * (idx % 2)} distance={20}>
-                        <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-brand-500/15 dark:border-brand-400/15 rounded-2xl overflow-hidden shadow-sm">
-                          {/* Club header */}
-                          <div className="flex items-center gap-3 px-6 py-4 border-b border-brand-500/10 dark:border-brand-400/10 bg-brand-500/[0.03] dark:bg-brand-400/[0.03] backdrop-blur-sm">
-                            {m.clubLogo ? (
-                              <img src={m.clubLogo} alt={m.clubName} className="w-9 h-9 rounded-xl object-cover border border-brand-500/20 dark:border-brand-400/20 shrink-0" />
-                            ) : (
-                              <div className="w-9 h-9 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 dark:border-brand-400/20 flex items-center justify-center shrink-0 text-base font-medium">
-                                {(m.clubName || 'C').charAt(0)}
-                              </div>
-                            )}
-                            <div>
-                              <p className="font-medium text-neutral-900 dark:text-white text-base leading-tight">{m.clubName || 'Your Club'}</p>
-                              <p className="text-[10px] uppercase tracking-widest font-medium text-brand-600 dark:text-brand-400">
-                                {isLead ? 'Student Lead' : isCoord ? 'Club Coordinator' : 'Team Member'}
-                              </p>
-                            </div>
-                            <Link
-                              to={`/club-events/${m.clubId}`}
-                              className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
-                            >
-                              View All Events <ArrowRightIcon className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-
-                          {/* Operation tiles */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-brand-500/10 dark:divide-brand-400/10">
-                            {/* Events & Attendance */}
-                            {canManageEvents && (
-                              <Link
-                                to={`/club-events/${m.clubId}`}
-                                className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15">
-                                  <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Events & Attendance</p>
-                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">
-                                    {isLead || isCoord || m.canEditEvents ? 'Create & manage events, scan QR tickets' : 'Scan QR tickets and check-in attendees'}
-                                  </p>
-                                </div>
-                              </Link>
-                            )}
-
-                            {/* Team Management */}
-                            {canManageTeam && (
-                              <Link
-                                to={`/club/${m.clubId}/team`}
-                                className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15">
-                                  <Users className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Team & Members</p>
-                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Roster, role assignments, invites</p>
-                                </div>
-                              </Link>
-                            )}
-
-                            {/* Payments */}
-                            {canReviewPayments && (
-                              <Link
-                                to="/payments"
-                                className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15">
-                                  <Wallet className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Finance & Receipts</p>
-                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Registration fees, verified payments</p>
-                                </div>
-                              </Link>
-                            )}
-
-                            {/* Broadcasts */}
-                            {canBroadcast && (
-                              <Link
-                                to={`/send-notification?clubId=${m.clubId}`}
-                                className="flex flex-col gap-3 p-5 group hover:bg-brand-500/[0.05] dark:hover:bg-brand-400/[0.05] transition-colors"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/15 dark:border-brand-400/15 text-brand-600 dark:text-brand-400 flex items-center justify-center transition-colors group-hover:bg-brand-500/15 dark:group-hover:bg-brand-400/15">
-                                  <Bell className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm text-neutral-900 dark:text-white">Announcements</p>
-                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-snug mt-0.5">Send alerts to registrants & campus</p>
-                                </div>
-                              </Link>
-                            )}
-                          </div>
-                        </div>
+                        <ClubOperationCard
+                          membership={m}
+                          isLead={isLead}
+                          isCoord={isCoord}
+                          canManageTeam={canManageTeam}
+                          canReviewPayments={canReviewPayments}
+                          canBroadcast={canBroadcast}
+                          canManageEvents={canManageEvents}
+                        />
                       </ScrollReveal>
                     );
                   })}
@@ -756,19 +907,19 @@ const Home = () => {
               <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
                 
                 <ScrollReveal delay={0.2}>
-                  <h1 className="font-medium  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight dark:text-white text-black drop-shadow-2xs">
+                  <div className='mb-8'>
+                  <h1 className="font-medium  text-[clamp(50px,5.5vw,70px)] leading-[1.1] tracking-tight dark:text-white text-white drop-shadow-2xs">
                    Never Miss What's Happening
                     <br />
-                    <span className="text-cn-blue text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
+                    <span className="text-white text-[clamp(53px,5.5vw,74px)]">at NITJ.</span>
                   </h1>
+
+                  </div>
                 </ScrollReveal>
 
                 <ScrollReveal delay={0.3} className="w-full">
                   <div className="flex flex-col items-center gap-8 mt-6">
-                    <p className="text-base md:text-lg font-normal dark:text-white text-black leading-relaxed max-w-2xl mx-auto drop-shadow-2xs">
-                      Find events, discover clubs, follow campus updates, and take part in the communities that make NIT Jalandhar more than just a campus.
-                    </p>
-
+                    
                     <div className="flex gap-3 sm:gap-4 flex-wrap justify-center items-center">
                       {/* Primary Action */}
                       <Link
@@ -913,134 +1064,212 @@ const Home = () => {
 
       {!user && (
         <>
-          {/* Section 1: For Students */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+          {/* ── Section 1: Why CampusNode? ────────────────────────── */}
+          <section className="py-14 sm:py-18 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
             <SectionGlow />
             <Section className="relative z-10">
-              <ScrollReveal direction="up">
-                <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
-                  {/* Left: text */}
-                  <div>
-                    <p className="text-xs font-medium tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
-                      For Students
-                    </p>
-                    <h2 className="text-3xl  sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                     Don't Just Be on Campus. <br/>Be Part of It.
-                      
-                    </h2>
-
-                    <div className="flex flex-col gap-4">
-                      {studentItems.map((item, i) => (
-                        <div key={i} className="flex gap-3.5 items-start">
-                          <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-cn-blue-50 dark:bg-cn-blue-950/30 border border-cn-blue-100 dark:border-cn-blue-900/40 flex items-center justify-center text-cn-blue-600 dark:text-cn-blue-400 text-base">
-                            {item.icon}
-                          </div>
-                          <div className="pt-0.5">
-                            <p className="text-xs text-neutral-400 line-through mb-0.5">{item.problem}</p>
-                            <p className="text-sm font-medium text-neutral-900 dark:text-white leading-snug">{item.solution}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-8 flex flex-wrap items-center gap-3">
-                      <Link to="/register" className="inline-flex items-center gap-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-medium uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-md shadow-black/10 dark:shadow-white/10 hover:shadow-lg">
-                        Join now
-                        <i className="ri-arrow-right-line text-sm" />
-                      </Link>
-                      <Link to="/events" className="inline-flex items-center gap-2 border border-neutral-300 dark:border-neutral-700 hover:border-cn-blue-500/60 hover:bg-neutral-50 dark:hover:bg-neutral-850 text-neutral-700 dark:text-neutral-300 hover:text-cn-blue-600 dark:hover:text-cn-blue-400 text-xs font-medium uppercase tracking-widest px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation cursor-pointer shadow-xs hover:shadow-md">
-                        Browse Events
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Right: image */}
-                  <div className="relative hidden md:block">
-                    <img
-                      src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80"
-                      alt="Student life"
-                      className="w-full h-[380px] object-cover rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm"
-                      style={{ filter: "saturate(0.9)" }}
-                    />
-                    <div className="absolute -bottom-4 -right-4 bg-amber-400 border-2 border-neutral-800 dark:border-neutral-200 rounded-xl px-4 py-3 shadow-md">
-                      <p className="text-lg font-medium text-cn-text leading-none">1-Click</p>
-                      <p className="text-[11px] text-cn-text mt-0.5 font-medium">Event Registration</p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            </Section>
-          </section>
-
-          {/* Section 2: For Clubs & Societies */}
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
-            <SectionGlow />
-            <Section className="relative z-10">
-              <ScrollReveal direction="up">
-                <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-medium tracking-widest uppercase text-cn-blue-600 dark:text-cn-blue-400 mb-3">
-                      For Clubs & Societies
-                    </p>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight text-neutral-900 dark:text-white">
-                      Less logistics,{" "}
-                      <span className="text-brand-600 dark:text-brand-500">more impact.</span>
-                    </h2>
-                  </div>
-                  <Link
-                    to="/clubs"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cn-blue-200 dark:border-cn-blue-900/60 bg-cn-blue-50/50 dark:bg-cn-blue-950/30 text-xs font-medium uppercase tracking-wider text-cn-blue-600 dark:text-cn-blue-400 hover:text-cn-blue-700 dark:hover:text-cn-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto"
-                  >
-                    <span>Explore All Societies</span>
-                    <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
-                  {clubFeatures.map((f, i) => (
-                    <div
-                      key={i}
-                      className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 rounded-2xl hover:border-cn-blue-500/50 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-200 group shadow-2xs hover:shadow-md hover:-translate-y-1"
-                    >
-                      <div className="w-10 h-10 bg-cn-blue-50 dark:bg-cn-blue-950/30 text-cn-blue-600 dark:text-cn-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-cn-blue-600 group-hover:text-white transition-colors text-lg">
-                        {f.icon}
-                      </div>
-                      <p className="text-base font-medium text-neutral-900 dark:text-white mb-1">{f.title}</p>
-                      <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollReveal>
-            </Section>
-          </section>
-
-          <section className="py-16 sm:py-20 lg:py-24 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
-            <SectionGlow />
-            <Section className="relative z-10">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+                {/* Left: Text & Problem Context */}
                 <ScrollReveal direction="left" className="lg:col-span-5">
                   <div>
-                    <SectionLabel>OUR VISION</SectionLabel>
-                    <h2 className="font-medium text-3xl sm:text-4xl lg:text-5xl leading-[1.1] tracking-tight text-neutral-900 dark:text-white mb-6 sm:mb-8">
-                      Making Campus Life Easier to Discover.<br />
+                    <div className="flex items-center gap-2 mb-2 text-brand-600 dark:text-brand-400">
+                      <span className="text-[11px] font-medium uppercase tracking-[0.15em]">WHY CAMPUSNODE?</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium leading-[1.2] tracking-tight text-neutral-900 dark:text-white mb-4">
+                      Campus life is connected. <br className="hidden sm:inline" />
+                      <span className="text-brand-600 dark:text-brand-400">Its information should be too.</span>
                     </h2>
-                    <div className="space-y-4 text-neutral-600 dark:text-neutral-300 leading-relaxed text-base sm:text-[17px]">
+                    <div className="space-y-3 text-neutral-600 dark:text-neutral-300 leading-relaxed text-sm sm:text-base">
                       <p>
-                        Campus life is full of events, communities, announcements and opportunities—but finding them shouldn't be difficult.
+                        Campus events and opportunities are often scattered across WhatsApp groups and Instagram stories, leaving key updates buried.
                       </p>
-                      <p>
-                        Campusnode brings everything together, making it easier to discover what's happening, connect with others and be part of campus life.
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        CampusNode unifies students, clubs, events, and announcements into one organized, searchable hub.
                       </p>
+                    </div>
+
+                    {/* Problem vs Solution Comparison */}
+                    <div className="mt-6 pt-5 border-t border-neutral-200/60 dark:border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/60 dark:border-neutral-800 transition-all duration-300 ease-out hover:scale-[1.015]">
+                        <span className="font-medium text-neutral-500 dark:text-neutral-400 block mb-1 uppercase tracking-wider text-[10px]">
+                          Fragmented Reality
+                        </span>
+                        <p className="text-neutral-700 dark:text-neutral-300 text-xs sm:text-[13px] leading-snug">
+                          Buried chat flyers & expiring stories.
+                        </p>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 border border-brand-500/20 transition-all duration-300 ease-out hover:scale-[1.015]">
+                        <span className="font-medium text-brand-600 dark:text-brand-400 block mb-1 uppercase tracking-wider text-[10px]">
+                          CampusNode Hub
+                        </span>
+                        <p className="text-neutral-900 dark:text-white font-medium text-xs sm:text-[13px] leading-snug">
+                          One verified, searchable campus source.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </ScrollReveal>
 
+                {/* Right: Hub Diagram */}
                 <ScrollReveal direction="right" delay={0.2} className="lg:col-span-7 w-full">
                   <div className="flex items-center justify-center w-full">
                     <CampusNodeDiagram />
                   </div>
                 </ScrollReveal>
               </div>
+            </Section>
+          </section>
+
+          {/* ── Section 2: For Students ───────────────────────────── */}
+          <section className="py-14 sm:py-18 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <SectionGlow />
+            <Section className="relative z-10">
+              <ScrollReveal direction="up">
+                <div className="max-w-2xl mb-8 sm:mb-10">
+                  <div className="flex items-center gap-2 mb-2 text-brand-600 dark:text-brand-400">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.15em]">FOR STUDENTS</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium leading-[1.2] tracking-tight text-neutral-900 dark:text-white mb-3">
+                    Everything Happening on Campus. <br className="hidden sm:inline" />
+                    <span className="text-brand-600 dark:text-brand-400">One Place.</span>
+                  </h2>
+                  <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                    No more tracking dozens of WhatsApp groups or Instagram pages. Discover activities and participate effortlessly.
+                  </p>
+                </div>
+
+                {/* 4 Benefits Showcase */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {/* Benefit 1: Campus Updates */}
+                  <div className="p-5 sm:p-6 border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-2xl hover:border-brand-500/40 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-md group flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/15 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105">
+                        <Bell className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-card-title text-neutral-900 dark:text-white mb-1.5">
+                        Campus Updates
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                        Stay informed with verified announcements and real-time alerts.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Benefit 2: Discover Events */}
+                  <div className="p-5 sm:p-6 border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-2xl hover:border-brand-500/40 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-md group flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/15 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105">
+                        <Compass className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-card-title text-neutral-900 dark:text-white mb-1.5">
+                        Discover Events
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                        Explore technical, cultural, and sports activities across all clubs.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Benefit 3: One-Click Registration (Highlighted Differentiator) */}
+                  <div className="p-5 sm:p-6 border border-brand-500/40 dark:border-brand-400/30 bg-brand-500/[0.04] dark:bg-brand-400/[0.04] rounded-2xl relative overflow-hidden transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-md group flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-105">
+                          <Zap className="w-5 h-5 fill-current" />
+                        </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-brand-600/10 dark:bg-brand-400/15 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Zero Repetitive Forms
+                        </span>
+                      </div>
+                      <h3 className="text-card-title text-neutral-900 dark:text-white mb-1.5 flex items-center gap-2">
+                        One-Click Registration
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3">
+                        Register instantly using your existing student profile—no typing roll number or details again.
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white/80 dark:bg-neutral-900/80 border border-brand-500/20 text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
+                      <span>Auto-syncs roll number, branch, and contact information.</span>
+                    </div>
+                  </div>
+
+                  {/* Benefit 4: Stay Connected */}
+                  <div className="p-5 sm:p-6 border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-2xl hover:border-brand-500/40 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-md group flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 border border-brand-500/15 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-card-title text-neutral-900 dark:text-white mb-1.5">
+                        Stay Connected
+                      </h3>
+                      <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                        Discover student communities, societies, and campus opportunities.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3">
+                  <BtnSecondary to="/clubs">
+                    <span>Explore Campus</span>
+                  </BtnSecondary>
+                  <BtnPrimary to="/events">
+                    <span>Browse Events</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </BtnPrimary>
+                </div>
+              </ScrollReveal>
+            </Section>
+          </section>
+
+          {/* ── Section 3: For Clubs & Societies ──────────────────── */}
+          <section className="py-14 sm:py-18 lg:py-20 bg-cn-surface border-b border-neutral-200/50 dark:border-white/[0.05] transition-colors duration-300 relative overflow-hidden">
+            <SectionGlow />
+            <Section className="relative z-10">
+              <ScrollReveal direction="up">
+                <div className="mb-8 sm:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+                  <div className="max-w-xl">
+                    <div className="flex items-center gap-2 mb-2 text-brand-600 dark:text-brand-400">
+                      <span className="text-[11px] font-medium uppercase tracking-[0.15em]">FOR CLUBS & SOCIETIES</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-medium leading-[1.2] tracking-tight text-neutral-900 dark:text-white mb-2.5">
+                      Organising Campus Activities <br className="hidden sm:inline" />
+                      <span className="text-brand-600 dark:text-brand-400">Shouldn't Be Complicated.</span>
+                    </h2>
+                    <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      A centralized platform to publish events, manage registrations, and communicate with students.
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/clubs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-brand-500/20 bg-brand-50/50 dark:bg-brand-950/30 text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:border-brand-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation shadow-xs hover:shadow-md group self-start md:self-auto shrink-0"
+                  >
+                    <span>Explore Clubs</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                  {clubBenefits.map((f, i) => (
+                    <div
+                      key={i}
+                      className="p-5 sm:p-6 border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-2xl hover:border-brand-500/40 hover:bg-white dark:hover:bg-neutral-900 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-md group flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="w-10 h-10 bg-brand-500/10 dark:bg-brand-400/10 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105 border border-brand-500/15">
+                          <f.icon className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-card-title text-neutral-900 dark:text-white mb-1.5">{f.title}</h3>
+                        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{f.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollReveal>
             </Section>
           </section>
         </>
@@ -1255,9 +1484,10 @@ const Home = () => {
       {/* Action Button */}
       <button
         onClick={acknowledgeWin}
-        className="mt-6 w-full py-3 bg-brand-200 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-400/20 font-medium rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-sm cursor-pointer"
+        className="mt-6 w-full py-3 bg-brand-200 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-400/20 font-medium rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 touch-manipulation text-sm cursor-pointer flex items-center justify-center gap-2"
       >
-        Awesome! 🎉
+        <span>Awesome!</span>
+        <Trophy className="w-4 h-4" />
       </button>
     </div>
   </div>
